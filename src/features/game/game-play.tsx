@@ -8,6 +8,7 @@ import { useAiVersus } from "./hooks/use-ai-versus";
 import { useNotation } from "./hooks/use-notation";
 import { useAutoSave } from "./hooks/use-auto-save";
 import { saveGame } from "@/lib/storage";
+import { useTranslation } from "react-i18next";
 
 type Tab = "move" | "board";
 
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export const GamePlay = ({ settings, initialMoves, gameId }: Props) => {
+  const { t } = useTranslation();
   const [playerSide] = useState<Side>(settings.color);
   const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<Tab>("move");
@@ -27,8 +29,8 @@ export const GamePlay = ({ settings, initialMoves, gameId }: Props) => {
   const { getAiMove } = useAiVersus({ skillLevel: settings.skillLevel });
   const { moves, pushMove, getFen } = useNotation(initialMoves);
   const handleAutoSave = useCallback(() => {
-    toast.success("Game saved!");
-  }, []);
+    toast.success(t("game.notifications.gameSaved"));
+  }, [t]);
   useAutoSave({
     moves,
     playerColor: playerSide,
@@ -54,9 +56,9 @@ export const GamePlay = ({ settings, initialMoves, gameId }: Props) => {
   useEffect(() => {
     if (gameStatus !== "in_progress") {
       saveGame(moves, playerSide, settings.skillLevel, gameId, gameStatus);
-      toast.success("Game result saved!");
+      toast.success(t("game.notifications.resultSaved"));
     }
-  }, [gameStatus]);
+  }, [gameStatus, moves, playerSide, settings.skillLevel, gameId, t]);
 
   const onMove = async (move: AlgebraicNotation) => {
     try {
@@ -87,9 +89,9 @@ export const GamePlay = ({ settings, initialMoves, gameId }: Props) => {
 
         {gameStatus !== "in_progress" && (
           <div className="mt-4 p-4 rounded bg-blue-50 text-blue-800 text-center font-semibold">
-            {gameStatus === "win" && "You won!"}
-            {gameStatus === "loss" && "You lost!"}
-            {gameStatus === "draw" && "Game drawn!"}
+            {gameStatus === "win" && t("game.status.win")}
+            {gameStatus === "loss" && t("game.status.loss")}
+            {gameStatus === "draw" && t("game.status.draw")}
           </div>
         )}
 

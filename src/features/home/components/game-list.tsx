@@ -1,6 +1,7 @@
 import { Game } from "@/types";
 import { useNavigate } from "react-router-dom";
 import { PlayScreenState } from "@/routes/app/game/play";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   games: Game[];
@@ -8,6 +9,7 @@ interface Props {
 
 export const GameList = ({ games }: Props) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleGameClick = (game: Game) => {
     navigate("/game/play", {
@@ -25,9 +27,7 @@ export const GameList = ({ games }: Props) => {
   if (games.length === 0) {
     return (
       <div className="flex items-center justify-center p-8 text-gray-500">
-        <p className="text-center">
-          No games yet. Start playing to see your games here!
-        </p>
+        <p className="text-center">{t("game.list.noGames")}</p>
       </div>
     );
   }
@@ -47,7 +47,8 @@ export const GameList = ({ games }: Props) => {
                   {new Date(game.date).toLocaleDateString()}
                 </span>
                 <span className="text-sm text-gray-600">
-                  Playing as {game.playerColor}
+                  {t("game.list.playingAs")}{" "}
+                  {t(`game.color.${game.playerColor}`)}
                 </span>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -58,12 +59,12 @@ export const GameList = ({ games }: Props) => {
                         : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {game.status.toUpperCase()}
+                  {t(`game.list.status.${game.status}`)}
                 </span>
               </div>
               <div className="mt-2 sm:mt-0">
                 <span className="text-sm text-gray-600">
-                  {game.moves.length} moves
+                  {game.moves.length} {t("game.list.moves")}
                 </span>
               </div>
             </div>

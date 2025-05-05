@@ -1,5 +1,6 @@
 import { PlayerColor } from "@/types";
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 
 type ColorOptionProps = {
   color: PlayerColor;
@@ -14,6 +15,7 @@ const iconMap: Record<PlayerColor, string> = {
 };
 
 export const ColorOption = ({ color, selected, onClick }: ColorOptionProps) => {
+  const { t } = useTranslation();
   const baseClasses =
     "w-full aspect-square rounded-2xl flex flex-col items-center justify-center space-y-1 font-medium transition-all overflow-hidden border-2";
 
@@ -36,6 +38,7 @@ export const ColorOption = ({ color, selected, onClick }: ColorOptionProps) => {
       className={clsx(baseClasses, colorClasses, ringColor, {
         "hover:opacity-90": !selected,
       })}
+      aria-label={t(`game.color.${color}`)}
     >
       <span className="text-5xl leading-none">{iconMap[color]}</span>
     </button>

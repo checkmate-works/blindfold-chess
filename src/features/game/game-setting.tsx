@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { PlayerColor, Side, SkillLevel } from "@/types";
 import { ColorSelector } from "./components/color-selector";
 import { SkillLevelSelector } from "./components/skill-level-selector";
+import { useTranslation } from "react-i18next";
 
 const decidePlayerSide = (colorSetting: PlayerColor): Side => {
   if (colorSetting === "random") {
@@ -15,6 +16,7 @@ export const GameSetting = () => {
   const navigate = useNavigate();
   const [selectedColor, setSelectedColor] = useState<PlayerColor>("white");
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(10);
+  const { t } = useTranslation();
 
   const handleStartGame = () => {
     navigate("/game/play", {
@@ -47,7 +49,7 @@ export const GameSetting = () => {
             onClick={handleStartGame}
             className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors duration-200"
           >
-            Start Game
+            {t("game.start")}
           </button>
         </div>
       </div>

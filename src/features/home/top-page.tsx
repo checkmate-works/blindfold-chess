@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { GameList } from "./components/game-list";
 import { Game } from "@/types";
 import { loadGames } from "@/lib/storage";
+import { useTranslation } from "react-i18next";
 
 export const TopPage = () => {
   const [games, setGames] = useState<Game[]>([]);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setGames(loadGames());
@@ -24,7 +26,7 @@ export const TopPage = () => {
             onClick={() => navigate("/game/setup")}
             className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg shadow transition-colors duration-200"
           >
-            Start New Game
+            {t("game.start")}
           </button>
         </div>
       </div>

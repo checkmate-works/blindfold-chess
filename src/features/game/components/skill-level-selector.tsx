@@ -1,4 +1,5 @@
 import { SKILL_LEVEL_OPTIONS, SkillLevel } from "@/types";
+import { useTranslation } from "react-i18next";
 
 type SkillLevelSelectorProps = {
   selectedLevel: SkillLevel;
@@ -9,9 +10,12 @@ export const SkillLevelSelector = ({
   selectedLevel,
   onLevelSelect,
 }: SkillLevelSelectorProps) => {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Select AI Level</h3>
+      <h3 className="text-lg font-semibold text-gray-800">
+        {t("game.ai.level")}
+      </h3>
       <div className="grid grid-cols-1 gap-3">
         {SKILL_LEVEL_OPTIONS.map(({ label, value }) => {
           const isSelected = selectedLevel === value;
@@ -28,7 +32,7 @@ export const SkillLevelSelector = ({
                 }
               `}
             >
-              {label}
+              {t(`game.ai.levels.${label.toLowerCase()}`)}
             </button>
           );
         })}

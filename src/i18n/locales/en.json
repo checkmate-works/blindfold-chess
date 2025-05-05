@@ -1,0 +1,52 @@
+{
+  "game": {
+    "title": "Blindfold Chess",
+    "start": "Start Game",
+    "color.title": "Choose Your Color",
+    "color.white": "White",
+    "color.black": "Black",
+    "color.random": "Random",
+    "ai": {
+      "level": "Select AI Level",
+      "levels": {
+        "beginner": "Beginner",
+        "easy": "Easy",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "expert": "Expert"
+      }
+    },
+    "status": {
+      "playing": "Playing as",
+      "aiLevel": "AI Level",
+      "yourTurn": "Your turn",
+      "thinking": "Stockfish is thinking...",
+      "lastMove": "Last move",
+      "currentInput": "Current input",
+      "enterMove": "Enter move (e.g. e4, Nf3, O-O, Bxc6)",
+      "makeMove": "Make Move",
+      "win": "You won!",
+      "loss": "You lost!",
+      "draw": "Game drawn!"
+    },
+    "tabs": {
+      "move": "Enter Move",
+      "board": "View Board"
+    },
+    "notifications": {
+      "gameSaved": "Game saved!",
+      "resultSaved": "Game result saved!"
+    },
+    "list": {
+      "noGames": "No games yet. Start playing to see your games here!",
+      "playingAs": "Playing as",
+      "moves": "moves",
+      "status": {
+        "win": "WIN",
+        "loss": "LOSS",
+        "draw": "DRAW",
+        "in_progress": "IN PROGRESS"
+      }
+    }
+  }
+}

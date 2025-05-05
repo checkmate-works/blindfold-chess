@@ -1,0 +1,52 @@
+{
+  "game": {
+    "title": "目隠しチェス",
+    "start": "ゲーム開始",
+    "color.title": "色を選択",
+    "color.white": "白",
+    "color.black": "黒",
+    "color.random": "ランダム",
+    "ai": {
+      "level": "AIレベルを選択",
+      "levels": {
+        "beginner": "初心者",
+        "easy": "初級",
+        "intermediate": "中級",
+        "advanced": "上級",
+        "expert": "エキスパート"
+      }
+    },
+    "status": {
+      "playing": "プレイヤー",
+      "aiLevel": "AIレベル",
+      "yourTurn": "あなたの手番です",
+      "thinking": "AIが考え中...",
+      "lastMove": "前の手",
+      "currentInput": "入力中",
+      "enterMove": "手を入力 (例: e4, Nf3, O-O, Bxc6)",
+      "makeMove": "手を指す",
+      "win": "あなたの勝ちです！",
+      "loss": "あなたの負けです！",
+      "draw": "引き分けです！"
+    },
+    "tabs": {
+      "move": "手を入力",
+      "board": "盤面を表示"
+    },
+    "notifications": {
+      "gameSaved": "ゲームを保存しました！",
+      "resultSaved": "ゲーム結果を保存しました！"
+    },
+    "list": {
+      "noGames": "まだゲームがありません。ゲームを開始すると、ここに表示されます。",
+      "playingAs": "プレイヤー",
+      "moves": "手",
+      "status": {
+        "win": "勝利",
+        "loss": "負け",
+        "draw": "引き分け",
+        "in_progress": "進行中"
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { useLocation, Navigate } from "react-router-dom";
 import { GamePlay as GamePlayContainer } from "@/features/game";
 import { ContentLayout } from "@/components/layouts";
 import { GameSettings, AlgebraicNotation } from "@/types";
+import { useTranslation } from "react-i18next";
 
 export type PlayScreenState = {
   gameId?: string;
@@ -10,6 +11,7 @@ export type PlayScreenState = {
 };
 
 export const GamePlay = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const state = location.state as PlayScreenState;
 
@@ -18,7 +20,7 @@ export const GamePlay = () => {
   }
 
   return (
-    <ContentLayout title="Blindfold Chess">
+    <ContentLayout title={t("game.title")}>
       <GamePlayContainer
         settings={state.settings}
         initialMoves={state.initialMoves || []}
