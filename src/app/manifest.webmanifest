@@ -1,0 +1,21 @@
+{
+  "name": "Blindfold Chess",
+  "short_name": "Blindfold Chess",
+  "description": "Master chess visualization with our free online blindfold chess training platform",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "background_color": "#f8f9fa",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
