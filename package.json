@@ -35,10 +35,7 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "volta": {
-    "node": "22.17.1"
-  },
   "engines": {
-    "node": "22.x"
+    "node": ">=22.17.1 <23"
   }
 }
