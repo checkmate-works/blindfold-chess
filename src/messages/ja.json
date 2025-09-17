@@ -1,5 +1,12 @@
 {
   "Header": {
-    "title": "目隠しチェス"
+    "title": "目隠しチェス",
+    "home": "ホーム",
+    "learn": "学ぶ",
+    "practice": "練習",
+    "manual": "マニュアル",
+    "faq": "よくある質問",
+    "glossary": "用語集",
+    "settings": "設定"
   }
 }

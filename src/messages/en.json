@@ -1,5 +1,12 @@
 {
   "Header": {
-    "title": "Blindfold Chess"
+    "title": "Blindfold Chess",
+    "home": "Home",
+    "learn": "Learn",
+    "practice": "Practice",
+    "manual": "Manual",
+    "faq": "FAQ",
+    "glossary": "Glossary",
+    "settings": "Settings"
   }
 }
