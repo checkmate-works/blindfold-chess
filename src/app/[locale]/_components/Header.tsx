@@ -47,7 +47,7 @@ export async function Header({ locale }: HeaderProps) {
   ];
 
   return (
-    <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-gray-700">
+    <header className="bg-card border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Left side: Mobile menu + Logo + Title + Desktop navigation */}
@@ -66,7 +66,7 @@ export async function Header({ locale }: HeaderProps) {
                 className="w-10 h-10"
               />
               {/* Title - hidden on mobile, visible on desktop */}
-              <span className="hidden md:block text-xl font-bold text-gray-900 dark:text-gray-100">
+              <span className="hidden md:block text-xl font-bold text-foreground">
                 {t('title')}
               </span>
             </Link>
@@ -94,7 +94,7 @@ export async function Header({ locale }: HeaderProps) {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md transition-colors"
+                    className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent px-3 py-2 rounded-md transition-colors"
                   >
                     {getIcon()}
                     {item.label}
@@ -107,7 +107,7 @@ export async function Header({ locale }: HeaderProps) {
           {/* Right side: Settings icon */}
           <Link
             href={`/${locale}/preferences`}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
             aria-label={t('settings')}
           >
             <FaCog className="h-5 w-5" />

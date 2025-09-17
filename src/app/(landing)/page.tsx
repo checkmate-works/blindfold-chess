@@ -4,7 +4,7 @@ import { LanguageButton } from './_components/LanguageButton';
 
 export default function RootPage() {
   return (
-    <div className="fixed inset-0 min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="fixed inset-0 min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary">
       <div className="text-center px-6 py-6 md:px-4 w-full max-w-lg box-border">
         <div className="flex justify-center mb-6">
           <Image
@@ -16,7 +16,7 @@ export default function RootPage() {
           />
         </div>
 
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-slate-900 dark:text-slate-50 leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
           {siteName}
         </h1>
 

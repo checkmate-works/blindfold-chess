@@ -8,5 +8,22 @@
     "faq": "FAQ",
     "glossary": "Glossary",
     "settings": "Settings"
+  },
+  "Preferences": {
+    "title": "Settings",
+    "tabs": {
+      "appearance": "Appearance"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "themes": {
+        "system": "System",
+        "systemDescription": "Follow system theme",
+        "light": "Light",
+        "lightDescription": "Always use light theme",
+        "dark": "Dark",
+        "darkDescription": "Always use dark theme"
+      }
+    }
   }
 }

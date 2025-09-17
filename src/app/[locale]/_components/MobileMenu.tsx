@@ -25,7 +25,7 @@ export function MobileMenu({ title, items }: MobileMenuProps) {
       {/* Hamburger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="md:hidden p-2 rounded-md text-muted-foreground hover:bg-accent"
         aria-label="Menu"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,22 +50,22 @@ export function MobileMenu({ title, items }: MobileMenuProps) {
       {/* Mobile menu overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile menu panel */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 shadow-lg transform transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-lg transform transition-transform duration-300 ease-in-out md:hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</span>
+        <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+          <span className="text-lg font-semibold text-foreground">{title}</span>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-md text-muted-foreground hover:bg-accent"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -103,7 +103,7 @@ export function MobileMenu({ title, items }: MobileMenuProps) {
                 key={item.id}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-accent rounded-md"
               >
                 {getIcon()}
                 {item.label}

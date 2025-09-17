@@ -8,5 +8,22 @@
     "faq": "よくある質問",
     "glossary": "用語集",
     "settings": "設定"
+  },
+  "Preferences": {
+    "title": "設定",
+    "tabs": {
+      "appearance": "外観"
+    },
+    "appearance": {
+      "theme": "テーマ",
+      "themes": {
+        "system": "システム",
+        "systemDescription": "システム設定に従う",
+        "light": "ライト",
+        "lightDescription": "常にライトテーマを使用",
+        "dark": "ダーク",
+        "darkDescription": "常にダークテーマを使用"
+      }
+    }
   }
 }
