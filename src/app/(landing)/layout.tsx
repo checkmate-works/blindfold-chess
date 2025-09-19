@@ -6,7 +6,7 @@ const siteDescription =
 
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,6 +30,21 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
         <meta name="twitter:title" content={siteName} />
         <meta name="twitter:description" content={siteDescription} />
         <meta name="twitter:image" content={`${siteUrl}/logo.png`} />
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              })();
+            `,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
