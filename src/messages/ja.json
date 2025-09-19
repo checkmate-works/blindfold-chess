@@ -25,5 +25,15 @@
         "darkDescription": "常にダークテーマを使用"
       }
     }
+  },
+  "faq": {
+    "title": "よくある質問",
+    "description": "目隠しチェスに関するよくある質問への回答",
+    "items": {
+      "invalidMove": {
+        "question": "正しい手を送信したのに \"Invalid move\" と表示されます。",
+        "answer": "ナイトやルークなど2つある駒がどちらも同じマス目に動ける位置にある場合、 Ngf3 や Rad8 のようにどちらの駒を動かすか明示的に指定する必要があります。リーガルムーブを表示する<settingsLink>設定</settingsLink>が可能なので、適宜利用してください。"
+      }
+    }
   }
 }

@@ -25,5 +25,15 @@
         "darkDescription": "Always use dark theme"
       }
     }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "description": "Find answers to common questions about Blindfold Chess",
+    "items": {
+      "invalidMove": {
+        "question": "I entered a correct move but got \"Invalid move\" error.",
+        "answer": "When two pieces of the same type (like knights or rooks) can move to the same square, you need to specify which piece to move explicitly, such as Ngf3 or Rad8. You can enable the legal moves display in <settingsLink>settings</settingsLink> to help with this."
+      }
+    }
   }
 }
