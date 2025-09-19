@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { siteName } from '@/config';
+import { siteName, locales } from '@/config';
 import { LanguageButton } from './_components/LanguageButton';
 
 export default function RootPage() {
@@ -21,8 +21,15 @@ export default function RootPage() {
         </h1>
 
         <div className="flex flex-col sm:flex-row sm:justify-center gap-3 sm:gap-4 items-stretch w-full">
-          <LanguageButton href="/en" flag="🇬🇧" language="English" subtitle="Continue in English" />
-          <LanguageButton href="/ja" flag="🇯🇵" language="日本語" subtitle="日本語で続ける" />
+          {locales.map((locale) => (
+            <LanguageButton
+              key={locale.code}
+              href={`/${locale.code}`}
+              flag={locale.flag}
+              language={locale.label}
+              subtitle={locale.subtitle}
+            />
+          ))}
         </div>
       </div>
     </div>

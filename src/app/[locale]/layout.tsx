@@ -1,5 +1,6 @@
 import '../globals.css';
 import { Header } from './_components/Header';
+import { Footer } from './_components/Footer';
 import { Inter } from 'next/font/google';
 import { Providers } from './_lib/providers';
 import { getMessages } from 'next-intl/server';
@@ -27,6 +28,7 @@ export default async function Layout({
           <div className="flex flex-col min-h-screen">
             <Header locale={locale} />
             <main className="flex-1 bg-secondary">{children}</main>
+            <Footer locale={locale} />
           </div>
         </Providers>
       </body>
