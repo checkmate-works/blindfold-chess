@@ -63,5 +63,9 @@
     },
     "aliases": "Also known as",
     "relatedTerms": "Related terms"
+  },
+  "manual": {
+    "title": "Manual",
+    "description": "User guides and documentation for Blindfold Chess"
   }
 }

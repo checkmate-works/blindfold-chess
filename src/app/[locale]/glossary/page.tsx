@@ -48,7 +48,7 @@ export default async function GlossaryIndexPage({
 
       {/* Breadcrumb at bottom */}
       <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb items={[{ label: t('title') }]} />
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </div>
     </>
   );

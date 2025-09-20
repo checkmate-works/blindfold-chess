@@ -85,6 +85,7 @@ export default async function GlossaryCategoryPage({ params }: GlossaryCategoryP
       <div className="mt-8 pt-6 border-t border-border">
         <Breadcrumb
           items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
+          locale={locale}
         />
       </div>
     </>

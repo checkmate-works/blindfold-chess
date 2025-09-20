@@ -25,7 +25,7 @@ export default async function FAQPage({ params }: FAQPageProps) {
     <>
       <FAQClient />
       <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb items={[{ label: t('title') }]} />
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </div>
     </>
   );

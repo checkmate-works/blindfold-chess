@@ -63,5 +63,9 @@
     },
     "aliases": "別名",
     "relatedTerms": "関連用語"
+  },
+  "manual": {
+    "title": "マニュアル",
+    "description": "Blindfold Chess のユーザーガイドとドキュメント"
   }
 }

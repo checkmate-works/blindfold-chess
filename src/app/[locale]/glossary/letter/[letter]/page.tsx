@@ -62,7 +62,10 @@ export default async function GlossaryLetterPage({ params }: GlossaryLetterPageP
 
       {/* Breadcrumb at bottom */}
       <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]} />
+        <Breadcrumb
+          items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
+          locale={locale}
+        />
       </div>
     </>
   );

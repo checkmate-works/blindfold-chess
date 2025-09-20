@@ -8,14 +8,19 @@ interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
+  locale?: string;
 }
 
-export function Breadcrumb({ items }: BreadcrumbProps) {
+export function Breadcrumb({ items, locale }: BreadcrumbProps) {
   return (
     <nav aria-label="Breadcrumb" className="mb-4">
       <ol className="flex items-center space-x-1 text-sm">
         <li>
-          <Link href="/" className="flex items-center hover:opacity-70 transition-opacity">
+          <Link
+            href="/"
+            locale={locale}
+            className="flex items-center hover:opacity-70 transition-opacity"
+          >
             <Image
               src="/logo.png"
               alt="Blindfold Chess"
@@ -32,6 +37,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
             {item.href ? (
               <Link
                 href={item.href}
+                locale={locale}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.label}
