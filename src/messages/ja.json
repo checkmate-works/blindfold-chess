@@ -64,6 +64,12 @@
     "aliases": "別名",
     "relatedTerms": "関連用語"
   },
+  "error": {
+    "title": "エラーが発生しました",
+    "description": "ご不便をおかけして申し訳ございません。リクエストの処理中にエラーが発生しました。",
+    "tryAgain": "もう一度試す",
+    "goHome": "ホームに戻る"
+  },
   "manual": {
     "title": "マニュアル",
     "description": "Blindfold Chess のユーザーガイドとドキュメント"

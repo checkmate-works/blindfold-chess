@@ -64,6 +64,12 @@
     "aliases": "Also known as",
     "relatedTerms": "Related terms"
   },
+  "error": {
+    "title": "Something went wrong!",
+    "description": "We apologize for the inconvenience. An error occurred while processing your request.",
+    "tryAgain": "Try again",
+    "goHome": "Go home"
+  },
   "manual": {
     "title": "Manual",
     "description": "User guides and documentation for Blindfold Chess"
