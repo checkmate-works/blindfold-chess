@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb } from '@/app/[locale]/_components';
-import { Link } from '@/i18n/routing';
+import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
 
 interface PracticePageProps {
   params: Promise<{
@@ -18,35 +17,30 @@ export default async function PracticePage({ params }: PracticePageProps) {
       title: t('practice.algebraicNotation.title'),
       description: t('practice.algebraicNotation.description'),
       icon: '📝',
-      difficulty: t('practice.difficulty.beginner'),
     },
     {
       id: 'square-color',
       title: t('practice.squareColor.title'),
       description: t('practice.squareColor.description'),
       icon: '🎨',
-      difficulty: t('practice.difficulty.beginner'),
     },
     {
       id: 'position-memory',
       title: t('practice.positionMemory.title'),
       description: t('practice.positionMemory.description'),
       icon: '🧠',
-      difficulty: t('practice.difficulty.intermediate'),
     },
     {
       id: 'legal-moves',
       title: t('practice.legalMoves.title'),
       description: t('practice.legalMoves.description'),
       icon: '♟️',
-      difficulty: t('practice.difficulty.beginner'),
     },
     {
       id: 'coordinate-quiz',
       title: t('practice.coordinateQuiz.title'),
       description: t('practice.coordinateQuiz.description'),
       icon: '🎯',
-      difficulty: t('practice.difficulty.beginner'),
     },
   ];
 
@@ -57,18 +51,14 @@ export default async function PracticePage({ params }: PracticePageProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {practices.map((practice) => (
-          <Link key={practice.id} href={`/practice/${practice.id}`} className="block">
-            <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <span className="text-4xl">{practice.icon}</span>
-                <span className="text-xs font-medium text-muted-foreground bg-secondary px-2 py-1 rounded">
-                  {practice.difficulty}
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{practice.title}</h3>
-              <p className="text-sm text-muted-foreground">{practice.description}</p>
-            </div>
-          </Link>
+          <CardLink
+            key={practice.id}
+            href={`/practice/${practice.id}`}
+            icon={practice.icon}
+            title={practice.title}
+            description={practice.description}
+            locale={locale}
+          />
         ))}
       </div>
 
