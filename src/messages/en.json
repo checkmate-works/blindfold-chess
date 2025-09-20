@@ -35,5 +35,33 @@
         "answer": "When two pieces of the same type (like knights or rooks) can move to the same square, you need to specify which piece to move explicitly, such as Ngf3 or Rad8. You can enable the legal moves display in <settingsLink>settings</settingsLink> to help with this."
       }
     }
+  },
+  "glossary": {
+    "title": "Chess Glossary",
+    "description": "Comprehensive dictionary of chess terms and concepts",
+    "index": {
+      "alphabetical": "Alphabetical Index",
+      "byCategory": "By Category"
+    },
+    "categories": {
+      "tactics": "Tactics",
+      "strategy": "Strategy",
+      "endgame": "Endgame",
+      "opening": "Opening",
+      "structure": "Pawn Structure",
+      "general": "General"
+    },
+    "terms": "terms",
+    "letterPage": {
+      "title": "Terms Starting with {letter}",
+      "description": "Chess terms starting with the letter {letter}",
+      "count": "{count} terms found"
+    },
+    "categoryPage": {
+      "description": "Chess terms related to {category}",
+      "count": "{count} terms found"
+    },
+    "aliases": "Also known as",
+    "relatedTerms": "Related terms"
   }
 }

@@ -35,5 +35,33 @@
         "answer": "ナイトやルークなど2つある駒がどちらも同じマス目に動ける位置にある場合、 Ngf3 や Rad8 のようにどちらの駒を動かすか明示的に指定する必要があります。リーガルムーブを表示する<settingsLink>設定</settingsLink>が可能なので、適宜利用してください。"
       }
     }
+  },
+  "glossary": {
+    "title": "チェス用語集",
+    "description": "チェスの用語と概念の包括的な辞典",
+    "index": {
+      "alphabetical": "アルファベット順",
+      "byCategory": "カテゴリー別"
+    },
+    "categories": {
+      "tactics": "タクティクス",
+      "strategy": "戦略",
+      "endgame": "エンドゲーム",
+      "opening": "オープニング",
+      "structure": "ポーン構造",
+      "general": "一般"
+    },
+    "terms": "件",
+    "letterPage": {
+      "title": "{letter}で始まる用語",
+      "description": "{letter}で始まるチェス用語",
+      "count": "{count}件の用語"
+    },
+    "categoryPage": {
+      "description": "{category}に関連するチェス用語",
+      "count": "{count}件の用語"
+    },
+    "aliases": "別名",
+    "relatedTerms": "関連用語"
   }
 }
