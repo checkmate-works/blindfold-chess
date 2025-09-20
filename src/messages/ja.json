@@ -73,5 +73,49 @@
   "manual": {
     "title": "マニュアル",
     "description": "Blindfold Chess のユーザーガイドとドキュメント"
+  },
+  "navigation": {
+    "practice": "練習"
+  },
+  "practice": {
+    "title": "練習",
+    "description": "インタラクティブな練習問題で目隠しチェスのスキルを向上させましょう",
+    "tryAgain": "もう一度",
+    "morePractice": "他の練習",
+    "practiceComplete": "練習完了！",
+    "score": "スコア",
+    "difficulty": {
+      "beginner": "初級",
+      "intermediate": "中級",
+      "advanced": "上級"
+    },
+    "algebraicNotation": {
+      "title": "代数記法",
+      "description": "インタラクティブな演習でチェス記法システムをマスターする",
+      "pageTitle": "代数記法練習",
+      "question": "問題",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "correctAnswerIs": "正解は",
+      "explanation": "解説",
+      "nextExercise": "次の問題",
+      "complete": "完了"
+    },
+    "squareColor": {
+      "title": "マスの色",
+      "description": "盤上の明るいマスと暗いマスを識別する練習"
+    },
+    "positionMemory": {
+      "title": "位置記憶",
+      "description": "駒の位置を記憶する能力を訓練する"
+    },
+    "legalMoves": {
+      "title": "合法手",
+      "description": "ある局面でのすべての合法手を見つける練習"
+    },
+    "coordinateQuiz": {
+      "title": "座標クイズ",
+      "description": "盤の座標をマスターするためのクイック演習"
+    }
   }
 }

@@ -73,5 +73,49 @@
   "manual": {
     "title": "Manual",
     "description": "User guides and documentation for Blindfold Chess"
+  },
+  "navigation": {
+    "practice": "Practice"
+  },
+  "practice": {
+    "title": "Practice",
+    "description": "Improve your blindfold chess skills with interactive exercises",
+    "tryAgain": "Try Again",
+    "morePractice": "More Practice",
+    "practiceComplete": "Practice Complete!",
+    "score": "Score",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "algebraicNotation": {
+      "title": "Algebraic Notation",
+      "description": "Master chess notation system with interactive exercises",
+      "pageTitle": "Algebraic Notation Practice",
+      "question": "Question",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "correctAnswerIs": "The correct answer is",
+      "explanation": "Explanation",
+      "nextExercise": "Next Exercise",
+      "complete": "Complete"
+    },
+    "squareColor": {
+      "title": "Square Color",
+      "description": "Practice identifying light and dark squares on the board"
+    },
+    "positionMemory": {
+      "title": "Position Memory",
+      "description": "Train your ability to remember piece positions"
+    },
+    "legalMoves": {
+      "title": "Legal Moves",
+      "description": "Practice finding all legal moves in a position"
+    },
+    "coordinateQuiz": {
+      "title": "Coordinate Quiz",
+      "description": "Quick exercises to master board coordinates"
+    }
   }
 }
