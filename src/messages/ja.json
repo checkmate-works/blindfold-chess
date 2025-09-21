@@ -131,7 +131,26 @@
     },
     "coordinateQuiz": {
       "title": "座標クイズ",
-      "description": "盤の座標をマスターするためのクイック演習"
+      "description": "盤の座標をマスターするためのクイック演習",
+      "settings": "ゲーム設定",
+      "timeLimit": "制限時間",
+      "boardOrientation": "盤の向き",
+      "white": "白番",
+      "black": "黒番",
+      "random": "ランダム",
+      "start": "クイズ開始",
+      "clickSquare": "このマスをクリック",
+      "whiteToMove": "白番",
+      "blackToMove": "黒番",
+      "correct": "正解",
+      "wrong": "不正解",
+      "timeRemaining": "残り時間",
+      "finished": "クイズ完了！",
+      "points": "ポイント",
+      "correctAnswers": "正解数",
+      "accuracy": "正解率",
+      "timeTaken": "所要時間",
+      "averageTime": "平均時間"
     }
   }
 }

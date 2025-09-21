@@ -131,7 +131,26 @@
     },
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
-      "description": "Quick exercises to master board coordinates"
+      "description": "Quick exercises to master board coordinates",
+      "settings": "Game Settings",
+      "timeLimit": "Time Limit",
+      "boardOrientation": "Board Orientation",
+      "white": "White",
+      "black": "Black",
+      "random": "Random",
+      "start": "Start Quiz",
+      "clickSquare": "Click on this square",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move",
+      "correct": "Correct",
+      "wrong": "Wrong",
+      "timeRemaining": "Time",
+      "finished": "Quiz Complete!",
+      "points": "points",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Average Time"
     }
   }
 }
