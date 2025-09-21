@@ -127,7 +127,24 @@
     },
     "legalMoves": {
       "title": "Legal Moves",
-      "description": "Practice finding all legal moves in a position"
+      "description": "Practice finding all legal moves in a position",
+      "settings": "Game Settings",
+      "questionCount": "Number of Questions",
+      "pieceSelection": "Select Pieces",
+      "selectAtLeastOne": "Please select at least one piece",
+      "pieces": {
+        "bishop": "Bishop",
+        "knight": "Knight",
+        "rook": "Rook",
+        "queen": "Queen",
+        "king": "King"
+      },
+      "start": "Start Practice",
+      "question": "Can piece move from {from} to {to}?",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "legal": "Yes",
+      "illegal": "No"
     },
     "coordinateQuiz": {
       "title": "Coordinate Quiz",

@@ -127,7 +127,24 @@
     },
     "legalMoves": {
       "title": "合法手",
-      "description": "ある局面でのすべての合法手を見つける練習"
+      "description": "ある局面でのすべての合法手を見つける練習",
+      "settings": "ゲーム設定",
+      "questionCount": "問題数",
+      "pieceSelection": "駒の選択",
+      "selectAtLeastOne": "少なくとも1つの駒を選択してください",
+      "pieces": {
+        "bishop": "ビショップ",
+        "knight": "ナイト",
+        "rook": "ルーク",
+        "queen": "クイーン",
+        "king": "キング"
+      },
+      "start": "練習開始",
+      "question": "{from}から{to}へ移動できますか？",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "legal": "できる",
+      "illegal": "できない"
     },
     "coordinateQuiz": {
       "title": "座標クイズ",

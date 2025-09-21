@@ -54,7 +54,7 @@ export function PracticeComplete({
           </button>
 
           <button
-            onClick={() => router.push('/practice')}
+            onClick={() => router.push(`/${locale}/practice`)}
             className="w-full py-3 px-6 bg-secondary text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {translations.morePractice}
