@@ -75,7 +75,13 @@
     "description": "User guides and documentation for Blindfold Chess"
   },
   "navigation": {
-    "practice": "Practice"
+    "practice": "Practice",
+    "learn": "Learn"
+  },
+  "learn": {
+    "title": "Learn Chess",
+    "description": "Educational articles and guides to improve your chess understanding",
+    "practiceYourSkills": "Practice Your Skills"
   },
   "practice": {
     "title": "Practice",

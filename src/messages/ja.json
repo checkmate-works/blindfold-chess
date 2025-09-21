@@ -75,7 +75,13 @@
     "description": "Blindfold Chess のユーザーガイドとドキュメント"
   },
   "navigation": {
-    "practice": "練習"
+    "practice": "練習",
+    "learn": "学習"
+  },
+  "learn": {
+    "title": "チェスを学ぶ",
+    "description": "チェスの理解を深めるための教育記事とガイド",
+    "practiceYourSkills": "スキルを練習する"
   },
   "practice": {
     "title": "練習",

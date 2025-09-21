@@ -1,0 +1,75 @@
+import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { getArticle, getAvailableArticles } from '@/lib/learn';
+import { Breadcrumb, MarkdownRenderer, CardLink } from '@/app/[locale]/_components';
+
+interface LearnArticlePageProps {
+  params: Promise<{
+    locale: 'en' | 'ja';
+    slug: string;
+  }>;
+}
+
+export async function generateStaticParams() {
+  const slugs = getAvailableArticles();
+  const locales = ['en', 'ja'] as const;
+
+  return slugs.flatMap((slug) =>
+    locales.map((locale) => ({
+      locale,
+      slug,
+    }))
+  );
+}
+
+export default async function LearnArticlePage({ params }: LearnArticlePageProps) {
+  const { locale, slug } = await params;
+  const article = await getArticle(slug, locale);
+  const t = await getTranslations({ locale });
+
+  if (!article) {
+    notFound();
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <article className="prose prose-slate dark:prose-invert max-w-none">
+        <MarkdownRenderer content={article.content} />
+      </article>
+
+      {/* Practice link if available */}
+      {slug === 'algebraic-notation' && (
+        <div className="mt-12 p-6 bg-secondary/30 rounded-lg border border-border">
+          <h2 className="text-xl font-semibold mb-4">{t('learn.practiceYourSkills')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardLink
+              href="/practice/algebraic-notation"
+              icon="📝"
+              title={t('practice.algebraicNotation.title')}
+              description={t('practice.algebraicNotation.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/practice/coordinate-quiz"
+              icon="🎯"
+              title={t('practice.coordinateQuiz.title')}
+              description={t('practice.coordinateQuiz.description')}
+              locale={locale}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Breadcrumb at bottom */}
+      <div className="mt-12 pt-6 border-t border-border">
+        <Breadcrumb
+          items={[
+            { label: t('navigation.learn'), href: '/learn' },
+            { label: article.metadata.title },
+          ]}
+          locale={locale}
+        />
+      </div>
+    </div>
+  );
+}
