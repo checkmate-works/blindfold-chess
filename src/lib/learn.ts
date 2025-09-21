@@ -19,6 +19,30 @@ const contentRegistry: Record<string, Record<'en' | 'ja', () => Promise<string>>
     en: () => import('../content/learn/algebraic-notation/en').then((m) => m.default),
     ja: () => import('../content/learn/algebraic-notation/ja').then((m) => m.default),
   },
+  'bishop-movement': {
+    en: () => import('../content/learn/bishop-movement/en').then((m) => m.default),
+    ja: () => import('../content/learn/bishop-movement/ja').then((m) => m.default),
+  },
+  'king-movement': {
+    en: () => import('../content/learn/king-movement/en').then((m) => m.default),
+    ja: () => import('../content/learn/king-movement/ja').then((m) => m.default),
+  },
+  'knight-movement': {
+    en: () => import('../content/learn/knight-movement/en').then((m) => m.default),
+    ja: () => import('../content/learn/knight-movement/ja').then((m) => m.default),
+  },
+  'position-memory': {
+    en: () => import('../content/learn/position-memory/en').then((m) => m.default),
+    ja: () => import('../content/learn/position-memory/ja').then((m) => m.default),
+  },
+  'rook-movement': {
+    en: () => import('../content/learn/rook-movement/en').then((m) => m.default),
+    ja: () => import('../content/learn/rook-movement/ja').then((m) => m.default),
+  },
+  'square-colors': {
+    en: () => import('../content/learn/square-colors/en').then((m) => m.default),
+    ja: () => import('../content/learn/square-colors/ja').then((m) => m.default),
+  },
 };
 
 // Static article registry by locale
@@ -26,6 +50,30 @@ export const articleRegistry = {
   'algebraic-notation': {
     en: () => import('../content/learn/algebraic-notation/metadata.en'),
     ja: () => import('../content/learn/algebraic-notation/metadata.ja'),
+  },
+  'bishop-movement': {
+    en: () => import('../content/learn/bishop-movement/metadata.en'),
+    ja: () => import('../content/learn/bishop-movement/metadata.ja'),
+  },
+  'king-movement': {
+    en: () => import('../content/learn/king-movement/metadata.en'),
+    ja: () => import('../content/learn/king-movement/metadata.ja'),
+  },
+  'knight-movement': {
+    en: () => import('../content/learn/knight-movement/metadata.en'),
+    ja: () => import('../content/learn/knight-movement/metadata.ja'),
+  },
+  'position-memory': {
+    en: () => import('../content/learn/position-memory/metadata.en'),
+    ja: () => import('../content/learn/position-memory/metadata.ja'),
+  },
+  'rook-movement': {
+    en: () => import('../content/learn/rook-movement/metadata.en'),
+    ja: () => import('../content/learn/rook-movement/metadata.ja'),
+  },
+  'square-colors': {
+    en: () => import('../content/learn/square-colors/metadata.en'),
+    ja: () => import('../content/learn/square-colors/metadata.ja'),
   },
 } as const;
 

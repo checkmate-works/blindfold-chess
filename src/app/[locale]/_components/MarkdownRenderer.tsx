@@ -1,4 +1,6 @@
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { PageTitle } from './PageTitle';
 
 interface MarkdownRendererProps {
@@ -9,6 +11,8 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, skipFirstH1 = false }: MarkdownRendererProps) {
   return (
     <ReactMarkdown
+      remarkPlugins={[remarkMath]}
+      rehypePlugins={[rehypeKatex]}
       components={{
         h1: ({ children, node }) => {
           // Skip the first h1 if specified (for pages that show title separately)

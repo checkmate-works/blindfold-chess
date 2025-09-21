@@ -22,6 +22,20 @@ export async function generateStaticParams() {
   );
 }
 
+// Mapping of learn articles to practice modules
+const practiceModules: Record<string, Array<{ module: string; icon: string }>> = {
+  'algebraic-notation': [
+    { module: 'algebraic-notation', icon: '📝' },
+    { module: 'coordinate-quiz', icon: '🎯' },
+  ],
+  'bishop-movement': [{ module: 'legal-moves', icon: '♗' }],
+  'king-movement': [{ module: 'legal-moves', icon: '♔' }],
+  'knight-movement': [{ module: 'legal-moves', icon: '♘' }],
+  'rook-movement': [{ module: 'legal-moves', icon: '♜' }],
+  'square-colors': [{ module: 'square-colors', icon: '🏁' }],
+  'position-memory': [{ module: 'position-memory', icon: '🧠' }],
+};
+
 export default async function LearnArticlePage({ params }: LearnArticlePageProps) {
   const { locale, slug } = await params;
   const article = await getArticle(slug, locale);
@@ -38,24 +52,36 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
       </article>
 
       {/* Practice link if available */}
-      {slug === 'algebraic-notation' && (
+      {practiceModules[slug] && (
         <div className="mt-12 p-6 bg-secondary/30 rounded-lg border border-border">
           <h2 className="text-xl font-semibold mb-4">{t('learn.practiceYourSkills')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <CardLink
-              href="/practice/algebraic-notation"
-              icon="📝"
-              title={t('practice.algebraicNotation.title')}
-              description={t('practice.algebraicNotation.description')}
-              locale={locale}
-            />
-            <CardLink
-              href="/practice/coordinate-quiz"
-              icon="🎯"
-              title={t('practice.coordinateQuiz.title')}
-              description={t('practice.coordinateQuiz.description')}
-              locale={locale}
-            />
+            {practiceModules[slug].map((practice) => {
+              // Handle special cases for module naming
+              const moduleKey =
+                practice.module === 'coordinate-quiz'
+                  ? 'coordinateQuiz'
+                  : practice.module === 'legal-moves'
+                    ? 'legalMoves'
+                    : practice.module === 'position-memory'
+                      ? 'positionMemory'
+                      : practice.module === 'square-color'
+                        ? 'squareColor'
+                        : practice.module === 'algebraic-notation'
+                          ? 'algebraicNotation'
+                          : practice.module;
+
+              return (
+                <CardLink
+                  key={practice.module}
+                  href={`/practice/${practice.module}`}
+                  icon={practice.icon}
+                  title={t(`practice.${moduleKey}.title`)}
+                  description={t(`practice.${moduleKey}.description`)}
+                  locale={locale}
+                />
+              );
+            })}
           </div>
         </div>
       )}

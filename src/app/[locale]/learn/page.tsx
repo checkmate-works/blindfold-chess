@@ -11,6 +11,12 @@ interface LearnPageProps {
 // Icons for each article type
 const articleIcons: Record<string, string> = {
   'algebraic-notation': '📝',
+  'bishop-movement': '♗',
+  'king-movement': '♔',
+  'knight-movement': '♘',
+  'rook-movement': '♜',
+  'square-colors': '🏁',
+  'position-memory': '🧠',
 };
 
 export default async function LearnPage({ params }: LearnPageProps) {
