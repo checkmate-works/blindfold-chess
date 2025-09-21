@@ -1,0 +1,480 @@
+'use client';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useNotation } from '../_hooks/use-notation';
+import { useAiVersus } from '../_hooks/use-ai-versus';
+import { useAutoSave } from '../_hooks/use-auto-save';
+import { GameStateService } from '../_lib/game-state-service';
+import { LocalStorageGameRepository } from '../_lib/game-repository';
+import { SimpleChessBoard } from './SimpleChessBoard';
+import { MoveInput } from './MoveInput';
+import { UndoIcon, FlagIcon } from './Icons';
+import { Chess } from 'chess.js';
+import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
+
+interface PlayClientProps {
+  locale: 'en' | 'ja';
+  translations: {
+    title: string;
+    yourMove: string;
+    aiThinking: string;
+    gameOver: string;
+    checkmate: string;
+    stalemate: string;
+    draw: string;
+    youWin: string;
+    youLose: string;
+    check: string;
+    inputMove: string;
+    submitMove: string;
+    invalidMove: string;
+    newGame: string;
+    resign: string;
+    undo: string;
+    moves: string;
+    confirmResignTitle: string;
+    confirmResignMessage: string;
+    cancel: string;
+    confirmResign: string;
+    confirmUndoTitle: string;
+    confirmUndoMessage: string;
+    confirmUndo: string;
+  };
+}
+
+export function PlayClient({ locale, translations }: PlayClientProps) {
+  const searchParams = useSearchParams();
+
+  // Parse URL parameters
+  const playerSide = (searchParams.get('color') as Side) || 'white';
+  const skillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
+  const initialGameId = searchParams.get('gameId') || undefined;
+  const initialMoves = searchParams.get('moves')
+    ? (JSON.parse(searchParams.get('moves')!) as AlgebraicNotation[])
+    : [];
+
+  // Hooks
+  const { moves, pushMove, removeMoves, getFen, getFormattedPgn } = useNotation(initialMoves);
+  const { getAiMove } = useAiVersus(skillLevel);
+
+  // State
+  const [moveInput, setMoveInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const isProcessingRef = useRef(false); // Use ref to track processing state
+  const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
+  const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
+    'in_progress'
+  );
+  const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
+  const [isCheck, setIsCheck] = useState(false);
+  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [savedGameStatus, setSavedGameStatus] = useState<
+    'in_progress' | 'win' | 'loss' | 'draw' | null
+  >(null);
+
+  // Load saved game status if gameId exists
+  useEffect(() => {
+    const loadSavedGameStatus = async () => {
+      if (initialGameId) {
+        const gameRepository = new LocalStorageGameRepository();
+        const savedGame = await gameRepository.load(initialGameId);
+        if (savedGame) {
+          setSavedGameStatus(savedGame.status);
+          // If game is finished, set the appropriate states
+          if (savedGame.status !== 'in_progress') {
+            if (savedGame.status === 'loss') {
+              setGameStatus('checkmate');
+              setPlayerResult('loss');
+            } else if (savedGame.status === 'win') {
+              setGameStatus('checkmate');
+              setPlayerResult('win');
+            } else if (savedGame.status === 'draw') {
+              setGameStatus('draw');
+              setPlayerResult('draw');
+            }
+            // Prevent AI from making moves on finished games
+            setShouldMakeAiMove(false);
+          }
+        }
+      }
+    };
+    loadSavedGameStatus();
+  }, [initialGameId]);
+
+  const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
+    // Check if it's AI's turn when resuming a game
+    if (initialMoves.length > 0) {
+      const gameStateService = new GameStateService(initialMoves, playerSide);
+      return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
+    }
+    // New game: AI plays first if player is black
+    return playerSide === 'black';
+  });
+
+  // Map game status to repository status
+  const mapGameStatus = useCallback(
+    (
+      gs: 'in_progress' | 'checkmate' | 'stalemate' | 'draw',
+      pr: 'win' | 'loss' | 'draw' | null
+    ) => {
+      if (gs === 'in_progress') return 'in_progress' as const;
+      if (pr === 'win') return 'win' as const;
+      if (pr === 'loss') return 'loss' as const;
+      return 'draw' as const;
+    },
+    []
+  );
+
+  // Auto-save hook
+  const { markPlayerInteraction } = useAutoSave({
+    gameId: initialGameId,
+    moves,
+    playerColor: playerSide,
+    skillLevel,
+    status: mapGameStatus(gameStatus, playerResult),
+    enabled: true,
+  });
+
+  // Helper function to get last move details from chess.js
+  const getLastMoveDetails = useCallback((movesArray: AlgebraicNotation[]) => {
+    if (movesArray.length === 0) return null;
+
+    try {
+      const chess = new Chess();
+      let lastMoveDetails = null;
+
+      for (let i = 0; i < movesArray.length; i++) {
+        const move = chess.move(movesArray[i]);
+        if (i === movesArray.length - 1 && move) {
+          lastMoveDetails = { from: move.from, to: move.to };
+        }
+      }
+
+      return lastMoveDetails;
+    } catch (error) {
+      console.error('Error getting last move details:', error);
+      return null;
+    }
+  }, []);
+
+  // Helper function to make AI move
+  const makeAiMove = useCallback(
+    async (currentMoves: AlgebraicNotation[]) => {
+      // Double-check we're not already processing using ref
+      if (isProcessingRef.current) {
+        console.warn('AI move already in progress, skipping');
+        return;
+      }
+
+      isProcessingRef.current = true; // Mark as processing
+      setIsLoading(true);
+
+      try {
+        setShouldMakeAiMove(false); // Prevent multiple AI moves immediately
+        const aiMove = await getAiMove(currentMoves);
+        pushMove(aiMove);
+
+        // Update last move
+        const newMoves = [...currentMoves, aiMove];
+        setLastMove(getLastMoveDetails(newMoves));
+      } catch (error) {
+        console.error('Failed to get AI move:', error);
+        setError('AI move failed');
+        setShouldMakeAiMove(false); // Reset on error
+      } finally {
+        setIsLoading(false);
+        isProcessingRef.current = false; // Clear processing flag
+      }
+    },
+    [getAiMove, pushMove, getLastMoveDetails]
+  );
+
+  // Initialize on mount with initial moves
+  useEffect(() => {
+    if (!isInitialized && initialMoves.length > 0) {
+      setLastMove(getLastMoveDetails(initialMoves));
+      setIsInitialized(true);
+    }
+  }, [isInitialized, initialMoves, getLastMoveDetails]);
+
+  // Update game state whenever moves change
+  useEffect(() => {
+    // Don't update game state from moves if we've already loaded a finished game
+    if (savedGameStatus && savedGameStatus !== 'in_progress') {
+      return;
+    }
+
+    const gameStateService = new GameStateService(moves, playerSide);
+
+    const newIsPlayerTurn = gameStateService.isPlayerTurn();
+    setIsPlayerTurn(newIsPlayerTurn);
+    setGameStatus(gameStateService.getGameStatus());
+    setPlayerResult(gameStateService.getPlayerResult());
+    setIsCheck(gameStateService.isCheck());
+
+    // Check if we should trigger AI move
+    if (!newIsPlayerTurn && gameStateService.getGameStatus() === 'in_progress') {
+      setShouldMakeAiMove(true);
+    }
+  }, [moves, playerSide, savedGameStatus]);
+
+  // Make AI move when it's AI's turn
+  useEffect(() => {
+    if (shouldMakeAiMove && !isProcessingRef.current && gameStatus === 'in_progress') {
+      makeAiMove(moves);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldMakeAiMove, gameStatus]); // Intentionally omit some deps to prevent re-runs
+
+  // Handle player move submission
+  const handleSubmitMove = useCallback(
+    (move: AlgebraicNotation) => {
+      const gameStateService = new GameStateService(moves, playerSide);
+
+      if (gameStateService.validateMove(move)) {
+        markPlayerInteraction(); // Mark that player has made a move
+        pushMove(move);
+        setMoveInput('');
+        setError(null);
+
+        // Update last move
+        const newMoves = [...moves, move];
+        setLastMove(getLastMoveDetails(newMoves));
+      } else {
+        setError(translations.invalidMove);
+      }
+    },
+    [
+      moves,
+      playerSide,
+      pushMove,
+      translations.invalidMove,
+      getLastMoveDetails,
+      markPlayerInteraction,
+    ]
+  );
+
+  // Handle undo
+  const handleUndo = useCallback(() => {
+    setShowUndoConfirm(true);
+  }, []);
+
+  const confirmUndo = useCallback(() => {
+    markPlayerInteraction(); // Mark interaction for undo
+    // Remove last 2 moves (player and AI)
+    removeMoves(2);
+    setError(null);
+
+    // Update last move
+    const newMoves = moves.slice(0, -2);
+    setLastMove(getLastMoveDetails(newMoves));
+    setShowUndoConfirm(false);
+  }, [removeMoves, moves, getLastMoveDetails, markPlayerInteraction]);
+
+  // Handle resign
+  const handleResign = useCallback(() => {
+    setShowResignConfirm(true);
+  }, []);
+
+  const confirmResign = useCallback(() => {
+    markPlayerInteraction(); // Mark interaction for resign
+    // Set game as loss for player
+    setGameStatus('checkmate');
+    setPlayerResult('loss');
+    setShowResignConfirm(false);
+  }, [markPlayerInteraction]);
+
+  // Get current FEN for board display
+  const currentFen = getFen();
+  const formattedPgn = getFormattedPgn();
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Chess Board */}
+        <div className="lg:col-span-2">
+          <div className="bg-card rounded-lg p-4 shadow-lg">
+            <SimpleChessBoard
+              fen={currentFen}
+              flipped={playerSide === 'black'}
+              lastMove={lastMove}
+              className="max-w-2xl mx-auto"
+            />
+
+            {/* Game Status */}
+            {gameStatus !== 'in_progress' && (
+              <div className="mt-6 text-center bg-card/50 rounded-lg p-4 border border-border">
+                <div className="mb-3">
+                  <p className="text-base font-semibold text-foreground mb-1">
+                    {translations.gameOver}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {gameStatus === 'checkmate' && translations.checkmate}
+                    {gameStatus === 'stalemate' && translations.stalemate}
+                    {gameStatus === 'draw' && translations.draw}
+                  </p>
+                </div>
+                {playerResult && (
+                  <div className="mt-3">
+                    <p className="text-lg font-bold">
+                      {playerResult === 'win' && (
+                        <span className="text-green-600 dark:text-green-400">
+                          ✓ {translations.youWin}
+                        </span>
+                      )}
+                      {playerResult === 'loss' && (
+                        <span className="text-red-600 dark:text-red-400">
+                          ✗ {translations.youLose}
+                        </span>
+                      )}
+                      {playerResult === 'draw' && (
+                        <span className="text-yellow-600 dark:text-yellow-400">
+                          = {translations.draw}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Move Input */}
+            {gameStatus === 'in_progress' && (
+              <div className="mt-4">
+                {isPlayerTurn ? (
+                  <div>
+                    {isCheck && (
+                      <p className="text-red-500 font-semibold mb-2">{translations.check}!</p>
+                    )}
+                    <MoveInput
+                      value={moveInput}
+                      onChange={setMoveInput}
+                      onSubmit={handleSubmitMove}
+                      disabled={isLoading}
+                      placeholder={translations.inputMove}
+                      showSuggestions={true}
+                      showSubmitButton={true}
+                    />
+                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground">
+                    {isLoading ? translations.aiThinking : translations.yourMove}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons - Only show during active game */}
+            {gameStatus === 'in_progress' && (
+              <div className="mt-4 flex gap-2 justify-center">
+                <button
+                  onClick={handleUndo}
+                  disabled={moves.length < 2}
+                  className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
+                >
+                  <UndoIcon className="w-4 h-4" />
+                  {translations.undo}
+                </button>
+                <button
+                  onClick={handleResign}
+                  className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
+                >
+                  <FlagIcon className="w-4 h-4" />
+                  {translations.resign}
+                </button>
+              </div>
+            )}
+
+            {/* New Game Button */}
+            {gameStatus !== 'in_progress' && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => (window.location.href = `/${locale}/game/new`)}
+                  className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
+                >
+                  {translations.newGame}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Move List */}
+        <div className="lg:col-span-1">
+          <div className="bg-card rounded-lg p-4 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">{translations.moves}</h2>
+            <div className="max-h-96 overflow-y-auto">
+              {formattedPgn.length > 0 ? (
+                <div className="space-y-1">
+                  {formattedPgn.map((move) => (
+                    <div key={move.moveNumber} className="flex gap-2 text-sm">
+                      <span className="font-semibold w-8">{move.moveNumber}.</span>
+                      <span className="w-16">{move.whiteMove}</span>
+                      <span className="w-16">{move.blackMove || ''}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">No moves yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resign Confirmation Modal */}
+      {showResignConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">{translations.confirmResignTitle}</h3>
+            <p className="text-muted-foreground mb-6">{translations.confirmResignMessage}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowResignConfirm(false)}
+                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
+              >
+                {translations.cancel}
+              </button>
+              <button
+                onClick={confirmResign}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                {translations.confirmResign}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Confirmation Modal */}
+      {showUndoConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">{translations.confirmUndoTitle}</h3>
+            <p className="text-muted-foreground mb-6">{translations.confirmUndoMessage}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowUndoConfirm(false)}
+                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
+              >
+                {translations.cancel}
+              </button>
+              <button
+                onClick={confirmUndo}
+                className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
+              >
+                {translations.confirmUndo}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
