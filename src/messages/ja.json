@@ -121,10 +121,6 @@
       "questionCount": "問題数",
       "start": "練習を開始"
     },
-    "positionMemory": {
-      "title": "位置記憶",
-      "description": "駒の位置を記憶する能力を訓練する"
-    },
     "legalMoves": {
       "title": "合法手",
       "description": "ある局面でのすべての合法手を見つける練習",
@@ -168,6 +164,53 @@
       "accuracy": "正解率",
       "timeTaken": "所要時間",
       "averageTime": "平均時間"
+    },
+    "positionMemory": {
+      "title": "位置記憶",
+      "description": "チェスの位置を記憶して再現する能力を訓練",
+      "settings": "ゲーム設定",
+      "timeLimit": "記憶時間",
+      "seconds": "秒",
+      "problemCount": "問題数",
+      "problems": "問",
+      "shuffle": "シャッフル",
+      "start": "練習開始",
+      "memorize": "記憶",
+      "recreate": "再現",
+      "result": "結果",
+      "memorizing": "位置を記憶してください",
+      "timeRemaining": "残り時間",
+      "memorized": "記憶しました",
+      "recreatePosition": "位置を再現してください",
+      "submit": "提出",
+      "accuracy": "正解率",
+      "correct": "正解",
+      "extra": "余分",
+      "score": "スコア",
+      "nextProblem": "次の問題",
+      "viewResults": "結果を見る",
+      "original": "正解",
+      "yourRecreation": "あなたの再現",
+      "pieceNames": {
+        "K": "白キング",
+        "Q": "白クイーン",
+        "R": "白ルーク",
+        "B": "白ビショップ",
+        "N": "白ナイト",
+        "P": "白ポーン",
+        "k": "黒キング",
+        "q": "黒クイーン",
+        "r": "黒ルーク",
+        "b": "黒ビショップ",
+        "n": "黒ナイト",
+        "p": "黒ポーン"
+      },
+      "scoreDescriptions": {
+        "correct": "{square}の{piece}は正解",
+        "wrongPiece": "{square}は{expected}ではなく{actual}",
+        "missing": "{square}の{piece}が不足",
+        "extra": "{square}に余分な{piece}"
+      }
     }
   }
 }

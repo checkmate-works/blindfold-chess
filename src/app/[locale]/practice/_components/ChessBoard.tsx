@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Chess } from 'chess.js';
 
 // SVG Chess Pieces (Lichess cburnett style)
-const ChessPieces = {
+export const ChessPieces = {
   wP: ({ size = 45 }: { size?: number }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45 45" width={size} height={size}>
       <path
@@ -298,6 +298,7 @@ interface ChessBoardProps {
   animationDuration?: number;
   className?: string;
   autoPlay?: boolean;
+  flipped?: boolean;
 }
 
 export function ChessBoard({
@@ -307,6 +308,7 @@ export function ChessBoard({
   animationDuration = 500,
   className = '',
   autoPlay = false,
+  flipped = false,
 }: ChessBoardProps) {
   const [currentFen, setCurrentFen] = useState(initialFen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -360,6 +362,7 @@ export function ChessBoard({
   // Parse the current position
   const pieces = useMemo(() => {
     try {
+      // Try using chess.js first for valid positions
       const chess = new Chess(currentFen);
       const board = chess.board();
       const flatBoard: Array<{ type: string; color: string; square: string }> = [];
@@ -380,8 +383,38 @@ export function ChessBoard({
 
       return flatBoard;
     } catch (error) {
-      console.error('Error parsing FEN:', error);
-      return [];
+      // If chess.js fails (e.g., missing king), parse FEN manually
+      try {
+        const fenParts = currentFen.split(' ');
+        const piecePlacement = fenParts[0];
+        const flatBoard: Array<{ type: string; color: string; square: string }> = [];
+
+        const ranks = piecePlacement.split('/');
+        for (let rank = 0; rank < ranks.length; rank++) {
+          let file = 0;
+          for (const char of ranks[rank]) {
+            if (/\d/.test(char)) {
+              // Empty squares
+              file += parseInt(char);
+            } else {
+              // Piece
+              const square = String.fromCharCode(97 + file) + (8 - rank);
+              const isWhite = char === char.toUpperCase();
+              flatBoard.push({
+                type: char.toLowerCase(),
+                color: isWhite ? 'w' : 'b',
+                square,
+              });
+              file++;
+            }
+          }
+        }
+
+        return flatBoard;
+      } catch {
+        console.error('Error parsing FEN:', error);
+        return [];
+      }
     }
   }, [currentFen]);
 
@@ -501,7 +534,7 @@ export function ChessBoard({
     if (PieceComponent) {
       return (
         <div className="w-[80%] h-[80%] flex items-center justify-center">
-          <PieceComponent size={100} />
+          <PieceComponent size={45} />
         </div>
       );
     }
@@ -554,7 +587,7 @@ export function ChessBoard({
 
     return (
       <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <PieceComponent size={100} />
+        <PieceComponent size={45} />
       </div>
     );
   };
@@ -569,15 +602,17 @@ export function ChessBoard({
   };
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      <div className="w-full max-w-sm">
+    <div className={`flex flex-col items-center w-full ${className}`}>
+      <div className="w-full">
         <div className="relative" ref={boardRef}>
           {/* Chess board */}
           <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden shadow-lg">
-            {ranks.map((rank, rankIndex) => (
+            {(flipped ? [...ranks].reverse() : ranks).map((rank, rankIndex) => (
               <div key={rank} className="flex h-[12.5%]">
-                {files.map((file, fileIndex) => {
-                  const isLight = isLightSquare(fileIndex, rankIndex);
+                {(flipped ? [...files].reverse() : files).map((file, fileIndex) => {
+                  const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
+                  const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
+                  const isLight = isLightSquare(actualFileIndex, actualRankIndex);
                   const piece = getPieceAtSquare(file, rank);
 
                   return (
