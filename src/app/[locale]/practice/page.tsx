@@ -19,9 +19,9 @@ export default async function PracticePage({ params }: PracticePageProps) {
       icon: '📝',
     },
     {
-      id: 'square-color',
-      title: t('practice.squareColor.title'),
-      description: t('practice.squareColor.description'),
+      id: 'square-colors',
+      title: t('practice.squareColors.title'),
+      description: t('practice.squareColors.description'),
       icon: '🎨',
     },
     {

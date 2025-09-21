@@ -38,7 +38,7 @@ export function FAQClient() {
             settingsLink: (chunks) => (
               <Link
                 href="/preferences?tab=game-settings"
-                className="text-primary hover:text-primary/80 underline transition-colors"
+                className="text-foreground underline hover:opacity-80 transition-colors"
               >
                 {chunks}
               </Link>

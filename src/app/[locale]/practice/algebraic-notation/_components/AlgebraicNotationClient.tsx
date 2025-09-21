@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { ChessBoard } from '../../_components/ChessBoard';
+import { ProgressBar } from '../../_components/ProgressBar';
+import { PracticeComplete } from '../../_components/PracticeComplete';
 import { Exercise } from '@/lib/practice/algebraic-notation';
-import { Link } from '@/i18n/routing';
 
 interface AlgebraicNotationClientProps {
   exercises: Exercise[];
@@ -67,48 +68,27 @@ export default function AlgebraicNotationClient({
 
   if (completed) {
     return (
-      <div className="max-w-2xl mx-auto text-center">
-        <div className="bg-card rounded-lg p-8 border border-border">
-          <h2 className="text-2xl font-bold mb-4">{t.practiceComplete}</h2>
-          <p className="text-lg mb-6">
-            {t.score}: {score}/{exercises.length}
-          </p>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={handleRestart}
-              className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-            >
-              {t.tryAgain}
-            </button>
-            <Link
-              href="/practice"
-              className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors inline-block"
-            >
-              {t.morePractice}
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PracticeComplete
+        score={score}
+        total={exercises.length}
+        onTryAgain={handleRestart}
+        locale={locale}
+        translations={{
+          practiceComplete: t.practiceComplete,
+          score: t.score,
+          tryAgain: t.tryAgain,
+          morePractice: t.morePractice,
+        }}
+      />
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">{t.pageTitle}</h1>
+
       {/* Progress bar */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold">{t.pageTitle}</h1>
-          <div className="text-sm text-muted-foreground">
-            {currentExercise + 1} / {exercises.length}
-          </div>
-        </div>
-        <div className="w-full bg-secondary rounded-full h-2">
-          <div
-            className="bg-foreground h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentExercise + 1) / exercises.length) * 100}%` }}
-          />
-        </div>
-      </div>
+      <ProgressBar current={currentExercise + 1} total={exercises.length} />
 
       {/* Exercise */}
       <div className="space-y-6">

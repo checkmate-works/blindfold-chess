@@ -49,7 +49,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: MarkdownRende
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-foreground underline hover:opacity-80"
           >
             {children}
           </a>

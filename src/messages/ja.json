@@ -81,7 +81,8 @@
   "learn": {
     "title": "チェスを学ぶ",
     "description": "チェスの理解を深めるための教育記事とガイド",
-    "practiceYourSkills": "スキルを練習する"
+    "practiceYourSkills": "スキルを練習する",
+    "relatedLearning": "学習する"
   },
   "practice": {
     "title": "練習",
@@ -90,6 +91,7 @@
     "morePractice": "他の練習",
     "practiceComplete": "練習完了！",
     "score": "スコア",
+    "relatedLearning": "関連する学習",
     "difficulty": {
       "beginner": "初級",
       "intermediate": "中級",
@@ -107,9 +109,17 @@
       "nextExercise": "次の問題",
       "complete": "完了"
     },
-    "squareColor": {
+    "squareColors": {
       "title": "マスの色",
-      "description": "盤上の明るいマスと暗いマスを識別する練習"
+      "description": "マスが明るいか暗いかを素早く識別する能力を鍛えます",
+      "question": "{square}マスは何色ですか？",
+      "white": "白",
+      "black": "黒",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "settings": "ゲーム設定",
+      "questionCount": "問題数",
+      "start": "練習を開始"
     },
     "positionMemory": {
       "title": "位置記憶",

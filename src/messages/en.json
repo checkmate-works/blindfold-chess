@@ -81,7 +81,8 @@
   "learn": {
     "title": "Learn Chess",
     "description": "Educational articles and guides to improve your chess understanding",
-    "practiceYourSkills": "Practice Your Skills"
+    "practiceYourSkills": "Practice Your Skills",
+    "relatedLearning": "Learn More"
   },
   "practice": {
     "title": "Practice",
@@ -90,6 +91,7 @@
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",
     "score": "Score",
+    "relatedLearning": "Related Learning",
     "difficulty": {
       "beginner": "Beginner",
       "intermediate": "Intermediate",
@@ -107,9 +109,17 @@
       "nextExercise": "Next Exercise",
       "complete": "Complete"
     },
-    "squareColor": {
-      "title": "Square Color",
-      "description": "Practice identifying light and dark squares on the board"
+    "squareColors": {
+      "title": "Square Colors",
+      "description": "Train your ability to quickly identify whether a square is light or dark",
+      "question": "What color is square {square}?",
+      "white": "Light",
+      "black": "Dark",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "settings": "Game Settings",
+      "questionCount": "Number of Questions",
+      "start": "Start Practice"
     },
     "positionMemory": {
       "title": "Position Memory",

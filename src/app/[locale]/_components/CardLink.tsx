@@ -18,9 +18,7 @@ export function CardLink({ href, icon, title, description, locale }: CardLinkPro
       <div className="flex items-start gap-4">
         <span className="text-3xl flex-shrink-0">{icon}</span>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-            {title}
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2 transition-colors">{title}</h3>
           <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
         </div>
       </div>

@@ -65,8 +65,8 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
                     ? 'legalMoves'
                     : practice.module === 'position-memory'
                       ? 'positionMemory'
-                      : practice.module === 'square-color'
-                        ? 'squareColor'
+                      : practice.module === 'square-colors'
+                        ? 'squareColors'
                         : practice.module === 'algebraic-notation'
                           ? 'algebraicNotation'
                           : practice.module;

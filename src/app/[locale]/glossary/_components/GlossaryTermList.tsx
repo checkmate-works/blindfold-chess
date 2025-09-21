@@ -66,7 +66,7 @@ export async function GlossaryTermList({ terms, locale }: GlossaryTermListProps)
                 <span key={relatedTerm}>
                   <a
                     href={`#${relatedTerm.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="text-primary hover:text-primary/80"
+                    className="text-foreground underline hover:opacity-80"
                   >
                     {relatedTerm}
                   </a>
