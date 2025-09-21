@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { getAllManualArticles } from '@/lib/manual';
+import { getAllManualArticles } from './_lib/manual';
 import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
 
 interface ManualPageProps {

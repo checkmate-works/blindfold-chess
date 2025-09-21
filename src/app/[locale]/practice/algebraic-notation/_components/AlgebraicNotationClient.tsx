@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ChessBoard } from '../../_components/ChessBoard';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
-import { Exercise } from '@/lib/practice/algebraic-notation';
+import { Exercise } from '../_lib/algebraic-notation';
 
 interface AlgebraicNotationClientProps {
   exercises: Exercise[];

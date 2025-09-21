@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getArticle, getAvailableArticles } from '@/lib/learn';
+import { getArticle, getAvailableArticles } from '../_lib/learn';
 import { Breadcrumb, MarkdownRenderer, CardLink } from '@/app/[locale]/_components';
 
 interface LearnArticlePageProps {

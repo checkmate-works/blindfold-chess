@@ -5,7 +5,7 @@ import { PageTitle } from '../../../_components/PageTitle';
 import { Breadcrumb } from '../../../_components/Breadcrumb';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
-import { chessTerms } from '@/data/chess-terms';
+import { chessTerms } from '../../_data/chess-terms';
 
 interface GlossaryLetterPageProps {
   params: Promise<{

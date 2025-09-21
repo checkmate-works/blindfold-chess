@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { PageTitle } from '@/app/[locale]/_components';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
-import { getSquareColor, generateSquareSequence } from '@/lib/square-utils';
+import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
 
 interface SquareColorsClientProps {
   locale: 'en' | 'ja';

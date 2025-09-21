@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { chessTerms } from '@/data/chess-terms';
+import { chessTerms } from '../_data/chess-terms';
 
 interface CategoryIndexProps {
   locale: string;

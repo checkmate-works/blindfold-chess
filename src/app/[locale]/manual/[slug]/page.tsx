@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getManualArticle, getAvailableManualArticles } from '@/lib/manual';
+import { getManualArticle, getAvailableManualArticles } from '../_lib/manual';
 import { PageTitle, Breadcrumb, MarkdownRenderer } from '@/app/[locale]/_components';
 import { getTranslations } from 'next-intl/server';
 

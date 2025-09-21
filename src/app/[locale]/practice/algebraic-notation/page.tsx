@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb } from '@/app/[locale]/_components';
 import AlgebraicNotationClient from './_components/AlgebraicNotationClient';
-import { exercises } from '@/lib/practice/algebraic-notation';
+import { exercises } from './_lib/algebraic-notation';
 
 interface AlgebraicNotationPageProps {
   params: Promise<{

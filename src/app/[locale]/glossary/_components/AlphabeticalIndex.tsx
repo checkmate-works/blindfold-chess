@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/routing';
-import { chessTerms } from '@/data/chess-terms';
+import { chessTerms } from '../_data/chess-terms';
 
 interface AlphabeticalIndexProps {
   locale: string;

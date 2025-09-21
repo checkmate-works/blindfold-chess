@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { getAllArticles } from '@/lib/learn';
+import { getAllArticles } from './_lib/learn';
 import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
 
 interface LearnPageProps {
