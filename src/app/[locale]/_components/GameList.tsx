@@ -1,5 +1,3 @@
-'use client';
-
 import { Game } from '../play/_lib/game-repository';
 import { GameListItem } from './GameListItem';
 
