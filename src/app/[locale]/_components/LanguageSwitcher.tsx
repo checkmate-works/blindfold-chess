@@ -12,12 +12,35 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Pages where language switching should be disabled to prevent state loss
+  const shouldHideLanguageSwitcher = () => {
+    const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
+
+    // List of paths where language switching would interrupt user activity
+    const restrictedPaths = [
+      '/play', // Chess game in progress
+      '/practice/coordinate-quiz', // Quiz session
+      '/practice/legal-moves', // Practice session
+      '/practice/algebraic-notation', // Practice session
+      '/practice/square-colors', // Practice session
+      '/practice/position-memory', // Memory session
+      '/game/new', // Game setup
+    ];
+
+    return restrictedPaths.some((path) => pathWithoutLocale.startsWith(path));
+  };
+
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value;
     // Replace the current locale in the pathname with the new one
     const newPathname = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
     router.push(newPathname);
   };
+
+  // Don't render the language switcher on restricted pages
+  if (shouldHideLanguageSwitcher()) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-2">
