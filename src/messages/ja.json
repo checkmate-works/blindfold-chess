@@ -297,7 +297,9 @@
     "confirmResign": "投了する",
     "confirmUndoTitle": "待ったの確認",
     "confirmUndoMessage": "直前の2手を取り消しますか？",
-    "confirmUndo": "取り消す"
+    "confirmUndo": "取り消す",
+    "configureBoardAppearance": "ボードの外観を設定する",
+    "save": "保存"
   },
   "newGame": {
     "title": "新規ゲーム",

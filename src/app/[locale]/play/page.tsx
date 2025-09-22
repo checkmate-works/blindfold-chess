@@ -36,6 +36,8 @@ export default async function PlayPage({ params }: PlayPageProps) {
     confirmUndoTitle: t('play.confirmUndoTitle'),
     confirmUndoMessage: t('play.confirmUndoMessage'),
     confirmUndo: t('play.confirmUndo'),
+    configureBoardAppearance: t('play.configureBoardAppearance'),
+    save: t('play.save'),
   };
 
   return <PlayClient locale={locale} translations={translations} />;

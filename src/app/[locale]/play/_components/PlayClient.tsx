@@ -13,6 +13,7 @@ import { UndoIcon, FlagIcon } from './Icons';
 import { Chess } from 'chess.js';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
 import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
+import { GameSettingsModal } from './GameSettingsModal';
 
 interface PlayClientProps {
   locale: 'en' | 'ja';
@@ -41,6 +42,8 @@ interface PlayClientProps {
     confirmUndoTitle: string;
     confirmUndoMessage: string;
     confirmUndo: string;
+    configureBoardAppearance: string;
+    save: string;
   };
 }
 
@@ -66,6 +69,7 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
   const isProcessingRef = useRef(false); // Use ref to track processing state
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const { preferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
@@ -314,6 +318,16 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
               className="max-w-2xl mx-auto"
             />
 
+            {/* Settings Link */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowSettingsModal(true)}
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                {translations.configureBoardAppearance}
+              </button>
+            </div>
+
             {/* Game Status */}
             {gameStatus !== 'in_progress' && (
               <div className="mt-6 text-center bg-card/50 rounded-lg p-4 border border-border">
@@ -483,6 +497,13 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
           </div>
         </div>
       )}
+
+      {/* Settings Modal */}
+      <GameSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        playerSide={playerSide}
+      />
     </div>
   );
 }

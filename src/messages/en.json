@@ -297,7 +297,9 @@
     "confirmResign": "Resign",
     "confirmUndoTitle": "Confirm Undo",
     "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
-    "confirmUndo": "Undo"
+    "confirmUndo": "Undo",
+    "configureBoardAppearance": "Configure board appearance",
+    "save": "Save"
   },
   "newGame": {
     "title": "New Game",
