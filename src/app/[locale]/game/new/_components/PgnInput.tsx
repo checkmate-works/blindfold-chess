@@ -55,11 +55,7 @@ export function PgnInput({ value, onChange, error, translations }: PgnInputProps
         </div>
         {showSuccess && validationResult?.moveCount !== undefined && (
           <p className="text-sm text-muted-foreground">
-            ✓{' '}
-            {translations.validWithMoves.replace(
-              '{moveCount}',
-              validationResult.moveCount.toString()
-            )}
+            ✓ {translations.validWithMoves.replace('{}', validationResult.moveCount.toString())}
           </p>
         )}
         {showError && <p className="text-sm text-red-600">✗ {error || validationResult.error}</p>}
