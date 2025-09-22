@@ -1,39 +1,136 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Chess } from 'chess.js';
 import { PageTitle } from '../../../_components/PageTitle';
+import { StartMethodSelector } from './StartMethodSelector';
+import { ColorSelector } from './ColorSelector';
+import { SkillLevelSelector } from './SkillLevelSelector';
+import { PgnInput } from './PgnInput';
+import { validatePgn, parsePgn } from '../../../play/_lib/pgn-parser';
 import type { Side, SkillLevel } from '../../../play/_lib/types';
+
+type StartMethod = 'new' | 'pgn';
 
 interface NewGameFormProps {
   locale: 'en' | 'ja';
   translations: {
     title: string;
+    // Start Method
+    startMethod: string;
+    newGame: string;
+    newGameDescription: string;
+    fromPgn: string;
+    fromPgnDescription: string;
+    // PGN
+    pgnTitle: string;
+    pgnPlaceholder: string;
+    validWithMoves: string;
+    invalidPgn: string;
+    derivedFromPgn: string;
+    // Color
     selectColor: string;
     playAsWhite: string;
     playAsBlack: string;
+    whiteDescription: string;
+    blackDescription: string;
+    // Skill Level
     selectLevel: string;
     beginner: string;
     intermediate: string;
     advanced: string;
+    // Buttons
     startGame: string;
-    whiteDescription: string;
-    blackDescription: string;
+    cancel: string;
   };
 }
 
 export function NewGameForm({ locale, translations }: NewGameFormProps) {
   const router = useRouter();
+  const [startMethod, setStartMethod] = useState<StartMethod>('new');
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
+  const [pgn, setPgn] = useState('');
+  const [pgnError, setPgnError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleStartGame = () => {
-    // Navigate to play page with selected parameters
-    const params = new URLSearchParams({
-      color,
-      skillLevel: skillLevel.toString(),
-    });
-    router.push(`/${locale}/play?${params.toString()}`);
+  // Auto-derive color from PGN when PGN method is selected
+  useEffect(() => {
+    if (startMethod === 'pgn' && pgn.trim() && validatePgn(pgn)) {
+      try {
+        const chess = new Chess();
+        chess.loadPgn(pgn);
+        const history = chess.history({ verbose: true });
+
+        if (history.length > 0) {
+          // Determine which color made the last move
+          const lastMove = history[history.length - 1];
+          // If last move was by white, user should play as black (next to move)
+          // If last move was by black, user should play as white (next to move)
+          const derivedColor: Side = lastMove.color === 'w' ? 'black' : 'white';
+          setColor(derivedColor);
+        }
+      } catch {
+        // If PGN parsing fails, keep current color selection
+      }
+    }
+  }, [startMethod, pgn]);
+
+  const handlePgnChange = (value: string) => {
+    setPgn(value);
+    setPgnError(null);
+
+    // Real-time validation
+    if (value.trim() && !validatePgn(value)) {
+      setPgnError(translations.invalidPgn);
+    }
+  };
+
+  const handleStartGame = async () => {
+    setIsLoading(true);
+
+    try {
+      let moves: string[] | undefined;
+      if (startMethod === 'pgn') {
+        if (!pgn.trim()) {
+          setPgnError(translations.invalidPgn);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!validatePgn(pgn)) {
+          setPgnError(translations.invalidPgn);
+          setIsLoading(false);
+          return;
+        }
+
+        moves = parsePgn(pgn);
+      }
+
+      const finalColor: Side = color;
+
+      // Navigate to game play screen with settings
+      const searchParams = new URLSearchParams({
+        color: finalColor,
+        skillLevel: skillLevel.toString(),
+      });
+
+      // Add moves if from PGN
+      if (moves && moves.length > 0) {
+        searchParams.set('moves', JSON.stringify(moves));
+      }
+
+      router.push(`/${locale}/play?${searchParams.toString()}`);
+    } catch {
+      setPgnError(translations.invalidPgn);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    router.push(`/${locale}`);
   };
 
   return (
@@ -43,163 +140,59 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
       </div>
 
       <div className="space-y-8">
-        {/* Color Selection */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">{translations.selectColor}</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setColor('white')}
-              className={`p-6 rounded-lg border-2 transition-all ${
-                color === 'white'
-                  ? 'border-foreground bg-foreground/10'
-                  : 'border-border hover:border-muted-foreground'
-              }`}
-            >
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 mb-3 flex items-center justify-center">
-                  {/* White King SVG */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 45 45"
-                    width="60"
-                    height="60"
-                  >
-                    <g
-                      fill="none"
-                      fillRule="evenodd"
-                      stroke="#000"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                    >
-                      <path strokeLinejoin="miter" d="M22.5 11.63V6M20 8h5" />
-                      <path
-                        fill="#fff"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
-                        d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"
-                      />
-                      <path
-                        fill="#fff"
-                        d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z"
-                      />
-                      <path d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0" />
-                    </g>
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{translations.playAsWhite}</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  {translations.whiteDescription}
-                </p>
-              </div>
-            </button>
+        {/* Start Method Selector */}
+        <StartMethodSelector
+          value={startMethod}
+          onChange={setStartMethod}
+          translations={translations}
+        />
 
-            <button
-              onClick={() => setColor('black')}
-              className={`p-6 rounded-lg border-2 transition-all ${
-                color === 'black'
-                  ? 'border-foreground bg-foreground/10'
-                  : 'border-border hover:border-muted-foreground'
-              }`}
-            >
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 mb-3 flex items-center justify-center">
-                  {/* Black King SVG */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 45 45"
-                    width="60"
-                    height="60"
-                  >
-                    <g
-                      fill="none"
-                      fillRule="evenodd"
-                      stroke="#000"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                    >
-                      <path strokeLinejoin="miter" d="M22.5 11.6V6" />
-                      <path
-                        fill="#000"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
-                        d="M22.5 25s4.5-7.5 3-10.5c0 0-1-2.5-3-2.5s-3 2.5-3 2.5c-1.5 3 3 10.5 3 10.5"
-                      />
-                      <path
-                        fill="#000"
-                        d="M11.5 37c5.5 3.5 15.5 3.5 21 0v-7s9-4.5 6-10.5c-4-6.5-13.5-3.5-16 4V27v-3.5c-3.5-7.5-13-10.5-16-4-3 6 5 10 5 10V37z"
-                      />
-                      <path fill="none" d="M20 8h5" />
-                      <path
-                        stroke="#ececec"
-                        d="M32 29.5s8.5-4 6.03-9.65C34.15 14 25 18 22.5 24.5l.01 2.1-.01-2.1C20 18 9.906 14 6.997 19.85c-2.497 5.65 4.853 9 4.853 9"
-                      />
-                      <path
-                        stroke="#ececec"
-                        d="M11.5 30c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0m-21 3.5c5.5-3 15.5-3 21 0"
-                      />
-                    </g>
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{translations.playAsBlack}</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  {translations.blackDescription}
-                </p>
-              </div>
-            </button>
-          </div>
+        {/* PGN Input (only show if pgn method selected) */}
+        {startMethod === 'pgn' && (
+          <PgnInput
+            value={pgn}
+            onChange={handlePgnChange}
+            error={pgnError}
+            translations={translations}
+          />
+        )}
+
+        {/* Color Selection (disabled when using PGN with valid moves) */}
+        <div>
+          <ColorSelector
+            value={color}
+            onChange={setColor}
+            disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+            translations={translations}
+          />
+          {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
+            <p className="text-sm text-muted-foreground mt-2">{translations.derivedFromPgn}</p>
+          )}
         </div>
 
         {/* Skill Level Selection */}
-        <div>
-          <h2 className="text-lg font-semibold mb-4">{translations.selectLevel}</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <button
-              onClick={() => setSkillLevel(1)}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                skillLevel === 1
-                  ? 'border-foreground bg-foreground/10'
-                  : 'border-border hover:border-muted-foreground'
-              }`}
-            >
-              <h3 className="font-semibold">{translations.beginner}</h3>
-              <p className="text-sm text-muted-foreground mt-1">ELO ~1000</p>
-            </button>
+        <SkillLevelSelector
+          value={skillLevel}
+          onChange={setSkillLevel}
+          translations={translations}
+        />
 
-            <button
-              onClick={() => setSkillLevel(5)}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                skillLevel === 5
-                  ? 'border-foreground bg-foreground/10'
-                  : 'border-border hover:border-muted-foreground'
-              }`}
-            >
-              <h3 className="font-semibold">{translations.intermediate}</h3>
-              <p className="text-sm text-muted-foreground mt-1">ELO ~1500</p>
-            </button>
-
-            <button
-              onClick={() => setSkillLevel(10)}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                skillLevel === 10
-                  ? 'border-foreground bg-foreground/10'
-                  : 'border-border hover:border-muted-foreground'
-              }`}
-            >
-              <h3 className="font-semibold">{translations.advanced}</h3>
-              <p className="text-sm text-muted-foreground mt-1">ELO ~2000</p>
-            </button>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-4">
+          <button
+            onClick={handleCancel}
+            className="flex-1 px-6 py-3 text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg font-medium transition-colors"
+          >
+            {translations.cancel}
+          </button>
+          <button
+            onClick={handleStartGame}
+            disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
+            className="flex-1 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+          >
+            {isLoading ? '...' : translations.startGame}
+          </button>
         </div>
-
-        {/* Start Game Button */}
-        <button
-          onClick={handleStartGame}
-          className="w-full py-3 px-6 bg-foreground text-background rounded-lg font-semibold hover:bg-foreground/90 transition-colors"
-        >
-          {translations.startGame}
-        </button>
       </div>
     </div>
   );

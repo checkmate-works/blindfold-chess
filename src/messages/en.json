@@ -303,6 +303,16 @@
   },
   "newGame": {
     "title": "New Game",
+    "startMethod": "How would you like to start?",
+    "newGame": "New Game",
+    "newGameDescription": "Start a fresh game from the beginning",
+    "fromPgn": "Import PGN",
+    "fromPgnDescription": "Continue from a specific position",
+    "pgnTitle": "Import PGN",
+    "pgnPlaceholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "validWithMoves": "Valid PGN with {moveCount} moves",
+    "invalidPgn": "Invalid PGN format",
+    "derivedFromPgn": "Color automatically selected based on PGN",
     "selectColor": "Select Your Color",
     "playAsWhite": "Play as White",
     "playAsBlack": "Play as Black",
@@ -311,6 +321,7 @@
     "intermediate": "Intermediate",
     "advanced": "Advanced",
     "startGame": "Start Game",
+    "cancel": "Cancel",
     "whiteDescription": "You play first",
     "blackDescription": "AI plays first"
   }

@@ -1,0 +1,88 @@
+'use client';
+
+interface StartMethodSelectorProps {
+  value: 'new' | 'pgn';
+  onChange: (value: 'new' | 'pgn') => void;
+  translations: {
+    startMethod: string;
+    newGame: string;
+    newGameDescription: string;
+    fromPgn: string;
+    fromPgnDescription: string;
+  };
+}
+
+export function StartMethodSelector({ value, onChange, translations }: StartMethodSelectorProps) {
+  return (
+    <div>
+      <h2 className="text-lg font-semibold mb-4">{translations.startMethod}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button
+          onClick={() => onChange('new')}
+          className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+            value === 'new'
+              ? 'border-foreground bg-foreground/10'
+              : 'border-border hover:border-muted-foreground'
+          }`}
+        >
+          {value === 'new' && (
+            <div className="absolute top-3 right-3">
+              <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-background"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+          <div className="pr-8">
+            <h3 className="font-semibold mb-1">{translations.newGame}</h3>
+            <p className="text-sm text-muted-foreground">{translations.newGameDescription}</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => onChange('pgn')}
+          className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+            value === 'pgn'
+              ? 'border-foreground bg-foreground/10'
+              : 'border-border hover:border-muted-foreground'
+          }`}
+        >
+          {value === 'pgn' && (
+            <div className="absolute top-3 right-3">
+              <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-background"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
+          <div className="pr-8">
+            <h3 className="font-semibold mb-1">{translations.fromPgn}</h3>
+            <p className="text-sm text-muted-foreground">{translations.fromPgnDescription}</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}

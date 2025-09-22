@@ -303,6 +303,16 @@
   },
   "newGame": {
     "title": "新規ゲーム",
+    "startMethod": "開始方法を選択",
+    "newGame": "新規ゲーム",
+    "newGameDescription": "初期配置から新しいゲームを開始",
+    "fromPgn": "PGNからインポート",
+    "fromPgnDescription": "特定の局面から続ける",
+    "pgnTitle": "PGNをインポート",
+    "pgnPlaceholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "validWithMoves": "{moveCount}手の有効なPGN",
+    "invalidPgn": "無効なPGN形式",
+    "derivedFromPgn": "PGNに基づいて色が自動選択されました",
     "selectColor": "色を選択",
     "playAsWhite": "白でプレイ",
     "playAsBlack": "黒でプレイ",
@@ -311,6 +321,7 @@
     "intermediate": "中級",
     "advanced": "上級",
     "startGame": "ゲーム開始",
+    "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
     "blackDescription": "AIが先手"
   }

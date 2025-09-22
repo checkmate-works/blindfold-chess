@@ -13,16 +13,32 @@ export default async function NewGamePage({ params }: NewGamePageProps) {
 
   const translations = {
     title: t('newGame.title'),
+    // Start Method
+    startMethod: t('newGame.startMethod'),
+    newGame: t('newGame.newGame'),
+    newGameDescription: t('newGame.newGameDescription'),
+    fromPgn: t('newGame.fromPgn'),
+    fromPgnDescription: t('newGame.fromPgnDescription'),
+    // PGN
+    pgnTitle: t('newGame.pgnTitle'),
+    pgnPlaceholder: t('newGame.pgnPlaceholder'),
+    validWithMoves: t('newGame.validWithMoves'),
+    invalidPgn: t('newGame.invalidPgn'),
+    derivedFromPgn: t('newGame.derivedFromPgn'),
+    // Color
     selectColor: t('newGame.selectColor'),
     playAsWhite: t('newGame.playAsWhite'),
     playAsBlack: t('newGame.playAsBlack'),
+    whiteDescription: t('newGame.whiteDescription'),
+    blackDescription: t('newGame.blackDescription'),
+    // Skill Level
     selectLevel: t('newGame.selectLevel'),
     beginner: t('newGame.beginner'),
     intermediate: t('newGame.intermediate'),
     advanced: t('newGame.advanced'),
+    // Buttons
     startGame: t('newGame.startGame'),
-    whiteDescription: t('newGame.whiteDescription'),
-    blackDescription: t('newGame.blackDescription'),
+    cancel: t('newGame.cancel'),
   };
 
   return <NewGameForm locale={locale} translations={translations} />;
