@@ -23,6 +23,7 @@ export default async function NewGamePage({ params }: NewGamePageProps) {
     pgnTitle: t('newGame.pgnTitle'),
     pgnPlaceholder: t('newGame.pgnPlaceholder'),
     validWithMoves: t('newGame.validWithMoves'),
+    validWithMovesCount: t('newGame.validWithMovesCount'),
     invalidPgn: t('newGame.invalidPgn'),
     derivedFromPgn: t('newGame.derivedFromPgn'),
     // Color

@@ -10,6 +10,7 @@ interface PgnInputProps {
     pgnTitle: string;
     pgnPlaceholder: string;
     validWithMoves: string;
+    validWithMovesCount: string;
   };
 }
 
@@ -55,7 +56,8 @@ export function PgnInput({ value, onChange, error, translations }: PgnInputProps
         </div>
         {showSuccess && validationResult?.moveCount !== undefined && (
           <p className="text-sm text-muted-foreground">
-            ✓ {translations.validWithMoves.replace('{}', validationResult.moveCount.toString())}
+            ✓ {translations.validWithMoves} {validationResult.moveCount}{' '}
+            {translations.validWithMovesCount}
           </p>
         )}
         {showError && <p className="text-sm text-red-600">✗ {error || validationResult.error}</p>}

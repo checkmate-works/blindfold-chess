@@ -27,6 +27,7 @@ interface NewGameFormProps {
     pgnTitle: string;
     pgnPlaceholder: string;
     validWithMoves: string;
+    validWithMovesCount: string;
     invalidPgn: string;
     derivedFromPgn: string;
     // Color
