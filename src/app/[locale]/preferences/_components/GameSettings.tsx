@@ -16,17 +16,15 @@ export function GameSettings() {
   return (
     <div className="max-w-4xl">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          {t('game.title')}
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">{t('game.description')}</p>
+        <h3 className="text-lg font-semibold text-foreground mb-2">{t('game.title')}</h3>
+        <p className="text-muted-foreground mb-8">{t('game.description')}</p>
 
         {/* All settings in one container */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="space-y-8">
             {/* Board Appearance */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h4 className="text-lg font-semibold text-foreground mb-4">
                 {t('game.boardAppearance')}
               </h4>
               <div className="space-y-3">
@@ -37,7 +35,7 @@ export function GameSettings() {
                     onChange={(e) => updatePreferences({ showCoordinates: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     {t('game.showCoordinates')}
                   </span>
                 </label>
@@ -48,7 +46,7 @@ export function GameSettings() {
                     onChange={(e) => updatePreferences({ highlightLastMove: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     {t('game.highlightLastMove')}
                   </span>
                 </label>
@@ -56,11 +54,11 @@ export function GameSettings() {
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+            <div className="border-t border-border"></div>
 
             {/* Piece Visibility */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h4 className="text-lg font-semibold text-foreground mb-4">
                 {t('game.pieceVisibility')}
               </h4>
               <div className="space-y-3">
@@ -71,7 +69,7 @@ export function GameSettings() {
                     onChange={(e) => updatePreferences({ showOwnPieces: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     {t('game.showOwnPieces')}
                   </span>
                 </label>
@@ -82,7 +80,7 @@ export function GameSettings() {
                     onChange={(e) => updatePreferences({ showOpponentPieces: e.target.checked })}
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     {t('game.showOpponentPieces')}
                   </span>
                 </label>
@@ -90,17 +88,17 @@ export function GameSettings() {
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+            <div className="border-t border-border"></div>
 
             {/* Piece Appearance */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h4 className="text-lg font-semibold text-foreground mb-4">
                 {t('game.pieceAppearance')}
               </h4>
 
               {/* Piece Shape */}
               <div className="mb-6">
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <h5 className="text-sm font-medium text-muted-foreground mb-3">
                   {t('game.pieceShape')}
                 </h5>
                 <div className="space-y-2">
@@ -123,7 +121,7 @@ export function GameSettings() {
                           }
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                         />
-                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        <span className="ml-2 text-sm text-muted-foreground">
                           {t(`game.pieceShapes.${mode}`)}
                         </span>
                       </label>
@@ -134,7 +132,7 @@ export function GameSettings() {
 
               {/* Piece Colors */}
               <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <h5 className="text-sm font-medium text-muted-foreground mb-3">
                   {t('game.pieceColor')}
                 </h5>
                 <div className="space-y-2">
@@ -152,7 +150,7 @@ export function GameSettings() {
                         }
                         className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                       />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      <span className="ml-2 text-sm text-muted-foreground">
                         {t(`game.pieceColors.${colors}`)}
                       </span>
                     </label>
@@ -162,23 +160,23 @@ export function GameSettings() {
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+            <div className="border-t border-border"></div>
 
             {/* Preview */}
             <div>
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
+              <h4 className="text-sm font-medium text-muted-foreground mb-4 text-center">
                 {t('game.preview.title')}
               </h4>
 
               {/* Perspective toggle */}
               <div className="flex justify-center mb-4">
-                <div className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                <div className="inline-flex rounded-lg bg-muted p-1">
                   <button
                     onClick={() => setPreviewPerspective('white')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       previewPerspective === 'white'
-                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {t('game.preview.whiteView')}
@@ -187,8 +185,8 @@ export function GameSettings() {
                     onClick={() => setPreviewPerspective('black')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                       previewPerspective === 'black'
-                        ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {t('game.preview.blackView')}
@@ -219,7 +217,7 @@ export function GameSettings() {
         <div className="mt-8">
           <button
             onClick={resetPreferences}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-md transition-colors"
+            className="px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-md transition-colors"
           >
             {t('game.resetDefaults')}
           </button>

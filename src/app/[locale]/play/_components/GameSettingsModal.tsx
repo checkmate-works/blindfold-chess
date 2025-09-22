@@ -56,7 +56,7 @@ export function GameSettingsModal({
       <div className="space-y-8">
         {/* Board Appearance */}
         <div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h4 className="text-lg font-semibold text-foreground mb-4">
             {tPrefs('game.boardAppearance')}
           </h4>
           <div className="space-y-3">
@@ -69,7 +69,7 @@ export function GameSettingsModal({
                 }
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {tPrefs('game.showCoordinates')}
               </span>
             </label>
@@ -82,7 +82,7 @@ export function GameSettingsModal({
                 }
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {tPrefs('game.highlightLastMove')}
               </span>
             </label>
@@ -90,11 +90,11 @@ export function GameSettingsModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700"></div>
+        <div className="border-t border-border"></div>
 
         {/* Piece Visibility */}
         <div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h4 className="text-lg font-semibold text-foreground mb-4">
             {tPrefs('game.pieceVisibility')}
           </h4>
           <div className="space-y-3">
@@ -107,7 +107,7 @@ export function GameSettingsModal({
                 }
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {tPrefs('game.showOwnPieces')}
               </span>
             </label>
@@ -120,7 +120,7 @@ export function GameSettingsModal({
                 }
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              <span className="ml-2 text-sm text-muted-foreground">
                 {tPrefs('game.showOpponentPieces')}
               </span>
             </label>
@@ -128,17 +128,17 @@ export function GameSettingsModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700"></div>
+        <div className="border-t border-border"></div>
 
         {/* Piece Appearance */}
         <div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h4 className="text-lg font-semibold text-foreground mb-4">
             {tPrefs('game.pieceAppearance')}
           </h4>
 
           {/* Piece Shape */}
           <div className="mb-6">
-            <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h5 className="text-sm font-medium text-muted-foreground mb-3">
               {tPrefs('game.pieceShape')}
             </h5>
             <div className="space-y-2">
@@ -158,7 +158,7 @@ export function GameSettingsModal({
                       }
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                     />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    <span className="ml-2 text-sm text-muted-foreground">
                       {tPrefs(`game.pieceShapes.${mode}`)}
                     </span>
                   </label>
@@ -169,7 +169,7 @@ export function GameSettingsModal({
 
           {/* Piece Colors */}
           <div>
-            <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h5 className="text-sm font-medium text-muted-foreground mb-3">
               {tPrefs('game.pieceColor')}
             </h5>
             <div className="space-y-2">
@@ -188,7 +188,7 @@ export function GameSettingsModal({
                     }
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                   />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  <span className="ml-2 text-sm text-muted-foreground">
                     {tPrefs(`game.pieceColors.${colors}`)}
                   </span>
                 </label>
@@ -198,23 +198,23 @@ export function GameSettingsModal({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700"></div>
+        <div className="border-t border-border"></div>
 
         {/* Preview */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
+          <h4 className="text-sm font-medium text-muted-foreground mb-4 text-center">
             {tPrefs('game.preview.title')}
           </h4>
 
           {/* Perspective toggle */}
           <div className="flex justify-center mb-4">
-            <div className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+            <div className="inline-flex rounded-lg bg-muted p-1">
               <button
                 onClick={() => setPreviewPerspective('white')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   previewPerspective === 'white'
-                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tPrefs('game.preview.whiteView')}
@@ -223,8 +223,8 @@ export function GameSettingsModal({
                 onClick={() => setPreviewPerspective('black')}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   previewPerspective === 'black'
-                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tPrefs('game.preview.blackView')}
@@ -250,7 +250,7 @@ export function GameSettingsModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-700 space-x-4">
+        <div className="flex justify-center pt-4 border-t border-border space-x-4">
           <button
             onClick={handleCancel}
             className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted"

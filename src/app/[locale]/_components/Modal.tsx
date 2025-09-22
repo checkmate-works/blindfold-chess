@@ -39,16 +39,13 @@ export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl'
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div
-          className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
+          className={`bg-card rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
         >
           {/* Header */}
           {title && (
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
