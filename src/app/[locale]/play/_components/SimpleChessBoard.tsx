@@ -10,21 +10,35 @@ type BoardPiece = {
   color: Color;
 } | null;
 
+import type { Side } from '../_lib/types';
+
 interface SimpleChessBoardProps {
   fen: string;
   flipped?: boolean;
+  playerSide?: Side;
   lastMove?: { from: string; to: string } | null;
   onSquareClick?: (square: string) => void;
   highlightedSquares?: string[];
+  showCoordinates?: boolean;
+  showOwnPieces?: boolean;
+  showOpponentPieces?: boolean;
+  pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
+  pieceColors?: 'normal' | 'white-only' | 'black-only';
   className?: string;
 }
 
 export function SimpleChessBoard({
   fen,
   flipped = false,
+  playerSide = 'white',
   lastMove = null,
   onSquareClick,
   highlightedSquares = [],
+  showCoordinates = true,
+  showOwnPieces = true,
+  showOpponentPieces = true,
+  pieceShapeMode = 'normal',
+  pieceColors = 'normal',
   className = '',
 }: SimpleChessBoardProps) {
   const [board, setBoard] = useState<BoardPiece[][]>([]);
@@ -50,7 +64,34 @@ export function SimpleChessBoard({
   const renderPiece = (piece: BoardPiece) => {
     if (!piece) return null;
 
-    const pieceKey = `${piece.color}${piece.type.toUpperCase()}` as keyof typeof ChessPieces;
+    // Check if piece should be shown based on settings
+    const isOwnPiece = piece.color === playerSide.charAt(0);
+    if (isOwnPiece && !showOwnPieces) return null;
+    if (!isOwnPiece && !showOpponentPieces) return null;
+
+    // Determine if piece should be shown as circle
+    const shouldShowAsCircle =
+      pieceShapeMode === 'circles-all' ||
+      (pieceShapeMode === 'circles-own' && isOwnPiece) ||
+      (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
+
+    // Determine piece color based on settings
+    let displayColor = piece.color;
+    if (pieceColors === 'white-only') {
+      displayColor = 'w';
+    } else if (pieceColors === 'black-only') {
+      displayColor = 'b';
+    }
+
+    if (shouldShowAsCircle) {
+      // Show as circle with consistent appearance regardless of square color
+      const circleColor =
+        displayColor === 'w' ? 'bg-white border-gray-800' : 'bg-gray-900 border-gray-300';
+      return <div className={`w-[60%] h-[60%] rounded-full border-4 ${circleColor} shadow-md`} />;
+    }
+
+    // Show normal piece
+    const pieceKey = `${displayColor}${piece.type.toUpperCase()}` as keyof typeof ChessPieces;
     const PieceComponent = ChessPieces[pieceKey];
 
     if (PieceComponent) {
@@ -126,7 +167,7 @@ export function SimpleChessBoard({
                   </div>
 
                   {/* Coordinates */}
-                  {fileIndex === 0 && (
+                  {showCoordinates && fileIndex === 0 && (
                     <div
                       className={`absolute left-0.5 top-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${
                         isLight
@@ -137,7 +178,7 @@ export function SimpleChessBoard({
                       {displayRanks[rankIndex]}
                     </div>
                   )}
-                  {rankIndex === 7 && (
+                  {showCoordinates && rankIndex === 7 && (
                     <div
                       className={`absolute right-0.5 bottom-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${
                         isLight

@@ -3,16 +3,20 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ThemeSelector } from './ThemeSelector';
+import { GameSettings } from './GameSettings';
 
 interface PreferencesTabsProps {
   locale: string;
 }
 
 export function PreferencesTabs({}: PreferencesTabsProps) {
-  const [activeTab, setActiveTab] = useState('appearance');
+  const [activeTab, setActiveTab] = useState('game');
   const t = useTranslations('Preferences');
 
-  const tabs = [{ id: 'appearance', label: t('tabs.appearance') }];
+  const tabs = [
+    { id: 'game', label: t('tabs.game') },
+    { id: 'appearance', label: t('tabs.appearance') },
+  ];
 
   return (
     <div>
@@ -37,6 +41,7 @@ export function PreferencesTabs({}: PreferencesTabsProps) {
 
       {/* Tab Content */}
       <div className="py-6">
+        {activeTab === 'game' && <GameSettings />}
         {activeTab === 'appearance' && (
           <div className="max-w-2xl">
             <div className="space-y-6">

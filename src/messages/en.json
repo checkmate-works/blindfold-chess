@@ -12,7 +12,38 @@
   "Preferences": {
     "title": "Settings",
     "tabs": {
+      "game": "Game",
       "appearance": "Appearance"
+    },
+    "game": {
+      "title": "Game Settings",
+      "description": "Configure your blindfold chess training preferences",
+      "boardAppearance": "Board Appearance",
+      "showCoordinates": "Show coordinates",
+      "highlightLastMove": "Highlight last move",
+      "pieceVisibility": "Piece Visibility",
+      "showOwnPieces": "Show own pieces",
+      "showOpponentPieces": "Show opponent pieces",
+      "pieceAppearance": "Piece Appearance",
+      "pieceShape": "Piece Shape",
+      "pieceShapes": {
+        "normal": "Normal pieces",
+        "circles-all": "Show all pieces as circles",
+        "circles-own": "Show own pieces as circles",
+        "circles-opponent": "Show opponent pieces as circles"
+      },
+      "pieceColor": "Piece Color",
+      "pieceColors": {
+        "normal": "Normal colors (White & Black)",
+        "white-only": "Show all pieces as white",
+        "black-only": "Show all pieces as black"
+      },
+      "preview": {
+        "title": "Preview",
+        "whiteView": "White's Perspective",
+        "blackView": "Black's Perspective"
+      },
+      "resetDefaults": "Reset to defaults"
     },
     "appearance": {
       "theme": "Theme",

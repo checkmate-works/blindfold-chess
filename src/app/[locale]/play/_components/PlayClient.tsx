@@ -12,6 +12,7 @@ import { MoveInput } from './MoveInput';
 import { UndoIcon, FlagIcon } from './Icons';
 import { Chess } from 'chess.js';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
+import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
 
 interface PlayClientProps {
   locale: 'en' | 'ja';
@@ -65,6 +66,7 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
   const isProcessingRef = useRef(false); // Use ref to track processing state
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const { preferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
     'in_progress'
@@ -302,7 +304,13 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
             <SimpleChessBoard
               fen={currentFen}
               flipped={playerSide === 'black'}
-              lastMove={lastMove}
+              playerSide={playerSide}
+              lastMove={preferences.highlightLastMove ? lastMove : null}
+              showCoordinates={preferences.showCoordinates}
+              showOwnPieces={preferences.showOwnPieces}
+              showOpponentPieces={preferences.showOpponentPieces}
+              pieceShapeMode={preferences.pieceShapeMode}
+              pieceColors={preferences.pieceColors}
               className="max-w-2xl mx-auto"
             />
 

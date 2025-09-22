@@ -1,0 +1,100 @@
+'use client';
+
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+// Game preferences
+export interface GamePreferences {
+  // Board appearance
+  showCoordinates: boolean; // Show rank and file labels on the board
+  highlightLastMove: boolean; // Highlight the last move on the board
+  // Piece visibility
+  showOwnPieces: boolean; // Show player's own pieces
+  showOpponentPieces: boolean; // Show opponent's pieces
+  // Piece appearance
+  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent'; // Piece shape mode
+  pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
+}
+
+// Default preferences
+const defaultPreferences: GamePreferences = {
+  showCoordinates: true,
+  highlightLastMove: true,
+  showOwnPieces: true,
+  showOpponentPieces: true,
+  pieceShapeMode: 'normal',
+  pieceColors: 'normal',
+};
+
+// Local storage key
+const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
+
+interface GamePreferencesContextType {
+  preferences: GamePreferences;
+  updatePreferences: (updates: Partial<GamePreferences>) => void;
+  resetPreferences: () => void;
+}
+
+const GamePreferencesContext = createContext<GamePreferencesContextType | undefined>(undefined);
+
+export function GamePreferencesProvider({ children }: { children: React.ReactNode }) {
+  const [preferences, setPreferences] = useState<GamePreferences>(defaultPreferences);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load preferences from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setPreferences({
+          ...defaultPreferences,
+          ...parsed,
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to load game preferences from localStorage:', error);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save preferences to localStorage whenever they change
+  useEffect(() => {
+    if (!isLoaded) return; // Don't save until initial load is complete
+
+    try {
+      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
+    } catch (error) {
+      console.warn('Failed to save game preferences to localStorage:', error);
+    }
+  }, [preferences, isLoaded]);
+
+  const updatePreferences = (updates: Partial<GamePreferences>) => {
+    setPreferences((prev) => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+
+  const resetPreferences = () => {
+    setPreferences(defaultPreferences);
+  };
+
+  const value: GamePreferencesContextType = {
+    preferences,
+    updatePreferences,
+    resetPreferences,
+  };
+
+  return (
+    <GamePreferencesContext.Provider value={value}>{children}</GamePreferencesContext.Provider>
+  );
+}
+
+export function useGamePreferences() {
+  const context = useContext(GamePreferencesContext);
+  if (!context) {
+    throw new Error('useGamePreferences must be used within a GamePreferencesProvider');
+  }
+  return context;
+}
