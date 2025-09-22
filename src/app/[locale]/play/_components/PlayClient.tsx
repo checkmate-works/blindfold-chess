@@ -144,6 +144,7 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
     skillLevel,
     status: mapGameStatus(gameStatus, playerResult),
     enabled: true,
+    saveOnInit: !initialGameId, // Save on init for new games (including PGN imports)
   });
 
   // Helper function to get last move details from chess.js

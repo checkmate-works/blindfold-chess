@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { LocalStorageGameRepository, GameStatus } from '../_lib/game-repository';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
@@ -10,6 +10,7 @@ interface UseAutoSaveOptions {
   skillLevel: SkillLevel;
   status: GameStatus;
   enabled?: boolean;
+  saveOnInit?: boolean;
 }
 
 /**
@@ -22,8 +23,9 @@ export function useAutoSave({
   skillLevel,
   status,
   enabled = true,
+  saveOnInit = false,
 }: UseAutoSaveOptions) {
-  const gameRepository = new LocalStorageGameRepository();
+  const gameRepository = useMemo(() => new LocalStorageGameRepository(), []);
   const pathname = usePathname();
 
   const gameIdRef = useRef<string | undefined>(gameId);
@@ -35,6 +37,7 @@ export function useAutoSave({
   const hasPendingChanges = useRef(false);
   const hasSavedInSession = useRef(false);
   const previousPathname = useRef(pathname);
+  const hasInitialSaveExecuted = useRef(false);
 
   // Update refs with current values
   useEffect(() => {
@@ -45,10 +48,55 @@ export function useAutoSave({
     currentStatusRef.current = status;
   }, [gameId, moves, status]);
 
+  // Initial save when component mounts if saveOnInit is true
+  useEffect(() => {
+    if (saveOnInit && enabled && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+      // For new games (including PGN imports), save immediately
+      // This ensures the game is saved even if player navigates away without making a move
+      const performInitialSave = async () => {
+        hasInitialSaveExecuted.current = true; // Mark as executed to prevent duplicates
+
+        try {
+          const savedGameId = await gameRepository.save(
+            {
+              moves: currentMovesRef.current,
+              playerColor,
+              skillLevel,
+              status: currentStatusRef.current,
+            },
+            gameIdRef.current
+          );
+
+          // Update game ID if it was newly created
+          if (!gameIdRef.current) {
+            gameIdRef.current = savedGameId;
+          }
+
+          lastSavedMovesLength.current = currentMovesRef.current.length;
+          lastSavedStatus.current = currentStatusRef.current;
+          hasSavedInSession.current = true;
+
+          // Set session storage flag for cross-component updates
+          sessionStorage.setItem('blindfold_chess_game_updated', Date.now().toString());
+        } catch (error) {
+          console.error('Failed to save initial game state:', error);
+          hasInitialSaveExecuted.current = false; // Reset flag on error
+        }
+      };
+
+      performInitialSave();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Save game function
   const saveGame = useCallback(
     async (showNotification = false) => {
       if (!enabled) return;
+
+      // Skip if initial save is pending for a new game
+      if (saveOnInit && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+        return;
+      }
 
       // Don't save if the game is already finished and we're just viewing it
       const isGameFinished = status === 'win' || status === 'loss' || status === 'draw';
@@ -94,11 +142,16 @@ export function useAutoSave({
         console.error('Failed to auto-save game:', error);
       }
     },
-    [enabled, gameRepository, moves, playerColor, skillLevel, status]
+    [enabled, gameRepository, moves, playerColor, skillLevel, status, saveOnInit]
   );
 
   // Auto-save on moves change or status change
   useEffect(() => {
+    // Skip if initial save is pending for a new game
+    if (saveOnInit && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+      return;
+    }
+
     // Auto-save if moves have changed and either:
     // 1. Player has interacted (made a move)
     // 2. We have more moves than initially (game is progressing)
@@ -124,7 +177,7 @@ export function useAutoSave({
       // Save immediately to ensure both player and AI moves are saved
       saveGame(false); // Don't show notification on auto-save
     }
-  }, [moves.length, status, saveGame]);
+  }, [moves.length, status, saveGame, saveOnInit]);
 
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {
