@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageTitle } from '../../../_components/PageTitle';
 import type { Side, SkillLevel } from '../../../play/_lib/types';
 
 interface NewGameFormProps {
@@ -37,7 +38,9 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8 text-center">{translations.title}</h1>
+      <div className="mb-8">
+        <PageTitle>{translations.title}</PageTitle>
+      </div>
 
       <div className="space-y-8">
         {/* Color Selection */}
