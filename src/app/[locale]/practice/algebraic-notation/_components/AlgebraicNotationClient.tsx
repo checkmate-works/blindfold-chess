@@ -85,8 +85,6 @@ export default function AlgebraicNotationClient({
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{t.pageTitle}</h1>
-
       {/* Progress bar */}
       <ProgressBar current={currentExercise + 1} total={exercises.length} />
 

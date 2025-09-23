@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { PracticeComplete } from '../../_components/PracticeComplete';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { LegalMovesSettings } from './LegalMovesSettings';
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components';
 import {
   isLegalMove,
   generateBalancedMoveQuestions,
@@ -178,8 +178,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
     const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
 
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <PageTitle>{translations.title}</PageTitle>
+      <div className="max-w-4xl mx-auto">
         <p className="text-muted-foreground mb-8">{translations.description}</p>
 
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">

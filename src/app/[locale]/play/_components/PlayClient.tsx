@@ -415,7 +415,9 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       if (isAiMove(i)) {
         const moveNumber = Math.floor(i / 2) + 1;
         const isWhiteMove = i % 2 === 0;
-        const moveText = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
+        const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
+        const moveText =
+          locale === 'ja' ? `AIが${moveNotation}を指しました` : `AI played ${moveNotation}`;
         onAiMoveChange(moveText);
         return;
       }

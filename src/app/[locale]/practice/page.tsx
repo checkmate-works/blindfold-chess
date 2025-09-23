@@ -45,9 +45,11 @@ export default async function PracticePage({ params }: PracticePageProps) {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <PageTitle>{t('practice.title')}</PageTitle>
-      <p className="text-muted-foreground mb-8">{t('practice.description')}</p>
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('practice.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('practice.description')}</p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {practices.map((practice) => (
@@ -65,6 +67,6 @@ export default async function PracticePage({ params }: PracticePageProps) {
       <div className="mt-8 pt-6 border-t border-border">
         <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
       </div>
-    </div>
+    </>
   );
 }

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
-import { PageTitle } from '../../../_components/PageTitle';
 import { StartMethodSelector } from './StartMethodSelector';
 import { ColorSelector } from './ColorSelector';
 import { SkillLevelSelector } from './SkillLevelSelector';
@@ -135,65 +134,55 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="mb-8">
-        <PageTitle>{translations.title}</PageTitle>
+    <div className="space-y-8">
+      {/* Start Method Selector */}
+      <StartMethodSelector
+        value={startMethod}
+        onChange={setStartMethod}
+        translations={translations}
+      />
+
+      {/* PGN Input (only show if pgn method selected) */}
+      {startMethod === 'pgn' && (
+        <PgnInput
+          value={pgn}
+          onChange={handlePgnChange}
+          error={pgnError}
+          translations={translations}
+        />
+      )}
+
+      {/* Color Selection (disabled when using PGN with valid moves) */}
+      <div>
+        <ColorSelector
+          value={color}
+          onChange={setColor}
+          disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+          translations={translations}
+        />
+        {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
+          <p className="text-sm text-muted-foreground mt-2">{translations.derivedFromPgn}</p>
+        )}
       </div>
 
-      <div className="space-y-8">
-        {/* Start Method Selector */}
-        <StartMethodSelector
-          value={startMethod}
-          onChange={setStartMethod}
-          translations={translations}
-        />
+      {/* Skill Level Selection */}
+      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} translations={translations} />
 
-        {/* PGN Input (only show if pgn method selected) */}
-        {startMethod === 'pgn' && (
-          <PgnInput
-            value={pgn}
-            onChange={handlePgnChange}
-            error={pgnError}
-            translations={translations}
-          />
-        )}
-
-        {/* Color Selection (disabled when using PGN with valid moves) */}
-        <div>
-          <ColorSelector
-            value={color}
-            onChange={setColor}
-            disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
-            translations={translations}
-          />
-          {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
-            <p className="text-sm text-muted-foreground mt-2">{translations.derivedFromPgn}</p>
-          )}
-        </div>
-
-        {/* Skill Level Selection */}
-        <SkillLevelSelector
-          value={skillLevel}
-          onChange={setSkillLevel}
-          translations={translations}
-        />
-
-        {/* Action Buttons */}
-        <div className="flex gap-4 pt-4">
-          <button
-            onClick={handleCancel}
-            className="flex-1 px-6 py-3 text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg font-medium transition-colors"
-          >
-            {translations.cancel}
-          </button>
-          <button
-            onClick={handleStartGame}
-            disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
-            className="flex-1 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
-          >
-            {isLoading ? '...' : translations.startGame}
-          </button>
-        </div>
+      {/* Action Buttons */}
+      <div className="flex gap-4 pt-4">
+        <button
+          onClick={handleCancel}
+          className="flex-1 px-6 py-3 text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg font-medium transition-colors"
+        >
+          {translations.cancel}
+        </button>
+        <button
+          onClick={handleStartGame}
+          disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
+          className="flex-1 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+        >
+          {isLoading ? '...' : translations.startGame}
+        </button>
       </div>
     </div>
   );

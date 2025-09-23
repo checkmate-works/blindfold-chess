@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import SquareColorsClient from './_components/SquareColorsClient';
 
 interface SquareColorsPageProps {
@@ -45,7 +45,10 @@ export default async function SquareColorsPage({ params }: SquareColorsPageProps
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('practice.squareColors.title')}</PageTitle>
+      </div>
       <SquareColorsClient locale={locale} translations={translations} />
 
       {/* Breadcrumb at bottom */}
@@ -58,6 +61,6 @@ export default async function SquareColorsPage({ params }: SquareColorsPageProps
           locale={locale}
         />
       </div>
-    </div>
+    </>
   );
 }

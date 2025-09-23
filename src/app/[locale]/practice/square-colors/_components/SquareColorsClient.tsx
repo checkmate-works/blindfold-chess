@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { PageTitle } from '@/app/[locale]/_components';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
 import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
@@ -141,7 +140,6 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
   if (gameState === 'setup') {
     return (
       <div>
-        <PageTitle>{translations.title}</PageTitle>
         <p className="text-muted-foreground mb-8">{translations.description}</p>
 
         <div className="bg-card rounded-xl shadow-sm border border-border p-6">

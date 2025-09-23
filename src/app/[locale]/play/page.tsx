@@ -42,9 +42,11 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <PageTitle>{aiMoveDisplay || translations.title}</PageTitle>
+    <>
+      <div className="mb-8">
+        <PageTitle>{aiMoveDisplay || translations.title}</PageTitle>
+      </div>
       <PlayClient locale={locale} translations={translations} onAiMoveChange={setAiMoveDisplay} />
-    </div>
+    </>
   );
 }

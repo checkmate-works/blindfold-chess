@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { PageTitle } from '@/app/[locale]/_components';
 import { LegalMovesClient } from './_components/LegalMovesClient';
 
 interface LegalMovesPageProps {
@@ -48,5 +49,12 @@ export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
     morePractice: t('practice.morePractice'),
   };
 
-  return <LegalMovesClient locale={locale} translations={translations} />;
+  return (
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
+      </div>
+      <LegalMovesClient locale={locale} translations={translations} />
+    </>
+  );
 }

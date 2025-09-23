@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { PageTitle } from '@/app/[locale]/_components';
 import { NewGameForm } from './_components/NewGameForm';
 
 interface NewGamePageProps {
@@ -42,5 +43,12 @@ export default async function NewGamePage({ params }: NewGamePageProps) {
     cancel: t('newGame.cancel'),
   };
 
-  return <NewGameForm locale={locale} translations={translations} />;
+  return (
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('newGame.title')}</PageTitle>
+      </div>
+      <NewGameForm locale={locale} translations={translations} />
+    </>
+  );
 }

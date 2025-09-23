@@ -25,9 +25,11 @@ export default async function LearnPage({ params }: LearnPageProps) {
   const articles = await getAllArticles(locale);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <PageTitle>{t('learn.title')}</PageTitle>
-      <p className="text-muted-foreground mb-8">{t('learn.description')}</p>
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('learn.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('learn.description')}</p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article) => (
@@ -46,6 +48,6 @@ export default async function LearnPage({ params }: LearnPageProps) {
       <div className="mt-8 pt-6 border-t border-border">
         <Breadcrumb items={[{ label: t('navigation.learn') }]} locale={locale} />
       </div>
-    </div>
+    </>
   );
 }

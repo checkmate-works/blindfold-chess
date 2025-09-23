@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import AlgebraicNotationClient from './_components/AlgebraicNotationClient';
 import { exercises } from './_lib/algebraic-notation';
 
@@ -29,7 +29,10 @@ export default async function AlgebraicNotationPage({ params }: AlgebraicNotatio
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
+      </div>
       <AlgebraicNotationClient exercises={exercises} locale={locale} translations={translations} />
 
       {/* Breadcrumb at bottom */}
@@ -42,6 +45,6 @@ export default async function AlgebraicNotationPage({ params }: AlgebraicNotatio
           locale={locale}
         />
       </div>
-    </div>
+    </>
   );
 }

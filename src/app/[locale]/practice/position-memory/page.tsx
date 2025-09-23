@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { PageTitle } from '@/app/[locale]/_components';
 import { PositionMemoryClient } from './_components/PositionMemoryClient';
 
 interface PositionMemoryPageProps {
@@ -75,5 +76,12 @@ export default async function PositionMemoryPage({ params }: PositionMemoryPageP
     },
   };
 
-  return <PositionMemoryClient locale={locale} translations={translations} />;
+  return (
+    <>
+      <div className="mb-8">
+        <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
+      </div>
+      <PositionMemoryClient locale={locale} translations={translations} />
+    </>
+  );
 }
