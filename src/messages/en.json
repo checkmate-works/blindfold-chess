@@ -299,7 +299,9 @@
     "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
     "confirmUndo": "Undo",
     "configureBoardAppearance": "Configure board appearance",
-    "save": "Save"
+    "save": "Save",
+    "showBoard": "Show Board",
+    "hideBoard": "Hide Board"
   },
   "newGame": {
     "title": "New Game",

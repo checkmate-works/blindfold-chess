@@ -299,7 +299,9 @@
     "confirmUndoMessage": "直前の2手を取り消しますか？",
     "confirmUndo": "取り消す",
     "configureBoardAppearance": "ボードの外観を設定する",
-    "save": "保存"
+    "save": "保存",
+    "showBoard": "ボードを表示",
+    "hideBoard": "ボードを隠す"
   },
   "newGame": {
     "title": "新規ゲーム",

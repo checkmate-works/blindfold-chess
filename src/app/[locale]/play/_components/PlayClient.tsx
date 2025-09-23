@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import { useNotation } from '../_hooks/use-notation';
 import { useAiVersus } from '../_hooks/use-ai-versus';
@@ -45,6 +46,8 @@ interface PlayClientProps {
     confirmUndo: string;
     configureBoardAppearance: string;
     save: string;
+    showBoard: string;
+    hideBoard: string;
   };
 }
 
@@ -86,6 +89,8 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
   const [displayFen, setDisplayFen] = useState<string | null>(null);
   const previousMovesLength = useRef(moves.length);
+  const [isBoardVisible, setIsBoardVisible] = useState(true);
+  const [isMovesVisible, setIsMovesVisible] = useState(true);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -431,28 +436,60 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg p-4 shadow-lg">
-            <SimpleChessBoard
-              fen={displayFen || currentFen}
-              flipped={playerSide === 'black'}
-              playerSide={playerSide}
-              lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
-              showCoordinates={preferences.showCoordinates}
-              showOwnPieces={preferences.showOwnPieces}
-              showOpponentPieces={preferences.showOpponentPieces}
-              pieceShapeMode={preferences.pieceShapeMode}
-              pieceColors={preferences.pieceColors}
-              className="max-w-2xl mx-auto"
-            />
+          <div className="bg-card rounded-lg shadow-lg overflow-hidden">
+            {/* Board Toggle Header */}
+            <button
+              onClick={() => setIsBoardVisible(!isBoardVisible)}
+              className="w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset"
+              aria-expanded={isBoardVisible}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {isBoardVisible ? (
+                    <FaEye className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <FaEyeSlash className="w-4 h-4 text-muted-foreground" />
+                  )}
+                  <span className="font-medium text-foreground">
+                    {isBoardVisible ? translations.hideBoard : translations.showBoard}
+                  </span>
+                </div>
+                <FaChevronDown
+                  className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
+                    isBoardVisible ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+            </button>
 
-            {/* Settings Link */}
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setShowSettingsModal(true)}
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
-                {translations.configureBoardAppearance}
-              </button>
+            {/* Board Content */}
+            <div className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'}`}>
+              <div className="p-4">
+                <SimpleChessBoard
+                  fen={displayFen || currentFen}
+                  flipped={playerSide === 'black'}
+                  playerSide={playerSide}
+                  lastMove={
+                    preferences.highlightLastMove && currentPosition === -1 ? lastMove : null
+                  }
+                  showCoordinates={preferences.showCoordinates}
+                  showOwnPieces={preferences.showOwnPieces}
+                  showOpponentPieces={preferences.showOpponentPieces}
+                  pieceShapeMode={preferences.pieceShapeMode}
+                  pieceColors={preferences.pieceColors}
+                  className="max-w-2xl mx-auto"
+                />
+
+                {/* Settings Link */}
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => setShowSettingsModal(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    {translations.configureBoardAppearance}
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Game Status */}
@@ -494,7 +531,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
             {/* Move Input */}
             {gameStatus === 'in_progress' && currentPosition === -1 && (
-              <div className="mt-4">
+              <div className="mt-6 px-4">
                 {isPlayerTurn ? (
                   <div>
                     {isCheck && (
@@ -530,7 +567,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
             {/* Action Buttons - Only show during active game and not viewing history */}
             {gameStatus === 'in_progress' && currentPosition === -1 && (
-              <div className="mt-4 flex gap-2 justify-center">
+              <div className="mt-4 mb-4 px-4 flex gap-2 justify-center">
                 <button
                   onClick={handleUndo}
                   disabled={moves.length < 2}
@@ -565,94 +602,112 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
         {/* Move List */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-lg p-4 shadow-lg">
-            <h2 className="text-lg font-semibold mb-4">{translations.moves}</h2>
-            <div className="max-h-96 overflow-y-auto font-mono">
-              {formattedPgn.length > 0 ? (
-                <div className="space-y-0.5">
-                  {formattedPgn.map((move, index) => {
-                    const whiteIndex = index * 2;
-                    const blackIndex = index * 2 + 1;
-                    const isWhiteHighlighted = currentPosition === whiteIndex;
-                    const isBlackHighlighted = currentPosition === blackIndex;
-
-                    return (
-                      <div key={move.moveNumber} className="flex items-center text-sm">
-                        <span className="w-10 text-right pr-2 text-muted-foreground">
-                          {move.moveNumber}.
-                        </span>
-                        <span
-                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                            isWhiteHighlighted
-                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                              : 'hover:bg-muted/40'
-                          }`}
-                          onClick={() => navigateToPosition(whiteIndex)}
-                        >
-                          {move.whiteMove}
-                        </span>
-                        <span
-                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                            isBlackHighlighted
-                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                              : move.blackMove
-                                ? 'hover:bg-muted/40'
-                                : ''
-                          } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                          onClick={() => move.blackMove && navigateToPosition(blackIndex)}
-                        >
-                          {move.blackMove || ''}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-sm">No moves yet</p>
-              )}
-            </div>
-
-            {/* Navigation Controls */}
-            {moves.length > 0 && (
-              <div className="mt-4 flex justify-center gap-1">
-                <button
-                  onClick={navigateToStart}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
-                  aria-label="Go to start"
-                  style={{ fontSize: '24px' }}
-                >
-                  «
-                </button>
-                <button
-                  onClick={navigatePrevious}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
-                  aria-label="Previous move"
-                  disabled={
-                    currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
-                  }
-                  style={{ fontSize: '24px' }}
-                >
-                  ‹
-                </button>
-                <button
-                  onClick={navigateNext}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
-                  aria-label="Next move"
-                  disabled={currentPosition === -1}
-                  style={{ fontSize: '24px' }}
-                >
-                  ›
-                </button>
-                <button
-                  onClick={navigateToEnd}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
-                  aria-label="Go to end"
-                  style={{ fontSize: '24px' }}
-                >
-                  »
-                </button>
+          <div className="bg-card rounded-lg shadow-lg overflow-hidden">
+            {/* Moves Toggle Header */}
+            <button
+              onClick={() => setIsMovesVisible(!isMovesVisible)}
+              className="w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset"
+              aria-expanded={isMovesVisible}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-foreground">{translations.moves}</span>
+                <FaChevronDown
+                  className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
+                    isMovesVisible ? 'rotate-180' : ''
+                  }`}
+                />
               </div>
-            )}
+            </button>
+
+            {/* Moves Content */}
+            <div className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'}`}>
+              <div className="p-4 max-h-96 overflow-y-auto font-mono">
+                {formattedPgn.length > 0 ? (
+                  <div className="space-y-0.5">
+                    {formattedPgn.map((move, index) => {
+                      const whiteIndex = index * 2;
+                      const blackIndex = index * 2 + 1;
+                      const isWhiteHighlighted = currentPosition === whiteIndex;
+                      const isBlackHighlighted = currentPosition === blackIndex;
+
+                      return (
+                        <div key={move.moveNumber} className="flex items-center text-sm">
+                          <span className="w-10 text-right pr-2 text-muted-foreground">
+                            {move.moveNumber}.
+                          </span>
+                          <span
+                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                              isWhiteHighlighted
+                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                : 'hover:bg-muted/40'
+                            }`}
+                            onClick={() => navigateToPosition(whiteIndex)}
+                          >
+                            {move.whiteMove}
+                          </span>
+                          <span
+                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                              isBlackHighlighted
+                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                : move.blackMove
+                                  ? 'hover:bg-muted/40'
+                                  : ''
+                            } ${!move.blackMove ? 'pointer-events-none' : ''}`}
+                            onClick={() => move.blackMove && navigateToPosition(blackIndex)}
+                          >
+                            {move.blackMove || ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">No moves yet</p>
+                )}
+
+                {/* Navigation Controls */}
+                {moves.length > 0 && (
+                  <div className="mt-4 flex justify-center gap-1">
+                    <button
+                      onClick={navigateToStart}
+                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
+                      aria-label="Go to start"
+                      style={{ fontSize: '24px' }}
+                    >
+                      «
+                    </button>
+                    <button
+                      onClick={navigatePrevious}
+                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+                      aria-label="Previous move"
+                      disabled={
+                        currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
+                      }
+                      style={{ fontSize: '24px' }}
+                    >
+                      ‹
+                    </button>
+                    <button
+                      onClick={navigateNext}
+                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+                      aria-label="Next move"
+                      disabled={currentPosition === -1}
+                      style={{ fontSize: '24px' }}
+                    >
+                      ›
+                    </button>
+                    <button
+                      onClick={navigateToEnd}
+                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
+                      aria-label="Go to end"
+                      style={{ fontSize: '24px' }}
+                    >
+                      »
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

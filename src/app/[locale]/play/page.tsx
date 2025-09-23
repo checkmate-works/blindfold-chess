@@ -39,6 +39,8 @@ export default function PlayPage() {
     confirmUndo: t('play.confirmUndo'),
     configureBoardAppearance: t('play.configureBoardAppearance'),
     save: t('play.save'),
+    showBoard: t('play.showBoard'),
+    hideBoard: t('play.hideBoard'),
   };
 
   return (
