@@ -533,9 +533,9 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
         <div className="lg:col-span-1">
           <div className="bg-card rounded-lg p-4 shadow-lg">
             <h2 className="text-lg font-semibold mb-4">{translations.moves}</h2>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto font-mono">
               {formattedPgn.length > 0 ? (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {formattedPgn.map((move, index) => {
                     const whiteIndex = index * 2;
                     const blackIndex = index * 2 + 1;
@@ -543,19 +543,27 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
                     const isBlackHighlighted = currentPosition === blackIndex;
 
                     return (
-                      <div key={move.moveNumber} className="flex gap-2 text-sm">
-                        <span className="font-semibold w-8">{move.moveNumber}.</span>
+                      <div key={move.moveNumber} className="flex items-center text-sm">
+                        <span className="w-10 text-right pr-2 text-muted-foreground">
+                          {move.moveNumber}.
+                        </span>
                         <span
-                          className={`w-16 px-1 rounded cursor-pointer hover:bg-muted/50 ${
-                            isWhiteHighlighted ? 'bg-foreground/20 font-semibold' : ''
+                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                            isWhiteHighlighted
+                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                              : 'hover:bg-muted/40'
                           }`}
                           onClick={() => navigateToPosition(whiteIndex)}
                         >
                           {move.whiteMove}
                         </span>
                         <span
-                          className={`w-16 px-1 rounded cursor-pointer hover:bg-muted/50 ${
-                            isBlackHighlighted ? 'bg-foreground/20 font-semibold' : ''
+                          className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                            isBlackHighlighted
+                              ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                              : move.blackMove
+                                ? 'hover:bg-muted/40'
+                                : ''
                           } ${!move.blackMove ? 'pointer-events-none' : ''}`}
                           onClick={() => move.blackMove && navigateToPosition(blackIndex)}
                         >
@@ -575,51 +583,39 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
               <div className="mt-4 flex justify-center gap-1">
                 <button
                   onClick={navigateToStart}
-                  className="p-2 hover:bg-muted rounded"
+                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
                   aria-label="Go to start"
+                  style={{ fontSize: '24px' }}
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8.445 14.832A1 1 0 0010 14v-8a1 1 0 00-1.555-.832L3 10l5.445 4.832zM13 14a1 1 0 100-8v8z" />
-                  </svg>
+                  «
                 </button>
                 <button
                   onClick={navigatePrevious}
-                  className="p-2 hover:bg-muted rounded disabled:opacity-50"
+                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
                   aria-label="Previous move"
                   disabled={
                     currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
                   }
+                  style={{ fontSize: '24px' }}
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M12.707 14.707a1 1 0 010-1.414L9.414 10l3.293-3.293a1 1 0 00-1.414-1.414l-4 4a1 1 0 000 1.414l4 4a1 1 0 001.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  ‹
                 </button>
                 <button
                   onClick={navigateNext}
-                  className="p-2 hover:bg-muted rounded disabled:opacity-50"
+                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
                   aria-label="Next move"
                   disabled={currentPosition === -1}
+                  style={{ fontSize: '24px' }}
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M7.293 5.293a1 1 0 011.414 0L13.414 10l-4.707 4.707a1 1 0 01-1.414-1.414L10.586 10 7.293 6.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  ›
                 </button>
                 <button
                   onClick={navigateToEnd}
-                  className="p-2 hover:bg-muted rounded"
+                  className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
                   aria-label="Go to end"
+                  style={{ fontSize: '24px' }}
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M11.555 5.168A1 1 0 0010 6v8a1 1 0 001.555.832L17 10l-5.445-4.832zM7 6a1 1 0 100 8V6z" />
-                  </svg>
+                  »
                 </button>
               </div>
             )}
