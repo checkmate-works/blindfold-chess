@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaChevronDown, FaEye, FaEyeSlash, FaCopy, FaCheck } from 'react-icons/fa';
 import { useSearchParams } from 'next/navigation';
 import { useNotation } from '../_hooks/use-notation';
 import { useAiVersus } from '../_hooks/use-ai-versus';
@@ -48,6 +48,8 @@ interface PlayClientProps {
     save: string;
     showBoard: string;
     hideBoard: string;
+    copyPgn: string;
+    copied: string;
   };
 }
 
@@ -91,6 +93,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const previousMovesLength = useRef(moves.length);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isMovesVisible, setIsMovesVisible] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -707,6 +710,43 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                       style={{ fontSize: '24px' }}
                     >
                       »
+                    </button>
+                  </div>
+                )}
+
+                {/* Copy PGN Button */}
+                {moves.length > 0 && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={() => {
+                        const pgnText = formattedPgn
+                          .map((move) => {
+                            const moveNumber = `${move.moveNumber}.`;
+                            const movePair = move.blackMove
+                              ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
+                              : `${moveNumber} ${move.whiteMove}`;
+                            return movePair;
+                          })
+                          .join(' ');
+
+                        navigator.clipboard.writeText(pgnText).then(() => {
+                          setIsCopied(true);
+                          setTimeout(() => setIsCopied(false), 2000);
+                        });
+                      }}
+                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 flex items-center gap-2 text-sm"
+                    >
+                      {isCopied ? (
+                        <>
+                          <FaCheck className="w-3 h-3 text-green-500" />
+                          {translations.copied || 'Copied!'}
+                        </>
+                      ) : (
+                        <>
+                          <FaCopy className="w-3 h-3" />
+                          {translations.copyPgn || 'Copy PGN'}
+                        </>
+                      )}
                     </button>
                   </div>
                 )}

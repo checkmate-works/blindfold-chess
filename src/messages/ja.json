@@ -301,7 +301,9 @@
     "configureBoardAppearance": "ボードの外観を設定する",
     "save": "保存",
     "showBoard": "ボードを表示",
-    "hideBoard": "ボードを隠す"
+    "hideBoard": "ボードを隠す",
+    "copyPgn": "棋譜をコピー",
+    "copied": "コピー済み！"
   },
   "newGame": {
     "title": "新規ゲーム",

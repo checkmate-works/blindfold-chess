@@ -41,6 +41,8 @@ export default function PlayPage() {
     save: t('play.save'),
     showBoard: t('play.showBoard'),
     hideBoard: t('play.hideBoard'),
+    copyPgn: t('play.copyPgn'),
+    copied: t('play.copied'),
   };
 
   return (

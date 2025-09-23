@@ -301,7 +301,9 @@
     "configureBoardAppearance": "Configure board appearance",
     "save": "Save",
     "showBoard": "Show Board",
-    "hideBoard": "Hide Board"
+    "hideBoard": "Hide Board",
+    "copyPgn": "Copy PGN",
+    "copied": "Copied!"
   },
   "newGame": {
     "title": "New Game",
