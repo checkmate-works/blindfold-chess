@@ -1,10 +1,10 @@
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
+import Link from 'next/link';
 import { chessTerms } from '../_data/chess-terms';
 
 interface CategoryIndexProps {
-  locale: string;
   currentCategory?: string;
+  locale: string;
 }
 
 const categoryStyles = {
@@ -16,7 +16,7 @@ const categoryStyles = {
   general: { color: 'bg-card text-card-foreground', icon: '📋' },
 };
 
-export async function CategoryIndex({ locale, currentCategory }: CategoryIndexProps) {
+export async function CategoryIndex({ currentCategory, locale }: CategoryIndexProps) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   // Get category counts
@@ -36,8 +36,7 @@ export async function CategoryIndex({ locale, currentCategory }: CategoryIndexPr
         return (
           <Link
             key={category}
-            href={`/glossary/category/${category}`}
-            locale={locale}
+            href={`/${locale}/glossary/category/${category}`}
             className={`p-6 rounded-xl shadow-sm border transition-colors ${
               isActive ? 'bg-muted border-foreground/20' : 'bg-card hover:bg-muted/50 border-border'
             }`}

@@ -1,12 +1,12 @@
-import { Link } from '@/i18n/routing';
+import Link from 'next/link';
 import { chessTerms } from '../_data/chess-terms';
 
 interface AlphabeticalIndexProps {
-  locale: string;
   currentLetter?: string;
+  locale: string;
 }
 
-export async function AlphabeticalIndex({ locale, currentLetter }: AlphabeticalIndexProps) {
+export function AlphabeticalIndex({ currentLetter, locale }: AlphabeticalIndexProps) {
   // Get all unique first letters
   const alphabet = [...new Set(chessTerms.map((term) => term.term.charAt(0).toUpperCase()))].sort();
 
@@ -21,8 +21,7 @@ export async function AlphabeticalIndex({ locale, currentLetter }: AlphabeticalI
         return (
           <Link
             key={letter}
-            href={`/glossary/letter/${letter.toLowerCase()}`}
-            locale={locale}
+            href={`/${locale}/glossary/letter/${letter.toLowerCase()}`}
             className={`flex flex-col items-center justify-center p-4 rounded-xl shadow-sm border transition-colors ${
               isActive ? 'bg-muted border-foreground/20' : 'bg-card hover:bg-muted/50 border-border'
             }`}

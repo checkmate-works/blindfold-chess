@@ -5,6 +5,10 @@ import { Breadcrumb } from '../_components/Breadcrumb';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
 
+export async function generateStaticParams() {
+  return [{ locale: 'en' }, { locale: 'ja' }];
+}
+
 export async function generateMetadata({
   params,
 }: {
