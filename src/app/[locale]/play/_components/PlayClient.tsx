@@ -82,6 +82,9 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
   const [savedGameStatus, setSavedGameStatus] = useState<
     'in_progress' | 'win' | 'loss' | 'draw' | null
   >(null);
+  const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
+  const [displayFen, setDisplayFen] = useState<string | null>(null);
+  const previousMovesLength = useRef(moves.length);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -296,6 +299,95 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
     setShowResignConfirm(false);
   }, [markPlayerInteraction]);
 
+  // Navigation functions for move history
+  const navigateToPosition = useCallback(
+    (position: number) => {
+      const chess = new Chess();
+
+      // Reset board
+      if (position === -1 || position >= moves.length) {
+        // Show latest position
+        setCurrentPosition(-1);
+        setDisplayFen(null);
+        return;
+      }
+
+      // Apply moves up to the specified position
+      const movesToApply = moves.slice(0, position + 1);
+      try {
+        for (const move of movesToApply) {
+          chess.move(move);
+        }
+        setCurrentPosition(position);
+        setDisplayFen(chess.fen());
+      } catch (error) {
+        console.error('Error navigating to position:', error);
+        setCurrentPosition(-1);
+        setDisplayFen(null);
+      }
+    },
+    [moves]
+  );
+
+  const navigateToStart = useCallback(() => {
+    // Show initial position (before any moves)
+    const chess = new Chess();
+    setDisplayFen(chess.fen());
+    setCurrentPosition(-2); // Special value to indicate start position
+  }, []);
+
+  const navigateToEnd = useCallback(() => {
+    setCurrentPosition(-1);
+    setDisplayFen(null);
+  }, []);
+
+  const navigatePrevious = useCallback(() => {
+    if (currentPosition === -2) {
+      // Already at start, can't go back further
+      return;
+    }
+
+    if (currentPosition === -1) {
+      // From latest position, go to the move before the last
+      if (moves.length > 0) {
+        navigateToPosition(moves.length - 2);
+      }
+    } else if (currentPosition === 0) {
+      // From first move, go to start position
+      navigateToStart();
+    } else {
+      // Normal navigation
+      navigateToPosition(currentPosition - 1);
+    }
+  }, [currentPosition, moves.length, navigateToPosition, navigateToStart]);
+
+  const navigateNext = useCallback(() => {
+    if (currentPosition === -2) {
+      // From start position, go to first move
+      if (moves.length > 0) {
+        navigateToPosition(0);
+      }
+    } else if (currentPosition === -1) {
+      // Already at latest position, can't go forward
+      return;
+    } else {
+      const newPosition = currentPosition + 1;
+      if (newPosition < moves.length) {
+        navigateToPosition(newPosition);
+      }
+    }
+  }, [currentPosition, moves.length, navigateToPosition]);
+
+  // Reset to latest position when new moves are added
+  useEffect(() => {
+    // Only reset to latest position if moves were added (not removed)
+    if (moves.length > previousMovesLength.current) {
+      setCurrentPosition(-1);
+      setDisplayFen(null);
+    }
+    previousMovesLength.current = moves.length;
+  }, [moves.length]); // Only trigger when moves length changes
+
   // Get current FEN for board display
   const currentFen = getFen();
   const formattedPgn = getFormattedPgn();
@@ -307,10 +399,10 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
         <div className="lg:col-span-2">
           <div className="bg-card rounded-lg p-4 shadow-lg">
             <SimpleChessBoard
-              fen={currentFen}
+              fen={displayFen || currentFen}
               flipped={playerSide === 'black'}
               playerSide={playerSide}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
+              lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
               showCoordinates={preferences.showCoordinates}
               showOwnPieces={preferences.showOwnPieces}
               showOpponentPieces={preferences.showOpponentPieces}
@@ -367,7 +459,7 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
             )}
 
             {/* Move Input */}
-            {gameStatus === 'in_progress' && (
+            {gameStatus === 'in_progress' && currentPosition === -1 && (
               <div className="mt-4">
                 {isPlayerTurn ? (
                   <div>
@@ -393,8 +485,17 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
               </div>
             )}
 
-            {/* Action Buttons - Only show during active game */}
-            {gameStatus === 'in_progress' && (
+            {/* Viewing past position indicator */}
+            {currentPosition !== -1 && (
+              <div className="mt-4 text-center text-muted-foreground text-sm">
+                {currentPosition === -2
+                  ? 'Viewing starting position'
+                  : `Viewing position after move ${currentPosition + 1}`}
+              </div>
+            )}
+
+            {/* Action Buttons - Only show during active game and not viewing history */}
+            {gameStatus === 'in_progress' && currentPosition === -1 && (
               <div className="mt-4 flex gap-2 justify-center">
                 <button
                   onClick={handleUndo}
@@ -435,18 +536,93 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
             <div className="max-h-96 overflow-y-auto">
               {formattedPgn.length > 0 ? (
                 <div className="space-y-1">
-                  {formattedPgn.map((move) => (
-                    <div key={move.moveNumber} className="flex gap-2 text-sm">
-                      <span className="font-semibold w-8">{move.moveNumber}.</span>
-                      <span className="w-16">{move.whiteMove}</span>
-                      <span className="w-16">{move.blackMove || ''}</span>
-                    </div>
-                  ))}
+                  {formattedPgn.map((move, index) => {
+                    const whiteIndex = index * 2;
+                    const blackIndex = index * 2 + 1;
+                    const isWhiteHighlighted = currentPosition === whiteIndex;
+                    const isBlackHighlighted = currentPosition === blackIndex;
+
+                    return (
+                      <div key={move.moveNumber} className="flex gap-2 text-sm">
+                        <span className="font-semibold w-8">{move.moveNumber}.</span>
+                        <span
+                          className={`w-16 px-1 rounded cursor-pointer hover:bg-muted/50 ${
+                            isWhiteHighlighted ? 'bg-foreground/20 font-semibold' : ''
+                          }`}
+                          onClick={() => navigateToPosition(whiteIndex)}
+                        >
+                          {move.whiteMove}
+                        </span>
+                        <span
+                          className={`w-16 px-1 rounded cursor-pointer hover:bg-muted/50 ${
+                            isBlackHighlighted ? 'bg-foreground/20 font-semibold' : ''
+                          } ${!move.blackMove ? 'pointer-events-none' : ''}`}
+                          onClick={() => move.blackMove && navigateToPosition(blackIndex)}
+                        >
+                          {move.blackMove || ''}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm">No moves yet</p>
               )}
             </div>
+
+            {/* Navigation Controls */}
+            {moves.length > 0 && (
+              <div className="mt-4 flex justify-center gap-1">
+                <button
+                  onClick={navigateToStart}
+                  className="p-2 hover:bg-muted rounded"
+                  aria-label="Go to start"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.445 14.832A1 1 0 0010 14v-8a1 1 0 00-1.555-.832L3 10l5.445 4.832zM13 14a1 1 0 100-8v8z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={navigatePrevious}
+                  className="p-2 hover:bg-muted rounded disabled:opacity-50"
+                  aria-label="Previous move"
+                  disabled={
+                    currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
+                  }
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M12.707 14.707a1 1 0 010-1.414L9.414 10l3.293-3.293a1 1 0 00-1.414-1.414l-4 4a1 1 0 000 1.414l4 4a1 1 0 001.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={navigateNext}
+                  className="p-2 hover:bg-muted rounded disabled:opacity-50"
+                  aria-label="Next move"
+                  disabled={currentPosition === -1}
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 5.293a1 1 0 011.414 0L13.414 10l-4.707 4.707a1 1 0 01-1.414-1.414L10.586 10 7.293 6.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={navigateToEnd}
+                  className="p-2 hover:bg-muted rounded"
+                  aria-label="Go to end"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M11.555 5.168A1 1 0 0010 6v8a1 1 0 001.555.832L17 10l-5.445-4.832zM7 6a1 1 0 100 8V6z" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
