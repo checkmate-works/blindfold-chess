@@ -89,8 +89,8 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
   const [displayFen, setDisplayFen] = useState<string | null>(null);
   const previousMovesLength = useRef(moves.length);
-  const [isBoardVisible, setIsBoardVisible] = useState(true);
-  const [isMovesVisible, setIsMovesVisible] = useState(true);
+  const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [isMovesVisible, setIsMovesVisible] = useState(false);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -436,11 +436,11 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-card rounded-lg shadow-lg">
             {/* Board Toggle Header */}
             <button
               onClick={() => setIsBoardVisible(!isBoardVisible)}
-              className="w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset"
+              className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isBoardVisible ? 'rounded-b-lg' : ''}`}
               aria-expanded={isBoardVisible}
             >
               <div className="flex items-center justify-between">
@@ -463,7 +463,9 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
             </button>
 
             {/* Board Content */}
-            <div className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'}`}>
+            <div
+              className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-lg`}
+            >
               <div className="p-4">
                 <SimpleChessBoard
                   fen={displayFen || currentFen}
@@ -567,7 +569,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
             {/* Action Buttons - Only show during active game and not viewing history */}
             {gameStatus === 'in_progress' && currentPosition === -1 && (
-              <div className="mt-4 mb-4 px-4 flex gap-2 justify-center">
+              <div className="mt-4 pb-4 px-4 flex gap-2 justify-center">
                 <button
                   onClick={handleUndo}
                   disabled={moves.length < 2}
@@ -602,11 +604,11 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
         {/* Move List */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-card rounded-lg shadow-lg">
             {/* Moves Toggle Header */}
             <button
               onClick={() => setIsMovesVisible(!isMovesVisible)}
-              className="w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset"
+              className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isMovesVisible ? 'rounded-b-lg' : ''}`}
               aria-expanded={isMovesVisible}
             >
               <div className="flex items-center justify-between">
@@ -620,7 +622,9 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
             </button>
 
             {/* Moves Content */}
-            <div className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'}`}>
+            <div
+              className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'} rounded-b-lg`}
+            >
               <div className="p-4 max-h-96 overflow-y-auto font-mono">
                 {formattedPgn.length > 0 ? (
                   <div className="space-y-0.5">

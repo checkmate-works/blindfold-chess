@@ -151,7 +151,7 @@ export function MoveInput({
           <button
             type="submit"
             disabled={disabled || !value.trim()}
-            className="w-14 h-14 bg-foreground hover:bg-foreground/90 disabled:bg-muted disabled:cursor-not-allowed text-background font-medium rounded-lg transition-colors duration-150 flex items-center justify-center text-xl"
+            className="w-14 h-14 bg-muted hover:bg-foreground hover:text-background disabled:bg-muted disabled:cursor-not-allowed text-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
             title="Submit Move"
           >
             ♟️
