@@ -16,9 +16,6 @@ export function GameSettings() {
   return (
     <div className="max-w-4xl">
       <div>
-        <h3 className="text-lg font-semibold text-foreground mb-2">{t('game.title')}</h3>
-        <p className="text-muted-foreground mb-8">{t('game.description')}</p>
-
         {/* All settings in one container */}
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="space-y-8">

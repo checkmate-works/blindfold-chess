@@ -12,12 +12,13 @@
   "Preferences": {
     "title": "設定",
     "tabs": {
-      "game": "ゲーム",
+      "board": "ボード",
+      "controls": "コントロール",
       "appearance": "外観"
     },
     "game": {
-      "title": "ゲーム設定",
-      "description": "目隠しチェスの練習設定をカスタマイズ",
+      "title": "ボード設定",
+      "description": "目隠しチェスのボード設定をカスタマイズ",
       "boardAppearance": "盤面の表示",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
@@ -55,6 +56,15 @@
         "dark": "ダーク",
         "darkDescription": "常にダークテーマを使用"
       }
+    },
+    "controls": {
+      "title": "コントロール設定",
+      "description": "チェスボードの操作方法をカスタマイズ",
+      "moveInput": "手の入力方法",
+      "textInput": "テキスト入力",
+      "textInputDescription": "代数記法で手を入力します",
+      "selectInput": "リストから選択",
+      "selectInputDescription": "利用可能な合法手から選択します"
     }
   },
   "faq": {
@@ -285,6 +295,7 @@
     "youLose": "あなたの負け",
     "check": "チェック",
     "inputMove": "手を入力 (例: e4, Nf3)",
+    "selectMove": "手を選択",
     "submitMove": "決定",
     "invalidMove": "無効な手です",
     "newGame": "新規ゲーム",

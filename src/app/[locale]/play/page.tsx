@@ -25,6 +25,7 @@ export default function PlayPage() {
     youLose: t('play.youLose'),
     check: t('play.check'),
     inputMove: t('play.inputMove'),
+    selectMove: t('play.selectMove'),
     submitMove: t('play.submitMove'),
     invalidMove: t('play.invalidMove'),
     resign: t('play.resign'),

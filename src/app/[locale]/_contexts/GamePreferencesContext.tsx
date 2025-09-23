@@ -13,6 +13,8 @@ export interface GamePreferences {
   // Piece appearance
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent'; // Piece shape mode
   pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
+  // Move input
+  moveInputMode: 'text' | 'select'; // Move input mode
 }
 
 // Default preferences
@@ -23,6 +25,7 @@ const defaultPreferences: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  moveInputMode: 'text',
 };
 
 // Local storage key

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ThemeSelector } from './ThemeSelector';
 import { GameSettings } from './GameSettings';
+import { ControlSettings } from './ControlSettings';
 
 interface PreferencesTabsProps {
   locale: string;
@@ -14,7 +15,8 @@ export function PreferencesTabs({}: PreferencesTabsProps) {
   const t = useTranslations('Preferences');
 
   const tabs = [
-    { id: 'game', label: t('tabs.game') },
+    { id: 'game', label: t('tabs.board') },
+    { id: 'controls', label: t('tabs.controls') },
     { id: 'appearance', label: t('tabs.appearance') },
   ];
 
@@ -42,14 +44,17 @@ export function PreferencesTabs({}: PreferencesTabsProps) {
       {/* Tab Content */}
       <div className="py-6">
         {activeTab === 'game' && <GameSettings />}
+        {activeTab === 'controls' && <ControlSettings />}
         {activeTab === 'appearance' && (
           <div className="max-w-2xl">
-            <div className="space-y-6">
-              <div>
-                <h4 className="text-sm font-medium text-foreground mb-3">
-                  {t('appearance.theme')}
-                </h4>
-                <ThemeSelector />
+            <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
+              <div className="space-y-6">
+                <div>
+                  <h4 className="text-lg font-semibold text-foreground mb-4">
+                    {t('appearance.theme')}
+                  </h4>
+                  <ThemeSelector />
+                </div>
               </div>
             </div>
           </div>

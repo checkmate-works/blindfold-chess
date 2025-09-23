@@ -12,12 +12,13 @@
   "Preferences": {
     "title": "Settings",
     "tabs": {
-      "game": "Game",
+      "board": "Board",
+      "controls": "Controls",
       "appearance": "Appearance"
     },
     "game": {
-      "title": "Game Settings",
-      "description": "Configure your blindfold chess training preferences",
+      "title": "Board Settings",
+      "description": "Configure your blindfold chess board preferences",
       "boardAppearance": "Board Appearance",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
@@ -55,6 +56,15 @@
         "dark": "Dark",
         "darkDescription": "Always use dark theme"
       }
+    },
+    "controls": {
+      "title": "Control Settings",
+      "description": "Customize how you interact with the chess board",
+      "moveInput": "Move Input Method",
+      "textInput": "Text Input",
+      "textInputDescription": "Type moves using algebraic notation",
+      "selectInput": "Select from List",
+      "selectInputDescription": "Choose from available legal moves"
     }
   },
   "faq": {
@@ -285,6 +295,7 @@
     "youLose": "You Lose",
     "check": "Check",
     "inputMove": "Enter move (e.g., e4, Nf3)",
+    "selectMove": "Select a move",
     "submitMove": "Submit",
     "invalidMove": "Invalid move",
     "newGame": "New Game",

@@ -10,6 +10,7 @@ import { GameStateService } from '../_lib/game-state-service';
 import { LocalStorageGameRepository } from '../_lib/game-repository';
 import { SimpleChessBoard } from './SimpleChessBoard';
 import { MoveInput } from './MoveInput';
+import { MoveSelect } from './MoveSelect';
 import { UndoIcon, FlagIcon } from './Icons';
 import { Chess } from 'chess.js';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
@@ -31,6 +32,7 @@ interface PlayClientProps {
     youLose: string;
     check: string;
     inputMove: string;
+    selectMove: string;
     submitMove: string;
     invalidMove: string;
     newGame: string;
@@ -542,15 +544,24 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                     {isCheck && (
                       <p className="text-red-500 font-semibold mb-2">{translations.check}!</p>
                     )}
-                    <MoveInput
-                      value={moveInput}
-                      onChange={setMoveInput}
-                      onSubmit={handleSubmitMove}
-                      disabled={isLoading}
-                      placeholder={translations.inputMove}
-                      showSuggestions={true}
-                      showSubmitButton={true}
-                    />
+                    {preferences.moveInputMode === 'select' ? (
+                      <MoveSelect
+                        fen={currentFen}
+                        onSubmit={handleSubmitMove}
+                        disabled={isLoading}
+                        placeholder={translations.selectMove}
+                      />
+                    ) : (
+                      <MoveInput
+                        value={moveInput}
+                        onChange={setMoveInput}
+                        onSubmit={handleSubmitMove}
+                        disabled={isLoading}
+                        placeholder={translations.inputMove}
+                        showSuggestions={true}
+                        showSubmitButton={true}
+                      />
+                    )}
                     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                   </div>
                 ) : (
