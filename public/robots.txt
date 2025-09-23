@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /_next/
-Disallow: /_vercel/
-
-Sitemap: https://www.blindfold-chess.online/sitemap.xml
