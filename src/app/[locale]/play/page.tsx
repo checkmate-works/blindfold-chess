@@ -1,18 +1,20 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { PlayClient } from './_components/PlayClient';
+import { PageTitle } from '../_components/PageTitle';
 
-interface PlayPageProps {
-  params: Promise<{
-    locale: 'en' | 'ja';
-  }>;
-}
-
-export default async function PlayPage({ params }: PlayPageProps) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale });
+export default function PlayPage() {
+  const params = useParams();
+  const locale = params.locale as 'en' | 'ja';
+  const t = useTranslations();
+  const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
 
   const translations = {
     title: t('play.title'),
+    newGame: t('play.newGame'),
     yourMove: t('play.yourMove'),
     aiThinking: t('play.aiThinking'),
     gameOver: t('play.gameOver'),
@@ -25,7 +27,6 @@ export default async function PlayPage({ params }: PlayPageProps) {
     inputMove: t('play.inputMove'),
     submitMove: t('play.submitMove'),
     invalidMove: t('play.invalidMove'),
-    newGame: t('play.newGame'),
     resign: t('play.resign'),
     undo: t('play.undo'),
     moves: t('play.moves'),
@@ -40,5 +41,10 @@ export default async function PlayPage({ params }: PlayPageProps) {
     save: t('play.save'),
   };
 
-  return <PlayClient locale={locale} translations={translations} />;
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <PageTitle>{aiMoveDisplay || translations.title}</PageTitle>
+      <PlayClient locale={locale} translations={translations} onAiMoveChange={setAiMoveDisplay} />
+    </div>
+  );
 }

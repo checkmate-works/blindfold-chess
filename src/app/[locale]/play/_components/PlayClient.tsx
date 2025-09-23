@@ -17,8 +17,9 @@ import { GameSettingsModal } from './GameSettingsModal';
 
 interface PlayClientProps {
   locale: 'en' | 'ja';
+  onAiMoveChange?: (move: string | null) => void;
   translations: {
-    title: string;
+    title?: string;
     yourMove: string;
     aiThinking: string;
     gameOver: string;
@@ -47,7 +48,7 @@ interface PlayClientProps {
   };
 }
 
-export function PlayClient({ locale, translations }: PlayClientProps) {
+export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientProps) {
   const searchParams = useSearchParams();
 
   // Parse URL parameters
@@ -283,6 +284,7 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
     // Update last move
     const newMoves = moves.slice(0, -2);
     setLastMove(getLastMoveDetails(newMoves));
+
     setShowUndoConfirm(false);
   }, [removeMoves, moves, getLastMoveDetails, markPlayerInteraction]);
 
@@ -392,8 +394,38 @@ export function PlayClient({ locale, translations }: PlayClientProps) {
   const currentFen = getFen();
   const formattedPgn = getFormattedPgn();
 
+  // Update parent component with AI's last move
+  useEffect(() => {
+    if (!onAiMoveChange) return;
+
+    if (moves.length === 0) {
+      onAiMoveChange(null);
+      return;
+    }
+
+    // Get the latest AI move
+    // If player is white, AI plays black (odd indices: 1, 3, 5...)
+    // If player is black, AI plays white (even indices: 0, 2, 4...)
+    const isAiMove = (index: number) => {
+      return playerSide === 'white' ? index % 2 === 1 : index % 2 === 0;
+    };
+
+    // Find the last AI move
+    for (let i = moves.length - 1; i >= 0; i--) {
+      if (isAiMove(i)) {
+        const moveNumber = Math.floor(i / 2) + 1;
+        const isWhiteMove = i % 2 === 0;
+        const moveText = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
+        onAiMoveChange(moveText);
+        return;
+      }
+    }
+
+    onAiMoveChange(null);
+  }, [moves, playerSide, onAiMoveChange]);
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Chess Board */}
         <div className="lg:col-span-2">
