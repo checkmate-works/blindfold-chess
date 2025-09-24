@@ -4,8 +4,10 @@ import { Header } from './_components/Header';
 import { Footer } from './_components/Footer';
 import { Inter } from 'next/font/google';
 import { Providers } from './_lib/providers';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import Script from 'next/script';
+import type { Metadata } from 'next';
+import { siteUrl, siteName, authorName } from '@/config';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -14,6 +16,67 @@ const inter = Inter({
 });
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+
+  const description = t('siteDescription');
+  const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+
+  return {
+    title: {
+      default: siteName,
+      template: `%s | ${siteName}`,
+    },
+    description,
+    authors: [{ name: authorName }],
+    metadataBase: new URL(siteUrl),
+    alternates: {
+      languages: {
+        en: '/en',
+        ja: '/ja',
+      },
+    },
+    openGraph: {
+      title: siteName,
+      description,
+      url: siteUrl,
+      siteName: siteName,
+      type: 'website',
+      locale: currentLocale,
+      images: [
+        {
+          url: '/logo.png',
+          width: 512,
+          height: 512,
+          alt: `${siteName} Logo`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description,
+      images: ['/logo.png'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  };
+}
 
 export default async function Layout({
   children,

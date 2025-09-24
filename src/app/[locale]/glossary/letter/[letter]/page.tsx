@@ -21,12 +21,12 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: GlossaryLetterPageProps): Promise<Metadata> {
   const { locale, letter } = await params;
-  const t = await getTranslations({ locale, namespace: 'glossary' });
+  const t = await getTranslations({ locale, namespace: 'metadata.glossary.letter' });
   const upperLetter = letter.toUpperCase();
 
   return {
-    title: `${t('title')} - ${upperLetter}`,
-    description: `${t('letterPage.description', { letter: upperLetter })}`,
+    title: t('title', { letter: upperLetter }),
+    description: t('description', { letter: upperLetter }),
   };
 }
 

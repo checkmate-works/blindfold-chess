@@ -1,9 +1,20 @@
 import { getTranslations } from 'next-intl/server';
 import { PreferencesTabs } from './_components/PreferencesTabs';
 import { PageTitle } from '../_components/PageTitle';
+import type { Metadata } from 'next';
 
 interface PreferencesPageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PreferencesPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata.preferences' });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
 }
 
 export default async function PreferencesPage({ params }: PreferencesPageProps) {

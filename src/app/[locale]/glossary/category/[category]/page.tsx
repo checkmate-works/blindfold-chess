@@ -29,11 +29,15 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: GlossaryCategoryPageProps): Promise<Metadata> {
   const { locale, category } = await params;
-  const t = await getTranslations({ locale, namespace: 'glossary' });
+  const t = await getTranslations({ locale, namespace: 'metadata.glossary.category' });
+
+  // Get localized category name
+  const categoryT = await getTranslations({ locale, namespace: 'glossary.categories' });
+  const categoryName = categoryT(category);
 
   return {
-    title: `${t('title')} - ${t(`categories.${category}`)}`,
-    description: t('categoryPage.description', { category: t(`categories.${category}`) }),
+    title: t('title', { category: categoryName }),
+    description: t('description', { category: categoryName }),
   };
 }
 

@@ -1,4 +1,31 @@
 {
+  "metadata": {
+    "siteDescription": "目隠しチェスをマスターしよう - 駒を見ずにチェスをプレイして、視覚化と計算能力を向上させる無料トレーニングプラットフォーム。",
+    "home": {
+      "title": "ホーム",
+      "description": "目隠しチェスの旅を始めよう。駒を見ずにチェスをプレイして、視覚化スキルを向上させましょう。"
+    },
+    "play": {
+      "title": "プレイ",
+      "description": "AIと対戦して目隠しチェスをプレイ。駒を見ずにチェスをプレイしてチャレンジしよう。"
+    },
+    "preferences": {
+      "title": "設定",
+      "description": "あなた好みに目隠しチェスの体験をカスタマイズしましょう。"
+    },
+    "glossary": {
+      "title": "チェス用語集",
+      "description": "包括的なチェス用語集でチェスの専門用語を学びましょう。",
+      "category": {
+        "title": "カテゴリー: {category}",
+        "description": "{category}カテゴリーのチェス用語を閲覧。チェスの専門用語を学んで理解を深めましょう。"
+      },
+      "letter": {
+        "title": "{letter}で始まる用語",
+        "description": "{letter}で始まるチェス用語と定義。"
+      }
+    }
+  },
   "Header": {
     "title": "目隠しチェス",
     "home": "ホーム",

@@ -1,4 +1,31 @@
 {
+  "metadata": {
+    "siteDescription": "Master blindfold chess online - Practice chess without seeing pieces. Improve your visualization and calculation skills with our free training platform.",
+    "home": {
+      "title": "Home",
+      "description": "Start your blindfold chess journey. Practice chess without seeing pieces and improve your visualization skills."
+    },
+    "play": {
+      "title": "Play",
+      "description": "Play blindfold chess against AI. Challenge yourself by playing chess without seeing the pieces."
+    },
+    "preferences": {
+      "title": "Settings",
+      "description": "Customize your blindfold chess experience with personalized settings and preferences."
+    },
+    "glossary": {
+      "title": "Chess Glossary",
+      "description": "Learn chess terminology with our comprehensive glossary of chess terms and definitions.",
+      "category": {
+        "title": "Category: {category}",
+        "description": "Browse chess terms in the {category} category. Learn chess terminology and improve your understanding."
+      },
+      "letter": {
+        "title": "Terms starting with {letter}",
+        "description": "Chess terms and definitions starting with the letter {letter}."
+      }
+    }
+  },
   "Header": {
     "title": "Blindfold Chess",
     "home": "Home",
