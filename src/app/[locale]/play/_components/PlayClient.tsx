@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { FaChevronDown, FaEye, FaEyeSlash, FaCopy, FaCheck } from 'react-icons/fa';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useNotation } from '../_hooks/use-notation';
 import { useAiVersus } from '../_hooks/use-ai-versus';
 import { useAutoSave } from '../_hooks/use-auto-save';
@@ -57,17 +57,20 @@ interface PlayClientProps {
 
 export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Parse URL parameters
   const playerSide = (searchParams.get('color') as Side) || 'white';
   const skillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
   const initialGameId = searchParams.get('gameId') || undefined;
-  const initialMoves = searchParams.get('moves')
-    ? (JSON.parse(searchParams.get('moves')!) as AlgebraicNotation[])
-    : [];
+
+  // Get initial moves from URL
+  const urlMoves = searchParams.get('moves');
+  const initialMovesFromUrl = urlMoves ? JSON.parse(urlMoves) : [];
 
   // Hooks
-  const { moves, pushMove, removeMoves, getFen, getFormattedPgn } = useNotation(initialMoves);
+  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } =
+    useNotation(initialMovesFromUrl);
   const { getAiMove } = useAiVersus(skillLevel);
 
   // State
@@ -128,8 +131,8 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
   const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
     // Check if it's AI's turn when resuming a game
-    if (initialMoves.length > 0) {
-      const gameStateService = new GameStateService(initialMoves, playerSide);
+    if (initialMovesFromUrl.length > 0) {
+      const gameStateService = new GameStateService(initialMovesFromUrl, playerSide);
       return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
     }
     // New game: AI plays first if player is black
@@ -150,16 +153,38 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     []
   );
 
+  // Track if we're loading from localStorage
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(!!initialGameId);
+
+  // Clear save toast flag on mount when we have a gameId (reload scenario)
+  useEffect(() => {
+    if (initialGameId && typeof window !== 'undefined') {
+      sessionStorage.removeItem('blindfold_chess_show_save_toast');
+    }
+  }, []); // Run only once on mount
+
   // Auto-save hook
-  const { markPlayerInteraction } = useAutoSave({
+  const { markPlayerInteraction, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
     skillLevel,
     status: mapGameStatus(gameStatus, playerResult),
-    enabled: true,
+    enabled: !isLoadingFromStorage, // Disable auto-save while loading from storage
     saveOnInit: !initialGameId, // Save on init for new games (including PGN imports)
   });
+
+  // Update URL when gameId is generated
+  useEffect(() => {
+    if (gameId && !initialGameId) {
+      // Only update URL if we didn't have a gameId initially
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('gameId', gameId);
+      // Remove moves parameter as we're now using gameId
+      params.delete('moves');
+      router.replace(`?${params.toString()}`, { scroll: false });
+    }
+  }, [gameId, initialGameId, searchParams, router]);
 
   // Helper function to get last move details from chess.js
   const getLastMoveDetails = useCallback((movesArray: AlgebraicNotation[]) => {
@@ -182,6 +207,49 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       return null;
     }
   }, []);
+
+  // Load moves from localStorage on client-side
+  useEffect(() => {
+    const loadGame = async () => {
+      if (initialGameId && typeof window !== 'undefined') {
+        setIsLoadingFromStorage(true);
+
+        // Clear any existing save toast flag immediately when loading a game
+        // This prevents showing toast on reload
+        sessionStorage.removeItem('blindfold_chess_show_save_toast');
+
+        // Use LocalStorageGameRepository
+        const gameRepository = new LocalStorageGameRepository();
+        const savedGame = await gameRepository.load(initialGameId);
+
+        if (savedGame && savedGame.moves && savedGame.moves.length > 0) {
+          setMovesTo(savedGame.moves);
+
+          // Update last move details
+          setLastMove(getLastMoveDetails(savedGame.moves));
+
+          // Also update game status if finished
+          if (savedGame.status && savedGame.status !== 'in_progress') {
+            setSavedGameStatus(savedGame.status);
+            if (savedGame.status === 'loss') {
+              setGameStatus('checkmate');
+              setPlayerResult('loss');
+            } else if (savedGame.status === 'win') {
+              setGameStatus('checkmate');
+              setPlayerResult('win');
+            } else if (savedGame.status === 'draw') {
+              setGameStatus('draw');
+              setPlayerResult('draw');
+            }
+          }
+        }
+
+        setIsLoadingFromStorage(false);
+      }
+    };
+
+    loadGame();
+  }, [initialGameId, setMovesTo, getLastMoveDetails]);
 
   // Helper function to make AI move
   const makeAiMove = useCallback(
@@ -217,11 +285,11 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
   // Initialize on mount with initial moves
   useEffect(() => {
-    if (!isInitialized && initialMoves.length > 0) {
-      setLastMove(getLastMoveDetails(initialMoves));
+    if (!isInitialized && initialMovesFromUrl.length > 0) {
+      setLastMove(getLastMoveDetails(initialMovesFromUrl));
       setIsInitialized(true);
     }
-  }, [isInitialized, initialMoves, getLastMoveDetails]);
+  }, [isInitialized, initialMovesFromUrl, getLastMoveDetails]);
 
   // Update game state whenever moves change
   useEffect(() => {
