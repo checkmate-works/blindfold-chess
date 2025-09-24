@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import * as Sentry from '@sentry/nextjs';
 
 export default function Error({
   error,
@@ -14,7 +15,12 @@ export default function Error({
   const t = useTranslations('error');
 
   useEffect(() => {
-    console.error(error);
+    // Log the error to Sentry
+    Sentry.captureException(error);
+    // Also log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error(error);
+    }
   }, [error]);
 
   return (
