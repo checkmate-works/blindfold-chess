@@ -1,5 +1,8 @@
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
+// Note: Using standard next/link instead of @/i18n/routing Link
+// to avoid DYNAMIC_SERVER_USAGE errors in production.
+// Server Components should use standard Link with explicit locale in href.
+import Link from 'next/link';
 import { ChessTerm } from '@/app/[locale]/_lib/types';
 
 interface GlossaryTermListProps {
@@ -46,8 +49,7 @@ export async function GlossaryTermList({ terms, locale }: GlossaryTermListProps)
             </div>
             {term.category && (
               <Link
-                href={`/glossary/category/${term.category}`}
-                locale={locale}
+                href={`/${locale}/glossary/category/${term.category}`}
                 className={`px-3 py-1 rounded-full text-sm font-medium inline-block hover:opacity-80 transition-opacity ${
                   categoryColors[term.category] || categoryColors.general
                 }`}

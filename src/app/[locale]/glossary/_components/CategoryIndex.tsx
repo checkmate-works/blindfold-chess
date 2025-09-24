@@ -1,4 +1,7 @@
 import { getTranslations } from 'next-intl/server';
+// Note: Using standard next/link instead of @/i18n/routing Link
+// to avoid DYNAMIC_SERVER_USAGE errors in production.
+// Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 import { chessTerms } from '../_data/chess-terms';
 

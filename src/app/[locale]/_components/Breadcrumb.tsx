@@ -1,4 +1,7 @@
-import { Link } from '@/i18n/routing';
+// Note: Using standard next/link instead of @/i18n/routing Link
+// to avoid DYNAMIC_SERVER_USAGE errors in production.
+// Server Components should use standard Link with explicit locale in href.
+import Link from 'next/link';
 import Image from 'next/image';
 
 interface BreadcrumbItem {
@@ -17,8 +20,7 @@ export function Breadcrumb({ items, locale }: BreadcrumbProps) {
       <ol className="flex items-center space-x-1 text-sm">
         <li>
           <Link
-            href="/"
-            locale={locale}
+            href={locale ? `/${locale}` : '/'}
             className="flex items-center hover:opacity-70 transition-opacity"
           >
             <Image
@@ -36,8 +38,7 @@ export function Breadcrumb({ items, locale }: BreadcrumbProps) {
             <span className="mx-1 text-muted-foreground">/</span>
             {item.href ? (
               <Link
-                href={item.href}
-                locale={locale}
+                href={locale ? `/${locale}${item.href}` : item.href}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 {item.label}
