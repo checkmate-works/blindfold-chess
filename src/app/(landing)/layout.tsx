@@ -1,5 +1,6 @@
 import '../globals.css';
 import { siteUrl, siteName, authorName } from '@/config';
+import { GoogleAnalyticsHead } from '../_components/GoogleAnalyticsHead';
 
 const siteDescription =
   'Free online platform to practice chess without seeing pieces. Master blindfold chess, improve your visualization and calculation skills.';
@@ -8,6 +9,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <GoogleAnalyticsHead />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{siteName}</title>

@@ -42,6 +42,19 @@ cp .env.example .env.local
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
+#### Google Analytics (Optional)
+
+The application supports Google Analytics 4 for usage tracking. To enable it:
+
+1. Create a Google Analytics 4 property at [analytics.google.com](https://analytics.google.com/)
+2. Get your Measurement ID (format: G-XXXXXXXXXX)
+3. Add to your `.env.local` file:
+
+```bash
+# Google Analytics Measurement ID
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
 #### Error Tracking (Optional)
 
 The application supports Sentry for error tracking in production. To enable it:
