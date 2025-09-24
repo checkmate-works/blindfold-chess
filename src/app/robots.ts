@@ -1,6 +1,10 @@
 import { MetadataRoute } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://blindfold-chess.com';
+// Remove trailing slash from BASE_URL if present to avoid double slashes
+const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://blindfold-chess.com').replace(
+  /\/$/,
+  ''
+);
 
 export default function robots(): MetadataRoute.Robots {
   return {

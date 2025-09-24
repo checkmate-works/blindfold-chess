@@ -3,7 +3,11 @@ import { getAllArticles } from './[locale]/learn/_lib/learn';
 import { getAllManualArticles } from './[locale]/manual/_lib/manual';
 import { chessTerms } from './[locale]/glossary/_data/chess-terms';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://blindfold-chess.com';
+// Remove trailing slash from BASE_URL if present to avoid double slashes
+const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://blindfold-chess.com').replace(
+  /\/$/,
+  ''
+);
 const LOCALES = ['en', 'ja'] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
