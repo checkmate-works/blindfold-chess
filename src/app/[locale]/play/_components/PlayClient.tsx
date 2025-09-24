@@ -537,7 +537,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
             )}
 
             {/* Move Input */}
-            {gameStatus === 'in_progress' && currentPosition === -1 && (
+            {gameStatus === 'in_progress' && (
               <div className="mt-6 px-4">
                 {isPlayerTurn ? (
                   <div>
@@ -572,17 +572,8 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
               </div>
             )}
 
-            {/* Viewing past position indicator */}
-            {currentPosition !== -1 && (
-              <div className="mt-4 text-center text-muted-foreground text-sm">
-                {currentPosition === -2
-                  ? 'Viewing starting position'
-                  : `Viewing position after move ${currentPosition + 1}`}
-              </div>
-            )}
-
-            {/* Action Buttons - Only show during active game and not viewing history */}
-            {gameStatus === 'in_progress' && currentPosition === -1 && (
+            {/* Action Buttons */}
+            {gameStatus === 'in_progress' && (
               <div className="mt-4 pb-4 px-4 flex gap-2 justify-center">
                 <button
                   onClick={handleUndo}
