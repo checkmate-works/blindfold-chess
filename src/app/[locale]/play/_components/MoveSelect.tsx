@@ -7,11 +7,12 @@ import type { AlgebraicNotation } from '../_lib/types';
 interface MoveSelectProps {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
+  onChange?: () => void;
   disabled?: boolean;
   placeholder?: string;
 }
 
-export function MoveSelect({ fen, onSubmit, disabled, placeholder }: MoveSelectProps) {
+export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: MoveSelectProps) {
   const [selectedMove, setSelectedMove] = useState('');
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
 
@@ -49,6 +50,12 @@ export function MoveSelect({ fen, onSubmit, disabled, placeholder }: MoveSelectP
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const move = e.target.value;
     setSelectedMove(move);
+
+    // Call onChange callback if provided (e.g., to clear errors)
+    if (onChange) {
+      onChange();
+    }
+
     // Auto-submit on selection
     if (move && !disabled) {
       onSubmit(move as AlgebraicNotation);

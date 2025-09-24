@@ -548,13 +548,21 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                       <MoveSelect
                         fen={currentFen}
                         onSubmit={handleSubmitMove}
+                        onChange={() => {
+                          // Clear error when user changes selection
+                          if (error) setError(null);
+                        }}
                         disabled={isLoading}
                         placeholder={translations.selectMove}
                       />
                     ) : (
                       <MoveInput
                         value={moveInput}
-                        onChange={setMoveInput}
+                        onChange={(value) => {
+                          setMoveInput(value);
+                          // Clear error when user starts typing
+                          if (error) setError(null);
+                        }}
                         onSubmit={handleSubmitMove}
                         disabled={isLoading}
                         placeholder={translations.inputMove}
