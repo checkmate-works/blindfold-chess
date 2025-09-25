@@ -64,9 +64,51 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const skillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
   const initialGameId = searchParams.get('gameId') || undefined;
 
-  // Get initial moves from URL
+  // Get initial moves from URL and validate them
   const urlMoves = searchParams.get('moves');
-  const initialMovesFromUrl = urlMoves ? JSON.parse(urlMoves) : [];
+  const parsedMoves = urlMoves ? JSON.parse(urlMoves) : [];
+
+  // Validate moves if we don't have a gameId (gameId takes precedence)
+  let initialMovesFromUrl = parsedMoves;
+  let shouldRedirectToError = false;
+  let errorDetails = null;
+
+  if (!initialGameId && parsedMoves.length > 0) {
+    const validMoves: AlgebraicNotation[] = [];
+    const chess = new Chess();
+
+    for (let i = 0; i < parsedMoves.length; i++) {
+      const move = parsedMoves[i];
+      try {
+        const result = chess.move(move);
+        if (result) {
+          validMoves.push(move as AlgebraicNotation);
+        } else {
+          // Invalid move found
+          shouldRedirectToError = true;
+          errorDetails = {
+            invalidMove: move,
+            invalidIndex: i,
+            validMoves,
+            allMoves: parsedMoves,
+          };
+          break;
+        }
+      } catch {
+        // Error processing move
+        shouldRedirectToError = true;
+        errorDetails = {
+          invalidMove: move,
+          invalidIndex: i,
+          validMoves,
+          allMoves: parsedMoves,
+        };
+        break;
+      }
+    }
+
+    initialMovesFromUrl = validMoves;
+  }
 
   // Hooks
   const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } =
@@ -78,6 +120,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isProcessingRef = useRef(false); // Use ref to track processing state
+  const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null); // Track last submitted move
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -173,6 +216,25 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     enabled: !isLoadingFromStorage, // Disable auto-save while loading from storage
     saveOnInit: !initialGameId, // Save on init for new games (including PGN imports)
   });
+
+  // Redirect to error page if invalid moves detected
+  useEffect(() => {
+    if (shouldRedirectToError && errorDetails) {
+      const params = new URLSearchParams();
+      params.set('invalidMove', errorDetails.invalidMove);
+      params.set('invalidIndex', errorDetails.invalidIndex.toString());
+      params.set('validMoves', JSON.stringify(errorDetails.validMoves));
+      params.set('allMoves', JSON.stringify(errorDetails.allMoves));
+      params.set('color', playerSide);
+      params.set('skillLevel', skillLevel.toString());
+
+      if (initialGameId) {
+        params.set('gameId', initialGameId);
+      }
+
+      router.replace(`/${locale}/play/error?${params.toString()}`);
+    }
+  }, [shouldRedirectToError, errorDetails, router, locale, playerSide, skillLevel, initialGameId]);
 
   // Update URL when gameId is generated
   useEffect(() => {
@@ -323,9 +385,31 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   // Handle player move submission
   const handleSubmitMove = useCallback(
     (move: AlgebraicNotation) => {
+      // Prevent submission if AI is processing or loading
+      if (isLoading || isProcessingRef.current) {
+        return;
+      }
+
+      // Prevent submission if it's not player's turn
+      if (!isPlayerTurn) {
+        return;
+      }
+
+      // Prevent duplicate submission within 500ms
+      const now = Date.now();
+      if (lastSubmittedMoveRef.current) {
+        const { move: lastMove, timestamp } = lastSubmittedMoveRef.current;
+        if (lastMove === move && now - timestamp < 500) {
+          return;
+        }
+      }
+
       const gameStateService = new GameStateService(moves, playerSide);
 
       if (gameStateService.validateMove(move)) {
+        // Record this submission to prevent duplicates
+        lastSubmittedMoveRef.current = { move, timestamp: now };
+
         markPlayerInteraction(); // Mark that player has made a move
         pushMove(move);
         setMoveInput('');
@@ -345,6 +429,8 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       translations.invalidMove,
       getLastMoveDetails,
       markPlayerInteraction,
+      isLoading,
+      isPlayerTurn,
     ]
   );
 

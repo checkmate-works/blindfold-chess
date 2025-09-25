@@ -343,6 +343,20 @@
     "copyPgn": "棋譜をコピー",
     "copied": "コピー済み！"
   },
+  "playError": {
+    "title": "ゲームの復旧",
+    "corruptedGame": "棋譜の破損を検出",
+    "description": "棋譜に無効な手が含まれているため、ゲームを続行できません。エラーからの復旧方法を選択してください。",
+    "invalidMove": "無効な手",
+    "validMoves": "有効な手",
+    "noValidMoves": "有効な手がありません",
+    "discardedMoves": "破棄される手",
+    "recoveryOptions": "復旧オプション",
+    "recoverGame": "修復して続行",
+    "recoverDescription": "{count}手目から続行します。無効な手はすべて破棄されます。",
+    "deleteGame": "ゲームを削除",
+    "deleteDescription": "破損したゲームを履歴から削除して、新しく始めます。"
+  },
   "newGame": {
     "title": "新規ゲーム",
     "startMethod": "開始方法を選択",

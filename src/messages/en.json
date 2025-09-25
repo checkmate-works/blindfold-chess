@@ -343,6 +343,20 @@
     "copyPgn": "Copy PGN",
     "copied": "Copied!"
   },
+  "playError": {
+    "title": "Game Recovery",
+    "corruptedGame": "Corrupted Game Detected",
+    "description": "The game notation contains invalid moves and cannot be played. Please choose how to recover from this error.",
+    "invalidMove": "Invalid Move",
+    "validMoves": "Valid Moves",
+    "noValidMoves": "No valid moves",
+    "discardedMoves": "Discarded Moves",
+    "recoveryOptions": "Recovery Options",
+    "recoverGame": "Recover and Continue",
+    "recoverDescription": "Continue playing from move {count}. All invalid moves will be discarded.",
+    "deleteGame": "Delete Game",
+    "deleteDescription": "Remove this corrupted game from your history and start fresh."
+  },
   "newGame": {
     "title": "New Game",
     "startMethod": "How would you like to start?",
