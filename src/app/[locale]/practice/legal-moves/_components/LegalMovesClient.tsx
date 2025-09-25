@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { PracticeResult } from '../../_components/PracticeResult';
 import { TimeDisplay } from '../../_components/TimeDisplay';
 import { LegalMovesSettings } from './LegalMovesSettings';
-import { Breadcrumb } from '@/app/[locale]/_components';
 import {
   isLegalMove,
   generateBalancedMoveQuestions,
@@ -278,17 +277,6 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             {translations.start}
           </button>
         </div>
-
-        {/* Breadcrumb at bottom */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
-            locale={locale}
-          />
-        </div>
       </div>
     );
   }
@@ -302,17 +290,6 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
-        </div>
-
-        {/* Breadcrumb at bottom */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
-            locale={locale}
-          />
         </div>
       </div>
     );
@@ -378,17 +355,6 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             <span>{translations.illegal}</span>
           </button>
         </div>
-      </div>
-
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: translations.practice, href: '/practice' },
-            { label: translations.title },
-          ]}
-          locale={locale}
-        />
       </div>
     </div>
   );

@@ -12,7 +12,6 @@ import {
 } from '../_lib/coordinate-quiz';
 import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
-import { Breadcrumb } from '@/app/[locale]/_components';
 import { PracticeResult } from '../../_components/PracticeResult';
 import { TimeDisplay } from '../../_components/TimeDisplay';
 
@@ -205,17 +204,6 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
             {translations.start}
           </button>
         </div>
-
-        {/* Breadcrumb at bottom */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
-            locale={locale}
-          />
-        </div>
       </div>
     );
   }
@@ -304,17 +292,6 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
         <span>
           {translations.wrong}: {wrongAnswers}
         </span>
-      </div>
-
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: translations.practice, href: '/practice' },
-            { label: translations.title },
-          ]}
-          locale={locale}
-        />
       </div>
     </div>
   );
