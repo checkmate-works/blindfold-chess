@@ -130,7 +130,6 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     'in_progress'
   );
   const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
-  const [isCheck, setIsCheck] = useState(false);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [savedGameStatus, setSavedGameStatus] = useState<
@@ -366,7 +365,6 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     setIsPlayerTurn(newIsPlayerTurn);
     setGameStatus(gameStateService.getGameStatus());
     setPlayerResult(gameStateService.getPlayerResult());
-    setIsCheck(gameStateService.isCheck());
 
     // Check if we should trigger AI move
     if (!newIsPlayerTurn && gameStateService.getGameStatus() === 'in_progress') {
@@ -625,7 +623,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
             <div
               className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-lg`}
             >
-              <div className="p-4">
+              <div className={`p-4 ${gameStatus !== 'in_progress' ? 'pb-8' : ''}`}>
                 <SimpleChessBoard
                   fen={displayFen || currentFen}
                   flipped={playerSide === 'black'}
@@ -655,7 +653,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
             {/* Game Status */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-6 text-center bg-card/50 rounded-lg p-4 border border-border">
+              <div className="mt-6 text-center">
                 <div className="mb-3">
                   <p className="text-base font-semibold text-foreground mb-1">
                     {translations.gameOver}
@@ -695,9 +693,6 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
               <div className="mt-6 px-4">
                 {isPlayerTurn ? (
                   <div>
-                    {isCheck && (
-                      <p className="text-red-500 font-semibold mb-2">{translations.check}!</p>
-                    )}
                     {preferences.moveInputMode === 'select' ? (
                       <MoveSelect
                         fen={currentFen}
@@ -757,7 +752,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
 
             {/* New Game Button */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4 pb-4 flex justify-center">
                 <button
                   onClick={() => (window.location.href = `/${locale}/game/new`)}
                   className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
