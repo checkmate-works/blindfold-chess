@@ -12,36 +12,26 @@ export default async function SquareColorsPage({ params }: SquareColorsPageProps
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
-  // Get learn article metadata for related learning section
-  const learnArticleMetadata =
-    locale === 'ja'
-      ? {
-          title: 'マス目の色の理解',
-          description: '駒の連携を向上させるためのチェス盤の交互色パターンをマスターしましょう',
-        }
-      : {
-          title: 'Understanding Square Colors',
-          description:
-            "Master the chessboard's alternating color pattern for better piece coordination",
-        };
-
   const translations = {
     title: t('practice.squareColors.title'),
     description: t('practice.squareColors.description'),
     settings: t('practice.squareColors.settings'),
-    questionCount: t('practice.squareColors.questionCount'),
+    timeLimit: t('practice.squareColors.timeLimit'),
+    seconds: t('practice.squareColors.seconds'),
     start: t('practice.squareColors.start'),
     white: t('practice.squareColors.white'),
     black: t('practice.squareColors.black'),
     correct: t('practice.squareColors.correct'),
     incorrect: t('practice.squareColors.incorrect'),
-    practiceComplete: t('practice.practiceComplete'),
-    score: t('practice.score'),
+    finished: t('practice.squareColors.finished'),
+    correctAnswers: t('practice.squareColors.correctAnswers'),
+    accuracy: t('practice.squareColors.accuracy'),
+    timeTaken: t('practice.squareColors.timeTaken'),
+    averageTime: t('practice.squareColors.averageTime'),
     tryAgain: t('practice.tryAgain'),
     morePractice: t('practice.morePractice'),
-    relatedLearning: t('learn.relatedLearning'),
-    learnTitle: learnArticleMetadata.title,
-    learnDescription: learnArticleMetadata.description,
+    practice: t('navigation.practice'),
+    timeRemaining: t('practice.squareColors.timeRemaining'),
   };
 
   return (

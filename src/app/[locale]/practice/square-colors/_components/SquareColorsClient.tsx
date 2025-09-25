@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { ProgressBar } from '../../_components/ProgressBar';
-import { PracticeComplete } from '../../_components/PracticeComplete';
+import { PracticeResult } from '../../_components/PracticeResult';
+import { TimeSlider } from '../../_components/TimeSlider';
+import { TimeDisplay } from '../../_components/TimeDisplay';
 import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
 
 interface SquareColorsClientProps {
@@ -12,19 +13,22 @@ interface SquareColorsClientProps {
     title: string;
     description: string;
     settings: string;
-    questionCount: string;
+    timeLimit: string;
+    seconds: string;
     start: string;
     white: string;
     black: string;
     correct: string;
     incorrect: string;
-    practiceComplete: string;
-    score: string;
+    finished: string;
+    correctAnswers: string;
+    accuracy: string;
+    timeTaken: string;
+    averageTime: string;
     tryAgain: string;
     morePractice: string;
-    relatedLearning: string;
-    learnTitle: string;
-    learnDescription: string;
+    practice: string;
+    timeRemaining: string;
   };
 }
 
@@ -37,33 +41,90 @@ interface GameStats {
 
 type GameState = 'setup' | 'playing' | 'finished';
 
+const STORAGE_KEY = 'squareColors_settings';
+
 export default function SquareColorsClient({ locale, translations }: SquareColorsClientProps) {
   const t = useTranslations('practice.squareColors');
-  const [questionCount, setQuestionCount] = useState(10);
+
+  // Default settings (will be updated from localStorage in useEffect)
+  const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
+  const [timeRemaining, setTimeRemaining] = useState(timeLimit);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [squares, setSquares] = useState<string[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
-  const [totalTime, setTotalTime] = useState<number>(0);
+  const [questionTimes, setQuestionTimes] = useState<number[]>([]);
   const [gameState, setGameState] = useState<GameState>('setup');
   const [showResult, setShowResult] = useState<boolean>(false);
   const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; square: string } | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          if (settings.timeLimit) {
+            setTimeLimit(settings.timeLimit);
+          }
+        } catch {}
+      }
+      setSettingsLoaded(true);
+    }
+  }, []);
+
+  // Save settings to localStorage when they change (after initial load)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && settingsLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit }));
+    }
+  }, [timeLimit, settingsLoaded]);
 
   const startGame = useCallback(() => {
-    const newSquares = generateSquareSequence(questionCount);
+    // Generate a large pool of squares
+    const newSquares = generateSquareSequence(100);
     setSquares(newSquares);
     setQuestionStartTime(Date.now());
     setCurrentIndex(0);
     setAnswers([]);
-    setTotalTime(0);
+    setQuestionTimes([]);
+    setTimeRemaining(timeLimit);
     setShowResult(false);
     setLastAnswer(null);
     setGameState('playing');
-  }, [questionCount]);
+  }, [timeLimit]);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === 'playing') {
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            setGameState('finished');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [gameState]);
 
   const handleAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {
-      if (currentIndex >= squares.length || gameState === 'finished') return;
+      if (gameState === 'finished') return;
 
       const currentSquare = squares[currentIndex];
       const correctColor = getSquareColor(currentSquare);
@@ -72,22 +133,18 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
       // Update timing
       const now = Date.now();
       const questionTime = now - questionStartTime;
-      setTotalTime((prev) => prev + questionTime);
+      setQuestionTimes((prev) => [...prev, questionTime / 1000]); // Convert to seconds
 
       // Record answer
       setAnswers((prev) => [...prev, isCorrect]);
       setLastAnswer({ correct: isCorrect, square: currentSquare });
       setShowResult(true);
 
-      // Move to next question or finish game
+      // Move to next question
       setTimeout(() => {
         setShowResult(false);
-        if (currentIndex + 1 >= squares.length) {
-          setGameState('finished');
-        } else {
-          setCurrentIndex((prev) => prev + 1);
-          setQuestionStartTime(Date.now());
-        }
+        setCurrentIndex((prev) => prev + 1);
+        setQuestionStartTime(Date.now());
       }, 500);
     },
     [currentIndex, squares, gameState, questionStartTime]
@@ -96,9 +153,12 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
   const getStats = (): GameStats => {
     const correct = answers.filter((a) => a).length;
     const incorrect = answers.filter((a) => !a).length;
-    const averageTime = totalTime / answers.length / 1000; // in seconds
+    const averageTime =
+      questionTimes.length > 0
+        ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length
+        : 0;
 
-    return { correct, incorrect, totalTime, averageTime };
+    return { correct, incorrect, totalTime: 0, averageTime };
   };
 
   const handlePlayAgain = () => {
@@ -106,32 +166,36 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
     setCurrentIndex(0);
     setSquares([]);
     setAnswers([]);
-    setTotalTime(0);
+    setQuestionTimes([]);
+    setTimeRemaining(timeLimit);
     setShowResult(false);
     setLastAnswer(null);
   };
 
   if (gameState === 'finished') {
     const stats = getStats();
+    const total = answers.length;
+    const accuracy = total > 0 ? (stats.correct / total) * 100 : 0;
+    const timeElapsed = timeLimit - timeRemaining;
 
     return (
-      <PracticeComplete
-        score={stats.correct}
-        total={squares.length}
+      <PracticeResult
+        score={{
+          correct: stats.correct,
+          total,
+          accuracy,
+          timeElapsed,
+          averageTime: stats.averageTime,
+        }}
         onTryAgain={handlePlayAgain}
         locale={locale}
         translations={{
-          practiceComplete: translations.practiceComplete,
-          score: translations.score,
+          correctAnswers: translations.correctAnswers,
+          accuracy: translations.accuracy,
+          timeTaken: translations.timeTaken,
+          averageTime: translations.averageTime,
           tryAgain: translations.tryAgain,
           morePractice: translations.morePractice,
-        }}
-        relatedModule={{
-          href: '/learn/square-colors',
-          icon: '🏁',
-          title: translations.learnTitle,
-          description: translations.learnDescription,
-          sectionTitle: translations.relatedLearning,
         }}
       />
     );
@@ -146,19 +210,15 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
           <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {translations.questionCount}
-            </label>
-            <select
-              value={questionCount}
-              onChange={(e) => setQuestionCount(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-            </select>
+            <TimeSlider
+              timeLimit={timeLimit}
+              onTimeLimitChange={setTimeLimit}
+              translations={{
+                timeLimit: translations.timeLimit,
+                seconds: translations.seconds,
+              }}
+              locale={locale}
+            />
           </div>
 
           <button
@@ -173,11 +233,19 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
   }
 
   const currentSquare = squares[currentIndex];
+  const timeElapsed = timeLimit - timeRemaining;
 
   return (
     <div>
-      {/* Progress bar */}
-      <ProgressBar current={currentIndex + 1} total={squares.length} />
+      {/* Timer display */}
+      <TimeDisplay
+        timeRemaining={timeRemaining}
+        timeLimit={timeLimit}
+        timeElapsed={timeElapsed}
+        translations={{
+          timeRemaining: translations.timeRemaining,
+        }}
+      />
 
       <div className="bg-card rounded-xl border border-border p-8 text-center">
         <h2 className="text-2xl font-semibold text-foreground mb-8">

@@ -2,14 +2,17 @@
 
 import { type PieceType } from '../_lib/legal-moves';
 import { PieceSelector } from './PieceSelector';
+import { TimeSlider } from '../../_components/TimeSlider';
 
 interface LegalMovesSettingsProps {
-  questionCount: number;
+  timeLimit: number;
   selectedPieces: Record<PieceType, boolean>;
-  onQuestionCountChange: (count: number) => void;
+  onTimeLimitChange: (timeLimit: number) => void;
   onPieceToggle: (piece: PieceType) => void;
+  locale?: 'en' | 'ja';
   translations: {
-    questionCount: string;
+    timeLimit: string;
+    seconds: string;
     pieceSelection: string;
     selectAtLeastOne: string;
     pieces: {
@@ -23,36 +26,27 @@ interface LegalMovesSettingsProps {
 }
 
 export function LegalMovesSettings({
-  questionCount,
+  timeLimit,
   selectedPieces,
-  onQuestionCountChange,
+  onTimeLimitChange,
   onPieceToggle,
+  locale = 'en',
   translations,
 }: LegalMovesSettingsProps) {
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
 
   return (
     <div className="space-y-6">
-      {/* Question Count */}
-      <div>
-        <label htmlFor="questionCount" className="block text-sm font-medium text-foreground mb-2">
-          {translations.questionCount}: {questionCount}
-        </label>
-        <input
-          id="questionCount"
-          type="range"
-          min="10"
-          max="50"
-          step="10"
-          value={questionCount}
-          onChange={(e) => onQuestionCountChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>10</span>
-          <span>50</span>
-        </div>
-      </div>
+      {/* Time Limit */}
+      <TimeSlider
+        timeLimit={timeLimit}
+        onTimeLimitChange={onTimeLimitChange}
+        translations={{
+          timeLimit: translations.timeLimit,
+          seconds: translations.seconds,
+        }}
+        locale={locale}
+      />
 
       {/* Piece Selection */}
       <div>

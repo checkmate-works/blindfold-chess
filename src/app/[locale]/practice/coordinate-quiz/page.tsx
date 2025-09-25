@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import CoordinateQuizClient from './_components/CoordinateQuizClient';
 
 interface CoordinateQuizPageProps {
@@ -54,6 +54,17 @@ export default async function CoordinateQuizPage({ params }: CoordinateQuizPageP
         <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
       </div>
       <CoordinateQuizClient locale={locale} translations={translations} />
+
+      {/* Breadcrumb at bottom */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.coordinateQuiz.title') },
+          ]}
+          locale={locale}
+        />
+      </div>
     </>
   );
 }

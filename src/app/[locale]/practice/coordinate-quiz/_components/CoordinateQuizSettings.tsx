@@ -2,12 +2,14 @@
 
 import { formatTime } from '../_lib/coordinate-quiz';
 import type { BoardOrientation } from '../_lib/coordinate-quiz';
+import { TimeSlider } from '../../_components/TimeSlider';
 
 interface CoordinateQuizSettingsProps {
   timeLimit: number;
   boardOrientation: BoardOrientation;
   onTimeLimitChange: (time: number) => void;
   onBoardOrientationChange: (orientation: BoardOrientation) => void;
+  locale?: 'en' | 'ja';
   translations: {
     timeLimit: string;
     boardOrientation: string;
@@ -22,30 +24,22 @@ export function CoordinateQuizSettings({
   boardOrientation,
   onTimeLimitChange,
   onBoardOrientationChange,
+  locale = 'en',
   translations,
 }: CoordinateQuizSettingsProps) {
   return (
     <div className="space-y-6">
       {/* Time Limit */}
-      <div>
-        <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground mb-2">
-          {translations.timeLimit}: {formatTime(timeLimit)}
-        </label>
-        <input
-          id="timeLimit"
-          type="range"
-          min="10"
-          max="60"
-          step="10"
-          value={timeLimit}
-          onChange={(e) => onTimeLimitChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>0:10</span>
-          <span>1:00</span>
-        </div>
-      </div>
+      <TimeSlider
+        timeLimit={timeLimit}
+        onTimeLimitChange={onTimeLimitChange}
+        translations={{
+          timeLimit: translations.timeLimit,
+        }}
+        showSeconds={false}
+        formatTime={formatTime}
+        locale={locale}
+      />
 
       {/* Board Orientation */}
       <div>

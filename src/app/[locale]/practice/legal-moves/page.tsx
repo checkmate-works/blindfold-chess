@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import { LegalMovesClient } from './_components/LegalMovesClient';
 
 interface LegalMovesPageProps {
@@ -25,7 +25,8 @@ export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
     title: t('practice.legalMoves.title'),
     description: t('practice.legalMoves.description'),
     settings: t('practice.legalMoves.settings'),
-    questionCount: t('practice.legalMoves.questionCount'),
+    timeLimit: t('practice.legalMoves.timeLimit'),
+    seconds: t('practice.legalMoves.seconds'),
     pieceSelection: t('practice.legalMoves.pieceSelection'),
     selectAtLeastOne: t('practice.legalMoves.selectAtLeastOne'),
     pieces: {
@@ -43,10 +44,14 @@ export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
     legal: t('practice.legalMoves.legal'),
     illegal: t('practice.legalMoves.illegal'),
     practice: t('navigation.practice'),
-    practiceComplete: t('practice.practiceComplete'),
-    score: t('practice.score'),
+    finished: t('practice.legalMoves.finished'),
+    correctAnswers: t('practice.legalMoves.correctAnswers'),
+    accuracy: t('practice.legalMoves.accuracy'),
+    timeTaken: t('practice.legalMoves.timeTaken'),
+    averageTime: t('practice.legalMoves.averageTime'),
     tryAgain: t('practice.tryAgain'),
     morePractice: t('practice.morePractice'),
+    timeRemaining: t('practice.legalMoves.timeRemaining'),
   };
 
   return (
@@ -55,6 +60,17 @@ export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
         <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
       </div>
       <LegalMovesClient locale={locale} translations={translations} />
+
+      {/* Breadcrumb at bottom */}
+      <div className="mt-8 pt-6 border-t border-border">
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.legalMoves.title') },
+          ]}
+          locale={locale}
+        />
+      </div>
     </>
   );
 }

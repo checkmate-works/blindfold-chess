@@ -186,14 +186,22 @@
       "correct": "Correct!",
       "incorrect": "Incorrect",
       "settings": "Game Settings",
-      "questionCount": "Number of Questions",
-      "start": "Start Practice"
+      "timeLimit": "Time Limit",
+      "seconds": "seconds",
+      "start": "Start Practice",
+      "timeRemaining": "Time",
+      "finished": "Practice Complete!",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Average Time"
     },
     "legalMoves": {
       "title": "Legal Moves",
       "description": "Practice finding all legal moves in a position",
       "settings": "Game Settings",
-      "questionCount": "Number of Questions",
+      "timeLimit": "Time Limit",
+      "seconds": "seconds",
       "pieceSelection": "Select Pieces",
       "selectAtLeastOne": "Please select at least one piece",
       "pieces": {
@@ -208,7 +216,13 @@
       "correct": "Correct!",
       "incorrect": "Incorrect",
       "legal": "Yes",
-      "illegal": "No"
+      "illegal": "No",
+      "timeRemaining": "Time",
+      "finished": "Practice Complete!",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Average Time"
     },
     "coordinateQuiz": {
       "title": "Coordinate Quiz",

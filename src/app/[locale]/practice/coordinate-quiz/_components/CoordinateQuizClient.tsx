@@ -13,7 +13,8 @@ import {
 import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 import { Breadcrumb } from '@/app/[locale]/_components';
-import { Link } from '@/i18n/routing';
+import { PracticeResult } from '../../_components/PracticeResult';
+import { TimeDisplay } from '../../_components/TimeDisplay';
 
 type GameState = 'setup' | 'playing' | 'finished';
 
@@ -47,9 +48,11 @@ interface CoordinateQuizClientProps {
   };
 }
 
+const STORAGE_KEY = 'coordinateQuiz_settings';
+
 export default function CoordinateQuizClient({ locale, translations }: CoordinateQuizClientProps) {
-  // Game settings
-  const [timeLimit, setTimeLimit] = useState(60);
+  // Game settings - Default values (will be updated from localStorage in useEffect)
+  const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
   const [boardOrientation, setBoardOrientation] = useState<BoardOrientation>('white');
 
   // Game state
@@ -65,6 +68,33 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
   const [isCorrect, setIsCorrect] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          if (settings.timeLimit) {
+            setTimeLimit(settings.timeLimit);
+          }
+          if (settings.boardOrientation) {
+            setBoardOrientation(settings.boardOrientation);
+          }
+        } catch {}
+      }
+      setSettingsLoaded(true);
+    }
+  }, []);
+
+  // Save settings to localStorage when they change (after initial load)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && settingsLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit, boardOrientation }));
+    }
+  }, [timeLimit, boardOrientation, settingsLoaded]);
 
   // Start timer
   useEffect(() => {
@@ -158,6 +188,7 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
             boardOrientation={boardOrientation}
             onTimeLimitChange={setTimeLimit}
             onBoardOrientationChange={setBoardOrientation}
+            locale={locale}
             translations={{
               timeLimit: translations.timeLimit,
               boardOrientation: translations.boardOrientation,
@@ -191,86 +222,42 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
 
   if (gameState === 'finished' && score) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-card rounded-2xl p-8 shadow-sm border border-border mb-8">
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-foreground">
-                {correctAnswers}/{totalQuestions}
-              </div>
-              <div className="text-sm text-muted-foreground">{translations.correctAnswers}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-foreground">
-                {score.accuracy.toFixed(1)}%
-              </div>
-              <div className="text-sm text-muted-foreground">{translations.accuracy}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-foreground">
-                {formatTime(timeElapsed)}
-              </div>
-              <div className="text-sm text-muted-foreground">{translations.timeTaken}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-foreground">
-                {score.averageTime.toFixed(1)}s
-              </div>
-              <div className="text-sm text-muted-foreground">{translations.averageTime}</div>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              onClick={startGame}
-              className="flex-1 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
-            >
-              {translations.tryAgain}
-            </button>
-            <Link
-              href="/practice"
-              locale={locale}
-              className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 px-6 rounded-xl transition-colors text-center"
-            >
-              {translations.morePractice}
-            </Link>
-          </div>
-        </div>
-
-        {/* Breadcrumb at bottom */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
-            locale={locale}
-          />
-        </div>
-      </div>
+      <PracticeResult
+        score={{
+          correct: correctAnswers,
+          total: totalQuestions,
+          accuracy: score.accuracy,
+          timeElapsed,
+          averageTime: score.averageTime,
+        }}
+        onTryAgain={startGame}
+        locale={locale}
+        translations={{
+          correctAnswers: translations.correctAnswers,
+          accuracy: translations.accuracy,
+          timeTaken: translations.timeTaken,
+          averageTime: translations.averageTime,
+          tryAgain: translations.tryAgain,
+          morePractice: translations.morePractice,
+        }}
+      />
     );
   }
 
   // Playing state
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="mb-6">
-        {/* Timer and score */}
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-muted-foreground">
-            {translations.correct}: {correctAnswers} / {translations.wrong}: {wrongAnswers}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {translations.timeRemaining}: {formatTime(timeRemaining)}
-          </span>
-        </div>
-        <div className="w-full bg-secondary rounded-full h-2">
-          <div
-            className="bg-foreground h-2 rounded-full transition-all duration-1000"
-            style={{ width: `${(timeElapsed / timeLimit) * 100}%` }}
-          />
-        </div>
-      </div>
+      {/* Timer display with score */}
+      <TimeDisplay
+        timeRemaining={timeRemaining}
+        timeLimit={timeLimit}
+        timeElapsed={timeElapsed}
+        translations={{
+          timeRemaining: translations.timeRemaining,
+        }}
+        formatTime={formatTime}
+        leftContent={`${translations.correct}: ${correctAnswers} / ${translations.wrong}: ${wrongAnswers}`}
+      />
 
       {currentQuestion && (
         <div className="text-center mb-8">

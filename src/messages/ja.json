@@ -186,14 +186,22 @@
       "correct": "正解！",
       "incorrect": "不正解",
       "settings": "ゲーム設定",
-      "questionCount": "問題数",
-      "start": "練習を開始"
+      "timeLimit": "制限時間",
+      "seconds": "秒",
+      "start": "練習を開始",
+      "timeRemaining": "残り時間",
+      "finished": "練習完了！",
+      "correctAnswers": "正解数",
+      "accuracy": "正解率",
+      "timeTaken": "所要時間",
+      "averageTime": "平均時間"
     },
     "legalMoves": {
       "title": "合法手",
       "description": "ある局面でのすべての合法手を見つける練習",
       "settings": "ゲーム設定",
-      "questionCount": "問題数",
+      "timeLimit": "制限時間",
+      "seconds": "秒",
       "pieceSelection": "駒の選択",
       "selectAtLeastOne": "少なくとも1つの駒を選択してください",
       "pieces": {
@@ -208,7 +216,13 @@
       "correct": "正解！",
       "incorrect": "不正解",
       "legal": "できる",
-      "illegal": "できない"
+      "illegal": "できない",
+      "timeRemaining": "残り時間",
+      "finished": "練習完了！",
+      "correctAnswers": "正解数",
+      "accuracy": "正解率",
+      "timeTaken": "所要時間",
+      "averageTime": "平均時間"
     },
     "coordinateQuiz": {
       "title": "座標クイズ",
