@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getArticle, getAvailableArticles } from '../_lib/learn';
-import { Breadcrumb, MarkdownRenderer, CardLink } from '@/app/[locale]/_components';
+import { Breadcrumb, MarkdownRenderer, CardLink, PageTitle } from '@/app/[locale]/_components';
 
 interface LearnArticlePageProps {
   params: Promise<{
@@ -46,9 +46,15 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      {/* Page Title */}
+      <div className="mb-8">
+        <PageTitle>{article.metadata.title}</PageTitle>
+      </div>
+
+      {/* Article Content */}
       <article className="prose prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={article.content} />
+        <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
       {/* Practice link if available */}
@@ -96,6 +102,6 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
           locale={locale}
         />
       </div>
-    </div>
+    </>
   );
 }
