@@ -119,13 +119,13 @@ export function GameListItem({ game, locale, onDelete, translations }: GameListI
           </div>
 
           {/* Delete button */}
-          <div className="flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex-shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(game.id);
               }}
-              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Delete game"
             >
               <TrashIcon className="w-4 h-4" />
