@@ -15,6 +15,7 @@ export interface GamePreferences {
   pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
   // Move input
   moveInputMode: 'text' | 'select'; // Move input mode
+  enableAutoComplete: boolean; // Enable auto-complete for text input
 }
 
 // Default preferences
@@ -26,6 +27,7 @@ const defaultPreferences: GamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
+  enableAutoComplete: true,
 };
 
 // Local storage key

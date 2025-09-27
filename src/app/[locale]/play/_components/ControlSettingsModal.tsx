@@ -3,21 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Modal } from '../../_components/Modal';
-import { GameSettingsContent } from '../../preferences/_components/GameSettingsContent';
+import { ControlSettingsContent } from '../../preferences/_components/ControlSettingsContent';
 import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
-import type { Side } from '../_lib/types';
 
-interface GameSettingsModalProps {
+interface ControlSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  playerSide?: Side;
 }
 
-export function GameSettingsModal({
-  isOpen,
-  onClose,
-  playerSide = 'white',
-}: GameSettingsModalProps) {
+export function ControlSettingsModal({ isOpen, onClose }: ControlSettingsModalProps) {
   const t = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 
@@ -44,16 +38,14 @@ export function GameSettingsModal({
   return (
     <Modal
       isOpen={isOpen}
-      title={t('configureBoardAppearance')}
+      title={t('configureInputMethod')}
       onClose={handleCancel}
-      maxWidth="max-w-4xl"
+      maxWidth="max-w-2xl"
     >
       <div className="space-y-8">
-        <GameSettingsContent
+        <ControlSettingsContent
           settings={tempSettings}
           onSettingsChange={(updates) => setTempSettings({ ...tempSettings, ...updates })}
-          playerSide={playerSide}
-          showPreview={true}
           compact={true}
         />
 

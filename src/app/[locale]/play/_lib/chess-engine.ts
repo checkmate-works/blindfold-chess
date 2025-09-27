@@ -131,6 +131,11 @@ export class ChessEngine {
     moves: AlgebraicNotation[] = [],
     timeLimit: number = 1000
   ): Promise<UciMove> {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+      throw new Error('Chess engine can only be used in browser environment');
+    }
+
     if (!this.isInitialized || !this.engine) {
       throw new Error('Engine not ready');
     }
@@ -222,6 +227,11 @@ export class ChessEngine {
 let engineInstance: ChessEngine | null = null;
 
 export function getChessEngine(): ChessEngine {
+  // Only create instance in browser environment
+  if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+    throw new Error('Chess engine can only be created in browser environment');
+  }
+
   if (!engineInstance) {
     engineInstance = new ChessEngine();
   }

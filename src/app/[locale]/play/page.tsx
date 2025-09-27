@@ -39,6 +39,7 @@ export default function PlayPage() {
     confirmUndoMessage: t('play.confirmUndoMessage'),
     confirmUndo: t('play.confirmUndo'),
     configureBoardAppearance: t('play.configureBoardAppearance'),
+    configureInputMethod: t('play.configureInputMethod'),
     save: t('play.save'),
     showBoard: t('play.showBoard'),
     hideBoard: t('play.hideBoard'),

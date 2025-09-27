@@ -3,11 +3,23 @@ import { getChessEngine } from '../_lib/chess-engine';
 import type { AlgebraicNotation, SkillLevel } from '../_lib/types';
 
 export function useAiVersus(skillLevel: SkillLevel) {
-  const engineRef = useRef(getChessEngine());
+  const engineRef = useRef<ReturnType<typeof getChessEngine> | null>(null);
+
+  // Initialize engine only in browser environment
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {
+      try {
+        engineRef.current = getChessEngine();
+      } catch (error) {
+        console.error('Failed to initialize chess engine:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const setSkill = async () => {
       const engine = engineRef.current;
+      if (!engine) return;
 
       // Wait for engine to be ready before setting skill level
       let retries = 0;
@@ -33,6 +45,9 @@ export function useAiVersus(skillLevel: SkillLevel) {
 
   const getAiMove = useCallback(async (moves: AlgebraicNotation[]): Promise<AlgebraicNotation> => {
     const engine = engineRef.current;
+    if (!engine) {
+      throw new Error('Chess engine not available');
+    }
 
     // Wait for engine to be ready
     let retries = 0;

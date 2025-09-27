@@ -91,7 +91,8 @@
       "textInput": "Text Input",
       "textInputDescription": "Type moves using algebraic notation",
       "selectInput": "Select from List",
-      "selectInputDescription": "Choose from available legal moves"
+      "selectInputDescription": "Choose from available legal moves",
+      "enableAutoComplete": "Enable auto-complete"
     }
   },
   "faq": {
@@ -351,6 +352,7 @@
     "confirmUndoMessage": "Are you sure you want to undo the last two moves?",
     "confirmUndo": "Undo",
     "configureBoardAppearance": "Configure board appearance",
+    "configureInputMethod": "Configure input method",
     "save": "Save",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",

@@ -16,6 +16,7 @@ import { Chess } from 'chess.js';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
 import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
 import { GameSettingsModal } from './GameSettingsModal';
+import { ControlSettingsModal } from './ControlSettingsModal';
 
 interface PlayClientProps {
   locale: 'en' | 'ja';
@@ -47,6 +48,7 @@ interface PlayClientProps {
     confirmUndoMessage: string;
     confirmUndo: string;
     configureBoardAppearance: string;
+    configureInputMethod: string;
     save: string;
     showBoard: string;
     hideBoard: string;
@@ -124,6 +126,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showControlSettingsModal, setShowControlSettingsModal] = useState(false);
   const { preferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
@@ -203,7 +206,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     if (initialGameId && typeof window !== 'undefined') {
       sessionStorage.removeItem('blindfold_chess_show_save_toast');
     }
-  }, []); // Run only once on mount
+  }, [initialGameId]); // Run only once on mount
 
   // Auto-save hook
   const { markPlayerInteraction, gameId } = useAutoSave({
@@ -586,7 +589,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
     }
 
     onAiMoveChange(null);
-  }, [moves, playerSide, onAiMoveChange]);
+  }, [moves, playerSide, onAiMoveChange, locale]);
 
   return (
     <div>
@@ -715,7 +718,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                         onSubmit={handleSubmitMove}
                         disabled={isLoading}
                         placeholder={translations.inputMove}
-                        showSuggestions={true}
+                        showSuggestions={preferences.enableAutoComplete}
                         showSubmitButton={true}
                       />
                     )}
@@ -729,24 +732,36 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
               </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Action Buttons and Settings */}
             {gameStatus === 'in_progress' && (
-              <div className="mt-4 pb-4 px-4 flex gap-2 justify-center">
-                <button
-                  onClick={handleUndo}
-                  disabled={moves.length < 2}
-                  className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
-                >
-                  <UndoIcon className="w-4 h-4" />
-                  {translations.undo}
-                </button>
-                <button
-                  onClick={handleResign}
-                  className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
-                >
-                  <FlagIcon className="w-4 h-4" />
-                  {translations.resign}
-                </button>
+              <div className="mt-4 pb-4 px-4">
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={handleUndo}
+                    disabled={moves.length < 2}
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <UndoIcon className="w-4 h-4" />
+                    {translations.undo}
+                  </button>
+                  <button
+                    onClick={handleResign}
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
+                  >
+                    <FlagIcon className="w-4 h-4" />
+                    {translations.resign}
+                  </button>
+                </div>
+
+                {/* Control Settings Link */}
+                <div className="mt-2 text-center">
+                  <button
+                    onClick={() => setShowControlSettingsModal(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    {translations.configureInputMethod}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -774,7 +789,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
               aria-expanded={isMovesVisible}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-foreground">{translations.moves}</span>
+                <span className="text-foreground">{translations.moves}</span>
                 <FaChevronDown
                   className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
                     isMovesVisible ? 'rotate-180' : ''
@@ -968,6 +983,12 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         playerSide={playerSide}
+      />
+
+      {/* Control Settings Modal */}
+      <ControlSettingsModal
+        isOpen={showControlSettingsModal}
+        onClose={() => setShowControlSettingsModal(false)}
       />
     </div>
   );
