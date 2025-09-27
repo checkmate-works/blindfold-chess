@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import CoordinateQuizClient from './_components/CoordinateQuizClient';
+import type { Locale } from '../../_lib/types';
 
 interface CoordinateQuizPageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

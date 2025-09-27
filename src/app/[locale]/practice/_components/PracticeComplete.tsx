@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { CardLink } from '@/app/[locale]/_components';
+import type { Locale } from '../../_lib/types';
 
 interface PracticeCompleteProps {
   score: number;
   total: number;
   onTryAgain: () => void;
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     practiceComplete: string;
     score: string;

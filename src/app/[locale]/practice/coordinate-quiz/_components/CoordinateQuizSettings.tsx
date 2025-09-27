@@ -3,13 +3,14 @@
 import { formatTime } from '../_lib/coordinate-quiz';
 import type { BoardOrientation } from '../_lib/coordinate-quiz';
 import { TimeSlider } from '../../_components/TimeSlider';
+import type { Locale } from '../../../_lib/types';
 
 interface CoordinateQuizSettingsProps {
   timeLimit: number;
   boardOrientation: BoardOrientation;
   onTimeLimitChange: (time: number) => void;
   onBoardOrientationChange: (orientation: BoardOrientation) => void;
-  locale?: 'en' | 'ja';
+  locale?: Locale;
   translations: {
     timeLimit: string;
     boardOrientation: string;

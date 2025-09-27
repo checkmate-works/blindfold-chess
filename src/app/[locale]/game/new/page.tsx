@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { PageTitle } from '@/app/[locale]/_components';
 import { NewGameForm } from './_components/NewGameForm';
+import type { Locale } from '../../_lib/types';
 
 interface NewGamePageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

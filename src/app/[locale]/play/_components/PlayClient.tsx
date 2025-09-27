@@ -14,12 +14,13 @@ import { MoveSelect } from './MoveSelect';
 import { UndoIcon, FlagIcon } from './Icons';
 import { Chess } from 'chess.js';
 import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
+import type { Locale } from '../../_lib/types';
 import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
 import { GameSettingsModal } from './GameSettingsModal';
 import { ControlSettingsModal } from './ControlSettingsModal';
 
 interface PlayClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   onAiMoveChange?: (move: string | null) => void;
   translations: {
     title?: string;

@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { PageTitle } from '@/app/[locale]/_components';
 import { PositionMemoryClient } from './_components/PositionMemoryClient';
+import type { Locale } from '../../_lib/types';
 
 interface PositionMemoryPageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

@@ -1,3 +1,5 @@
+import type { Locale } from '../../_lib/types';
+
 export interface ArticleMetadata {
   title: string;
   slug: string;
@@ -14,7 +16,7 @@ export interface Article {
 }
 
 // Content registry for markdown files
-const contentRegistry: Record<string, Record<'en' | 'ja', () => Promise<string>>> = {
+const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/en').then((m) => m.default),
     ja: () => import('../_content/algebraic-notation/ja').then((m) => m.default),
@@ -83,7 +85,7 @@ export function getAvailableArticles(): string[] {
   return Object.keys(articleRegistry);
 }
 
-export async function getArticle(slug: string, locale: 'en' | 'ja'): Promise<Article | null> {
+export async function getArticle(slug: string, locale: Locale): Promise<Article | null> {
   try {
     if (!(slug in articleRegistry)) {
       return null;
@@ -115,7 +117,7 @@ export async function getArticle(slug: string, locale: 'en' | 'ja'): Promise<Art
   }
 }
 
-export async function getAllArticles(locale: 'en' | 'ja'): Promise<ArticleMetadata[]> {
+export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]> {
   const slugs = getAvailableArticles();
   const articles: ArticleMetadata[] = [];
 

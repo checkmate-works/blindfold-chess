@@ -1,5 +1,7 @@
 'use client';
 
+import type { Locale } from '../../_lib/types';
+
 interface TimeSliderProps {
   timeLimit: number;
   onTimeLimitChange: (value: number) => void;
@@ -9,7 +11,7 @@ interface TimeSliderProps {
   };
   showSeconds?: boolean; // whether to show "seconds" suffix
   formatTime?: (seconds: number) => string; // custom time formatter
-  locale?: 'en' | 'ja'; // for label formatting
+  locale?: Locale; // for label formatting
 }
 
 export function TimeSlider({

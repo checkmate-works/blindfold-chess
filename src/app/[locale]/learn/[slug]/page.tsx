@@ -2,10 +2,11 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getArticle, getAvailableArticles } from '../_lib/learn';
 import { Breadcrumb, MarkdownRenderer, CardLink, PageTitle } from '@/app/[locale]/_components';
+import type { Locale } from '../../_lib/types';
 
 interface LearnArticlePageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
     slug: string;
   }>;
 }

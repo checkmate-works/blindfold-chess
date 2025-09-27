@@ -3,13 +3,14 @@
 import { type PieceType } from '../_lib/legal-moves';
 import { PieceSelector } from './PieceSelector';
 import { TimeSlider } from '../../_components/TimeSlider';
+import type { Locale } from '../../../_lib/types';
 
 interface LegalMovesSettingsProps {
   timeLimit: number;
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (timeLimit: number) => void;
   onPieceToggle: (piece: PieceType) => void;
-  locale?: 'en' | 'ja';
+  locale?: Locale;
   translations: {
     timeLimit: string;
     seconds: string;

@@ -9,11 +9,12 @@ import { SkillLevelSelector } from './SkillLevelSelector';
 import { PgnInput } from './PgnInput';
 import { validatePgn, parsePgn } from '../../../play/_lib/pgn-parser';
 import type { Side, SkillLevel } from '../../../play/_lib/types';
+import type { Locale } from '../../../_lib/types';
 
 type StartMethod = 'new' | 'pgn';
 
 interface NewGameFormProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     // Start Method

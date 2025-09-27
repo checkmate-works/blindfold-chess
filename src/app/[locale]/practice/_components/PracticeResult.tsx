@@ -1,6 +1,7 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
+import type { Locale } from '../../_lib/types';
 
 interface PracticeResultProps {
   score: {
@@ -11,7 +12,7 @@ interface PracticeResultProps {
     averageTime: number; // in seconds
   };
   onTryAgain: () => void;
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     correctAnswers: string;
     accuracy: string;

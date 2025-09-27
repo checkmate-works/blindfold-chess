@@ -1,14 +1,15 @@
 import { getTranslations } from 'next-intl/server';
 import { GameListClient } from './_components/GameListClient';
 import type { Metadata } from 'next';
+import type { Locale } from './_lib/types';
 
-interface HomePageProps {
+interface Props {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 
-export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.home' });
 
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
   };
 }
 
-export default async function HomePage({ params }: HomePageProps) {
+export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 

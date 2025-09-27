@@ -1,9 +1,10 @@
 import { Game } from '../play/_lib/game-repository';
 import { GameListItem } from './GameListItem';
+import type { Locale } from '../_lib/types';
 
 interface GameListProps {
   games: Game[];
-  locale: 'en' | 'ja';
+  locale: Locale;
   onDeleteGame: (gameId: string) => void;
   sortControls?: React.ReactNode;
   translations: {

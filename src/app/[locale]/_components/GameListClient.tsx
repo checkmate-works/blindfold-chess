@@ -11,9 +11,10 @@ import { GameList } from './GameList';
 import { NewGameCard } from './NewGameCard';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useToast } from '../_contexts/ToastContext';
+import type { Locale } from '../_lib/types';
 
 interface GameListClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     noGames: string;

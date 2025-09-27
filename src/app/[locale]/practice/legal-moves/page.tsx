@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import { LegalMovesClient } from './_components/LegalMovesClient';
+import type { Locale } from '../../_lib/types';
 
 interface LegalMovesPageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

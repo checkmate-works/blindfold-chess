@@ -11,6 +11,7 @@ import {
   type MoveQuestion,
   type PieceType,
 } from '../_lib/legal-moves';
+import type { Locale } from '../../../_lib/types';
 
 interface GameStats {
   correct: number;
@@ -22,7 +23,7 @@ interface GameStats {
 type GameState = 'setup' | 'playing' | 'finished';
 
 interface LegalMovesClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     description: string;

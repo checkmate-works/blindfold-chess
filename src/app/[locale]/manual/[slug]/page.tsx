@@ -2,10 +2,11 @@ import { notFound } from 'next/navigation';
 import { getManualArticle, getAvailableManualArticles } from '../_lib/manual';
 import { PageTitle, Breadcrumb, MarkdownRenderer } from '@/app/[locale]/_components';
 import { getTranslations } from 'next-intl/server';
+import type { Locale } from '../../_lib/types';
 
 interface ManualArticlePageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
     slug: string;
   }>;
 }

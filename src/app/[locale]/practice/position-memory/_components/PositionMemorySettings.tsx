@@ -1,5 +1,7 @@
 'use client';
 
+import type { Locale } from '../../../../_lib/types';
+
 interface PositionMemorySettingsProps {
   timeLimit: number;
   problemCount: number;
@@ -8,7 +10,7 @@ interface PositionMemorySettingsProps {
   useCustomFen: boolean;
   customFenInput: string;
   customFenError: string | null;
-  locale: 'en' | 'ja';
+  locale: Locale;
   onTimeLimitChange: (value: number) => void;
   onProblemCountChange: (value: number) => void;
   onShuffleChange: (value: boolean) => void;

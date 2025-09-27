@@ -14,11 +14,12 @@ import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 import { PracticeResult } from '../../_components/PracticeResult';
 import { TimeDisplay } from '../../_components/TimeDisplay';
+import type { Locale } from '../../../_lib/types';
 
 type GameState = 'setup' | 'playing' | 'finished';
 
 interface CoordinateQuizClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     description: string;

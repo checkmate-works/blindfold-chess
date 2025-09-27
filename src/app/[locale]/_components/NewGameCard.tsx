@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { PlusIcon } from './Icons';
+import type { Locale } from '../_lib/types';
 
 interface NewGameCardProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   disabled?: boolean;
   translations: {
     newGame: string;

@@ -1,9 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
+import type { Locale } from '../_lib/types';
 
 interface PracticePageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

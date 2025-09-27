@@ -1,3 +1,5 @@
+import type { Locale } from '../../_lib/types';
+
 export interface ManualArticleMetadata {
   slug: string;
   title: string;
@@ -60,7 +62,7 @@ export const getAvailableManualArticles = (): string[] => {
 
 export const getManualArticle = async (
   slug: string,
-  locale: 'en' | 'ja'
+  locale: Locale
 ): Promise<ManualArticle | null> => {
   const metadataLoader = articleRegistry[slug]?.[locale];
   const contentLoader = contentRegistry[slug]?.[locale];
@@ -88,9 +90,7 @@ export const getManualArticle = async (
   }
 };
 
-export const getAllManualArticles = async (
-  locale: 'en' | 'ja'
-): Promise<ManualArticleMetadata[]> => {
+export const getAllManualArticles = async (locale: Locale): Promise<ManualArticleMetadata[]> => {
   const slugs = getAvailableManualArticles();
   const articles = await Promise.all(
     slugs.map(async (slug) => {

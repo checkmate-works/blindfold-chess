@@ -5,10 +5,11 @@ import { ChessBoard } from '../../_components/ChessBoard';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
 import { Exercise } from '../_lib/algebraic-notation';
+import type { Locale } from '../../../_lib/types';
 
 interface AlgebraicNotationClientProps {
   exercises: Exercise[];
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     question: string;
     correct: string;

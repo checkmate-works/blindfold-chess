@@ -6,9 +6,10 @@ import { PracticeResult } from '../../_components/PracticeResult';
 import { TimeSlider } from '../../_components/TimeSlider';
 import { TimeDisplay } from '../../_components/TimeDisplay';
 import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
+import type { Locale } from '../../../_lib/types';
 
 interface SquareColorsClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     description: string;

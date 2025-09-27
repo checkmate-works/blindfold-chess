@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { Game } from '../play/_lib/game-repository';
 import { TrashIcon } from './Icons';
+import type { Locale } from '../_lib/types';
 
 interface GameListItemProps {
   game: Game;
-  locale: 'en' | 'ja';
+  locale: Locale;
   onDelete: (gameId: string) => void;
   translations: {
     moves: string;

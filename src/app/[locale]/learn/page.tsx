@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { getAllArticles } from './_lib/learn';
 import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
+import type { Locale } from '../_lib/types';
 
 interface LearnPageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

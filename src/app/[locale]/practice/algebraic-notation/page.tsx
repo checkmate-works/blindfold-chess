@@ -2,10 +2,11 @@ import { getTranslations } from 'next-intl/server';
 import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import AlgebraicNotationClient from './_components/AlgebraicNotationClient';
 import { exercises } from './_lib/algebraic-notation';
+import type { Locale } from '../../_lib/types';
 
 interface AlgebraicNotationPageProps {
   params: Promise<{
-    locale: 'en' | 'ja';
+    locale: Locale;
   }>;
 }
 

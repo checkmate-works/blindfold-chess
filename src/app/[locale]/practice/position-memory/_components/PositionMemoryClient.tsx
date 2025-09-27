@@ -17,11 +17,12 @@ import {
   type PositionData,
   type PositionAccuracy,
 } from '../_lib/position-memory';
+import type { Locale } from '../../../_lib/types';
 
 type ExtendedGamePhase = GamePhase | 'setup' | 'problem-result';
 
 interface PositionMemoryClientProps {
-  locale: 'en' | 'ja';
+  locale: Locale;
   translations: {
     title: string;
     description: string;

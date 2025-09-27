@@ -5,10 +5,11 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { PlayClient } from './_components/PlayClient';
 import { PageTitle } from '../_components/PageTitle';
+import type { Locale } from '../_lib/types';
 
 export default function PlayPage() {
   const params = useParams();
-  const locale = params.locale as 'en' | 'ja';
+  const locale = params.locale as Locale;
   const t = useTranslations();
   const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
 
