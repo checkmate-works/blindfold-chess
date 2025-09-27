@@ -1,5 +1,4 @@
 import '../globals.css';
-import 'katex/dist/katex.min.css';
 import { Header } from './_components/Header';
 import { Footer } from './_components/Footer';
 import { Inter } from 'next/font/google';
