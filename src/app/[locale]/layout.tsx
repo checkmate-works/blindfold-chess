@@ -5,17 +5,15 @@ import { Footer } from './_components/Footer';
 import { Inter } from 'next/font/google';
 import { Providers } from './_lib/providers';
 import { getMessages, getTranslations } from 'next-intl/server';
-import Script from 'next/script';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { siteUrl, siteName, authorName } from '@/config';
+import { siteUrl, siteName, authorName, GA_MEASUREMENT_ID } from '@/config';
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 });
-
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export async function generateMetadata({
   params,
@@ -91,23 +89,7 @@ export default async function Layout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        {/* Google Analytics - Script with beforeInteractive will be hoisted to <head> */}
-        {GA_MEASUREMENT_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-              strategy="beforeInteractive"
-            />
-            <Script id="google-analytics" strategy="beforeInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_MEASUREMENT_ID}');
-              `}
-            </Script>
-          </>
-        )}
+        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers locale={locale} messages={messages}>
           <div className="flex flex-col min-h-screen">
             <Header locale={locale} />

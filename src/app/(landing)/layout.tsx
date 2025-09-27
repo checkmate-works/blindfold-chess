@@ -1,7 +1,7 @@
 import '../globals.css';
-import { GoogleAnalyticsHead } from '../_components/GoogleAnalyticsHead';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { siteUrl, siteName, authorName } from '@/config';
+import { siteUrl, siteName, authorName, GA_MEASUREMENT_ID } from '@/config';
 
 const siteDescription =
   'Free online platform to practice chess without seeing pieces. Master blindfold chess, improve your visualization and calculation skills.';
@@ -42,8 +42,6 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <GoogleAnalyticsHead />
-
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -59,7 +57,10 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
+        {children}
+      </body>
     </html>
   );
 }

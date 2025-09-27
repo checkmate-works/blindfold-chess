@@ -21,6 +21,7 @@
     ]
   },
   "dependencies": {
+    "@next/third-parties": "^15.5.4",
     "@sentry/nextjs": "^10.14.0",
     "@types/chess.js": "^0.13.7",
     "chess.js": "^1.4.0",
