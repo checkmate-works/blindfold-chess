@@ -10,6 +10,9 @@ import { Breadcrumb } from '@/app/[locale]/_components';
 import {
   getRandomPositions,
   calculateAccuracy,
+  getMaxProblems,
+  getCustomPositions,
+  validateFEN,
   type GamePhase,
   type PositionData,
   type PositionAccuracy,
@@ -64,6 +67,45 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
   const [timeLimit, setTimeLimit] = useState(10);
   const [problemCount, setProblemCount] = useState(1);
   const [shuffleProblems, setShuffleProblems] = useState(true);
+  const [useCustomFen, setUseCustomFen] = useState(false);
+  const [customFenInput, setCustomFenInput] = useState('');
+  const [customFenError, setCustomFenError] = useState<string | null>(null);
+
+  // Load saved settings from localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('positionMemorySettings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        setTimeLimit(settings.timeLimit ?? 10);
+        setProblemCount(settings.problemCount ?? 1);
+        setShuffleProblems(settings.shuffleProblems ?? true);
+        setUseCustomFen(settings.useCustomFen ?? false);
+        setCustomFenInput(settings.customFenInput ?? '');
+      } catch (error) {
+        console.error('Failed to load position memory settings:', error);
+      }
+    }
+  }, []);
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    // Skip the initial render to avoid overwriting with defaults
+    const savedSettings = localStorage.getItem('positionMemorySettings');
+    if (!savedSettings && customFenInput === '') {
+      // Don't save empty customFenInput on initial load
+      return;
+    }
+
+    const settings = {
+      timeLimit,
+      problemCount,
+      shuffleProblems,
+      useCustomFen,
+      customFenInput,
+    };
+    localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
+  }, [timeLimit, problemCount, shuffleProblems, useCustomFen, customFenInput]);
 
   // Game state
   const [phase, setPhase] = useState<ExtendedGamePhase>('setup');
@@ -75,8 +117,58 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
 
+  // Validate custom FEN when input changes
+  useEffect(() => {
+    if (useCustomFen && customFenInput.trim()) {
+      const lines = customFenInput
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim());
+      const invalidLines: number[] = [];
+
+      lines.forEach((line, index) => {
+        if (!validateFEN(line.trim())) {
+          invalidLines.push(index + 1);
+        }
+      });
+
+      if (invalidLines.length > 0) {
+        const lineStr =
+          locale === 'ja'
+            ? `行 ${invalidLines.join(', ')} に無効なFENがあります`
+            : `Invalid FEN on line${invalidLines.length > 1 ? 's' : ''} ${invalidLines.join(', ')}`;
+        setCustomFenError(lineStr);
+      } else {
+        setCustomFenError(null);
+      }
+    } else {
+      setCustomFenError(null);
+    }
+  }, [customFenInput, useCustomFen, locale]);
+
   const startGame = useCallback(() => {
-    const newPositions = getRandomPositions(problemCount, shuffleProblems);
+    let newPositions: PositionData[];
+
+    if (useCustomFen) {
+      const lines = customFenInput
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim());
+      if (lines.length === 0) {
+        return;
+      }
+
+      // Validate all FEN strings
+      const allValid = lines.every((line) => validateFEN(line.trim()));
+      if (!allValid) {
+        return;
+      }
+
+      newPositions = getCustomPositions(lines, lines.length, shuffleProblems);
+    } else {
+      newPositions = getRandomPositions(problemCount, shuffleProblems);
+    }
+
     setPositions(newPositions);
     setCurrentProblemIndex(0);
     setOriginalPosition(newPositions[0]);
@@ -85,7 +177,7 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
     setCurrentAccuracy(null);
     setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
     setPhase('memorize');
-  }, [timeLimit, problemCount, shuffleProblems]);
+  }, [timeLimit, problemCount, shuffleProblems, useCustomFen, customFenInput]);
 
   const handleMemorized = useCallback(() => {
     setPhase('recreate');
@@ -172,22 +264,35 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             timeLimit={timeLimit}
             problemCount={problemCount}
             shuffleProblems={shuffleProblems}
+            maxProblems={getMaxProblems()}
+            useCustomFen={useCustomFen}
+            customFenInput={customFenInput}
+            customFenError={customFenError}
+            locale={locale}
             onTimeLimitChange={setTimeLimit}
             onProblemCountChange={setProblemCount}
             onShuffleChange={setShuffleProblems}
-            maxProblems={10}
+            onUseCustomFenChange={setUseCustomFen}
+            onCustomFenInputChange={setCustomFenInput}
             translations={{
               timeLimit: translations.timeLimit,
               seconds: translations.seconds,
               problemCount: translations.problemCount,
               problems: translations.problems,
               shuffle: translations.shuffle,
+              useCustomFen: locale === 'ja' ? 'カスタムFENを使用' : 'Use Custom FEN',
+              customFenPlaceholder:
+                locale === 'ja'
+                  ? 'FENを改行区切りで入力\n例: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+                  : 'Enter FEN strings (one per line)\nExample: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+              customFenError: locale === 'ja' ? '無効なFEN' : 'Invalid FEN',
             }}
           />
 
           <button
             onClick={startGame}
-            className="w-full mt-6 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
+            disabled={useCustomFen && (customFenError !== null || !customFenInput.trim())}
+            className="w-full mt-6 bg-foreground hover:bg-foreground/90 disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed text-background font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             {translations.start}
           </button>
@@ -215,7 +320,8 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-foreground mb-2">{translations.memorizing}</h2>
           <p className="text-lg text-muted-foreground">
-            {translations.timeRemaining}: {memorizeTimeLeft}s
+            {translations.timeRemaining}: {memorizeTimeLeft}
+            {locale === 'ja' ? '秒' : 's'}
           </p>
         </div>
 
