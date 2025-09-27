@@ -1,3 +1,5 @@
+export type Locale = 'en' | 'ja';
+
 export interface NavigationItem {
   id: string;
   label: string;

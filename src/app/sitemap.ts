@@ -2,13 +2,10 @@ import { MetadataRoute } from 'next';
 import { getAllArticles } from './[locale]/learn/_lib/learn';
 import { getAllManualArticles } from './[locale]/manual/_lib/manual';
 import { chessTerms } from './[locale]/glossary/_data/chess-terms';
+import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 // Remove trailing slash from BASE_URL if present to avoid double slashes
-const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://blindfold-chess.com').replace(
-  /\/$/,
-  ''
-);
-const LOCALES = ['en', 'ja'] as const;
+const BASE_URL = SITE_URL.replace(/\/$/, '');
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sitemap: MetadataRoute.Sitemap = [];
@@ -32,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Add static pages for each locale
-  for (const locale of LOCALES) {
+  for (const locale of SUPPORTED_LOCALES) {
     for (const page of staticPages) {
       sitemap.push({
         url: `${BASE_URL}/${locale}${page}`,
@@ -44,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Dynamic pages - Learn articles
-  for (const locale of LOCALES) {
+  for (const locale of SUPPORTED_LOCALES) {
     try {
       const articles = await getAllArticles(locale);
       for (const article of articles) {
@@ -61,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Dynamic pages - Manual sections
-  for (const locale of LOCALES) {
+  for (const locale of SUPPORTED_LOCALES) {
     try {
       const sections = await getAllManualArticles(locale);
       for (const section of sections) {
@@ -88,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   });
 
-  for (const locale of LOCALES) {
+  for (const locale of SUPPORTED_LOCALES) {
     // Glossary letter pages
     uniqueLetters.forEach((letter) => {
       sitemap.push({

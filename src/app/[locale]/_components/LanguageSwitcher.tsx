@@ -2,13 +2,18 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { FaGlobe } from 'react-icons/fa';
-import { locales } from '@/config';
+import { SUPPORTED_LOCALES } from '@/config';
 
-interface LanguageSwitcherProps {
+const LOCALE_LABELS = {
+  en: 'English',
+  ja: '日本語',
+} as const;
+
+interface Props {
   currentLocale: string;
 }
 
-export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ currentLocale }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -18,13 +23,13 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
 
     // List of paths where language switching would interrupt user activity
     const restrictedPaths = [
-      '/play', // Chess game in progress
-      '/practice/coordinate-quiz', // Quiz session
-      '/practice/legal-moves', // Practice session
-      '/practice/algebraic-notation', // Practice session
-      '/practice/square-colors', // Practice session
-      '/practice/position-memory', // Memory session
-      '/game/new', // Game setup
+      '/play',
+      '/practice/coordinate-quiz',
+      '/practice/legal-moves',
+      '/practice/algebraic-notation',
+      '/practice/square-colors',
+      '/practice/position-memory',
+      '/game/new',
     ];
 
     return restrictedPaths.some((path) => pathWithoutLocale.startsWith(path));
@@ -32,12 +37,10 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value;
-    // Replace the current locale in the pathname with the new one
     const newPathname = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
     router.push(newPathname);
   };
 
-  // Don't render the language switcher on restricted pages
   if (shouldHideLanguageSwitcher()) {
     return null;
   }
@@ -51,9 +54,9 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         className="px-2 py-1 text-sm bg-transparent border border-border rounded text-muted-foreground hover:text-foreground focus:text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors cursor-pointer"
         aria-label="Select language"
       >
-        {locales.map((locale) => (
-          <option key={locale.code} value={locale.code}>
-            {locale.label}
+        {SUPPORTED_LOCALES.map((locale) => (
+          <option key={locale} value={locale}>
+            {LOCALE_LABELS[locale]}
           </option>
         ))}
       </select>

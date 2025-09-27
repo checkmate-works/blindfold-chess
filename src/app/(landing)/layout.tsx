@@ -1,24 +1,24 @@
 import '../globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { siteUrl, siteName, authorName, GA_MEASUREMENT_ID } from '@/config';
+import { SITE_URL, SITE_NAME, AUTHOR_NAME, GA_MEASUREMENT_ID } from '@/config';
 
 const siteDescription =
   'Free online platform to practice chess without seeing pieces. Master blindfold chess, improve your visualization and calculation skills.';
 
 export const metadata: Metadata = {
-  title: siteName,
+  title: SITE_NAME,
   description: siteDescription,
-  authors: [{ name: authorName }],
-  metadataBase: new URL(siteUrl),
+  authors: [{ name: AUTHOR_NAME }],
+  metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: siteName,
+    title: SITE_NAME,
     description: siteDescription,
-    url: siteUrl,
-    siteName: siteName,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     type: 'website',
     locale: 'en_US',
     images: [
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 512,
         height: 512,
-        alt: `${siteName} Logo`,
+        alt: `${SITE_NAME} Logo`,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteName,
+    title: SITE_NAME,
     description: siteDescription,
     images: ['/logo.png'],
   },

@@ -1,6 +1,21 @@
 import Image from 'next/image';
-import { siteName, locales } from '@/config';
+import { SITE_NAME } from '@/config';
 import { LanguageButton } from './_components/LanguageButton';
+
+const LANGUAGE_OPTIONS = [
+  {
+    code: 'en',
+    label: 'English',
+    flag: '🇬🇧',
+    subtitle: 'Continue in English',
+  },
+  {
+    code: 'ja',
+    label: '日本語',
+    flag: '🇯🇵',
+    subtitle: '日本語で続ける',
+  },
+] as const;
 
 export default function RootPage() {
   return (
@@ -9,7 +24,7 @@ export default function RootPage() {
         <div className="flex justify-center mb-6">
           <Image
             src="/logo.png"
-            alt={`${siteName} Logo`}
+            alt={`${SITE_NAME} Logo`}
             width={96}
             height={96}
             className="w-24 h-24"
@@ -17,11 +32,11 @@ export default function RootPage() {
         </div>
 
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground leading-tight">
-          {siteName}
+          {SITE_NAME}
         </h1>
 
         <div className="flex flex-col sm:flex-row sm:justify-center gap-3 sm:gap-4 items-stretch w-full">
-          {locales.map((locale) => (
+          {LANGUAGE_OPTIONS.map((locale) => (
             <LanguageButton
               key={locale.code}
               href={`/${locale.code}`}

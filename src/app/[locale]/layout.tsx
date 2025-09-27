@@ -7,7 +7,7 @@ import { Providers } from './_lib/providers';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { siteUrl, siteName, authorName, GA_MEASUREMENT_ID } from '@/config';
+import { SITE_URL, SITE_NAME, AUTHOR_NAME, GA_MEASUREMENT_ID } from '@/config';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,12 +28,12 @@ export async function generateMetadata({
 
   return {
     title: {
-      default: siteName,
-      template: `%s | ${siteName}`,
+      default: SITE_NAME,
+      template: `%s | ${SITE_NAME}`,
     },
     description,
-    authors: [{ name: authorName }],
-    metadataBase: new URL(siteUrl),
+    authors: [{ name: AUTHOR_NAME }],
+    metadataBase: new URL(SITE_URL),
     alternates: {
       languages: {
         en: '/en',
@@ -41,10 +41,10 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: siteName,
+      title: SITE_NAME,
       description,
-      url: siteUrl,
-      siteName: siteName,
+      url: SITE_URL,
+      siteName: SITE_NAME,
       type: 'website',
       locale: currentLocale,
       images: [
@@ -52,13 +52,13 @@ export async function generateMetadata({
           url: '/logo.png',
           width: 512,
           height: 512,
-          alt: `${siteName} Logo`,
+          alt: `${SITE_NAME} Logo`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: siteName,
+      title: SITE_NAME,
       description,
       images: ['/logo.png'],
     },
