@@ -2,15 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  FaHome,
-  FaGraduationCap,
-  FaDumbbell,
-  FaBook,
-  FaQuestionCircle,
-  FaList,
-} from 'react-icons/fa';
+import { FaHome } from 'react-icons/fa';
 import type { NavigationItem } from '../_lib/types';
+import { getIcon } from '../_lib/utils';
 
 interface MobileMenuProps {
   title: string;
@@ -80,24 +74,8 @@ export function MobileMenu({ title, items }: MobileMenuProps) {
 
         <nav className="px-4 py-6 space-y-2">
           {items.map((item) => {
-            const getIcon = () => {
-              switch (item.iconName) {
-                case 'home':
-                  return <FaHome className="h-5 w-5" />;
-                case 'learn':
-                  return <FaGraduationCap className="h-5 w-5" />;
-                case 'practice':
-                  return <FaDumbbell className="h-5 w-5" />;
-                case 'manual':
-                  return <FaBook className="h-5 w-5" />;
-                case 'faq':
-                  return <FaQuestionCircle className="h-5 w-5" />;
-                case 'glossary':
-                  return <FaList className="h-5 w-5" />;
-                default:
-                  return null;
-              }
-            };
+            const icon =
+              item.iconName === 'home' ? <FaHome className="h-5 w-5" /> : getIcon(item.iconName);
             return (
               <Link
                 key={item.id}
@@ -105,7 +83,7 @@ export function MobileMenu({ title, items }: MobileMenuProps) {
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:bg-accent rounded-md"
               >
-                {getIcon()}
+                {icon}
                 {item.label}
               </Link>
             );

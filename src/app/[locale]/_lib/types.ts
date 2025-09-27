@@ -1,11 +1,12 @@
 export type Locale = 'en' | 'ja';
 
+export type NavigationIconName = 'home' | 'learn' | 'practice' | 'manual' | 'faq' | 'glossary';
+
 export interface NavigationItem {
   id: string;
   label: string;
   href: string;
-  isLink: boolean;
-  iconName?: string;
+  iconName: NavigationIconName;
 }
 
 export interface ChessTerm {
