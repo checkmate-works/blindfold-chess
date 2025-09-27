@@ -177,8 +177,6 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
   if (gameState === 'setup') {
     return (
       <div className="max-w-4xl mx-auto">
-        <p className="text-muted-foreground mb-8">{translations.description}</p>
-
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
 

@@ -52,6 +52,7 @@ export default async function CoordinateQuizPage({ params }: CoordinateQuizPageP
     <>
       <div className="mb-8">
         <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('practice.coordinateQuiz.description')}</p>
       </div>
       <CoordinateQuizClient locale={locale} translations={translations} />
 

@@ -80,6 +80,7 @@ export default async function PositionMemoryPage({ params }: PositionMemoryPageP
     <>
       <div className="mb-8">
         <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('practice.positionMemory.description')}</p>
       </div>
       <PositionMemoryClient locale={locale} translations={translations} />
     </>

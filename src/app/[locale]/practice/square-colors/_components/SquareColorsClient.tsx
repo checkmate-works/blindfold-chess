@@ -204,8 +204,6 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
   if (gameState === 'setup') {
     return (
       <div>
-        <p className="text-muted-foreground mb-8">{translations.description}</p>
-
         <div className="bg-card rounded-xl shadow-sm border border-border p-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
 

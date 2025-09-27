@@ -38,6 +38,7 @@ export default async function SquareColorsPage({ params }: SquareColorsPageProps
     <>
       <div className="mb-8">
         <PageTitle>{t('practice.squareColors.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('practice.squareColors.description')}</p>
       </div>
       <SquareColorsClient locale={locale} translations={translations} />
 

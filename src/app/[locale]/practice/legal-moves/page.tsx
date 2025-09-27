@@ -58,6 +58,7 @@ export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
     <>
       <div className="mb-8">
         <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
+        <p className="text-muted-foreground">{t('practice.legalMoves.description')}</p>
       </div>
       <LegalMovesClient locale={locale} translations={translations} />
 
