@@ -1,21 +1,17 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface StartMethodSelectorProps {
   value: 'new' | 'pgn';
   onChange: (value: 'new' | 'pgn') => void;
-  translations: {
-    startMethod: string;
-    newGame: string;
-    newGameDescription: string;
-    fromPgn: string;
-    fromPgnDescription: string;
-  };
 }
 
-export function StartMethodSelector({ value, onChange, translations }: StartMethodSelectorProps) {
+export function StartMethodSelector({ value, onChange }: StartMethodSelectorProps) {
+  const t = useTranslations('gameNew');
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">{translations.startMethod}</h2>
+      <h2 className="text-lg font-semibold mb-4">{t('startMethod')}</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button
           onClick={() => onChange('new')}
@@ -45,8 +41,8 @@ export function StartMethodSelector({ value, onChange, translations }: StartMeth
             </div>
           )}
           <div className="pr-8">
-            <h3 className="font-semibold mb-1">{translations.newGame}</h3>
-            <p className="text-sm text-muted-foreground">{translations.newGameDescription}</p>
+            <h3 className="font-semibold mb-1">{t('newGame')}</h3>
+            <p className="text-sm text-muted-foreground">{t('newGameDescription')}</p>
           </div>
         </button>
 
@@ -78,8 +74,8 @@ export function StartMethodSelector({ value, onChange, translations }: StartMeth
             </div>
           )}
           <div className="pr-8">
-            <h3 className="font-semibold mb-1">{translations.fromPgn}</h3>
-            <p className="text-sm text-muted-foreground">{translations.fromPgnDescription}</p>
+            <h3 className="font-semibold mb-1">{t('fromPgn')}</h3>
+            <p className="text-sm text-muted-foreground">{t('fromPgnDescription')}</p>
           </div>
         </button>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { PracticeResult } from '../../_components/PracticeResult';
 import { TimeDisplay } from '../../_components/TimeDisplay';
 import { LegalMovesSettings } from './LegalMovesSettings';
@@ -24,42 +25,19 @@ type GameState = 'setup' | 'playing' | 'finished';
 
 interface LegalMovesClientProps {
   locale: Locale;
-  translations: {
-    title: string;
-    description: string;
-    settings: string;
-    timeLimit: string;
-    seconds: string;
-    pieceSelection: string;
-    selectAtLeastOne: string;
-    pieces: {
-      bishop: string;
-      knight: string;
-      rook: string;
-      queen: string;
-      king: string;
-    };
-    start: string;
-    question: string;
-    correct: string;
-    incorrect: string;
-    legal: string;
-    illegal: string;
-    practice: string;
-    finished: string;
-    correctAnswers: string;
-    accuracy: string;
-    timeTaken: string;
-    averageTime: string;
-    tryAgain: string;
-    morePractice: string;
-    timeRemaining: string;
-  };
 }
 
 const STORAGE_KEY = 'legalMoves_settings';
 
-export function LegalMovesClient({ locale, translations }: LegalMovesClientProps) {
+export function LegalMovesClient({ locale }: LegalMovesClientProps) {
+  const t = useTranslations('practice.legalMoves');
+  const tPractice = useTranslations('practice');
+
+  // Helper function to get question text
+  const getQuestion = (from: string, to: string) =>
+    locale === 'ja'
+      ? `${from}から${to}へ移動できますか？`
+      : `Can piece move from ${from} to ${to}?`;
   // Game settings - Default values (will be updated from localStorage in useEffect)
   const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
   const [selectedPieces, setSelectedPieces] = useState<Record<PieceType, boolean>>({
@@ -229,12 +207,12 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
         onTryAgain={handlePlayAgain}
         locale={locale}
         translations={{
-          correctAnswers: translations.correctAnswers,
-          accuracy: translations.accuracy,
-          timeTaken: translations.timeTaken,
-          averageTime: translations.averageTime,
-          tryAgain: translations.tryAgain,
-          morePractice: translations.morePractice,
+          correctAnswers: t('correctAnswers'),
+          accuracy: t('accuracy'),
+          timeTaken: t('timeTaken'),
+          averageTime: t('averageTime'),
+          tryAgain: tPractice('tryAgain'),
+          morePractice: tPractice('morePractice'),
         }}
       />
     );
@@ -251,7 +229,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
 
           <LegalMovesSettings
             timeLimit={timeLimit}
@@ -260,11 +238,17 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             onPieceToggle={togglePiece}
             locale={locale}
             translations={{
-              timeLimit: translations.timeLimit,
-              seconds: translations.seconds,
-              pieceSelection: translations.pieceSelection,
-              selectAtLeastOne: translations.selectAtLeastOne,
-              pieces: translations.pieces,
+              timeLimit: t('timeLimit'),
+              seconds: t('seconds'),
+              pieceSelection: t('pieceSelection'),
+              selectAtLeastOne: t('selectAtLeastOne'),
+              pieces: {
+                bishop: t('pieces.bishop'),
+                knight: t('pieces.knight'),
+                rook: t('pieces.rook'),
+                queen: t('pieces.queen'),
+                king: t('pieces.king'),
+              },
             }}
           />
 
@@ -273,7 +257,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             disabled={!hasSelectedPieces}
             className="w-full mt-6 bg-foreground hover:bg-foreground/90 disabled:bg-secondary disabled:cursor-not-allowed text-background font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            {translations.start}
+            {t('start')}
           </button>
         </div>
       </div>
@@ -302,13 +286,13 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
         timeLimit={timeLimit}
         timeElapsed={timeElapsed}
         translations={{
-          timeRemaining: translations.timeRemaining,
+          timeRemaining: t('timeRemaining'),
         }}
       />
 
       <div className="bg-card rounded-2xl border border-border p-8 text-center">
         <h2 className="text-2xl font-semibold text-foreground mb-8">
-          {translations.question
+          {getQuestion(currentQuestion.from, currentQuestion.to)
             .replace('{from}', currentQuestion.from)
             .replace('{to}', currentQuestion.to)}
         </h2>
@@ -316,7 +300,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
         <div className="mb-8">
           <div className="text-6xl mb-4">{pieceDisplayMap[currentQuestion.piece]}</div>
           <div className="text-lg text-muted-foreground">
-            {translations.pieces[currentQuestion.piece]}
+            {t(`pieces.${currentQuestion.piece}`)}
           </div>
 
           {showResult && lastAnswer && (
@@ -328,10 +312,8 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
               }`}
             >
               {lastAnswer.correct
-                ? translations.correct
-                : `${translations.incorrect} (${
-                    lastAnswer.isLegal ? translations.legal : translations.illegal
-                  })`}
+                ? t('correct')
+                : `${t('incorrect')} (${lastAnswer.isLegal ? t('legal') : t('illegal')})`}
             </div>
           )}
         </div>
@@ -343,7 +325,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">○</span>
-            <span>{translations.legal}</span>
+            <span>{t('legal')}</span>
           </button>
           <button
             onClick={() => handleAnswer(false)}
@@ -351,7 +333,7 @@ export function LegalMovesClient({ locale, translations }: LegalMovesClientProps
             className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">×</span>
-            <span>{translations.illegal}</span>
+            <span>{t('illegal')}</span>
           </button>
         </div>
       </div>

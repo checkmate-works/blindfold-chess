@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { FaChevronDown, FaEye, FaEyeSlash, FaCopy, FaCheck } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useNotation } from '../_hooks/use-notation';
@@ -22,43 +23,10 @@ import { ControlSettingsModal } from './ControlSettingsModal';
 interface PlayClientProps {
   locale: Locale;
   onAiMoveChange?: (move: string | null) => void;
-  translations: {
-    title?: string;
-    yourMove: string;
-    aiThinking: string;
-    gameOver: string;
-    checkmate: string;
-    stalemate: string;
-    draw: string;
-    youWin: string;
-    youLose: string;
-    check: string;
-    inputMove: string;
-    selectMove: string;
-    submitMove: string;
-    invalidMove: string;
-    newGame: string;
-    resign: string;
-    undo: string;
-    moves: string;
-    confirmResignTitle: string;
-    confirmResignMessage: string;
-    cancel: string;
-    confirmResign: string;
-    confirmUndoTitle: string;
-    confirmUndoMessage: string;
-    confirmUndo: string;
-    configureBoardAppearance: string;
-    configureInputMethod: string;
-    save: string;
-    showBoard: string;
-    hideBoard: string;
-    copyPgn: string;
-    copied: string;
-  };
 }
 
-export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientProps) {
+export function PlayClient({ locale, onAiMoveChange }: PlayClientProps) {
+  const t = useTranslations('play');
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -421,14 +389,14 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
         const newMoves = [...moves, move];
         setLastMove(getLastMoveDetails(newMoves));
       } else {
-        setError(translations.invalidMove);
+        setError(t('invalidMove'));
       }
     },
     [
       moves,
       playerSide,
       pushMove,
-      translations.invalidMove,
+      t,
       getLastMoveDetails,
       markPlayerInteraction,
       isLoading,
@@ -612,7 +580,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                     <FaEyeSlash className="w-4 h-4 text-muted-foreground" />
                   )}
                   <span className="font-medium text-foreground">
-                    {isBoardVisible ? translations.hideBoard : translations.showBoard}
+                    {isBoardVisible ? t('hideBoard') : t('showBoard')}
                   </span>
                 </div>
                 <FaChevronDown
@@ -649,7 +617,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                     onClick={() => setShowSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
                   >
-                    {translations.configureBoardAppearance}
+                    {t('configureBoardAppearance')}
                   </button>
                 </div>
               </div>
@@ -659,32 +627,24 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
             {gameStatus !== 'in_progress' && (
               <div className="mt-6 text-center">
                 <div className="mb-3">
-                  <p className="text-base font-semibold text-foreground mb-1">
-                    {translations.gameOver}
-                  </p>
+                  <p className="text-base font-semibold text-foreground mb-1">{t('gameOver')}</p>
                   <p className="text-sm text-muted-foreground">
-                    {gameStatus === 'checkmate' && translations.checkmate}
-                    {gameStatus === 'stalemate' && translations.stalemate}
-                    {gameStatus === 'draw' && translations.draw}
+                    {gameStatus === 'checkmate' && t('checkmate')}
+                    {gameStatus === 'stalemate' && t('stalemate')}
+                    {gameStatus === 'draw' && t('draw')}
                   </p>
                 </div>
                 {playerResult && (
                   <div className="mt-3">
                     <p className="text-lg font-bold">
                       {playerResult === 'win' && (
-                        <span className="text-green-600 dark:text-green-400">
-                          ✓ {translations.youWin}
-                        </span>
+                        <span className="text-green-600 dark:text-green-400">✓ {t('youWin')}</span>
                       )}
                       {playerResult === 'loss' && (
-                        <span className="text-red-600 dark:text-red-400">
-                          ✗ {translations.youLose}
-                        </span>
+                        <span className="text-red-600 dark:text-red-400">✗ {t('youLose')}</span>
                       )}
                       {playerResult === 'draw' && (
-                        <span className="text-yellow-600 dark:text-yellow-400">
-                          = {translations.draw}
-                        </span>
+                        <span className="text-yellow-600 dark:text-yellow-400">= {t('draw')}</span>
                       )}
                     </p>
                   </div>
@@ -706,7 +666,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                           if (error) setError(null);
                         }}
                         disabled={isLoading}
-                        placeholder={translations.selectMove}
+                        placeholder={t('selectMove')}
                       />
                     ) : (
                       <MoveInput
@@ -718,7 +678,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                         }}
                         onSubmit={handleSubmitMove}
                         disabled={isLoading}
-                        placeholder={translations.inputMove}
+                        placeholder={t('inputMove')}
                         showSuggestions={preferences.enableAutoComplete}
                         showSubmitButton={true}
                       />
@@ -727,7 +687,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground">
-                    {isLoading ? translations.aiThinking : translations.yourMove}
+                    {isLoading ? t('aiThinking') : t('yourMove')}
                   </p>
                 )}
               </div>
@@ -743,14 +703,14 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                     className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
                   >
                     <UndoIcon className="w-4 h-4" />
-                    {translations.undo}
+                    {t('undo')}
                   </button>
                   <button
                     onClick={handleResign}
                     className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
                   >
                     <FlagIcon className="w-4 h-4" />
-                    {translations.resign}
+                    {t('resign')}
                   </button>
                 </div>
 
@@ -760,7 +720,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                     onClick={() => setShowControlSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
                   >
-                    {translations.configureInputMethod}
+                    {t('configureInputMethod')}
                   </button>
                 </div>
               </div>
@@ -773,7 +733,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                   onClick={() => (window.location.href = `/${locale}/game/new`)}
                   className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
                 >
-                  {translations.newGame}
+                  {t('newGame')}
                 </button>
               </div>
             )}
@@ -790,7 +750,7 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
               aria-expanded={isMovesVisible}
             >
               <div className="flex items-center justify-between">
-                <span className="text-foreground">{translations.moves}</span>
+                <span className="text-foreground">{t('moves')}</span>
                 <FaChevronDown
                   className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
                     isMovesVisible ? 'rotate-180' : ''
@@ -914,12 +874,12 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
                       {isCopied ? (
                         <>
                           <FaCheck className="w-3 h-3 text-green-500" />
-                          {translations.copied || 'Copied!'}
+                          {t('copied') || 'Copied!'}
                         </>
                       ) : (
                         <>
                           <FaCopy className="w-3 h-3" />
-                          {translations.copyPgn || 'Copy PGN'}
+                          {t('copyPgn')}
                         </>
                       )}
                     </button>
@@ -935,20 +895,20 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       {showResignConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{translations.confirmResignTitle}</h3>
-            <p className="text-muted-foreground mb-6">{translations.confirmResignMessage}</p>
+            <h3 className="text-lg font-semibold mb-4">{t('confirmResignTitle')}</h3>
+            <p className="text-muted-foreground mb-6">{t('confirmResignMessage')}</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowResignConfirm(false)}
                 className="px-4 py-2 border border-border rounded-md hover:bg-muted"
               >
-                {translations.cancel}
+                {t('cancel')}
               </button>
               <button
                 onClick={confirmResign}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
-                {translations.confirmResign}
+                {t('confirmResign')}
               </button>
             </div>
           </div>
@@ -959,20 +919,20 @@ export function PlayClient({ locale, translations, onAiMoveChange }: PlayClientP
       {showUndoConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{translations.confirmUndoTitle}</h3>
-            <p className="text-muted-foreground mb-6">{translations.confirmUndoMessage}</p>
+            <h3 className="text-lg font-semibold mb-4">{t('confirmUndoTitle')}</h3>
+            <p className="text-muted-foreground mb-6">{t('confirmUndoMessage')}</p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowUndoConfirm(false)}
                 className="px-4 py-2 border border-border rounded-md hover:bg-muted"
               >
-                {translations.cancel}
+                {t('cancel')}
               </button>
               <button
                 onClick={confirmUndo}
                 className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
               >
-                {translations.confirmUndo}
+                {t('confirmUndo')}
               </button>
             </div>
           </div>

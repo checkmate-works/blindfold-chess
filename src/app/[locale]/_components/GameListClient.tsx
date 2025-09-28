@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Game,
   LocalStorageGameRepository,
@@ -15,48 +16,22 @@ import type { Locale } from '../_lib/types';
 
 interface GameListClientProps {
   locale: Locale;
-  translations: {
-    title: string;
-    noGames: string;
-    count: string;
-    moves: string;
-    level: string;
-    win: string;
-    loss: string;
-    draw: string;
-    inProgress: string;
-    sortBy: string;
-    lastPlayedDesc: string;
-    lastPlayedAsc: string;
-    createdDesc: string;
-    createdAsc: string;
-    newGame: string;
-    newGameDescription: string;
-    playAsWhite: string;
-    playAsBlack: string;
-    vsComputer: string;
-    maxGamesReached?: string;
-    deleteGameTitle: string;
-    deleteGameMessage: string;
-    deleteConfirm: string;
-    cancel: string;
-    gameDeletedToast: string;
-    deleteFailedToast: string;
-  };
 }
 
 const MAX_GAMES = 50; // Maximum number of games to keep
 
-export function GameListClient({ locale, translations }: GameListClientProps) {
+export function GameListClient({ locale }: GameListClientProps) {
+  const t = useTranslations('home');
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [deleteConfirmGameId, setDeleteConfirmGameId] = useState<string | null>(null);
-  const gameRepository = new LocalStorageGameRepository();
   const { showToast } = useToast();
 
   useEffect(() => {
+    const gameRepository = new LocalStorageGameRepository();
+
     // Load games from repository
     const loadGames = async () => {
       setIsLoading(true);
@@ -106,13 +81,15 @@ export function GameListClient({ locale, translations }: GameListClientProps) {
   const confirmDeleteGame = async () => {
     if (!deleteConfirmGameId) return;
 
+    const gameRepository = new LocalStorageGameRepository();
+
     try {
       await gameRepository.delete(deleteConfirmGameId);
       setGames((prevGames) => prevGames.filter((game) => game.id !== deleteConfirmGameId));
-      showToast(translations.gameDeletedToast, 'success');
+      showToast(t('gameDeletedToast'), 'success');
     } catch (error) {
       console.error('Failed to delete game:', error);
-      showToast(translations.deleteFailedToast, 'error');
+      showToast(t('deleteFailedToast'), 'error');
     } finally {
       setDeleteConfirmGameId(null);
     }
@@ -132,12 +109,12 @@ export function GameListClient({ locale, translations }: GameListClientProps) {
         locale={locale}
         disabled={isGameLimitReached}
         translations={{
-          newGame: translations.newGame,
-          newGameDescription: translations.newGameDescription,
-          playAsWhite: translations.playAsWhite,
-          playAsBlack: translations.playAsBlack,
-          vsComputer: translations.vsComputer,
-          maxGamesReached: translations.maxGamesReached,
+          newGame: t('newGame'),
+          newGameDescription: t('newGameDescription'),
+          playAsWhite: t('playAsWhite'),
+          playAsBlack: t('playAsBlack'),
+          vsComputer: t('vsComputer'),
+          maxGamesReached: t('maxGamesReached', { max: 50 }),
         }}
       />
 
@@ -163,7 +140,7 @@ export function GameListClient({ locale, translations }: GameListClientProps) {
                 <label
                   htmlFor="sort-select"
                   className="text-muted-foreground"
-                  aria-label={translations.sortBy}
+                  aria-label={t('sortBy')}
                 >
                   <svg
                     className="w-5 h-5"
@@ -185,24 +162,23 @@ export function GameListClient({ locale, translations }: GameListClientProps) {
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="text-sm bg-card border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground cursor-pointer hover:border-muted-foreground transition-colors"
                 >
-                  <option value="lastPlayed-desc">{translations.lastPlayedDesc}</option>
-                  <option value="lastPlayed-asc">{translations.lastPlayedAsc}</option>
-                  <option value="created-desc">{translations.createdDesc}</option>
-                  <option value="created-asc">{translations.createdAsc}</option>
+                  <option value="lastPlayed-desc">{t('lastPlayedDesc')}</option>
+                  <option value="lastPlayed-asc">{t('lastPlayedAsc')}</option>
+                  <option value="created-desc">{t('createdDesc')}</option>
+                  <option value="created-asc">{t('createdAsc')}</option>
                 </select>
               </div>
             ) : null
           }
-          translations={translations}
         />
       )}
 
       <ConfirmationModal
         isOpen={deleteConfirmGameId !== null}
-        title={translations.deleteGameTitle}
-        message={translations.deleteGameMessage}
-        confirmText={translations.deleteConfirm}
-        cancelText={translations.cancel}
+        title={t('deleteGameTitle')}
+        message={t('deleteGameMessage')}
+        confirmText={t('deleteConfirm')}
+        cancelText={t('cancel')}
         confirmVariant="danger"
         onConfirm={confirmDeleteGame}
         onCancel={() => setDeleteConfirmGameId(null)}

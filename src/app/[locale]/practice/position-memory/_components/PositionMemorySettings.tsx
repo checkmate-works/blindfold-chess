@@ -1,6 +1,6 @@
 'use client';
 
-import type { Locale } from '../../../../_lib/types';
+import type { Locale } from '../../../_lib/types';
 
 interface PositionMemorySettingsProps {
   timeLimit: number;

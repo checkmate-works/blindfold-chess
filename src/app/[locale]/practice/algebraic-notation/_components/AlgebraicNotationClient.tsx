@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChessBoard } from '../../_components/ChessBoard';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
@@ -10,27 +11,14 @@ import type { Locale } from '../../../_lib/types';
 interface AlgebraicNotationClientProps {
   exercises: Exercise[];
   locale: Locale;
-  translations: {
-    question: string;
-    correct: string;
-    incorrect: string;
-    correctAnswerIs: string;
-    explanation: string;
-    nextExercise: string;
-    complete: string;
-    pageTitle: string;
-    tryAgain: string;
-    morePractice: string;
-    practiceComplete: string;
-    score: string;
-  };
 }
 
 export default function AlgebraicNotationClient({
   exercises,
   locale,
-  translations: t,
 }: AlgebraicNotationClientProps) {
+  const t = useTranslations('practice.algebraicNotation');
+  const tPractice = useTranslations('practice');
   const [currentExercise, setCurrentExercise] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
@@ -75,10 +63,10 @@ export default function AlgebraicNotationClient({
         onTryAgain={handleRestart}
         locale={locale}
         translations={{
-          practiceComplete: t.practiceComplete,
-          score: t.score,
-          tryAgain: t.tryAgain,
-          morePractice: t.morePractice,
+          practiceComplete: tPractice('practiceComplete'),
+          score: tPractice('score'),
+          tryAgain: tPractice('tryAgain'),
+          morePractice: tPractice('morePractice'),
         }}
       />
     );
@@ -92,7 +80,7 @@ export default function AlgebraicNotationClient({
       {/* Exercise */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-semibold mb-4">{t.question}</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('question')}</h2>
           <div className="bg-card rounded-xl p-6 border border-border">
             <div className="mb-6">
               <p className="text-lg mb-4">{exercise.description[locale]}</p>
@@ -152,16 +140,16 @@ export default function AlgebraicNotationClient({
               }`}
             >
               <p className="text-lg font-semibold mb-2">
-                {selectedAnswer === exercise.correctAnswer ? t.correct : t.incorrect}
+                {selectedAnswer === exercise.correctAnswer ? t('correct') : t('incorrect')}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
-                {t.correctAnswerIs}{' '}
+                {t('correctAnswerIs')}{' '}
                 <span className="font-mono font-bold">{exercise.correctAnswer}</span>
               </p>
 
               {/* Explanation */}
               <div className="text-left bg-muted/50 dark:bg-secondary rounded-lg p-4">
-                <h4 className="text-sm font-medium text-foreground mb-3">{t.explanation}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">{t('explanation')}</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {exercise.explanation[locale].map((point, index) => (
                     <li key={index} className="flex items-start">
@@ -182,7 +170,7 @@ export default function AlgebraicNotationClient({
               onClick={handleNext}
               className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
             >
-              {currentExercise < exercises.length - 1 ? t.nextExercise : t.complete}
+              {currentExercise < exercises.length - 1 ? t('nextExercise') : t('complete')}
             </button>
           </div>
         )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChessBoard } from '../../_components/ChessBoard';
 import { ProgressBar } from '../../_components/ProgressBar';
 import { PracticeComplete } from '../../_components/PracticeComplete';
@@ -23,47 +24,24 @@ type ExtendedGamePhase = GamePhase | 'setup' | 'problem-result';
 
 interface PositionMemoryClientProps {
   locale: Locale;
-  translations: {
-    title: string;
-    description: string;
-    settings: string;
-    timeLimit: string;
-    seconds: string;
-    problemCount: string;
-    problems: string;
-    shuffle: string;
-    start: string;
-    memorize: string;
-    recreate: string;
-    result: string;
-    memorizing: string;
-    timeRemaining: string;
-    memorized: string;
-    recreatePosition: string;
-    submit: string;
-    accuracy: string;
-    correct: string;
-    extra: string;
-    score: string;
-    nextProblem: string;
-    viewResults: string;
-    original: string;
-    yourRecreation: string;
-    practice: string;
-    practiceComplete: string;
-    tryAgain: string;
-    morePractice: string;
-    pieceNames: Record<string, string>;
-    scoreDescriptions: {
-      correct: string;
-      wrongPiece: string;
-      missing: string;
-      extra: string;
-    };
-  };
 }
 
-export function PositionMemoryClient({ locale, translations }: PositionMemoryClientProps) {
+export function PositionMemoryClient({ locale }: PositionMemoryClientProps) {
+  const t = useTranslations('practice.positionMemory');
+  const tPractice = useTranslations('practice');
+  const tNavigation = useTranslations('navigation');
+
+  // Helper function to get piece names
+  const getPieceName = (piece: string) => t(`pieceNames.${piece}`);
+
+  // Helper function to get score description
+  const getScoreDescription = (
+    type: 'correct' | 'wrongPiece' | 'missing' | 'extra',
+    params: Record<string, string>
+  ) => {
+    const template = t(`scoreDescriptions.${type}`);
+    return template.replace(/\{(\w+)\}/g, (match: string, key: string) => params[key] || match);
+  };
   // Game settings
   const [timeLimit, setTimeLimit] = useState(10);
   const [problemCount, setProblemCount] = useState(1);
@@ -199,29 +177,36 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
   const handleSubmit = useCallback(() => {
     if (!originalPosition) return;
 
-    const descriptions = {
-      correct: (piece: string, square: string) =>
-        translations.scoreDescriptions.correct
-          .replace('{piece}', piece)
-          .replace('{square}', square),
+    // Create pieceNames object for calculateAccuracy
+    const pieceNames: Record<string, string> = {
+      K: t('pieceNames.K'),
+      Q: t('pieceNames.Q'),
+      R: t('pieceNames.R'),
+      B: t('pieceNames.B'),
+      N: t('pieceNames.N'),
+      P: t('pieceNames.P'),
+      k: t('pieceNames.k'),
+      q: t('pieceNames.q'),
+      r: t('pieceNames.r'),
+      b: t('pieceNames.b'),
+      n: t('pieceNames.n'),
+      p: t('pieceNames.p'),
+    };
+
+    // Create descriptions object for calculateAccuracy
+    const accuracyDescriptions = {
+      correct: (piece: string, square: string) => getScoreDescription('correct', { piece, square }),
       wrongPiece: (square: string, expected: string, actual: string) =>
-        translations.scoreDescriptions.wrongPiece
-          .replace('{square}', square)
-          .replace('{expected}', expected)
-          .replace('{actual}', actual),
-      missing: (piece: string, square: string) =>
-        translations.scoreDescriptions.missing
-          .replace('{piece}', piece)
-          .replace('{square}', square),
-      extra: (piece: string, square: string) =>
-        translations.scoreDescriptions.extra.replace('{piece}', piece).replace('{square}', square),
+        getScoreDescription('wrongPiece', { square, expected, actual }),
+      missing: (piece: string, square: string) => getScoreDescription('missing', { piece, square }),
+      extra: (piece: string, square: string) => getScoreDescription('extra', { piece, square }),
     };
 
     const accuracy = calculateAccuracy(
       originalPosition.fen,
       recreatedPosition,
-      translations.pieceNames,
-      descriptions
+      pieceNames,
+      accuracyDescriptions
     );
 
     setCurrentAccuracy(accuracy);
@@ -229,7 +214,7 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
 
     // Always show problem-result phase first
     setPhase('problem-result');
-  }, [originalPosition, recreatedPosition, translations]);
+  }, [originalPosition, recreatedPosition, t, getScoreDescription, getPieceName]);
 
   const handleNextProblem = useCallback(() => {
     const nextIndex = currentProblemIndex + 1;
@@ -257,7 +242,7 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
 
           <PositionMemorySettings
             timeLimit={timeLimit}
@@ -274,11 +259,11 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             onUseCustomFenChange={setUseCustomFen}
             onCustomFenInputChange={setCustomFenInput}
             translations={{
-              timeLimit: translations.timeLimit,
-              seconds: translations.seconds,
-              problemCount: translations.problemCount,
-              problems: translations.problems,
-              shuffle: translations.shuffle,
+              timeLimit: t('timeLimit'),
+              seconds: t('seconds'),
+              problemCount: t('problemCount'),
+              problems: t('problems'),
+              shuffle: t('shuffle'),
               useCustomFen: locale === 'ja' ? 'カスタムFENを使用' : 'Use Custom FEN',
               customFenPlaceholder:
                 locale === 'ja'
@@ -293,16 +278,13 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             disabled={useCustomFen && (customFenError !== null || !customFenInput.trim())}
             className="w-full mt-6 bg-foreground hover:bg-foreground/90 disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed text-background font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            {translations.start}
+            {t('start')}
           </button>
         </div>
 
         <div className="mt-8 pt-6 border-t border-border">
           <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
+            items={[{ label: tNavigation('practice'), href: '/practice' }, { label: t('title') }]}
             locale={locale}
           />
         </div>
@@ -317,9 +299,9 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
         {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-foreground mb-2">{translations.memorizing}</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('memorizing')}</h2>
           <p className="text-lg text-muted-foreground">
-            {translations.timeRemaining}: {memorizeTimeLeft}
+            {t('timeRemaining')}: {memorizeTimeLeft}
             {locale === 'ja' ? '秒' : 's'}
           </p>
         </div>
@@ -339,16 +321,13 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             onClick={handleMemorized}
             className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
           >
-            {translations.memorized}
+            {t('memorized')}
           </button>
         </div>
 
         <div className="mt-8 pt-6 border-t border-border">
           <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
+            items={[{ label: tNavigation('practice'), href: '/practice' }, { label: t('title') }]}
             locale={locale}
           />
         </div>
@@ -363,9 +342,7 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
         {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            {translations.recreatePosition}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('recreatePosition')}</h2>
         </div>
 
         <div className="flex justify-center">
@@ -395,16 +372,13 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             onClick={handleSubmit}
             className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
           >
-            {translations.submit}
+            {t('submit')}
           </button>
         </div>
 
         <div className="mt-8 pt-6 border-t border-border">
           <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
+            items={[{ label: tNavigation('practice'), href: '/practice' }, { label: t('title') }]}
             locale={locale}
           />
         </div>
@@ -418,31 +392,29 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
           <h2 className="text-2xl font-bold text-foreground text-center mb-6">
-            {translations.accuracy}: {currentAccuracy.accuracy.toFixed(1)}%
+            {t('accuracy')}: {currentAccuracy.accuracy.toFixed(1)}%
           </h2>
 
           <div className="grid grid-cols-3 gap-4 text-center mb-6">
             <div>
               <p className="text-2xl font-bold text-green-600">{currentAccuracy.correctPieces}</p>
-              <p className="text-sm text-muted-foreground">{translations.correct}</p>
+              <p className="text-sm text-muted-foreground">{t('correct')}</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-red-600">{currentAccuracy.extraPieces}</p>
-              <p className="text-sm text-muted-foreground">{translations.extra}</p>
+              <p className="text-sm text-muted-foreground">{t('extra')}</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
                 {currentAccuracy.netScore.toFixed(1)}
               </p>
-              <p className="text-sm text-muted-foreground">{translations.score}</p>
+              <p className="text-sm text-muted-foreground">{t('score')}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">
-                {translations.original}
-              </p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
               <div className="w-full max-w-xs mx-auto">
                 <ChessBoard
                   initialFen={originalPosition.fen}
@@ -453,7 +425,7 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-2">
-                {translations.yourRecreation}
+                {t('yourRecreation')}
               </p>
               <div className="w-full max-w-xs mx-auto">
                 <ChessBoard
@@ -470,24 +442,21 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
               onClick={handleNextProblem}
               className="w-full mt-6 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
             >
-              {translations.nextProblem}
+              {t('nextProblem')}
             </button>
           ) : (
             <button
               onClick={() => setPhase('result')}
               className="w-full mt-6 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
             >
-              {translations.viewResults}
+              {t('viewResults')}
             </button>
           )}
         </div>
 
         <div className="mt-8 pt-6 border-t border-border">
           <Breadcrumb
-            items={[
-              { label: translations.practice, href: '/practice' },
-              { label: translations.title },
-            ]}
+            items={[{ label: tNavigation('practice'), href: '/practice' }, { label: t('title') }]}
             locale={locale}
           />
         </div>
@@ -509,10 +478,10 @@ export function PositionMemoryClient({ locale, translations }: PositionMemoryCli
         onTryAgain={handlePlayAgain}
         locale={locale}
         translations={{
-          practiceComplete: translations.practiceComplete,
-          score: `${translations.accuracy}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`,
-          tryAgain: translations.tryAgain,
-          morePractice: translations.morePractice,
+          practiceComplete: tPractice('practiceComplete'),
+          score: `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`,
+          tryAgain: tPractice('tryAgain'),
+          morePractice: tPractice('morePractice'),
         }}
       />
     );

@@ -1,29 +1,19 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { Side } from '../../../play/_lib/types';
 
 interface ColorSelectorProps {
   value: Side;
   onChange: (value: Side) => void;
   disabled?: boolean;
-  translations: {
-    selectColor: string;
-    playAsWhite: string;
-    playAsBlack: string;
-    whiteDescription: string;
-    blackDescription: string;
-  };
 }
 
-export function ColorSelector({
-  value,
-  onChange,
-  disabled = false,
-  translations,
-}: ColorSelectorProps) {
+export function ColorSelector({ value, onChange, disabled = false }: ColorSelectorProps) {
+  const t = useTranslations('gameNew');
   return (
     <div className={disabled ? 'opacity-60 pointer-events-none' : ''}>
-      <h2 className="text-lg font-semibold mb-4">{translations.selectColor}</h2>
+      <h2 className="text-lg font-semibold mb-4">{t('selectColor')}</h2>
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => onChange('white')}
@@ -61,10 +51,8 @@ export function ColorSelector({
                 </g>
               </svg>
             </div>
-            <h3 className="font-semibold text-lg mb-2">{translations.playAsWhite}</h3>
-            <p className="text-sm text-muted-foreground text-center">
-              {translations.whiteDescription}
-            </p>
+            <h3 className="font-semibold text-lg mb-2">{t('playAsWhite')}</h3>
+            <p className="text-sm text-muted-foreground text-center">{t('whiteDescription')}</p>
           </div>
         </button>
 
@@ -112,10 +100,8 @@ export function ColorSelector({
                 </g>
               </svg>
             </div>
-            <h3 className="font-semibold text-lg mb-2">{translations.playAsBlack}</h3>
-            <p className="text-sm text-muted-foreground text-center">
-              {translations.blackDescription}
-            </p>
+            <h3 className="font-semibold text-lg mb-2">{t('playAsBlack')}</h3>
+            <p className="text-sm text-muted-foreground text-center">{t('blackDescription')}</p>
           </div>
         </button>
       </div>

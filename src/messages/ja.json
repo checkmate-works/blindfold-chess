@@ -297,15 +297,17 @@
     }
   },
   "home": {
-    "title": "ゲーム履歴",
-    "noGames": "まだゲームがありません",
-    "gamesCount": "個のゲーム",
-    "moves": "手",
-    "level": "Lv",
-    "win": "勝利",
-    "loss": "敗北",
-    "draw": "引き分け",
-    "inProgress": "進行中",
+    "gameList": {
+      "title": "ゲーム履歴",
+      "noGames": "まだゲームがありません",
+      "count": "個のゲーム",
+      "moves": "手",
+      "level": "Lv",
+      "win": "勝利",
+      "loss": "敗北",
+      "draw": "引き分け",
+      "inProgress": "進行中"
+    },
     "sortBy": "並び替え",
     "lastPlayedDesc": "最終プレイ ↓",
     "lastPlayedAsc": "最終プレイ ↑",

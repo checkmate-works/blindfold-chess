@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Chess } from 'chess.js';
 import { StartMethodSelector } from './StartMethodSelector';
@@ -15,39 +16,10 @@ type StartMethod = 'new' | 'pgn';
 
 interface NewGameFormProps {
   locale: Locale;
-  translations: {
-    title: string;
-    // Start Method
-    startMethod: string;
-    newGame: string;
-    newGameDescription: string;
-    fromPgn: string;
-    fromPgnDescription: string;
-    // PGN
-    pgnTitle: string;
-    pgnPlaceholder: string;
-    validWithMoves: string;
-    validWithMovesCount: string;
-    invalidPgn: string;
-    derivedFromPgn: string;
-    // Color
-    selectColor: string;
-    playAsWhite: string;
-    playAsBlack: string;
-    whiteDescription: string;
-    blackDescription: string;
-    // Skill Level
-    selectLevel: string;
-    beginner: string;
-    intermediate: string;
-    advanced: string;
-    // Buttons
-    startGame: string;
-    cancel: string;
-  };
 }
 
-export function NewGameForm({ locale, translations }: NewGameFormProps) {
+export function NewGameForm({ locale }: NewGameFormProps) {
+  const t = useTranslations('newGame');
   const router = useRouter();
   const [startMethod, setStartMethod] = useState<StartMethod>('new');
   const [color, setColor] = useState<Side>('white');
@@ -84,7 +56,7 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
 
     // Real-time validation
     if (value.trim() && !validatePgn(value)) {
-      setPgnError(translations.invalidPgn);
+      setPgnError(t('invalidPgn'));
     }
   };
 
@@ -95,13 +67,13 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
       let moves: string[] | undefined;
       if (startMethod === 'pgn') {
         if (!pgn.trim()) {
-          setPgnError(translations.invalidPgn);
+          setPgnError(t('invalidPgn'));
           setIsLoading(false);
           return;
         }
 
         if (!validatePgn(pgn)) {
-          setPgnError(translations.invalidPgn);
+          setPgnError(t('invalidPgn'));
           setIsLoading(false);
           return;
         }
@@ -124,7 +96,7 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
 
       router.push(`/${locale}/play?${searchParams.toString()}`);
     } catch {
-      setPgnError(translations.invalidPgn);
+      setPgnError(t('invalidPgn'));
     } finally {
       setIsLoading(false);
     }
@@ -137,20 +109,11 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
   return (
     <div className="space-y-8">
       {/* Start Method Selector */}
-      <StartMethodSelector
-        value={startMethod}
-        onChange={setStartMethod}
-        translations={translations}
-      />
+      <StartMethodSelector value={startMethod} onChange={setStartMethod} />
 
       {/* PGN Input (only show if pgn method selected) */}
       {startMethod === 'pgn' && (
-        <PgnInput
-          value={pgn}
-          onChange={handlePgnChange}
-          error={pgnError}
-          translations={translations}
-        />
+        <PgnInput value={pgn} onChange={handlePgnChange} error={pgnError} />
       )}
 
       {/* Color Selection (disabled when using PGN with valid moves) */}
@@ -159,15 +122,14 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
           value={color}
           onChange={setColor}
           disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
-          translations={translations}
         />
         {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
-          <p className="text-sm text-muted-foreground mt-2">{translations.derivedFromPgn}</p>
+          <p className="text-sm text-muted-foreground mt-2">{t('derivedFromPgn')}</p>
         )}
       </div>
 
       {/* Skill Level Selection */}
-      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} translations={translations} />
+      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
       {/* Action Buttons */}
       <div className="flex gap-4 pt-4">
@@ -175,14 +137,14 @@ export function NewGameForm({ locale, translations }: NewGameFormProps) {
           onClick={handleCancel}
           className="flex-1 px-6 py-3 text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg font-medium transition-colors"
         >
-          {translations.cancel}
+          {t('cancel')}
         </button>
         <button
           onClick={handleStartGame}
           disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
           className="flex-1 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
         >
-          {isLoading ? '...' : translations.startGame}
+          {isLoading ? '...' : t('startGame')}
         </button>
       </div>
     </div>

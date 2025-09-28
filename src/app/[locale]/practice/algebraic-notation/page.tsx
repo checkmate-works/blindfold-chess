@@ -14,27 +14,12 @@ export default async function AlgebraicNotationPage({ params }: AlgebraicNotatio
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
-  const translations = {
-    question: t('practice.algebraicNotation.question'),
-    correct: t('practice.algebraicNotation.correct'),
-    incorrect: t('practice.algebraicNotation.incorrect'),
-    correctAnswerIs: t('practice.algebraicNotation.correctAnswerIs'),
-    explanation: t('practice.algebraicNotation.explanation'),
-    nextExercise: t('practice.algebraicNotation.nextExercise'),
-    complete: t('practice.algebraicNotation.complete'),
-    pageTitle: t('practice.algebraicNotation.pageTitle'),
-    tryAgain: t('practice.tryAgain'),
-    morePractice: t('practice.morePractice'),
-    practiceComplete: t('practice.practiceComplete'),
-    score: t('practice.score'),
-  };
-
   return (
     <>
       <div className="mb-8">
         <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
       </div>
-      <AlgebraicNotationClient exercises={exercises} locale={locale} translations={translations} />
+      <AlgebraicNotationClient exercises={exercises} locale={locale} />
 
       {/* Breadcrumb at bottom */}
       <div className="mt-8 pt-6 border-t border-border">

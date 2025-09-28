@@ -10,27 +10,6 @@ import type { Locale } from '../../../_lib/types';
 
 interface SquareColorsClientProps {
   locale: Locale;
-  translations: {
-    title: string;
-    description: string;
-    settings: string;
-    timeLimit: string;
-    seconds: string;
-    start: string;
-    white: string;
-    black: string;
-    correct: string;
-    incorrect: string;
-    finished: string;
-    correctAnswers: string;
-    accuracy: string;
-    timeTaken: string;
-    averageTime: string;
-    tryAgain: string;
-    morePractice: string;
-    practice: string;
-    timeRemaining: string;
-  };
 }
 
 interface GameStats {
@@ -44,8 +23,9 @@ type GameState = 'setup' | 'playing' | 'finished';
 
 const STORAGE_KEY = 'squareColors_settings';
 
-export default function SquareColorsClient({ locale, translations }: SquareColorsClientProps) {
+export default function SquareColorsClient({ locale }: SquareColorsClientProps) {
   const t = useTranslations('practice.squareColors');
+  const tPractice = useTranslations('practice');
 
   // Default settings (will be updated from localStorage in useEffect)
   const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
@@ -191,12 +171,12 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
         onTryAgain={handlePlayAgain}
         locale={locale}
         translations={{
-          correctAnswers: translations.correctAnswers,
-          accuracy: translations.accuracy,
-          timeTaken: translations.timeTaken,
-          averageTime: translations.averageTime,
-          tryAgain: translations.tryAgain,
-          morePractice: translations.morePractice,
+          correctAnswers: t('correctAnswers'),
+          accuracy: t('accuracy'),
+          timeTaken: t('timeTaken'),
+          averageTime: t('averageTime'),
+          tryAgain: tPractice('tryAgain'),
+          morePractice: tPractice('morePractice'),
         }}
       />
     );
@@ -206,15 +186,15 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
     return (
       <div>
         <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
 
           <div className="mb-6">
             <TimeSlider
               timeLimit={timeLimit}
               onTimeLimitChange={setTimeLimit}
               translations={{
-                timeLimit: translations.timeLimit,
-                seconds: translations.seconds,
+                timeLimit: t('timeLimit'),
+                seconds: t('seconds'),
               }}
               locale={locale}
             />
@@ -224,7 +204,7 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
             onClick={startGame}
             className="w-full py-3 px-6 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
-            {translations.start}
+            {t('start')}
           </button>
         </div>
       </div>
@@ -242,7 +222,7 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
         timeLimit={timeLimit}
         timeElapsed={timeElapsed}
         translations={{
-          timeRemaining: translations.timeRemaining,
+          timeRemaining: t('timeRemaining'),
         }}
       />
 
@@ -262,7 +242,7 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
                   : 'text-red-600 dark:text-red-400'
               }`}
             >
-              {lastAnswer.correct ? translations.correct : translations.incorrect}
+              {lastAnswer.correct ? t('correct') : t('incorrect')}
             </div>
           )}
         </div>
@@ -273,14 +253,14 @@ export default function SquareColorsClient({ locale, translations }: SquareColor
             disabled={showResult}
             className="px-6 py-4 bg-gray-100 dark:bg-gray-200 hover:bg-gray-200 dark:hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-900 rounded-lg font-medium text-lg transition-colors"
           >
-            {translations.white}
+            {t('white')}
           </button>
           <button
             onClick={() => handleAnswer('dark')}
             disabled={showResult}
             className="px-6 py-4 bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-lg transition-colors"
           >
-            {translations.black}
+            {t('black')}
           </button>
         </div>
       </div>

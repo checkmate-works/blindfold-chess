@@ -297,15 +297,17 @@
     }
   },
   "home": {
-    "title": "Your Games",
-    "noGames": "No games yet",
-    "gamesCount": "games",
-    "moves": "moves",
-    "level": "Lv",
-    "win": "Win",
-    "loss": "Loss",
-    "draw": "Draw",
-    "inProgress": "In Progress",
+    "gameList": {
+      "title": "Your Games",
+      "noGames": "No games yet",
+      "count": "games",
+      "moves": "moves",
+      "level": "Lv",
+      "win": "Win",
+      "loss": "Loss",
+      "draw": "Draw",
+      "inProgress": "In Progress"
+    },
     "sortBy": "Sort by",
     "lastPlayedDesc": "Last played ↓",
     "lastPlayedAsc": "Last played ↑",

@@ -1,33 +1,29 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { validatePgnWithDetails } from '../../../play/_lib/pgn-parser';
 
 interface PgnInputProps {
   value: string;
   onChange: (value: string) => void;
   error?: string | null;
-  translations: {
-    pgnTitle: string;
-    pgnPlaceholder: string;
-    validWithMoves: string;
-    validWithMovesCount: string;
-  };
 }
 
-export function PgnInput({ value, onChange, error, translations }: PgnInputProps) {
+export function PgnInput({ value, onChange, error }: PgnInputProps) {
+  const t = useTranslations('gameNew');
   const validationResult = value.trim() ? validatePgnWithDetails(value) : null;
   const showSuccess = validationResult?.isValid && value.trim();
   const showError = validationResult && !validationResult.isValid;
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">{translations.pgnTitle}</h2>
+      <h2 className="text-lg font-semibold mb-4">{t('pgnTitle')}</h2>
       <div className="space-y-3">
         <div className="relative">
           <textarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={translations.pgnPlaceholder}
+            placeholder={t('pgnPlaceholder')}
             className={`
               w-full h-40 px-4 py-3 border-2 rounded-lg bg-muted/20 font-mono text-sm resize-none
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
@@ -56,8 +52,7 @@ export function PgnInput({ value, onChange, error, translations }: PgnInputProps
         </div>
         {showSuccess && validationResult?.moveCount !== undefined && (
           <p className="text-sm text-muted-foreground">
-            ✓ {translations.validWithMoves} {validationResult.moveCount}{' '}
-            {translations.validWithMovesCount}
+            ✓ {t('validWithMoves')} {validationResult.moveCount} {t('validWithMovesCount')}
           </p>
         )}
         {showError && <p className="text-sm text-red-600">✗ {error || validationResult.error}</p>}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Square } from 'chess.js';
 import {
   generateSingleQuestion,
@@ -20,37 +21,13 @@ type GameState = 'setup' | 'playing' | 'finished';
 
 interface CoordinateQuizClientProps {
   locale: Locale;
-  translations: {
-    title: string;
-    description: string;
-    settings: string;
-    timeLimit: string;
-    boardOrientation: string;
-    white: string;
-    black: string;
-    random: string;
-    start: string;
-    clickSquare: string;
-    whiteToMove: string;
-    blackToMove: string;
-    correct: string;
-    wrong: string;
-    timeRemaining: string;
-    finished: string;
-    points: string;
-    correctAnswers: string;
-    accuracy: string;
-    timeTaken: string;
-    averageTime: string;
-    tryAgain: string;
-    morePractice: string;
-    practice: string;
-  };
 }
 
 const STORAGE_KEY = 'coordinateQuiz_settings';
 
-export default function CoordinateQuizClient({ locale, translations }: CoordinateQuizClientProps) {
+export default function CoordinateQuizClient({ locale }: CoordinateQuizClientProps) {
+  const t = useTranslations('practice.coordinateQuiz');
+  const tPractice = useTranslations('practice');
   // Game settings - Default values (will be updated from localStorage in useEffect)
   const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
   const [boardOrientation, setBoardOrientation] = useState<BoardOrientation>('white');
@@ -179,7 +156,7 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
     return (
       <div className="max-w-4xl mx-auto">
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{translations.settings}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
 
           <CoordinateQuizSettings
             timeLimit={timeLimit}
@@ -188,11 +165,11 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
             onBoardOrientationChange={setBoardOrientation}
             locale={locale}
             translations={{
-              timeLimit: translations.timeLimit,
-              boardOrientation: translations.boardOrientation,
-              white: translations.white,
-              black: translations.black,
-              random: translations.random,
+              timeLimit: t('timeLimit'),
+              boardOrientation: t('boardOrientation'),
+              white: t('white'),
+              black: t('black'),
+              random: t('random'),
             }}
           />
 
@@ -200,7 +177,7 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
             onClick={startGame}
             className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors mt-6"
           >
-            {translations.start}
+            {t('start')}
           </button>
         </div>
       </div>
@@ -220,12 +197,12 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
         onTryAgain={startGame}
         locale={locale}
         translations={{
-          correctAnswers: translations.correctAnswers,
-          accuracy: translations.accuracy,
-          timeTaken: translations.timeTaken,
-          averageTime: translations.averageTime,
-          tryAgain: translations.tryAgain,
-          morePractice: translations.morePractice,
+          correctAnswers: t('correctAnswers'),
+          accuracy: t('accuracy'),
+          timeTaken: t('timeTaken'),
+          averageTime: t('averageTime'),
+          tryAgain: tPractice('tryAgain'),
+          morePractice: tPractice('morePractice'),
         }}
       />
     );
@@ -240,10 +217,10 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
         timeLimit={timeLimit}
         timeElapsed={timeElapsed}
         translations={{
-          timeRemaining: translations.timeRemaining,
+          timeRemaining: t('timeRemaining'),
         }}
         formatTime={formatTime}
-        leftContent={`${translations.correct}: ${correctAnswers} / ${translations.wrong}: ${wrongAnswers}`}
+        leftContent={`${t('correct')}: ${correctAnswers} / ${t('wrong')}: ${wrongAnswers}`}
       />
 
       {currentQuestion && (
@@ -251,7 +228,7 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
           <h2 className="text-4xl font-bold text-foreground mb-2">
             {currentQuestion.targetSquare}
           </h2>
-          <p className="text-lg text-muted-foreground">{translations.clickSquare}</p>
+          <p className="text-lg text-muted-foreground">{t('clickSquare')}</p>
         </div>
       )}
 
@@ -265,9 +242,7 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
             }`}
           />
           <span className="text-sm font-medium text-muted-foreground">
-            {currentQuestion?.orientation === 'white'
-              ? translations.whiteToMove
-              : translations.blackToMove}
+            {currentQuestion?.orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
           </span>
         </div>
         <CoordinateQuizBoard
@@ -286,10 +261,10 @@ export default function CoordinateQuizClient({ locale, translations }: Coordinat
 
       <div className="flex justify-between text-sm text-muted-foreground">
         <span>
-          {translations.correct}: {correctAnswers}
+          {t('correct')}: {correctAnswers}
         </span>
         <span>
-          {translations.wrong}: {wrongAnswers}
+          {t('wrong')}: {wrongAnswers}
         </span>
       </div>
     </div>
