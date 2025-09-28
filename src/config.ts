@@ -5,3 +5,5 @@ export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export const SUPPORTED_LOCALES = ['en', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
+
+export const MAX_GAMES = 20;

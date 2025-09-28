@@ -1,33 +1,21 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Game } from '../play/_lib/game-repository';
-import { TrashIcon } from './Icons';
-import type { Locale } from '../_lib/types';
+import { useTranslations } from 'next-intl';
+import { FaTrash } from 'react-icons/fa';
+import { ColorIcon } from '../../_components/ColorIcon';
+import { Game } from '../../play/_lib/game-repository';
+import type { Locale } from '../../_lib/types';
 
-interface GameListItemProps {
+type Props = {
   game: Game;
   locale: Locale;
   onDelete: (gameId: string) => void;
-  translations: {
-    moves: string;
-    level: string;
-    win: string;
-    loss: string;
-    draw: string;
-    inProgress: string;
-  };
-}
-
-const ColorIcon = ({ color }: { color: 'white' | 'black' }) => {
-  if (color === 'white') {
-    return <div className="w-4 h-4 rounded-full bg-white border border-border" />;
-  }
-  return <div className="w-4 h-4 rounded-full bg-foreground border border-border" />;
 };
 
-export function GameListItem({ game, locale, onDelete, translations }: GameListItemProps) {
+export function GameListItem({ game, locale, onDelete }: Props) {
   const router = useRouter();
+  const t = useTranslations('home.gameList');
 
   const handleGameClick = () => {
     // Build URL parameters for resuming the game
@@ -71,13 +59,13 @@ export function GameListItem({ game, locale, onDelete, translations }: GameListI
   const getStatusText = (status: Game['status']) => {
     switch (status) {
       case 'win':
-        return translations.win;
+        return t('win');
       case 'loss':
-        return translations.loss;
+        return t('loss');
       case 'draw':
-        return translations.draw;
+        return t('draw');
       default:
-        return translations.inProgress;
+        return t('inProgress');
     }
   };
 
@@ -108,13 +96,13 @@ export function GameListItem({ game, locale, onDelete, translations }: GameListI
               <span className="text-muted-foreground">•</span>
 
               <span className="font-medium">
-                {game.moves.length} {translations.moves}
+                {game.moves.length} {t('moves')}
               </span>
 
               <span className="text-muted-foreground">•</span>
 
               <span className="font-medium">
-                {translations.level} {game.skillLevel}
+                {t('level')} {game.skillLevel}
               </span>
             </div>
           </div>
@@ -129,7 +117,7 @@ export function GameListItem({ game, locale, onDelete, translations }: GameListI
               className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Delete game"
             >
-              <TrashIcon className="w-4 h-4" />
+              <FaTrash className="w-4 h-4" />
             </button>
           </div>
         </div>

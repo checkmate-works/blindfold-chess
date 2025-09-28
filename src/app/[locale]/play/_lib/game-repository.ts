@@ -1,4 +1,5 @@
 import { AlgebraicNotation, Side, SkillLevel } from './types';
+import { GameSortOption, SortDirection } from '../../(home)/_lib/types';
 
 export type GameStatus = 'in_progress' | 'win' | 'loss' | 'draw';
 
@@ -12,10 +13,7 @@ export type Game = {
   status: GameStatus;
 };
 
-export type GameSortOption = 'lastPlayed' | 'created';
-export type SortDirection = 'asc' | 'desc';
-
-export interface IGameRepository {
+interface IGameRepository {
   save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string>;
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
