@@ -99,12 +99,13 @@ export function GameListClient({ locale }: Props) {
     <>
       <div className="mb-6 flex items-center justify-between">
         <PageTitle>{tGameList('title')}</PageTitle>
-        <SortButton
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          isLoading={isLoading}
-          onSortChange={handleSortChange}
-        />
+        {!isLoading && games.length > 0 && (
+          <SortButton
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+          />
+        )}
       </div>
 
       {isLoading ? (

@@ -7,11 +7,10 @@ import type { GameSortOption, SortDirection } from '@/lib/types';
 type Props = {
   sortBy: GameSortOption;
   sortDirection: SortDirection;
-  isLoading: boolean;
   onSortChange: (value: string) => void;
 };
 
-export function SortButton({ sortBy, sortDirection, isLoading, onSortChange }: Props) {
+export function SortButton({ sortBy, sortDirection, onSortChange }: Props) {
   const t = useTranslations('home');
 
   return (
@@ -23,8 +22,7 @@ export function SortButton({ sortBy, sortDirection, isLoading, onSortChange }: P
         id="sort-select"
         value={`${sortBy}-${sortDirection}`}
         onChange={(e) => onSortChange(e.target.value)}
-        disabled={isLoading}
-        className="text-sm bg-card border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground cursor-pointer hover:border-muted-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="text-sm bg-card border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground cursor-pointer hover:border-muted-foreground transition-colors"
       >
         <option value="lastPlayed-desc">{t('lastPlayedDesc')}</option>
         <option value="lastPlayed-asc">{t('lastPlayedAsc')}</option>
