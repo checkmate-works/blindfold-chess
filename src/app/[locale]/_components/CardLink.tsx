@@ -1,14 +1,14 @@
 import { Link } from '@/i18n/routing';
 
-interface CardLinkProps {
+type Props = {
   href: string;
   icon: string;
   title: string;
   description: string;
   locale?: string;
-}
+};
 
-export function CardLink({ href, icon, title, description, locale }: CardLinkProps) {
+export function CardLink({ href, icon, title, description, locale }: Props) {
   return (
     <Link
       href={href}

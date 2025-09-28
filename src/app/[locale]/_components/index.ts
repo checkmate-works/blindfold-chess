@@ -6,3 +6,5 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';
 export { PageTitle } from './PageTitle';
+export { SectionTitle } from './SectionTitle';
+export { SubsectionTitle } from './SubsectionTitle';

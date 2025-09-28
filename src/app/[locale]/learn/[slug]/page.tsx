@@ -1,15 +1,21 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getArticle, getAvailableArticles } from '../_lib/learn';
-import { Breadcrumb, MarkdownRenderer, CardLink, PageTitle } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  MarkdownRenderer,
+  CardLink,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
-interface LearnArticlePageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
     slug: string;
   }>;
-}
+};
 
 export async function generateStaticParams() {
   const slugs = getAvailableArticles();
@@ -37,7 +43,7 @@ const practiceModules: Record<string, Array<{ module: string; icon: string }>> =
   'position-memory': [{ module: 'position-memory', icon: '🧠' }],
 };
 
-export default async function LearnArticlePage({ params }: LearnArticlePageProps) {
+export default async function LearnArticlePage({ params }: Props) {
   const { locale, slug } = await params;
   const article = await getArticle(slug, locale);
   const t = await getTranslations({ locale });
@@ -47,21 +53,16 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
   }
 
   return (
-    <>
-      {/* Page Title */}
-      <div className="mb-8">
-        <PageTitle>{article.metadata.title}</PageTitle>
-      </div>
+    <div className="space-y-8">
+      <PageTitle>{article.metadata.title}</PageTitle>
 
-      {/* Article Content */}
-      <article className="prose prose-slate dark:prose-invert max-w-none">
+      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
-      {/* Practice link if available */}
       {practiceModules[slug] && (
-        <div className="mt-12 p-6 bg-secondary/30 rounded-lg border border-border">
-          <h2 className="text-xl font-semibold mb-4">{t('learn.practiceYourSkills')}</h2>
+        <div className="p-6 bg-secondary/30 rounded-lg border border-border space-y-4">
+          <SectionTitle className="text-xl">{t('learn.practiceYourSkills')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {practiceModules[slug].map((practice) => {
               // Handle special cases for module naming
@@ -93,8 +94,7 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
         </div>
       )}
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-12 pt-6 border-t border-border">
+      <div className="pt-6 border-t border-border">
         <Breadcrumb
           items={[
             { label: t('navigation.learn'), href: '/learn' },
@@ -103,6 +103,6 @@ export default async function LearnArticlePage({ params }: LearnArticlePageProps
           locale={locale}
         />
       </div>
-    </>
+    </div>
   );
 }

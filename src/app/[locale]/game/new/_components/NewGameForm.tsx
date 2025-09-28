@@ -104,50 +104,41 @@ export function NewGameForm({ locale }: Props) {
   };
 
   return (
-    <>
+    <div className="space-y-4">
       {/* Start Method Selector */}
-      <div>
-        <SectionTitle>{t('startMethod')}</SectionTitle>
-        <StartMethodSelector value={startMethod} onChange={setStartMethod} />
-      </div>
+      <SectionTitle>{t('startMethod')}</SectionTitle>
+      <StartMethodSelector value={startMethod} onChange={setStartMethod} />
 
       {/* PGN Input (only show if pgn method selected) */}
       {startMethod === 'pgn' && (
-        <div>
+        <>
           <SectionTitle>{t('pgnTitle')}</SectionTitle>
           <PgnInput value={pgn} onChange={handlePgnChange} error={pgnError} />
-        </div>
+        </>
       )}
 
       {/* Color Selection (disabled when using PGN with valid moves) */}
-      <div>
-        <SectionTitle>{t('selectColor')}</SectionTitle>
-        <ColorSelector
-          value={color}
-          onChange={setColor}
-          disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
-        />
-        {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
-          <p className="text-sm text-muted-foreground mt-2">{t('derivedFromPgn')}</p>
-        )}
-      </div>
+      <SectionTitle>{t('selectColor')}</SectionTitle>
+      <ColorSelector
+        value={color}
+        onChange={setColor}
+        disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+      />
+      {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
+        <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
+      )}
 
       {/* Skill Level Selection */}
-      <div>
-        <SectionTitle>{t('selectLevel')}</SectionTitle>
-        <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
-      </div>
+      <SectionTitle>{t('selectLevel')}</SectionTitle>
+      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
-      {/* Action Button */}
-      <div className="pt-4">
-        <button
-          onClick={handleStartGame}
-          disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
-          className="w-full px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
-        >
-          {isLoading ? '...' : t('startGame')}
-        </button>
-      </div>
-    </>
+      <button
+        onClick={handleStartGame}
+        disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
+        className="w-full px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+      >
+        {isLoading ? '...' : t('startGame')}
+      </button>
+    </div>
   );
 }
