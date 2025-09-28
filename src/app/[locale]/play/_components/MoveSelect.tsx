@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
-import type { AlgebraicNotation } from '../_lib/types';
+import type { AlgebraicNotation } from '@/lib/types';
 
 interface MoveSelectProps {
   fen: string;

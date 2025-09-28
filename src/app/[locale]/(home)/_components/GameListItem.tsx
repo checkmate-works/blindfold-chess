@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { FaTrash } from 'react-icons/fa';
 import { ColorIcon } from '../../_components/ColorIcon';
-import { Game } from '../../play/_lib/game-repository';
+import type { Game } from '@/lib/types';
 import type { Locale } from '../../_lib/types';
 
 type Props = {

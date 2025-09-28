@@ -1,7 +1,8 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { LocalStorageGameRepository, GameStatus } from '../_lib/game-repository';
-import type { AlgebraicNotation, Side, SkillLevel } from '../_lib/types';
+import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { GameStatus } from '@/lib/types';
+import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
 interface UseAutoSaveOptions {
   gameId?: string;

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Game, LocalStorageGameRepository } from '../../play/_lib/game-repository';
-import { GameSortOption, SortDirection } from '../_lib/types';
+import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 import { GameList } from './GameList';
 import { EmptyGameList } from './EmptyGameList';
 import { GameListSkeleton } from './GameListSkeleton';

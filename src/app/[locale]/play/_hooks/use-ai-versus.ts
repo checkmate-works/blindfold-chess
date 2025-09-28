@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { getChessEngine } from '../_lib/chess-engine';
-import type { AlgebraicNotation, SkillLevel } from '../_lib/types';
+import type { AlgebraicNotation, SkillLevel } from '@/lib/types';
 
 export function useAiVersus(skillLevel: SkillLevel) {
   const engineRef = useRef<ReturnType<typeof getChessEngine> | null>(null);

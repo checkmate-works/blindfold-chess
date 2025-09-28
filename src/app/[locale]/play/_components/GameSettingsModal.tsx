@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Modal } from '../../_components/Modal';
 import { GameSettingsContent } from '../../preferences/_components/GameSettingsContent';
 import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
-import type { Side } from '../_lib/types';
+import type { Side } from '@/lib/types';
 
 interface GameSettingsModalProps {
   isOpen: boolean;

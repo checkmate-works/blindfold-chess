@@ -392,6 +392,9 @@
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
-    "blackDescription": "AIが先手"
+    "blackDescription": "AIが先手",
+    "gameLimitReached": "ゲーム数が上限に達しています",
+    "gameLimitMessage": "保存できるゲーム数は最大{limit}個までです。\n既存のゲームを削除してください。",
+    "backToGameList": "ゲーム一覧へ戻る"
   }
 }

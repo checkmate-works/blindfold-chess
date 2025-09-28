@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { SimpleChessBoard } from '../../play/_components/SimpleChessBoard';
 import type { GamePreferences } from '../../_contexts/GamePreferencesContext';
-import type { Side } from '../../play/_lib/types';
+import type { Side } from '@/lib/types';
 
 interface GameSettingsContentProps {
   settings: GamePreferences;

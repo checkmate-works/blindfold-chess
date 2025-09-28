@@ -1,4 +1,4 @@
-import { Game } from '../../play/_lib/game-repository';
+import type { Game } from '@/lib/types';
 import { GameListItem } from './GameListItem';
 import type { Locale } from '../../_lib/types';
 

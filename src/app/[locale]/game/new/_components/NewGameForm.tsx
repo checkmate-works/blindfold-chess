@@ -8,17 +8,18 @@ import { StartMethodSelector } from './StartMethodSelector';
 import { ColorSelector } from './ColorSelector';
 import { SkillLevelSelector } from './SkillLevelSelector';
 import { PgnInput } from './PgnInput';
+import { SectionTitle } from '../../../_components/SectionTitle';
 import { validatePgn, parsePgn } from '../../../play/_lib/pgn-parser';
-import type { Side, SkillLevel } from '../../../play/_lib/types';
+import type { Side, SkillLevel } from '@/lib/types';
 import type { Locale } from '../../../_lib/types';
 
 type StartMethod = 'new' | 'pgn';
 
-interface NewGameFormProps {
+type Props = {
   locale: Locale;
-}
+};
 
-export function NewGameForm({ locale }: NewGameFormProps) {
+export function NewGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const [startMethod, setStartMethod] = useState<StartMethod>('new');
@@ -102,22 +103,25 @@ export function NewGameForm({ locale }: NewGameFormProps) {
     }
   };
 
-  const handleCancel = () => {
-    router.push(`/${locale}`);
-  };
-
   return (
-    <div className="space-y-8">
+    <>
       {/* Start Method Selector */}
-      <StartMethodSelector value={startMethod} onChange={setStartMethod} />
+      <div>
+        <SectionTitle>{t('startMethod')}</SectionTitle>
+        <StartMethodSelector value={startMethod} onChange={setStartMethod} />
+      </div>
 
       {/* PGN Input (only show if pgn method selected) */}
       {startMethod === 'pgn' && (
-        <PgnInput value={pgn} onChange={handlePgnChange} error={pgnError} />
+        <div>
+          <SectionTitle>{t('pgnTitle')}</SectionTitle>
+          <PgnInput value={pgn} onChange={handlePgnChange} error={pgnError} />
+        </div>
       )}
 
       {/* Color Selection (disabled when using PGN with valid moves) */}
       <div>
+        <SectionTitle>{t('selectColor')}</SectionTitle>
         <ColorSelector
           value={color}
           onChange={setColor}
@@ -129,24 +133,21 @@ export function NewGameForm({ locale }: NewGameFormProps) {
       </div>
 
       {/* Skill Level Selection */}
-      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
+      <div>
+        <SectionTitle>{t('selectLevel')}</SectionTitle>
+        <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
+      </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 pt-4">
-        <button
-          onClick={handleCancel}
-          className="flex-1 px-6 py-3 text-muted-foreground bg-muted hover:bg-muted/80 rounded-lg font-medium transition-colors"
-        >
-          {t('cancel')}
-        </button>
+      {/* Action Button */}
+      <div className="pt-4">
         <button
           onClick={handleStartGame}
           disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
-          className="flex-1 px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+          className="w-full px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
         >
           {isLoading ? '...' : t('startGame')}
         </button>
       </div>
-    </div>
+    </>
   );
 }

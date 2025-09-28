@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
-import { LocalStorageGameRepository } from '../_lib/game-repository';
+import { LocalStorageGameRepository } from '@/lib/repositories';
 import { PageTitle } from '../../_components/PageTitle';
 
 export default function PlayErrorPage() {

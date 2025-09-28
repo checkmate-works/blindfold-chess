@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
-import type { AlgebraicNotation } from '../_lib/types';
+import type { AlgebraicNotation } from '@/lib/types';
 
 interface MoveInputProps {
   /**

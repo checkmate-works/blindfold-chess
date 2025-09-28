@@ -62,17 +62,5 @@ export type GameSettings = {
   skillLevel: SkillLevel;
 };
 
-export type GameStatus = 'in_progress' | 'win' | 'loss' | 'draw';
-
-export type Game = {
-  id: string;
-  date: string;
-  lastPlayed?: string;
-  moves: AlgebraicNotation[];
-  playerColor: Side;
-  skillLevel: SkillLevel;
-  status: GameStatus;
-};
-
 export type UciMove = `${string}${number}${string}${number}`;
 export type Fen = string;

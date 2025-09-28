@@ -10,7 +10,7 @@ type BoardPiece = {
   color: Color;
 } | null;
 
-import type { Side } from '../_lib/types';
+import type { Side } from '@/lib/types';
 
 interface SimpleChessBoardProps {
   fen: string;

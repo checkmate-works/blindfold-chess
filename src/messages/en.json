@@ -392,6 +392,9 @@
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
-    "blackDescription": "AI plays first"
+    "blackDescription": "AI plays first",
+    "gameLimitReached": "Game Limit Reached",
+    "gameLimitMessage": "You can save up to {limit} games.\nPlease delete existing games to start a new one.",
+    "backToGameList": "Back to Game List"
   }
 }

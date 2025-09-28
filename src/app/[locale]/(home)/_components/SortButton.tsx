@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { FaSort } from 'react-icons/fa';
-import { GameSortOption, SortDirection } from '../_lib/types';
+import type { GameSortOption, SortDirection } from '@/lib/types';
 
 type Props = {
   sortBy: GameSortOption;

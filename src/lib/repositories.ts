@@ -1,17 +1,5 @@
-import { AlgebraicNotation, Side, SkillLevel } from './types';
-import { GameSortOption, SortDirection } from '../../(home)/_lib/types';
-
-export type GameStatus = 'in_progress' | 'win' | 'loss' | 'draw';
-
-export type Game = {
-  id: string;
-  date: string;
-  lastPlayed?: string;
-  moves: AlgebraicNotation[];
-  playerColor: Side;
-  skillLevel: SkillLevel;
-  status: GameStatus;
-};
+import type { AlgebraicNotation } from '@/lib/types';
+import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
 interface IGameRepository {
   save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string>;
