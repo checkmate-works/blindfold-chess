@@ -7,6 +7,7 @@ import {
   CardLink,
   PageTitle,
   SectionTitle,
+  Divider,
 } from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
@@ -94,15 +95,15 @@ export default async function LearnArticlePage({ params }: Props) {
         </div>
       )}
 
-      <div className="pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: t('navigation.learn'), href: '/learn' },
-            { label: article.metadata.title },
-          ]}
-          locale={locale}
-        />
-      </div>
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('navigation.learn'), href: '/learn' },
+          { label: article.metadata.title },
+        ]}
+        locale={locale}
+      />
     </div>
   );
 }

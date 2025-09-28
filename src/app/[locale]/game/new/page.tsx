@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb } from '@/app/[locale]/_components';
+import { PageTitle, Breadcrumb, Divider } from '@/app/[locale]/_components';
 import { NewGameForm } from './_components/NewGameForm';
 import { GameLimitCheck } from './_components/GameLimitCheck';
 import type { Locale } from '../../_lib/types';
@@ -19,9 +19,8 @@ export default async function NewGamePage({ params }: Props) {
       <PageTitle>{t('newGame.title')}</PageTitle>
       <GameLimitCheck locale={locale}>
         <NewGameForm locale={locale} />
-        <div className="pt-6 border-t border-border">
-          <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />
-        </div>
+        <Divider />
+        <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />
       </GameLimitCheck>
     </div>
   );
