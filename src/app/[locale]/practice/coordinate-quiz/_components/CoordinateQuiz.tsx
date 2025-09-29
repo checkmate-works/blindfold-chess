@@ -152,7 +152,6 @@ export default function CoordinateQuiz({ locale }: Props) {
         onTimeLimitChange={setTimeLimit}
         onBoardOrientationChange={setBoardOrientation}
         onStart={startGame}
-        locale={locale}
       />
     );
   }

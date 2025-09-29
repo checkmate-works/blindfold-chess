@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
 import { LegalMovesSettings } from './LegalMovesSettings';
 import type { PieceType } from '../_lib/types';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   timeLimit: number;
@@ -13,7 +12,6 @@ type Props = {
   onPieceToggle: (piece: PieceType) => void;
   onStart: () => void;
   hasSelectedPieces: boolean;
-  locale: Locale;
 };
 
 export function LegalMovesSetup({
@@ -23,7 +21,6 @@ export function LegalMovesSetup({
   onPieceToggle,
   onStart,
   hasSelectedPieces,
-  locale,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   return (
@@ -36,7 +33,6 @@ export function LegalMovesSetup({
           selectedPieces={selectedPieces}
           onTimeLimitChange={onTimeLimitChange}
           onPieceToggle={onPieceToggle}
-          locale={locale}
         />
 
         <PrimaryButton onClick={onStart} disabled={!hasSelectedPieces} className="mt-6">

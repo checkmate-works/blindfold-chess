@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 import type { BoardOrientation } from '../_lib/types';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   timeLimit: number;
@@ -12,7 +11,6 @@ type Props = {
   onTimeLimitChange: (value: number) => void;
   onBoardOrientationChange: (value: BoardOrientation) => void;
   onStart: () => void;
-  locale: Locale;
 };
 
 export function CoordinateQuizSetup({
@@ -21,7 +19,6 @@ export function CoordinateQuizSetup({
   onTimeLimitChange,
   onBoardOrientationChange,
   onStart,
-  locale,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   return (
@@ -34,7 +31,6 @@ export function CoordinateQuizSetup({
           boardOrientation={boardOrientation}
           onTimeLimitChange={onTimeLimitChange}
           onBoardOrientationChange={onBoardOrientationChange}
-          locale={locale}
         />
 
         <PrimaryButton onClick={onStart} className="mt-6">

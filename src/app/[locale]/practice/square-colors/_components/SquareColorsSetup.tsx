@@ -3,16 +3,14 @@
 import { useTranslations } from 'next-intl';
 import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
 import { TimeSlider } from '../../_components/TimeSlider';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   timeLimit: number;
   onTimeLimitChange: (value: number) => void;
   onStart: () => void;
-  locale: Locale;
 };
 
-export function SquareColorsSetup({ timeLimit, onTimeLimitChange, onStart, locale }: Props) {
+export function SquareColorsSetup({ timeLimit, onTimeLimitChange, onStart }: Props) {
   const t = useTranslations('practice.squareColors');
   return (
     <div>
@@ -27,7 +25,6 @@ export function SquareColorsSetup({ timeLimit, onTimeLimitChange, onStart, local
               timeLimit: t('timeLimit'),
               seconds: t('seconds'),
             }}
-            locale={locale}
           />
         </div>
 

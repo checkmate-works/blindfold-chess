@@ -225,7 +225,6 @@ export function LegalMoves({ locale }: Props) {
         onPieceToggle={togglePiece}
         onStart={startGame}
         hasSelectedPieces={hasSelectedPieces}
-        locale={locale}
       />
     );
   }

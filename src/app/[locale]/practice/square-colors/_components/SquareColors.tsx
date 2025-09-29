@@ -187,7 +187,6 @@ export default function SquareColors({ locale }: Props) {
         timeLimit={timeLimit}
         onTimeLimitChange={setTimeLimit}
         onStart={startGame}
-        locale={locale}
       />
     );
   }

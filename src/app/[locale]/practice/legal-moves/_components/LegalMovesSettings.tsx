@@ -4,14 +4,12 @@ import { useTranslations } from 'next-intl';
 import type { PieceType } from '../_lib/types';
 import { PieceSelector } from './PieceSelector';
 import { TimeSlider } from '../../_components/TimeSlider';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   timeLimit: number;
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (timeLimit: number) => void;
   onPieceToggle: (piece: PieceType) => void;
-  locale?: Locale;
 };
 
 export function LegalMovesSettings({
@@ -19,7 +17,6 @@ export function LegalMovesSettings({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
-  locale = 'en',
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
@@ -34,7 +31,6 @@ export function LegalMovesSettings({
           timeLimit: t('timeLimit'),
           seconds: t('seconds'),
         }}
-        locale={locale}
       />
 
       {/* Piece Selection */}
