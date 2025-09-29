@@ -1,51 +1,41 @@
 'use client';
 
-import { formatTime } from '../_lib/coordinate-quiz';
-import type { BoardOrientation } from '../_lib/coordinate-quiz';
+import { useTranslations } from 'next-intl';
+import type { BoardOrientation } from '../_lib/types';
+import { formatTime } from '../_lib/utils';
 import { TimeSlider } from '../../_components/TimeSlider';
-import type { Locale } from '../../../_lib/types';
 
-interface CoordinateQuizSettingsProps {
+type Props = {
   timeLimit: number;
   boardOrientation: BoardOrientation;
   onTimeLimitChange: (time: number) => void;
   onBoardOrientationChange: (orientation: BoardOrientation) => void;
-  locale?: Locale;
-  translations: {
-    timeLimit: string;
-    boardOrientation: string;
-    white: string;
-    black: string;
-    random: string;
-  };
-}
+};
 
 export function CoordinateQuizSettings({
   timeLimit,
   boardOrientation,
   onTimeLimitChange,
   onBoardOrientationChange,
-  locale = 'en',
-  translations,
-}: CoordinateQuizSettingsProps) {
+}: Props) {
+  const t = useTranslations('practice.coordinateQuiz');
   return (
     <div className="space-y-6">
       {/* Time Limit */}
       <TimeSlider
         timeLimit={timeLimit}
         onTimeLimitChange={onTimeLimitChange}
-        translations={{
-          timeLimit: translations.timeLimit,
+        labels={{
+          timeLimit: t('timeLimit'),
         }}
         showSeconds={false}
         formatTime={formatTime}
-        locale={locale}
       />
 
       {/* Board Orientation */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
-          {translations.boardOrientation}
+          {t('boardOrientation')}
         </label>
         <div className="flex gap-2">
           {(['white', 'black', 'random'] as const).map((orientation) => (
@@ -58,7 +48,7 @@ export function CoordinateQuizSettings({
                   : 'bg-secondary text-secondary-foreground hover:bg-muted'
               }`}
             >
-              {translations[orientation]}
+              {t(orientation)}
             </button>
           ))}
         </div>

@@ -161,6 +161,9 @@
     "practiceComplete": "練習完了！",
     "score": "スコア",
     "relatedLearning": "関連する学習",
+    "result": "結果",
+    "secondsFormat": "{seconds}秒",
+    "minutesFormat": "{minutes}分",
     "difficulty": {
       "beginner": "初級",
       "intermediate": "中級",
@@ -214,6 +217,7 @@
       },
       "start": "練習開始",
       "question": "{from}から{to}へ移動できますか？",
+      "questionFormat": "{from}から{to}へ移動できますか？",
       "correct": "正解！",
       "incorrect": "不正解",
       "legal": "できる",
@@ -293,7 +297,18 @@
         "wrongPiece": "{square}は{expected}ではなく{actual}",
         "missing": "{square}の{piece}が不足",
         "extra": "{square}に余分な{piece}"
-      }
+      },
+      "blackPieces": "黒の駒",
+      "whitePieces": "白の駒",
+      "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
+      "placingPiece": "配置中:",
+      "useCustomFen": "カスタムFENを使用",
+      "customFenPlaceholder": "FENを改行区切りで入力\n例: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "customFenError": "無効なFEN",
+      "invalidFenOnLine": "行 {lines} に無効なFENがあります",
+      "invalidFenOnLines": "行 {lines} に無効なFENがあります",
+      "fiveSeconds": "5秒",
+      "oneMinute": "1分"
     }
   },
   "home": {

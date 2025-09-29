@@ -3,29 +3,21 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Square } from 'chess.js';
-import {
-  generateSingleQuestion,
-  checkAnswer,
-  formatTime,
-  calculateScore,
-  BoardOrientation,
-  CoordinateQuestion,
-} from '../_lib/coordinate-quiz';
-import { CoordinateQuizBoard } from './CoordinateQuizBoard';
-import { CoordinateQuizSettings } from './CoordinateQuizSettings';
+import type { BoardOrientation, CoordinateQuestion } from '../_lib/types';
+import { generateSingleQuestion, checkAnswer, calculateScore } from '../_lib/utils';
+import { CoordinateQuizSetup } from './CoordinateQuizSetup';
+import { CoordinateQuizPlaying } from './CoordinateQuizPlaying';
 import { PracticeResult } from '../../_components/PracticeResult';
-import { TimeDisplay } from '../../_components/TimeDisplay';
+import type { GameState } from '../../_lib/types';
 import type { Locale } from '../../../_lib/types';
 
-type GameState = 'setup' | 'playing' | 'finished';
-
-interface CoordinateQuizClientProps {
+type Props = {
   locale: Locale;
-}
+};
 
 const STORAGE_KEY = 'coordinateQuiz_settings';
 
-export default function CoordinateQuizClient({ locale }: CoordinateQuizClientProps) {
+export default function CoordinateQuiz({ locale }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
   // Game settings - Default values (will be updated from localStorage in useEffect)
@@ -154,33 +146,14 @@ export default function CoordinateQuizClient({ locale }: CoordinateQuizClientPro
 
   if (gameState === 'setup') {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
-
-          <CoordinateQuizSettings
-            timeLimit={timeLimit}
-            boardOrientation={boardOrientation}
-            onTimeLimitChange={setTimeLimit}
-            onBoardOrientationChange={setBoardOrientation}
-            locale={locale}
-            translations={{
-              timeLimit: t('timeLimit'),
-              boardOrientation: t('boardOrientation'),
-              white: t('white'),
-              black: t('black'),
-              random: t('random'),
-            }}
-          />
-
-          <button
-            onClick={startGame}
-            className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors mt-6"
-          >
-            {t('start')}
-          </button>
-        </div>
-      </div>
+      <CoordinateQuizSetup
+        timeLimit={timeLimit}
+        boardOrientation={boardOrientation}
+        onTimeLimitChange={setTimeLimit}
+        onBoardOrientationChange={setBoardOrientation}
+        onStart={startGame}
+        locale={locale}
+      />
     );
   }
 
@@ -196,7 +169,7 @@ export default function CoordinateQuizClient({ locale }: CoordinateQuizClientPro
         }}
         onTryAgain={startGame}
         locale={locale}
-        translations={{
+        labels={{
           correctAnswers: t('correctAnswers'),
           accuracy: t('accuracy'),
           timeTaken: t('timeTaken'),
@@ -210,63 +183,17 @@ export default function CoordinateQuizClient({ locale }: CoordinateQuizClientPro
 
   // Playing state
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Timer display with score */}
-      <TimeDisplay
-        timeRemaining={timeRemaining}
-        timeLimit={timeLimit}
-        timeElapsed={timeElapsed}
-        translations={{
-          timeRemaining: t('timeRemaining'),
-        }}
-        formatTime={formatTime}
-        leftContent={`${t('correct')}: ${correctAnswers} / ${t('wrong')}: ${wrongAnswers}`}
-      />
-
-      {currentQuestion && (
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-foreground mb-2">
-            {currentQuestion.targetSquare}
-          </h2>
-          <p className="text-lg text-muted-foreground">{t('clickSquare')}</p>
-        </div>
-      )}
-
-      <div className="max-w-md mx-auto mb-8">
-        <div className="mb-2 text-center flex items-center justify-center gap-2">
-          <div
-            className={`w-5 h-5 rounded-full border-2 ${
-              currentQuestion?.orientation === 'white'
-                ? 'bg-white border-gray-800 dark:border-gray-600'
-                : 'bg-gray-800 dark:bg-gray-700 border-gray-800 dark:border-gray-600'
-            }`}
-          />
-          <span className="text-sm font-medium text-muted-foreground">
-            {currentQuestion?.orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
-          </span>
-        </div>
-        <CoordinateQuizBoard
-          orientation={currentQuestion?.orientation || 'white'}
-          onSquareClick={handleSquareClick}
-          highlightedSquares={
-            showFeedback && lastClickedSquare && currentQuestion
-              ? {
-                  [lastClickedSquare]: isCorrect ? 'correct' : 'incorrect',
-                  [currentQuestion.targetSquare]: 'target',
-                }
-              : {}
-          }
-        />
-      </div>
-
-      <div className="flex justify-between text-sm text-muted-foreground">
-        <span>
-          {t('correct')}: {correctAnswers}
-        </span>
-        <span>
-          {t('wrong')}: {wrongAnswers}
-        </span>
-      </div>
-    </div>
+    <CoordinateQuizPlaying
+      currentQuestion={currentQuestion}
+      timeRemaining={timeRemaining}
+      timeLimit={timeLimit}
+      timeElapsed={timeElapsed}
+      correctAnswers={correctAnswers}
+      wrongAnswers={wrongAnswers}
+      lastClickedSquare={lastClickedSquare}
+      showFeedback={showFeedback}
+      isCorrect={isCorrect}
+      onSquareClick={handleSquareClick}
+    />
   );
 }

@@ -1,15 +1,6 @@
-export interface Exercise {
-  id: number;
-  description: { en: string; ja: string };
-  fenBefore: string;
-  fenAfter: string;
-  correctAnswer: string;
-  options: string[];
-  explanation: { en: string[]; ja: string[] };
-  move: string;
-}
+import type { Question } from '../_lib/types';
 
-export const exercises: Exercise[] = [
+export const questions: Question[] = [
   {
     id: 1,
     description: {

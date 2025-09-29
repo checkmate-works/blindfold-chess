@@ -3,14 +3,15 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { PracticeResult } from '../../_components/PracticeResult';
-import { TimeSlider } from '../../_components/TimeSlider';
-import { TimeDisplay } from '../../_components/TimeDisplay';
+import { SquareColorsSetup } from './SquareColorsSetup';
+import { SquareColorsPlaying } from './SquareColorsPlaying';
 import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
+import type { GameState } from '../../_lib/types';
 import type { Locale } from '../../../_lib/types';
 
-interface SquareColorsClientProps {
+type Props = {
   locale: Locale;
-}
+};
 
 interface GameStats {
   correct: number;
@@ -19,11 +20,9 @@ interface GameStats {
   averageTime: number;
 }
 
-type GameState = 'setup' | 'playing' | 'finished';
-
 const STORAGE_KEY = 'squareColors_settings';
 
-export default function SquareColorsClient({ locale }: SquareColorsClientProps) {
+export default function SquareColors({ locale }: Props) {
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
 
@@ -170,7 +169,7 @@ export default function SquareColorsClient({ locale }: SquareColorsClientProps) 
         }}
         onTryAgain={handlePlayAgain}
         locale={locale}
-        translations={{
+        labels={{
           correctAnswers: t('correctAnswers'),
           accuracy: t('accuracy'),
           timeTaken: t('timeTaken'),
@@ -184,86 +183,23 @@ export default function SquareColorsClient({ locale }: SquareColorsClientProps) 
 
   if (gameState === 'setup') {
     return (
-      <div>
-        <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
-
-          <div className="mb-6">
-            <TimeSlider
-              timeLimit={timeLimit}
-              onTimeLimitChange={setTimeLimit}
-              translations={{
-                timeLimit: t('timeLimit'),
-                seconds: t('seconds'),
-              }}
-              locale={locale}
-            />
-          </div>
-
-          <button
-            onClick={startGame}
-            className="w-full py-3 px-6 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
-          >
-            {t('start')}
-          </button>
-        </div>
-      </div>
+      <SquareColorsSetup
+        timeLimit={timeLimit}
+        onTimeLimitChange={setTimeLimit}
+        onStart={startGame}
+        locale={locale}
+      />
     );
   }
 
-  const currentSquare = squares[currentIndex];
-  const timeElapsed = timeLimit - timeRemaining;
-
   return (
-    <div>
-      {/* Timer display */}
-      <TimeDisplay
-        timeRemaining={timeRemaining}
-        timeLimit={timeLimit}
-        timeElapsed={timeElapsed}
-        translations={{
-          timeRemaining: t('timeRemaining'),
-        }}
-      />
-
-      <div className="bg-card rounded-xl border border-border p-8 text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-8">
-          {t('question', { square: currentSquare })}
-        </h2>
-
-        <div className="mb-8">
-          <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>
-
-          {showResult && lastAnswer && (
-            <div
-              className={`text-lg font-medium ${
-                lastAnswer.correct
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
-            >
-              {lastAnswer.correct ? t('correct') : t('incorrect')}
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => handleAnswer('light')}
-            disabled={showResult}
-            className="px-6 py-4 bg-gray-100 dark:bg-gray-200 hover:bg-gray-200 dark:hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-900 rounded-lg font-medium text-lg transition-colors"
-          >
-            {t('white')}
-          </button>
-          <button
-            onClick={() => handleAnswer('dark')}
-            disabled={showResult}
-            className="px-6 py-4 bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-lg transition-colors"
-          >
-            {t('black')}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SquareColorsPlaying
+      currentSquare={squares[currentIndex]}
+      timeRemaining={timeRemaining}
+      timeLimit={timeLimit}
+      showResult={showResult}
+      lastAnswer={lastAnswer}
+      onAnswer={handleAnswer}
+    />
   );
 }

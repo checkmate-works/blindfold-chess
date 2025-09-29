@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { CardLink } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
 interface PracticeCompleteProps {
@@ -9,7 +9,7 @@ interface PracticeCompleteProps {
   total: number;
   onTryAgain: () => void;
   locale: Locale;
-  translations: {
+  labels: {
     practiceComplete: string;
     score: string;
     tryAgain: string;
@@ -29,7 +29,7 @@ export function PracticeComplete({
   total,
   onTryAgain,
   locale,
-  translations,
+  labels,
   relatedModule,
 }: PracticeCompleteProps) {
   const router = useRouter();
@@ -37,13 +37,13 @@ export function PracticeComplete({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8 text-center">
-        <h2 className="text-2xl font-bold mb-6 text-foreground">{translations.practiceComplete}</h2>
+        <SectionTitle className="text-2xl font-bold mb-6">{labels.practiceComplete}</SectionTitle>
 
         <div className="mb-8">
           <p className="text-3xl font-bold text-foreground mb-2">
             {score} / {total}
           </p>
-          <p className="text-muted-foreground">{translations.score}</p>
+          <p className="text-muted-foreground">{labels.score}</p>
         </div>
 
         <div className="space-y-4">
@@ -51,14 +51,14 @@ export function PracticeComplete({
             onClick={onTryAgain}
             className="w-full py-3 px-6 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
-            {translations.tryAgain}
+            {labels.tryAgain}
           </button>
 
           <button
             onClick={() => router.push(`/${locale}/practice`)}
             className="w-full py-3 px-6 bg-secondary text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
-            {translations.morePractice}
+            {labels.morePractice}
           </button>
         </div>
       </div>
@@ -66,9 +66,9 @@ export function PracticeComplete({
       {/* Related learning module */}
       {relatedModule && (
         <div className="mt-12 p-6 bg-secondary/30 rounded-lg border border-border">
-          <h2 className="text-xl font-semibold mb-4 text-foreground">
+          <SectionTitle className="text-xl font-semibold mb-4">
             {relatedModule.sectionTitle || 'Related Learning'}
-          </h2>
+          </SectionTitle>
           <CardLink
             href={relatedModule.href}
             icon={relatedModule.icon}

@@ -1,22 +1,16 @@
 'use client';
 
-import { pieceDisplayMap, type PieceType } from '../_lib/legal-moves';
+import { useTranslations } from 'next-intl';
+import type { PieceType } from '../_lib/types';
+import { pieceDisplayMap } from '../_data/constants';
 
-interface PieceSelectorProps {
+type Props = {
   selectedPieces: Record<PieceType, boolean>;
   onPieceToggle: (piece: PieceType) => void;
-  translations: {
-    pieces: {
-      bishop: string;
-      knight: string;
-      rook: string;
-      queen: string;
-      king: string;
-    };
-  };
-}
+};
 
-export function PieceSelector({ selectedPieces, onPieceToggle, translations }: PieceSelectorProps) {
+export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
+  const t = useTranslations('practice.legalMoves');
   const pieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
 
   return (
@@ -30,13 +24,11 @@ export function PieceSelector({ selectedPieces, onPieceToggle, translations }: P
               ? 'bg-foreground text-background shadow-lg scale-105'
               : 'bg-secondary hover:bg-muted border-2 border-border'
           }`}
-          aria-label={translations.pieces[piece]}
-          title={translations.pieces[piece]}
+          aria-label={t(`pieces.${piece}`)}
+          title={t(`pieces.${piece}`)}
         >
           <span className="text-2xl sm:text-3xl">{pieceDisplayMap[piece]}</span>
-          <span className="text-[10px] sm:text-xs mt-1 font-medium">
-            {translations.pieces[piece]}
-          </span>
+          <span className="text-[10px] sm:text-xs mt-1 font-medium">{t(`pieces.${piece}`)}</span>
         </button>
       ))}
     </div>

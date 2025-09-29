@@ -1,9 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
-interface PracticeResultProps {
+type Props = {
   score: {
     correct: number;
     total: number;
@@ -13,7 +15,7 @@ interface PracticeResultProps {
   };
   onTryAgain: () => void;
   locale: Locale;
-  translations: {
+  labels: {
     correctAnswers: string;
     accuracy: string;
     timeTaken: string;
@@ -21,9 +23,10 @@ interface PracticeResultProps {
     tryAgain: string;
     morePractice: string;
   };
-}
+};
 
-export function PracticeResult({ score, onTryAgain, locale, translations }: PracticeResultProps) {
+export function PracticeResult({ score, onTryAgain, locale, labels }: Props) {
+  const t = useTranslations('practice');
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -32,40 +35,38 @@ export function PracticeResult({ score, onTryAgain, locale, translations }: Prac
 
   const formatAverageTime = (seconds: number) => {
     const formatted = seconds.toFixed(1);
-    return locale === 'ja' ? `${formatted}秒` : `${formatted}s`;
+    return t('secondsFormat', { seconds: formatted });
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
-        <h2 className="text-2xl font-bold mb-8 text-center text-foreground">
-          {locale === 'ja' ? '結果' : 'Result'}
-        </h2>
+        <SectionTitle>{t('result')}</SectionTitle>
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="text-center">
             <div className="text-2xl font-semibold text-foreground">
               {score.correct}/{score.total}
             </div>
-            <div className="text-sm text-muted-foreground">{translations.correctAnswers}</div>
+            <div className="text-sm text-muted-foreground">{labels.correctAnswers}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-foreground">
               {score.accuracy.toFixed(1)}%
             </div>
-            <div className="text-sm text-muted-foreground">{translations.accuracy}</div>
+            <div className="text-sm text-muted-foreground">{labels.accuracy}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-foreground">
               {formatTime(score.timeElapsed)}
             </div>
-            <div className="text-sm text-muted-foreground">{translations.timeTaken}</div>
+            <div className="text-sm text-muted-foreground">{labels.timeTaken}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-foreground">
               {formatAverageTime(score.averageTime)}
             </div>
-            <div className="text-sm text-muted-foreground">{translations.averageTime}</div>
+            <div className="text-sm text-muted-foreground">{labels.averageTime}</div>
           </div>
         </div>
 
@@ -74,14 +75,14 @@ export function PracticeResult({ score, onTryAgain, locale, translations }: Prac
             onClick={onTryAgain}
             className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            {translations.tryAgain}
+            {labels.tryAgain}
           </button>
           <Link
             href="/practice"
             locale={locale}
             className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 px-6 rounded-xl transition-colors text-center"
           >
-            {translations.morePractice}
+            {labels.morePractice}
           </Link>
         </div>
       </div>

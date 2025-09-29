@@ -161,6 +161,9 @@
     "practiceComplete": "Practice Complete!",
     "score": "Score",
     "relatedLearning": "Related Learning",
+    "result": "Result",
+    "secondsFormat": "{seconds}s",
+    "minutesFormat": "{minutes}m",
     "difficulty": {
       "beginner": "Beginner",
       "intermediate": "Intermediate",
@@ -214,6 +217,7 @@
       },
       "start": "Start Practice",
       "question": "Can piece move from {from} to {to}?",
+      "questionFormat": "Can piece move from {from} to {to}?",
       "correct": "Correct!",
       "incorrect": "Incorrect",
       "legal": "Yes",
@@ -293,7 +297,18 @@
         "wrongPiece": "{square} has {actual} instead of {expected}",
         "missing": "{piece} is missing from {square}",
         "extra": "Extra {piece} on {square}"
-      }
+      },
+      "blackPieces": "Black Pieces",
+      "whitePieces": "White Pieces",
+      "removePieceMode": "Remove piece mode - Click on a square to remove piece",
+      "placingPiece": "Placing",
+      "useCustomFen": "Use Custom FEN",
+      "customFenPlaceholder": "Enter FEN strings (one per line)\nExample: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "customFenError": "Invalid FEN",
+      "invalidFenOnLine": "Invalid FEN on line {lines}",
+      "invalidFenOnLines": "Invalid FEN on lines {lines}",
+      "fiveSeconds": "5s",
+      "oneMinute": "60s"
     }
   },
   "home": {

@@ -1,34 +1,33 @@
 'use client';
 
-import type { Locale } from '../../_lib/types';
+import { useTranslations } from 'next-intl';
 
 interface TimeSliderProps {
   timeLimit: number;
   onTimeLimitChange: (value: number) => void;
-  translations: {
+  labels: {
     timeLimit: string;
     seconds?: string;
   };
   showSeconds?: boolean; // whether to show "seconds" suffix
   formatTime?: (seconds: number) => string; // custom time formatter
-  locale?: Locale; // for label formatting
 }
 
 export function TimeSlider({
   timeLimit,
   onTimeLimitChange,
-  translations,
+  labels,
   showSeconds = true,
   formatTime,
-  locale = 'en',
 }: TimeSliderProps) {
+  const t = useTranslations('practice');
   // Default time display
   const getTimeDisplay = () => {
     if (formatTime) {
       return formatTime(timeLimit);
     }
     if (showSeconds) {
-      return `${timeLimit} ${translations.seconds || 'seconds'}`;
+      return `${timeLimit} ${labels.seconds || 'seconds'}`;
     }
     return `${timeLimit}`;
   };
@@ -39,16 +38,16 @@ export function TimeSlider({
       return formatTime(seconds);
     }
     if (seconds < 60) {
-      return locale === 'ja' ? `${seconds}秒` : `${seconds}s`;
+      return t('secondsFormat', { seconds });
     }
     const minutes = seconds / 60;
-    return locale === 'ja' ? `${minutes}分` : `${minutes}m`;
+    return t('minutesFormat', { minutes });
   };
 
   return (
     <div>
       <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground mb-2">
-        {translations.timeLimit}: {getTimeDisplay()}
+        {labels.timeLimit}: {getTimeDisplay()}
       </label>
       <input
         id="timeLimit"

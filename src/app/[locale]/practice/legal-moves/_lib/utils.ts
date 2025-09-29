@@ -1,30 +1,6 @@
-import { Chess, Square, PieceSymbol } from 'chess.js';
-
-export type PieceType = 'bishop' | 'knight' | 'rook' | 'queen' | 'king';
-
-export interface MoveQuestion {
-  from: string;
-  to: string;
-  piece: PieceType;
-}
-
-// Map piece types to chess.js piece symbols
-const pieceSymbolMap: Record<PieceType, PieceSymbol> = {
-  bishop: 'b',
-  knight: 'n',
-  rook: 'r',
-  queen: 'q',
-  king: 'k',
-};
-
-// Get piece display symbol
-export const pieceDisplayMap: Record<PieceType, string> = {
-  bishop: '♗',
-  knight: '♘',
-  rook: '♖',
-  queen: '♕',
-  king: '♔',
-};
+import { Chess, Square } from 'chess.js';
+import type { PieceType, MoveQuestion } from './types';
+import { pieceSymbolMap } from '../_data/constants';
 
 // Check if a move is legal for a given piece
 export function isLegalMove(from: string, to: string, pieceType: PieceType): boolean {

@@ -6,7 +6,7 @@ interface TimeDisplayProps {
   timeRemaining: number; // in seconds
   timeLimit: number; // in seconds
   timeElapsed: number; // in seconds
-  translations: {
+  labels: {
     timeRemaining: string;
   };
   formatTime?: (seconds: number) => string; // optional custom formatter
@@ -17,7 +17,7 @@ export function TimeDisplay({
   timeRemaining,
   timeLimit,
   timeElapsed,
-  translations,
+  labels,
   formatTime,
   leftContent,
 }: TimeDisplayProps) {
@@ -35,7 +35,7 @@ export function TimeDisplay({
       <div className="flex justify-between items-center mb-2">
         {leftContent && <span className="text-sm text-muted-foreground">{leftContent}</span>}
         <span className={`text-sm text-muted-foreground ${!leftContent ? 'ml-auto' : ''}`}>
-          {translations.timeRemaining}: {displayTime}
+          {labels.timeRemaining}: {displayTime}
         </span>
       </div>
       <div className="w-full bg-secondary rounded-full h-2">

@@ -8,7 +8,7 @@ import { StartMethodSelector } from './StartMethodSelector';
 import { ColorSelector } from './ColorSelector';
 import { SkillLevelSelector } from './SkillLevelSelector';
 import { PgnInput } from './PgnInput';
-import { SectionTitle } from '../../../_components/SectionTitle';
+import { SectionTitle, PrimaryButton } from '../../../_components';
 import { validatePgn, parsePgn } from '../../../play/_lib/pgn-parser';
 import type { Side, SkillLevel } from '@/lib/types';
 import type { Locale } from '../../../_lib/types';
@@ -132,13 +132,13 @@ export function NewGameForm({ locale }: Props) {
       <SectionTitle>{t('selectLevel')}</SectionTitle>
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
-      <button
+      <PrimaryButton
         onClick={handleStartGame}
-        disabled={isLoading || (startMethod === 'pgn' && (!pgn.trim() || !!pgnError))}
-        className="w-full px-6 py-3 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+        disabled={startMethod === 'pgn' && (!pgn.trim() || !!pgnError)}
+        loading={isLoading}
       >
-        {isLoading ? '...' : t('startGame')}
-      </button>
+        {t('startGame')}
+      </PrimaryButton>
     </div>
   );
 }

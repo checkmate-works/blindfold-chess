@@ -2,17 +2,17 @@
 
 import { Square } from 'chess.js';
 
-interface CoordinateQuizBoardProps {
+type Props = {
   orientation: 'white' | 'black';
   onSquareClick: (square: Square) => void;
   highlightedSquares?: Record<string, 'correct' | 'incorrect' | 'target'>;
-}
+};
 
 export function CoordinateQuizBoard({
   orientation,
   onSquareClick,
   highlightedSquares = {},
-}: CoordinateQuizBoardProps) {
+}: Props) {
   const files =
     orientation === 'white'
       ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']

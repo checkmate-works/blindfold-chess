@@ -1,22 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ChessPieces } from '../../_components/ChessBoard';
 
-interface SimpleChessBoardProps {
+type Props = {
   fen: string;
   onFenChange: (fen: string) => void;
   flipped?: boolean;
   editable?: boolean;
   preserveTurnInfo?: boolean; // Whether to preserve turn info from original position
   originalPosition?: string; // Original position to preserve turn info from
-  translations?: {
-    blackPieces: string;
-    whitePieces: string;
-    removePieceMode: string;
-    placingPiece: string;
-  };
-}
+};
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
 
@@ -127,13 +122,8 @@ export function SimpleChessBoard({
   editable = false,
   preserveTurnInfo = false,
   originalPosition,
-  translations = {
-    blackPieces: 'Black Pieces',
-    whitePieces: 'White Pieces',
-    removePieceMode: 'Remove piece mode - Click on a square to remove piece',
-    placingPiece: 'Placing',
-  },
-}: SimpleChessBoardProps) {
+}: Props) {
+  const t = useTranslations('practice.positionMemory');
   const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));
   const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
 
@@ -180,12 +170,12 @@ export function SimpleChessBoard({
 
   // Determine palette order based on board orientation
   const topPalette = flipped
-    ? { pieces: WHITE_PIECES, label: translations.whitePieces }
-    : { pieces: BLACK_PIECES, label: translations.blackPieces };
+    ? { pieces: WHITE_PIECES, label: t('whitePieces') }
+    : { pieces: BLACK_PIECES, label: t('blackPieces') };
 
   const bottomPalette = flipped
-    ? { pieces: BLACK_PIECES, label: translations.blackPieces }
-    : { pieces: WHITE_PIECES, label: translations.whitePieces };
+    ? { pieces: BLACK_PIECES, label: t('blackPieces') }
+    : { pieces: WHITE_PIECES, label: t('whitePieces') };
 
   const renderPalette = (pieces: PieceType[], title: string) => (
     <div className="flex flex-col items-center gap-2">
@@ -268,9 +258,9 @@ export function SimpleChessBoard({
       {editable && (
         <p className="text-sm text-muted-foreground text-center">
           {selectedPiece === ''
-            ? translations.removePieceMode
+            ? t('removePieceMode')
             : selectedPiece
-              ? `${translations.placingPiece} ${selectedPiece.toUpperCase()}`
+              ? `${t('placingPiece')} ${selectedPiece.toUpperCase()}`
               : 'Select a piece above'}
         </p>
       )}

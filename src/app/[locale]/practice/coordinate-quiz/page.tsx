@@ -1,15 +1,15 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
-import CoordinateQuizClient from './_components/CoordinateQuizClient';
+import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import CoordinateQuiz from './_components/CoordinateQuiz';
 import type { Locale } from '../../_lib/types';
 
-interface CoordinateQuizPageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-}
+};
 
-export async function generateMetadata({ params }: CoordinateQuizPageProps) {
+export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   return {
@@ -18,28 +18,27 @@ export async function generateMetadata({ params }: CoordinateQuizPageProps) {
   };
 }
 
-export default async function CoordinateQuizPage({ params }: CoordinateQuizPageProps) {
+export default async function CoordinateQuizPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
-        <p className="text-muted-foreground">{t('practice.coordinateQuiz.description')}</p>
-      </div>
-      <CoordinateQuizClient locale={locale} />
+    <div className="space-y-8">
+      <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.coordinateQuiz.title') },
-          ]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <p className="text-muted-foreground">{t('practice.coordinateQuiz.description')}</p>
+
+      <CoordinateQuiz locale={locale} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('navigation.practice'), href: '/practice' },
+          { label: t('practice.coordinateQuiz.title') },
+        ]}
+        locale={locale}
+      />
+    </div>
   );
 }

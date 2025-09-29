@@ -1,28 +1,5 @@
 import { FEN_STRINGS } from '../_data/positions';
-
-export type GamePhase = 'memorize' | 'recreate' | 'result';
-
-export interface ScoreDetail {
-  square: string;
-  expected: string;
-  actual: string;
-  score: number;
-  description: string;
-}
-
-export interface PositionAccuracy {
-  correctPieces: number;
-  totalPieces: number;
-  extraPieces: number;
-  netScore: number;
-  accuracy: number;
-  details: ScoreDetail[];
-}
-
-export interface PositionData {
-  fen: string;
-  isBlackToMove: boolean;
-}
+import type { PositionData, ScoreDetail, PositionAccuracy } from './types';
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {

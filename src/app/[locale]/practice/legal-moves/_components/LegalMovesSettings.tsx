@@ -1,30 +1,18 @@
 'use client';
 
-import { type PieceType } from '../_lib/legal-moves';
+import { useTranslations } from 'next-intl';
+import type { PieceType } from '../_lib/types';
 import { PieceSelector } from './PieceSelector';
 import { TimeSlider } from '../../_components/TimeSlider';
 import type { Locale } from '../../../_lib/types';
 
-interface LegalMovesSettingsProps {
+type Props = {
   timeLimit: number;
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (timeLimit: number) => void;
   onPieceToggle: (piece: PieceType) => void;
   locale?: Locale;
-  translations: {
-    timeLimit: string;
-    seconds: string;
-    pieceSelection: string;
-    selectAtLeastOne: string;
-    pieces: {
-      bishop: string;
-      knight: string;
-      rook: string;
-      queen: string;
-      king: string;
-    };
-  };
-}
+};
 
 export function LegalMovesSettings({
   timeLimit,
@@ -32,8 +20,8 @@ export function LegalMovesSettings({
   onTimeLimitChange,
   onPieceToggle,
   locale = 'en',
-  translations,
-}: LegalMovesSettingsProps) {
+}: Props) {
+  const t = useTranslations('practice.legalMoves');
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
 
   return (
@@ -42,9 +30,9 @@ export function LegalMovesSettings({
       <TimeSlider
         timeLimit={timeLimit}
         onTimeLimitChange={onTimeLimitChange}
-        translations={{
-          timeLimit: translations.timeLimit,
-          seconds: translations.seconds,
+        labels={{
+          timeLimit: t('timeLimit'),
+          seconds: t('seconds'),
         }}
         locale={locale}
       />
@@ -52,17 +40,11 @@ export function LegalMovesSettings({
       {/* Piece Selection */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-4">
-          {translations.pieceSelection}
+          {t('pieceSelection')}
         </label>
-        <PieceSelector
-          selectedPieces={selectedPieces}
-          onPieceToggle={onPieceToggle}
-          translations={{ pieces: translations.pieces }}
-        />
+        <PieceSelector selectedPieces={selectedPieces} onPieceToggle={onPieceToggle} />
         {!hasSelectedPieces && (
-          <p className="mt-3 text-sm text-destructive text-center">
-            {translations.selectAtLeastOne}
-          </p>
+          <p className="mt-3 text-sm text-destructive text-center">{t('selectAtLeastOne')}</p>
         )}
       </div>
     </div>

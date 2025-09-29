@@ -1,36 +1,36 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
-import AlgebraicNotationClient from './_components/AlgebraicNotationClient';
-import { exercises } from './_lib/algebraic-notation';
+import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import AlgebraicNotation from './_components/AlgebraicNotation';
+import { questions } from './_data/questions';
 import type { Locale } from '../../_lib/types';
 
-interface AlgebraicNotationPageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-}
+};
 
-export default async function AlgebraicNotationPage({ params }: AlgebraicNotationPageProps) {
+export default async function AlgebraicNotationPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
-      </div>
-      <AlgebraicNotationClient exercises={exercises} locale={locale} />
+    <div className="space-y-8">
+      <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.algebraicNotation.pageTitle') },
-          ]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <p className="text-muted-foreground">{t('practice.algebraicNotation.description')}</p>
+
+      <AlgebraicNotation questions={questions} locale={locale} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('navigation.practice'), href: '/practice' },
+          { label: t('practice.algebraicNotation.pageTitle') },
+        ]}
+        locale={locale}
+      />
+    </div>
   );
 }

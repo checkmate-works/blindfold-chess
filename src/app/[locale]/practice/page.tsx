@@ -1,14 +1,14 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb, CardLink } from '@/app/[locale]/_components';
+import { PageTitle, Breadcrumb, CardLink, Divider } from '@/app/[locale]/_components';
 import type { Locale } from '../_lib/types';
 
-interface PracticePageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-}
+};
 
-export default async function PracticePage({ params }: PracticePageProps) {
+export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
@@ -46,11 +46,9 @@ export default async function PracticePage({ params }: PracticePageProps) {
   ];
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('practice.title')}</PageTitle>
-        <p className="text-muted-foreground">{t('practice.description')}</p>
-      </div>
+    <div className="space-y-8">
+      <PageTitle>{t('practice.title')}</PageTitle>
+      <p className="text-muted-foreground">{t('practice.description')}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {practices.map((practice) => (
@@ -65,9 +63,9 @@ export default async function PracticePage({ params }: PracticePageProps) {
         ))}
       </div>
 
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
-      </div>
-    </>
+      <Divider />
+
+      <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
+    </div>
   );
 }

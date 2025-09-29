@@ -1,15 +1,15 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
-import { LegalMovesClient } from './_components/LegalMovesClient';
+import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import { LegalMoves } from './_components/LegalMoves';
 import type { Locale } from '../../_lib/types';
 
-interface LegalMovesPageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-}
+};
 
-export async function generateMetadata({ params }: LegalMovesPageProps) {
+export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   return {
@@ -18,28 +18,27 @@ export async function generateMetadata({ params }: LegalMovesPageProps) {
   };
 }
 
-export default async function LegalMovesPage({ params }: LegalMovesPageProps) {
+export default async function LegalMovesPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
-        <p className="text-muted-foreground">{t('practice.legalMoves.description')}</p>
-      </div>
-      <LegalMovesClient locale={locale} />
+    <div className="space-y-8">
+      <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.legalMoves.title') },
-          ]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <p className="text-muted-foreground">{t('practice.legalMoves.description')}</p>
+
+      <LegalMoves locale={locale} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('navigation.practice'), href: '/practice' },
+          { label: t('practice.legalMoves.title') },
+        ]}
+        locale={locale}
+      />
+    </div>
   );
 }

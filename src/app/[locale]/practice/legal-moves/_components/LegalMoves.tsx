@@ -3,41 +3,32 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { PracticeResult } from '../../_components/PracticeResult';
-import { TimeDisplay } from '../../_components/TimeDisplay';
-import { LegalMovesSettings } from './LegalMovesSettings';
-import {
-  isLegalMove,
-  generateBalancedMoveQuestions,
-  pieceDisplayMap,
-  type MoveQuestion,
-  type PieceType,
-} from '../_lib/legal-moves';
+import { LegalMovesSetup } from './LegalMovesSetup';
+import { LegalMovesPlaying } from './LegalMovesPlaying';
+import type { MoveQuestion, PieceType } from '../_lib/types';
+import { isLegalMove, generateBalancedMoveQuestions } from '../_lib/utils';
+import type { GameState } from '../../_lib/types';
 import type { Locale } from '../../../_lib/types';
 
-interface GameStats {
+type GameStats = {
   correct: number;
   incorrect: number;
   totalTime: number;
   averageTime: number;
-}
+};
 
-type GameState = 'setup' | 'playing' | 'finished';
-
-interface LegalMovesClientProps {
+type Props = {
   locale: Locale;
-}
+};
 
 const STORAGE_KEY = 'legalMoves_settings';
 
-export function LegalMovesClient({ locale }: LegalMovesClientProps) {
+export function LegalMoves({ locale }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tPractice = useTranslations('practice');
 
   // Helper function to get question text
-  const getQuestion = (from: string, to: string) =>
-    locale === 'ja'
-      ? `${from}から${to}へ移動できますか？`
-      : `Can piece move from ${from} to ${to}?`;
+  const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
   // Game settings - Default values (will be updated from localStorage in useEffect)
   const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
   const [selectedPieces, setSelectedPieces] = useState<Record<PieceType, boolean>>({
@@ -206,7 +197,7 @@ export function LegalMovesClient({ locale }: LegalMovesClientProps) {
         }}
         onTryAgain={handlePlayAgain}
         locale={locale}
-        translations={{
+        labels={{
           correctAnswers: t('correctAnswers'),
           accuracy: t('accuracy'),
           timeTaken: t('timeTaken'),
@@ -227,40 +218,15 @@ export function LegalMovesClient({ locale }: LegalMovesClientProps) {
     const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
 
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">{t('settings')}</h2>
-
-          <LegalMovesSettings
-            timeLimit={timeLimit}
-            selectedPieces={selectedPieces}
-            onTimeLimitChange={setTimeLimit}
-            onPieceToggle={togglePiece}
-            locale={locale}
-            translations={{
-              timeLimit: t('timeLimit'),
-              seconds: t('seconds'),
-              pieceSelection: t('pieceSelection'),
-              selectAtLeastOne: t('selectAtLeastOne'),
-              pieces: {
-                bishop: t('pieces.bishop'),
-                knight: t('pieces.knight'),
-                rook: t('pieces.rook'),
-                queen: t('pieces.queen'),
-                king: t('pieces.king'),
-              },
-            }}
-          />
-
-          <button
-            onClick={startGame}
-            disabled={!hasSelectedPieces}
-            className="w-full mt-6 bg-foreground hover:bg-foreground/90 disabled:bg-secondary disabled:cursor-not-allowed text-background font-semibold py-3 px-6 rounded-xl transition-colors"
-          >
-            {t('start')}
-          </button>
-        </div>
-      </div>
+      <LegalMovesSetup
+        timeLimit={timeLimit}
+        selectedPieces={selectedPieces}
+        onTimeLimitChange={setTimeLimit}
+        onPieceToggle={togglePiece}
+        onStart={startGame}
+        hasSelectedPieces={hasSelectedPieces}
+        locale={locale}
+      />
     );
   }
 
@@ -279,64 +245,15 @@ export function LegalMovesClient({ locale }: LegalMovesClientProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Timer display */}
-      <TimeDisplay
-        timeRemaining={timeRemaining}
-        timeLimit={timeLimit}
-        timeElapsed={timeElapsed}
-        translations={{
-          timeRemaining: t('timeRemaining'),
-        }}
-      />
-
-      <div className="bg-card rounded-2xl border border-border p-8 text-center">
-        <h2 className="text-2xl font-semibold text-foreground mb-8">
-          {getQuestion(currentQuestion.from, currentQuestion.to)
-            .replace('{from}', currentQuestion.from)
-            .replace('{to}', currentQuestion.to)}
-        </h2>
-
-        <div className="mb-8">
-          <div className="text-6xl mb-4">{pieceDisplayMap[currentQuestion.piece]}</div>
-          <div className="text-lg text-muted-foreground">
-            {t(`pieces.${currentQuestion.piece}`)}
-          </div>
-
-          {showResult && lastAnswer && (
-            <div
-              className={`mt-4 text-lg font-medium ${
-                lastAnswer.correct
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
-            >
-              {lastAnswer.correct
-                ? t('correct')
-                : `${t('incorrect')} (${lastAnswer.isLegal ? t('legal') : t('illegal')})`}
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => handleAnswer(true)}
-            disabled={showResult}
-            className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <span className="text-2xl">○</span>
-            <span>{t('legal')}</span>
-          </button>
-          <button
-            onClick={() => handleAnswer(false)}
-            disabled={showResult}
-            className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
-          >
-            <span className="text-2xl">×</span>
-            <span>{t('illegal')}</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <LegalMovesPlaying
+      currentQuestion={currentQuestion}
+      timeRemaining={timeRemaining}
+      timeLimit={timeLimit}
+      timeElapsed={timeElapsed}
+      showResult={showResult}
+      lastAnswer={lastAnswer}
+      onAnswer={handleAnswer}
+      getQuestion={getQuestion}
+    />
   );
 }

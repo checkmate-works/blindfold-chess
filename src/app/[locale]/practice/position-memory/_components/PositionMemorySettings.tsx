@@ -1,8 +1,8 @@
 'use client';
 
-import type { Locale } from '../../../_lib/types';
+import { useTranslations } from 'next-intl';
 
-interface PositionMemorySettingsProps {
+type Props = {
   timeLimit: number;
   problemCount: number;
   shuffleProblems: boolean;
@@ -10,23 +10,12 @@ interface PositionMemorySettingsProps {
   useCustomFen: boolean;
   customFenInput: string;
   customFenError: string | null;
-  locale: Locale;
   onTimeLimitChange: (value: number) => void;
   onProblemCountChange: (value: number) => void;
   onShuffleChange: (value: boolean) => void;
   onUseCustomFenChange: (value: boolean) => void;
   onCustomFenInputChange: (value: string) => void;
-  translations: {
-    timeLimit: string;
-    seconds: string;
-    problemCount: string;
-    problems: string;
-    shuffle: string;
-    useCustomFen: string;
-    customFenPlaceholder: string;
-    customFenError: string;
-  };
-}
+};
 
 export function PositionMemorySettings({
   timeLimit,
@@ -36,20 +25,19 @@ export function PositionMemorySettings({
   useCustomFen,
   customFenInput,
   customFenError,
-  locale,
   onTimeLimitChange,
   onProblemCountChange,
   onShuffleChange,
   onUseCustomFenChange,
   onCustomFenInputChange,
-  translations,
-}: PositionMemorySettingsProps) {
+}: Props) {
+  const t = useTranslations('practice.positionMemory');
   return (
     <div className="space-y-6">
       {/* Time Limit */}
       <div>
         <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground mb-2">
-          {translations.timeLimit}: {timeLimit} {translations.seconds}
+          {t('timeLimit')}: {timeLimit} {t('seconds')}
         </label>
         <input
           id="timeLimit"
@@ -62,15 +50,15 @@ export function PositionMemorySettings({
           className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>{locale === 'ja' ? '5秒' : '5s'}</span>
-          <span>{locale === 'ja' ? '1分' : '60s'}</span>
+          <span>{t('fiveSeconds')}</span>
+          <span>{t('oneMinute')}</span>
         </div>
       </div>
 
       {/* Use Custom FEN */}
       <div className="flex items-center justify-between">
         <label htmlFor="useCustomFen" className="text-sm font-medium text-foreground">
-          {translations.useCustomFen}
+          {t('useCustomFen')}
         </label>
         <button
           id="useCustomFen"
@@ -82,7 +70,7 @@ export function PositionMemorySettings({
             useCustomFen ? 'bg-foreground' : 'bg-secondary'
           }`}
         >
-          <span className="sr-only">{translations.useCustomFen}</span>
+          <span className="sr-only">{t('useCustomFen')}</span>
           <span
             className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
               useCustomFen ? 'translate-x-6' : 'translate-x-1'
@@ -112,7 +100,7 @@ export function PositionMemorySettings({
             id="customFenInput"
             value={customFenInput}
             onChange={(e) => onCustomFenInputChange(e.target.value)}
-            placeholder={translations.customFenPlaceholder}
+            placeholder={t('customFenPlaceholder')}
             className="w-full h-32 px-3 py-2 border border-border rounded-lg bg-background text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-foreground resize-none"
             spellCheck="false"
           />
@@ -126,8 +114,7 @@ export function PositionMemorySettings({
       {!useCustomFen && (
         <div>
           <label htmlFor="problemCount" className="block text-sm font-medium text-foreground mb-2">
-            {translations.problemCount}: {problemCount}{' '}
-            {problemCount > 1 ? translations.problems : ''}
+            {t('problemCount')}: {problemCount} {problemCount > 1 ? t('problems') : ''}
           </label>
           <input
             id="problemCount"
@@ -150,7 +137,7 @@ export function PositionMemorySettings({
       {problemCount > 1 && (
         <div className="flex items-center justify-between">
           <label htmlFor="shuffle" className="text-sm font-medium text-foreground">
-            {translations.shuffle}
+            {t('shuffle')}
           </label>
           <button
             id="shuffle"
@@ -162,7 +149,7 @@ export function PositionMemorySettings({
               shuffleProblems ? 'bg-foreground' : 'bg-secondary'
             }`}
           >
-            <span className="sr-only">{translations.shuffle}</span>
+            <span className="sr-only">{t('shuffle')}</span>
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
                 shuffleProblems ? 'translate-x-6' : 'translate-x-1'
