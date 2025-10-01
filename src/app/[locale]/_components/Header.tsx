@@ -56,14 +56,14 @@ export async function Header({ locale }: Props) {
                 height={40}
                 className="w-10 h-10"
               />
-              {/* Title - hidden on mobile, visible on desktop */}
-              <span className="hidden md:block text-xl font-bold text-foreground">
+              {/* Title - hidden on mobile/tablet, visible on desktop */}
+              <span className="hidden lg:block text-xl font-bold text-foreground">
                 {t('title')}
               </span>
             </Link>
 
             {/* Desktop navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="hidden lg:flex items-center space-x-6">
               {menuItems.slice(1).map((item) => (
                 <Link
                   key={item.id}
