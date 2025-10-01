@@ -1,28 +1,5 @@
 import type { Locale } from '../../_lib/types';
-
-export interface ManualArticleMetadata {
-  slug: string;
-  title: string;
-  excerpt: string;
-  order?: number;
-  tags: string[];
-}
-
-export interface ManualArticle {
-  metadata: ManualArticleMetadata;
-  content: string;
-}
-
-// Type for locale-specific loaders
-type LocaleLoaders = {
-  en: () => Promise<{ metadata: ManualArticleMetadata }>;
-  ja: () => Promise<{ metadata: ManualArticleMetadata }>;
-};
-
-type ContentLoaders = {
-  en: () => Promise<{ default: string } | { content: string }>;
-  ja: () => Promise<{ default: string } | { content: string }>;
-};
+import type { LocaleLoaders, ContentLoaders, ManualArticle, ManualArticleMetadata } from './types';
 
 // Article registry - maps slugs to their metadata modules
 const articleRegistry: Record<string, LocaleLoaders> = {

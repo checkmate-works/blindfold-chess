@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllArticles } from './[locale]/learn/_lib/learn';
-import { getAllManualArticles } from './[locale]/manual/_lib/manual';
+import { getAllManualArticles } from './[locale]/manual/_lib/utils';
 import { chessTerms } from './[locale]/glossary/_data/chess-terms';
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 

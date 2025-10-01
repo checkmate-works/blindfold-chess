@@ -1,29 +1,29 @@
 import { notFound } from 'next/navigation';
-import { getManualArticle, getAvailableManualArticles } from '../_lib/manual';
-import { PageTitle, Breadcrumb, MarkdownRenderer } from '@/app/[locale]/_components';
 import { getTranslations } from 'next-intl/server';
+import { getManualArticle, getAvailableManualArticles } from '../_lib/utils';
+import { PageTitle, Breadcrumb, MarkdownRenderer, Divider } from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
-interface ManualArticlePageProps {
+type Props = {
   params: Promise<{
     locale: Locale;
     slug: string;
   }>;
-}
+};
 
 export async function generateStaticParams() {
-  const articles = getAvailableManualArticles();
-  const params = [];
+  const slugs = getAvailableManualArticles();
+  const locales = ['en', 'ja'] as const;
 
-  for (const slug of articles) {
-    params.push({ locale: 'en', slug });
-    params.push({ locale: 'ja', slug });
-  }
-
-  return params;
+  return slugs.flatMap((slug) =>
+    locales.map((locale) => ({
+      locale,
+      slug,
+    }))
+  );
 }
 
-export async function generateMetadata({ params }: ManualArticlePageProps) {
+export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
   const article = await getManualArticle(slug, locale);
 
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: ManualArticlePageProps) {
   };
 }
 
-export default async function ManualArticlePage({ params }: ManualArticlePageProps) {
+export default async function ManualArticlePage({ params }: Props) {
   const { locale, slug } = await params;
   const article = await getManualArticle(slug, locale);
   const t = await getTranslations({ locale, namespace: 'manual' });
@@ -56,36 +56,34 @@ export default async function ManualArticlePage({ params }: ManualArticlePagePro
   const excerpt = article.metadata.excerpt;
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{title}</PageTitle>
-        <p className="text-muted-foreground mb-4">{excerpt}</p>
+    <div className="space-y-8">
+      <PageTitle>{title}</PageTitle>
 
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      <p className="text-muted-foreground">{excerpt}</p>
 
-      <article className="prose prose-lg prose-neutral dark:prose-invert max-w-none">
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/manual' }, { label: title }]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <Divider />
+
+      <Breadcrumb
+        items={[{ label: t('title'), href: '/manual' }, { label: title }]}
+        locale={locale}
+      />
+    </div>
   );
 }
