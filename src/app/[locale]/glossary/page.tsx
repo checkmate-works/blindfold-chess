@@ -1,19 +1,19 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PageTitle } from '../_components/PageTitle';
-import { Breadcrumb } from '../_components/Breadcrumb';
+import { PageTitle, Breadcrumb, SectionTitle, Divider } from '../_components';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
+import type { Locale } from '../_lib/types';
+
+type Props = {
+  params: Promise<{ locale: Locale }>;
+};
 
 export async function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'ja' }];
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.glossary' });
 
@@ -23,37 +23,29 @@ export async function generateMetadata({
   };
 }
 
-export default async function GlossaryIndexPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function GlossaryIndexPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('title')}</PageTitle>
-        <p className="text-muted-foreground">{t('description')}</p>
-      </div>
+    <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
 
-      {/* Alphabetical Index */}
-      <div className="mb-12">
-        <h2 className="text-lg font-bold text-foreground mb-6">{t('index.alphabetical')}</h2>
+      <p className="text-muted-foreground">{t('description')}</p>
+
+      <div className="space-y-6">
+        <SectionTitle>{t('index.alphabetical')}</SectionTitle>
         <AlphabeticalIndex locale={locale} />
       </div>
 
-      {/* Category Index */}
-      <div>
-        <h2 className="text-lg font-bold text-foreground mb-6">{t('index.byCategory')}</h2>
+      <div className="space-y-6">
+        <SectionTitle>{t('index.byCategory')}</SectionTitle>
         <CategoryIndex locale={locale} />
       </div>
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </div>
-    </>
+      <Divider />
+
+      <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+    </div>
   );
 }

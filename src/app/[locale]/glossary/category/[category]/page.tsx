@@ -1,18 +1,18 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { PageTitle } from '../../../_components/PageTitle';
-import { Breadcrumb } from '../../../_components/Breadcrumb';
+import { PageTitle, Breadcrumb, Divider } from '../../../_components';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { CategoryIndex } from '../../_components/CategoryIndex';
 import { chessTerms } from '../../_data/chess-terms';
+import type { Locale } from '../../../_lib/types';
 
-interface GlossaryCategoryPageProps {
+type Props = {
   params: Promise<{
-    locale: string;
+    locale: Locale;
     category: string;
   }>;
-}
+};
 
 const validCategories = [
   'tactics',
@@ -27,7 +27,7 @@ export async function generateStaticParams() {
   return validCategories.map((category) => ({ category }));
 }
 
-export async function generateMetadata({ params }: GlossaryCategoryPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.glossary.category' });
 
@@ -50,7 +50,7 @@ const categoryStyles = {
   general: { color: 'bg-card text-card-foreground', icon: '📋' },
 };
 
-export default async function GlossaryCategoryPage({ params }: GlossaryCategoryPageProps) {
+export default async function GlossaryCategoryPage({ params }: Props) {
   const { locale, category } = await params;
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
@@ -65,8 +65,8 @@ export default async function GlossaryCategoryPage({ params }: GlossaryCategoryP
   const categoryStyle = categoryStyles[category as keyof typeof categoryStyles];
 
   return (
-    <>
-      <div className="flex items-start gap-4 mb-8">
+    <div className="space-y-8">
+      <div className="flex items-start gap-4">
         <span className="text-4xl">{categoryStyle.icon}</span>
         <div>
           <PageTitle>{t(`categories.${category}`)}</PageTitle>
@@ -76,22 +76,18 @@ export default async function GlossaryCategoryPage({ params }: GlossaryCategoryP
         </div>
       </div>
 
-      <div className="mb-8">
-        <GlossaryTermList terms={filteredTerms} locale={locale} />
-      </div>
+      <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      {/* Navigation */}
-      <div className="mt-12 pt-8 border-t border-border">
-        <CategoryIndex locale={locale} currentCategory={category} />
-      </div>
+      <Divider />
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <CategoryIndex locale={locale} currentCategory={category} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
+        locale={locale}
+      />
+    </div>
   );
 }

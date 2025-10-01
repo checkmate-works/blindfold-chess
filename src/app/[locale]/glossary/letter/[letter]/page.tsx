@@ -1,25 +1,25 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { PageTitle } from '../../../_components/PageTitle';
-import { Breadcrumb } from '../../../_components/Breadcrumb';
+import { PageTitle, Breadcrumb, Divider } from '../../../_components';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { chessTerms } from '../../_data/chess-terms';
+import type { Locale } from '../../../_lib/types';
 
-interface GlossaryLetterPageProps {
+type Props = {
   params: Promise<{
-    locale: string;
+    locale: Locale;
     letter: string;
   }>;
-}
+};
 
 export async function generateStaticParams() {
   const letters = [...new Set(chessTerms.map((term) => term.term.charAt(0).toLowerCase()))];
   return letters.map((letter) => ({ letter }));
 }
 
-export async function generateMetadata({ params }: GlossaryLetterPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, letter } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.glossary.letter' });
   const upperLetter = letter.toUpperCase();
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: GlossaryLetterPageProps): Pro
   };
 }
 
-export default async function GlossaryLetterPage({ params }: GlossaryLetterPageProps) {
+export default async function GlossaryLetterPage({ params }: Props) {
   const { locale, letter } = await params;
   const t = await getTranslations({ locale, namespace: 'glossary' });
   const upperLetter = letter.toUpperCase();
@@ -45,28 +45,25 @@ export default async function GlossaryLetterPage({ params }: GlossaryLetterPageP
   }
 
   return (
-    <>
+    <div className="space-y-8">
       <PageTitle>{t('letterPage.title', { letter: upperLetter })}</PageTitle>
-      <p className="text-muted-foreground mb-6">
+
+      <p className="text-muted-foreground">
         {t('letterPage.count', { count: filteredTerms.length })}
       </p>
 
-      <div className="mb-8">
-        <GlossaryTermList terms={filteredTerms} locale={locale} />
-      </div>
+      <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      {/* Navigation */}
-      <div className="mt-12 pt-8 border-t border-border">
-        <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
-      </div>
+      <Divider />
 
-      {/* Breadcrumb at bottom */}
-      <div className="mt-8 pt-6 border-t border-border">
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
-          locale={locale}
-        />
-      </div>
-    </>
+      <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
+        locale={locale}
+      />
+    </div>
   );
 }
