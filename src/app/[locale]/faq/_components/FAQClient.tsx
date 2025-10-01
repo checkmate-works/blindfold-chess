@@ -5,12 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { FaChevronDown } from 'react-icons/fa';
 import { PageTitle } from '../../_components/PageTitle';
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: React.ReactNode;
-}
+import type { FAQItem } from '../_lib/types';
 
 export function FAQClient() {
   const t = useTranslations('faq');
@@ -32,29 +27,24 @@ export function FAQClient() {
     {
       id: 'invalid-move',
       question: t('items.invalidMove.question'),
-      answer: (
-        <>
-          {t.rich('items.invalidMove.answer', {
-            settingsLink: (chunks) => (
-              <Link
-                href="/preferences?tab=game-settings"
-                className="text-foreground underline hover:opacity-80 transition-colors"
-              >
-                {chunks}
-              </Link>
-            ),
-          })}
-        </>
-      ),
+      answer: t.rich('items.invalidMove.answer', {
+        settingsLink: (chunks) => (
+          <Link
+            href="/preferences?tab=game-settings"
+            className="text-foreground underline hover:opacity-80 transition-colors"
+          >
+            {chunks}
+          </Link>
+        ),
+      }),
     },
   ];
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('title')}</PageTitle>
-        <p className="text-muted-foreground">{t('description')}</p>
-      </div>
+    <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+
+      <p className="text-muted-foreground">{t('description')}</p>
 
       <div className="space-y-4">
         {faqItems.map((item) => {
@@ -88,6 +78,6 @@ export function FAQClient() {
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
