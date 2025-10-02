@@ -124,14 +124,18 @@
     "letterPage": {
       "title": "Terms Starting with {letter}",
       "description": "Chess terms starting with the letter {letter}",
-      "count": "{count} terms found"
+      "count": "{count} terms found",
+      "termsTitle": "Terms"
     },
     "categoryPage": {
       "description": "Chess terms related to {category}",
-      "count": "{count} terms found"
+      "count": "{count} terms found",
+      "termsTitle": "Terms",
+      "categoriesTitle": "Categories"
     },
     "aliases": "Also known as",
-    "relatedTerms": "Related terms"
+    "relatedTerms": "Related terms",
+    "alphabeticalIndexTitle": "Alphabetical"
   },
   "error": {
     "title": "Something went wrong!",
@@ -141,7 +145,8 @@
   },
   "manual": {
     "title": "Manual",
-    "description": "User guides and documentation for Blindfold Chess"
+    "description": "User guides and documentation for Blindfold Chess",
+    "articlesTitle": "Guides"
   },
   "navigation": {
     "practice": "Practice",
@@ -150,12 +155,14 @@
   "learn": {
     "title": "Learn Chess",
     "description": "Educational articles and guides to improve your chess understanding",
-    "practiceYourSkills": "Practice Your Skills",
-    "relatedLearning": "Learn More"
+    "practiceYourSkills": "Related Practice",
+    "relatedLearning": "Learn More",
+    "articlesTitle": "Articles"
   },
   "practice": {
     "title": "Practice",
     "description": "Improve your blindfold chess skills with interactive exercises",
+    "modulesTitle": "Practice Modules",
     "tryAgain": "Try Again",
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",

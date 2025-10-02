@@ -124,14 +124,18 @@
     "letterPage": {
       "title": "{letter}で始まる用語",
       "description": "{letter}で始まるチェス用語",
-      "count": "{count}件の用語"
+      "count": "{count}件の用語",
+      "termsTitle": "用語一覧"
     },
     "categoryPage": {
       "description": "{category}に関連するチェス用語",
-      "count": "{count}件の用語"
+      "count": "{count}件の用語",
+      "termsTitle": "用語一覧",
+      "categoriesTitle": "カテゴリー一覧"
     },
     "aliases": "別名",
-    "relatedTerms": "関連用語"
+    "relatedTerms": "関連用語",
+    "alphabeticalIndexTitle": "アルファベット順"
   },
   "error": {
     "title": "エラーが発生しました",
@@ -141,7 +145,8 @@
   },
   "manual": {
     "title": "マニュアル",
-    "description": "Blindfold Chess のユーザーガイドとドキュメント"
+    "description": "Blindfold Chess のユーザーガイドとドキュメント",
+    "articlesTitle": "マニュアル一覧"
   },
   "navigation": {
     "practice": "練習",
@@ -150,12 +155,14 @@
   "learn": {
     "title": "チェスを学ぶ",
     "description": "チェスの理解を深めるための教育記事とガイド",
-    "practiceYourSkills": "スキルを練習する",
-    "relatedLearning": "学習する"
+    "practiceYourSkills": "関連する練習メニュー",
+    "relatedLearning": "学習する",
+    "articlesTitle": "記事一覧"
   },
   "practice": {
     "title": "練習",
     "description": "インタラクティブな練習問題で目隠しチェスのスキルを向上させましょう",
+    "modulesTitle": "練習メニュー一覧",
     "tryAgain": "もう一度",
     "morePractice": "他の練習",
     "practiceComplete": "練習完了！",

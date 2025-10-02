@@ -62,8 +62,9 @@ export default async function LearnArticlePage({ params }: Props) {
       </article>
 
       {practiceModules[slug] && (
-        <div className="p-6 bg-secondary/30 rounded-lg border border-border space-y-4">
-          <SectionTitle className="text-xl">{t('learn.practiceYourSkills')}</SectionTitle>
+        <div className="space-y-4">
+          <Divider />
+          <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {practiceModules[slug].map((practice) => {
               // Handle special cases for module naming
