@@ -15,15 +15,16 @@ export function generateCanonicalMetadata({
   locale,
   path,
 }: GenerateCanonicalMetadataParams): Metadata {
-  // Remove leading slash if present
+  // Remove trailing slash from SITE_URL and leading slash from path
+  const baseUrl = SITE_URL.replace(/\/$/, '');
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
 
   // Build canonical URL with locale
-  const canonical = `${SITE_URL}/${locale}${cleanPath ? `/${cleanPath}` : ''}`;
+  const canonical = `${baseUrl}/${locale}${cleanPath ? `/${cleanPath}` : ''}`;
 
   // Build alternate URLs for all locales
-  const enUrl = `${SITE_URL}/en${cleanPath ? `/${cleanPath}` : ''}`;
-  const jaUrl = `${SITE_URL}/ja${cleanPath ? `/${cleanPath}` : ''}`;
+  const enUrl = `${baseUrl}/en${cleanPath ? `/${cleanPath}` : ''}`;
+  const jaUrl = `${baseUrl}/ja${cleanPath ? `/${cleanPath}` : ''}`;
 
   return {
     alternates: {
