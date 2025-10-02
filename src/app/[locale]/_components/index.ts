@@ -6,6 +6,7 @@ export { Header } from './Header';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';
+export { PageDescription } from './PageDescription';
 export { PageTitle } from './PageTitle';
 export { PrimaryButton } from './PrimaryButton';
 export { SectionTitle } from './SectionTitle';

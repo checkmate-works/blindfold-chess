@@ -1,5 +1,12 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb, CardLink, Divider, SectionTitle } from '@/app/[locale]/_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  CardLink,
+  Divider,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -48,9 +55,8 @@ export default async function PracticePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.title')}</PageTitle>
-      <p className="text-muted-foreground">{t('practice.description')}</p>
 
-      <Divider />
+      <PageDescription>{t('practice.description')}</PageDescription>
 
       <SectionTitle>{t('practice.modulesTitle')}</SectionTitle>
 

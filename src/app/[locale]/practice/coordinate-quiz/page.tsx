@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
 import CoordinateQuiz from './_components/CoordinateQuiz';
 import type { Locale } from '../../_lib/types';
 
@@ -26,7 +26,7 @@ export default async function CoordinateQuizPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('practice.coordinateQuiz.description')}</p>
+      <PageDescription>{t('practice.coordinateQuiz.description')}</PageDescription>
 
       <CoordinateQuiz locale={locale} />
 

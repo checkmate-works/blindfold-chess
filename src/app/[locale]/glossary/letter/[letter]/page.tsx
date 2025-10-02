@@ -1,7 +1,13 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { PageTitle, Breadcrumb, Divider, SectionTitle } from '../../../_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  Divider,
+  SectionTitle,
+} from '../../../_components';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { chessTerms } from '../../_data/chess-terms';
@@ -48,11 +54,7 @@ export default async function GlossaryLetterPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('letterPage.title', { letter: upperLetter })}</PageTitle>
 
-      <p className="text-muted-foreground">
-        {t('letterPage.count', { count: filteredTerms.length })}
-      </p>
-
-      <Divider />
+      <PageDescription>{t('letterPage.count', { count: filteredTerms.length })}</PageDescription>
 
       <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>
 

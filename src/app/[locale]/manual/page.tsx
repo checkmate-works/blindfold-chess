@@ -1,6 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import { getAllManualArticles } from './_lib/utils';
-import { PageTitle, Breadcrumb, CardLink, Divider, SectionTitle } from '@/app/[locale]/_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  CardLink,
+  Divider,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -18,9 +25,7 @@ export default async function ManualPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('description')}</p>
-
-      <Divider />
+      <PageDescription>{t('description')}</PageDescription>
 
       <SectionTitle>{t('articlesTitle')}</SectionTitle>
 

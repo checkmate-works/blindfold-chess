@@ -1,7 +1,13 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getManualArticle, getAvailableManualArticles } from '../_lib/utils';
-import { PageTitle, Breadcrumb, MarkdownRenderer, Divider } from '@/app/[locale]/_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  MarkdownRenderer,
+  Divider,
+} from '@/app/[locale]/_components';
 import type { Locale } from '../../_lib/types';
 
 type Props = {
@@ -59,7 +65,7 @@ export default async function ManualArticlePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{title}</PageTitle>
 
-      <p className="text-muted-foreground">{excerpt}</p>
+      <PageDescription>{excerpt}</PageDescription>
 
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2">

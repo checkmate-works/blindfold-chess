@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
 import AlgebraicNotation from './_components/AlgebraicNotation';
 import { questions } from './_data/questions';
 import type { Locale } from '../../_lib/types';
@@ -18,7 +18,7 @@ export default async function AlgebraicNotationPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('practice.algebraicNotation.description')}</p>
+      <PageDescription>{t('practice.algebraicNotation.description')}</PageDescription>
 
       <AlgebraicNotation questions={questions} locale={locale} />
 

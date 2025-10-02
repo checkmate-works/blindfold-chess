@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
 import { LegalMoves } from './_components/LegalMoves';
 import type { Locale } from '../../_lib/types';
 
@@ -26,7 +26,7 @@ export default async function LegalMovesPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('practice.legalMoves.description')}</p>
+      <PageDescription>{t('practice.legalMoves.description')}</PageDescription>
 
       <LegalMoves locale={locale} />
 

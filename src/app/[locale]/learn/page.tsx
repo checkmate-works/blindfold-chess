@@ -1,6 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import { getAllArticles } from './_lib/learn';
-import { PageTitle, Breadcrumb, CardLink, Divider, SectionTitle } from '@/app/[locale]/_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  CardLink,
+  Divider,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -29,9 +36,7 @@ export default async function LearnPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('learn.title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('learn.description')}</p>
-
-      <Divider />
+      <PageDescription>{t('learn.description')}</PageDescription>
 
       <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 

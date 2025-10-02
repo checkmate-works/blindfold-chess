@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb, Divider } from '@/app/[locale]/_components';
+import { PageTitle, PageDescription, Breadcrumb, Divider } from '@/app/[locale]/_components';
 import { PositionMemory } from './_components/PositionMemory';
 import type { Locale } from '../../_lib/types';
 
@@ -26,7 +26,7 @@ export default async function PositionMemoryPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('practice.positionMemory.description')}</p>
+      <PageDescription>{t('practice.positionMemory.description')}</PageDescription>
 
       <PositionMemory locale={locale} />
 

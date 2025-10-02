@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
 import SquareColors from './_components/SquareColors';
 import type { Locale } from '../../_lib/types';
 
@@ -17,7 +17,7 @@ export default async function SquareColorsPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.squareColors.title')}</PageTitle>
 
-      <p className="text-muted-foreground">{t('practice.squareColors.description')}</p>
+      <PageDescription>{t('practice.squareColors.description')}</PageDescription>
 
       <SquareColors locale={locale} />
 

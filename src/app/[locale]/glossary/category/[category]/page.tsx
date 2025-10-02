@@ -1,7 +1,13 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { PageTitle, Breadcrumb, Divider, SectionTitle } from '../../../_components';
+import {
+  PageTitle,
+  PageDescription,
+  Breadcrumb,
+  Divider,
+  SectionTitle,
+} from '../../../_components';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { CategoryIndex } from '../../_components/CategoryIndex';
 import { chessTerms } from '../../_data/chess-terms';
@@ -70,13 +76,11 @@ export default async function GlossaryCategoryPage({ params }: Props) {
         <span className="text-4xl">{categoryStyle.icon}</span>
         <div>
           <PageTitle>{t(`categories.${category}`)}</PageTitle>
-          <p className="text-muted-foreground">
+          <PageDescription>
             {t('categoryPage.count', { count: filteredTerms.length })}
-          </p>
+          </PageDescription>
         </div>
       </div>
-
-      <Divider />
 
       <SectionTitle>{t('categoryPage.termsTitle')}</SectionTitle>
 
