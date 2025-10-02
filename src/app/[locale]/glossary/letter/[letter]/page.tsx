@@ -11,6 +11,7 @@ import {
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { chessTerms } from '../../_data/chess-terms';
+import { generateCanonicalMetadata } from '../../../_lib/metadata';
 import type { Locale } from '../../../_lib/types';
 
 type Props = {
@@ -31,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const upperLetter = letter.toUpperCase();
 
   return {
+    ...generateCanonicalMetadata({ locale, path: `glossary/letter/${letter}` }),
     title: t('title', { letter: upperLetter }),
     description: t('description', { letter: upperLetter }),
   };

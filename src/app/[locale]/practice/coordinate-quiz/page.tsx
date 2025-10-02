@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../../_lib/metadata';
 import CoordinateQuiz from './_components/CoordinateQuiz';
 import type { Locale } from '../../_lib/types';
 
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   return {
+    ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz' }),
     title: t('practice.coordinateQuiz.title'),
     description: t('practice.coordinateQuiz.description'),
   };

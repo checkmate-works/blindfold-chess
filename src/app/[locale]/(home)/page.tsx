@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { NewGameCard } from './_components/NewGameCard';
 import { GameListClient } from './_components/GameListClient';
+import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Metadata } from 'next';
 import type { Locale } from '../_lib/types';
 
@@ -15,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.home' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: '' }),
     title: t('title'),
     description: t('description'),
   };

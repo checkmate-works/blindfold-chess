@@ -8,6 +8,7 @@ import {
   MarkdownRenderer,
   Divider,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../../_lib/metadata';
 import type { Locale } from '../../_lib/types';
 
 type Props = {
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: Props) {
   const excerpt = article.metadata.excerpt;
 
   return {
+    ...generateCanonicalMetadata({ locale, path: `manual/${slug}` }),
     title,
     description: excerpt,
   };

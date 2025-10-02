@@ -8,6 +8,8 @@ import {
   Divider,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../_lib/metadata';
+import type { Metadata } from 'next';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -15,6 +17,17 @@ type Props = {
     locale: Locale;
   }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'learn' }),
+    title: t('learn.title'),
+    description: t('learn.description'),
+  };
+}
 
 // Icons for each article type
 const articleIcons: Record<string, string> = {

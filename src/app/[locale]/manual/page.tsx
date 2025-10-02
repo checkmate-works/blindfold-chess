@@ -8,6 +8,8 @@ import {
   Divider,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../_lib/metadata';
+import type { Metadata } from 'next';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -15,6 +17,17 @@ type Props = {
     locale: Locale;
   }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'manual' });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'manual' }),
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export default async function ManualPage({ params }: Props) {
   const { locale } = await params;

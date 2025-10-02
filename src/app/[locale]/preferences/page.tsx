@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { PreferencesTabs } from './_components/PreferencesTabs';
 import { PageTitle } from '../_components/PageTitle';
+import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Metadata } from 'next';
 
 interface PreferencesPageProps {
@@ -12,6 +13,7 @@ export async function generateMetadata({ params }: PreferencesPageProps): Promis
   const t = await getTranslations({ locale, namespace: 'metadata.preferences' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: 'preferences' }),
     title: t('title'),
     description: t('description'),
   };

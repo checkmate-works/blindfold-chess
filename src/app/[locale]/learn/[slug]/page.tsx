@@ -9,6 +9,8 @@ import {
   SectionTitle,
   Divider,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../../_lib/metadata';
+import type { Metadata } from 'next';
 import type { Locale } from '../../_lib/types';
 
 type Props = {
@@ -28,6 +30,23 @@ export async function generateStaticParams() {
       slug,
     }))
   );
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const article = await getArticle(slug, locale);
+
+  if (!article) {
+    return {
+      title: 'Article Not Found',
+    };
+  }
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: `learn/${slug}` }),
+    title: article.metadata.title,
+    description: article.metadata.excerpt,
+  };
 }
 
 // Mapping of learn articles to practice modules

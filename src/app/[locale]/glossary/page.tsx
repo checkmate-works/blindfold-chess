@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { PageTitle, PageDescription, Breadcrumb, SectionTitle, Divider } from '../_components';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
+import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -18,6 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.glossary' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: 'glossary' }),
     title: t('title'),
     description: t('description'),
   };

@@ -11,6 +11,7 @@ import {
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { CategoryIndex } from '../../_components/CategoryIndex';
 import { chessTerms } from '../../_data/chess-terms';
+import { generateCanonicalMetadata } from '../../../_lib/metadata';
 import type { Locale } from '../../../_lib/types';
 
 type Props = {
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const categoryName = categoryT(category);
 
   return {
+    ...generateCanonicalMetadata({ locale, path: `glossary/category/${category}` }),
     title: t('title', { category: categoryName }),
     description: t('description', { category: categoryName }),
   };

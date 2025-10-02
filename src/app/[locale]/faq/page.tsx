@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { FAQClient } from './_components/FAQClient';
 import { Breadcrumb, Divider } from '../_components';
+import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 
 type Props = {
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'faq' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: 'faq' }),
     title: t('title'),
     description: t('description'),
   };

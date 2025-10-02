@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { PageTitle, PageDescription, Breadcrumb, Divider } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '../../_lib/metadata';
 import { PositionMemory } from './_components/PositionMemory';
 import type { Locale } from '../../_lib/types';
 
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   return {
+    ...generateCanonicalMetadata({ locale, path: 'practice/position-memory' }),
     title: t('practice.positionMemory.title'),
     description: t('practice.positionMemory.description'),
   };
