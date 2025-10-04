@@ -86,6 +86,9 @@ SENTRY_PROJECT=your-project-name
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
 - `pnpm lint` - Run ESLint
+- `pnpm test` - Run tests in watch mode
+- `pnpm test:run` - Run tests once (CI mode)
+- `pnpm test:ui` - Run tests with UI
 
 ## Tech Stack
 

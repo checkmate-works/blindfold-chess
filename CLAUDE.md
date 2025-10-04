@@ -41,6 +41,24 @@ This document outlines the technical decisions and implementation guidelines for
 - **URL Path-based Locales** - Use `/[locale]/` pattern
 - **Supported Languages** - English (`en`) and Japanese (`ja`)
 
+## Testing
+
+### Framework
+- **Vitest** - Unit and integration testing framework
+
+### Test File Organization
+- **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension
+- **Integration Tests** - Separate directory at `tests/integration/`
+- **E2E Tests** - Separate directory at `tests/e2e/`
+
+### File Structure Examples
+```
+src/components/Button/Button.test.tsx    # Component unit test
+src/lib/utils.test.ts                    # Utility unit test
+tests/integration/api/validation.test.ts # Integration test
+tests/e2e/practice-flow.e2e.ts          # E2E test
+```
+
 ## Code Quality
 
 ### Development Tools
