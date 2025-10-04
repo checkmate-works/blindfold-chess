@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
-import type { Locale } from '../../_lib/types';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 interface PracticeCompleteProps {
   score: number;

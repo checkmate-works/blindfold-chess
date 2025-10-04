@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
-import type { UciMove, Fen, SkillLevel, AlgebraicNotation } from '@/lib/types';
+
+import type { AlgebraicNotation, Fen, SkillLevel, UciMove } from '@/lib/types';
 
 interface EngineResponse {
   type: 'readyok' | 'bestmove' | 'info' | 'uci';

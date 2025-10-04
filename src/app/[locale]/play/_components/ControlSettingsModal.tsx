@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { Modal } from '../../_components/Modal';
-import { ControlSettingsContent } from '../../preferences/_components/ControlSettingsContent';
-import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
+
+import { Modal } from '@/app/[locale]/_components/Modal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { ControlSettingsContent } from '@/app/[locale]/preferences/_components/ControlSettingsContent';
 
 interface ControlSettingsModalProps {
   isOpen: boolean;

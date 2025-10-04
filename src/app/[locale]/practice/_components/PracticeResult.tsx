@@ -1,9 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { Link } from '@/i18n/routing';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import type { Locale } from '../../_lib/types';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   score: {

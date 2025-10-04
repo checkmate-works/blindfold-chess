@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import { PlayClient } from './_components/PlayClient';
+
 import { PageTitle } from '../_components/PageTitle';
 import type { Locale } from '../_lib/types';
+import { PlayClient } from './_components/PlayClient';
 
 export default function PlayPage() {
   const params = useParams();

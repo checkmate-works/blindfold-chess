@@ -1,10 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MobileMenu } from './MobileMenu';
+
 import { FaCog } from 'react-icons/fa';
+
 import type { NavigationItem } from '../_lib/types';
 import { getIcon } from '../_lib/utils';
+import { MobileMenu } from './MobileMenu';
 
 interface Props {
   locale: string;

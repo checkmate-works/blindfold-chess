@@ -1,9 +1,10 @@
-import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
-import { FAQClient } from './_components/FAQClient';
+import { getTranslations } from 'next-intl/server';
+
 import { Breadcrumb, Divider } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
+import { FAQClient } from './_components/FAQClient';
 
 type Props = {
   params: Promise<{ locale: Locale }>;

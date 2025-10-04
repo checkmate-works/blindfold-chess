@@ -1,9 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { PrimaryButton } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import type { Question } from '../_lib/types';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   selectedAnswer: string;

@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { SimpleChessBoard } from '../../play/_components/SimpleChessBoard';
-import type { GamePreferences } from '../../_contexts/GamePreferencesContext';
+
 import type { Side } from '@/lib/types';
+
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { SimpleChessBoard } from '@/app/[locale]/play/_components/SimpleChessBoard';
 
 interface GameSettingsContentProps {
   settings: GamePreferences;

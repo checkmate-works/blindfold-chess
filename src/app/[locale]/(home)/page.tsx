@@ -1,9 +1,10 @@
-import { getTranslations } from 'next-intl/server';
-import { NewGameButton } from './_components/NewGameButton';
-import { GameListClient } from './_components/GameListClient';
-import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+
+import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
+import { GameListClient } from './_components/GameListClient';
+import { NewGameButton } from './_components/NewGameButton';
 
 type Props = {
   params: Promise<{

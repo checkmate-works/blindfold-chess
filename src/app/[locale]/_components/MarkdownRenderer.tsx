@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown';
-import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+
 import { PageTitle } from './PageTitle';
 import { SectionTitle } from './SectionTitle';
 import { SubsectionTitle } from './SubsectionTitle';

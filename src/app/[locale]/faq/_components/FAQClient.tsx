@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
+
 import { Link } from '@/i18n/routing';
 import { FaChevronDown } from 'react-icons/fa';
-import { PageTitle } from '../../_components/PageTitle';
+
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+
 import type { FAQItem } from '../_lib/types';
 
 export function FAQClient() {

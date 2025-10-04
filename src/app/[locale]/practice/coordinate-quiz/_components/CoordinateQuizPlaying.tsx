@@ -1,12 +1,15 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { Square } from 'chess.js';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { TimeDisplay } from '../../_components/TimeDisplay';
-import { CoordinateQuizBoard } from './CoordinateQuizBoard';
+import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
+
 import type { CoordinateQuestion } from '../_lib/types';
 import { formatTime } from '../_lib/utils';
+import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 
 type Props = {
   currentQuestion: CoordinateQuestion | null;

@@ -1,10 +1,11 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, PageDescription, Breadcrumb, SectionTitle, Divider } from '../_components';
-import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
-import { CategoryIndex } from './_components/CategoryIndex';
+
+import { Breadcrumb, Divider, PageDescription, PageTitle, SectionTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
+import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
+import { CategoryIndex } from './_components/CategoryIndex';
 
 type Props = {
   params: Promise<{ locale: Locale }>;

@@ -1,6 +1,7 @@
-import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/config';
+import { defineRouting } from 'next-intl/routing';
+
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/config';
 
 export const routing = defineRouting({
   locales: SUPPORTED_LOCALES,

@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { PracticeResult } from '../../_components/PracticeResult';
-import { SquareColorsSetup } from './SquareColorsSetup';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
+import type { GameState } from '@/app/[locale]/practice/_lib/types';
+
+import { generateSquareSequence, getSquareColor } from '../_lib/square-utils';
 import { SquareColorsPlaying } from './SquareColorsPlaying';
-import { getSquareColor, generateSquareSequence } from '../_lib/square-utils';
-import type { GameState } from '../../_lib/types';
-import type { Locale } from '../../../_lib/types';
+import { SquareColorsSetup } from './SquareColorsSetup';
 
 type Props = {
   locale: Locale;

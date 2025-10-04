@@ -1,6 +1,7 @@
 import { Square } from 'chess.js';
-import type { BoardOrientation, CoordinateQuestion } from './types';
+
 import { allSquares } from '../_data/squares';
+import type { BoardOrientation, CoordinateQuestion } from './types';
 
 /**
  * Generate a single coordinate quiz question

@@ -1,9 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
+import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
+
 import type { BoardOrientation } from '../_lib/types';
 import { formatTime } from '../_lib/utils';
-import { TimeSlider } from '../../_components/TimeSlider';
 
 type Props = {
   timeLimit: number;

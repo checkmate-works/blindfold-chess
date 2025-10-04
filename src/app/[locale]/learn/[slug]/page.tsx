@@ -1,17 +1,19 @@
-import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { getArticle, getAvailableArticles } from '../_lib/learn';
+import { notFound } from 'next/navigation';
+
 import {
   Breadcrumb,
-  MarkdownRenderer,
   CardLink,
+  Divider,
+  MarkdownRenderer,
   PageTitle,
   SectionTitle,
-  Divider,
 } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '../../_lib/metadata';
-import type { Metadata } from 'next';
-import type { Locale } from '../../_lib/types';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { getArticle, getAvailableArticles } from '../_lib/learn';
 
 type Props = {
   params: Promise<{

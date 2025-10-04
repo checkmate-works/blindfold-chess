@@ -1,8 +1,10 @@
 import { getTranslations } from 'next-intl/server';
-import { PageTitle, Breadcrumb, Divider } from '@/app/[locale]/_components';
-import { NewGameForm } from './_components/NewGameForm';
+
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { GameLimitCheck } from './_components/GameLimitCheck';
-import type { Locale } from '../../_lib/types';
+import { NewGameForm } from './_components/NewGameForm';
 
 type Props = {
   params: Promise<{

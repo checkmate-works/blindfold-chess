@@ -1,24 +1,29 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { FaChevronDown, FaEye, FaEyeSlash, FaCopy, FaCheck } from 'react-icons/fa';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useNotation } from '../_hooks/use-notation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+import { Chess } from 'chess.js';
+import { FaCheck, FaChevronDown, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { useAiVersus } from '../_hooks/use-ai-versus';
 import { useAutoSave } from '../_hooks/use-auto-save';
+import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
-import { LocalStorageGameRepository } from '@/lib/repositories';
-import { SimpleChessBoard } from './SimpleChessBoard';
+import { ControlSettingsModal } from './ControlSettingsModal';
+import { GameSettingsModal } from './GameSettingsModal';
+import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveSelect } from './MoveSelect';
-import { UndoIcon, FlagIcon } from './Icons';
-import { Chess } from 'chess.js';
-import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
-import type { Locale } from '../../_lib/types';
-import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
-import { GameSettingsModal } from './GameSettingsModal';
-import { ControlSettingsModal } from './ControlSettingsModal';
+import { SimpleChessBoard } from './SimpleChessBoard';
 
 interface PlayClientProps {
   locale: Locale;

@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { GamePreferences } from '../../_contexts/GamePreferencesContext';
+
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 interface ControlSettingsContentProps {
   settings: GamePreferences;

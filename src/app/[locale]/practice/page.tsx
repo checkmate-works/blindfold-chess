@@ -1,14 +1,16 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+
 import {
-  PageTitle,
-  PageDescription,
   Breadcrumb,
   CardLink,
   Divider,
+  PageDescription,
+  PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+
 import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Metadata } from 'next';
 import type { Locale } from '../_lib/types';
 
 type Props = {

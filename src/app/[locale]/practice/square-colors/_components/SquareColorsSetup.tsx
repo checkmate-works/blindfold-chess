@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
-import { TimeSlider } from '../../_components/TimeSlider';
+
+import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
 type Props = {
   timeLimit: number;

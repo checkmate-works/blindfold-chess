@@ -1,7 +1,9 @@
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+
 import { FaPlus } from 'react-icons/fa';
-import type { Locale } from '../../_lib/types';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 export async function NewGameButton({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'home' });

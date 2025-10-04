@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
+import { useEffect, useRef, useState } from 'react';
+
 import type { AlgebraicNotation } from '@/lib/types';
+
+import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
 
 interface MoveInputProps {
   /**

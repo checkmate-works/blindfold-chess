@@ -72,6 +72,50 @@ tests/e2e/practice-flow.e2e.ts          # E2E test
 - **Image Optimization** - Always use Next.js Image component
 - **Font Optimization** - Use `next/font` for web fonts (Inter)
 
+### Import Path Convention
+- **Same Directory** - Use relative imports: `import { Foo } from './Foo'`
+- **Parent Directory** - Use relative imports: `import { Bar } from '../Bar'`
+- **Two or More Levels Up** - Use absolute imports with `@` alias: `import { Baz } from '@/app/[locale]/_components/Baz'`
+- **lib Directory** - Always use `@/lib/...` for shared utilities and types
+
+### Import Order Convention
+Imports are automatically sorted by Prettier using `@trivago/prettier-plugin-sort-imports` in the following order:
+
+1. React imports
+2. Next.js imports
+3. Third-party modules
+4. `@/lib/` imports
+5. `@/app/[locale]/` imports
+6. Relative imports (`.` and `..`)
+
+Groups are separated by blank lines, and specifiers within imports are sorted alphabetically.
+
+**Examples:**
+```typescript
+// ✓ Good - proper import path usage
+import { Button } from './Button';
+import { Header } from '../Header';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+// ✗ Bad - don't use deep relative paths
+import { PageTitle } from '../../_components/PageTitle';
+
+// ✓ Good - proper import order (automatically enforced by Prettier)
+import React from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { format } from 'date-fns';
+
+import type { Game } from '@/lib/types';
+
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { Button } from './Button';
+```
+
 ## File Structure
 - **Unopinionated Approach** - Follow Next.js flexibility
 - **No Forced Structure** - Organize based on project needs

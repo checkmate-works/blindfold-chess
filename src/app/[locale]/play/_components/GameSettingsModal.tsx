@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { Modal } from '../../_components/Modal';
-import { GameSettingsContent } from '../../preferences/_components/GameSettingsContent';
-import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
+
 import type { Side } from '@/lib/types';
+
+import { Modal } from '@/app/[locale]/_components/Modal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { GameSettingsContent } from '@/app/[locale]/preferences/_components/GameSettingsContent';
 
 interface GameSettingsModalProps {
   isOpen: boolean;

@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { PracticeResult } from '../../_components/PracticeResult';
-import { LegalMovesSetup } from './LegalMovesSetup';
-import { LegalMovesPlaying } from './LegalMovesPlaying';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
+import type { GameState } from '@/app/[locale]/practice/_lib/types';
+
 import type { MoveQuestion, PieceType } from '../_lib/types';
-import { isLegalMove, generateBalancedMoveQuestions } from '../_lib/utils';
-import type { GameState } from '../../_lib/types';
-import type { Locale } from '../../../_lib/types';
+import { generateBalancedMoveQuestions, isLegalMove } from '../_lib/utils';
+import { LegalMovesPlaying } from './LegalMovesPlaying';
+import { LegalMovesSetup } from './LegalMovesSetup';
 
 type GameStats = {
   correct: number;

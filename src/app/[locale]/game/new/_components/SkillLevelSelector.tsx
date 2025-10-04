@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import type { SkillLevel } from '@/lib/types';
 
 type Props = {

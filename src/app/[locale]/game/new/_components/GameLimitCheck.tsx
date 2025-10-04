@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GameLimitError } from './GameLimitError';
-import { LocalStorageGameRepository } from '@/lib/repositories';
+
 import { MAX_GAMES } from '@/config';
-import type { Locale } from '../../../_lib/types';
+
+import { LocalStorageGameRepository } from '@/lib/repositories';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { GameLimitError } from './GameLimitError';
 
 type Props = {
   locale: Locale;

@@ -1,5 +1,7 @@
 import Image from 'next/image';
+
 import { SITE_NAME } from '@/config';
+
 import { LanguageButton } from './_components/LanguageButton';
 
 const LANGUAGE_OPTIONS = [

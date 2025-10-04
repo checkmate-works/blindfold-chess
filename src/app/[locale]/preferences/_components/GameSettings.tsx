@@ -1,7 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 import { GameSettingsContent } from './GameSettingsContent';
 
 export function GameSettings() {

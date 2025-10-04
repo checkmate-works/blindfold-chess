@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { ProgressBar } from '../../_components/ProgressBar';
-import { PracticeComplete } from '../../_components/PracticeComplete';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
+
+import type { Question } from '../_lib/types';
 import { AlgebraicNotationPlaying } from './AlgebraicNotationPlaying';
 import { AlgebraicNotationResult } from './AlgebraicNotationResult';
-import type { Question } from '../_lib/types';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   questions: Question[];

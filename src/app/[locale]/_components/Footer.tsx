@@ -1,4 +1,5 @@
 import { FaGithub } from 'react-icons/fa';
+
 import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface Props {

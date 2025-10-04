@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { TimeDisplay } from '../../_components/TimeDisplay';
+import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
 
 type Props = {
   currentSquare: string;

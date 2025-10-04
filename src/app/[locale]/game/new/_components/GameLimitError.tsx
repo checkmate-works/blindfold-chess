@@ -1,9 +1,11 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { SectionTitle } from '../../../_components/SectionTitle';
+import Link from 'next/link';
+
 import { MAX_GAMES } from '@/config';
-import type { Locale } from '../../../_lib/types';
+import { FaExclamationTriangle } from 'react-icons/fa';
+
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;

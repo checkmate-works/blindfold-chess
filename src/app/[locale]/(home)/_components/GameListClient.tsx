@@ -1,17 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
+
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
-import { GameList } from './GameList';
+
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { EmptyGameList } from './EmptyGameList';
+import { GameList } from './GameList';
 import { GameListSkeleton } from './GameListSkeleton';
 import { SortButton } from './SortButton';
-import { ConfirmationModal } from '../../_components/ConfirmationModal';
-import { PageTitle } from '../../_components/PageTitle';
-import { useToast } from '../../_contexts/ToastContext';
-import type { Locale } from '../../_lib/types';
 
 type Props = {
   locale: Locale;

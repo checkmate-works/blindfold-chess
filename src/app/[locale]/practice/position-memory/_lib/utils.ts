@@ -1,5 +1,5 @@
 import { FEN_STRINGS } from '../_data/positions';
-import type { PositionData, ScoreDetail, PositionAccuracy } from './types';
+import type { PositionAccuracy, PositionData, ScoreDetail } from './types';
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {

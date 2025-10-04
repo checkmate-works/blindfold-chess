@@ -1,9 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
-import { CoordinateQuizSettings } from './CoordinateQuizSettings';
+
+import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+
 import type { BoardOrientation } from '../_lib/types';
+import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 
 type Props = {
   timeLimit: number;

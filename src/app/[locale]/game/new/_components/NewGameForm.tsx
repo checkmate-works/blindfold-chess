@@ -1,17 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
 import { Chess } from 'chess.js';
-import { StartMethodSelector } from './StartMethodSelector';
-import { ColorSelector } from './ColorSelector';
-import { SkillLevelSelector } from './SkillLevelSelector';
-import { PgnInput } from './PgnInput';
-import { SectionTitle, PrimaryButton } from '../../../_components';
-import { validatePgn, parsePgn } from '../../../play/_lib/pgn-parser';
+
 import type { Side, SkillLevel } from '@/lib/types';
-import type { Locale } from '../../../_lib/types';
+
+import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { parsePgn, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
+
+import { ColorSelector } from './ColorSelector';
+import { PgnInput } from './PgnInput';
+import { SkillLevelSelector } from './SkillLevelSelector';
+import { StartMethodSelector } from './StartMethodSelector';
 
 type StartMethod = 'new' | 'pgn';
 

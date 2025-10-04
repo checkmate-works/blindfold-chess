@@ -1,12 +1,14 @@
-import '../globals.css';
-import { Header } from './_components/Header';
-import { Footer } from './_components/Footer';
-import { Inter } from 'next/font/google';
-import { Providers } from './_lib/providers';
-import { getMessages, getTranslations } from 'next-intl/server';
-import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { SITE_URL, SITE_NAME, AUTHOR_NAME, GA_MEASUREMENT_ID } from '@/config';
+import { getMessages, getTranslations } from 'next-intl/server';
+import { Inter } from 'next/font/google';
+
+import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { GoogleAnalytics } from '@next/third-parties/google';
+
+import '../globals.css';
+import { Footer } from './_components/Footer';
+import { Header } from './_components/Header';
+import { Providers } from './_lib/providers';
 
 const inter = Inter({
   subsets: ['latin'],

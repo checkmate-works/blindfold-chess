@@ -1,15 +1,17 @@
-import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getManualArticle, getAvailableManualArticles } from '../_lib/utils';
+import { notFound } from 'next/navigation';
+
 import {
-  PageTitle,
-  PageDescription,
   Breadcrumb,
-  MarkdownRenderer,
   Divider,
+  MarkdownRenderer,
+  PageDescription,
+  PageTitle,
 } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '../../_lib/metadata';
-import type { Locale } from '../../_lib/types';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { getAvailableManualArticles, getManualArticle } from '../_lib/utils';
 
 type Props = {
   params: Promise<{

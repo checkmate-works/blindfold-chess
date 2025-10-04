@@ -1,8 +1,10 @@
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '../../_lib/metadata';
+
+import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import CoordinateQuiz from './_components/CoordinateQuiz';
-import type { Locale } from '../../_lib/types';
 
 type Props = {
   params: Promise<{

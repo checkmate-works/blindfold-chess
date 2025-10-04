@@ -1,4 +1,5 @@
 import { PieceSymbol } from 'chess.js';
+
 import type { PieceType } from '../_lib/types';
 
 // Map piece types to chess.js piece symbols

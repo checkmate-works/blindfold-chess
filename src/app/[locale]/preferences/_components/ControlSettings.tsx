@@ -1,6 +1,7 @@
 'use client';
 
-import { useGamePreferences } from '../../_contexts/GamePreferencesContext';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 import { ControlSettingsContent } from './ControlSettingsContent';
 
 export function ControlSettings() {

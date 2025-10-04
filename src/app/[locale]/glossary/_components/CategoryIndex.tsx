@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 // to avoid DYNAMIC_SERVER_USAGE errors in production.
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
+
 import { chessTerms } from '../_data/chess-terms';
 
 interface CategoryIndexProps {

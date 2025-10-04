@@ -1,9 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
-import { LegalMovesSettings } from './LegalMovesSettings';
+
+import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+
 import type { PieceType } from '../_lib/types';
+import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {
   timeLimit: number;

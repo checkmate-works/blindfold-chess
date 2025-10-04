@@ -1,18 +1,20 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+
 import {
-  PageTitle,
-  PageDescription,
   Breadcrumb,
   Divider,
+  PageDescription,
+  PageTitle,
   SectionTitle,
-} from '../../../_components';
-import { GlossaryTermList } from '../../_components/GlossaryTermList';
+} from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { CategoryIndex } from '../../_components/CategoryIndex';
+import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { chessTerms } from '../../_data/chess-terms';
-import { generateCanonicalMetadata } from '../../../_lib/metadata';
-import type { Locale } from '../../../_lib/types';
 
 type Props = {
   params: Promise<{

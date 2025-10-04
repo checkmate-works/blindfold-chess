@@ -1,4 +1,4 @@
-import { AlgebraicNotation, ALL_FILES, ALL_RANKS, PIECES, File, Rank } from '@/lib/types';
+import { ALL_FILES, ALL_RANKS, AlgebraicNotation, File, PIECES, Rank } from '@/lib/types';
 
 /**
  * Generate move suggestions based on partial input

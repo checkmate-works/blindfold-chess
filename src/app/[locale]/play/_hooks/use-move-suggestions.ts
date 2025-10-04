@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { generateMoveSuggestions } from '../_lib/move-suggestions';
+import { useCallback, useEffect, useState } from 'react';
+
 import type { AlgebraicNotation } from '@/lib/types';
+
+import { generateMoveSuggestions } from '../_lib/move-suggestions';
 
 interface UseMoveSuggestionsOptions {
   /**

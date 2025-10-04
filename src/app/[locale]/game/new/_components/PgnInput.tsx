@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { validatePgnWithDetails } from '../../../play/_lib/pgn-parser';
+
+import { validatePgnWithDetails } from '@/app/[locale]/play/_lib/pgn-parser';
 
 type Props = {
   value: string;

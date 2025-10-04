@@ -1,8 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { ChessBoard } from '../../_components/ChessBoard';
+import { ChessBoard } from '@/app/[locale]/practice/_components/ChessBoard';
+
 import type { PositionAccuracy, PositionData } from '../_lib/types';
 
 type Props = {

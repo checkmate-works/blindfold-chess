@@ -1,4 +1,4 @@
-import type { Locale } from '../../_lib/types';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 export interface ArticleMetadata {
   title: string;

@@ -1,5 +1,7 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+
 import { usePathname } from 'next/navigation';
+
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameStatus } from '@/lib/types';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';

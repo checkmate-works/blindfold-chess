@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+
 import { useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
+
 import { useToast } from '../_contexts/ToastContext';
 
 export function ToastContainer() {

@@ -1,6 +1,8 @@
 import type { Game } from '@/lib/types';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { GameListItem } from './GameListItem';
-import type { Locale } from '../../_lib/types';
 
 type Props = {
   games: Game[];

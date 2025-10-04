@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { SimpleChessBoard } from './SimpleChessBoard';
-import { ProgressBar } from '../../_components/ProgressBar';
+import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
+
 import type { PositionData } from '../_lib/types';
+import { SimpleChessBoard } from './SimpleChessBoard';
 
 type Props = {
   originalPosition: PositionData;

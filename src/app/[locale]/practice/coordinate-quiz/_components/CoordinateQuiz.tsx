@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
+
 import { Square } from 'chess.js';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
+import type { GameState } from '@/app/[locale]/practice/_lib/types';
+
 import type { BoardOrientation, CoordinateQuestion } from '../_lib/types';
-import { generateSingleQuestion, checkAnswer, calculateScore } from '../_lib/utils';
-import { CoordinateQuizSetup } from './CoordinateQuizSetup';
+import { calculateScore, checkAnswer, generateSingleQuestion } from '../_lib/utils';
 import { CoordinateQuizPlaying } from './CoordinateQuizPlaying';
-import { PracticeResult } from '../../_components/PracticeResult';
-import type { GameState } from '../../_lib/types';
-import type { Locale } from '../../../_lib/types';
+import { CoordinateQuizSetup } from './CoordinateQuizSetup';
 
 type Props = {
   locale: Locale;

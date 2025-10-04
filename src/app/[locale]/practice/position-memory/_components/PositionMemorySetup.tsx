@@ -1,7 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { SectionTitle, PrimaryButton } from '@/app/[locale]/_components';
+
+import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+
 import { PositionMemorySettings } from './PositionMemorySettings';
 
 type Props = {

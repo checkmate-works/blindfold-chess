@@ -1,8 +1,9 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { PreferencesTabs } from './_components/PreferencesTabs';
+
 import { PageTitle } from '../_components/PageTitle';
 import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Metadata } from 'next';
+import { PreferencesTabs } from './_components/PreferencesTabs';
 
 interface PreferencesPageProps {
   params: Promise<{ locale: string }>;

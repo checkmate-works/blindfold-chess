@@ -1,8 +1,9 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { FaGlobe } from 'react-icons/fa';
+
 import { SUPPORTED_LOCALES } from '@/config';
+import { FaGlobe } from 'react-icons/fa';
 
 const LOCALE_LABELS = {
   en: 'English',

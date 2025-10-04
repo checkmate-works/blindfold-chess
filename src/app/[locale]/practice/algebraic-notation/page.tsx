@@ -1,10 +1,12 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '../../_lib/metadata';
+
+import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import AlgebraicNotation from './_components/AlgebraicNotation';
 import { questions } from './_data/questions';
-import type { Metadata } from 'next';
-import type { Locale } from '../../_lib/types';
 
 type Props = {
   params: Promise<{

@@ -1,11 +1,13 @@
 'use client';
 
-import { ThemeProvider } from 'next-themes';
-import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
-import { ToastProvider } from '../_contexts/ToastContext';
+
+import { NextIntlClientProvider } from 'next-intl';
+import { ThemeProvider } from 'next-themes';
+
 import { ToastContainer } from '../_components/ToastContainer';
 import { GamePreferencesProvider } from '../_contexts/GamePreferencesContext';
+import { ToastProvider } from '../_contexts/ToastContext';
 
 interface ProvidersProps {
   children: ReactNode;

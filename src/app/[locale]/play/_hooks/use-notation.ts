@@ -1,5 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+
 import { Chess } from 'chess.js';
+
 import type { AlgebraicNotation } from '@/lib/types';
 
 export function useNotation(initialMoves: AlgebraicNotation[] = []) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import type { Side } from '@/lib/types';
 
 type Props = {

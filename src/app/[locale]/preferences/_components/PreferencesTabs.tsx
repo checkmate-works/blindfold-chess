@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { ThemeSelector } from './ThemeSelector';
-import { GameSettings } from './GameSettings';
+
 import { ControlSettings } from './ControlSettings';
+import { GameSettings } from './GameSettings';
+import { ThemeSelector } from './ThemeSelector';
 
 interface PreferencesTabsProps {
   locale: string;

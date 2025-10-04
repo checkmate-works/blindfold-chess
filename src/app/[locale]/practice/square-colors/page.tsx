@@ -1,9 +1,11 @@
-import { getTranslations } from 'next-intl/server';
-import { Breadcrumb, PageTitle, PageDescription, Divider } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '../../_lib/metadata';
-import SquareColors from './_components/SquareColors';
 import type { Metadata } from 'next';
-import type { Locale } from '../../_lib/types';
+import { getTranslations } from 'next-intl/server';
+
+import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import SquareColors from './_components/SquareColors';
 
 type Props = {
   params: Promise<{

@@ -1,5 +1,6 @@
-import type { Locale } from '../../_lib/types';
-import type { LocaleLoaders, ContentLoaders, ManualArticle, ManualArticleMetadata } from './types';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import type { ContentLoaders, LocaleLoaders, ManualArticle, ManualArticleMetadata } from './types';
 
 // Article registry - maps slugs to their metadata modules
 const articleRegistry: Record<string, LocaleLoaders> = {

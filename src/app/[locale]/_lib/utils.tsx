@@ -1,4 +1,5 @@
-import { FaGraduationCap, FaDumbbell, FaBook, FaQuestionCircle, FaList } from 'react-icons/fa';
+import { FaBook, FaDumbbell, FaGraduationCap, FaList, FaQuestionCircle } from 'react-icons/fa';
+
 import type { NavigationIconName } from './types';
 
 export const getIcon = (iconName: NavigationIconName) => {

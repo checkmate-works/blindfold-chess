@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { Chess, Square, PieceSymbol, Color } from 'chess.js';
-import { ChessPieces } from '../../practice/_components/ChessBoard';
+import { useEffect, useMemo, useState } from 'react';
+
+import { Chess, Color, PieceSymbol, Square } from 'chess.js';
+
+import type { Side } from '@/lib/types';
+
+import { ChessPieces } from '@/app/[locale]/practice/_components/ChessBoard';
 
 type BoardPiece = {
   square: Square;
   type: PieceSymbol;
   color: Color;
 } | null;
-
-import type { Side } from '@/lib/types';
 
 interface SimpleChessBoardProps {
   fen: string;

@@ -1,11 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+
 import { FaTrash } from 'react-icons/fa';
-import { ColorIcon } from '../../_components/ColorIcon';
+
 import type { Game } from '@/lib/types';
-import type { Locale } from '../../_lib/types';
+
+import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   game: Game;

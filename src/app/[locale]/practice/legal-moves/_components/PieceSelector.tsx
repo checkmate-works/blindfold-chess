@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { PieceType } from '../_lib/types';
+
 import { pieceDisplayMap } from '../_data/constants';
+import type { PieceType } from '../_lib/types';
 
 type Props = {
   selectedPieces: Record<PieceType, boolean>;

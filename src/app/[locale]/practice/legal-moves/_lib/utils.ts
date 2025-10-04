@@ -1,6 +1,7 @@
 import { Chess, Square } from 'chess.js';
-import type { PieceType, MoveQuestion } from './types';
+
 import { pieceSymbolMap } from '../_data/constants';
+import type { MoveQuestion, PieceType } from './types';
 
 // Check if a move is legal for a given piece
 export function isLegalMove(from: string, to: string, pieceType: PieceType): boolean {

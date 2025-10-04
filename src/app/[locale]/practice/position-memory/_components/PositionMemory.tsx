@@ -1,21 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import { PracticeComplete } from '../../_components/PracticeComplete';
-import { PositionMemorySetup } from './PositionMemorySetup';
-import { PositionMemoryMemorize } from './PositionMemoryMemorize';
-import { PositionMemoryRecreate } from './PositionMemoryRecreate';
-import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
-import type { GamePhase, PositionData, PositionAccuracy } from '../_lib/types';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+
+import type { GamePhase, PositionAccuracy, PositionData } from '../_lib/types';
 import {
-  getRandomPositions,
   calculateAccuracy,
-  getMaxProblems,
   getCustomPositions,
+  getMaxProblems,
+  getRandomPositions,
   validateFEN,
 } from '../_lib/utils';
-import type { Locale } from '../../../_lib/types';
+import { PositionMemoryMemorize } from './PositionMemoryMemorize';
+import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
+import { PositionMemoryRecreate } from './PositionMemoryRecreate';
+import { PositionMemorySetup } from './PositionMemorySetup';
 
 type ExtendedGamePhase = GamePhase | 'setup' | 'problem-result';
 

@@ -1,7 +1,9 @@
-import '../globals.css';
-import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata } from 'next';
-import { SITE_URL, SITE_NAME, AUTHOR_NAME, GA_MEASUREMENT_ID } from '@/config';
+
+import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { GoogleAnalytics } from '@next/third-parties/google';
+
+import '../globals.css';
 import { Providers } from './_lib/providers';
 
 const siteDescription =

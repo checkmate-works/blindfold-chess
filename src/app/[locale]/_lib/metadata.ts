@@ -1,5 +1,6 @@
-import { SITE_URL } from '@/config';
 import type { Metadata } from 'next';
+
+import { SITE_URL } from '@/config';
 
 /**
  * Generate canonical URL and alternates metadata for a page

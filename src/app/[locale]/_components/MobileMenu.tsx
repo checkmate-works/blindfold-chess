@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+
 import Link from 'next/link';
+
 import { FaHome } from 'react-icons/fa';
+
 import type { NavigationItem } from '../_lib/types';
 import { getIcon } from '../_lib/utils';
 

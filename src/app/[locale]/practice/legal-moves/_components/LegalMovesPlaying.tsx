@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { TimeDisplay } from '../../_components/TimeDisplay';
-import type { MoveQuestion } from '../_lib/types';
+import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
+
 import { pieceDisplayMap } from '../_data/constants';
+import type { MoveQuestion } from '../_lib/types';
 
 type Props = {
   currentQuestion: MoveQuestion;
