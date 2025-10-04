@@ -5,7 +5,7 @@ import { SITE_URL, SITE_NAME, AUTHOR_NAME, GA_MEASUREMENT_ID } from '@/config';
 import { Providers } from './_lib/providers';
 
 const siteDescription =
-  'Free online platform to practice chess without seeing pieces. Master blindfold chess, improve your visualization and calculation skills.';
+  'A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.';
 
 export const metadata: Metadata = {
   title: SITE_NAME,
