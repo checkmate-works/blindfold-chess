@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { NewGameCard } from './_components/NewGameCard';
+import { NewGameButton } from './_components/NewGameButton';
 import { GameListClient } from './_components/GameListClient';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Metadata } from 'next';
@@ -28,7 +28,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div id="new-game-card">
-        <NewGameCard locale={locale} />
+        <NewGameButton locale={locale} />
       </div>
 
       <GameListClient locale={locale} />
