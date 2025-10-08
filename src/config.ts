@@ -7,3 +7,7 @@ export const SUPPORTED_LOCALES = ['en', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
 
 export const MAX_GAMES = 20;
+
+export const STORAGE_KEYS = {
+  GAME_UPDATED: 'blindfold_chess_game_updated',
+} as const;

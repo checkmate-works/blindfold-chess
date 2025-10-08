@@ -1,0 +1,79 @@
+import { useEffect, useState } from 'react';
+
+import { STORAGE_KEYS } from '@/config';
+
+import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { Game, GameSortOption, SortDirection } from '@/lib/types';
+
+type Return = {
+  games: Game[];
+  isLoading: boolean;
+  reloadGames: () => Promise<void>;
+};
+
+/**
+ * Custom hook for managing game list state with localStorage synchronization
+ *
+ * Features:
+ * - Loads games from localStorage sorted by specified criteria
+ * - Listens to storage events for cross-tab synchronization
+ * - Polls sessionStorage for same-tab update notifications
+ * - Automatically reloads when sort parameters change
+ *
+ * @param sortBy - Sort column (e.g., 'lastPlayed', 'createdAt')
+ * @param sortDirection - Sort direction ('asc' or 'desc')
+ * @returns Object containing games array, loading state, and reload function
+ */
+export function useGameList(sortBy: GameSortOption, sortDirection: SortDirection): Return {
+  const [games, setGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadGames = async () => {
+    setIsLoading(true);
+    try {
+      const gameRepository = new LocalStorageGameRepository();
+      const savedGames = await gameRepository.loadAllSorted(sortBy, sortDirection);
+      setGames(savedGames);
+    } catch (error) {
+      console.error('Failed to load games:', error);
+      setGames([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGames();
+
+    // Listen to storage events for cross-tab synchronization
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.GAME_UPDATED) {
+        loadGames();
+      }
+    };
+
+    // Poll sessionStorage for same-tab update notifications
+    const checkSessionStorage = () => {
+      const updated = sessionStorage.getItem(STORAGE_KEYS.GAME_UPDATED);
+      if (updated) {
+        sessionStorage.removeItem(STORAGE_KEYS.GAME_UPDATED);
+        loadGames();
+      }
+    };
+
+    const interval = setInterval(checkSessionStorage, 1000);
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [sortBy, sortDirection]);
+
+  return {
+    games,
+    isLoading,
+    reloadGames: loadGames,
+  };
+}

@@ -1,17 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { STORAGE_KEYS } from '@/config';
+
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { Game, GameSortOption, SortDirection } from '@/lib/types';
+import type { GameSortOption, SortDirection } from '@/lib/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useGameList } from '../_hooks/useGameList';
 import { EmptyGameList } from './EmptyGameList';
 import { GameList } from './GameList';
 import { GameListSkeleton } from './GameListSkeleton';
@@ -25,52 +28,11 @@ export function GameListClient({ locale }: Props) {
   const t = useTranslations('home');
   const tGameList = useTranslations('home.gameList');
   const { showToast } = useToast();
-  const [games, setGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [deleteConfirmGameId, setDeleteConfirmGameId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const gameRepository = new LocalStorageGameRepository();
-
-    const loadGames = async () => {
-      setIsLoading(true);
-      try {
-        const savedGames = await gameRepository.loadAllSorted(sortBy, sortDirection);
-        setGames(savedGames);
-      } catch (error) {
-        console.error('Failed to load games:', error);
-        setGames([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadGames();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'blindfold_chess_game_updated') {
-        loadGames();
-      }
-    };
-
-    const checkSessionStorage = () => {
-      const updated = sessionStorage.getItem('blindfold_chess_game_updated');
-      if (updated) {
-        sessionStorage.removeItem('blindfold_chess_game_updated');
-        loadGames();
-      }
-    };
-
-    const interval = setInterval(checkSessionStorage, 1000);
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, [sortBy, sortDirection]);
+  const { games, isLoading } = useGameList(sortBy, sortDirection);
 
   const handleDeleteGame = (gameId: string) => {
     setDeleteConfirmGameId(gameId);
@@ -83,7 +45,7 @@ export function GameListClient({ locale }: Props) {
 
     try {
       await gameRepository.delete(deleteConfirmGameId);
-      sessionStorage.setItem('blindfold_chess_game_updated', 'true');
+      sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, 'true');
       showToast(t('gameDeletedToast'), 'success');
     } catch (error) {
       console.error('Failed to delete game:', error);

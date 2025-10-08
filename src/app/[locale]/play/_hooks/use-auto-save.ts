@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { usePathname } from 'next/navigation';
 
+import { STORAGE_KEYS } from '@/config';
+
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameStatus } from '@/lib/types';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
@@ -80,7 +82,7 @@ export function useAutoSave({
           hasSavedInSession.current = true;
 
           // Set session storage flag for cross-component updates
-          sessionStorage.setItem('blindfold_chess_game_updated', Date.now().toString());
+          sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
         } catch (error) {
           console.error('Failed to save initial game state:', error);
           hasInitialSaveExecuted.current = false; // Reset flag on error
@@ -133,7 +135,7 @@ export function useAutoSave({
         hasSavedInSession.current = true;
 
         // Set session storage flag for cross-component updates
-        sessionStorage.setItem('blindfold_chess_game_updated', Date.now().toString());
+        sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
 
         // Show notification if requested
         if (showNotification) {
