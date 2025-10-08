@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider } from '../_components';
+import { Link } from '@/i18n/routing';
+
+import { Breadcrumb, Divider, PageDescription, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { FAQClient } from './_components/FAQClient';
+import type { FAQItem } from './_lib/types';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -25,9 +28,30 @@ export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'faq' });
 
+  const faqItems: FAQItem[] = [
+    {
+      id: 'invalid-move',
+      question: t('items.invalidMove.question'),
+      answer: t.rich('items.invalidMove.answer', {
+        settingsLink: (chunks) => (
+          <Link
+            href="/preferences?tab=game-settings"
+            className="text-foreground underline hover:opacity-80 transition-colors"
+          >
+            {chunks}
+          </Link>
+        ),
+      }),
+    },
+  ];
+
   return (
     <div className="space-y-8">
-      <FAQClient />
+      <PageTitle>{t('title')}</PageTitle>
+
+      <PageDescription>{t('description')}</PageDescription>
+
+      <FAQClient items={faqItems} />
 
       <Divider />
 
