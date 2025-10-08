@@ -1,18 +1,19 @@
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { ContentLoaders, LocaleLoaders, ManualArticle, ManualArticleMetadata } from './types';
+import { MANUAL_ARTICLE_SLUGS } from './types';
 
 // Article registry - maps slugs to their metadata modules
 const articleRegistry: Record<string, LocaleLoaders> = {
-  'about-this-website': {
+  [MANUAL_ARTICLE_SLUGS.ABOUT_THIS_WEBSITE]: {
     en: () => import('@/app/[locale]/manual/_data/about-this-website/metadata.en'),
     ja: () => import('@/app/[locale]/manual/_data/about-this-website/metadata.ja'),
   },
-  'changing-piece-appearance': {
+  [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/metadata.en'),
     ja: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/metadata.ja'),
   },
-  'data-handling-caution': {
+  [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () => import('@/app/[locale]/manual/_data/data-handling-caution/metadata.en'),
     ja: () => import('@/app/[locale]/manual/_data/data-handling-caution/metadata.ja'),
   },
@@ -20,15 +21,15 @@ const articleRegistry: Record<string, LocaleLoaders> = {
 
 // Content registry - maps slugs to their content modules
 const contentRegistry: Record<string, ContentLoaders> = {
-  'about-this-website': {
+  [MANUAL_ARTICLE_SLUGS.ABOUT_THIS_WEBSITE]: {
     en: () => import('@/app/[locale]/manual/_data/about-this-website/en'),
     ja: () => import('@/app/[locale]/manual/_data/about-this-website/ja'),
   },
-  'changing-piece-appearance': {
+  [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/en'),
     ja: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/ja'),
   },
-  'data-handling-caution': {
+  [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () => import('@/app/[locale]/manual/_data/data-handling-caution/en'),
     ja: () => import('@/app/[locale]/manual/_data/data-handling-caution/ja'),
   },
@@ -89,5 +90,3 @@ export const getAllManualArticles = async (locale: Locale): Promise<ManualArticl
       return 0;
     });
 };
-
-export type ManualArticleSlug = keyof typeof articleRegistry;
