@@ -12,7 +12,8 @@ import {
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
-import { getAllArticles } from './_lib/learn';
+import { ARTICLE_ICONS, type ArticleSlug } from './_lib/types';
+import { getAllArticles } from './_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -30,17 +31,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('learn.description'),
   };
 }
-
-// Icons for each article type
-const articleIcons: Record<string, string> = {
-  'algebraic-notation': '📝',
-  'bishop-movement': '♗',
-  'king-movement': '♔',
-  'knight-movement': '♘',
-  'rook-movement': '♜',
-  'square-colors': '🏁',
-  'position-memory': '🧠',
-};
 
 export default async function LearnPage({ params }: Props) {
   const { locale } = await params;
@@ -60,7 +50,7 @@ export default async function LearnPage({ params }: Props) {
           <CardLink
             key={article.slug}
             href={`/learn/${article.slug}`}
-            icon={articleIcons[article.slug] || '📚'}
+            icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
             title={article.title}
             description={article.excerpt}
             locale={locale}

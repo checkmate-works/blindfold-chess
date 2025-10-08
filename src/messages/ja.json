@@ -177,9 +177,9 @@
       "advanced": "上級"
     },
     "algebraicNotation": {
-      "title": "代数記法",
+      "title": "代数式表記法",
       "description": "インタラクティブな演習でチェス記法システムをマスターする",
-      "pageTitle": "代数記法練習",
+      "pageTitle": "代数式表記法",
       "question": "問題",
       "correct": "正解！",
       "incorrect": "不正解",
@@ -260,7 +260,7 @@
       "averageTime": "平均時間"
     },
     "positionMemory": {
-      "title": "位置記憶",
+      "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
       "settings": "ゲーム設定",
       "timeLimit": "記憶時間",

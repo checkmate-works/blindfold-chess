@@ -1,21 +1,12 @@
+/**
+ * Utility functions for learn section
+ */
+import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export interface ArticleMetadata {
-  title: string;
-  slug: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  tags: readonly string[];
-  publishedAt: string;
-  excerpt: string;
-  order?: number;
-}
+import type { Article, ArticleMetadata, ArticleSlug } from './types';
+import { ARTICLE_ICONS, ARTICLE_PRACTICE_MAPPING } from './types';
 
-export interface Article {
-  metadata: ArticleMetadata;
-  content: string;
-}
-
-// Content registry for markdown files
 const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/en').then((m) => m.default),
@@ -48,7 +39,7 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
 };
 
 // Static article registry by locale
-export const articleRegistry = {
+const articleRegistry = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/metadata.en'),
     ja: () => import('../_content/algebraic-notation/metadata.ja'),
@@ -79,12 +70,19 @@ export const articleRegistry = {
   },
 } as const;
 
-export type ArticleSlug = keyof typeof articleRegistry;
-
+/**
+ * Get list of available article slugs
+ */
 export function getAvailableArticles(): string[] {
   return Object.keys(articleRegistry);
 }
 
+/**
+ * Get a single article with its content
+ * @param slug - Article slug
+ * @param locale - Locale
+ * @returns Article or null if not found
+ */
 export async function getArticle(slug: string, locale: Locale): Promise<Article | null> {
   try {
     if (!(slug in articleRegistry)) {
@@ -117,6 +115,11 @@ export async function getArticle(slug: string, locale: Locale): Promise<Article 
   }
 }
 
+/**
+ * Get all articles metadata for a given locale
+ * @param locale - Locale
+ * @returns Sorted array of article metadata
+ */
 export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]> {
   const slugs = getAvailableArticles();
   const articles: ArticleMetadata[] = [];
@@ -145,4 +148,24 @@ export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]>
     // If neither has order, sort by published date (newest first)
     return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
   });
+}
+
+/**
+ * Get icon for an article
+ * @param slug - The article slug
+ * @returns Emoji icon string
+ */
+export function getArticleIcon(slug: ArticleSlug): string {
+  return ARTICLE_ICONS[slug];
+}
+
+/**
+ * Get recommended practice modules for an article
+ * @param articleSlug - The article slug
+ * @returns Array of practice module IDs, or undefined if no mapping exists
+ */
+export function getPracticeModulesForArticle(
+  articleSlug: ArticleSlug
+): PracticeModuleId[] | undefined {
+  return ARTICLE_PRACTICE_MAPPING[articleSlug];
 }

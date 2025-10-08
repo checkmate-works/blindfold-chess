@@ -11,9 +11,14 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import {
+  getPracticeModuleIcon,
+  getPracticeModuleTranslationKey,
+} from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getArticle, getAvailableArticles } from '../_lib/learn';
+import type { ArticleSlug } from '../_lib/types';
+import { getArticle, getAvailableArticles, getPracticeModulesForArticle } from '../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -51,20 +56,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Mapping of learn articles to practice modules
-const practiceModules: Record<string, Array<{ module: string; icon: string }>> = {
-  'algebraic-notation': [
-    { module: 'algebraic-notation', icon: '📝' },
-    { module: 'coordinate-quiz', icon: '🎯' },
-  ],
-  'bishop-movement': [{ module: 'legal-moves', icon: '♗' }],
-  'king-movement': [{ module: 'legal-moves', icon: '♔' }],
-  'knight-movement': [{ module: 'legal-moves', icon: '♘' }],
-  'rook-movement': [{ module: 'legal-moves', icon: '♜' }],
-  'square-colors': [{ module: 'square-colors', icon: '🏁' }],
-  'position-memory': [{ module: 'position-memory', icon: '🧠' }],
-};
-
 export default async function LearnArticlePage({ params }: Props) {
   const { locale, slug } = await params;
   const article = await getArticle(slug, locale);
@@ -74,6 +65,8 @@ export default async function LearnArticlePage({ params }: Props) {
     notFound();
   }
 
+  const relatedPracticeModules = getPracticeModulesForArticle(slug as ArticleSlug);
+
   return (
     <div className="space-y-8">
       <PageTitle>{article.metadata.title}</PageTitle>
@@ -82,33 +75,22 @@ export default async function LearnArticlePage({ params }: Props) {
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
-      {practiceModules[slug] && (
+      {relatedPracticeModules && (
         <div className="space-y-4">
           <Divider />
           <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {practiceModules[slug].map((practice) => {
-              // Handle special cases for module naming
-              const moduleKey =
-                practice.module === 'coordinate-quiz'
-                  ? 'coordinateQuiz'
-                  : practice.module === 'legal-moves'
-                    ? 'legalMoves'
-                    : practice.module === 'position-memory'
-                      ? 'positionMemory'
-                      : practice.module === 'square-colors'
-                        ? 'squareColors'
-                        : practice.module === 'algebraic-notation'
-                          ? 'algebraicNotation'
-                          : practice.module;
+            {relatedPracticeModules.map((moduleId) => {
+              const translationKey = getPracticeModuleTranslationKey(moduleId);
+              const icon = getPracticeModuleIcon(moduleId);
 
               return (
                 <CardLink
-                  key={practice.module}
-                  href={`/practice/${practice.module}`}
-                  icon={practice.icon}
-                  title={t(`practice.${moduleKey}.title`)}
-                  description={t(`practice.${moduleKey}.description`)}
+                  key={moduleId}
+                  href={`/practice/${moduleId}`}
+                  icon={icon}
+                  title={t(`practice.${translationKey}.title`)}
+                  description={t(`practice.${translationKey}.description`)}
                   locale={locale}
                 />
               );
