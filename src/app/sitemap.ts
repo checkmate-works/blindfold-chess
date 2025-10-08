@@ -12,6 +12,14 @@ const BASE_URL = SITE_URL.replace(/\/$/, '');
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const sitemap: MetadataRoute.Sitemap = [];
 
+  // Add root URL without locale
+  sitemap.push({
+    url: BASE_URL,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 1.0,
+  });
+
   // Static pages for each locale
   const staticPages = [
     '', // Home
