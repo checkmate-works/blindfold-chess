@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 import { chessTerms } from './[locale]/glossary/_data/chess-terms';
-import { getAllArticles } from './[locale]/learn/_lib/learn';
+import { getAllArticles } from './[locale]/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/manual/_lib/utils';
 
 // Remove trailing slash from BASE_URL if present to avoid double slashes
