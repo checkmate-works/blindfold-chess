@@ -8,7 +8,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 import type { GameState } from '@/app/[locale]/practice/_lib/types';
 
-import { generateSquareSequence, getSquareColor } from '../_lib/square-utils';
+import { generateSquareSequence, getSquareColor } from '../_lib/utils';
 import { SquareColorsPlaying } from './SquareColorsPlaying';
 import { SquareColorsSetup } from './SquareColorsSetup';
 

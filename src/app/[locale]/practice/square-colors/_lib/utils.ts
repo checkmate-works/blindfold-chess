@@ -1,5 +1,3 @@
-export type Square = string;
-
 export function isValidSquare(square: string): boolean {
   const regex = /^[a-h][1-8]$/;
   return regex.test(square);
