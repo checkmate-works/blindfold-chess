@@ -14,7 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
-import { chessTerms } from '../../_data/chess-terms';
+import { getTermsByLetter, getUniqueLetters } from '../../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -24,8 +24,8 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const letters = [...new Set(chessTerms.map((term) => term.term.charAt(0).toLowerCase()))];
-  return letters.map((letter) => ({ letter }));
+  const letters = getUniqueLetters();
+  return letters.map((letter) => ({ letter: letter.toLowerCase() }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,10 +45,7 @@ export default async function GlossaryLetterPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
   const upperLetter = letter.toUpperCase();
 
-  // Filter terms by letter
-  const filteredTerms = chessTerms.filter(
-    (term) => term.term.charAt(0).toUpperCase() === upperLetter
-  );
+  const filteredTerms = getTermsByLetter(letter);
 
   if (filteredTerms.length === 0) {
     notFound();

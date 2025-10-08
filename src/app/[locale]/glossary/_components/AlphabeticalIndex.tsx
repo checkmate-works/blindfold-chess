@@ -3,23 +3,21 @@
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import { chessTerms } from '../_data/chess-terms';
+import { getLetterCounts, getUniqueLetters } from '../_lib/utils';
 
-interface AlphabeticalIndexProps {
+type Props = {
   currentLetter?: string;
   locale: string;
-}
+};
 
-export function AlphabeticalIndex({ currentLetter, locale }: AlphabeticalIndexProps) {
-  // Get all unique first letters
-  const alphabet = [...new Set(chessTerms.map((term) => term.term.charAt(0).toUpperCase()))].sort();
+export function AlphabeticalIndex({ currentLetter, locale }: Props) {
+  const alphabet = getUniqueLetters();
+  const letterCounts = getLetterCounts();
 
   return (
     <div className="grid grid-cols-6 sm:grid-cols-9 md:grid-cols-13 gap-2">
       {alphabet.map((letter) => {
-        const count = chessTerms.filter(
-          (term) => term.term.charAt(0).toUpperCase() === letter
-        ).length;
+        const count = letterCounts[letter] || 0;
         const isActive = currentLetter === letter.toLowerCase();
 
         return (

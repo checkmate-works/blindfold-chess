@@ -4,36 +4,21 @@ import { getTranslations } from 'next-intl/server';
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import { chessTerms } from '../_data/chess-terms';
+import { CATEGORY_STYLES } from '../_lib/types';
+import { getCategoryCounts } from '../_lib/utils';
 
-interface CategoryIndexProps {
+type Props = {
   currentCategory?: string;
   locale: string;
-}
-
-const categoryStyles = {
-  tactics: { color: 'bg-destructive/10 text-destructive', icon: '⚔️' },
-  strategy: { color: 'bg-primary/10 text-primary', icon: '🎯' },
-  endgame: { color: 'bg-secondary/10 text-secondary-foreground', icon: '♔' },
-  opening: { color: 'bg-muted/50 text-muted-foreground', icon: '📖' },
-  structure: { color: 'bg-accent/50 text-accent-foreground', icon: '♟' },
-  general: { color: 'bg-card text-card-foreground', icon: '📋' },
 };
 
-export async function CategoryIndex({ currentCategory, locale }: CategoryIndexProps) {
+export async function CategoryIndex({ currentCategory, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
-
-  // Get category counts
-  const categoryCounts: Record<string, number> = {};
-  chessTerms.forEach((term) => {
-    if (term.category) {
-      categoryCounts[term.category] = (categoryCounts[term.category] || 0) + 1;
-    }
-  });
+  const categoryCounts = getCategoryCounts();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {Object.entries(categoryStyles).map(([category, { color, icon }]) => {
+      {Object.entries(CATEGORY_STYLES).map(([category, { color, icon }]) => {
         const count = categoryCounts[category] || 0;
         const isActive = currentCategory === category;
 

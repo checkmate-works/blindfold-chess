@@ -14,7 +14,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CategoryIndex } from '../../_components/CategoryIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
-import { chessTerms } from '../../_data/chess-terms';
+import { CATEGORY_STYLES } from '../../_lib/types';
+import { getTermsByCategory } from '../../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -23,17 +24,10 @@ type Props = {
   }>;
 };
 
-const validCategories = [
-  'tactics',
-  'strategy',
-  'endgame',
-  'opening',
-  'structure',
-  'general',
-] as const;
+const VALID_CATEGORIES = Object.keys(CATEGORY_STYLES);
 
 export async function generateStaticParams() {
-  return validCategories.map((category) => ({ category }));
+  return VALID_CATEGORIES.map((category) => ({ category }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -51,28 +45,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const categoryStyles = {
-  tactics: { color: 'bg-destructive/10 text-destructive', icon: '⚔️' },
-  strategy: { color: 'bg-primary/10 text-primary', icon: '🎯' },
-  endgame: { color: 'bg-secondary/10 text-secondary-foreground', icon: '♔' },
-  opening: { color: 'bg-muted/50 text-muted-foreground', icon: '📖' },
-  structure: { color: 'bg-accent/50 text-accent-foreground', icon: '♟' },
-  general: { color: 'bg-card text-card-foreground', icon: '📋' },
-};
-
 export default async function GlossaryCategoryPage({ params }: Props) {
   const { locale, category } = await params;
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
-  // Validate category
-  if (!validCategories.includes(category as (typeof validCategories)[number])) {
+  if (!VALID_CATEGORIES.includes(category)) {
     notFound();
   }
 
-  // Filter terms by category
-  const filteredTerms = chessTerms.filter((term) => term.category === category);
-
-  const categoryStyle = categoryStyles[category as keyof typeof categoryStyles];
+  const filteredTerms = getTermsByCategory(category);
+  const categoryStyle = CATEGORY_STYLES[category];
 
   return (
     <div className="space-y-8">

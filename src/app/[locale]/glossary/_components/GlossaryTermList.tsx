@@ -4,23 +4,16 @@ import { getTranslations } from 'next-intl/server';
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import { ChessTerm } from '@/app/[locale]/_lib/types';
+import type { ChessTerm } from '@/app/[locale]/_lib/types';
 
-interface GlossaryTermListProps {
+import { CATEGORY_COLORS } from '../_lib/types';
+
+type Props = {
   terms: ChessTerm[];
   locale: string;
-}
-
-const categoryColors = {
-  tactics: 'bg-destructive/10 text-destructive',
-  strategy: 'bg-primary/10 text-primary',
-  endgame: 'bg-secondary/10 text-secondary-foreground',
-  opening: 'bg-muted/50 text-muted-foreground',
-  structure: 'bg-accent/50 text-accent-foreground',
-  general: 'bg-card text-card-foreground',
 };
 
-export async function GlossaryTermList({ terms, locale }: GlossaryTermListProps) {
+export async function GlossaryTermList({ terms, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   return (
@@ -52,7 +45,7 @@ export async function GlossaryTermList({ terms, locale }: GlossaryTermListProps)
               <Link
                 href={`/${locale}/glossary/category/${term.category}`}
                 className={`px-3 py-1 rounded-full text-sm font-medium inline-block hover:opacity-80 transition-opacity ${
-                  categoryColors[term.category] || categoryColors.general
+                  CATEGORY_COLORS[term.category] || CATEGORY_COLORS.general
                 }`}
               >
                 {t(`categories.${term.category}`)}
