@@ -2,15 +2,15 @@
 
 import { ReactNode, useEffect } from 'react';
 
-interface ModalProps {
+type Props = {
   isOpen: boolean;
   title?: string;
   onClose: () => void;
   children: ReactNode;
   maxWidth?: string;
-}
+};
 
-export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl' }: ModalProps) {
+export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl' }: Props) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {

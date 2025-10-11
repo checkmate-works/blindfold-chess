@@ -16,12 +16,12 @@ type Props = {
   locale: Locale;
 };
 
-interface GameStats {
+type GameStats = {
   correct: number;
   incorrect: number;
   totalTime: number;
   averageTime: number;
-}
+};
 
 const STORAGE_KEY = 'squareColors_settings';
 

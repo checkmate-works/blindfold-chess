@@ -8,9 +8,9 @@ import type { NavigationItem } from '../_lib/types';
 import { getIcon } from '../_lib/utils';
 import { MobileMenu } from './MobileMenu';
 
-interface Props {
+type Props = {
   locale: string;
-}
+};
 
 export async function Header({ locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'Header' });

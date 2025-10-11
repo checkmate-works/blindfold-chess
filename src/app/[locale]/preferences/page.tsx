@@ -5,11 +5,11 @@ import { PageTitle } from '../_components/PageTitle';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import { PreferencesTabs } from './_components/PreferencesTabs';
 
-interface PreferencesPageProps {
+type Props = {
   params: Promise<{ locale: string }>;
-}
+};
 
-export async function generateMetadata({ params }: PreferencesPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.preferences' });
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PreferencesPageProps): Promis
   };
 }
 
-export default async function PreferencesPage({ params }: PreferencesPageProps) {
+export default async function PreferencesPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Preferences' });
 

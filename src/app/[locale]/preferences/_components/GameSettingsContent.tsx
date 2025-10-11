@@ -9,13 +9,13 @@ import type { Side } from '@/lib/types';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { SimpleChessBoard } from '@/app/[locale]/play/_components/SimpleChessBoard';
 
-interface GameSettingsContentProps {
+type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
   playerSide?: Side;
   showPreview?: boolean;
   compact?: boolean;
-}
+};
 
 export function GameSettingsContent({
   settings,
@@ -23,7 +23,7 @@ export function GameSettingsContent({
   playerSide = 'white',
   showPreview = true,
   compact = false,
-}: GameSettingsContentProps) {
+}: Props) {
   const t = useTranslations('Preferences');
   const [previewPerspective, setPreviewPerspective] = useState<'white' | 'black'>(playerSide);
 

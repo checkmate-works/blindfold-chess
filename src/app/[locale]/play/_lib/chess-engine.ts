@@ -2,11 +2,11 @@ import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation, Fen, SkillLevel, UciMove } from '@/lib/types';
 
-interface EngineResponse {
+type EngineResponse = {
   type: 'readyok' | 'bestmove' | 'info' | 'uci';
   data: string;
   move?: string;
-}
+};
 
 export class ChessEngine {
   private engine: Worker | null = null;

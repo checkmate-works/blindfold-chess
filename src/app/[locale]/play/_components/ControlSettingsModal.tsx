@@ -8,12 +8,12 @@ import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { ControlSettingsContent } from '@/app/[locale]/preferences/_components/ControlSettingsContent';
 
-interface ControlSettingsModalProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
-export function ControlSettingsModal({ isOpen, onClose }: ControlSettingsModalProps) {
+export function ControlSettingsModal({ isOpen, onClose }: Props) {
   const t = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 

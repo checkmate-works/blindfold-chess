@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // Game preferences
-export interface GamePreferences {
+export type GamePreferences = {
   // Board appearance
   showCoordinates: boolean; // Show rank and file labels on the board
   highlightLastMove: boolean; // Highlight the last move on the board
@@ -16,7 +16,7 @@ export interface GamePreferences {
   // Move input
   moveInputMode: 'text' | 'select'; // Move input mode
   enableAutoComplete: boolean; // Enable auto-complete for text input
-}
+};
 
 // Default preferences
 const defaultPreferences: GamePreferences = {
@@ -33,11 +33,11 @@ const defaultPreferences: GamePreferences = {
 // Local storage key
 const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
 
-interface GamePreferencesContextType {
+type GamePreferencesContextType = {
   preferences: GamePreferences;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
   resetPreferences: () => void;
-}
+};
 
 const GamePreferencesContext = createContext<GamePreferencesContextType | undefined>(undefined);
 

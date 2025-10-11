@@ -8,11 +8,11 @@ import { ControlSettings } from './ControlSettings';
 import { GameSettings } from './GameSettings';
 import { ThemeSelector } from './ThemeSelector';
 
-interface PreferencesTabsProps {
+type Props = {
   locale: string;
-}
+};
 
-export function PreferencesTabs({}: PreferencesTabsProps) {
+export function PreferencesTabs({}: Props) {
   const [activeTab, setActiveTab] = useState('game');
   const t = useTranslations('Preferences');
 

@@ -4,17 +4,17 @@ import React, { ReactNode, createContext, useCallback, useContext, useState } fr
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
-export interface Toast {
+export type Toast = {
   id: string;
   message: string;
   type: ToastType;
-}
+};
 
-interface ToastContextValue {
+type ToastContextValue = {
   toasts: Toast[];
   showToast: (message: string, type?: ToastType) => void;
   hideToast: (id: string) => void;
-}
+};
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 

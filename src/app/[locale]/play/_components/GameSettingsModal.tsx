@@ -10,17 +10,13 @@ import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { GameSettingsContent } from '@/app/[locale]/preferences/_components/GameSettingsContent';
 
-interface GameSettingsModalProps {
+type Props = {
   isOpen: boolean;
   onClose: () => void;
   playerSide?: Side;
-}
+};
 
-export function GameSettingsModal({
-  isOpen,
-  onClose,
-  playerSide = 'white',
-}: GameSettingsModalProps) {
+export function GameSettingsModal({ isOpen, onClose, playerSide = 'white' }: Props) {
   const t = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 

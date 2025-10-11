@@ -10,9 +10,9 @@ const LOCALE_LABELS = {
   ja: '日本語',
 } as const;
 
-interface Props {
+type Props = {
   currentLocale: string;
-}
+};
 
 export function LanguageSwitcher({ currentLocale }: Props) {
   const router = useRouter();

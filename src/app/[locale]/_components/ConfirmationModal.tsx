@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-interface ConfirmationModalProps {
+type Props = {
   isOpen: boolean;
   title: string;
   message: string;
@@ -12,7 +12,7 @@ interface ConfirmationModalProps {
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-}
+};
 
 export function ConfirmationModal({
   isOpen,
@@ -24,7 +24,7 @@ export function ConfirmationModal({
   isLoading = false,
   onConfirm,
   onCancel,
-}: ConfirmationModalProps) {
+}: Props) {
   // Handle escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {

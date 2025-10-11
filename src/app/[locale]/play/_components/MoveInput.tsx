@@ -6,7 +6,7 @@ import type { AlgebraicNotation } from '@/lib/types';
 
 import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
 
-interface MoveInputProps {
+type Props = {
   /**
    * Current input value
    */
@@ -39,7 +39,7 @@ interface MoveInputProps {
    * Additional CSS classes
    */
   className?: string;
-}
+};
 
 export function MoveInput({
   value,
@@ -50,7 +50,7 @@ export function MoveInput({
   showSuggestions = true,
   showSubmitButton = false,
   className = '',
-}: MoveInputProps) {
+}: Props) {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);

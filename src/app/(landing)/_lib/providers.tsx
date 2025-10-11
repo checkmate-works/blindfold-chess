@@ -4,11 +4,11 @@ import { ReactNode } from 'react';
 
 import { ThemeProvider } from 'next-themes';
 
-interface ProvidersProps {
+type Props = {
   children: ReactNode;
-}
+};
 
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children }: Props) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       {children}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-interface PracticeCompleteProps {
+type Props = {
   score: number;
   total: number;
   onTryAgain: () => void;
@@ -23,7 +23,7 @@ interface PracticeCompleteProps {
     description: string;
     sectionTitle?: string;
   };
-}
+};
 
 export function PracticeComplete({
   score,
@@ -32,7 +32,7 @@ export function PracticeComplete({
   locale,
   labels,
   relatedModule,
-}: PracticeCompleteProps) {
+}: Props) {
   const router = useRouter();
 
   return (

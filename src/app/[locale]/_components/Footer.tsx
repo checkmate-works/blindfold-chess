@@ -2,9 +2,9 @@ import { FaGithub } from 'react-icons/fa';
 
 import { LanguageSwitcher } from './LanguageSwitcher';
 
-interface Props {
+type Props = {
   locale: string;
-}
+};
 
 export async function Footer({ locale }: Props) {
   return (

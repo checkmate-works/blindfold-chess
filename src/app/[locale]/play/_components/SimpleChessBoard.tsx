@@ -14,7 +14,7 @@ type BoardPiece = {
   color: Color;
 } | null;
 
-interface SimpleChessBoardProps {
+type Props = {
   fen: string;
   flipped?: boolean;
   playerSide?: Side;
@@ -27,7 +27,7 @@ interface SimpleChessBoardProps {
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
   className?: string;
-}
+};
 
 export function SimpleChessBoard({
   fen,
@@ -42,7 +42,7 @@ export function SimpleChessBoard({
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
   className = '',
-}: SimpleChessBoardProps) {
+}: Props) {
   const [board, setBoard] = useState<BoardPiece[][]>([]);
 
   useEffect(() => {

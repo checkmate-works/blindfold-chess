@@ -48,12 +48,12 @@ export function ToastContainer() {
   );
 }
 
-interface ToastProps {
+type Props = {
   toast: { id: string; message: string; type: 'success' | 'error' | 'info' | 'warning' };
   onClose: () => void;
-}
+};
 
-function Toast({ toast, onClose }: ToastProps) {
+function Toast({ toast, onClose }: Props) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);

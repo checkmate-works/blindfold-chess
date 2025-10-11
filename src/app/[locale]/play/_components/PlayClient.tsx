@@ -25,12 +25,12 @@ import { MoveInput } from './MoveInput';
 import { MoveSelect } from './MoveSelect';
 import { SimpleChessBoard } from './SimpleChessBoard';
 
-interface PlayClientProps {
+type Props = {
   locale: Locale;
   onAiMoveChange?: (move: string | null) => void;
-}
+};
 
-export function PlayClient({ locale, onAiMoveChange }: PlayClientProps) {
+export function PlayClient({ locale, onAiMoveChange }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const router = useRouter();

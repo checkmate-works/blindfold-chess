@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-interface TimeSliderProps {
+type Props = {
   timeLimit: number;
   onTimeLimitChange: (value: number) => void;
   labels: {
@@ -11,7 +11,7 @@ interface TimeSliderProps {
   };
   showSeconds?: boolean; // whether to show "seconds" suffix
   formatTime?: (seconds: number) => string; // custom time formatter
-}
+};
 
 export function TimeSlider({
   timeLimit,
@@ -19,7 +19,7 @@ export function TimeSlider({
   labels,
   showSeconds = true,
   formatTime,
-}: TimeSliderProps) {
+}: Props) {
   const t = useTranslations('practice');
   // Default time display
   const getTimeDisplay = () => {

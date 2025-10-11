@@ -6,15 +6,15 @@ import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
-interface MoveSelectProps {
+type Props = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   onChange?: () => void;
   disabled?: boolean;
   placeholder?: string;
-}
+};
 
-export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: MoveSelectProps) {
+export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: Props) {
   const [selectedMove, setSelectedMove] = useState('');
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
 

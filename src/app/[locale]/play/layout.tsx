@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-interface PlayLayoutProps {
+type Props = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
-}
+};
 
-export async function generateMetadata({ params }: PlayLayoutProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.play' });
 
@@ -16,6 +16,6 @@ export async function generateMetadata({ params }: PlayLayoutProps): Promise<Met
   };
 }
 
-export default function PlayLayout({ children }: PlayLayoutProps) {
+export default function PlayLayout({ children }: Props) {
   return <>{children}</>;
 }

@@ -4,17 +4,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface BreadcrumbItem {
+type BreadcrumbItem = {
   label: string;
   href?: string;
-}
+};
 
-interface BreadcrumbProps {
+type Props = {
   items: BreadcrumbItem[];
   locale?: string;
-}
+};
 
-export function Breadcrumb({ items, locale }: BreadcrumbProps) {
+export function Breadcrumb({ items, locale }: Props) {
   return (
     <nav aria-label="Breadcrumb" className="mb-4">
       <ol className="flex items-center space-x-1 text-sm">

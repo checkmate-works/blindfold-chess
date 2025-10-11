@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-interface TimeDisplayProps {
+type Props = {
   timeRemaining: number; // in seconds
   timeLimit: number; // in seconds
   timeElapsed: number; // in seconds
@@ -11,7 +11,7 @@ interface TimeDisplayProps {
   };
   formatTime?: (seconds: number) => string; // optional custom formatter
   leftContent?: ReactNode; // optional content for the left side (e.g., score)
-}
+};
 
 export function TimeDisplay({
   timeRemaining,
@@ -20,7 +20,7 @@ export function TimeDisplay({
   labels,
   formatTime,
   leftContent,
-}: TimeDisplayProps) {
+}: Props) {
   // Default time formatter
   const defaultFormatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

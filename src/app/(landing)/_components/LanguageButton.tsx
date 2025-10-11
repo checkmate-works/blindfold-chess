@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
-interface LanguageButtonProps {
+type Props = {
   href: string;
   flag: string;
   language: string;
   subtitle: string;
-}
+};
 
-export function LanguageButton({ href, flag, language, subtitle }: LanguageButtonProps) {
+export function LanguageButton({ href, flag, language, subtitle }: Props) {
   return (
     <Link
       href={href}

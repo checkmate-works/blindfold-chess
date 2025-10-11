@@ -8,7 +8,7 @@ import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameStatus } from '@/lib/types';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
-interface UseAutoSaveOptions {
+type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
   playerColor: Side;
@@ -16,7 +16,7 @@ interface UseAutoSaveOptions {
   status: GameStatus;
   enabled?: boolean;
   saveOnInit?: boolean;
-}
+};
 
 /**
  * Hook for automatic game saving with session tracking

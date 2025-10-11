@@ -284,15 +284,15 @@ export const ChessPieces = {
   ),
 };
 
-interface AnimatingPiece {
+type AnimatingPiece = {
   type: string;
   color: string;
   from: { x: number; y: number };
   to: { x: number; y: number };
   startTime: number;
-}
+};
 
-interface ChessBoardProps {
+type Props = {
   initialFen: string;
   move?: string;
   showCoordinates?: boolean;
@@ -300,7 +300,7 @@ interface ChessBoardProps {
   className?: string;
   autoPlay?: boolean;
   flipped?: boolean;
-}
+};
 
 export function ChessBoard({
   initialFen,
@@ -310,7 +310,7 @@ export function ChessBoard({
   className = '',
   autoPlay = false,
   flipped = false,
-}: ChessBoardProps) {
+}: Props) {
   const [currentFen, setCurrentFen] = useState(initialFen);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showPlayButton, setShowPlayButton] = useState(!autoPlay);

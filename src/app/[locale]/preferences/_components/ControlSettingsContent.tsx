@@ -4,17 +4,13 @@ import { useTranslations } from 'next-intl';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-interface ControlSettingsContentProps {
+type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
   compact?: boolean;
-}
+};
 
-export function ControlSettingsContent({
-  settings,
-  onSettingsChange,
-  compact = false,
-}: ControlSettingsContentProps) {
+export function ControlSettingsContent({ settings, onSettingsChange, compact = false }: Props) {
   const t = useTranslations('Preferences');
 
   const containerClass = compact ? '' : 'bg-card rounded-xl p-6 shadow-sm border border-border';

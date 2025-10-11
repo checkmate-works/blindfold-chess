@@ -1,10 +1,10 @@
-interface ProgressBarProps {
+type Props = {
   current: number;
   total: number;
   className?: string;
-}
+};
 
-export function ProgressBar({ current, total, className = '' }: ProgressBarProps) {
+export function ProgressBar({ current, total, className = '' }: Props) {
   const progress = (current / total) * 100;
 
   return (

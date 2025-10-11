@@ -4,7 +4,7 @@ import type { AlgebraicNotation } from '@/lib/types';
 
 import { generateMoveSuggestions } from '../_lib/move-suggestions';
 
-interface UseMoveSuggestionsOptions {
+type UseMoveSuggestionsOptions = {
   /**
    * Whether suggestions should be enabled
    */
@@ -13,7 +13,7 @@ interface UseMoveSuggestionsOptions {
    * Callback when a suggestion is selected
    */
   onSelect?: (move: AlgebraicNotation) => void;
-}
+};
 
 export function useMoveSuggestions({ enabled = true, onSelect }: UseMoveSuggestionsOptions = {}) {
   const [suggestions, setSuggestions] = useState<AlgebraicNotation[]>([]);

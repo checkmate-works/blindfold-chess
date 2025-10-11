@@ -9,12 +9,12 @@ import { FaHome } from 'react-icons/fa';
 import type { NavigationItem } from '../_lib/types';
 import { getIcon } from '../_lib/utils';
 
-interface MobileMenuProps {
+type Props = {
   title: string;
   items: NavigationItem[];
-}
+};
 
-export function MobileMenu({ title, items }: MobileMenuProps) {
+export function MobileMenu({ title, items }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
