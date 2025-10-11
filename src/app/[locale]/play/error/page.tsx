@@ -8,6 +8,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { Side, SkillLevel } from '@/lib/types';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 
@@ -50,9 +51,16 @@ export default function PlayErrorPage() {
         await gameRepository.save(savedGame);
       }
     } else {
-      // No gameId, just use valid moves in URL
+      // No gameId, save the game with valid moves and get new gameId
       if (validMoves.length > 0) {
-        params.set('moves', JSON.stringify(validMoves));
+        const gameRepository = new LocalStorageGameRepository();
+        const newGameId = await gameRepository.save({
+          moves: validMoves,
+          playerColor: color as Side,
+          skillLevel: parseInt(skillLevel) as SkillLevel,
+          status: 'in_progress',
+        });
+        params.set('gameId', newGameId);
       }
     }
 

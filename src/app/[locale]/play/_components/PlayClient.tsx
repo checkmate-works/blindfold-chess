@@ -60,7 +60,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         if (result) {
           validMoves.push(move as AlgebraicNotation);
         } else {
-          // Invalid move found
+          // Invalid move found - log warning instead of throwing error
+          console.warn(`Invalid move detected in URL: ${move} at index ${i}`);
           shouldRedirectToError = true;
           errorDetails = {
             invalidMove: move,
@@ -70,8 +71,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
           };
           break;
         }
-      } catch {
-        // Error processing move
+      } catch (error) {
+        // Error processing move - log warning instead of throwing error
+        console.warn(`Error processing move from URL: ${move} at index ${i}`, error);
         shouldRedirectToError = true;
         errorDetails = {
           invalidMove: move,
@@ -189,8 +191,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     playerColor: playerSide,
     skillLevel,
     status: mapGameStatus(gameStatus, playerResult),
-    enabled: !isLoadingFromStorage, // Disable auto-save while loading from storage
-    saveOnInit: !initialGameId, // Save on init for new games (including PGN imports)
+    enabled: !isLoadingFromStorage && !shouldRedirectToError, // Disable auto-save while loading from storage or if error detected
+    saveOnInit: !initialGameId && !shouldRedirectToError, // Save on init for new games, but not if error detected
   });
 
   // Redirect to error page if invalid moves detected
@@ -204,13 +206,24 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       params.set('color', playerSide);
       params.set('skillLevel', skillLevel.toString());
 
-      if (initialGameId) {
-        params.set('gameId', initialGameId);
+      // Use the current gameId (either from URL or auto-generated) to prevent duplication
+      const effectiveGameId = initialGameId || gameId;
+      if (effectiveGameId) {
+        params.set('gameId', effectiveGameId);
       }
 
       router.replace(`/${locale}/play/error?${params.toString()}`);
     }
-  }, [shouldRedirectToError, errorDetails, router, locale, playerSide, skillLevel, initialGameId]);
+  }, [
+    shouldRedirectToError,
+    errorDetails,
+    router,
+    locale,
+    playerSide,
+    skillLevel,
+    initialGameId,
+    gameId,
+  ]);
 
   // Update URL when gameId is generated
   useEffect(() => {

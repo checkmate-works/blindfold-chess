@@ -14,7 +14,16 @@ export class GameStateService {
 
     // Replay all moves to get current position
     for (const move of moves) {
-      this.chess.move(move);
+      try {
+        const result = this.chess.move(move);
+        if (!result) {
+          console.warn(`Invalid move skipped in GameStateService: ${move}`);
+          break;
+        }
+      } catch (error) {
+        console.warn(`Error processing move in GameStateService: ${move}`, error);
+        break;
+      }
     }
   }
 

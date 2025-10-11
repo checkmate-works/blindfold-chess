@@ -3,7 +3,7 @@ export type CategoryStyle = {
   icon: string;
 };
 
-export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
+export const CATEGORY_STYLES = {
   tactics: { color: 'bg-destructive/10 text-destructive', icon: '⚔️' },
   strategy: { color: 'bg-primary/10 text-primary', icon: '🎯' },
   endgame: { color: 'bg-secondary/10 text-secondary-foreground', icon: '♔' },
@@ -12,7 +12,9 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
   general: { color: 'bg-card text-card-foreground', icon: '📋' },
 } as const;
 
-export const CATEGORY_COLORS: Record<string, string> = {
+export type GlossaryCategory = keyof typeof CATEGORY_STYLES;
+
+export const CATEGORY_COLORS: Record<GlossaryCategory, string> = {
   tactics: 'bg-destructive/10 text-destructive',
   strategy: 'bg-primary/10 text-primary',
   endgame: 'bg-secondary/10 text-secondary-foreground',

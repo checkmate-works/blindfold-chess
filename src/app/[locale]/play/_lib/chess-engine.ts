@@ -183,9 +183,12 @@ export class ChessEngine {
         const result = chess.move(move);
         if (result) {
           uciMoves.push(result.from + result.to + (result.promotion || ''));
+        } else {
+          console.warn(`Invalid move in UCI conversion: ${move}`);
+          break;
         }
       } catch (error) {
-        console.warn('Invalid move:', move, error);
+        console.warn(`Error converting move to UCI: ${move}`, error);
         break;
       }
     }

@@ -1,4 +1,8 @@
-export type Locale = 'en' | 'ja';
+import { SUPPORTED_LOCALES } from '@/config';
+
+import type { GlossaryCategory } from '@/app/[locale]/glossary/_lib/types';
+
+export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export type NavigationIconName = 'home' | 'learn' | 'practice' | 'manual' | 'faq' | 'glossary';
 
@@ -17,5 +21,5 @@ export interface ChessTerm {
   definitionEn?: string;
   aliases?: string[];
   relatedTerms?: string[];
-  category?: 'tactics' | 'strategy' | 'endgame' | 'opening' | 'structure' | 'general';
+  category?: GlossaryCategory;
 }
