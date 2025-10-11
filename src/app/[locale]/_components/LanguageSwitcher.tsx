@@ -5,7 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 import { FaGlobe } from 'react-icons/fa';
 
-const LOCALE_LABELS = {
+type LocaleLabels = {
+  [K in (typeof SUPPORTED_LOCALES)[number]]: string;
+};
+
+const LOCALE_LABELS: LocaleLabels = {
   en: 'English',
   ja: '日本語',
 } as const;

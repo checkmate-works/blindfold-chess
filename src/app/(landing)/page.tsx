@@ -4,7 +4,14 @@ import { SITE_NAME } from '@/config';
 
 import { LanguageButton } from './_components/LanguageButton';
 
-const LANGUAGE_OPTIONS = [
+type LanguageOption = {
+  code: 'en' | 'ja';
+  label: string;
+  flag: string;
+  subtitle: string;
+};
+
+const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
   {
     code: 'en',
     label: 'English',

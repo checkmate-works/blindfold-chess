@@ -49,7 +49,12 @@ export type AlgebraicNotation =
 export type Side = 'white' | 'black';
 export type PlayerColor = Side;
 
-export const SKILL_LEVEL_OPTIONS = [
+type SkillLevelOption = {
+  label: string;
+  value: number;
+};
+
+export const SKILL_LEVEL_OPTIONS: readonly SkillLevelOption[] = [
   { label: 'Beginner', value: 1 },
   { label: 'Intermediate', value: 5 },
   { label: 'Advanced', value: 10 },
