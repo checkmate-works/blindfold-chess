@@ -27,16 +27,13 @@ export function GameLimitCheck({ locale, children }: Props) {
     checkGameLimit();
   }, []);
 
-  // Loading state
   if (isOverLimit === null) {
     return <div className="animate-pulse h-96" />;
   }
 
-  // Over limit - show error
   if (isOverLimit) {
     return <GameLimitError locale={locale} />;
   }
 
-  // Under limit - show children
   return <>{children}</>;
 }

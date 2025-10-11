@@ -34,7 +34,11 @@ export class ChessEngine {
 
       this.engine.onerror = (error) => {
         console.error('Worker error:', error);
-        throw new Error(`Worker error: ${error.message}`);
+        const errorMessage =
+          error instanceof ErrorEvent
+            ? error.message || error.error?.message || 'Unknown error'
+            : String(error);
+        throw new Error(`Worker error: ${errorMessage}`);
       };
 
       // Wait a bit for the worker to initialize
