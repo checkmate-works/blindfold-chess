@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { ChessBoard } from '@/app/[locale]/practice/_components/ChessBoard';
+import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import type { Question } from '../_lib/types';
 
@@ -36,7 +36,7 @@ export function AlgebraicNotationPlaying({
 
         {/* Chess Board */}
         <div className="mb-6 flex justify-center">
-          <ChessBoard
+          <AnimatedChessBoard
             key={`question-${currentQuestionIndex}`}
             initialFen={question.fenBefore}
             move={question.move}

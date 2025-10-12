@@ -23,7 +23,7 @@ type Props = {
   flipped?: boolean;
 };
 
-export function ChessBoard({
+export function AnimatedChessBoard({
   initialFen,
   move,
   showCoordinates = true,

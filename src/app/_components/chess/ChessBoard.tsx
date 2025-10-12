@@ -28,7 +28,7 @@ type Props = {
   className?: string;
 };
 
-export function SimpleChessBoard({
+export function ChessBoard({
   fen,
   flipped = false,
   playerSide = 'white',

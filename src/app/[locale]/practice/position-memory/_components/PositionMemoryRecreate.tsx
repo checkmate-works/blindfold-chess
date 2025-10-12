@@ -6,7 +6,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { PositionData } from '../_lib/types';
-import { SimpleChessBoard } from './SimpleChessBoard';
+import { EditableChessBoard } from './EditableChessBoard';
 
 type Props = {
   originalPosition: PositionData;
@@ -36,7 +36,7 @@ export function PositionMemoryRecreate({
 
       <div className="flex justify-center">
         <div className="w-full max-w-md">
-          <SimpleChessBoard
+          <EditableChessBoard
             fen={recreatedPosition}
             onFenChange={onPositionChange}
             flipped={originalPosition.isBlackToMove}

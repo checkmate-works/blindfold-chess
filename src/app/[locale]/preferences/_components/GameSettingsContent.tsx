@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { ChessBoard } from '@/app/_components';
+
 import type { Side } from '@/lib/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { SimpleChessBoard } from '@/app/[locale]/play/_components/SimpleChessBoard';
 
 type Props = {
   settings: GamePreferences;
@@ -210,7 +211,7 @@ export function GameSettingsContent({
 
               <div className="flex justify-center">
                 <div className="w-full max-w-[90vw] sm:max-w-[280px] aspect-square">
-                  <SimpleChessBoard
+                  <ChessBoard
                     fen={demoFen}
                     flipped={previewPerspective === 'black'}
                     playerSide={previewPerspective}

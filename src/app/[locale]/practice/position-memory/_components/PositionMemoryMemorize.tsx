@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { SectionTitle } from '@/app/[locale]/_components';
-import { ChessBoard } from '@/app/[locale]/practice/_components/ChessBoard';
+import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { PositionData } from '../_lib/types';
@@ -38,7 +38,7 @@ export function PositionMemoryMemorize({
 
       <div className="flex justify-center mb-6">
         <div className="w-full max-w-md">
-          <ChessBoard
+          <AnimatedChessBoard
             initialFen={position.fen}
             showCoordinates={true}
             flipped={position.isBlackToMove}

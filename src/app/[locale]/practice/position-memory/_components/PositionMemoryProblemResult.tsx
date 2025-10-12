@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { SectionTitle } from '@/app/[locale]/_components';
-import { ChessBoard } from '@/app/[locale]/practice/_components/ChessBoard';
+import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import type { PositionAccuracy, PositionData } from '../_lib/types';
 
@@ -55,7 +55,7 @@ export function PositionMemoryProblemResult({
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
             <div className="w-full max-w-xs mx-auto">
-              <ChessBoard
+              <AnimatedChessBoard
                 initialFen={originalPosition.fen}
                 showCoordinates={false}
                 flipped={originalPosition.isBlackToMove}
@@ -65,7 +65,7 @@ export function PositionMemoryProblemResult({
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">{t('yourRecreation')}</p>
             <div className="w-full max-w-xs mx-auto">
-              <ChessBoard
+              <AnimatedChessBoard
                 initialFen={recreatedPosition}
                 showCoordinates={false}
                 flipped={originalPosition.isBlackToMove}

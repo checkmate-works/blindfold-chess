@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import { FaCheck, FaChevronDown, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -23,7 +24,6 @@ import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveSelect } from './MoveSelect';
-import { SimpleChessBoard } from './SimpleChessBoard';
 
 type Props = {
   locale: Locale;
@@ -614,7 +614,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
               className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-lg`}
             >
               <div className={`p-4 ${gameStatus !== 'in_progress' ? 'pb-8' : ''}`}>
-                <SimpleChessBoard
+                <ChessBoard
                   fen={displayFen || currentFen}
                   flipped={playerSide === 'black'}
                   playerSide={playerSide}
