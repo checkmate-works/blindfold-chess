@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { ChessPieces } from '@/app/_components';
+import { ChessPiece } from '@/app/_components';
+import { Color, PieceSymbol } from 'chess.js';
 
 type Props = {
   fen: string;
@@ -99,22 +100,14 @@ const renderPiece = (piece: PieceType) => {
 
   // Determine color: uppercase = white, lowercase = black
   const isWhite = piece === piece.toUpperCase();
-  const color = isWhite ? 'w' : 'b';
-  const type = piece.toLowerCase().toUpperCase(); // Convert to uppercase for key
+  const color: Color = (isWhite ? 'w' : 'b') as Color;
+  const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
 
-  // Create the correct key: color + uppercase type (e.g., 'wP', 'bK')
-  const pieceKey = `${color}${type}` as keyof typeof ChessPieces;
-  const PieceComponent = ChessPieces[pieceKey];
-
-  if (PieceComponent) {
-    return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <PieceComponent size={45} />
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className="w-[80%] h-[80%] flex items-center justify-center">
+      <ChessPiece type={type} color={color} size={45} />
+    </div>
+  );
 };
 
 export function EditableChessBoard({
@@ -196,10 +189,8 @@ export function EditableChessBoard({
         </button>
         {pieces.map((piece) => {
           const isWhite = piece === piece.toUpperCase();
-          const color = isWhite ? 'w' : 'b';
-          const type = piece.toLowerCase().toUpperCase();
-          const pieceKey = `${color}${type}` as keyof typeof ChessPieces;
-          const PieceComponent = ChessPieces[pieceKey];
+          const color: Color = (isWhite ? 'w' : 'b') as Color;
+          const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
 
           return (
             <button
@@ -212,11 +203,9 @@ export function EditableChessBoard({
               }`}
               title={`Place ${piece.toUpperCase() === piece ? 'White' : 'Black'} ${piece.toUpperCase()}`}
             >
-              {PieceComponent && (
-                <div className="w-full h-full flex items-center justify-center p-1">
-                  <PieceComponent size={32} />
-                </div>
-              )}
+              <div className="w-full h-full flex items-center justify-center p-1">
+                <ChessPiece type={type} color={color} size={32} />
+              </div>
             </button>
           );
         })}

@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChessPieces } from '@/app/_components';
-import { Chess } from 'chess.js';
+import { ChessPiece } from '@/app/_components';
+import { Chess, Color, PieceSymbol } from 'chess.js';
 
 type AnimatingPiece = {
-  type: string;
-  color: string;
+  type: PieceSymbol;
+  color: Color;
   from: { x: number; y: number };
   to: { x: number; y: number };
   startTime: number;
@@ -87,7 +87,7 @@ export function AnimatedChessBoard({
       // Try using chess.js first for valid positions
       const chess = new Chess(currentFen);
       const board = chess.board();
-      const flatBoard: Array<{ type: string; color: string; square: string }> = [];
+      const flatBoard: Array<{ type: PieceSymbol; color: Color; square: string }> = [];
 
       for (let rank = 0; rank < 8; rank++) {
         for (let file = 0; file < 8; file++) {
@@ -109,7 +109,7 @@ export function AnimatedChessBoard({
       try {
         const fenParts = currentFen.split(' ');
         const piecePlacement = fenParts[0];
-        const flatBoard: Array<{ type: string; color: string; square: string }> = [];
+        const flatBoard: Array<{ type: PieceSymbol; color: Color; square: string }> = [];
 
         const ranks = piecePlacement.split('/');
         for (let rank = 0; rank < ranks.length; rank++) {
@@ -123,8 +123,8 @@ export function AnimatedChessBoard({
               const square = String.fromCharCode(97 + file) + (8 - rank);
               const isWhite = char === char.toUpperCase();
               flatBoard.push({
-                type: char.toLowerCase(),
-                color: isWhite ? 'w' : 'b',
+                type: char.toLowerCase() as PieceSymbol,
+                color: (isWhite ? 'w' : 'b') as Color,
                 square,
               });
               file++;
@@ -249,19 +249,12 @@ export function AnimatedChessBoard({
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
-  const renderPiece = (piece: { type: string; color: string }) => {
-    const pieceKey = `${piece.color}${piece.type.toUpperCase()}` as keyof typeof ChessPieces;
-    const PieceComponent = ChessPieces[pieceKey];
-
-    if (PieceComponent) {
-      return (
-        <div className="w-[80%] h-[80%] flex items-center justify-center">
-          <PieceComponent size={45} />
-        </div>
-      );
-    }
-
-    return null;
+  const renderPiece = (piece: { type: PieceSymbol; color: Color }) => {
+    return (
+      <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <ChessPiece type={piece.type} color={piece.color} size={45} />
+      </div>
+    );
   };
 
   // Calculate position for animating piece
@@ -301,15 +294,9 @@ export function AnimatedChessBoard({
   const renderAnimatingPiece = () => {
     if (!animatingPiece) return null;
 
-    const pieceKey =
-      `${animatingPiece.color}${animatingPiece.type.toUpperCase()}` as keyof typeof ChessPieces;
-    const PieceComponent = ChessPieces[pieceKey];
-
-    if (!PieceComponent) return null;
-
     return (
       <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <PieceComponent size={45} />
+        <ChessPiece type={animatingPiece.type} color={animatingPiece.color} size={45} />
       </div>
     );
   };

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { ChessPieces } from '@/app/_components';
+import { ChessPiece } from '@/app/_components';
 import { Chess, Color, PieceSymbol, Square } from 'chess.js';
 
 import type { Side } from '@/lib/types';
@@ -92,18 +92,11 @@ export function ChessBoard({
     }
 
     // Show normal piece
-    const pieceKey = `${displayColor}${piece.type.toUpperCase()}` as keyof typeof ChessPieces;
-    const PieceComponent = ChessPieces[pieceKey];
-
-    if (PieceComponent) {
-      return (
-        <div className="w-[80%] h-[80%] flex items-center justify-center">
-          <PieceComponent size={45} />
-        </div>
-      );
-    }
-
-    return null;
+    return (
+      <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <ChessPiece type={piece.type} color={displayColor} size={45} />
+      </div>
+    );
   };
 
   const isLightSquare = (file: number, rank: number) => {
