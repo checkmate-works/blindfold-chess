@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { ChessPiece } from '@/app/_components';
+import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
 type Props = {
@@ -94,22 +94,6 @@ function boardToFen(
   return fen + ' w - - 0 1';
 }
 
-// Helper function to render piece using SVG
-const renderPiece = (piece: PieceType) => {
-  if (!piece) return null;
-
-  // Determine color: uppercase = white, lowercase = black
-  const isWhite = piece === piece.toUpperCase();
-  const color: Color = (isWhite ? 'w' : 'b') as Color;
-  const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
-
-  return (
-    <div className="w-[80%] h-[80%] flex items-center justify-center">
-      <ChessPiece type={type} color={color} size={45} />
-    </div>
-  );
-};
-
 export function EditableChessBoard({
   fen,
   onFenChange,
@@ -155,12 +139,18 @@ export function EditableChessBoard({
     onFenChange(newFen);
   };
 
-  const getSquareColor = (squareIndex: number) => {
+  const isLightSquare = (squareIndex: number) => {
     const rank = Math.floor(squareIndex / 8);
     const file = squareIndex % 8;
-    return (rank + file) % 2 === 0
-      ? 'bg-stone-200 dark:bg-stone-300'
-      : 'bg-stone-600 dark:bg-stone-700';
+    return (rank + file) % 2 === 0;
+  };
+
+  const getFileRank = (squareIndex: number) => {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+    const file = files[squareIndex % 8];
+    const rank = ranks[Math.floor(squareIndex / 8)];
+    return { file, rank };
   };
 
   // Determine palette order based on board orientation
@@ -226,19 +216,27 @@ export function EditableChessBoard({
               // Handle board flipping for black side
               const displayIndex = flipped ? 63 - squareIndex : squareIndex;
               const displayPiece = board[displayIndex];
+              const { file, rank } = getFileRank(squareIndex);
+              const isLight = isLightSquare(squareIndex);
+
+              // Convert PieceType to Square piece format
+              const squarePiece = displayPiece
+                ? {
+                    type: displayPiece.toLowerCase() as PieceSymbol,
+                    color: (displayPiece === displayPiece.toUpperCase() ? 'w' : 'b') as Color,
+                  }
+                : null;
 
               return (
-                <div
+                <Square
                   key={squareIndex}
-                  className={`
-                    aspect-square flex items-center justify-center cursor-pointer
-                    transition-colors select-none hover:opacity-80
-                    ${getSquareColor(squareIndex)}
-                  `}
+                  file={file}
+                  rank={rank}
+                  isLight={isLight}
+                  piece={squarePiece}
                   onClick={() => handleSquareClick(displayIndex)}
-                >
-                  {renderPiece(displayPiece)}
-                </div>
+                  layoutMode="grid"
+                />
               );
             })}
           </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChessPiece } from '@/app/_components';
+import { ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol } from 'chess.js';
 
 type AnimatingPiece = {
@@ -249,14 +249,6 @@ export function AnimatedChessBoard({
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
-  const renderPiece = (piece: { type: PieceSymbol; color: Color }) => {
-    return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <ChessPiece type={piece.type} color={piece.color} size={45} />
-      </div>
-    );
-  };
-
   // Calculate position for animating piece
   const getAnimatingPieceStyle = () => {
     if (!animatingPiece || !boardRef.current) return {};
@@ -325,48 +317,17 @@ export function AnimatedChessBoard({
                   const piece = getPieceAtSquare(file, rank);
 
                   return (
-                    <div
+                    <Square
                       key={file}
-                      className={`w-[12.5%] h-full relative flex items-center justify-center ${
-                        isLight
-                          ? 'bg-stone-200 dark:bg-stone-300'
-                          : 'bg-stone-600 dark:bg-stone-700'
-                      }`}
-                    >
-                      {piece && piece.square !== hiddenSquare && (
-                        <div className="flex items-center justify-center w-full h-full">
-                          {renderPiece(piece)}
-                        </div>
-                      )}
-
-                      {/* Coordinates */}
-                      {showCoordinates && (
-                        <>
-                          {fileIndex === 0 && (
-                            <div
-                              className={`absolute left-0.5 top-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${
-                                isLight
-                                  ? 'text-stone-700 dark:text-stone-800'
-                                  : 'text-stone-300 dark:text-stone-200'
-                              }`}
-                            >
-                              {rank}
-                            </div>
-                          )}
-                          {rankIndex === ranks.length - 1 && (
-                            <div
-                              className={`absolute right-0.5 bottom-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${
-                                isLight
-                                  ? 'text-stone-700 dark:text-stone-800'
-                                  : 'text-stone-300 dark:text-stone-200'
-                              }`}
-                            >
-                              {file}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                      file={file}
+                      rank={rank}
+                      isLight={isLight}
+                      piece={piece}
+                      hidden={piece?.square === hiddenSquare}
+                      showCoordinates={showCoordinates}
+                      showRankCoordinate={fileIndex === 0}
+                      showFileCoordinate={rankIndex === ranks.length - 1}
+                    />
                   );
                 })}
               </div>
