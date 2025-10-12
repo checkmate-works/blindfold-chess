@@ -153,6 +153,20 @@ export function EditableChessBoard({
     return { file, rank };
   };
 
+  const renderPiece = (piece: PieceType) => {
+    if (!piece) return null;
+
+    const isWhite = piece === piece.toUpperCase();
+    const color: Color = (isWhite ? 'w' : 'b') as Color;
+    const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
+
+    return (
+      <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <ChessPiece type={type} color={color} size={45} />
+      </div>
+    );
+  };
+
   // Determine palette order based on board orientation
   const topPalette = flipped
     ? { pieces: WHITE_PIECES, label: t('whitePieces') }
@@ -219,24 +233,17 @@ export function EditableChessBoard({
               const { file, rank } = getFileRank(squareIndex);
               const isLight = isLightSquare(squareIndex);
 
-              // Convert PieceType to Square piece format
-              const squarePiece = displayPiece
-                ? {
-                    type: displayPiece.toLowerCase() as PieceSymbol,
-                    color: (displayPiece === displayPiece.toUpperCase() ? 'w' : 'b') as Color,
-                  }
-                : null;
-
               return (
                 <Square
                   key={squareIndex}
                   file={file}
                   rank={rank}
                   isLight={isLight}
-                  piece={squarePiece}
                   onClick={() => handleSquareClick(displayIndex)}
                   layoutMode="grid"
-                />
+                >
+                  {renderPiece(displayPiece)}
+                </Square>
               );
             })}
           </div>

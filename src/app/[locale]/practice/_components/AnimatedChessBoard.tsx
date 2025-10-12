@@ -249,6 +249,16 @@ export function AnimatedChessBoard({
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
+  const renderPiece = (piece: { type: PieceSymbol; color: Color; square: string }) => {
+    if (piece.square === hiddenSquare) return null;
+
+    return (
+      <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <ChessPiece type={piece.type} color={piece.color} size={45} />
+      </div>
+    );
+  };
+
   // Calculate position for animating piece
   const getAnimatingPieceStyle = () => {
     if (!animatingPiece || !boardRef.current) return {};
@@ -322,12 +332,12 @@ export function AnimatedChessBoard({
                       file={file}
                       rank={rank}
                       isLight={isLight}
-                      piece={piece}
-                      hidden={piece?.square === hiddenSquare}
                       showCoordinates={showCoordinates}
                       showRankCoordinate={fileIndex === 0}
                       showFileCoordinate={rankIndex === ranks.length - 1}
-                    />
+                    >
+                      {piece && renderPiece(piece)}
+                    </Square>
                   );
                 })}
               </div>

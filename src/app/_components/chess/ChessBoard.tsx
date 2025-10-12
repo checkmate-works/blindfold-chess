@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { Square } from '@/app/_components';
+import { ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
 import type { Side } from '@/lib/types';
@@ -62,6 +62,43 @@ export function ChessBoard({
   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
+  const renderPiece = (piece: BoardPiece) => {
+    if (!piece) return null;
+
+    // Check if piece should be shown based on settings
+    const isOwnPiece = piece.color === playerSide.charAt(0);
+    if (isOwnPiece && !showOwnPieces) return null;
+    if (!isOwnPiece && !showOpponentPieces) return null;
+
+    // Determine if piece should be shown as circle
+    const shouldShowAsCircle =
+      pieceShapeMode === 'circles-all' ||
+      (pieceShapeMode === 'circles-own' && isOwnPiece) ||
+      (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
+
+    // Determine piece color based on settings
+    let displayColor = piece.color;
+    if (pieceColors === 'white-only') {
+      displayColor = 'w';
+    } else if (pieceColors === 'black-only') {
+      displayColor = 'b';
+    }
+
+    if (shouldShowAsCircle) {
+      // Show as circle with consistent appearance regardless of square color
+      const circleColor =
+        displayColor === 'w' ? 'bg-white border-gray-800' : 'bg-gray-900 border-gray-300';
+      return <div className={`w-[60%] h-[60%] rounded-full border-4 ${circleColor} shadow-md`} />;
+    }
+
+    // Show normal piece
+    return (
+      <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <ChessPiece type={piece.type} color={displayColor} size={45} />
+      </div>
+    );
+  };
+
   const isLightSquare = (file: number, rank: number) => {
     return (file + rank) % 2 === 0;
   };
@@ -113,18 +150,14 @@ export function ChessBoard({
                   file={displayFiles[fileIndex]}
                   rank={displayRanks[rankIndex]}
                   isLight={isLight}
-                  piece={piece}
-                  playerSide={playerSide}
-                  showOwnPieces={showOwnPieces}
-                  showOpponentPieces={showOpponentPieces}
-                  pieceShapeMode={pieceShapeMode}
-                  pieceColors={pieceColors}
                   showCoordinates={showCoordinates}
                   showRankCoordinate={fileIndex === 0}
                   showFileCoordinate={rankIndex === 7}
                   onClick={onSquareClick ? () => onSquareClick(square) : undefined}
                   highlightType={isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none'}
-                />
+                >
+                  {renderPiece(piece)}
+                </Square>
               );
             })}
           </div>

@@ -1,12 +1,4 @@
-import { ChessPiece } from '@/app/_components';
-import type { Color, PieceSymbol } from 'chess.js';
-
-import type { Side } from '@/lib/types';
-
-type Piece = {
-  type: PieceSymbol;
-  color: Color;
-};
+import type { ReactNode } from 'react';
 
 type Props = {
   // Position
@@ -14,16 +6,8 @@ type Props = {
   rank: string;
   isLight: boolean;
 
-  // Piece
-  piece?: Piece | null;
-  hidden?: boolean; // For animation
-
-  // Piece display settings (for ChessBoard)
-  playerSide?: Side;
-  showOwnPieces?: boolean;
-  showOpponentPieces?: boolean;
-  pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
-  pieceColors?: 'normal' | 'white-only' | 'black-only';
+  // Content
+  children?: ReactNode;
 
   // Coordinates
   showCoordinates?: boolean;
@@ -44,13 +28,7 @@ export function Square({
   file,
   rank,
   isLight,
-  piece,
-  hidden = false,
-  playerSide = 'white',
-  showOwnPieces = true,
-  showOpponentPieces = true,
-  pieceShapeMode = 'normal',
-  pieceColors = 'normal',
+  children,
   showCoordinates = false,
   showFileCoordinate = false,
   showRankCoordinate = false,
@@ -58,43 +36,6 @@ export function Square({
   highlightType = 'none',
   layoutMode = 'flex',
 }: Props) {
-  const renderPiece = () => {
-    if (!piece || hidden) return null;
-
-    // Check if piece should be shown based on settings
-    const isOwnPiece = piece.color === playerSide.charAt(0);
-    if (isOwnPiece && !showOwnPieces) return null;
-    if (!isOwnPiece && !showOpponentPieces) return null;
-
-    // Determine if piece should be shown as circle
-    const shouldShowAsCircle =
-      pieceShapeMode === 'circles-all' ||
-      (pieceShapeMode === 'circles-own' && isOwnPiece) ||
-      (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
-
-    // Determine piece color based on settings
-    let displayColor = piece.color;
-    if (pieceColors === 'white-only') {
-      displayColor = 'w';
-    } else if (pieceColors === 'black-only') {
-      displayColor = 'b';
-    }
-
-    if (shouldShowAsCircle) {
-      // Show as circle with consistent appearance regardless of square color
-      const circleColor =
-        displayColor === 'w' ? 'bg-white border-gray-800' : 'bg-gray-900 border-gray-300';
-      return <div className={`w-[60%] h-[60%] rounded-full border-4 ${circleColor} shadow-md`} />;
-    }
-
-    // Show normal piece
-    return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <ChessPiece type={piece.type} color={displayColor} size={45} />
-      </div>
-    );
-  };
-
   const squareColorClass = isLight
     ? 'bg-stone-200 dark:bg-stone-300'
     : 'bg-stone-600 dark:bg-stone-700';
@@ -123,7 +64,7 @@ export function Square({
       `}
       onClick={onClick}
     >
-      <div className="flex items-center justify-center w-full h-full">{renderPiece()}</div>
+      <div className="flex items-center justify-center w-full h-full">{children}</div>
 
       {/* Coordinates */}
       {showCoordinates && showRankCoordinate && (
