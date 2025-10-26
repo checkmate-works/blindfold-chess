@@ -315,7 +315,14 @@
       "invalidFenOnLine": "行 {lines} に無効なFENがあります",
       "invalidFenOnLines": "行 {lines} に無効なFENがあります",
       "fiveSeconds": "5秒",
-      "oneMinute": "1分"
+      "oneMinute": "1分",
+      "copyShareLink": "共有リンクをコピー",
+      "linkCopied": "リンクをクリップボードにコピーしました",
+      "copyFailed": "コピーに失敗しました",
+      "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
+      "url_too_long": "共有URLが長すぎます。問題数を減らしてください。",
+      "invalid_base64": "無効な共有URLです",
+      "invalid_fen": "無効なFEN形式が含まれています"
     }
   },
   "home": {

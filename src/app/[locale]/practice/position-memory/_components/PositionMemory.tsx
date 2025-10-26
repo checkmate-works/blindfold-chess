@@ -24,9 +24,13 @@ type ExtendedGamePhase = GamePhase | 'setup' | 'problem-result';
 
 type Props = {
   locale: Locale;
+  urlError?: string | null;
+  urlFens?: string[] | null;
+  urlTimeLimit?: number | null;
+  urlShuffle?: boolean | null;
 };
 
-export function PositionMemory({ locale }: Props) {
+export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShuffle }: Props) {
   const t = useTranslations('practice.positionMemory');
   const tPractice = useTranslations('practice');
 
@@ -44,9 +48,28 @@ export function PositionMemory({ locale }: Props) {
   const [useCustomFen, setUseCustomFen] = useState(false);
   const [customFenInput, setCustomFenInput] = useState('');
   const [customFenError, setCustomFenError] = useState<string | null>(null);
+  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
 
-  // Load saved settings from localStorage
+  // Load saved settings from localStorage or URL params
   useEffect(() => {
+    // URL params take priority over localStorage
+    if (urlFens) {
+      setUseCustomFen(true);
+      setCustomFenInput(urlFens.join('\n'));
+      setTimeLimit(urlTimeLimit ?? 10);
+      setShuffleProblems(urlShuffle ?? true);
+      setHasLoadedSettings(true);
+      return;
+    }
+
+    // Handle URL errors
+    if (urlError) {
+      setCustomFenError(urlError);
+      setHasLoadedSettings(true);
+      return;
+    }
+
+    // Load from localStorage if no URL params
     const savedSettings = localStorage.getItem('positionMemorySettings');
     if (savedSettings) {
       try {
@@ -60,14 +83,18 @@ export function PositionMemory({ locale }: Props) {
         console.error('Failed to load position memory settings:', error);
       }
     }
-  }, []);
+    setHasLoadedSettings(true);
+  }, [urlFens, urlTimeLimit, urlShuffle, urlError]);
 
   // Save settings to localStorage whenever they change
   useEffect(() => {
-    // Skip the initial render to avoid overwriting with defaults
-    const savedSettings = localStorage.getItem('positionMemorySettings');
-    if (!savedSettings && customFenInput === '') {
-      // Don't save empty customFenInput on initial load
+    // Don't save if settings haven't been loaded yet
+    if (!hasLoadedSettings) {
+      return;
+    }
+
+    // Don't save if loaded from URL params
+    if (urlFens) {
       return;
     }
 
@@ -79,7 +106,15 @@ export function PositionMemory({ locale }: Props) {
       customFenInput,
     };
     localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-  }, [timeLimit, problemCount, shuffleProblems, useCustomFen, customFenInput]);
+  }, [
+    timeLimit,
+    problemCount,
+    shuffleProblems,
+    useCustomFen,
+    customFenInput,
+    hasLoadedSettings,
+    urlFens,
+  ]);
 
   // Game state
   const [phase, setPhase] = useState<ExtendedGamePhase>('setup');
@@ -236,6 +271,7 @@ export function PositionMemory({ locale }: Props) {
   if (phase === 'setup') {
     return (
       <PositionMemorySetup
+        locale={locale}
         timeLimit={timeLimit}
         problemCount={problemCount}
         shuffleProblems={shuffleProblems}

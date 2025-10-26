@@ -315,7 +315,14 @@
       "invalidFenOnLine": "Invalid FEN on line {lines}",
       "invalidFenOnLines": "Invalid FEN on lines {lines}",
       "fiveSeconds": "5s",
-      "oneMinute": "60s"
+      "oneMinute": "60s",
+      "copyShareLink": "Copy Share Link",
+      "linkCopied": "Link copied to clipboard",
+      "copyFailed": "Failed to copy link",
+      "urlTooLong": "URL is too long (must be under 1000 characters)",
+      "url_too_long": "Share URL is too long. Please reduce the number of problems.",
+      "invalid_base64": "Invalid share URL",
+      "invalid_fen": "Contains invalid FEN format"
     }
   },
   "home": {

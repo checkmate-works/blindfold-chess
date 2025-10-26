@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { FaLink } from 'react-icons/fa';
+
 type Props = {
   timeLimit: number;
   problemCount: number;
@@ -10,11 +12,13 @@ type Props = {
   useCustomFen: boolean;
   customFenInput: string;
   customFenError: string | null;
+  copyStatus: 'idle' | 'success' | 'error' | 'too_long';
   onTimeLimitChange: (value: number) => void;
   onProblemCountChange: (value: number) => void;
   onShuffleChange: (value: boolean) => void;
   onUseCustomFenChange: (value: boolean) => void;
   onCustomFenInputChange: (value: string) => void;
+  onCopyShareLink: () => void;
 };
 
 export function PositionMemorySettings({
@@ -25,11 +29,13 @@ export function PositionMemorySettings({
   useCustomFen,
   customFenInput,
   customFenError,
+  copyStatus,
   onTimeLimitChange,
   onProblemCountChange,
   onShuffleChange,
   onUseCustomFenChange,
   onCustomFenInputChange,
+  onCopyShareLink,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   return (
@@ -106,6 +112,30 @@ export function PositionMemorySettings({
           />
           {customFenError && (
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">{customFenError}</p>
+          )}
+
+          {/* Share Link Button */}
+          {customFenInput.trim() && !customFenError && (
+            <div className="mt-3 flex justify-end">
+              <button
+                onClick={onCopyShareLink}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+              >
+                <FaLink />
+                <span>{t('copyShareLink')}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Copy Status Messages */}
+          {copyStatus === 'success' && (
+            <p className="mt-2 text-sm text-green-600 dark:text-green-400">{t('linkCopied')}</p>
+          )}
+          {copyStatus === 'error' && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t('copyFailed')}</p>
+          )}
+          {copyStatus === 'too_long' && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t('urlTooLong')}</p>
           )}
         </div>
       )}
