@@ -315,7 +315,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       setIsLoading(true);
 
       try {
-        setShouldMakeAiMove(false); // Prevent multiple AI moves immediately
         const aiMove = await getAiMove(currentMoves);
         pushMove(aiMove);
 
@@ -325,7 +324,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       } catch (error) {
         console.error('Failed to get AI move:', error);
         setError('AI move failed');
-        setShouldMakeAiMove(false); // Reset on error
+        // On error, reset the flag to allow retry
+        setShouldMakeAiMove(false);
       } finally {
         setIsLoading(false);
         isProcessingRef.current = false; // Clear processing flag
@@ -352,13 +352,23 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     const gameStateService = new GameStateService(moves, playerSide);
 
     const newIsPlayerTurn = gameStateService.isPlayerTurn();
+    const newGameStatus = gameStateService.getGameStatus();
+
     setIsPlayerTurn(newIsPlayerTurn);
-    setGameStatus(gameStateService.getGameStatus());
+    setGameStatus(newGameStatus);
     setPlayerResult(gameStateService.getPlayerResult());
 
-    // Check if we should trigger AI move
-    if (!newIsPlayerTurn && gameStateService.getGameStatus() === 'in_progress') {
-      setShouldMakeAiMove(true);
+    // Update shouldMakeAiMove based on current state
+    // This ensures the flag is always synchronized with the actual game state
+    if (!newIsPlayerTurn && newGameStatus === 'in_progress') {
+      // Only set to true if not already processing to avoid duplicate requests
+      if (!isProcessingRef.current) {
+        setShouldMakeAiMove(true);
+      }
+    } else {
+      // Explicitly reset the flag when it's player's turn or game is over
+      // This prevents stale state from blocking future AI moves
+      setShouldMakeAiMove(false);
     }
   }, [moves, playerSide, savedGameStatus]);
 
