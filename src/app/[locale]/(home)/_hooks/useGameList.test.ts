@@ -9,9 +9,11 @@ import { useGameList } from './useGameList';
 const mockLoadAllSorted = vi.fn();
 
 vi.mock('@/lib/repositories', () => ({
-  LocalStorageGameRepository: vi.fn().mockImplementation(() => ({
-    loadAllSorted: mockLoadAllSorted,
-  })),
+  LocalStorageGameRepository: vi.fn(function () {
+    return {
+      loadAllSorted: mockLoadAllSorted,
+    };
+  }),
 }));
 
 describe('useGameList', () => {
