@@ -21,3 +21,10 @@ export type PositionData = {
   fen: string;
   isBlackToMove: boolean;
 };
+
+export type SquareStatus = 'correct' | 'incorrect' | 'missing';
+
+export type SquareDiff = {
+  square: string;
+  status: SquareStatus;
+};

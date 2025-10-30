@@ -1,7 +1,7 @@
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FEN_STRINGS } from '../_data/positions';
-import type { PositionAccuracy, PositionData, ScoreDetail } from './types';
+import type { PositionAccuracy, PositionData, ScoreDetail, SquareDiff } from './types';
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {
@@ -281,4 +281,47 @@ export function isQueryTooLong(encoded: string): boolean {
  */
 export function getMaxQueryLength(): number {
   return MAX_QUERY_LENGTH;
+}
+
+/**
+ * Calculate square differences between original and recreated positions
+ * for visual overlay display
+ */
+export function calculateSquareDifferences(
+  originalFen: string,
+  recreatedFen: string
+): SquareDiff[] {
+  const originalPieces = originalFen.split(' ')[0];
+  const recreatedPieces = recreatedFen.split(' ')[0];
+
+  const originalBoard = fenToBoard(originalPieces);
+  const recreatedBoard = fenToBoard(recreatedPieces);
+
+  const differences: SquareDiff[] = [];
+
+  for (let i = 0; i < 64; i++) {
+    const originalPiece = originalBoard[i];
+    const recreatedPiece = recreatedBoard[i];
+    const square = indexToSquare(i);
+
+    if (originalPiece !== '' && recreatedPiece !== '') {
+      // Both squares have pieces
+      if (originalPiece === recreatedPiece) {
+        // Correct piece
+        differences.push({ square, status: 'correct' });
+      } else {
+        // Wrong piece
+        differences.push({ square, status: 'incorrect' });
+      }
+    } else if (originalPiece !== '' && recreatedPiece === '') {
+      // Missing piece (should be here but isn't)
+      differences.push({ square, status: 'missing' });
+    } else if (originalPiece === '' && recreatedPiece !== '') {
+      // Extra piece (shouldn't be here but is)
+      differences.push({ square, status: 'incorrect' });
+    }
+    // If both are empty, no overlay needed
+  }
+
+  return differences;
 }

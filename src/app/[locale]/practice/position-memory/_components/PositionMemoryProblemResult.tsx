@@ -1,11 +1,15 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import type { PositionAccuracy, PositionData } from '../_lib/types';
+import { calculateSquareDifferences } from '../_lib/utils';
+import { ChessBoardWithOverlay } from './ChessBoardWithOverlay';
 
 type Props = {
   accuracy: PositionAccuracy;
@@ -28,6 +32,12 @@ export function PositionMemoryProblemResult({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
+
+  // Calculate square differences for overlay display
+  const squareDifferences = useMemo(
+    () => calculateSquareDifferences(originalPosition.fen, recreatedPosition),
+    [originalPosition.fen, recreatedPosition]
+  );
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -65,10 +75,10 @@ export function PositionMemoryProblemResult({
           <div>
             <p className="text-sm font-medium text-muted-foreground mb-2">{t('yourRecreation')}</p>
             <div className="w-full max-w-xs mx-auto">
-              <AnimatedChessBoard
-                initialFen={recreatedPosition}
-                showCoordinates={false}
+              <ChessBoardWithOverlay
+                fen={recreatedPosition}
                 flipped={originalPosition.isBlackToMove}
+                squareDifferences={squareDifferences}
               />
             </div>
           </div>

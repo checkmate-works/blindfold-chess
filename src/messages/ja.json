@@ -280,6 +280,8 @@
       "accuracy": "正解率",
       "correct": "正解",
       "extra": "余分",
+      "incorrect": "間違い",
+      "missing": "不足",
       "score": "スコア",
       "nextProblem": "次の問題",
       "viewResults": "結果を見る",

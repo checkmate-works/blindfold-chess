@@ -280,6 +280,8 @@
       "accuracy": "Accuracy",
       "correct": "Correct",
       "extra": "Extra",
+      "incorrect": "Incorrect",
+      "missing": "Missing",
       "score": "Score",
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
