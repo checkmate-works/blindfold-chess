@@ -58,3 +58,42 @@ export function validatePgnWithDetails(pgn: string): {
     };
   }
 }
+
+/**
+ * Get PGN auto-completion suggestion based on current input
+ * Returns the next move number only when both moves in a pair are complete
+ * Does not suggest single spaces as they are easy to type manually
+ * Only suggests when the current PGN is valid
+ */
+export function getPgnSuggestion(pgn: string): string | null {
+  if (!pgn) return '1. ';
+
+  // Remove trailing whitespace for analysis
+  const trimmed = pgn.trimEnd();
+  if (!trimmed) return '1. ';
+
+  // Try to parse the PGN to get move count
+  try {
+    const chess = new Chess();
+    chess.loadPgn(trimmed);
+    const moveCount = chess.history().length;
+
+    // Only suggest next move number when both white and black have played
+    // moveCount % 2 === 0 means even number of moves (full move pair completed)
+    if (moveCount > 0 && moveCount % 2 === 0) {
+      // Even number of moves means black just played, suggest next move number
+      const nextMoveNumber = Math.floor(moveCount / 2) + 1;
+      return ` ${nextMoveNumber}. `;
+    }
+  } catch {
+    // If parsing fails, the PGN is invalid, don't suggest anything
+    // This prevents suggesting completion for invalid input like "1. d4 e"
+  }
+
+  // If no pattern detected and input doesn't start with move number, suggest it
+  if (!trimmed.match(/\d+\./)) {
+    return '1. ';
+  }
+
+  return null;
+}
