@@ -10,6 +10,8 @@ import type { Game } from '@/lib/types';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { formatLastMove } from '../_lib/utils';
+
 type Props = {
   game: Game;
   locale: Locale;
@@ -98,8 +100,8 @@ export function GameListItem({ game, locale, onDelete }: Props) {
 
               <span className="text-muted-foreground">•</span>
 
-              <span className="font-medium">
-                {game.moves.length} {t('moves')}
+              <span className="font-medium font-mono">
+                {formatLastMove(game.moves, game.playerColor)}
               </span>
 
               <span className="text-muted-foreground">•</span>
