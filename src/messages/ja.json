@@ -384,7 +384,8 @@
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
     "copyPgn": "棋譜をコピー",
-    "copied": "コピー済み！"
+    "copied": "コピー済み！",
+    "aiPlayed": "AIが{move}を指しました"
   },
   "playError": {
     "title": "ゲームの復旧",
@@ -426,6 +427,8 @@
     "blackDescription": "AIが先手",
     "gameLimitReached": "ゲーム数が上限に達しています",
     "gameLimitMessage": "保存できるゲーム数は最大{limit}個までです。\n既存のゲームを削除してください。",
-    "backToGameList": "ゲーム一覧へ戻る"
+    "backToGameList": "ゲーム一覧へ戻る",
+    "completeSuggestion": "\"{suggestion}\" を補完",
+    "tabToComplete": "Tab キーで \"{suggestion}\" を補完"
   }
 }

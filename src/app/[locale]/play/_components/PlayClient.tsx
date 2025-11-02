@@ -578,15 +578,14 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         const moveNumber = Math.floor(i / 2) + 1;
         const isWhiteMove = i % 2 === 0;
         const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
-        const moveText =
-          locale === 'ja' ? `AIが${moveNotation}を指しました` : `AI played ${moveNotation}`;
+        const moveText = t('aiPlayed', { move: moveNotation });
         onAiMoveChange(moveText);
         return;
       }
     }
 
     onAiMoveChange(null);
-  }, [moves, playerSide, onAiMoveChange, locale]);
+  }, [moves, playerSide, onAiMoveChange, t]);
 
   return (
     <div>

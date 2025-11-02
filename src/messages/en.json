@@ -384,7 +384,8 @@
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
     "copyPgn": "Copy PGN",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "aiPlayed": "AI played {move}"
   },
   "playError": {
     "title": "Game Recovery",
@@ -426,6 +427,8 @@
     "blackDescription": "AI plays first",
     "gameLimitReached": "Game Limit Reached",
     "gameLimitMessage": "You can save up to {limit} games.\nPlease delete existing games to start a new one.",
-    "backToGameList": "Back to Game List"
+    "backToGameList": "Back to Game List",
+    "completeSuggestion": "Complete \"{suggestion}\"",
+    "tabToComplete": "Press Tab to complete \"{suggestion}\""
   }
 }
