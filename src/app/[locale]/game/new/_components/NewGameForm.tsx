@@ -31,7 +31,6 @@ export function NewGameForm({ locale }: Props) {
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
-  const [pgnError, setPgnError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Auto-derive color from PGN when PGN method is selected
@@ -58,12 +57,6 @@ export function NewGameForm({ locale }: Props) {
 
   const handlePgnChange = (value: string) => {
     setPgn(value);
-    setPgnError(null);
-
-    // Real-time validation
-    if (value.trim() && !validatePgn(value)) {
-      setPgnError(t('invalidPgn'));
-    }
   };
 
   const handleStartGame = async () => {
@@ -72,14 +65,7 @@ export function NewGameForm({ locale }: Props) {
     try {
       let moves: string[] | undefined;
       if (startMethod === 'pgn') {
-        if (!pgn.trim()) {
-          setPgnError(t('invalidPgn'));
-          setIsLoading(false);
-          return;
-        }
-
-        if (!validatePgn(pgn)) {
-          setPgnError(t('invalidPgn'));
+        if (!pgn.trim() || !validatePgn(pgn)) {
           setIsLoading(false);
           return;
         }
@@ -101,8 +87,6 @@ export function NewGameForm({ locale }: Props) {
       }
 
       router.push(`/${locale}/play?${searchParams.toString()}`);
-    } catch {
-      setPgnError(t('invalidPgn'));
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +102,7 @@ export function NewGameForm({ locale }: Props) {
       {startMethod === 'pgn' && (
         <>
           <SectionTitle>{t('pgnTitle')}</SectionTitle>
-          <PgnInput value={pgn} onChange={handlePgnChange} error={pgnError} />
+          <PgnInput value={pgn} onChange={handlePgnChange} />
         </>
       )}
 
@@ -139,7 +123,7 @@ export function NewGameForm({ locale }: Props) {
 
       <PrimaryButton
         onClick={handleStartGame}
-        disabled={startMethod === 'pgn' && (!pgn.trim() || !!pgnError)}
+        disabled={startMethod === 'pgn' && (!pgn.trim() || !validatePgn(pgn))}
         loading={isLoading}
       >
         {t('startGame')}
