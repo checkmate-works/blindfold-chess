@@ -45,3 +45,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stockfish files (copied from node_modules)
+/public/stockfish.js
+/public/stockfish.wasm
+/public/stockfish.wasm.js

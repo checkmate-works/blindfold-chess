@@ -19,6 +19,9 @@ cd blindfold-chess
 # Install dependencies
 pnpm install
 
+# Copy Stockfish AI engine files (required for AI opponent)
+pnpm run copy-stockfish
+
 # Start development server
 pnpm dev
 ```
@@ -83,12 +86,13 @@ SENTRY_PROJECT=your-project-name
 ## Available Scripts
 
 - `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production
+- `pnpm build` - Build for production (automatically copies Stockfish files)
 - `pnpm start` - Start production server
 - `pnpm lint` - Run ESLint
 - `pnpm test` - Run tests in watch mode
 - `pnpm test:run` - Run tests once (CI mode)
 - `pnpm test:ui` - Run tests with UI
+- `pnpm run copy-stockfish` - Manually copy Stockfish AI engine files
 
 ## Tech Stack
 

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "tsx scripts/copy-stockfish.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,7 +16,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "copy-stockfish": "tsx scripts/copy-stockfish.ts"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
@@ -58,7 +60,9 @@
     "jsdom": "^27.0.1",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
+    "stockfish.js": "^10.0.2",
     "tailwindcss": "^4.1.16",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.4"
   }
