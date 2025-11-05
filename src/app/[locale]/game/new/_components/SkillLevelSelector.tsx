@@ -9,45 +9,31 @@ type Props = {
   onChange: (value: SkillLevel) => void;
 };
 
+// Generate skill level options (1-20)
+const SKILL_LEVELS = Array.from({ length: 20 }, (_, i) => i + 1);
+
 export function SkillLevelSelector({ value, onChange }: Props) {
   const t = useTranslations('newGame');
+
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const level = parseInt(event.target.value, 10);
+    onChange(level);
+  };
+
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <button
-        onClick={() => onChange(1)}
-        className={`p-4 rounded-lg border-2 transition-all ${
-          value === 1
-            ? 'border-foreground bg-foreground/10'
-            : 'border-border hover:border-muted-foreground'
-        }`}
+    <div className="space-y-2">
+      <select
+        value={value}
+        onChange={handleChange}
+        className="w-full p-3 rounded-lg border-2 border-border bg-background text-foreground hover:border-muted-foreground focus:border-foreground focus:outline-none transition-all"
       >
-        <h3 className="font-semibold">{t('beginner')}</h3>
-        <p className="text-sm text-muted-foreground mt-1">ELO ~1000</p>
-      </button>
-
-      <button
-        onClick={() => onChange(5)}
-        className={`p-4 rounded-lg border-2 transition-all ${
-          value === 5
-            ? 'border-foreground bg-foreground/10'
-            : 'border-border hover:border-muted-foreground'
-        }`}
-      >
-        <h3 className="font-semibold">{t('intermediate')}</h3>
-        <p className="text-sm text-muted-foreground mt-1">ELO ~1500</p>
-      </button>
-
-      <button
-        onClick={() => onChange(10)}
-        className={`p-4 rounded-lg border-2 transition-all ${
-          value === 10
-            ? 'border-foreground bg-foreground/10'
-            : 'border-border hover:border-muted-foreground'
-        }`}
-      >
-        <h3 className="font-semibold">{t('advanced')}</h3>
-        <p className="text-sm text-muted-foreground mt-1">ELO ~2000</p>
-      </button>
+        {SKILL_LEVELS.map((level) => (
+          <option key={level} value={level}>
+            {t('levelWithNumber', { level })}
+          </option>
+        ))}
+      </select>
+      <p className="text-sm text-muted-foreground">{t('skillLevelDescription')}</p>
     </div>
   );
 }

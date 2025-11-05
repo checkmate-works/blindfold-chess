@@ -1,18 +1,14 @@
 import type { AlgebraicNotation, Side } from './chess';
 
 // Skill level types and options
-type SkillLevelOption = {
-  label: string;
-  value: number;
-};
+// Stockfish supports Skill Level 0-20
+export type SkillLevel = number;
 
-export const SKILL_LEVEL_OPTIONS: readonly SkillLevelOption[] = [
-  { label: 'Beginner', value: 1 },
-  { label: 'Intermediate', value: 5 },
-  { label: 'Advanced', value: 10 },
-] as const;
-
-export type SkillLevel = (typeof SKILL_LEVEL_OPTIONS)[number]['value'];
+// Validate skill level is within valid range (1-20)
+// We start from 1 instead of 0 to avoid complete random moves
+export function isValidSkillLevel(level: number): level is SkillLevel {
+  return Number.isInteger(level) && level >= 1 && level <= 20;
+}
 
 // Game settings
 export type GameSettings = {

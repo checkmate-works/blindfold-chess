@@ -121,13 +121,21 @@ export class ChessEngine {
       return;
     }
 
-    // Set Stockfish skill level (0-20)
+    // Set Stockfish skill level (1-20)
+    // Stockfish 17 NNUE supports the same UCI Skill Level parameter as earlier versions
     await this.sendCommand(`setoption name Skill Level value ${level}`);
 
-    // For lower levels, add some randomness
-    if (level < 10) {
+    // For levels below 15, also use UCI_LimitStrength to cap playing strength
+    // This provides more consistent behavior across different skill levels
+    if (level < 15) {
       await this.sendCommand(`setoption name UCI_LimitStrength value true`);
-      await this.sendCommand(`setoption name UCI_Elo value ${Math.max(800, 800 + level * 100)}`);
+      // Map skill level to approximate Elo rating
+      // Level 1 (~800 Elo) to Level 14 (~2100 Elo)
+      const targetElo = Math.max(800, 700 + level * 100);
+      await this.sendCommand(`setoption name UCI_Elo value ${targetElo}`);
+    } else {
+      // For higher levels (15-20), disable UCI_LimitStrength to allow full strength
+      await this.sendCommand(`setoption name UCI_LimitStrength value false`);
     }
   }
 

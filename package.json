@@ -60,7 +60,7 @@
     "jsdom": "^27.0.1",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
-    "stockfish.js": "^10.0.2",
+    "stockfish": "17.1.0",
     "tailwindcss": "^4.1.16",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
