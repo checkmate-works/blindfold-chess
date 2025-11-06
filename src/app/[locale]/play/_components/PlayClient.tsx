@@ -23,6 +23,7 @@ import { ControlSettingsModal } from './ControlSettingsModal';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
+import { MoveNavigationControls } from './MoveNavigationControls';
 import { MoveSelect } from './MoveSelect';
 
 type Props = {
@@ -638,6 +639,22 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   className="max-w-2xl mx-auto"
                 />
 
+                {/* Navigation Controls (below board) */}
+                {moves.length > 0 && (
+                  <div className="mt-4">
+                    <MoveNavigationControls
+                      onNavigateToStart={navigateToStart}
+                      onNavigatePrevious={navigatePrevious}
+                      onNavigateNext={navigateNext}
+                      onNavigateToEnd={navigateToEnd}
+                      isPreviousDisabled={
+                        currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
+                      }
+                      isNextDisabled={currentPosition === -1}
+                    />
+                  </div>
+                )}
+
                 {/* Settings Link */}
                 <div className="mt-4 text-center">
                   <button
@@ -836,43 +853,17 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
                 {/* Navigation Controls */}
                 {moves.length > 0 && (
-                  <div className="mt-4 flex justify-center gap-1">
-                    <button
-                      onClick={navigateToStart}
-                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
-                      aria-label="Go to start"
-                      style={{ fontSize: '24px' }}
-                    >
-                      «
-                    </button>
-                    <button
-                      onClick={navigatePrevious}
-                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
-                      aria-label="Previous move"
-                      disabled={
+                  <div className="mt-4">
+                    <MoveNavigationControls
+                      onNavigateToStart={navigateToStart}
+                      onNavigatePrevious={navigatePrevious}
+                      onNavigateNext={navigateNext}
+                      onNavigateToEnd={navigateToEnd}
+                      isPreviousDisabled={
                         currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
                       }
-                      style={{ fontSize: '24px' }}
-                    >
-                      ‹
-                    </button>
-                    <button
-                      onClick={navigateNext}
-                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
-                      aria-label="Next move"
-                      disabled={currentPosition === -1}
-                      style={{ fontSize: '24px' }}
-                    >
-                      ›
-                    </button>
-                    <button
-                      onClick={navigateToEnd}
-                      className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
-                      aria-label="Go to end"
-                      style={{ fontSize: '24px' }}
-                    >
-                      »
-                    </button>
+                      isNextDisabled={currentPosition === -1}
+                    />
                   </div>
                 )}
 
