@@ -98,13 +98,9 @@ export function GameListItem({ game, locale, onDelete }: Props) {
                 <ColorIcon color={game.playerColor} />
               </div>
 
-              <span className="text-muted-foreground">•</span>
-
               <span className="font-medium font-mono">
                 {formatLastMove(game.moves, game.playerColor)}
               </span>
-
-              <span className="text-muted-foreground">•</span>
 
               <span className="font-medium">
                 {t('level')} {game.skillLevel}
