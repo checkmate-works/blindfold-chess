@@ -139,6 +139,12 @@ export function PositionMemorySession({
     window.location.reload();
   }, []);
 
+  const handleViewAgain = useCallback(() => {
+    // Go back to memorize phase to view the position again
+    setPhase('memorize');
+    setMemorizeTimeLeft(timeLimit);
+  }, [timeLimit]);
+
   // Memorize phase
   if (phase === 'memorize' && originalPosition) {
     return (
@@ -162,6 +168,7 @@ export function PositionMemorySession({
         problemCount={positions.length}
         onPositionChange={setRecreatedPosition}
         onSubmit={handleSubmit}
+        onViewAgain={handleViewAgain}
       />
     );
   }

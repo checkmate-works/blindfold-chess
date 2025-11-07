@@ -15,6 +15,7 @@ type Props = {
   problemCount: number;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
+  onViewAgain: () => void;
 };
 
 export function PositionMemoryRecreate({
@@ -24,6 +25,7 @@ export function PositionMemoryRecreate({
   problemCount,
   onPositionChange,
   onSubmit,
+  onViewAgain,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   return (
@@ -47,13 +49,23 @@ export function PositionMemoryRecreate({
         </div>
       </div>
 
-      <div className="text-center mt-6">
-        <button
-          onClick={onSubmit}
-          className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-        >
-          {t('submit')}
-        </button>
+      <div className="text-center mt-6 space-y-4">
+        <div>
+          <button
+            onClick={onSubmit}
+            className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
+          >
+            {t('submit')}
+          </button>
+        </div>
+        <div>
+          <button
+            onClick={onViewAgain}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {t('viewAgain')}
+          </button>
+        </div>
       </div>
     </div>
   );
