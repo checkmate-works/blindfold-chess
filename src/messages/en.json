@@ -262,6 +262,7 @@
     "positionMemory": {
       "title": "Position Memory",
       "description": "Train your ability to remember and recreate chess positions",
+      "session": "In Progress",
       "settings": "Game Settings",
       "timeLimit": "Memorization Time",
       "seconds": "seconds",

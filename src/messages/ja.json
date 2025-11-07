@@ -262,6 +262,7 @@
     "positionMemory": {
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
+      "session": "練習中",
       "settings": "ゲーム設定",
       "timeLimit": "記憶時間",
       "seconds": "秒",

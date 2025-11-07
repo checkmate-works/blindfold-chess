@@ -4,8 +4,8 @@ import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PositionMemory } from './_components/PositionMemory';
-import { decodeFensFromBase64, isQueryTooLong, validateFEN } from './_lib/utils';
+import { PositionMemorySetup } from './_components/PositionMemorySetup';
+import { decodeFensFromBase64, getMaxProblems, isQueryTooLong, validateFEN } from './_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -29,7 +29,7 @@ export default async function PositionMemoryPage({ params, searchParams }: Props
   const search = await searchParams;
   const t = await getTranslations({ locale });
 
-  // Parse query parameters
+  // Parse query parameters for shared links
   let urlError: string | null = null;
   let urlFens: string[] | null = null;
   let urlTimeLimit: number | null = null;
@@ -80,12 +80,13 @@ export default async function PositionMemoryPage({ params, searchParams }: Props
 
       <PageDescription>{t('practice.positionMemory.description')}</PageDescription>
 
-      <PositionMemory
+      <PositionMemorySetup
         locale={locale}
         urlError={urlError}
         urlFens={urlFens}
         urlTimeLimit={urlTimeLimit}
         urlShuffle={urlShuffle}
+        maxProblems={getMaxProblems()}
       />
 
       <Divider />

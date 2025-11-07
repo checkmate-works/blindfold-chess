@@ -8,29 +8,28 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
 import type { GamePhase, PositionAccuracy, PositionData } from '../_lib/types';
-import {
-  calculateAccuracy,
-  getCustomPositions,
-  getMaxProblems,
-  getRandomPositions,
-  validateFEN,
-} from '../_lib/utils';
+import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
-import { PositionMemorySetup } from './PositionMemorySetup';
 
-type ExtendedGamePhase = GamePhase | 'setup' | 'problem-result';
+type ExtendedGamePhase = GamePhase | 'problem-result';
 
 type Props = {
   locale: Locale;
-  urlError?: string | null;
-  urlFens?: string[] | null;
-  urlTimeLimit?: number | null;
-  urlShuffle?: boolean | null;
+  fens?: string[];
+  timeLimit: number;
+  shuffle: boolean;
+  problemCount?: number;
 };
 
-export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShuffle }: Props) {
+export function PositionMemorySession({
+  locale,
+  fens,
+  timeLimit,
+  shuffle,
+  problemCount = 1,
+}: Props) {
   const t = useTranslations('practice.positionMemory');
   const tPractice = useTranslations('practice');
 
@@ -41,83 +40,9 @@ export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShu
     },
     [t]
   );
-  // Game settings
-  const [timeLimit, setTimeLimit] = useState(10);
-  const [problemCount, setProblemCount] = useState(1);
-  const [shuffleProblems, setShuffleProblems] = useState(true);
-  const [useCustomFen, setUseCustomFen] = useState(false);
-  const [customFenInput, setCustomFenInput] = useState('');
-  const [customFenError, setCustomFenError] = useState<string | null>(null);
-  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
-
-  // Load saved settings from localStorage or URL params
-  useEffect(() => {
-    // URL params take priority over localStorage
-    if (urlFens) {
-      setUseCustomFen(true);
-      setCustomFenInput(urlFens.join('\n'));
-      setTimeLimit(urlTimeLimit ?? 10);
-      setShuffleProblems(urlShuffle ?? true);
-      setHasLoadedSettings(true);
-      return;
-    }
-
-    // Handle URL errors
-    if (urlError) {
-      setCustomFenError(urlError);
-      setHasLoadedSettings(true);
-      return;
-    }
-
-    // Load from localStorage if no URL params
-    const savedSettings = localStorage.getItem('positionMemorySettings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setTimeLimit(settings.timeLimit ?? 10);
-        setProblemCount(settings.problemCount ?? 1);
-        setShuffleProblems(settings.shuffleProblems ?? true);
-        setUseCustomFen(settings.useCustomFen ?? false);
-        setCustomFenInput(settings.customFenInput ?? '');
-      } catch (error) {
-        console.error('Failed to load position memory settings:', error);
-      }
-    }
-    setHasLoadedSettings(true);
-  }, [urlFens, urlTimeLimit, urlShuffle, urlError]);
-
-  // Save settings to localStorage whenever they change
-  useEffect(() => {
-    // Don't save if settings haven't been loaded yet
-    if (!hasLoadedSettings) {
-      return;
-    }
-
-    // Don't save if loaded from URL params
-    if (urlFens) {
-      return;
-    }
-
-    const settings = {
-      timeLimit,
-      problemCount,
-      shuffleProblems,
-      useCustomFen,
-      customFenInput,
-    };
-    localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-  }, [
-    timeLimit,
-    problemCount,
-    shuffleProblems,
-    useCustomFen,
-    customFenInput,
-    hasLoadedSettings,
-    urlFens,
-  ]);
 
   // Game state
-  const [phase, setPhase] = useState<ExtendedGamePhase>('setup');
+  const [phase, setPhase] = useState<ExtendedGamePhase>('memorize');
   const [positions, setPositions] = useState<PositionData[]>([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [originalPosition, setOriginalPosition] = useState<PositionData | null>(null);
@@ -126,67 +51,20 @@ export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShu
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
 
-  // Validate custom FEN when input changes
+  // Initialize positions on mount
   useEffect(() => {
-    if (useCustomFen && customFenInput.trim()) {
-      const lines = customFenInput
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim());
-      const invalidLines: number[] = [];
-
-      lines.forEach((line, index) => {
-        if (!validateFEN(line.trim())) {
-          invalidLines.push(index + 1);
-        }
-      });
-
-      if (invalidLines.length > 0) {
-        const lineStr =
-          invalidLines.length > 1
-            ? t('invalidFenOnLines', { lines: invalidLines.join(', ') })
-            : t('invalidFenOnLine', { lines: invalidLines.join(', ') });
-        setCustomFenError(lineStr);
-      } else {
-        setCustomFenError(null);
-      }
-    } else {
-      setCustomFenError(null);
-    }
-  }, [customFenInput, useCustomFen, t]);
-
-  const startGame = useCallback(() => {
     let newPositions: PositionData[];
 
-    if (useCustomFen) {
-      const lines = customFenInput
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim());
-      if (lines.length === 0) {
-        return;
-      }
-
-      // Validate all FEN strings
-      const allValid = lines.every((line) => validateFEN(line.trim()));
-      if (!allValid) {
-        return;
-      }
-
-      newPositions = getCustomPositions(lines, lines.length, shuffleProblems);
+    if (fens && fens.length > 0) {
+      newPositions = getCustomPositions(fens, fens.length, shuffle);
     } else {
-      newPositions = getRandomPositions(problemCount, shuffleProblems);
+      newPositions = getRandomPositions(problemCount, shuffle);
     }
 
     setPositions(newPositions);
-    setCurrentProblemIndex(0);
     setOriginalPosition(newPositions[0]);
     setMemorizeTimeLeft(timeLimit);
-    setProblemResults([]);
-    setCurrentAccuracy(null);
-    setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-    setPhase('memorize');
-  }, [timeLimit, problemCount, shuffleProblems, useCustomFen, customFenInput]);
+  }, [fens, problemCount, shuffle, timeLimit]);
 
   const handleMemorized = useCallback(() => {
     setPhase('recreate');
@@ -257,37 +135,9 @@ export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShu
   }, [currentProblemIndex, positions, timeLimit]);
 
   const handlePlayAgain = useCallback(() => {
-    setPhase('setup');
-    setPositions([]);
-    setCurrentProblemIndex(0);
-    setOriginalPosition(null);
-    setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-    setMemorizeTimeLeft(timeLimit);
-    setCurrentAccuracy(null);
-    setProblemResults([]);
-  }, [timeLimit]);
-
-  // Setup phase
-  if (phase === 'setup') {
-    return (
-      <PositionMemorySetup
-        locale={locale}
-        timeLimit={timeLimit}
-        problemCount={problemCount}
-        shuffleProblems={shuffleProblems}
-        maxProblems={getMaxProblems()}
-        useCustomFen={useCustomFen}
-        customFenInput={customFenInput}
-        customFenError={customFenError}
-        onTimeLimitChange={setTimeLimit}
-        onProblemCountChange={setProblemCount}
-        onShuffleChange={setShuffleProblems}
-        onUseCustomFenChange={setUseCustomFen}
-        onCustomFenInputChange={setCustomFenInput}
-        onStart={startGame}
-      />
-    );
-  }
+    // Restart the session with the same settings
+    window.location.reload();
+  }, []);
 
   // Memorize phase
   if (phase === 'memorize' && originalPosition) {
@@ -296,7 +146,7 @@ export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShu
         position={originalPosition}
         memorizeTimeLeft={memorizeTimeLeft}
         currentProblemIndex={currentProblemIndex}
-        problemCount={problemCount}
+        problemCount={positions.length}
         onMemorized={handleMemorized}
       />
     );
@@ -309,7 +159,7 @@ export function PositionMemory({ locale, urlError, urlFens, urlTimeLimit, urlShu
         originalPosition={originalPosition}
         recreatedPosition={recreatedPosition}
         currentProblemIndex={currentProblemIndex}
-        problemCount={problemCount}
+        problemCount={positions.length}
         onPositionChange={setRecreatedPosition}
         onSubmit={handleSubmit}
       />
