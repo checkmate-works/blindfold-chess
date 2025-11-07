@@ -14,6 +14,7 @@ type Props = {
   currentProblemIndex: number;
   problemCount: number;
   onMemorized: () => void;
+  onQuit: () => void;
 };
 
 export function PositionMemoryMemorize({
@@ -22,6 +23,7 @@ export function PositionMemoryMemorize({
   currentProblemIndex,
   problemCount,
   onMemorized,
+  onQuit,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   return (
@@ -46,13 +48,23 @@ export function PositionMemoryMemorize({
         </div>
       </div>
 
-      <div className="text-center">
-        <button
-          onClick={onMemorized}
-          className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-        >
-          {t('memorized')}
-        </button>
+      <div className="text-center space-y-4">
+        <div>
+          <button
+            onClick={onMemorized}
+            className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
+          >
+            {t('memorized')}
+          </button>
+        </div>
+        <div>
+          <button
+            onClick={onQuit}
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {t('quit')}
+          </button>
+        </div>
       </div>
     </div>
   );

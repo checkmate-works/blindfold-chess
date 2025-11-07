@@ -12,6 +12,7 @@ import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_l
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
+import { QuitConfirmModal } from './QuitConfirmModal';
 
 type ExtendedGamePhase = GamePhase | 'problem-result';
 
@@ -50,6 +51,7 @@ export function PositionMemorySession({
   const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   // Initialize positions on mount
   useEffect(() => {
@@ -145,31 +147,61 @@ export function PositionMemorySession({
     setMemorizeTimeLeft(timeLimit);
   }, [timeLimit]);
 
+  const handleQuitClick = useCallback(() => {
+    setShowQuitModal(true);
+  }, []);
+
+  const handleQuitConfirm = useCallback(() => {
+    setShowQuitModal(false);
+    // Move to result phase with current results
+    setPhase('result');
+  }, []);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+  }, []);
+
   // Memorize phase
   if (phase === 'memorize' && originalPosition) {
     return (
-      <PositionMemoryMemorize
-        position={originalPosition}
-        memorizeTimeLeft={memorizeTimeLeft}
-        currentProblemIndex={currentProblemIndex}
-        problemCount={positions.length}
-        onMemorized={handleMemorized}
-      />
+      <>
+        <PositionMemoryMemorize
+          position={originalPosition}
+          memorizeTimeLeft={memorizeTimeLeft}
+          currentProblemIndex={currentProblemIndex}
+          problemCount={positions.length}
+          onMemorized={handleMemorized}
+          onQuit={handleQuitClick}
+        />
+        <QuitConfirmModal
+          isOpen={showQuitModal}
+          onConfirm={handleQuitConfirm}
+          onCancel={handleQuitCancel}
+        />
+      </>
     );
   }
 
   // Recreate phase
   if (phase === 'recreate' && originalPosition) {
     return (
-      <PositionMemoryRecreate
-        originalPosition={originalPosition}
-        recreatedPosition={recreatedPosition}
-        currentProblemIndex={currentProblemIndex}
-        problemCount={positions.length}
-        onPositionChange={setRecreatedPosition}
-        onSubmit={handleSubmit}
-        onViewAgain={handleViewAgain}
-      />
+      <>
+        <PositionMemoryRecreate
+          originalPosition={originalPosition}
+          recreatedPosition={recreatedPosition}
+          currentProblemIndex={currentProblemIndex}
+          problemCount={positions.length}
+          onPositionChange={setRecreatedPosition}
+          onSubmit={handleSubmit}
+          onViewAgain={handleViewAgain}
+          onQuit={handleQuitClick}
+        />
+        <QuitConfirmModal
+          isOpen={showQuitModal}
+          onConfirm={handleQuitConfirm}
+          onCancel={handleQuitCancel}
+        />
+      </>
     );
   }
 
@@ -189,7 +221,25 @@ export function PositionMemorySession({
   }
 
   // Final result phase
-  if (phase === 'result' && problemResults.length > 0) {
+  if (phase === 'result') {
+    // If no results yet (quit before solving any problem), show 0 score
+    if (problemResults.length === 0) {
+      return (
+        <PracticeComplete
+          score={0}
+          total={100}
+          onTryAgain={handlePlayAgain}
+          locale={locale}
+          labels={{
+            practiceComplete: tPractice('practiceComplete'),
+            score: `${t('accuracy')}: 0.0% (0/0)`,
+            tryAgain: tPractice('tryAgain'),
+            morePractice: tPractice('morePractice'),
+          }}
+        />
+      );
+    }
+
     const totalAccuracy =
       problemResults.reduce((sum, r) => sum + r.accuracy, 0) / problemResults.length;
     const totalCorrect = problemResults.reduce((sum, r) => sum + r.correctPieces, 0);
