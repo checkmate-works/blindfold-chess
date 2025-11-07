@@ -40,7 +40,7 @@ export function PositionMemoryProblemResult({
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <SectionTitle className="text-2xl font-bold text-center mb-6">
           {t('accuracy')}: {accuracy.accuracy.toFixed(1)}%
