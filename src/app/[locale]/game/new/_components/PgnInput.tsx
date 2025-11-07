@@ -106,6 +106,11 @@ export function PgnInput({ value, onChange }: Props) {
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             placeholder={t('pgnPlaceholder')}
+            inputMode="text"
+            spellCheck={false}
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
             className={`
               relative w-full h-40 px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-sm resize-none
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
