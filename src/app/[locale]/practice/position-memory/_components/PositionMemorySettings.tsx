@@ -164,7 +164,12 @@ export function PositionMemorySettings({
       )}
 
       {/* Shuffle Problems */}
-      {problemCount > 1 && (
+      {((useCustomFen &&
+        customFenInput
+          .trim()
+          .split('\n')
+          .filter((line) => line.trim()).length > 1) ||
+        (!useCustomFen && problemCount > 1)) && (
         <div className="flex items-center justify-between">
           <label htmlFor="shuffle" className="text-sm font-medium text-foreground">
             {t('shuffle')}
