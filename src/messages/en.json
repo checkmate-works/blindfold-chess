@@ -290,6 +290,8 @@
       "incorrect": "Incorrect",
       "missing": "Missing",
       "score": "Score",
+      "recreationProgress": "Recreation Progress",
+      "extraDescription": "Extra pieces placed in empty squares",
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
       "original": "Original",

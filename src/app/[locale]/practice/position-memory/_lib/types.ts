@@ -11,7 +11,9 @@ export type ScoreDetail = {
 export type PositionAccuracy = {
   correctPieces: number;
   totalPieces: number;
-  extraPieces: number;
+  incorrectPieces: number; // 誤答: 元の配置にある駒だが違う駒を置いた
+  missingPieces: number; // 漏れ: 置き忘れた駒
+  extraPieces: number; // 余分: 元の配置にない場所に置いた駒
   netScore: number;
   accuracy: number;
   details: ScoreDetail[];

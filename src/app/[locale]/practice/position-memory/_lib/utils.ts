@@ -119,7 +119,9 @@ export function calculateAccuracy(
 
   let correctPieces = 0;
   let totalPieces = 0;
-  let extraPieces = 0;
+  let incorrectPieces = 0; // 誤答: 元の配置にある駒だが違う駒を置いた
+  let missingPieces = 0; // 漏れ: 置き忘れた駒
+  let extraPieces = 0; // 余分: 元の配置にない場所に置いた駒
   const details: ScoreDetail[] = [];
 
   for (let i = 0; i < 64; i++) {
@@ -141,7 +143,8 @@ export function calculateAccuracy(
           description: descriptions.correct(getPieceDescription(originalPiece, pieceNames), square),
         });
       } else {
-        // Wrong piece
+        // Wrong piece (incorrect)
+        incorrectPieces++;
         details.push({
           square,
           expected: originalPiece,
@@ -153,11 +156,11 @@ export function calculateAccuracy(
             getPieceDescription(recreatedPiece, pieceNames)
           ),
         });
-        extraPieces++;
       }
     } else if (originalPiece !== '' && recreatedPiece === '') {
       // Missing piece
       totalPieces++;
+      missingPieces++;
       details.push({
         square,
         expected: originalPiece,
@@ -166,7 +169,7 @@ export function calculateAccuracy(
         description: descriptions.missing(getPieceDescription(originalPiece, pieceNames), square),
       });
     } else if (originalPiece === '' && recreatedPiece !== '') {
-      // Extra piece
+      // Extra piece (shouldn't be there)
       extraPieces++;
       details.push({
         square,
@@ -179,12 +182,14 @@ export function calculateAccuracy(
     // If both are empty, no action needed
   }
 
-  const netScore = correctPieces - extraPieces * 0.5;
+  const netScore = correctPieces - (incorrectPieces + extraPieces) * 0.5;
   const accuracy = totalPieces > 0 ? Math.max(0, (netScore / totalPieces) * 100) : 0;
 
   return {
     correctPieces,
     totalPieces,
+    incorrectPieces,
+    missingPieces,
     extraPieces,
     netScore,
     accuracy,

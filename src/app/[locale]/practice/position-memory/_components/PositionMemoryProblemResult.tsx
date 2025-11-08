@@ -43,22 +43,63 @@ export function PositionMemoryProblemResult({
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <SectionTitle className="text-2xl font-bold text-center mb-6">
-          {t('accuracy')}: {accuracy.accuracy.toFixed(1)}%
+          {t('accuracy')}: {accuracy.accuracy.toFixed(1)}% ({accuracy.correctPieces}/
+          {accuracy.totalPieces})
         </SectionTitle>
 
-        <div className="grid grid-cols-3 gap-4 text-center mb-6">
-          <div>
-            <p className="text-2xl font-bold text-green-600">{accuracy.correctPieces}</p>
-            <p className="text-sm text-muted-foreground">{t('correct')}</p>
+        {/* 元の配置の再現度プログレスバー */}
+        <div className="mb-6">
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            {t('recreationProgress')}
+          </p>
+          <div className="w-full h-8 bg-muted rounded-lg overflow-hidden flex">
+            <div
+              className="bg-green-600 flex items-center justify-center text-white text-sm font-semibold"
+              style={{ width: `${(accuracy.correctPieces / accuracy.totalPieces) * 100}%` }}
+            >
+              {accuracy.correctPieces > 0 && accuracy.correctPieces}
+            </div>
+            <div
+              className="bg-red-600 flex items-center justify-center text-white text-sm font-semibold"
+              style={{ width: `${(accuracy.incorrectPieces / accuracy.totalPieces) * 100}%` }}
+            >
+              {accuracy.incorrectPieces > 0 && accuracy.incorrectPieces}
+            </div>
+            <div
+              className="bg-muted-foreground/40 flex items-center justify-center text-white text-sm font-semibold"
+              style={{ width: `${(accuracy.missingPieces / accuracy.totalPieces) * 100}%` }}
+            >
+              {accuracy.missingPieces > 0 && accuracy.missingPieces}
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-red-600">{accuracy.extraPieces}</p>
-            <p className="text-sm text-muted-foreground">{t('extra')}</p>
+          <div className="flex justify-between mt-2 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-600 rounded"></div>
+              <span>
+                {t('correct')}: {accuracy.correctPieces}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-600 rounded"></div>
+              <span>
+                {t('incorrect')}: {accuracy.incorrectPieces}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-muted-foreground/40 rounded"></div>
+              <span>
+                {t('missing')}: {accuracy.missingPieces}
+              </span>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-foreground">{accuracy.netScore.toFixed(1)}</p>
-            <p className="text-sm text-muted-foreground">{t('score')}</p>
-          </div>
+
+          {/* 余分な駒の表示 - 控えめに */}
+          {accuracy.extraPieces > 0 && (
+            <p className="text-xs text-muted-foreground mt-3">
+              {t('extra')}: <span className="font-semibold">+{accuracy.extraPieces}</span> (
+              {t('extraDescription')})
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

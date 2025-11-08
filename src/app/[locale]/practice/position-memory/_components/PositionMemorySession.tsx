@@ -244,6 +244,9 @@ export function PositionMemorySession({
       problemResults.reduce((sum, r) => sum + r.accuracy, 0) / problemResults.length;
     const totalCorrect = problemResults.reduce((sum, r) => sum + r.correctPieces, 0);
     const totalPieces = problemResults.reduce((sum, r) => sum + r.totalPieces, 0);
+    const totalIncorrect = problemResults.reduce((sum, r) => sum + r.incorrectPieces, 0);
+    const totalMissing = problemResults.reduce((sum, r) => sum + r.missingPieces, 0);
+    const totalExtra = problemResults.reduce((sum, r) => sum + r.extraPieces, 0);
 
     return (
       <PracticeComplete
@@ -256,6 +259,19 @@ export function PositionMemorySession({
           score: `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`,
           tryAgain: tPractice('tryAgain'),
           morePractice: tPractice('morePractice'),
+          recreationProgress: t('recreationProgress'),
+          correct: t('correct'),
+          incorrect: t('incorrect'),
+          missing: t('missing'),
+          extra: t('extra'),
+          extraDescription: t('extraDescription'),
+        }}
+        detailedStats={{
+          correctPieces: totalCorrect,
+          totalPieces: totalPieces,
+          incorrectPieces: totalIncorrect,
+          missingPieces: totalMissing,
+          extraPieces: totalExtra,
         }}
       />
     );
