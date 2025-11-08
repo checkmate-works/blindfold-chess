@@ -15,9 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Add root URL without locale
   sitemap.push({
     url: BASE_URL,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 1.0,
   });
 
   // Static pages for each locale
@@ -43,9 +40,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const page of staticPages) {
       sitemap.push({
         url: `${BASE_URL}/${locale}${page}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: page === '' ? 1.0 : 0.8,
       });
     }
   }
@@ -57,9 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const article of articles) {
         sitemap.push({
           url: `${BASE_URL}/${locale}/learn/${article.slug}`,
-          lastModified: new Date(),
-          changeFrequency: 'monthly',
-          priority: 0.7,
         });
       }
     } catch (error) {
@@ -74,9 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       for (const section of sections) {
         sitemap.push({
           url: `${BASE_URL}/${locale}/manual/${section.slug}`,
-          lastModified: new Date(),
-          changeFrequency: 'monthly',
-          priority: 0.7,
         });
       }
     } catch (error) {
@@ -100,9 +88,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     uniqueLetters.forEach((letter) => {
       sitemap.push({
         url: `${BASE_URL}/${locale}/glossary/letter/${letter}`,
-        lastModified: new Date(),
-        changeFrequency: 'monthly',
-        priority: 0.6,
       });
     });
 
@@ -110,9 +95,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     uniqueCategories.forEach((category) => {
       sitemap.push({
         url: `${BASE_URL}/${locale}/glossary/category/${category}`,
-        lastModified: new Date(),
-        changeFrequency: 'monthly',
-        priority: 0.6,
       });
     });
   }
