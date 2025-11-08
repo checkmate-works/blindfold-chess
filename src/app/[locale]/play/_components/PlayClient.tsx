@@ -25,6 +25,7 @@ import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { MoveSelect } from './MoveSelect';
+import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
   locale: Locale;
@@ -38,8 +39,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   // Parse URL parameters
   const playerSide = (searchParams.get('color') as Side) || 'white';
-  const skillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
+  const initialSkillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
   const initialGameId = searchParams.get('gameId') || undefined;
+
+  // Skill level state (can be changed during game)
+  const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
 
   // Get initial moves from URL and validate them
   const urlMoves = searchParams.get('moves');
@@ -104,6 +108,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showControlSettingsModal, setShowControlSettingsModal] = useState(false);
+  const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const { preferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
@@ -464,6 +469,32 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     setShowResignConfirm(false);
   }, [markPlayerInteraction]);
 
+  // Handle skill level change
+  const handleSkillLevelChange = useCallback(
+    async (newSkillLevel: SkillLevel) => {
+      markPlayerInteraction(); // Mark interaction for skill level change
+      setSkillLevel(newSkillLevel);
+
+      // Update URL parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('skillLevel', newSkillLevel.toString());
+      router.replace(`?${params.toString()}`, { scroll: false });
+
+      // Update localStorage if game exists
+      if (gameId) {
+        const gameRepository = new LocalStorageGameRepository();
+        const savedGame = await gameRepository.load(gameId);
+        if (savedGame) {
+          await gameRepository.save({
+            ...savedGame,
+            skillLevel: newSkillLevel,
+          });
+        }
+      }
+    },
+    [markPlayerInteraction, searchParams, router, gameId]
+  );
+
   // Navigation functions for move history
   const navigateToPosition = useCallback(
     (position: number) => {
@@ -767,6 +798,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                     {t('configureInputMethod')}
                   </button>
                 </div>
+
+                {/* Skill Level Settings Link */}
+                <div className="mt-2 text-center">
+                  <button
+                    onClick={() => setShowSkillLevelSettingsModal(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    {t('configureSkillLevel')}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -968,6 +1009,14 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       <ControlSettingsModal
         isOpen={showControlSettingsModal}
         onClose={() => setShowControlSettingsModal(false)}
+      />
+
+      {/* Skill Level Settings Modal */}
+      <SkillLevelSettingsModal
+        isOpen={showSkillLevelSettingsModal}
+        onClose={() => setShowSkillLevelSettingsModal(false)}
+        currentSkillLevel={skillLevel}
+        onSkillLevelChange={handleSkillLevelChange}
       />
     </div>
   );
