@@ -3,14 +3,19 @@
 import { useEffect, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useToast } from '../_contexts/ToastContext';
 
 export function ToastContainer() {
   const { toasts, hideToast, showToast } = useToast();
   const t = useTranslations('home');
+  const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
+  const locale = params.locale as Locale;
   const processingToastRef = useRef(false);
 
   // Handle global notifications that need to be shown across page transitions
@@ -21,16 +26,18 @@ export function ToastContainer() {
 
       // Check for game limit error first (higher priority)
       const gameLimitReached = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-      if (gameLimitReached === 'true') {
-        processingToastRef.current = true;
-        sessionStorage.removeItem('blindfold_chess_game_limit_reached');
-        showToast(t('gameLimitReachedToast'), 'warning');
+      const hasPendingGame = sessionStorage.getItem('blindfold_chess_pending_game');
 
-        // Reset flag after a delay
+      if (gameLimitReached === 'true' && hasPendingGame) {
+        // Redirect to manage limit page instead of showing toast
+        processingToastRef.current = true;
+        router.push(`/${locale}/games/manage-limit`);
+
+        // Reset flag after redirect
         setTimeout(() => {
           processingToastRef.current = false;
         }, 1000);
-        return; // Don't show save toast if there's a limit error
+        return;
       }
 
       const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
@@ -49,7 +56,7 @@ export function ToastContainer() {
 
     // Check when pathname changes (navigation occurred)
     checkForToast();
-  }, [pathname, showToast, t]); // Re-run when pathname changes
+  }, [pathname, showToast, t, router, locale]); // Re-run when pathname changes
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">

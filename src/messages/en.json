@@ -367,7 +367,28 @@
     "deleteConfirm": "Delete",
     "cancel": "Cancel",
     "gameDeletedToast": "Game deleted successfully",
-    "deleteFailedToast": "Failed to delete game"
+    "deleteFailedToast": "Failed to delete game",
+    "manageLimit": {
+      "title": "Manage Games",
+      "explanation": "You've reached the game limit ({limit} games). To save this new game, please delete some existing games.",
+      "currentGames": "{count} games saved",
+      "selectGamesToDelete": "Select games to delete",
+      "gameNumber": "Game #{number}",
+      "statusWin": "Win",
+      "statusLoss": "Loss",
+      "statusDraw": "Draw",
+      "statusInProgress": "In Progress",
+      "playingWhite": "Playing White",
+      "playingBlack": "Playing Black",
+      "moves": "{count} moves",
+      "skillLevel": "Level {level}",
+      "lastPlayed": "Last played",
+      "selectedCount": "{count} games selected",
+      "deleteAndSave": "Delete Selected & Save",
+      "skipSave": "Don't Save",
+      "processing": "Processing...",
+      "errorSaving": "Failed to save. Please try again."
+    }
   },
   "play": {
     "title": "Play Chess",

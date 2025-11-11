@@ -367,7 +367,28 @@
     "deleteConfirm": "削除",
     "cancel": "キャンセル",
     "gameDeletedToast": "ゲームを削除しました",
-    "deleteFailedToast": "ゲームの削除に失敗しました"
+    "deleteFailedToast": "ゲームの削除に失敗しました",
+    "manageLimit": {
+      "title": "ゲームを管理",
+      "explanation": "ゲーム数が上限（{limit}個）に達しました。新しいゲームを保存するには、既存のゲームを削除する必要があります。",
+      "currentGames": "{count}個のゲームが保存されています",
+      "selectGamesToDelete": "削除するゲームを選択してください",
+      "gameNumber": "ゲーム #{number}",
+      "statusWin": "勝利",
+      "statusLoss": "敗北",
+      "statusDraw": "引き分け",
+      "statusInProgress": "対局中",
+      "playingWhite": "白番",
+      "playingBlack": "黒番",
+      "moves": "{count}手",
+      "skillLevel": "レベル {level}",
+      "lastPlayed": "最終プレイ",
+      "selectedCount": "{count}個のゲームを選択中",
+      "deleteAndSave": "選択したゲームを削除して保存",
+      "skipSave": "保存しない",
+      "processing": "処理中...",
+      "errorSaving": "保存に失敗しました。もう一度お試しください。"
+    }
   },
   "play": {
     "title": "チェス対戦",

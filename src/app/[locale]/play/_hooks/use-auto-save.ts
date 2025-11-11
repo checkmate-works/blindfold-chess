@@ -86,9 +86,17 @@ export function useAutoSave({
           sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
         } catch (error) {
           if (error instanceof GameLimitError) {
-            // Game limit reached - log warning but don't block the game
+            // Game limit reached - store pending game data for later
             console.warn('Game limit reached, cannot save game:', error.message);
-            // Set session storage flag to show notification later
+            sessionStorage.setItem(
+              'blindfold_chess_pending_game',
+              JSON.stringify({
+                moves: currentMovesRef.current,
+                playerColor,
+                skillLevel,
+                status: currentStatusRef.current,
+              })
+            );
             sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
           } else {
             console.error('Failed to save initial game state:', error);
@@ -153,9 +161,17 @@ export function useAutoSave({
         return savedGameId;
       } catch (error) {
         if (error instanceof GameLimitError) {
-          // Game limit reached - log warning but don't block the game
+          // Game limit reached - store pending game data for later
           console.warn('Game limit reached, cannot save game:', error.message);
-          // Set session storage flag to show notification later
+          sessionStorage.setItem(
+            'blindfold_chess_pending_game',
+            JSON.stringify({
+              moves,
+              playerColor,
+              skillLevel,
+              status,
+            })
+          );
           sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
         } else {
           console.error('Failed to auto-save game:', error);
