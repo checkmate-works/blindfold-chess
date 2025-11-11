@@ -2,11 +2,14 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 // Game preferences
 export type GamePreferences = {
   // Board appearance
   showCoordinates: boolean; // Show rank and file labels on the board
   highlightLastMove: boolean; // Highlight the last move on the board
+  boardTheme: BoardTheme; // Board color theme
   // Piece visibility
   showOwnPieces: boolean; // Show player's own pieces
   showOpponentPieces: boolean; // Show opponent's pieces
@@ -22,6 +25,7 @@ export type GamePreferences = {
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  boardTheme: 'default',
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',

@@ -46,29 +46,64 @@ export function GameSettingsContent({
           <h4 className="text-lg font-semibold text-foreground mb-4">
             {t('game.boardAppearance')}
           </h4>
-          <div className="space-y-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.showCoordinates}
-                onChange={(e) => onSettingsChange({ showCoordinates: e.target.checked })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {t('game.showCoordinates')}
-              </span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.highlightLastMove}
-                onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {t('game.highlightLastMove')}
-              </span>
-            </label>
+
+          {/* Board Theme */}
+          <div className="mb-6">
+            <h5 className="text-sm font-medium text-muted-foreground mb-3">
+              {t('game.boardTheme')}
+            </h5>
+            <div className="space-y-2">
+              {(['default', 'lichess', 'chesscom'] as const).map((theme) => (
+                <label key={theme} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="boardTheme"
+                    value={theme}
+                    checked={settings.boardTheme === theme}
+                    onChange={(e) =>
+                      onSettingsChange({
+                        boardTheme: e.target.value as typeof theme,
+                      })
+                    }
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {t(`game.boardThemes.${theme}`)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Board Display Options */}
+          <div>
+            <h5 className="text-sm font-medium text-muted-foreground mb-3">
+              {t('game.displayOptions')}
+            </h5>
+            <div className="space-y-3">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.showCoordinates}
+                  onChange={(e) => onSettingsChange({ showCoordinates: e.target.checked })}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {t('game.showCoordinates')}
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={settings.highlightLastMove}
+                  onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {t('game.highlightLastMove')}
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -220,6 +255,7 @@ export function GameSettingsContent({
                     showOpponentPieces={settings.showOpponentPieces}
                     pieceShapeMode={settings.pieceShapeMode}
                     pieceColors={settings.pieceColors}
+                    boardTheme={settings.boardTheme}
                     className="w-full h-full"
                   />
                 </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
@@ -19,6 +20,7 @@ type Props = {
 
 export default function AlgebraicNotation({ questions, locale }: Props) {
   const tPractice = useTranslations('practice');
+  const { preferences } = useGamePreferences();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
@@ -84,6 +86,7 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
           currentQuestionIndex={currentQuestionIndex}
           selectedAnswer={selectedAnswer}
           showResult={showResult}
+          boardTheme={preferences.boardTheme}
           onOptionSelect={handleOptionSelect}
           locale={locale}
         />

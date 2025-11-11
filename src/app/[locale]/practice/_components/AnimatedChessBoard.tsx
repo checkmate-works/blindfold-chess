@@ -5,6 +5,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol } from 'chess.js';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
 type AnimatingPiece = {
   type: PieceSymbol;
   color: Color;
@@ -21,6 +24,7 @@ type Props = {
   className?: string;
   autoPlay?: boolean;
   flipped?: boolean;
+  boardTheme?: BoardTheme;
 };
 
 export function AnimatedChessBoard({
@@ -31,6 +35,7 @@ export function AnimatedChessBoard({
   className = '',
   autoPlay = false,
   flipped = false,
+  boardTheme = 'default',
 }: Props) {
   const [currentFen, setCurrentFen] = useState(initialFen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -39,6 +44,7 @@ export function AnimatedChessBoard({
   const [hiddenSquare, setHiddenSquare] = useState<string | null>(null);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const boardRef = useRef<HTMLDivElement>(null);
+  const themeColors = getBoardThemeColors(boardTheme);
 
   // Reset state when initialFen or move changes (new exercise)
   useEffect(() => {
@@ -335,6 +341,7 @@ export function AnimatedChessBoard({
                       showCoordinates={showCoordinates}
                       showRankCoordinate={fileIndex === 0}
                       showFileCoordinate={rankIndex === ranks.length - 1}
+                      themeColors={themeColors}
                     >
                       {piece && renderPiece(piece)}
                     </Square>

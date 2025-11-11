@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
@@ -33,6 +34,7 @@ export function PositionMemorySession({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const tPractice = useTranslations('practice');
+  const { preferences } = useGamePreferences();
 
   // Helper function to get score description
   const getScoreDescription = useCallback(
@@ -170,6 +172,7 @@ export function PositionMemorySession({
           memorizeTimeLeft={memorizeTimeLeft}
           currentProblemIndex={currentProblemIndex}
           problemCount={positions.length}
+          boardTheme={preferences.boardTheme}
           onMemorized={handleMemorized}
           onQuit={handleQuitClick}
         />
@@ -214,6 +217,7 @@ export function PositionMemorySession({
         recreatedPosition={recreatedPosition}
         currentProblemIndex={currentProblemIndex}
         totalProblems={positions.length}
+        boardTheme={preferences.boardTheme}
         onNextProblem={handleNextProblem}
         onViewResults={() => setPhase('result')}
       />

@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
@@ -13,6 +15,7 @@ type Props = {
   currentQuestionIndex: number;
   selectedAnswer: string;
   showResult: boolean;
+  boardTheme?: BoardTheme;
   onOptionSelect: (option: string) => void;
   locale: Locale;
 };
@@ -22,6 +25,7 @@ export function AlgebraicNotationPlaying({
   currentQuestionIndex,
   selectedAnswer,
   showResult,
+  boardTheme = 'default',
   onOptionSelect,
   locale,
 }: Props) {
@@ -42,6 +46,7 @@ export function AlgebraicNotationPlaying({
             move={question.move}
             showCoordinates={true}
             animationDuration={800}
+            boardTheme={boardTheme}
             className="w-full"
           />
         </div>

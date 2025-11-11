@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
 import type { Side } from '@/lib/types';
 
 type BoardPiece = {
@@ -25,6 +27,7 @@ type Props = {
   showOpponentPieces?: boolean;
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
+  boardTheme?: BoardTheme;
   className?: string;
 };
 
@@ -40,9 +43,11 @@ export function ChessBoard({
   showOpponentPieces = true,
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
+  boardTheme = 'default',
   className = '',
 }: Props) {
   const [board, setBoard] = useState<BoardPiece[][]>([]);
+  const themeColors = getBoardThemeColors(boardTheme);
 
   useEffect(() => {
     try {
@@ -155,6 +160,7 @@ export function ChessBoard({
                   showFileCoordinate={rankIndex === 7}
                   onClick={onSquareClick ? () => onSquareClick(square) : undefined}
                   highlightType={isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none'}
+                  themeColors={themeColors}
                 >
                   {renderPiece(piece)}
                 </Square>

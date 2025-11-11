@@ -47,6 +47,13 @@
       "title": "ボード設定",
       "description": "目隠しチェスのボード設定をカスタマイズ",
       "boardAppearance": "盤面の表示",
+      "boardTheme": "ボードテーマ",
+      "boardThemes": {
+        "default": "デフォルト",
+        "lichess": "Lichess風",
+        "chesscom": "Chess.com風"
+      },
+      "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
       "pieceVisibility": "駒の表示",

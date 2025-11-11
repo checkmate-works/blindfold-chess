@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
@@ -17,6 +19,7 @@ type Props = {
   recreatedPosition: string;
   currentProblemIndex: number;
   totalProblems: number;
+  boardTheme?: BoardTheme;
   onNextProblem: () => void;
   onViewResults: () => void;
 };
@@ -27,6 +30,7 @@ export function PositionMemoryProblemResult({
   recreatedPosition,
   currentProblemIndex,
   totalProblems,
+  boardTheme = 'default',
   onNextProblem,
   onViewResults,
 }: Props) {
@@ -110,6 +114,7 @@ export function PositionMemoryProblemResult({
                 initialFen={originalPosition.fen}
                 showCoordinates={false}
                 flipped={originalPosition.isBlackToMove}
+                boardTheme={boardTheme}
               />
             </div>
           </div>

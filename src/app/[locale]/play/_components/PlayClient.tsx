@@ -667,6 +667,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   showOpponentPieces={preferences.showOpponentPieces}
                   pieceShapeMode={preferences.pieceShapeMode}
                   pieceColors={preferences.pieceColors}
+                  boardTheme={preferences.boardTheme}
                   className="max-w-2xl mx-auto"
                 />
 

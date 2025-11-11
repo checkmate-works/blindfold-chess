@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
@@ -13,6 +15,7 @@ type Props = {
   memorizeTimeLeft: number;
   currentProblemIndex: number;
   problemCount: number;
+  boardTheme?: BoardTheme;
   onMemorized: () => void;
   onQuit: () => void;
 };
@@ -22,6 +25,7 @@ export function PositionMemoryMemorize({
   memorizeTimeLeft,
   currentProblemIndex,
   problemCount,
+  boardTheme = 'default',
   onMemorized,
   onQuit,
 }: Props) {
@@ -44,6 +48,7 @@ export function PositionMemoryMemorize({
             initialFen={position.fen}
             showCoordinates={true}
             flipped={position.isBlackToMove}
+            boardTheme={boardTheme}
           />
         </div>
       </div>

@@ -47,6 +47,13 @@
       "title": "Board Settings",
       "description": "Configure your blindfold chess board preferences",
       "boardAppearance": "Board Appearance",
+      "boardTheme": "Board Theme",
+      "boardThemes": {
+        "default": "Default",
+        "lichess": "Lichess-style",
+        "chesscom": "Chess.com-style"
+      },
+      "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
       "pieceVisibility": "Piece Visibility",

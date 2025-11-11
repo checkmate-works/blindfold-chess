@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import type { BoardThemeColors } from '@/lib/boardThemes';
+
 type Props = {
   // Position
   file: string;
@@ -22,6 +24,9 @@ type Props = {
 
   // Layout
   layoutMode?: 'flex' | 'grid';
+
+  // Theme
+  themeColors?: BoardThemeColors;
 };
 
 export function Square({
@@ -35,10 +40,18 @@ export function Square({
   onClick,
   highlightType = 'none',
   layoutMode = 'flex',
+  themeColors,
 }: Props) {
-  const squareColorClass = isLight
-    ? 'bg-stone-200 dark:bg-stone-300'
-    : 'bg-stone-600 dark:bg-stone-700';
+  // Use default colors if themeColors not provided
+  const defaultColors = {
+    light: 'bg-stone-200 dark:bg-stone-300',
+    dark: 'bg-stone-600 dark:bg-stone-700',
+    lightCoordinates: 'text-stone-700 dark:text-stone-800',
+    darkCoordinates: 'text-stone-300 dark:text-stone-200',
+  };
+  const colors = themeColors || defaultColors;
+
+  const squareColorClass = isLight ? colors.light : colors.dark;
 
   const highlightClass =
     highlightType === 'last-move'
@@ -47,9 +60,7 @@ export function Square({
         ? 'ring-2 ring-green-400 ring-inset'
         : '';
 
-  const coordinateColorClass = isLight
-    ? 'text-stone-700 dark:text-stone-800'
-    : 'text-stone-300 dark:text-stone-200';
+  const coordinateColorClass = isLight ? colors.lightCoordinates : colors.darkCoordinates;
 
   const sizeClass = layoutMode === 'grid' ? 'aspect-square' : 'w-[12.5%] h-full';
 
