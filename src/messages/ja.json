@@ -361,6 +361,7 @@
     "createdAsc": "作成日時 ↑",
     "newGame": "新しいゲーム",
     "gameSavedToast": "ゲームを保存しました",
+    "gameLimitReachedToast": "ゲーム数が上限に達したため保存できませんでした。ゲーム一覧から不要なゲームを削除してください。",
     "deleteGameTitle": "ゲームを削除",
     "deleteGameMessage": "このゲームを削除してもよろしいですか？この操作は取り消せません。",
     "deleteConfirm": "削除",

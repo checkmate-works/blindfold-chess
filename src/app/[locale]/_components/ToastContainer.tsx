@@ -19,6 +19,20 @@ export function ToastContainer() {
       // Prevent duplicate processing
       if (processingToastRef.current) return;
 
+      // Check for game limit error first (higher priority)
+      const gameLimitReached = sessionStorage.getItem('blindfold_chess_game_limit_reached');
+      if (gameLimitReached === 'true') {
+        processingToastRef.current = true;
+        sessionStorage.removeItem('blindfold_chess_game_limit_reached');
+        showToast(t('gameLimitReachedToast'), 'warning');
+
+        // Reset flag after a delay
+        setTimeout(() => {
+          processingToastRef.current = false;
+        }, 1000);
+        return; // Don't show save toast if there's a limit error
+      }
+
       const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
 
       if (shouldShowSaveToast === 'true') {
@@ -35,7 +49,7 @@ export function ToastContainer() {
 
     // Check when pathname changes (navigation occurred)
     checkForToast();
-  }, [pathname, showToast]); // Re-run when pathname changes
+  }, [pathname, showToast, t]); // Re-run when pathname changes
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">

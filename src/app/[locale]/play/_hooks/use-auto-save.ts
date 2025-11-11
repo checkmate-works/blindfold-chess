@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 import { STORAGE_KEYS } from '@/config';
 
+import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameStatus } from '@/lib/types';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
@@ -84,7 +85,14 @@ export function useAutoSave({
           // Set session storage flag for cross-component updates
           sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
         } catch (error) {
-          console.error('Failed to save initial game state:', error);
+          if (error instanceof GameLimitError) {
+            // Game limit reached - log warning but don't block the game
+            console.warn('Game limit reached, cannot save game:', error.message);
+            // Set session storage flag to show notification later
+            sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
+          } else {
+            console.error('Failed to save initial game state:', error);
+          }
           hasInitialSaveExecuted.current = false; // Reset flag on error
         }
       };
@@ -144,7 +152,14 @@ export function useAutoSave({
 
         return savedGameId;
       } catch (error) {
-        console.error('Failed to auto-save game:', error);
+        if (error instanceof GameLimitError) {
+          // Game limit reached - log warning but don't block the game
+          console.warn('Game limit reached, cannot save game:', error.message);
+          // Set session storage flag to show notification later
+          sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
+        } else {
+          console.error('Failed to auto-save game:', error);
+        }
       }
     },
     [enabled, gameRepository, moves, playerColor, skillLevel, status, saveOnInit]
@@ -191,16 +206,20 @@ export function useAutoSave({
       currentStatusRef.current === 'loss' ||
       currentStatusRef.current === 'draw';
 
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = async () => {
       if (document.hidden && currentMovesRef.current.length > 0 && !isGameFinished) {
-        // Set flag to indicate game was saved
-        if (hasSavedInSession.current || hasPendingChanges.current) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
-        }
-
         // Save if there are pending changes
         if (hasPendingChanges.current) {
-          saveGame(false);
+          await saveGame(false);
+        }
+
+        // Set flag to indicate game was saved (only if no game limit error occurred)
+        const hasGameLimitError = sessionStorage.getItem('blindfold_chess_game_limit_reached');
+        if (
+          (hasSavedInSession.current || hasPendingChanges.current) &&
+          hasGameLimitError !== 'true'
+        ) {
+          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
         }
       }
     };
@@ -213,13 +232,18 @@ export function useAutoSave({
 
       // Show notification when navigating away if we've saved in this session
       if (currentMovesRef.current.length > 0 && !isGameFinished) {
-        if (hasSavedInSession.current || hasPendingChanges.current) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
-        }
-
-        // Save if there are pending changes
+        // Save if there are pending changes (synchronous during unmount)
         if (hasPendingChanges.current) {
           saveGame(false);
+        }
+
+        // Set flag to indicate game was saved (only if no game limit error occurred)
+        const hasGameLimitError = sessionStorage.getItem('blindfold_chess_game_limit_reached');
+        if (
+          (hasSavedInSession.current || hasPendingChanges.current) &&
+          hasGameLimitError !== 'true'
+        ) {
+          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
         }
       }
     };

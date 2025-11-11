@@ -1,3 +1,6 @@
+import { MAX_GAMES } from '@/config';
+
+import { GameLimitError } from '@/lib/errors';
 import type { AlgebraicNotation } from '@/lib/types';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
@@ -29,16 +32,28 @@ export class LocalStorageGameRepository implements IGameRepository {
           games[index] = { ...game, id, date: games[index].date, lastPlayed: now };
         } else {
           // ID provided but game doesn't exist, create new
+          // Check game limit before creating new game
+          if (games.length >= MAX_GAMES) {
+            throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
+          }
           games.push({ ...game, id: gameId, date: now, lastPlayed: now });
         }
       } else {
         // Create new game
+        // Check game limit before creating new game
+        if (games.length >= MAX_GAMES) {
+          throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
+        }
         games.push({ ...game, id: gameId, date: now, lastPlayed: now });
       }
 
       this.saveToStorage(games);
       return gameId;
     } catch (error) {
+      // Re-throw GameLimitError as-is
+      if (error instanceof GameLimitError) {
+        throw error;
+      }
       console.error('Failed to save game:', error);
       throw new Error('Failed to save game');
     }
