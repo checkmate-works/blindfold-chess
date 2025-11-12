@@ -165,7 +165,7 @@ export function GameSelector({ games, onDeleteAndSave, onSkipSave, isProcessing 
         <button
           onClick={onSkipSave}
           disabled={isProcessing}
-          className="sm:w-auto px-6 py-3 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="sm:w-auto px-6 py-3 bg-white dark:bg-white text-black border border-border rounded-md hover:bg-gray-100 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           {t('skipSave')}
         </button>
