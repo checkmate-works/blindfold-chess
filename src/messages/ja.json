@@ -438,7 +438,11 @@
     "hideBoard": "ボードを隠す",
     "copyPgn": "棋譜をコピー",
     "copied": "コピー済み！",
-    "aiPlayed": "AIが{move}を指しました"
+    "aiPlayed": "AIが{move}を指しました",
+    "restartFromHere": "ここからやり直す",
+    "confirmRestartTitle": "ここからやり直しますか？",
+    "confirmRestartMessage": "選択した手以降の棋譜が削除されます。この操作は取り消せません。",
+    "confirmRestart": "やり直す"
   },
   "playError": {
     "title": "ゲームの復旧",

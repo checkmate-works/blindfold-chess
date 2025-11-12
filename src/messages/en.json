@@ -438,7 +438,11 @@
     "hideBoard": "Hide Board",
     "copyPgn": "Copy PGN",
     "copied": "Copied!",
-    "aiPlayed": "AI played {move}"
+    "aiPlayed": "AI played {move}",
+    "restartFromHere": "Restart from here",
+    "confirmRestartTitle": "Restart from this position?",
+    "confirmRestartMessage": "All moves after the selected move will be deleted. This action cannot be undone.",
+    "confirmRestart": "Restart"
   },
   "playError": {
     "title": "Game Recovery",

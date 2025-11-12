@@ -126,6 +126,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isMovesVisible, setIsMovesVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
+  const [restartPosition, setRestartPosition] = useState<number | null>(null);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -455,6 +457,34 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
     setShowUndoConfirm(false);
   }, [removeMoves, moves, getLastMoveDetails, markPlayerInteraction]);
+
+  // Handle restart from position
+  const handleRestartFromPosition = useCallback((position: number) => {
+    setRestartPosition(position);
+    setShowRestartConfirm(true);
+  }, []);
+
+  const confirmRestart = useCallback(() => {
+    if (restartPosition === null) return;
+
+    markPlayerInteraction(); // Mark interaction for restart
+    // Remove all moves after the selected position
+    const movesToRemove = moves.length - restartPosition - 1;
+    if (movesToRemove > 0) {
+      removeMoves(movesToRemove);
+    }
+
+    // Update last move
+    const newMoves = moves.slice(0, restartPosition + 1);
+    setLastMove(getLastMoveDetails(newMoves));
+
+    // Reset to latest position after restart
+    setCurrentPosition(-1);
+    setDisplayFen(null);
+
+    setShowRestartConfirm(false);
+    setRestartPosition(null);
+  }, [restartPosition, moves, removeMoves, getLastMoveDetails, markPlayerInteraction]);
 
   // Handle resign
   const handleResign = useCallback(() => {
@@ -851,7 +881,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             <div
               className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'} rounded-b-lg`}
             >
-              <div className="p-4 max-h-96 overflow-y-auto font-mono">
+              <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
                 {formattedPgn.length > 0 ? (
                   <div className="space-y-0.5">
                     {formattedPgn.map((move, index) => {
@@ -908,6 +938,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       }
                       isNextDisabled={currentPosition === -1}
                     />
+                  </div>
+                )}
+
+                {/* Restart from here button */}
+                {currentPosition !== -1 && currentPosition !== -2 && (
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={() => handleRestartFromPosition(currentPosition)}
+                      className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors duration-150 text-sm"
+                    >
+                      {t('restartFromHere')}
+                    </button>
                   </div>
                 )}
 
@@ -995,6 +1037,33 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
               >
                 {t('confirmUndo')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Restart Confirmation Modal */}
+      {showRestartConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">{t('confirmRestartTitle')}</h3>
+            <p className="text-muted-foreground mb-6">{t('confirmRestartMessage')}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowRestartConfirm(false);
+                  setRestartPosition(null);
+                }}
+                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={confirmRestart}
+                className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
+              >
+                {t('confirmRestart')}
               </button>
             </div>
           </div>
