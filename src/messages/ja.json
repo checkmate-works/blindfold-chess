@@ -352,7 +352,8 @@
       "win": "勝利",
       "loss": "敗北",
       "draw": "引き分け",
-      "inProgress": "進行中"
+      "inProgress": "進行中",
+      "bulkDelete": "一括削除"
     },
     "sortBy": "並び替え",
     "lastPlayedDesc": "最終プレイ ↓",
@@ -367,6 +368,7 @@
     "deleteConfirm": "削除",
     "cancel": "キャンセル",
     "gameDeletedToast": "ゲームを削除しました",
+    "gamesDeletedToast": "{count}個のゲームを削除しました",
     "deleteFailedToast": "ゲームの削除に失敗しました",
     "manageLimit": {
       "title": "ゲームを管理",
@@ -388,6 +390,16 @@
       "skipSave": "保存しない",
       "processing": "処理中...",
       "errorSaving": "保存に失敗しました。もう一度お試しください。"
+    },
+    "bulkDelete": {
+      "title": "ゲームを整理",
+      "explanation": "不要なゲームを選択して一括削除できます。",
+      "noGames": "削除できるゲームがありません",
+      "selectedCount": "{count}個のゲームを選択中",
+      "delete": "削除",
+      "cancel": "キャンセル",
+      "processing": "処理中...",
+      "errorDeleting": "削除に失敗しました。もう一度お試しください。"
     }
   },
   "play": {

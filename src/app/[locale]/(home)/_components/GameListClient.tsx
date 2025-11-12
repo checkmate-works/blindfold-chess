@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import { STORAGE_KEYS } from '@/config';
 
@@ -79,7 +80,17 @@ export function GameListClient({ locale }: Props) {
       ) : games.length === 0 ? (
         <EmptyGameList />
       ) : (
-        <GameList games={games} locale={locale} onDeleteGame={handleDeleteGame} />
+        <>
+          <GameList games={games} locale={locale} onDeleteGame={handleDeleteGame} />
+          <div className="mt-4 text-right">
+            <Link
+              href={`/${locale}/games/bulk-delete`}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              {tGameList('bulkDelete')}
+            </Link>
+          </div>
+        </>
       )}
 
       <ConfirmationModal

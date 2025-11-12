@@ -29,9 +29,9 @@ export function ToastContainer() {
       const hasPendingGame = sessionStorage.getItem('blindfold_chess_pending_game');
 
       if (gameLimitReached === 'true' && hasPendingGame) {
-        // Redirect to manage limit page instead of showing toast
+        // Redirect to limit-reached page instead of showing toast
         processingToastRef.current = true;
-        router.push(`/${locale}/games/manage-limit`);
+        router.push(`/${locale}/games/limit-reached`);
 
         // Reset flag after redirect
         setTimeout(() => {
@@ -41,11 +41,25 @@ export function ToastContainer() {
       }
 
       const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
+      const shouldShowDeleteToast = sessionStorage.getItem('blindfold_chess_show_delete_toast');
 
       if (shouldShowSaveToast === 'true') {
         processingToastRef.current = true;
         sessionStorage.removeItem('blindfold_chess_show_save_toast');
         showToast(t('gameSavedToast'), 'success');
+
+        // Reset flag after a delay
+        setTimeout(() => {
+          processingToastRef.current = false;
+        }, 1000);
+      } else if (shouldShowDeleteToast === 'true') {
+        processingToastRef.current = true;
+        const deletedCount = sessionStorage.getItem('blindfold_chess_deleted_count');
+        sessionStorage.removeItem('blindfold_chess_show_delete_toast');
+        sessionStorage.removeItem('blindfold_chess_deleted_count');
+
+        const count = deletedCount ? parseInt(deletedCount, 10) : 1;
+        showToast(t('gamesDeletedToast', { count }), 'success');
 
         // Reset flag after a delay
         setTimeout(() => {

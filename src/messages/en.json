@@ -352,7 +352,8 @@
       "win": "Win",
       "loss": "Loss",
       "draw": "Draw",
-      "inProgress": "In Progress"
+      "inProgress": "In Progress",
+      "bulkDelete": "Bulk Delete"
     },
     "sortBy": "Sort by",
     "lastPlayedDesc": "Last played ↓",
@@ -367,6 +368,7 @@
     "deleteConfirm": "Delete",
     "cancel": "Cancel",
     "gameDeletedToast": "Game deleted successfully",
+    "gamesDeletedToast": "{count} games deleted successfully",
     "deleteFailedToast": "Failed to delete game",
     "manageLimit": {
       "title": "Manage Games",
@@ -388,6 +390,16 @@
       "skipSave": "Don't Save",
       "processing": "Processing...",
       "errorSaving": "Failed to save. Please try again."
+    },
+    "bulkDelete": {
+      "title": "Organize Games",
+      "explanation": "Select and delete unwanted games in bulk.",
+      "noGames": "No games to delete",
+      "selectedCount": "{count} games selected",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "processing": "Processing...",
+      "errorDeleting": "Failed to delete. Please try again."
     }
   },
   "play": {
