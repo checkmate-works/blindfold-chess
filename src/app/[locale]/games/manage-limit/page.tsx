@@ -76,7 +76,7 @@ export default function ManageLimitPage() {
       }
 
       // Save pending game
-      await gameRepository.save({
+      await gameRepository.create({
         moves: pendingGame.moves,
         playerColor: pendingGame.playerColor,
         skillLevel: pendingGame.skillLevel,

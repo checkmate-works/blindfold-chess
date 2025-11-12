@@ -5,6 +5,8 @@ import type { AlgebraicNotation } from '@/lib/types';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
 interface IGameRepository {
+  create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string>;
+  update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void>;
   save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string>;
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
@@ -19,36 +21,79 @@ interface IGameRepository {
 export class LocalStorageGameRepository implements IGameRepository {
   private readonly storageKey = 'blindfold_chess_games';
 
-  async save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string> {
+  async create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string> {
     try {
       const games = await this.loadAll();
-      const gameId = id || crypto.randomUUID();
+
+      // Check game limit before creating new game
+      if (games.length >= MAX_GAMES) {
+        throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
+      }
+
+      const gameId = crypto.randomUUID();
       const now = new Date().toISOString();
 
+      games.push({ ...game, id: gameId, date: now, lastPlayed: now });
+      this.saveToStorage(games);
+
+      return gameId;
+    } catch (error) {
+      // Re-throw GameLimitError as-is
+      if (error instanceof GameLimitError) {
+        throw error;
+      }
+      console.error('Failed to create game:', error);
+      throw new Error('Failed to create game');
+    }
+  }
+
+  async update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void> {
+    try {
+      const games = await this.loadAll();
+      const index = games.findIndex((g) => g.id === id);
+
+      if (index === -1) {
+        throw new Error(`Game with ID ${id} not found`);
+      }
+
+      const now = new Date().toISOString();
+      games[index] = { ...game, id, date: games[index].date, lastPlayed: now };
+
+      this.saveToStorage(games);
+    } catch (error) {
+      console.error('Failed to update game:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * @deprecated Use create() for new games or update() for existing games instead.
+   * This method is kept for backward compatibility.
+   */
+  async save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string> {
+    try {
       if (id) {
-        // Update existing game
-        const index = games.findIndex((g) => g.id === id);
-        if (index !== -1) {
-          games[index] = { ...game, id, date: games[index].date, lastPlayed: now };
+        // Try to update existing game
+        const existingGame = await this.load(id);
+        if (existingGame) {
+          await this.update(id, game);
+          return id;
         } else {
-          // ID provided but game doesn't exist, create new
-          // Check game limit before creating new game
+          // ID provided but game doesn't exist, create new with same ID attempt
+          // This is legacy behavior - in new code, this should throw an error
+          const games = await this.loadAll();
           if (games.length >= MAX_GAMES) {
             throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
           }
-          games.push({ ...game, id: gameId, date: now, lastPlayed: now });
+          const now = new Date().toISOString();
+          games.push({ ...game, id, date: now, lastPlayed: now });
+          this.saveToStorage(games);
+          return id;
         }
       } else {
         // Create new game
-        // Check game limit before creating new game
-        if (games.length >= MAX_GAMES) {
-          throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
-        }
-        games.push({ ...game, id: gameId, date: now, lastPlayed: now });
+        return await this.create(game);
       }
-
-      this.saveToStorage(games);
-      return gameId;
     } catch (error) {
       // Re-throw GameLimitError as-is
       if (error instanceof GameLimitError) {
@@ -140,15 +185,12 @@ export class LocalStorageGameRepository implements IGameRepository {
       }
 
       const updatedMoves = [...game.moves, move];
-      await this.save(
-        {
-          moves: updatedMoves,
-          playerColor: game.playerColor,
-          skillLevel: game.skillLevel,
-          status: game.status,
-        },
-        gameId
-      );
+      await this.update(gameId, {
+        moves: updatedMoves,
+        playerColor: game.playerColor,
+        skillLevel: game.skillLevel,
+        status: game.status,
+      });
     } catch (error) {
       console.error('Failed to save move:', error);
       throw new Error('Failed to save move');

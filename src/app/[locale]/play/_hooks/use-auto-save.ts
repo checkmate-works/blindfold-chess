@@ -130,18 +130,30 @@ export function useAutoSave({
       }
 
       try {
-        const savedGameId = await gameRepository.save(
-          {
-            moves,
-            playerColor,
-            skillLevel,
-            status,
-          },
-          gameIdRef.current
-        );
+        const gameData = {
+          moves,
+          playerColor,
+          skillLevel,
+          status,
+        };
 
-        // Update game ID if it was newly created
-        if (!gameIdRef.current) {
+        let savedGameId: string;
+
+        if (gameIdRef.current) {
+          // Check if game actually exists before updating
+          const existingGame = await gameRepository.load(gameIdRef.current);
+          if (existingGame) {
+            // Update existing game
+            await gameRepository.update(gameIdRef.current, gameData);
+            savedGameId = gameIdRef.current;
+          } else {
+            // Game ID provided but doesn't exist - create new game
+            savedGameId = await gameRepository.create(gameData);
+            gameIdRef.current = savedGameId;
+          }
+        } else {
+          // Create new game
+          savedGameId = await gameRepository.create(gameData);
           gameIdRef.current = savedGameId;
         }
 

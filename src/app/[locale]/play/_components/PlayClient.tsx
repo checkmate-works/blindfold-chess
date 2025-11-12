@@ -485,9 +485,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(gameId);
         if (savedGame) {
-          await gameRepository.save({
-            ...savedGame,
+          await gameRepository.update(gameId, {
+            moves: savedGame.moves,
+            playerColor: savedGame.playerColor,
             skillLevel: newSkillLevel,
+            status: savedGame.status,
           });
         }
       }

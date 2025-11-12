@@ -47,14 +47,18 @@ export default function PlayErrorPage() {
       const gameRepository = new LocalStorageGameRepository();
       const savedGame = await gameRepository.load(gameId);
       if (savedGame) {
-        savedGame.moves = validMoves;
-        await gameRepository.save(savedGame);
+        await gameRepository.update(gameId, {
+          moves: validMoves,
+          playerColor: savedGame.playerColor,
+          skillLevel: savedGame.skillLevel,
+          status: savedGame.status,
+        });
       }
     } else {
       // No gameId, save the game with valid moves and get new gameId
       if (validMoves.length > 0) {
         const gameRepository = new LocalStorageGameRepository();
-        const newGameId = await gameRepository.save({
+        const newGameId = await gameRepository.create({
           moves: validMoves,
           playerColor: color as Side,
           skillLevel: parseInt(skillLevel) as SkillLevel,
