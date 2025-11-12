@@ -486,6 +486,23 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     setRestartPosition(null);
   }, [restartPosition, moves, removeMoves, getLastMoveDetails, markPlayerInteraction]);
 
+  // Handle new game from position
+  const handleNewGameFromPosition = useCallback(
+    (position: number) => {
+      // Get moves up to the selected position
+      const movesToKeep = moves.slice(0, position + 1);
+
+      // Navigate to new game page with moves and current settings
+      const params = new URLSearchParams();
+      params.set('moves', JSON.stringify(movesToKeep));
+      params.set('color', playerSide);
+      params.set('skillLevel', skillLevel.toString());
+
+      router.push(`/${locale}/game/new?${params.toString()}`);
+    },
+    [moves, playerSide, skillLevel, locale, router]
+  );
+
   // Handle resign
   const handleResign = useCallback(() => {
     setShowResignConfirm(true);
@@ -943,12 +960,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
                 {/* Restart from here button */}
                 {currentPosition !== -1 && currentPosition !== -2 && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-4 flex flex-col gap-2">
                     <button
                       onClick={() => handleRestartFromPosition(currentPosition)}
                       className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors duration-150 text-sm"
                     >
                       {t('restartFromHere')}
+                    </button>
+                    <button
+                      onClick={() => handleNewGameFromPosition(currentPosition)}
+                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 text-sm"
+                    >
+                      {t('newGameFromHere')}
                     </button>
                   </div>
                 )}

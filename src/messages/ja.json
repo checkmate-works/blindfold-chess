@@ -442,7 +442,8 @@
     "restartFromHere": "ここからやり直す",
     "confirmRestartTitle": "ここからやり直しますか？",
     "confirmRestartMessage": "選択した手以降の棋譜が削除されます。この操作は取り消せません。",
-    "confirmRestart": "やり直す"
+    "confirmRestart": "やり直す",
+    "newGameFromHere": "ここから新規対局"
   },
   "playError": {
     "title": "ゲームの復旧",

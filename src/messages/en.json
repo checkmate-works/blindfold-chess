@@ -442,7 +442,8 @@
     "restartFromHere": "Restart from here",
     "confirmRestartTitle": "Restart from this position?",
     "confirmRestartMessage": "All moves after the selected move will be deleted. This action cannot be undone.",
-    "confirmRestart": "Restart"
+    "confirmRestart": "Restart",
+    "newGameFromHere": "New game from here"
   },
   "playError": {
     "title": "Game Recovery",

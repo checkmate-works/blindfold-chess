@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Chess } from 'chess.js';
 
-import type { Side, SkillLevel } from '@/lib/types';
+import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
 import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -27,14 +27,63 @@ type Props = {
 export function NewGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [startMethod, setStartMethod] = useState<StartMethod>('new');
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
+
+  // Initialize from URL parameters
+  useEffect(() => {
+    const urlMoves = searchParams.get('moves');
+    const urlColor = searchParams.get('color') as Side | null;
+    const urlSkillLevel = searchParams.get('skillLevel');
+
+    if (urlMoves) {
+      try {
+        const movesArray = JSON.parse(urlMoves) as AlgebraicNotation[];
+        if (movesArray.length > 0) {
+          // Convert moves array to PGN format (moves only, without headers)
+          const pgnParts: string[] = [];
+          for (let i = 0; i < movesArray.length; i += 2) {
+            const moveNumber = Math.floor(i / 2) + 1;
+            const whiteMove = movesArray[i];
+            const blackMove = movesArray[i + 1];
+            if (blackMove) {
+              pgnParts.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
+            } else {
+              pgnParts.push(`${moveNumber}. ${whiteMove}`);
+            }
+          }
+          const pgnText = pgnParts.join(' ');
+          setPgn(pgnText);
+          setStartMethod('pgn');
+        }
+      } catch (error) {
+        console.error('Failed to parse moves from URL:', error);
+      }
+    }
+
+    if (urlColor) {
+      setColor(urlColor);
+      setColorLockedFromUrl(true); // Lock color from URL to prevent auto-derivation
+    }
+
+    if (urlSkillLevel) {
+      const level = parseInt(urlSkillLevel);
+      if (level >= 1 && level <= 20) {
+        setSkillLevel(level as SkillLevel);
+      }
+    }
+  }, [searchParams]);
 
   // Auto-derive color from PGN when PGN method is selected
+  // Skip auto-derivation if color was set from URL
   useEffect(() => {
+    if (colorLockedFromUrl) return; // Don't auto-derive if color came from URL
+
     if (startMethod === 'pgn' && pgn.trim() && validatePgn(pgn)) {
       try {
         const chess = new Chess();
@@ -53,7 +102,7 @@ export function NewGameForm({ locale }: Props) {
         // If PGN parsing fails, keep current color selection
       }
     }
-  }, [startMethod, pgn]);
+  }, [startMethod, pgn, colorLockedFromUrl]);
 
   const handlePgnChange = (value: string) => {
     setPgn(value);
@@ -106,14 +155,17 @@ export function NewGameForm({ locale }: Props) {
         </>
       )}
 
-      {/* Color Selection (disabled when using PGN with valid moves) */}
+      {/* Color Selection (disabled when using PGN with valid moves, unless color was set from URL) */}
       <SectionTitle>{t('selectColor')}</SectionTitle>
       <ColorSelector
         value={color}
-        onChange={setColor}
-        disabled={startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+        onChange={(newColor) => {
+          setColor(newColor);
+          setColorLockedFromUrl(false); // Unlock when user manually changes color
+        }}
+        disabled={!colorLockedFromUrl && startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
       />
-      {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && (
+      {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && !colorLockedFromUrl && (
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
       )}
 
