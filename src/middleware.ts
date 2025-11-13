@@ -40,8 +40,8 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip all internal paths (_next), API routes, and static files
+    // Skip all internal paths (_next), API routes, static files, and images
     // Note: We need to process .xml files to return 404 for invalid ones like sitemap-0.xml
-    '/((?!_next|api|favicon.ico|logo.png|apple-icon.png|icon.png|manifest.webmanifest|robots.txt|sitemap.xml|stockfish.js|stockfish.wasm).*)',
+    '/((?!_next|api|images|favicon.ico|logo.png|apple-icon.png|icon.png|manifest.webmanifest|robots.txt|sitemap.xml|stockfish.js|stockfish.wasm).*)',
   ],
 };
