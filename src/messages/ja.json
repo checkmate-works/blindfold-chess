@@ -41,7 +41,8 @@
     "tabs": {
       "board": "ボード",
       "controls": "コントロール",
-      "appearance": "外観"
+      "appearance": "外観",
+      "ads": "広告"
     },
     "game": {
       "title": "ボード設定",
@@ -100,7 +101,18 @@
       "selectInput": "リストから選択",
       "selectInputDescription": "利用可能な合法手から選択します",
       "enableAutoComplete": "補完を有効にする"
+    },
+    "ads": {
+      "title": "広告設定",
+      "description": "広告の表示設定をカスタマイズ",
+      "displaySettings": "広告の表示",
+      "enableAds": "広告を表示する",
+      "enableAdsDescription": "無効にすると、サイト内の広告が非表示になります"
     }
+  },
+  "Common": {
+    "sponsoredLink": "スポンサーリンク",
+    "testAd": "テスト広告"
   },
   "faq": {
     "title": "よくある質問",

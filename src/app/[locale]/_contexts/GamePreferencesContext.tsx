@@ -19,6 +19,8 @@ export type GamePreferences = {
   // Move input
   moveInputMode: 'text' | 'select'; // Move input mode
   enableAutoComplete: boolean; // Enable auto-complete for text input
+  // Advertisements
+  adsEnabled: boolean; // Show advertisements
 };
 
 // Default preferences
@@ -32,6 +34,7 @@ const defaultPreferences: GamePreferences = {
   pieceColors: 'normal',
   moveInputMode: 'text',
   enableAutoComplete: true,
+  adsEnabled: true,
 };
 
 // Local storage key

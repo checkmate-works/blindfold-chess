@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { isAdsSystemEnabled } from '@/lib/ads/config';
+
+import { AdSettings } from './AdSettings';
 import { ControlSettings } from './ControlSettings';
 import { GameSettings } from './GameSettings';
 import { ThemeSelector } from './ThemeSelector';
@@ -15,11 +18,14 @@ type Props = {
 export function PreferencesTabs({}: Props) {
   const [activeTab, setActiveTab] = useState('game');
   const t = useTranslations('Preferences');
+  const adsSystemEnabled = isAdsSystemEnabled();
 
   const tabs = [
     { id: 'game', label: t('tabs.board') },
     { id: 'controls', label: t('tabs.controls') },
     { id: 'appearance', label: t('tabs.appearance') },
+    // システムレベルで広告が有効な場合のみ広告タブを表示
+    ...(adsSystemEnabled ? [{ id: 'ads', label: t('tabs.ads') }] : []),
   ];
 
   return (
@@ -61,6 +67,7 @@ export function PreferencesTabs({}: Props) {
             </div>
           </div>
         )}
+        {activeTab === 'ads' && adsSystemEnabled && <AdSettings />}
       </div>
     </div>
   );

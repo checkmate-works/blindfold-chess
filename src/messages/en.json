@@ -41,7 +41,8 @@
     "tabs": {
       "board": "Board",
       "controls": "Controls",
-      "appearance": "Appearance"
+      "appearance": "Appearance",
+      "ads": "Ads"
     },
     "game": {
       "title": "Board Settings",
@@ -100,7 +101,18 @@
       "selectInput": "Select from List",
       "selectInputDescription": "Choose from available legal moves",
       "enableAutoComplete": "Enable auto-complete"
+    },
+    "ads": {
+      "title": "Advertisement Settings",
+      "description": "Customize advertisement display preferences",
+      "displaySettings": "Advertisement Display",
+      "enableAds": "Show advertisements",
+      "enableAdsDescription": "When disabled, ads will be hidden throughout the site"
     }
+  },
+  "Common": {
+    "sponsoredLink": "Sponsored Link",
+    "testAd": "Test Ad"
   },
   "faq": {
     "title": "Frequently Asked Questions",
