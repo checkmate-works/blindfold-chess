@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 
 import { isAdsSystemEnabled } from '@/lib/ads/config';
 
@@ -16,9 +17,18 @@ type Props = {
 };
 
 export function PreferencesTabs({}: Props) {
-  const [activeTab, setActiveTab] = useState('game');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || 'game');
   const t = useTranslations('Preferences');
   const adsSystemEnabled = isAdsSystemEnabled();
+
+  // URLパラメータが変更されたらタブを更新
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const tabs = [
     { id: 'game', label: t('tabs.board') },

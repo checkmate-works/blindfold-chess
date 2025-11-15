@@ -43,6 +43,20 @@ export default async function FAQPage({ params }: Props) {
         ),
       }),
     },
+    {
+      id: 'ads',
+      question: t('items.ads.question'),
+      answer: t.rich('items.ads.answer', {
+        settingsLink: (chunks) => (
+          <Link
+            href="/preferences?tab=ads"
+            className="text-foreground underline hover:opacity-80 transition-colors"
+          >
+            {chunks}
+          </Link>
+        ),
+      }),
+    },
   ];
 
   return (

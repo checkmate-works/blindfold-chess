@@ -121,6 +121,10 @@
       "invalidMove": {
         "question": "I entered a correct move but got \"Invalid move\" error.",
         "answer": "When two pieces of the same type (like knights or rooks) can move to the same square, you need to specify which piece to move explicitly, such as Ngf3 or Rad8. You can enable the legal moves display in <settingsLink>settings</settingsLink> to help with this."
+      },
+      "ads": {
+        "question": "Why are there advertisements on this site?",
+        "answer": "This service is provided free of charge, but maintaining servers and domains incurs costs. Ad revenue helps cover these expenses. If ads bother you, you can disable them in <settingsLink>settings</settingsLink>."
       }
     }
   },
