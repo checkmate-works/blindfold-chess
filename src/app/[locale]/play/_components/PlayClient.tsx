@@ -34,6 +34,7 @@ import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { MoveSelect } from './MoveSelect';
+import { SaveIndicator } from './SaveIndicator';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
@@ -202,7 +203,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [initialGameId]); // Run only once on mount
 
   // Auto-save hook
-  const { markPlayerInteraction, gameId } = useAutoSave({
+  const { markPlayerInteraction, gameId, isSaving, lastSavedAt } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -818,6 +819,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       />
                     )}
                     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                    {/* Save Indicator */}
+                    <div className="mt-2 flex justify-end">
+                      <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+                    </div>
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground">

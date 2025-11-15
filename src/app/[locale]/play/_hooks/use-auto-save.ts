@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
@@ -44,6 +44,10 @@ export function useAutoSave({
   const hasSavedInSession = useRef(false);
   const previousPathname = useRef(pathname);
   const hasInitialSaveExecuted = useRef(false);
+
+  // State for save status indicator
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
   // Update refs with current values
   useEffect(() => {
@@ -129,6 +133,8 @@ export function useAutoSave({
         return;
       }
 
+      setIsSaving(true);
+
       try {
         const gameData = {
           moves,
@@ -162,6 +168,10 @@ export function useAutoSave({
         hasPendingChanges.current = false;
         hasSavedInSession.current = true;
 
+        // Update save status
+        setLastSavedAt(new Date());
+        setIsSaving(false);
+
         // Set session storage flag for cross-component updates
         sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
 
@@ -172,6 +182,7 @@ export function useAutoSave({
 
         return savedGameId;
       } catch (error) {
+        setIsSaving(false);
         if (error instanceof GameLimitError) {
           // Game limit reached - store pending game data for later
           console.warn('Game limit reached, cannot save game:', error.message);
@@ -325,5 +336,7 @@ export function useAutoSave({
     saveGame: manualSave,
     markPlayerInteraction,
     gameId: gameIdRef.current,
+    isSaving,
+    lastSavedAt,
   };
 }
