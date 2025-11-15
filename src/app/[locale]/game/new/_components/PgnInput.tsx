@@ -91,7 +91,7 @@ export function PgnInput({ value, onChange }: Props) {
         {/* Background layer for suggestion display */}
         <div className="relative">
           <div
-            className="absolute inset-0 px-4 py-3 font-mono text-sm pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
+            className="absolute inset-0 px-4 py-3 font-mono text-base pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
             aria-hidden="true"
           >
             <span className="invisible">{value}</span>
@@ -112,7 +112,7 @@ export function PgnInput({ value, onChange }: Props) {
             autoCapitalize="none"
             autoCorrect="off"
             className={`
-              relative w-full h-40 px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-sm resize-none
+              relative w-full h-40 px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-base resize-none
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
               ${showError ? 'border-red-500' : 'border-border focus:border-foreground'}
             `}
