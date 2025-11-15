@@ -7,7 +7,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
-import { FaCheck, FaChevronDown, FaCopy, FaEye, FaEyeSlash } from 'react-icons/fa';
+import {
+  FaCheck,
+  FaChevronDown,
+  FaCopy,
+  FaEye,
+  FaEyeSlash,
+  FaPlay,
+  FaPlusCircle,
+} from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
@@ -958,27 +966,30 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   </div>
                 )}
 
-                {/* Restart from here button */}
-                {currentPosition !== -1 && currentPosition !== -2 && (
-                  <div className="mt-4 flex flex-col gap-2">
-                    <button
-                      onClick={() => handleRestartFromPosition(currentPosition)}
-                      className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors duration-150 text-sm"
-                    >
-                      {t('restartFromHere')}
-                    </button>
-                    <button
-                      onClick={() => handleNewGameFromPosition(currentPosition)}
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 text-sm"
-                    >
-                      {t('newGameFromHere')}
-                    </button>
-                  </div>
-                )}
-
-                {/* Copy PGN Button */}
+                {/* Action Buttons */}
                 {moves.length > 0 && (
-                  <div className="mt-4 flex justify-center">
+                  <div className="mt-4 flex flex-col gap-4">
+                    {/* Restart from here button */}
+                    {currentPosition !== -1 && currentPosition !== -2 && (
+                      <>
+                        <button
+                          onClick={() => handleRestartFromPosition(currentPosition)}
+                          className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors duration-150 text-sm flex items-center justify-center gap-2"
+                        >
+                          <FaPlay className="w-3 h-3" />
+                          {t('restartFromHere')}
+                        </button>
+                        <button
+                          onClick={() => handleNewGameFromPosition(currentPosition)}
+                          className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 text-sm flex items-center justify-center gap-2"
+                        >
+                          <FaPlusCircle className="w-3 h-3" />
+                          {t('newGameFromHere')}
+                        </button>
+                      </>
+                    )}
+
+                    {/* Copy PGN Button */}
                     <button
                       onClick={() => {
                         const pgnText = formattedPgn
@@ -996,7 +1007,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                           setTimeout(() => setIsCopied(false), 2000);
                         });
                       }}
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 flex items-center gap-2 text-sm"
+                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 flex items-center justify-center gap-2 text-sm"
                     >
                       {isCopied ? (
                         <>
