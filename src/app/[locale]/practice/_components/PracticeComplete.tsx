@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@/app/_components';
+
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -137,12 +139,14 @@ export function PracticeComplete({
         )}
 
         <div className="space-y-4 mt-6">
-          <button
+          <Button
             onClick={onTryAgain}
-            className="w-full py-3 px-6 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            variant="primary"
+            size="md"
+            className="w-full py-3 px-6 font-semibold rounded-lg"
           >
             {labels.tryAgain}
-          </button>
+          </Button>
 
           <button
             onClick={() => router.push(`/${locale}/practice`)}

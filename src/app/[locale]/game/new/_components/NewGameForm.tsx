@@ -5,11 +5,12 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
-import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { parsePgn, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
@@ -173,13 +174,16 @@ export function NewGameForm({ locale }: Props) {
       <SectionTitle>{t('selectLevel')}</SectionTitle>
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
-      <PrimaryButton
+      <Button
         onClick={handleStartGame}
         disabled={startMethod === 'pgn' && (!pgn.trim() || !validatePgn(pgn))}
         loading={isLoading}
+        variant="primary"
+        size="lg"
+        className="w-full rounded-lg font-semibold"
       >
         {t('startGame')}
-      </PrimaryButton>
+      </Button>
     </div>
   );
 }

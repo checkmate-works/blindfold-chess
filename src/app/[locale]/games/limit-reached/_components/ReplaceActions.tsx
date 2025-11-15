@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 type Props = {
   selectedGameIds: Set<string>;
   onDeleteAndSave: (gameIdsToDelete: string[]) => Promise<void>;
@@ -35,27 +37,25 @@ export function ReplaceActions({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <button
+        <Button
           onClick={handleDeleteAndSave}
           disabled={selectedGameIds.size === 0 || isProcessing}
-          className="flex-1 px-6 py-3 bg-foreground text-background rounded-md hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+          variant="primary"
+          size="lg"
+          icon={isProcessing ? <span className="animate-spin">⏳</span> : undefined}
+          className="flex-1 font-medium"
         >
-          {isProcessing ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              {t('processing')}
-            </>
-          ) : (
-            <>{t('deleteAndSave')}</>
-          )}
-        </button>
-        <button
+          {isProcessing ? t('processing') : t('deleteAndSave')}
+        </Button>
+        <Button
           onClick={onSkipSave}
           disabled={isProcessing}
-          className="sm:w-auto px-6 py-3 bg-white dark:bg-white text-black border border-border rounded-md hover:bg-gray-100 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          variant="secondary"
+          size="lg"
+          className="sm:w-auto bg-white dark:bg-white text-black hover:bg-gray-100 dark:hover:bg-gray-100 font-medium"
         >
           {t('skipSave')}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import type { SkillLevel } from '@/lib/types/game';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -74,18 +76,12 @@ export function SkillLevelSettingsModal({
 
         {/* Modal Actions */}
         <div className="flex justify-center pt-4 border-t border-border space-x-4">
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted"
-          >
+          <Button variant="secondary" onClick={handleCancel}>
             {t('cancel')}
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 text-sm font-medium text-background bg-foreground rounded-md hover:bg-foreground/90"
-          >
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
             {t('save')}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

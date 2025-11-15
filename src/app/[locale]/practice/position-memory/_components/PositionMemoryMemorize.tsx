@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import type { BoardTheme } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -55,12 +57,14 @@ export function PositionMemoryMemorize({
 
       <div className="text-center space-y-4">
         <div>
-          <button
+          <Button
             onClick={onMemorized}
-            className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
+            variant="primary"
+            size="md"
+            className="px-6 py-3 rounded-lg"
           >
             {t('memorized')}
-          </button>
+          </Button>
         </div>
         <div>
           <button

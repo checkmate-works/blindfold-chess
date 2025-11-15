@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ChessBoard } from '@/app/_components';
+import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import {
   FaCheck,
@@ -14,6 +14,7 @@ import {
   FaEye,
   FaEyeSlash,
   FaPlay,
+  FaPlus,
   FaPlusCircle,
 } from 'react-icons/fa';
 
@@ -871,13 +872,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
             {/* New Game Button */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-4 pb-4 flex justify-center">
-                <button
+              <div className="mt-4 pb-4 px-4">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  icon={<FaPlus className="w-5 h-5" />}
                   onClick={() => (window.location.href = `/${locale}/game/new`)}
-                  className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
+                  className="w-full rounded-xl font-medium bg-card hover:bg-background dark:hover:bg-muted"
                 >
                   {t('newGame')}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -972,25 +976,33 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                     {/* Restart from here button */}
                     {currentPosition !== -1 && currentPosition !== -2 && (
                       <>
-                        <button
+                        <Button
+                          variant="primary"
+                          icon={<FaPlay className="w-3 h-3" />}
                           onClick={() => handleRestartFromPosition(currentPosition)}
-                          className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors duration-150 text-sm flex items-center justify-center gap-2"
                         >
-                          <FaPlay className="w-3 h-3" />
                           {t('restartFromHere')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          icon={<FaPlusCircle className="w-3 h-3" />}
                           onClick={() => handleNewGameFromPosition(currentPosition)}
-                          className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 text-sm flex items-center justify-center gap-2"
                         >
-                          <FaPlusCircle className="w-3 h-3" />
                           {t('newGameFromHere')}
-                        </button>
+                        </Button>
                       </>
                     )}
 
                     {/* Copy PGN Button */}
-                    <button
+                    <Button
+                      variant="secondary"
+                      icon={
+                        isCopied ? (
+                          <FaCheck className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <FaCopy className="w-3 h-3" />
+                        )
+                      }
                       onClick={() => {
                         const pgnText = formattedPgn
                           .map((move) => {
@@ -1007,20 +1019,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                           setTimeout(() => setIsCopied(false), 2000);
                         });
                       }}
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors duration-150 flex items-center justify-center gap-2 text-sm"
                     >
-                      {isCopied ? (
-                        <>
-                          <FaCheck className="w-3 h-3 text-green-500" />
-                          {t('copied') || 'Copied!'}
-                        </>
-                      ) : (
-                        <>
-                          <FaCopy className="w-3 h-3" />
-                          {t('copyPgn')}
-                        </>
-                      )}
-                    </button>
+                      {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                    </Button>
                   </div>
                 )}
               </div>
@@ -1036,18 +1037,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             <h3 className="text-lg font-semibold mb-4">{t('confirmResignTitle')}</h3>
             <p className="text-muted-foreground mb-6">{t('confirmResignMessage')}</p>
             <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowResignConfirm(false)}
-                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
-              >
+              <Button variant="secondary" onClick={() => setShowResignConfirm(false)}>
                 {t('cancel')}
-              </button>
-              <button
-                onClick={confirmResign}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
+              </Button>
+              <Button variant="destructive" onClick={confirmResign}>
                 {t('confirmResign')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1060,18 +1055,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             <h3 className="text-lg font-semibold mb-4">{t('confirmUndoTitle')}</h3>
             <p className="text-muted-foreground mb-6">{t('confirmUndoMessage')}</p>
             <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowUndoConfirm(false)}
-                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
-              >
+              <Button variant="secondary" onClick={() => setShowUndoConfirm(false)}>
                 {t('cancel')}
-              </button>
-              <button
-                onClick={confirmUndo}
-                className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
-              >
+              </Button>
+              <Button variant="primary" onClick={confirmUndo}>
                 {t('confirmUndo')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1084,21 +1073,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             <h3 className="text-lg font-semibold mb-4">{t('confirmRestartTitle')}</h3>
             <p className="text-muted-foreground mb-6">{t('confirmRestartMessage')}</p>
             <div className="flex gap-2 justify-end">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setShowRestartConfirm(false);
                   setRestartPosition(null);
                 }}
-                className="px-4 py-2 border border-border rounded-md hover:bg-muted"
               >
                 {t('cancel')}
-              </button>
-              <button
-                onClick={confirmRestart}
-                className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90"
-              >
+              </Button>
+              <Button variant="primary" onClick={confirmRestart}>
                 {t('confirmRestart')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

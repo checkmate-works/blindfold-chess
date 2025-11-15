@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import * as Sentry from '@sentry/nextjs';
 
@@ -31,12 +32,9 @@ export default function Error({
         <h1 className="text-3xl font-bold text-foreground mb-4">{t('title')}</h1>
         <p className="text-muted-foreground mb-8">{t('description')}</p>
         <div className="flex gap-4 justify-center">
-          <button
-            onClick={reset}
-            className="px-4 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors"
-          >
+          <Button onClick={reset} variant="primary" size="sm">
             {t('tryAgain')}
-          </button>
+          </Button>
           <Link
             href="/"
             className="px-4 py-2 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors inline-block"

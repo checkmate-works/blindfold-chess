@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import { Button } from '@/app/_components';
+import { FaPlay } from 'react-icons/fa';
+
+import { SectionTitle } from '@/app/[locale]/_components';
 
 import type { BoardOrientation } from '../_lib/types';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
@@ -35,9 +38,15 @@ export function CoordinateQuizSetup({
           onBoardOrientationChange={onBoardOrientationChange}
         />
 
-        <PrimaryButton onClick={onStart} className="mt-6">
+        <Button
+          onClick={onStart}
+          variant="primary"
+          size="lg"
+          className="w-full rounded-lg font-semibold mt-6"
+          icon={<FaPlay />}
+        >
           {t('start')}
-        </PrimaryButton>
+        </Button>
       </div>
     </div>
   );

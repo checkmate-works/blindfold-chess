@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { MAX_GAMES } from '@/config';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
@@ -29,11 +30,13 @@ export function GameLimitError({ locale }: Props) {
         </p>
       </div>
 
-      <Link href={`/${locale}`}>
-        <button className="px-6 py-3 bg-foreground text-background hover:bg-foreground/90 rounded-lg font-medium transition-colors">
-          {t('backToGameList')}
-        </button>
-      </Link>
+      <div className="flex justify-center">
+        <Link href={`/${locale}`}>
+          <Button variant="primary" size="lg" className="rounded-lg font-medium">
+            {t('backToGameList')}
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

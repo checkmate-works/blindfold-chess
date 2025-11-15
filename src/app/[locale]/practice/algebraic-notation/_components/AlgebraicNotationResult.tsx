@@ -2,7 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PrimaryButton } from '@/app/[locale]/_components';
+import { Button } from '@/app/_components';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { Question } from '../_lib/types';
@@ -57,9 +58,9 @@ export function AlgebraicNotationResult({
       </div>
 
       <div className="flex justify-end">
-        <PrimaryButton onClick={onNext} fullWidth={false}>
+        <Button onClick={onNext} variant="primary" size="lg" className="rounded-lg font-semibold">
           {currentQuestionIndex < totalQuestions - 1 ? t('nextExercise') : t('complete')}
-        </PrimaryButton>
+        </Button>
       </div>
     </>
   );

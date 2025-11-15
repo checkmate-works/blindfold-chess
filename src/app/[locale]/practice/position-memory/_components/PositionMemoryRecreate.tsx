@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
@@ -53,12 +55,9 @@ export function PositionMemoryRecreate({
 
       <div className="text-center mt-6 space-y-4">
         <div>
-          <button
-            onClick={onSubmit}
-            className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors"
-          >
+          <Button onClick={onSubmit} variant="primary" size="md" className="px-6 py-3 rounded-lg">
             {t('submit')}
-          </button>
+          </Button>
         </div>
         <div>
           <button

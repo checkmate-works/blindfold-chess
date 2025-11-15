@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import { Button } from '@/app/_components';
+import { FaPlay } from 'react-icons/fa';
+
+import { SectionTitle } from '@/app/[locale]/_components';
 import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
 type Props = {
@@ -29,7 +32,15 @@ export function SquareColorsSetup({ timeLimit, onTimeLimitChange, onStart }: Pro
           />
         </div>
 
-        <PrimaryButton onClick={onStart}>{t('start')}</PrimaryButton>
+        <Button
+          onClick={onStart}
+          variant="primary"
+          size="lg"
+          icon={<FaPlay />}
+          className="w-full rounded-lg font-semibold"
+        >
+          {t('start')}
+        </Button>
       </div>
     </div>
   );

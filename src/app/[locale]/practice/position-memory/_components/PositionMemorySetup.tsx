@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { PrimaryButton, SectionTitle } from '@/app/[locale]/_components';
+import { Button } from '@/app/_components';
+import { FaPlay } from 'react-icons/fa';
+
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { encodeFensToBase64, generateShareUrl, validateFEN } from '../_lib/utils';
@@ -214,13 +217,16 @@ export function PositionMemorySetup({
           onCopyShareLink={handleCopyShareLink}
         />
 
-        <PrimaryButton
+        <Button
           onClick={handleStart}
           disabled={useCustomFen && (customFenError !== null || !customFenInput.trim())}
-          className="mt-6"
+          variant="primary"
+          size="lg"
+          className="w-full rounded-lg font-semibold mt-6"
+          icon={<FaPlay />}
         >
           {t('start')}
-        </PrimaryButton>
+        </Button>
       </div>
     </div>
   );
