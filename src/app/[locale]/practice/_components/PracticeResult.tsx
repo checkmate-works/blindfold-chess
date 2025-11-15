@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -43,7 +44,7 @@ export function PracticeResult({ score, onTryAgain, locale, labels }: Props) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
-        <SectionTitle>{t('result')}</SectionTitle>
+        <SectionTitle className="text-center mb-6">{t('result')}</SectionTitle>
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="text-center">
@@ -73,18 +74,13 @@ export function PracticeResult({ score, onTryAgain, locale, labels }: Props) {
         </div>
 
         <div className="flex flex-col gap-4">
-          <button
-            onClick={onTryAgain}
-            className="w-full bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
-          >
+          <Button onClick={onTryAgain} variant="primary" size="lg" fullWidth className="rounded-xl">
             {labels.tryAgain}
-          </button>
-          <Link
-            href="/practice"
-            locale={locale}
-            className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold py-3 px-6 rounded-xl transition-colors text-center"
-          >
-            {labels.morePractice}
+          </Button>
+          <Link href="/practice" locale={locale} className="w-full">
+            <Button variant="secondary" size="lg" fullWidth className="rounded-xl">
+              {labels.morePractice}
+            </Button>
           </Link>
         </div>
       </div>

@@ -57,11 +57,15 @@ export function AlgebraicNotationResult({
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={onNext} variant="primary" size="lg" className="rounded-lg font-semibold">
-          {currentQuestionIndex < totalQuestions - 1 ? t('nextExercise') : t('complete')}
-        </Button>
-      </div>
+      <Button
+        onClick={onNext}
+        variant="primary"
+        size="lg"
+        fullWidth
+        className="rounded-lg font-semibold"
+      >
+        {currentQuestionIndex < totalQuestions - 1 ? t('nextExercise') : t('complete')}
+      </Button>
     </>
   );
 }

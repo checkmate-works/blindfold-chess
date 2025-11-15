@@ -56,16 +56,9 @@ export function PositionMemoryMemorize({
       </div>
 
       <div className="text-center space-y-4">
-        <div>
-          <Button
-            onClick={onMemorized}
-            variant="primary"
-            size="md"
-            className="px-6 py-3 rounded-lg"
-          >
-            {t('memorized')}
-          </Button>
-        </div>
+        <Button onClick={onMemorized} variant="primary" size="lg" fullWidth className="rounded-lg">
+          {t('memorized')}
+        </Button>
         <div>
           <button
             onClick={onQuit}

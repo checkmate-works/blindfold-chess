@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import type { BoardTheme } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -131,19 +133,25 @@ export function PositionMemoryProblemResult({
         </div>
 
         {isLastProblem ? (
-          <button
+          <Button
             onClick={onViewResults}
-            className="w-full mt-6 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="mt-6 rounded-xl"
           >
             {t('viewResults')}
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             onClick={onNextProblem}
-            className="w-full mt-6 bg-foreground hover:bg-foreground/90 text-background font-semibold py-3 px-6 rounded-xl transition-colors"
+            variant="primary"
+            size="lg"
+            fullWidth
+            className="mt-6 rounded-xl"
           >
             {t('nextProblem')}
-          </button>
+          </Button>
         )}
       </div>
     </div>

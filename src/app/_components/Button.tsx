@@ -8,6 +8,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   icon?: ReactNode;
   loading?: boolean;
+  fullWidth?: boolean;
   children: ReactNode;
 }
 
@@ -28,6 +29,7 @@ export function Button({
   size = 'sm',
   icon,
   loading = false,
+  fullWidth = false,
   children,
   className = '',
   disabled,
@@ -36,10 +38,11 @@ export function Button({
   const baseStyles =
     'rounded-md transition-colors duration-150 flex items-center justify-center gap-2';
   const disabledStyles = disabled || loading ? 'opacity-50 cursor-not-allowed' : '';
+  const widthStyles = fullWidth ? 'w-full' : '';
 
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${className}`}
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

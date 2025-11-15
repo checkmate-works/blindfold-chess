@@ -54,11 +54,9 @@ export function PositionMemoryRecreate({
       </div>
 
       <div className="text-center mt-6 space-y-4">
-        <div>
-          <Button onClick={onSubmit} variant="primary" size="md" className="px-6 py-3 rounded-lg">
-            {t('submit')}
-          </Button>
-        </div>
+        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-lg">
+          {t('submit')}
+        </Button>
         <div>
           <button
             onClick={onViewAgain}

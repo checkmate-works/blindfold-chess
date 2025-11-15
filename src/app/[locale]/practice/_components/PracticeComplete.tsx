@@ -67,7 +67,7 @@ export function PracticeComplete({
           </SectionTitle>
         ) : (
           // Other practices: show traditional score display
-          <div className="mb-6">
+          <div className="mb-6 text-center">
             <p className="text-3xl font-bold text-foreground mb-2">
               {score} / {total}
             </p>
@@ -139,21 +139,19 @@ export function PracticeComplete({
         )}
 
         <div className="space-y-4 mt-6">
-          <Button
-            onClick={onTryAgain}
-            variant="primary"
-            size="md"
-            className="w-full py-3 px-6 font-semibold rounded-lg"
-          >
+          <Button onClick={onTryAgain} variant="primary" size="lg" fullWidth className="rounded-lg">
             {labels.tryAgain}
           </Button>
 
-          <button
+          <Button
             onClick={() => router.push(`/${locale}/practice`)}
-            className="w-full py-3 px-6 bg-secondary text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            variant="secondary"
+            size="lg"
+            fullWidth
+            className="rounded-lg"
           >
             {labels.morePractice}
-          </button>
+          </Button>
         </div>
       </div>
 
