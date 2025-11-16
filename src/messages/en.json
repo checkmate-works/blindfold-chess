@@ -474,6 +474,7 @@
     "dontKnow": "I don't know",
     "correctMove": "Correct!",
     "incorrectMove": "Incorrect move. Try again.",
+    "logIncorrect": "is incorrect",
     "moveNumber": "Move {number}",
     "yourTurn": "Your turn",
     "opponentTurn": "Opponent's turn",

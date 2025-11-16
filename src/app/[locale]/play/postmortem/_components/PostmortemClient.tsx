@@ -23,6 +23,14 @@ type Props = {
   initialOffset?: number;
 };
 
+type MoveLogEntry = {
+  moveNumber: number;
+  isWhiteMove: boolean;
+  move: string;
+  status: 'correct' | 'incorrect' | 'auto'; // correct: 正解, incorrect: 間違い, auto: 自動入力
+  incorrectMove?: string; // 間違えた場合のユーザーの入力
+};
+
 export function PostmortemClient({
   locale,
   pgn,
@@ -39,11 +47,10 @@ export function PostmortemClient({
   const [currentMoveIndex, setCurrentMoveIndex] = useState(initialOffset);
   const [userMoves, setUserMoves] = useState<AlgebraicNotation[]>([]);
   const [moveInput, setMoveInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-  const [showCorrect, setShowCorrect] = useState(false);
+  const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
 
   // Parse PGN on mount
   useEffect(() => {
@@ -114,9 +121,23 @@ export function PostmortemClient({
     ) {
       // Auto-fill opponent's move
       const opponentMove = originalMoves[currentMoveIndex];
+      const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
+      const isWhiteMove = currentMoveIndex % 2 === 0;
       const newIndex = currentMoveIndex + 1;
+
       setUserMoves((prev) => [...prev, opponentMove]);
       setCurrentMoveIndex(newIndex);
+
+      // Add to log as auto-filled (opponent's move)
+      setMoveLog((prev) => [
+        ...prev,
+        {
+          moveNumber,
+          isWhiteMove,
+          move: opponentMove,
+          status: 'auto',
+        },
+      ]);
 
       // Check if completed after auto-fill
       if (newIndex >= originalMoves.length) {
@@ -129,6 +150,8 @@ export function PostmortemClient({
   const handleSubmitMove = useCallback(
     (move: AlgebraicNotation) => {
       const expectedMove = originalMoves[currentMoveIndex];
+      const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
+      const isWhiteMove = currentMoveIndex % 2 === 0;
 
       if (move === expectedMove) {
         // Correct move
@@ -136,18 +159,34 @@ export function PostmortemClient({
         setUserMoves((prev) => [...prev, move]);
         setCurrentMoveIndex(newIndex);
         setMoveInput('');
-        setError(null);
+
+        // Add to log
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            moveNumber,
+            isWhiteMove,
+            move,
+            status: 'correct',
+          },
+        ]);
 
         // Check if completed
         if (newIndex >= originalMoves.length) {
           setIsCompleted(true);
-          setShowCorrect(false); // Hide correct message when completed
-        } else {
-          setShowCorrect(true);
         }
       } else {
-        // Incorrect move
-        setError(t('incorrectMove'));
+        // Incorrect move - add to log but don't advance
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            moveNumber,
+            isWhiteMove,
+            move: expectedMove, // Show the correct move
+            status: 'incorrect',
+            incorrectMove: move, // Store the incorrect move user entered
+          },
+        ]);
       }
     },
     [currentMoveIndex, originalMoves, t]
@@ -156,12 +195,24 @@ export function PostmortemClient({
   // Handle "I don't know" button
   const handleDontKnow = useCallback(() => {
     const correctMove = originalMoves[currentMoveIndex];
+    const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
+    const isWhiteMove = currentMoveIndex % 2 === 0;
     const newIndex = currentMoveIndex + 1;
+
     setUserMoves((prev) => [...prev, correctMove]);
     setCurrentMoveIndex(newIndex);
     setMoveInput('');
-    setError(null);
-    setShowCorrect(false);
+
+    // Add to log as auto-filled
+    setMoveLog((prev) => [
+      ...prev,
+      {
+        moveNumber,
+        isWhiteMove,
+        move: correctMove,
+        status: 'auto',
+      },
+    ]);
 
     // Check if completed
     if (newIndex >= originalMoves.length) {
@@ -261,8 +312,6 @@ export function PostmortemClient({
                       value={moveInput}
                       onChange={(value) => {
                         setMoveInput(value);
-                        if (error) setError(null);
-                        if (showCorrect) setShowCorrect(false);
                       }}
                       onSubmit={handleSubmitMove}
                       disabled={false}
@@ -270,13 +319,6 @@ export function PostmortemClient({
                       showSuggestions={preferences.enableAutoComplete}
                       showSubmitButton={true}
                     />
-                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                    {showCorrect && (
-                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm mt-2">
-                        <FaCheck className="w-4 h-4" />
-                        <span>{t('correctMove')}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -308,14 +350,103 @@ export function PostmortemClient({
                       </span>
                     </label>
                   </div>
+
+                  {/* Move Log */}
+                  {moveLog.length > 0 && (
+                    <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
+                      <div className="space-y-1 font-mono text-sm">
+                        {[...moveLog].reverse().map((entry, index) => {
+                          const moveNotation = entry.isWhiteMove
+                            ? `${entry.moveNumber}. ${entry.move}`
+                            : `${entry.moveNumber}... ${entry.move}`;
+
+                          if (entry.status === 'correct') {
+                            return (
+                              <div
+                                key={moveLog.length - 1 - index}
+                                className="text-green-600 dark:text-green-400"
+                              >
+                                {moveNotation} <FaCheck className="inline w-3 h-3" />
+                              </div>
+                            );
+                          } else if (entry.status === 'incorrect') {
+                            return (
+                              <div
+                                key={moveLog.length - 1 - index}
+                                className="text-red-600 dark:text-red-400"
+                              >
+                                {entry.incorrectMove
+                                  ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
+                                  : `${moveNotation} ${t('logIncorrect')}`}
+                              </div>
+                            );
+                          } else {
+                            // auto
+                            return (
+                              <div
+                                key={moveLog.length - 1 - index}
+                                className="text-muted-foreground"
+                              >
+                                {moveNotation}
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
               /* Completion Message */
-              <div className="py-8 text-center">
-                <FaCheck className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">{t('completed')}</h3>
-                <p className="text-muted-foreground">{t('completedMessage')}</p>
+              <div className="pb-2">
+                <div className="py-8 text-center">
+                  <FaCheck className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">{t('completed')}</h3>
+                  <p className="text-muted-foreground">{t('completedMessage')}</p>
+                </div>
+
+                {/* Move Log - also show when completed */}
+                {moveLog.length > 0 && (
+                  <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
+                    <div className="space-y-1 font-mono text-sm">
+                      {[...moveLog].reverse().map((entry, index) => {
+                        const moveNotation = entry.isWhiteMove
+                          ? `${entry.moveNumber}. ${entry.move}`
+                          : `${entry.moveNumber}... ${entry.move}`;
+
+                        if (entry.status === 'correct') {
+                          return (
+                            <div
+                              key={moveLog.length - 1 - index}
+                              className="text-green-600 dark:text-green-400"
+                            >
+                              {moveNotation} <FaCheck className="inline w-3 h-3" />
+                            </div>
+                          );
+                        } else if (entry.status === 'incorrect') {
+                          return (
+                            <div
+                              key={moveLog.length - 1 - index}
+                              className="text-red-600 dark:text-red-400"
+                            >
+                              {entry.incorrectMove
+                                ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
+                                : `${moveNotation} ${t('logIncorrect')}`}
+                            </div>
+                          );
+                        } else {
+                          // auto
+                          return (
+                            <div key={moveLog.length - 1 - index} className="text-muted-foreground">
+                              {moveNotation}
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

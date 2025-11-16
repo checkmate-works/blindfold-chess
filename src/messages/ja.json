@@ -474,6 +474,7 @@
     "dontKnow": "わからない",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",
+    "logIncorrect": "は間違い",
     "moveNumber": "{number}手目",
     "yourTurn": "あなたの番",
     "opponentTurn": "相手の番",
