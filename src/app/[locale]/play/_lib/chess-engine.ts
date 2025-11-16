@@ -6,6 +6,12 @@ type EngineResponse = {
   type: 'readyok' | 'bestmove' | 'info' | 'uci';
   data: string;
   move?: string;
+  score?: number;
+};
+
+export type EvaluationResult = {
+  score: number; // Centipawn score from white's perspective
+  mate?: number; // Mate in N moves (positive = white wins, negative = black wins)
 };
 
 export class ChessEngine {
@@ -80,6 +86,12 @@ export class ChessEngine {
           this.pendingCallbacks.delete('bestmove'); // Delete first to prevent duplicate calls
           callback({ type: 'bestmove', data: message, move });
         }
+      }
+    } else if (message.includes('info') && message.includes('score')) {
+      // Handle evaluation info messages
+      const callback = this.pendingCallbacks.get('evaluation');
+      if (callback) {
+        callback({ type: 'info', data: message });
       }
     }
   }
@@ -176,6 +188,79 @@ export class ChessEngine {
       }
 
       return response.move as UciMove;
+    } finally {
+      this.isProcessing = false;
+    }
+  }
+
+  async getEvaluation(fen: Fen, depth: number = 15): Promise<EvaluationResult> {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+      throw new Error('Chess engine can only be used in browser environment');
+    }
+
+    if (!this.isInitialized || !this.engine) {
+      throw new Error('Engine not ready');
+    }
+
+    if (this.isProcessing) {
+      throw new Error('Engine is already processing a request');
+    }
+
+    try {
+      this.isProcessing = true;
+
+      // Set position
+      await this.sendCommand(`position fen ${fen}`);
+
+      // Get evaluation with depth
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          this.pendingCallbacks.delete('evaluation');
+          this.pendingCallbacks.delete('bestmove');
+          reject(new Error('Evaluation timeout'));
+        }, 20000); // Increased to 20 seconds for background tab scenarios
+
+        let latestScore: number | null = null;
+        let latestMate: number | undefined;
+
+        this.pendingCallbacks.set('evaluation', (response) => {
+          const message = response.data;
+
+          // Parse score from info messages
+          // Format: "info depth 15 score cp 123" or "info depth 15 score mate 5"
+          const cpMatch = message.match(/score cp (-?\d+)/);
+          const mateMatch = message.match(/score mate (-?\d+)/);
+
+          if (cpMatch) {
+            latestScore = parseInt(cpMatch[1], 10);
+            latestMate = undefined;
+          } else if (mateMatch) {
+            latestMate = parseInt(mateMatch[1], 10);
+            // Use a large score to indicate mate
+            latestScore = latestMate > 0 ? 10000 : -10000;
+          }
+        });
+
+        // Start evaluation
+        this.engine?.postMessage(`go depth ${depth}`);
+
+        // Wait for bestmove to know evaluation is complete
+        this.pendingCallbacks.set('bestmove', () => {
+          clearTimeout(timeoutId);
+          this.pendingCallbacks.delete('evaluation');
+          this.pendingCallbacks.delete('bestmove');
+
+          if (latestScore !== null) {
+            resolve({
+              score: latestScore,
+              mate: latestMate,
+            });
+          } else {
+            reject(new Error('No evaluation score received'));
+          }
+        });
+      });
     } finally {
       this.isProcessing = false;
     }

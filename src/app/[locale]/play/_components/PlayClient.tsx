@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import {
+  FaChartLine,
   FaCheck,
   FaChevronDown,
   FaCopy,
@@ -877,7 +878,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
             {/* New Game Button */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-4 pb-4 px-4 space-y-2">
+              <div className="mt-4 pb-4 px-4 space-y-3">
                 <Button
                   variant="secondary"
                   size="lg"
@@ -891,6 +892,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   <Button
                     variant="primary"
                     size="lg"
+                    icon={<FaChartLine className="w-5 h-5" />}
                     onClick={() => {
                       // Create PGN from moves
                       const pgnMoves = formattedPgn

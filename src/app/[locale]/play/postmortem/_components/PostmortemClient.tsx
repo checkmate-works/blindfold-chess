@@ -1,19 +1,28 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactElement, useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button, ChessBoard, ProgressBar } from '@/app/_components';
+import { Button, ChessBoard, InfoModal, ProgressBar } from '@/app/_components';
 import { Chess } from 'chess.js';
-import { FaCheck, FaChevronDown, FaEye, FaEyeSlash, FaQuestionCircle } from 'react-icons/fa';
+import {
+  FaCheck,
+  FaChevronDown,
+  FaEye,
+  FaEyeSlash,
+  FaInfoCircle,
+  FaQuestionCircle,
+  FaStar,
+} from 'react-icons/fa';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
+import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 
 type Props = {
   locale: Locale;
@@ -29,7 +38,125 @@ type MoveLogEntry = {
   move: string;
   status: 'correct' | 'incorrect' | 'auto'; // correct: 正解, incorrect: 間違い, auto: 自動入力
   incorrectMove?: string; // 間違えた場合のユーザーの入力
+  evaluation?: {
+    score: number;
+    mate?: number;
+    text: string; // 最善です, 好手です, etc.
+  };
 };
+
+// Helper function to get evaluation text based on score
+function getEvaluationText(t: (key: string) => string, score: number, mate?: number): string {
+  if (mate !== undefined) {
+    return mate > 0 ? t('evalMateIn') : t('evalMated');
+  }
+
+  const absScore = Math.abs(score);
+  if (absScore <= 20) return t('evalBest');
+  if (absScore <= 50) return t('evalGood');
+  if (absScore <= 100) return t('evalInaccuracy');
+  if (absScore <= 300) return t('evalMistake');
+  return t('evalBlunder');
+}
+
+// Helper function to get evaluation icon based on score (chess.com style)
+function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
+  if (mate !== undefined) {
+    // Checkmate - star (same as best move)
+    return (
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+        <FaStar className="w-2 h-2 text-white" />
+      </span>
+    );
+  }
+
+  const absScore = Math.abs(score);
+  if (absScore <= 20) {
+    // Best move - star with green background
+    return (
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+        <FaStar className="w-2 h-2 text-white" />
+      </span>
+    );
+  }
+  if (absScore <= 50) {
+    // Good move - checkmark with green background and white text
+    return (
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+        <FaCheck className="w-2 h-2 text-white" />
+      </span>
+    );
+  }
+  if (absScore <= 100) {
+    // Inaccuracy - ?! with yellow background
+    return (
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
+        ?!
+      </span>
+    );
+  }
+  if (absScore <= 300) {
+    // Mistake - ? with orange background
+    return (
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+        ?
+      </span>
+    );
+  }
+  // Blunder - ?? with red background
+  return (
+    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+      ??
+    </span>
+  );
+}
+
+// Helper function to get evaluation from engine
+async function getPositionEvaluation(
+  moves: AlgebraicNotation[],
+  moveIndex: number,
+  t: (key: string) => string
+): Promise<
+  | {
+      score: number;
+      mate?: number;
+      text: string;
+    }
+  | undefined
+> {
+  try {
+    const chess = new Chess();
+    for (let i = 0; i <= moveIndex; i++) {
+      chess.move(moves[i]);
+    }
+    const fen = chess.fen();
+    const engine = getChessEngine();
+
+    // Wait for engine to be ready
+    let retries = 0;
+    const maxRetries = 50; // 5 seconds max
+    while (!engine.isReady && retries < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      retries++;
+    }
+
+    if (engine.isReady) {
+      const evalResult = await engine.getEvaluation(fen, 12); // Reduced depth for better performance
+      return {
+        score: evalResult.score,
+        mate: evalResult.mate,
+        text: getEvaluationText(t, evalResult.score, evalResult.mate),
+      };
+    }
+  } catch (error) {
+    // Silently handle evaluation errors (e.g., timeout in background tabs)
+    // This is expected behavior and doesn't affect the core postmortem functionality
+    if (error instanceof Error && error.message !== 'Evaluation timeout') {
+      console.warn('Evaluation skipped:', error.message);
+    }
+  }
+  return undefined;
+}
 
 export function PostmortemClient({
   locale,
@@ -51,6 +178,9 @@ export function PostmortemClient({
   const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
+  const [showEvaluation, setShowEvaluation] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [showEvalInfo, setShowEvalInfo] = useState(false);
 
   // Parse PGN on mount
   useEffect(() => {
@@ -117,48 +247,80 @@ export function PostmortemClient({
       autoOpponent &&
       !isPlayerTurn() &&
       currentMoveIndex < originalMoves.length &&
-      !isCompleted
+      !isCompleted &&
+      !isEvaluating // Don't auto-fill while evaluating
     ) {
-      // Auto-fill opponent's move
-      const opponentMove = originalMoves[currentMoveIndex];
-      const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-      const isWhiteMove = currentMoveIndex % 2 === 0;
-      const newIndex = currentMoveIndex + 1;
+      const autoFillMove = async () => {
+        setIsEvaluating(true);
+        // Auto-fill opponent's move
+        const opponentMove = originalMoves[currentMoveIndex];
+        const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
+        const isWhiteMove = currentMoveIndex % 2 === 0;
+        const newIndex = currentMoveIndex + 1;
 
-      setUserMoves((prev) => [...prev, opponentMove]);
-      setCurrentMoveIndex(newIndex);
+        setUserMoves((prev) => [...prev, opponentMove]);
+        setCurrentMoveIndex(newIndex);
 
-      // Add to log as auto-filled (opponent's move)
-      setMoveLog((prev) => [
-        ...prev,
-        {
-          moveNumber,
-          isWhiteMove,
-          move: opponentMove,
-          status: 'auto',
-        },
-      ]);
+        // Get evaluation if enabled
+        const evaluation = showEvaluation
+          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+          : undefined;
 
-      // Check if completed after auto-fill
-      if (newIndex >= originalMoves.length) {
-        setIsCompleted(true);
-      }
+        // Add to log as auto-filled (opponent's move)
+        setMoveLog((prev) => [
+          ...prev,
+          {
+            moveNumber,
+            isWhiteMove,
+            move: opponentMove,
+            status: 'auto',
+            evaluation,
+          },
+        ]);
+
+        // Check if completed after auto-fill
+        if (newIndex >= originalMoves.length) {
+          setIsCompleted(true);
+        }
+
+        setIsEvaluating(false);
+      };
+
+      autoFillMove();
     }
-  }, [autoOpponent, isPlayerTurn, currentMoveIndex, originalMoves, isCompleted]);
+  }, [
+    autoOpponent,
+    isPlayerTurn,
+    currentMoveIndex,
+    originalMoves,
+    isCompleted,
+    isEvaluating,
+    showEvaluation,
+    t,
+  ]);
 
   // Handle move submission
   const handleSubmitMove = useCallback(
-    (move: AlgebraicNotation) => {
+    async (move: AlgebraicNotation) => {
+      if (isEvaluating) return; // Prevent submission while evaluating
+
       const expectedMove = originalMoves[currentMoveIndex];
       const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
       const isWhiteMove = currentMoveIndex % 2 === 0;
 
       if (move === expectedMove) {
+        setIsEvaluating(true);
+
         // Correct move
         const newIndex = currentMoveIndex + 1;
         setUserMoves((prev) => [...prev, move]);
         setCurrentMoveIndex(newIndex);
         setMoveInput('');
+
+        // Get evaluation if enabled
+        const evaluation = showEvaluation
+          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+          : undefined;
 
         // Add to log
         setMoveLog((prev) => [
@@ -168,6 +330,7 @@ export function PostmortemClient({
             isWhiteMove,
             move,
             status: 'correct',
+            evaluation,
           },
         ]);
 
@@ -175,6 +338,8 @@ export function PostmortemClient({
         if (newIndex >= originalMoves.length) {
           setIsCompleted(true);
         }
+
+        setIsEvaluating(false);
       } else {
         // Incorrect move - add to log but don't advance
         setMoveLog((prev) => [
@@ -189,11 +354,15 @@ export function PostmortemClient({
         ]);
       }
     },
-    [currentMoveIndex, originalMoves, t]
+    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t]
   );
 
   // Handle "I don't know" button
-  const handleDontKnow = useCallback(() => {
+  const handleDontKnow = useCallback(async () => {
+    if (isEvaluating) return; // Prevent action while evaluating
+
+    setIsEvaluating(true);
+
     const correctMove = originalMoves[currentMoveIndex];
     const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
     const isWhiteMove = currentMoveIndex % 2 === 0;
@@ -203,6 +372,11 @@ export function PostmortemClient({
     setCurrentMoveIndex(newIndex);
     setMoveInput('');
 
+    // Get evaluation if enabled
+    const evaluation = showEvaluation
+      ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+      : undefined;
+
     // Add to log as auto-filled
     setMoveLog((prev) => [
       ...prev,
@@ -211,6 +385,7 @@ export function PostmortemClient({
         isWhiteMove,
         move: correctMove,
         status: 'auto',
+        evaluation,
       },
     ]);
 
@@ -218,7 +393,9 @@ export function PostmortemClient({
     if (newIndex >= originalMoves.length) {
       setIsCompleted(true);
     }
-  }, [currentMoveIndex, originalMoves]);
+
+    setIsEvaluating(false);
+  }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t]);
 
   // Handle back to game
   const handleBackToGame = useCallback(() => {
@@ -305,6 +482,13 @@ export function PostmortemClient({
 
             {!isCompleted ? (
               <>
+                {/* Loading indicator during evaluation */}
+                {isEvaluating && (
+                  <div className="mb-4 text-center text-muted-foreground text-sm">
+                    {t('evaluating')}...
+                  </div>
+                )}
+
                 {/* Move Input */}
                 <div className="mb-4">
                   <div>
@@ -314,7 +498,7 @@ export function PostmortemClient({
                         setMoveInput(value);
                       }}
                       onSubmit={handleSubmitMove}
-                      disabled={false}
+                      disabled={isEvaluating}
                       placeholder={t('inputMove')}
                       showSuggestions={preferences.enableAutoComplete}
                       showSubmitButton={true}
@@ -324,20 +508,21 @@ export function PostmortemClient({
 
                 {/* Action Buttons and Settings */}
                 <div className="pb-2">
-                  <div className="flex gap-2 justify-center">
+                  {/* I don't know button */}
+                  <div className="flex gap-2 justify-center mb-4">
                     <Button
                       variant="secondary"
                       onClick={handleDontKnow}
                       icon={<FaQuestionCircle className="w-4 h-4" />}
-                      disabled={false}
+                      disabled={isEvaluating}
                       className="px-4 py-2"
                     >
                       {t('dontKnow')}
                     </Button>
                   </div>
 
-                  {/* Auto-opponent checkbox */}
-                  <div className="mt-4 text-center">
+                  {/* Settings checkboxes */}
+                  <div className="flex flex-col gap-2 mb-4">
                     <label className="inline-flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -349,12 +534,30 @@ export function PostmortemClient({
                         {t('autoOpponentMoves')}
                       </span>
                     </label>
+                    <div className="inline-flex items-center gap-2">
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showEvaluation}
+                          onChange={(e) => setShowEvaluation(e.target.checked)}
+                          className="w-4 h-4 rounded border-border"
+                        />
+                        <span className="text-sm text-muted-foreground">{t('showEvaluation')}</span>
+                      </label>
+                      <button
+                        onClick={() => setShowEvalInfo(true)}
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                        aria-label="Evaluation information"
+                      >
+                        <FaInfoCircle className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Move Log */}
                   {moveLog.length > 0 && (
                     <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
-                      <div className="space-y-1 font-mono text-sm">
+                      <div className="font-mono text-sm">
                         {[...moveLog].reverse().map((entry, index) => {
                           const moveNotation = entry.isWhiteMove
                             ? `${entry.moveNumber}. ${entry.move}`
@@ -362,18 +565,32 @@ export function PostmortemClient({
 
                           if (entry.status === 'correct') {
                             return (
-                              <div
-                                key={moveLog.length - 1 - index}
-                                className="text-green-600 dark:text-green-400"
-                              >
-                                {moveNotation} <FaCheck className="inline w-3 h-3" />
+                              <div key={moveLog.length - 1 - index} className="mb-2">
+                                <div className="text-green-600 dark:text-green-400">
+                                  {moveNotation} <FaCheck className="inline w-3 h-3" />
+                                </div>
+                                {entry.evaluation && (
+                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                    {getEvaluationIcon(
+                                      entry.evaluation.score,
+                                      entry.evaluation.mate
+                                    )}
+                                    <span>
+                                      {entry.evaluation.text} (
+                                      {entry.evaluation.mate
+                                        ? `#${entry.evaluation.mate}`
+                                        : (entry.evaluation.score / 100).toFixed(2)}
+                                      )
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             );
                           } else if (entry.status === 'incorrect') {
                             return (
                               <div
                                 key={moveLog.length - 1 - index}
-                                className="text-red-600 dark:text-red-400"
+                                className="text-red-600 dark:text-red-400 mb-2"
                               >
                                 {entry.incorrectMove
                                   ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
@@ -383,11 +600,23 @@ export function PostmortemClient({
                           } else {
                             // auto
                             return (
-                              <div
-                                key={moveLog.length - 1 - index}
-                                className="text-muted-foreground"
-                              >
-                                {moveNotation}
+                              <div key={moveLog.length - 1 - index} className="mb-2">
+                                <div className="text-muted-foreground">{moveNotation}</div>
+                                {entry.evaluation && (
+                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                    {getEvaluationIcon(
+                                      entry.evaluation.score,
+                                      entry.evaluation.mate
+                                    )}
+                                    <span>
+                                      {entry.evaluation.text} (
+                                      {entry.evaluation.mate
+                                        ? `#${entry.evaluation.mate}`
+                                        : (entry.evaluation.score / 100).toFixed(2)}
+                                      )
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             );
                           }
@@ -409,7 +638,7 @@ export function PostmortemClient({
                 {/* Move Log - also show when completed */}
                 {moveLog.length > 0 && (
                   <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
-                    <div className="space-y-1 font-mono text-sm">
+                    <div className="font-mono text-sm">
                       {[...moveLog].reverse().map((entry, index) => {
                         const moveNotation = entry.isWhiteMove
                           ? `${entry.moveNumber}. ${entry.move}`
@@ -417,18 +646,29 @@ export function PostmortemClient({
 
                         if (entry.status === 'correct') {
                           return (
-                            <div
-                              key={moveLog.length - 1 - index}
-                              className="text-green-600 dark:text-green-400"
-                            >
-                              {moveNotation} <FaCheck className="inline w-3 h-3" />
+                            <div key={moveLog.length - 1 - index} className="mb-2">
+                              <div className="text-green-600 dark:text-green-400">
+                                {moveNotation} <FaCheck className="inline w-3 h-3" />
+                              </div>
+                              {entry.evaluation && (
+                                <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                  {getEvaluationIcon(entry.evaluation.score, entry.evaluation.mate)}
+                                  <span>
+                                    {entry.evaluation.text} (
+                                    {entry.evaluation.mate
+                                      ? `#${entry.evaluation.mate}`
+                                      : (entry.evaluation.score / 100).toFixed(2)}
+                                    )
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           );
                         } else if (entry.status === 'incorrect') {
                           return (
                             <div
                               key={moveLog.length - 1 - index}
-                              className="text-red-600 dark:text-red-400"
+                              className="text-red-600 dark:text-red-400 mb-2"
                             >
                               {entry.incorrectMove
                                 ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
@@ -438,8 +678,20 @@ export function PostmortemClient({
                         } else {
                           // auto
                           return (
-                            <div key={moveLog.length - 1 - index} className="text-muted-foreground">
-                              {moveNotation}
+                            <div key={moveLog.length - 1 - index} className="mb-2">
+                              <div className="text-muted-foreground">{moveNotation}</div>
+                              {entry.evaluation && (
+                                <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                  {getEvaluationIcon(entry.evaluation.score, entry.evaluation.mate)}
+                                  <span>
+                                    {entry.evaluation.text} (
+                                    {entry.evaluation.mate
+                                      ? `#${entry.evaluation.mate}`
+                                      : (entry.evaluation.score / 100).toFixed(2)}
+                                    )
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           );
                         }
@@ -481,6 +733,75 @@ export function PostmortemClient({
           </div>
         </div>
       </div>
+
+      {/* Evaluation Info Modal */}
+      <InfoModal
+        isOpen={showEvalInfo}
+        onClose={() => setShowEvalInfo(false)}
+        title={t('evalInfoTitle')}
+      >
+        <div className="space-y-4">
+          <div>
+            <p className="mb-3">{t('evalInfoDescription')}</p>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>{t('evalInfoPoint1')}</li>
+              <li>{t('evalInfoPoint2')}</li>
+              <li>{t('evalInfoPoint3')}</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">{t('evalScoreMeaning')}</h3>
+            <p className="text-sm text-muted-foreground">{t('evalScoreDescription')}</p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">{t('evalCriteriaTitle')}</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 flex-shrink-0">
+                  <FaStar className="w-2.5 h-2.5 text-white" />
+                </span>
+                <span>
+                  <strong>{t('evalBest')}</strong>: {t('evalBestCriteria')}
+                </span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 flex-shrink-0">
+                  <FaCheck className="w-2.5 h-2.5 text-white" />
+                </span>
+                <span>
+                  <strong>{t('evalGood')}</strong>: {t('evalGoodCriteria')}
+                </span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-500 text-white text-[10px] font-bold flex-shrink-0">
+                  ?!
+                </span>
+                <span>
+                  <strong>{t('evalInaccuracy')}</strong>: {t('evalInaccuracyCriteria')}
+                </span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex-shrink-0">
+                  ?
+                </span>
+                <span>
+                  <strong>{t('evalMistake')}</strong>: {t('evalMistakeCriteria')}
+                </span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex-shrink-0">
+                  ??
+                </span>
+                <span>
+                  <strong>{t('evalBlunder')}</strong>: {t('evalBlunderCriteria')}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </InfoModal>
     </div>
   );
 }
