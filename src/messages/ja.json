@@ -466,7 +466,8 @@
   },
   "postmortem": {
     "title": "感想戦",
-    "description": "記憶を頼りに全ての手を入力して棋譜を再現しましょう",
+    "infoModalTitle": "感想戦について",
+    "description": "全ての手を入力して棋譜を再現することで、記憶力の強化を計る機能です",
     "autoOpponentMoves": "相手の手を自動入力",
     "autoOpponentMovesDescription": "自分の手だけを入力し、相手の手は自動的に入力されます",
     "inputMove": "手を入力",

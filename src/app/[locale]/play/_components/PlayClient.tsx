@@ -908,6 +908,13 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       params.set('color', playerSide);
                       params.set('autoOpponent', 'true');
 
+                      // Pass game parameters to allow returning to the exact game state
+                      if (initialGameId) {
+                        params.set('gameId', initialGameId);
+                      }
+                      params.set('skillLevel', skillLevel.toString());
+                      params.set('moves', JSON.stringify(moves));
+
                       router.push(`/${locale}/play/postmortem?${params.toString()}`);
                     }}
                     className="w-full rounded-xl font-medium"

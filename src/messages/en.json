@@ -466,7 +466,8 @@
   },
   "postmortem": {
     "title": "Game Review",
-    "description": "Replay the game by entering all moves from memory",
+    "infoModalTitle": "About Game Review",
+    "description": "A feature to strengthen your memory by replaying all moves from the game",
     "autoOpponentMoves": "Auto-fill opponent's moves",
     "autoOpponentMovesDescription": "Only enter your own moves; opponent's moves will be filled automatically",
     "inputMove": "Enter move",
