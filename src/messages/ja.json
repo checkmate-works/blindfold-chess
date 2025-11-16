@@ -461,7 +461,28 @@
     "confirmRestart": "やり直す",
     "newGameFromHere": "ここから新規対局",
     "saving": "保存中...",
-    "saved": "保存済み"
+    "saved": "保存済み",
+    "postmortem": "感想戦"
+  },
+  "postmortem": {
+    "title": "感想戦",
+    "description": "記憶を頼りに全ての手を入力して棋譜を再現しましょう",
+    "autoOpponentMoves": "相手の手を自動入力",
+    "autoOpponentMovesDescription": "自分の手だけを入力し、相手の手は自動的に入力されます",
+    "inputMove": "手を入力",
+    "dontKnow": "わからない",
+    "correctMove": "正解！",
+    "incorrectMove": "違う手です。もう一度試してください。",
+    "moveNumber": "{number}手目",
+    "yourTurn": "あなたの番",
+    "opponentTurn": "相手の番",
+    "completed": "感想戦完了！",
+    "completedMessage": "全ての手を正しく再現できました！",
+    "backToGame": "対局に戻る",
+    "progress": "進捗: {current} / {total} 手",
+    "showBoard": "ボードを表示",
+    "hideBoard": "ボードを隠す",
+    "moves": "棋譜"
   },
   "playError": {
     "title": "ゲームの復旧",

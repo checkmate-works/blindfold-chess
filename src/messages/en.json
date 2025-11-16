@@ -461,7 +461,28 @@
     "confirmRestart": "Restart",
     "newGameFromHere": "New game from here",
     "saving": "Saving...",
-    "saved": "Saved"
+    "saved": "Saved",
+    "postmortem": "Game Review"
+  },
+  "postmortem": {
+    "title": "Game Review",
+    "description": "Replay the game by entering all moves from memory",
+    "autoOpponentMoves": "Auto-fill opponent's moves",
+    "autoOpponentMovesDescription": "Only enter your own moves; opponent's moves will be filled automatically",
+    "inputMove": "Enter move",
+    "dontKnow": "I don't know",
+    "correctMove": "Correct!",
+    "incorrectMove": "Incorrect move. Try again.",
+    "moveNumber": "Move {number}",
+    "yourTurn": "Your turn",
+    "opponentTurn": "Opponent's turn",
+    "completed": "Game Review Completed!",
+    "completedMessage": "You successfully replayed all moves from the game!",
+    "backToGame": "Back to Game",
+    "progress": "Progress: {current} / {total} moves",
+    "showBoard": "Show Board",
+    "hideBoard": "Hide Board",
+    "moves": "Moves"
   },
   "playError": {
     "title": "Game Recovery",

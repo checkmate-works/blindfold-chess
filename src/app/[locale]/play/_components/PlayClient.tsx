@@ -877,7 +877,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
             {/* New Game Button */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-4 pb-4 px-4">
+              <div className="mt-4 pb-4 px-4 space-y-2">
                 <Button
                   variant="secondary"
                   size="lg"
@@ -887,6 +887,34 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 >
                   {t('newGame')}
                 </Button>
+                {moves.length > 0 && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={() => {
+                      // Create PGN from moves
+                      const pgnMoves = formattedPgn
+                        .map((move) => {
+                          const moveNumber = `${move.moveNumber}.`;
+                          const movePair = move.blackMove
+                            ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
+                            : `${moveNumber} ${move.whiteMove}`;
+                          return movePair;
+                        })
+                        .join(' ');
+
+                      const params = new URLSearchParams();
+                      params.set('pgn', pgnMoves);
+                      params.set('color', playerSide);
+                      params.set('autoOpponent', 'true');
+
+                      router.push(`/${locale}/play/postmortem?${params.toString()}`);
+                    }}
+                    className="w-full rounded-xl font-medium"
+                  >
+                    {t('postmortem')}
+                  </Button>
+                )}
               </div>
             )}
           </div>
