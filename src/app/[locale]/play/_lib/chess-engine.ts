@@ -252,9 +252,17 @@ export class ChessEngine {
           this.pendingCallbacks.delete('bestmove');
 
           if (latestScore !== null) {
+            // Stockfish returns score from the perspective of the side to move
+            // We need to convert it to always be from white's perspective
+            // FEN format: "... w ..." means white to move, "... b ..." means black to move
+            const isWhiteToMove = fen.split(' ')[1] === 'w';
+            const scoreFromWhitePerspective = isWhiteToMove ? latestScore : -latestScore;
+            const mateFromWhitePerspective =
+              latestMate !== undefined ? (isWhiteToMove ? latestMate : -latestMate) : undefined;
+
             resolve({
-              score: latestScore,
-              mate: latestMate,
+              score: scoreFromWhitePerspective,
+              mate: mateFromWhitePerspective,
             });
           } else {
             reject(new Error('No evaluation score received'));

@@ -42,26 +42,23 @@ type MoveLogEntry = {
     score: number;
     mate?: number;
     text: string; // 最善です, 好手です, etc.
+    loss: number; // Evaluation loss from this move (centipawns)
   };
 };
 
-// Helper function to get evaluation text based on score
-function getEvaluationText(t: (key: string) => string, score: number, mate?: number): string {
-  if (mate !== undefined) {
-    return mate > 0 ? t('evalMateIn') : t('evalMated');
-  }
-
-  const absScore = Math.abs(score);
-  if (absScore <= 20) return t('evalBest');
-  if (absScore <= 50) return t('evalGood');
-  if (absScore <= 100) return t('evalInaccuracy');
-  if (absScore <= 300) return t('evalMistake');
+// Helper function to get evaluation text based on evaluation loss
+// loss is the absolute difference from the previous position (always positive)
+function getEvaluationText(t: (key: string) => string, loss: number): string {
+  if (loss <= 20) return t('evalBest');
+  if (loss <= 50) return t('evalGood');
+  if (loss <= 100) return t('evalInaccuracy');
+  if (loss <= 300) return t('evalMistake');
   return t('evalBlunder');
 }
 
-// Helper function to get evaluation icon based on score (chess.com style)
-function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
-  if (mate !== undefined) {
+// Helper function to get evaluation icon based on evaluation loss (chess.com style)
+function getEvaluationIcon(loss: number, isMate: boolean = false): ReactElement | null {
+  if (isMate) {
     // Checkmate - star (same as best move)
     return (
       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
@@ -70,8 +67,7 @@ function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
     );
   }
 
-  const absScore = Math.abs(score);
-  if (absScore <= 20) {
+  if (loss <= 20) {
     // Best move - star with green background
     return (
       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
@@ -79,7 +75,7 @@ function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
       </span>
     );
   }
-  if (absScore <= 50) {
+  if (loss <= 50) {
     // Good move - checkmark with green background and white text
     return (
       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
@@ -87,7 +83,7 @@ function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
       </span>
     );
   }
-  if (absScore <= 100) {
+  if (loss <= 100) {
     // Inaccuracy - ?! with yellow background
     return (
       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
@@ -95,7 +91,7 @@ function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
       </span>
     );
   }
-  if (absScore <= 300) {
+  if (loss <= 300) {
     // Mistake - ? with orange background
     return (
       <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
@@ -111,25 +107,25 @@ function getEvaluationIcon(score: number, mate?: number): ReactElement | null {
   );
 }
 
+// Cache for position evaluations to avoid re-evaluating the same position
+const evaluationCache = new Map<string, { score: number; mate?: number }>();
+
 // Helper function to get evaluation from engine
 async function getPositionEvaluation(
   moves: AlgebraicNotation[],
   moveIndex: number,
-  t: (key: string) => string
+  t: (key: string) => string,
+  previousEval?: { score: number; mate?: number } // Pass previous evaluation to avoid re-calculation
 ): Promise<
   | {
       score: number;
       mate?: number;
       text: string;
+      loss: number; // Evaluation loss from this move
     }
   | undefined
 > {
   try {
-    const chess = new Chess();
-    for (let i = 0; i <= moveIndex; i++) {
-      chess.move(moves[i]);
-    }
-    const fen = chess.fen();
     const engine = getChessEngine();
 
     // Wait for engine to be ready
@@ -140,14 +136,79 @@ async function getPositionEvaluation(
       retries++;
     }
 
-    if (engine.isReady) {
-      const evalResult = await engine.getEvaluation(fen, 12); // Reduced depth for better performance
-      return {
-        score: evalResult.score,
-        mate: evalResult.mate,
-        text: getEvaluationText(t, evalResult.score, evalResult.mate),
-      };
+    if (!engine.isReady) {
+      return undefined;
     }
+
+    // Get evaluation BEFORE the move (use cached value if available)
+    let evalBefore: { score: number; mate?: number };
+
+    if (previousEval) {
+      // Use the previous evaluation (which is the position before this move)
+      evalBefore = previousEval;
+    } else {
+      // First move - evaluate the starting position
+      const chessBefore = new Chess();
+      for (let i = 0; i < moveIndex; i++) {
+        chessBefore.move(moves[i]);
+      }
+      const fenBefore = chessBefore.fen();
+
+      // Check cache
+      if (evaluationCache.has(fenBefore)) {
+        evalBefore = evaluationCache.get(fenBefore)!;
+      } else {
+        evalBefore = await engine.getEvaluation(fenBefore, 12);
+        evaluationCache.set(fenBefore, evalBefore);
+      }
+    }
+
+    // Get evaluation AFTER the move
+    const chessAfter = new Chess();
+    for (let i = 0; i <= moveIndex; i++) {
+      chessAfter.move(moves[i]);
+    }
+    const fenAfter = chessAfter.fen();
+
+    let evalAfter: { score: number; mate?: number };
+    if (evaluationCache.has(fenAfter)) {
+      evalAfter = evaluationCache.get(fenAfter)!;
+    } else {
+      evalAfter = await engine.getEvaluation(fenAfter, 12);
+      evaluationCache.set(fenAfter, evalAfter);
+    }
+
+    // Calculate evaluation loss
+    // For white's move: loss = evalBefore - evalAfter (positive means worse for white)
+    // For black's move: loss = evalAfter - evalBefore (positive means worse for black)
+    const isWhiteMove = moveIndex % 2 === 0;
+    let loss: number;
+
+    if (evalAfter.mate !== undefined) {
+      // If there's a mate, consider it a best move (0 loss)
+      loss = 0;
+    } else if (evalBefore.mate !== undefined) {
+      // If we had a mate and lost it, that's a big blunder
+      loss = 1000;
+    } else {
+      // Normal case: calculate centipawn loss
+      if (isWhiteMove) {
+        // White wants higher scores, so loss = before - after
+        loss = evalBefore.score - evalAfter.score;
+      } else {
+        // Black wants lower scores, so loss = after - before
+        loss = evalAfter.score - evalBefore.score;
+      }
+      // Ensure loss is non-negative
+      loss = Math.max(0, loss);
+    }
+
+    return {
+      score: evalAfter.score,
+      mate: evalAfter.mate,
+      text: getEvaluationText(t, loss),
+      loss,
+    };
   } catch (error) {
     // Silently handle evaluation errors (e.g., timeout in background tabs)
     // This is expected behavior and doesn't affect the core postmortem functionality
@@ -182,8 +243,11 @@ export function PostmortemClient({
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showEvalInfo, setShowEvalInfo] = useState(false);
 
-  // Parse PGN on mount
+  // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
+    // Clear evaluation cache when component mounts or pgn changes
+    evaluationCache.clear();
+
     try {
       const chess = new Chess();
       // Remove move numbers and periods from PGN
@@ -262,8 +326,17 @@ export function PostmortemClient({
         setCurrentMoveIndex(newIndex);
 
         // Get evaluation if enabled
+        // Get previous evaluation from the last log entry (if exists)
+        const previousEval =
+          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+            ? {
+                score: moveLog[moveLog.length - 1].evaluation!.score,
+                mate: moveLog[moveLog.length - 1].evaluation!.mate,
+              }
+            : undefined;
+
         const evaluation = showEvaluation
-          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, previousEval)
           : undefined;
 
         // Add to log as auto-filled (opponent's move)
@@ -318,8 +391,17 @@ export function PostmortemClient({
         setMoveInput('');
 
         // Get evaluation if enabled
+        // Get previous evaluation from the last log entry (if exists)
+        const previousEval =
+          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+            ? {
+                score: moveLog[moveLog.length - 1].evaluation!.score,
+                mate: moveLog[moveLog.length - 1].evaluation!.mate,
+              }
+            : undefined;
+
         const evaluation = showEvaluation
-          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, previousEval)
           : undefined;
 
         // Add to log
@@ -572,8 +654,8 @@ export function PostmortemClient({
                                 {entry.evaluation && (
                                   <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
                                     {getEvaluationIcon(
-                                      entry.evaluation.score,
-                                      entry.evaluation.mate
+                                      entry.evaluation.loss,
+                                      entry.evaluation.mate !== undefined
                                     )}
                                     <span>
                                       {entry.evaluation.text} (
@@ -605,8 +687,8 @@ export function PostmortemClient({
                                 {entry.evaluation && (
                                   <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
                                     {getEvaluationIcon(
-                                      entry.evaluation.score,
-                                      entry.evaluation.mate
+                                      entry.evaluation.loss,
+                                      entry.evaluation.mate !== undefined
                                     )}
                                     <span>
                                       {entry.evaluation.text} (
@@ -652,7 +734,10 @@ export function PostmortemClient({
                               </div>
                               {entry.evaluation && (
                                 <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                  {getEvaluationIcon(entry.evaluation.score, entry.evaluation.mate)}
+                                  {getEvaluationIcon(
+                                    entry.evaluation.loss,
+                                    entry.evaluation.mate !== undefined
+                                  )}
                                   <span>
                                     {entry.evaluation.text} (
                                     {entry.evaluation.mate
@@ -682,7 +767,10 @@ export function PostmortemClient({
                               <div className="text-muted-foreground">{moveNotation}</div>
                               {entry.evaluation && (
                                 <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                  {getEvaluationIcon(entry.evaluation.score, entry.evaluation.mate)}
+                                  {getEvaluationIcon(
+                                    entry.evaluation.loss,
+                                    entry.evaluation.mate !== undefined
+                                  )}
                                   <span>
                                     {entry.evaluation.text} (
                                     {entry.evaluation.mate
