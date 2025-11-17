@@ -33,6 +33,7 @@ type Props = {
   playerColor: 'white' | 'black';
   autoOpponent: boolean;
   initialOffset?: number;
+  onSelectedMoveChange?: (moveDisplay: ReactElement | null) => void;
 };
 
 type MoveLogEntry = {
@@ -228,6 +229,7 @@ export function PostmortemClient({
   playerColor,
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
+  onSelectedMoveChange,
 }: Props) {
   const t = useTranslations('postmortem');
   const router = useRouter();
@@ -248,6 +250,7 @@ export function PostmortemClient({
   const [isCopied, setIsCopied] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     player: { own: true, opponent: true },
     evaluation: {
@@ -301,11 +304,15 @@ export function PostmortemClient({
   // Get current FEN for board display
   const getCurrentFen = useCallback(() => {
     const chess = new Chess();
-    for (let i = 0; i < userMoves.length; i++) {
-      chess.move(userMoves[i]);
+    // If a move is selected for review, show that position
+    const movesToShow = selectedMoveIndex !== null ? selectedMoveIndex + 1 : userMoves.length;
+    const moves = selectedMoveIndex !== null ? originalMoves : userMoves;
+
+    for (let i = 0; i < movesToShow; i++) {
+      chess.move(moves[i]);
     }
     return chess.fen();
-  }, [userMoves]);
+  }, [userMoves, originalMoves, selectedMoveIndex]);
 
   // Check if current move is player's turn
   const isPlayerTurn = useCallback(() => {
@@ -605,6 +612,69 @@ export function PostmortemClient({
     });
   }, []);
 
+  // Get selected move info
+  const getSelectedMoveInfo = useCallback(() => {
+    if (selectedMoveIndex === null) return null;
+    return moveLog.find((entry, idx) => {
+      // Calculate the actual move index in the game
+      let currentIndex = 0;
+      for (let i = 0; i <= idx; i++) {
+        if (i === idx && currentIndex === selectedMoveIndex) {
+          return true;
+        }
+        currentIndex++;
+      }
+      return false;
+    });
+  }, [selectedMoveIndex, moveLog]);
+
+  // Handle move log click
+  const handleMoveClick = useCallback(
+    (entry: MoveLogEntry) => {
+      // Find the index of this move in the original moves
+      let moveIndex = 0;
+      for (const logEntry of moveLog) {
+        if (logEntry === entry) {
+          setSelectedMoveIndex(moveIndex);
+          return;
+        }
+        moveIndex++;
+      }
+    },
+    [moveLog]
+  );
+
+  // Update parent component with selected move display
+  useEffect(() => {
+    if (!onSelectedMoveChange) return;
+
+    if (selectedMoveIndex === null) {
+      onSelectedMoveChange(null);
+      return;
+    }
+
+    const entry = moveLog[selectedMoveIndex];
+    if (!entry) {
+      onSelectedMoveChange(null);
+      return;
+    }
+
+    const moveNotation = entry.isWhiteMove
+      ? `${entry.moveNumber}. ${entry.move}`
+      : `${entry.moveNumber}... ${entry.move}`;
+
+    // Create display element with evaluation icon if available
+    const displayElement = (
+      <span className="flex items-center gap-2">
+        {moveNotation}
+        {entry.evaluation &&
+          getEvaluationIcon(entry.evaluation.loss, entry.evaluation.mate !== undefined)}
+      </span>
+    );
+
+    onSelectedMoveChange(displayElement);
+  }, [selectedMoveIndex, moveLog, onSelectedMoveChange]);
+
   const currentFen = getCurrentFen();
   const totalMoves = originalMoves.length;
   const progress = currentMoveIndex;
@@ -845,7 +915,18 @@ export function PostmortemClient({
                 <div className="py-8 text-center">
                   <FaCheck className="w-12 h-12 text-green-500 mx-auto mb-4" />
                   <h3 className="text-xl font-bold mb-2">{t('completed')}</h3>
-                  <p className="text-muted-foreground">{t('completedMessage')}</p>
+                  <p className="text-muted-foreground">
+                    {selectedMoveIndex !== null ? (
+                      <button
+                        onClick={() => setSelectedMoveIndex(null)}
+                        className="text-sm underline hover:text-foreground"
+                      >
+                        {t('backToCurrentPosition')}
+                      </button>
+                    ) : (
+                      t('completedMessage')
+                    )}
+                  </p>
                 </div>
 
                 {/* Move Log - also show when completed */}
@@ -874,7 +955,11 @@ export function PostmortemClient({
 
                           if (entry.status === 'correct') {
                             return (
-                              <div key={keyId} className="mb-2">
+                              <div
+                                key={keyId}
+                                className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                onClick={() => handleMoveClick(entry)}
+                              >
                                 <div className="text-green-600 dark:text-green-400">
                                   {moveNotation} <FaCheck className="inline w-3 h-3" />
                                 </div>
@@ -897,7 +982,11 @@ export function PostmortemClient({
                             );
                           } else if (entry.status === 'incorrect') {
                             return (
-                              <div key={keyId} className="text-red-600 dark:text-red-400 mb-2">
+                              <div
+                                key={keyId}
+                                className="text-red-600 dark:text-red-400 mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                onClick={() => handleMoveClick(entry)}
+                              >
                                 {entry.incorrectMove
                                   ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
                                   : `${moveNotation} ${t('logIncorrect')}`}
@@ -906,7 +995,11 @@ export function PostmortemClient({
                           } else {
                             // auto
                             return (
-                              <div key={keyId} className="mb-2">
+                              <div
+                                key={keyId}
+                                className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                onClick={() => handleMoveClick(entry)}
+                              >
                                 <div className="text-muted-foreground">{moveNotation}</div>
                                 {entry.evaluation && (
                                   <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">

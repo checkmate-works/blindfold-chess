@@ -526,7 +526,8 @@
     "filterAuto": "自動入力",
     "filterEvaluation": "評価",
     "resetFilters": "リセット",
-    "applyFilters": "適用"
+    "applyFilters": "適用",
+    "backToCurrentPosition": "現在の局面に戻る"
   },
   "playError": {
     "title": "ゲームの復旧",

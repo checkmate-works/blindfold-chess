@@ -526,7 +526,8 @@
     "filterAuto": "Auto-filled",
     "filterEvaluation": "Evaluation",
     "resetFilters": "Reset",
-    "applyFilters": "Apply"
+    "applyFilters": "Apply",
+    "backToCurrentPosition": "Back to current position"
   },
   "playError": {
     "title": "Game Recovery",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactElement, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -21,6 +21,7 @@ export default function PostmortemPage() {
   const t = useTranslations('postmortem');
   const tPlay = useTranslations('play');
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<ReactElement | null>(null);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
@@ -62,14 +63,16 @@ export default function PostmortemPage() {
     <div className="space-y-8">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <PageTitle>{t('title')}</PageTitle>
-          <button
-            onClick={() => setIsInfoModalOpen(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1"
-            aria-label="Information"
-          >
-            <FaInfoCircle className="w-5 h-5" />
-          </button>
+          <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
+          {!selectedMoveDisplay && (
+            <button
+              onClick={() => setIsInfoModalOpen(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1"
+              aria-label="Information"
+            >
+              <FaInfoCircle className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
       <PostmortemClient
@@ -78,6 +81,7 @@ export default function PostmortemPage() {
         playerColor={playerColor}
         autoOpponent={autoOpponent}
         initialOffset={offset}
+        onSelectedMoveChange={setSelectedMoveDisplay}
       />
       <ClientBreadcrumb
         items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
