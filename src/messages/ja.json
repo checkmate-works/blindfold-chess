@@ -492,6 +492,7 @@
     "evalBlunderCriteria": "評価値の損失が3.0ポーン以上",
     "inputMove": "手を入力",
     "dontKnow": "わからない",
+    "analyzeAll": "全て解析",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",
     "logIncorrect": "は間違い",

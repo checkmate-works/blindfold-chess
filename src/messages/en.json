@@ -492,6 +492,7 @@
     "evalBlunderCriteria": "Loss of more than 3.0 pawns",
     "inputMove": "Enter move",
     "dontKnow": "I don't know",
+    "analyzeAll": "Analyze All",
     "correctMove": "Correct!",
     "incorrectMove": "Incorrect move. Try again.",
     "logIncorrect": "is incorrect",

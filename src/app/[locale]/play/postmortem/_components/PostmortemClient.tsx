@@ -245,6 +245,7 @@ export function PostmortemClient({
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showEvalInfo, setShowEvalInfo] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [dontKnowCount, setDontKnowCount] = useState(0);
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -447,6 +448,7 @@ export function PostmortemClient({
     if (isEvaluating) return; // Prevent action while evaluating
 
     setIsEvaluating(true);
+    setDontKnowCount((prev) => prev + 1);
 
     const correctMove = originalMoves[currentMoveIndex];
     const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
@@ -481,6 +483,58 @@ export function PostmortemClient({
 
     setIsEvaluating(false);
   }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t]);
+
+  // Handle "Analyze All" button
+  const handleAnalyzeAll = useCallback(async () => {
+    if (isEvaluating) return;
+
+    setIsEvaluating(true);
+
+    // Auto-fill all remaining moves
+    const remainingMoves = originalMoves.slice(currentMoveIndex);
+    const newMoves = [...userMoves, ...remainingMoves];
+    setUserMoves(newMoves);
+
+    // Add all remaining moves to log with evaluation if enabled
+    const newLogEntries: MoveLogEntry[] = [];
+    let previousEval =
+      moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+        ? {
+            score: moveLog[moveLog.length - 1].evaluation!.score,
+            mate: moveLog[moveLog.length - 1].evaluation!.mate,
+          }
+        : undefined;
+
+    for (let i = currentMoveIndex; i < originalMoves.length; i++) {
+      const move = originalMoves[i];
+      const moveNumber = Math.floor(i / 2) + 1;
+      const isWhiteMove = i % 2 === 0;
+
+      const evaluation = showEvaluation
+        ? await getPositionEvaluation(originalMoves, i, t, previousEval)
+        : undefined;
+
+      if (evaluation) {
+        previousEval = {
+          score: evaluation.score,
+          mate: evaluation.mate,
+        };
+      }
+
+      newLogEntries.push({
+        moveNumber,
+        isWhiteMove,
+        move,
+        status: 'auto',
+        evaluation,
+      });
+    }
+
+    setMoveLog((prev) => [...prev, ...newLogEntries]);
+    setCurrentMoveIndex(originalMoves.length);
+    setIsCompleted(true);
+    setIsEvaluating(false);
+  }, [currentMoveIndex, originalMoves, userMoves, moveLog, showEvaluation, isEvaluating, t]);
 
   // Handle back to game
   const handleBackToGame = useCallback(() => {
@@ -593,7 +647,7 @@ export function PostmortemClient({
 
                 {/* Action Buttons and Settings */}
                 <div className="pb-2">
-                  {/* I don't know button */}
+                  {/* I don't know and Analyze All buttons */}
                   <div className="flex gap-2 justify-center mb-4">
                     <Button
                       variant="secondary"
@@ -604,6 +658,16 @@ export function PostmortemClient({
                     >
                       {t('dontKnow')}
                     </Button>
+                    {dontKnowCount >= 2 && (
+                      <button
+                        onClick={handleAnalyzeAll}
+                        disabled={isEvaluating}
+                        className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <FaCheck className="w-4 h-4" />
+                        {t('analyzeAll')}
+                      </button>
+                    )}
                   </div>
 
                   {/* Settings checkboxes */}
