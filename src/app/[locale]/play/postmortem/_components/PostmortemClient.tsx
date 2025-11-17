@@ -10,6 +10,7 @@ import { Chess } from 'chess.js';
 import {
   FaCheck,
   FaChevronDown,
+  FaCopy,
   FaEye,
   FaEyeSlash,
   FaInfoCircle,
@@ -23,6 +24,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
+import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
 type Props = {
   locale: Locale;
@@ -242,6 +244,7 @@ export function PostmortemClient({
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showEvalInfo, setShowEvalInfo] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -818,6 +821,33 @@ export function PostmortemClient({
                 <p className="text-muted-foreground text-sm">No moves yet</p>
               )}
             </div>
+
+            {/* Copy PGN Button */}
+            {formattedPgn.length > 0 && (
+              <div className="px-4 pb-4">
+                <Button
+                  variant="secondary"
+                  icon={
+                    isCopied ? (
+                      <FaCheck className="w-3 h-3 text-green-500" />
+                    ) : (
+                      <FaCopy className="w-3 h-3" />
+                    )
+                  }
+                  onClick={() => {
+                    const pgnText = formatPgnToText(formattedPgn);
+
+                    navigator.clipboard.writeText(pgnText).then(() => {
+                      setIsCopied(true);
+                      setTimeout(() => setIsCopied(false), 2000);
+                    });
+                  }}
+                  className="w-full"
+                >
+                  {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

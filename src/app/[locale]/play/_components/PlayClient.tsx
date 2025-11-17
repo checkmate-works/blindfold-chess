@@ -29,6 +29,7 @@ import { useAiVersus } from '../_hooks/use-ai-versus';
 import { useAutoSave } from '../_hooks/use-auto-save';
 import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
+import { formatPgnToText } from '../_lib/pgn-parser';
 import { ControlSettingsModal } from './ControlSettingsModal';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
@@ -1049,15 +1050,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                         )
                       }
                       onClick={() => {
-                        const pgnText = formattedPgn
-                          .map((move) => {
-                            const moveNumber = `${move.moveNumber}.`;
-                            const movePair = move.blackMove
-                              ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
-                              : `${moveNumber} ${move.whiteMove}`;
-                            return movePair;
-                          })
-                          .join(' ');
+                        const pgnText = formatPgnToText(formattedPgn);
 
                         navigator.clipboard.writeText(pgnText).then(() => {
                           setIsCopied(true);

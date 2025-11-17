@@ -60,6 +60,24 @@ export function validatePgnWithDetails(pgn: string): {
 }
 
 /**
+ * Format PGN moves array to text string
+ * Converts formatted move pairs to standard PGN notation
+ */
+export function formatPgnToText(
+  formattedPgn: { moveNumber: number; whiteMove: string; blackMove?: string }[]
+): string {
+  return formattedPgn
+    .map((move) => {
+      const moveNumber = `${move.moveNumber}.`;
+      const movePair = move.blackMove
+        ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
+        : `${moveNumber} ${move.whiteMove}`;
+      return movePair;
+    })
+    .join(' ');
+}
+
+/**
  * Get PGN auto-completion suggestion based on current input
  * Returns the next move number only when both moves in a pair are complete
  * Does not suggest single spaces as they are easy to type manually

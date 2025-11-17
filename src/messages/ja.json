@@ -507,7 +507,9 @@
     "progress": "進捗: {current} / {total} 手",
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
-    "moves": "棋譜"
+    "moves": "棋譜",
+    "copyPgn": "棋譜をコピー",
+    "copied": "コピー済み！"
   },
   "playError": {
     "title": "ゲームの復旧",

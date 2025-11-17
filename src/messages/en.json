@@ -507,7 +507,9 @@
     "progress": "Progress: {current} / {total} moves",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
-    "moves": "Moves"
+    "moves": "Moves",
+    "copyPgn": "Copy PGN",
+    "copied": "Copied!"
   },
   "playError": {
     "title": "Game Recovery",
