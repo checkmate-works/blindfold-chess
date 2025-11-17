@@ -57,6 +57,11 @@ export default async function FAQPage({ params }: Props) {
         ),
       }),
     },
+    {
+      id: 'chess-engine',
+      question: t('items.chessEngine.question'),
+      answer: t('items.chessEngine.answer'),
+    },
   ];
 
   return (

@@ -125,6 +125,10 @@
       "ads": {
         "question": "なぜ広告が掲載されているのですか？",
         "answer": "本サービスは無料で提供していますが、サーバーやドメインの維持費がかかります。広告収入でこれらの費用を賄っています。広告が気になる場合は、<settingsLink>設定</settingsLink>から非表示にすることができます。"
+      },
+      "chessEngine": {
+        "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
+        "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
       }
     }
   },
