@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { SITE_NAME } from '@/config';
+import { SITE_DOMAIN, SITE_NAME } from '@/config';
 
 import { LanguageButton } from './_components/LanguageButton';
 
@@ -28,7 +28,7 @@ const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
 
 export default function RootPage() {
   return (
-    <div className="fixed inset-0 min-h-screen w-screen flex items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary">
+    <div className="fixed inset-0 min-h-screen w-screen flex flex-col items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary">
       <div className="text-center px-6 py-6 md:px-4 w-full max-w-lg box-border">
         <div className="flex justify-center mb-6">
           <Image
@@ -55,6 +55,11 @@ export default function RootPage() {
             />
           ))}
         </div>
+      </div>
+
+      {/* Copyright */}
+      <div className="absolute bottom-4 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()} {SITE_DOMAIN}
       </div>
     </div>
   );

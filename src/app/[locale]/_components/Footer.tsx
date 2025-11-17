@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { SITE_DOMAIN } from '@/config';
 import { FaChevronRight, FaGithub } from 'react-icons/fa';
 
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -68,7 +69,7 @@ export async function Footer({ locale }: Props) {
 
           {/* Copyright */}
           <div className="text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Blindfold Chess
+            © {new Date().getFullYear()} {SITE_DOMAIN}
           </div>
         </div>
       </div>
