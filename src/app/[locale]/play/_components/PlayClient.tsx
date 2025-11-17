@@ -1015,16 +1015,19 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 {/* Action Buttons */}
                 {moves.length > 0 && (
                   <div className="mt-4 flex flex-col gap-4">
-                    {/* Restart from here button */}
                     {currentPosition !== -1 && currentPosition !== -2 && (
                       <>
-                        <Button
-                          variant="primary"
-                          icon={<FaPlay className="w-3 h-3" />}
-                          onClick={() => handleRestartFromPosition(currentPosition)}
-                        >
-                          {t('restartFromHere')}
-                        </Button>
+                        {/* Restart from here button - only show if game is still in progress */}
+                        {gameStatus === 'in_progress' && (
+                          <Button
+                            variant="primary"
+                            icon={<FaPlay className="w-3 h-3" />}
+                            onClick={() => handleRestartFromPosition(currentPosition)}
+                          >
+                            {t('restartFromHere')}
+                          </Button>
+                        )}
+                        {/* New game from here button - always show when navigating moves */}
                         <Button
                           variant="secondary"
                           icon={<FaPlusCircle className="w-3 h-3" />}
