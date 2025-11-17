@@ -275,6 +275,11 @@ export function PostmortemClient({
       if (initialOffset > 0 && initialOffset <= validMoves.length) {
         const restoredMoves = validMoves.slice(0, initialOffset);
         setUserMoves(restoredMoves);
+
+        // If offset reaches the end, mark as completed
+        if (initialOffset >= validMoves.length) {
+          setIsCompleted(true);
+        }
       }
     } catch (error) {
       console.error('Error parsing PGN:', error);
