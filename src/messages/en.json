@@ -514,7 +514,19 @@
     "hideBoard": "Hide Board",
     "moves": "Moves",
     "copyPgn": "Copy PGN",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "moveLog": "Move Log",
+    "filterMoves": "Filter Moves",
+    "filterPlayer": "Player",
+    "filterOwnMoves": "Own Moves",
+    "filterOpponentMoves": "Opponent Moves",
+    "filterStatus": "Status",
+    "filterCorrect": "Correct",
+    "filterIncorrect": "Incorrect",
+    "filterAuto": "Auto-filled",
+    "filterEvaluation": "Evaluation",
+    "resetFilters": "Reset",
+    "applyFilters": "Apply"
   },
   "playError": {
     "title": "Game Recovery",

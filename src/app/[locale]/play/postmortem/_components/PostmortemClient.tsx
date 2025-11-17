@@ -13,6 +13,7 @@ import {
   FaCopy,
   FaEye,
   FaEyeSlash,
+  FaFilter,
   FaInfoCircle,
   FaQuestionCircle,
   FaStar,
@@ -246,6 +247,17 @@ export function PostmortemClient({
   const [showEvalInfo, setShowEvalInfo] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filters, setFilters] = useState({
+    player: { own: true, opponent: true },
+    evaluation: {
+      best: true,
+      good: true,
+      inaccuracy: true,
+      mistake: true,
+      blunder: true,
+    },
+  });
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -546,6 +558,53 @@ export function PostmortemClient({
     router.push(`/${locale}/play`);
   }, [router, locale]);
 
+  // Filter move log based on selected filters
+  const getFilteredMoveLog = useCallback(() => {
+    return moveLog.filter((entry) => {
+      // Check player filter
+      const isOwnMove =
+        (playerColor === 'white' && entry.isWhiteMove) ||
+        (playerColor === 'black' && !entry.isWhiteMove);
+      if (isOwnMove && !filters.player.own) return false;
+      if (!isOwnMove && !filters.player.opponent) return false;
+
+      // Check evaluation filter
+      // If any evaluation filter is disabled, hide moves without evaluation
+      const hasAnyEvaluationFilterDisabled = !Object.values(filters.evaluation).every((v) => v);
+
+      if (entry.status !== 'incorrect') {
+        if (entry.evaluation) {
+          // Has evaluation - check against filters
+          const loss = entry.evaluation.loss;
+          if (loss <= 20 && !filters.evaluation.best) return false;
+          if (loss > 20 && loss <= 50 && !filters.evaluation.good) return false;
+          if (loss > 50 && loss <= 100 && !filters.evaluation.inaccuracy) return false;
+          if (loss > 100 && loss <= 300 && !filters.evaluation.mistake) return false;
+          if (loss > 300 && !filters.evaluation.blunder) return false;
+        } else if (hasAnyEvaluationFilterDisabled) {
+          // No evaluation and some filters are disabled - hide this move
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [moveLog, filters, playerColor]);
+
+  // Handle filter reset
+  const handleResetFilters = useCallback(() => {
+    setFilters({
+      player: { own: true, opponent: true },
+      evaluation: {
+        best: true,
+        good: true,
+        inaccuracy: true,
+        mistake: true,
+        blunder: true,
+      },
+    });
+  }, []);
+
   const currentFen = getCurrentFen();
   const totalMoves = originalMoves.length;
   const progress = currentMoveIndex;
@@ -791,71 +850,84 @@ export function PostmortemClient({
 
                 {/* Move Log - also show when completed */}
                 {moveLog.length > 0 && (
-                  <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
-                    <div className="font-mono text-sm">
-                      {[...moveLog].reverse().map((entry, index) => {
-                        const moveNotation = entry.isWhiteMove
-                          ? `${entry.moveNumber}. ${entry.move}`
-                          : `${entry.moveNumber}... ${entry.move}`;
+                  <div className="mt-4 bg-muted/30 rounded-md">
+                    {/* Filter header - only show when completed */}
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {t('moveLog')}
+                      </span>
+                      <button
+                        onClick={() => setShowFilterModal(true)}
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-muted"
+                        aria-label={t('filterMoves')}
+                      >
+                        <FaFilter className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="p-3 max-h-48 overflow-y-auto">
+                      <div className="font-mono text-sm">
+                        {[...getFilteredMoveLog()].reverse().map((entry, index) => {
+                          const moveNotation = entry.isWhiteMove
+                            ? `${entry.moveNumber}. ${entry.move}`
+                            : `${entry.moveNumber}... ${entry.move}`;
+                          const keyId = `${entry.moveNumber}-${entry.isWhiteMove ? 'w' : 'b'}-${entry.status}`;
 
-                        if (entry.status === 'correct') {
-                          return (
-                            <div key={moveLog.length - 1 - index} className="mb-2">
-                              <div className="text-green-600 dark:text-green-400">
-                                {moveNotation} <FaCheck className="inline w-3 h-3" />
+                          if (entry.status === 'correct') {
+                            return (
+                              <div key={keyId} className="mb-2">
+                                <div className="text-green-600 dark:text-green-400">
+                                  {moveNotation} <FaCheck className="inline w-3 h-3" />
+                                </div>
+                                {entry.evaluation && (
+                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                    {getEvaluationIcon(
+                                      entry.evaluation.loss,
+                                      entry.evaluation.mate !== undefined
+                                    )}
+                                    <span>
+                                      {entry.evaluation.text} (
+                                      {entry.evaluation.mate
+                                        ? `#${entry.evaluation.mate}`
+                                        : (entry.evaluation.score / 100).toFixed(2)}
+                                      )
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                              {entry.evaluation && (
-                                <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                  {getEvaluationIcon(
-                                    entry.evaluation.loss,
-                                    entry.evaluation.mate !== undefined
-                                  )}
-                                  <span>
-                                    {entry.evaluation.text} (
-                                    {entry.evaluation.mate
-                                      ? `#${entry.evaluation.mate}`
-                                      : (entry.evaluation.score / 100).toFixed(2)}
-                                    )
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        } else if (entry.status === 'incorrect') {
-                          return (
-                            <div
-                              key={moveLog.length - 1 - index}
-                              className="text-red-600 dark:text-red-400 mb-2"
-                            >
-                              {entry.incorrectMove
-                                ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
-                                : `${moveNotation} ${t('logIncorrect')}`}
-                            </div>
-                          );
-                        } else {
-                          // auto
-                          return (
-                            <div key={moveLog.length - 1 - index} className="mb-2">
-                              <div className="text-muted-foreground">{moveNotation}</div>
-                              {entry.evaluation && (
-                                <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                  {getEvaluationIcon(
-                                    entry.evaluation.loss,
-                                    entry.evaluation.mate !== undefined
-                                  )}
-                                  <span>
-                                    {entry.evaluation.text} (
-                                    {entry.evaluation.mate
-                                      ? `#${entry.evaluation.mate}`
-                                      : (entry.evaluation.score / 100).toFixed(2)}
-                                    )
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-                      })}
+                            );
+                          } else if (entry.status === 'incorrect') {
+                            return (
+                              <div key={keyId} className="text-red-600 dark:text-red-400 mb-2">
+                                {entry.incorrectMove
+                                  ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
+                                  : `${moveNotation} ${t('logIncorrect')}`}
+                              </div>
+                            );
+                          } else {
+                            // auto
+                            return (
+                              <div key={keyId} className="mb-2">
+                                <div className="text-muted-foreground">{moveNotation}</div>
+                                {entry.evaluation && (
+                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
+                                    {getEvaluationIcon(
+                                      entry.evaluation.loss,
+                                      entry.evaluation.mate !== undefined
+                                    )}
+                                    <span>
+                                      {entry.evaluation.text} (
+                                      {entry.evaluation.mate
+                                        ? `#${entry.evaluation.mate}`
+                                        : (entry.evaluation.score / 100).toFixed(2)}
+                                      )
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -986,6 +1058,162 @@ export function PostmortemClient({
                 </span>
               </li>
             </ul>
+          </div>
+        </div>
+      </InfoModal>
+
+      {/* Filter Modal */}
+      <InfoModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        title={t('filterMoves')}
+      >
+        <div className="space-y-6">
+          {/* Player Filter */}
+          <div>
+            <h3 className="font-semibold mb-3 text-sm">{t('filterPlayer')}</h3>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.player.own}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      player: { ...prev.player, own: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm">{t('filterOwnMoves')}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.player.opponent}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      player: { ...prev.player, opponent: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm">{t('filterOpponentMoves')}</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Evaluation Filter */}
+          <div>
+            <h3 className="font-semibold mb-3 text-sm">{t('filterEvaluation')}</h3>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.evaluation.best}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      evaluation: { ...prev.evaluation, best: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm flex items-center gap-1">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+                    <FaStar className="w-2 h-2 text-white" />
+                  </span>
+                  {t('evalBest')}
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.evaluation.good}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      evaluation: { ...prev.evaluation, good: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm flex items-center gap-1">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+                    <FaCheck className="w-2 h-2 text-white" />
+                  </span>
+                  {t('evalGood')}
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.evaluation.inaccuracy}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      evaluation: { ...prev.evaluation, inaccuracy: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm flex items-center gap-1">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
+                    ?!
+                  </span>
+                  {t('evalInaccuracy')}
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.evaluation.mistake}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      evaluation: { ...prev.evaluation, mistake: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm flex items-center gap-1">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+                    ?
+                  </span>
+                  {t('evalMistake')}
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filters.evaluation.blunder}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      evaluation: { ...prev.evaluation, blunder: e.target.checked },
+                    }))
+                  }
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm flex items-center gap-1">
+                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+                    ??
+                  </span>
+                  {t('evalBlunder')}
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button variant="secondary" onClick={handleResetFilters} className="flex-1">
+              {t('resetFilters')}
+            </Button>
+            <Button variant="primary" onClick={() => setShowFilterModal(false)} className="flex-1">
+              {t('applyFilters')}
+            </Button>
           </div>
         </div>
       </InfoModal>
