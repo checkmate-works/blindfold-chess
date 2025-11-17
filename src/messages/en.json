@@ -448,7 +448,8 @@
     "configureInputMethod": "Configure input method",
     "configureSkillLevel": "Configure skill level",
     "skillLevel": "Skill Level",
-    "skillLevelDescription": "Change AI strength (1-20, higher is stronger)",
+    "levelWithNumber": "Level {level}",
+    "skillLevelDescription": "Change AI strength",
     "save": "Save",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
@@ -540,7 +541,7 @@
     "playAsBlack": "Play as Black",
     "selectLevel": "Select AI Skill Level",
     "levelWithNumber": "Level {level}",
-    "skillLevelDescription": "Level 1 (easiest) to Level 20 (strongest). Higher levels take longer to think.",
+    "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -549,7 +550,19 @@
     "gameLimitMessage": "You can save up to {limit} games.\nPlease delete existing games to start a new one.",
     "backToGameList": "Back to Game List",
     "completeSuggestion": "Complete \"{suggestion}\"",
-    "tabToComplete": "Press Tab to complete \"{suggestion}\""
+    "tabToComplete": "Press Tab to complete \"{suggestion}\"",
+    "skillLevelInfo": {
+      "title": "About Skill Levels",
+      "overview": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
+      "eloCalculationTitle": "How ELO Ratings are Calculated",
+      "eloCalculationDescription": "The ELO ratings shown are approximate values based on Stockfish engine settings:",
+      "eloLevels1to14": "Levels 1-14",
+      "eloFormula1to14": "max(800, 700 + level × 100)",
+      "eloLevels15to20": "Levels 15-20",
+      "eloFormula15to20": "2000 + level × 100",
+      "examplesTitle": "Example Ratings",
+      "note": "These ELO ratings are approximations based on the Stockfish engine's UCI_Elo and Skill Level parameters. Actual playing strength may vary depending on the position."
+    }
   },
   "privacy": {
     "title": "Privacy Policy",

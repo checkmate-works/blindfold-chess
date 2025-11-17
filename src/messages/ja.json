@@ -448,7 +448,8 @@
     "configureInputMethod": "入力方式を設定する",
     "configureSkillLevel": "スキルレベルを設定する",
     "skillLevel": "スキルレベル",
-    "skillLevelDescription": "AIの強さを変更します（1-20、数値が大きいほど強い）",
+    "levelWithNumber": "レベル {level}",
+    "skillLevelDescription": "AIの強さを変更します",
     "save": "保存",
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
@@ -540,7 +541,7 @@
     "playAsBlack": "黒でプレイ",
     "selectLevel": "AIの強さを選択",
     "levelWithNumber": "レベル {level}",
-    "skillLevelDescription": "レベル1（最も簡単）からレベル20（最強）まで。レベルが高いほど思考時間が長くなります。",
+    "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
@@ -549,7 +550,19 @@
     "gameLimitMessage": "保存できるゲーム数は最大{limit}個までです。\n既存のゲームを削除してください。",
     "backToGameList": "ゲーム一覧へ戻る",
     "completeSuggestion": "\"{suggestion}\" を補完",
-    "tabToComplete": "Tab キーで \"{suggestion}\" を補完"
+    "tabToComplete": "Tab キーで \"{suggestion}\" を補完",
+    "skillLevelInfo": {
+      "title": "スキルレベルについて",
+      "overview": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
+      "eloCalculationTitle": "ELOレーティングの算出方法",
+      "eloCalculationDescription": "表示されているELOレーティングは、Stockfishエンジンの設定に基づいた近似値です：",
+      "eloLevels1to14": "レベル1〜14",
+      "eloFormula1to14": "max(800, 700 + レベル × 100)",
+      "eloLevels15to20": "レベル15〜20",
+      "eloFormula15to20": "2000 + レベル × 100",
+      "examplesTitle": "レーティング例",
+      "note": "これらのELOレーティングは、Stockfishエンジンの UCI_Elo および Skill Level パラメータに基づいた近似値です。実際の棋力は局面によって変動する場合があります。"
+    }
   },
   "privacy": {
     "title": "プライバシーポリシー",

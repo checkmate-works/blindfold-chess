@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
+import { getEloRating } from '@/lib/chess/elo';
 import type { SkillLevel } from '@/lib/types/game';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -67,11 +68,10 @@ export function SkillLevelSettingsModal({
           >
             {skillLevels.map((level) => (
               <option key={level} value={level}>
-                {level}
+                {t('levelWithNumber', { level })} ({getEloRating(level)} ELO)
               </option>
             ))}
           </select>
-          <p className="mt-2 text-sm text-muted-foreground">{t('skillLevelDescription')}</p>
         </div>
 
         {/* Modal Actions */}

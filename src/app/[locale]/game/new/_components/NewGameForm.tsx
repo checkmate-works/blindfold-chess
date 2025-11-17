@@ -171,7 +171,6 @@ export function NewGameForm({ locale }: Props) {
       )}
 
       {/* Skill Level Selection */}
-      <SectionTitle>{t('selectLevel')}</SectionTitle>
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
 
       <Button
