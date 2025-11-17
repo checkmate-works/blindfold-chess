@@ -12,6 +12,7 @@ type Props = {
 export async function Footer({ locale }: Props) {
   const tPrivacy = await getTranslations({ locale, namespace: 'privacy' });
   const tTerms = await getTranslations({ locale, namespace: 'terms' });
+  const tCompany = await getTranslations({ locale, namespace: 'company' });
 
   return (
     <footer className="bg-card border-t border-border mt-auto">
@@ -36,6 +37,15 @@ export async function Footer({ locale }: Props) {
                 >
                   <FaChevronRight className="h-2 w-2" />
                   {tTerms('title')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/company`}
+                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                >
+                  <FaChevronRight className="h-2 w-2" />
+                  {tCompany('title')}
                 </Link>
               </li>
             </ul>

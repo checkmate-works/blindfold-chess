@@ -24,6 +24,10 @@
         "title": "Terms starting with {letter}",
         "description": "Chess terms and definitions starting with the letter {letter}."
       }
+    },
+    "company": {
+      "title": "Company Information",
+      "description": "Information about the operator of Blindfold Chess"
     }
   },
   "Header": {
@@ -667,5 +671,21 @@
     "governingLawDescription": "These Terms shall be governed by and construed in accordance with Japanese law.",
     "changesTitle": "Changes to Terms",
     "changesDescription": "The operator may change these Terms of Service as necessary. Changed Terms will take effect from the time they are posted on this page."
+  },
+  "company": {
+    "title": "Company Information",
+    "companyInfo": "Operator Information",
+    "companyName": "Company Name",
+    "companyNameValue": "Fuji Enterprise",
+    "location": "Location",
+    "postalCode": "〒107-0061",
+    "address": "Mitsuhashi Building 3F, 1-3-3 Kita-Aoyama, Minato-ku, Tokyo, Japan",
+    "business": "Business Activities",
+    "businessItem1": "System development contracting business",
+    "businessItem2": "Application development and operation business",
+    "businessItem3": "Web content business",
+    "businessItem4": "IT consulting business (new system development, search engine marketing, etc.)",
+    "moreInfo": "For more details, please visit our",
+    "corporateWebsite": "corporate website"
   }
 }

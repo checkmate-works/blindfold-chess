@@ -24,6 +24,10 @@
         "title": "{letter}で始まる用語",
         "description": "{letter}で始まるチェス用語と定義。"
       }
+    },
+    "company": {
+      "title": "運営者情報",
+      "description": "Blindfold Chessの運営者情報"
     }
   },
   "Header": {
@@ -667,5 +671,21 @@
     "governingLawDescription": "本規約の解釈および適用は、日本法に準拠するものとします。",
     "changesTitle": "規約の変更",
     "changesDescription": "運営者は、必要に応じて本利用規約を変更することがあります。変更後の利用規約は、本ページに掲載した時点で効力を生じるものとします。"
+  },
+  "company": {
+    "title": "運営者情報",
+    "companyInfo": "運営会社情報",
+    "companyName": "事業者名",
+    "companyNameValue": "富士エンタープライズ",
+    "location": "所在地",
+    "postalCode": "〒107-0061",
+    "address": "東京都港区北青山1-3-3 三橋ビル 3階",
+    "business": "事業内容",
+    "businessItem1": "システム開発受託事業",
+    "businessItem2": "アプリケーション開発・運営事業",
+    "businessItem3": "Webコンテンツ事業",
+    "businessItem4": "ITコンサルティング事業（新規システム開発、検索エンジンマーケティング等）",
+    "moreInfo": "詳細は",
+    "corporateWebsite": "コーポレートサイト"
   }
 }
