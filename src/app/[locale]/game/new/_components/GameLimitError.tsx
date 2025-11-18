@@ -1,5 +1,7 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { MAX_GAMES } from '@/config';
@@ -14,6 +16,7 @@ type Props = {
 
 export function GameLimitError({ locale }: Props) {
   const t = useTranslations('newGame');
+  const router = useRouter();
 
   return (
     <div className="space-y-6 text-center py-12">
@@ -31,11 +34,14 @@ export function GameLimitError({ locale }: Props) {
       </div>
 
       <div className="flex justify-center">
-        <Link href={`/${locale}`}>
-          <Button variant="primary" size="lg" className="rounded-lg font-medium">
-            {t('backToGameList')}
-          </Button>
-        </Link>
+        <Button
+          onClick={() => router.push(`/${locale}`)}
+          variant="primary"
+          size="lg"
+          className="rounded-lg font-medium"
+        >
+          {t('backToGameList')}
+        </Button>
       </div>
     </div>
   );

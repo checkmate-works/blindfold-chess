@@ -763,16 +763,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             {/* Game Status */}
             {gameStatus !== 'in_progress' && (
               <div className="mt-6 text-center">
-                <div className="mb-3">
-                  <p className="text-base font-semibold text-foreground mb-1">{t('gameOver')}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {gameStatus === 'checkmate' && t('checkmate')}
-                    {gameStatus === 'stalemate' && t('stalemate')}
-                    {gameStatus === 'draw' && t('draw')}
-                  </p>
-                </div>
                 {playerResult && (
-                  <div className="mt-3">
+                  <div>
                     <p className="text-lg font-bold">
                       {playerResult === 'win' && (
                         <span className="text-green-600 dark:text-green-400">✓ {t('youWin')}</span>
