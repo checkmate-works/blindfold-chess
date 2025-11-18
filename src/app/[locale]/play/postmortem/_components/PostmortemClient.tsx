@@ -16,6 +16,7 @@ import {
   FaFilter,
   FaInfoCircle,
   FaQuestionCircle,
+  FaSpinner,
   FaStar,
 } from 'react-icons/fa';
 
@@ -47,6 +48,8 @@ type MoveLogEntry = {
     mate?: number;
     text: string; // 最善です, 好手です, etc.
     loss: number; // Evaluation loss from this move (centipawns)
+    bestMove?: string; // Best move in algebraic notation (if not the best)
+    nextBestMove?: string; // Best move from evalAfter (for next evaluation)
   };
 };
 
@@ -112,20 +115,22 @@ function getEvaluationIcon(loss: number, isMate: boolean = false): ReactElement 
 }
 
 // Cache for position evaluations to avoid re-evaluating the same position
-const evaluationCache = new Map<string, { score: number; mate?: number }>();
+const evaluationCache = new Map<string, { score: number; mate?: number; bestMove?: string }>();
 
 // Helper function to get evaluation from engine
 async function getPositionEvaluation(
   moves: AlgebraicNotation[],
   moveIndex: number,
   t: (key: string) => string,
-  previousEval?: { score: number; mate?: number } // Pass previous evaluation to avoid re-calculation
+  previousEval?: { score: number; mate?: number; bestMove?: string } // Pass previous evaluation to avoid re-calculation
 ): Promise<
   | {
       score: number;
       mate?: number;
       text: string;
       loss: number; // Evaluation loss from this move
+      bestMove?: string; // Best move in algebraic notation (if not the best)
+      nextBestMove?: string; // Best move from evalAfter (for next evaluation)
     }
   | undefined
 > {
@@ -145,7 +150,7 @@ async function getPositionEvaluation(
     }
 
     // Get evaluation BEFORE the move (use cached value if available)
-    let evalBefore: { score: number; mate?: number };
+    let evalBefore: { score: number; mate?: number; bestMove?: string };
 
     if (previousEval) {
       // Use the previous evaluation (which is the position before this move)
@@ -174,7 +179,7 @@ async function getPositionEvaluation(
     }
     const fenAfter = chessAfter.fen();
 
-    let evalAfter: { score: number; mate?: number };
+    let evalAfter: { score: number; mate?: number; bestMove?: string };
     if (evaluationCache.has(fenAfter)) {
       evalAfter = evaluationCache.get(fenAfter)!;
     } else {
@@ -207,11 +212,45 @@ async function getPositionEvaluation(
       loss = Math.max(0, loss);
     }
 
+    // Convert best move from UCI to algebraic notation if available and loss is significant
+    let bestMoveAlgebraic: string | undefined;
+    if (evalBefore.bestMove && loss > 20) {
+      // Only show best move if loss > 20 centipawns (not a best move)
+      try {
+        const chessBefore = new Chess();
+        for (let i = 0; i < moveIndex; i++) {
+          chessBefore.move(moves[i]);
+        }
+        const fenBefore = chessBefore.fen();
+
+        // Check if bestMove is in UCI format (e.g., "e2e4") or already in algebraic notation
+        const isUciFormat = /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(evalBefore.bestMove);
+
+        if (isUciFormat) {
+          bestMoveAlgebraic = engine.convertUciToAlgebraic(
+            evalBefore.bestMove as any,
+            fenBefore as any
+          );
+        } else {
+          // Already in algebraic notation, verify it's valid
+          const testMove = chessBefore.move(evalBefore.bestMove);
+          if (testMove) {
+            bestMoveAlgebraic = testMove.san;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to convert best move to algebraic:', error);
+      }
+    }
+
     return {
       score: evalAfter.score,
       mate: evalAfter.mate,
       text: getEvaluationText(t, loss),
       loss,
+      bestMove: bestMoveAlgebraic,
+      // Store the engine's bestMove from evalAfter for the next evaluation
+      nextBestMove: evalAfter.bestMove,
     };
   } catch (error) {
     // Silently handle evaluation errors (e.g., timeout in background tabs)
@@ -360,6 +399,7 @@ export function PostmortemClient({
             ? {
                 score: moveLog[moveLog.length - 1].evaluation!.score,
                 mate: moveLog[moveLog.length - 1].evaluation!.mate,
+                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
               }
             : undefined;
 
@@ -425,6 +465,7 @@ export function PostmortemClient({
             ? {
                 score: moveLog[moveLog.length - 1].evaluation!.score,
                 mate: moveLog[moveLog.length - 1].evaluation!.mate,
+                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
               }
             : undefined;
 
@@ -526,6 +567,7 @@ export function PostmortemClient({
         ? {
             score: moveLog[moveLog.length - 1].evaluation!.score,
             mate: moveLog[moveLog.length - 1].evaluation!.mate,
+            bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
           }
         : undefined;
 
@@ -542,6 +584,7 @@ export function PostmortemClient({
         previousEval = {
           score: evaluation.score,
           mate: evaluation.mate,
+          bestMove: evaluation.nextBestMove,
         };
       }
 
@@ -757,8 +800,11 @@ export function PostmortemClient({
               <>
                 {/* Loading indicator during evaluation */}
                 {isEvaluating && (
-                  <div className="mb-4 text-center text-muted-foreground text-sm">
-                    {t('evaluating')}...
+                  <div className="mb-4 text-center">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <FaSpinner className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">{t('analyzing')}</span>
+                    </div>
                   </div>
                 )}
 
@@ -853,18 +899,25 @@ export function PostmortemClient({
                                   {moveNotation} <FaCheck className="inline w-3 h-3" />
                                 </div>
                                 {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                    {getEvaluationIcon(
-                                      entry.evaluation.loss,
-                                      entry.evaluation.mate !== undefined
+                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {getEvaluationIcon(
+                                        entry.evaluation.loss,
+                                        entry.evaluation.mate !== undefined
+                                      )}
+                                      <span>
+                                        {entry.evaluation.text} (
+                                        {entry.evaluation.mate
+                                          ? `#${entry.evaluation.mate}`
+                                          : (entry.evaluation.score / 100).toFixed(2)}
+                                        )
+                                      </span>
+                                    </div>
+                                    {entry.evaluation.bestMove && (
+                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                        {t('bestMove')}: {entry.evaluation.bestMove}
+                                      </div>
                                     )}
-                                    <span>
-                                      {entry.evaluation.text} (
-                                      {entry.evaluation.mate
-                                        ? `#${entry.evaluation.mate}`
-                                        : (entry.evaluation.score / 100).toFixed(2)}
-                                      )
-                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -886,18 +939,25 @@ export function PostmortemClient({
                               <div key={moveLog.length - 1 - index} className="mb-2">
                                 <div className="text-muted-foreground">{moveNotation}</div>
                                 {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                    {getEvaluationIcon(
-                                      entry.evaluation.loss,
-                                      entry.evaluation.mate !== undefined
+                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {getEvaluationIcon(
+                                        entry.evaluation.loss,
+                                        entry.evaluation.mate !== undefined
+                                      )}
+                                      <span>
+                                        {entry.evaluation.text} (
+                                        {entry.evaluation.mate
+                                          ? `#${entry.evaluation.mate}`
+                                          : (entry.evaluation.score / 100).toFixed(2)}
+                                        )
+                                      </span>
+                                    </div>
+                                    {entry.evaluation.bestMove && (
+                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                        {t('bestMove')}: {entry.evaluation.bestMove}
+                                      </div>
                                     )}
-                                    <span>
-                                      {entry.evaluation.text} (
-                                      {entry.evaluation.mate
-                                        ? `#${entry.evaluation.mate}`
-                                        : (entry.evaluation.score / 100).toFixed(2)}
-                                      )
-                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -964,18 +1024,25 @@ export function PostmortemClient({
                                   {moveNotation} <FaCheck className="inline w-3 h-3" />
                                 </div>
                                 {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                    {getEvaluationIcon(
-                                      entry.evaluation.loss,
-                                      entry.evaluation.mate !== undefined
+                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {getEvaluationIcon(
+                                        entry.evaluation.loss,
+                                        entry.evaluation.mate !== undefined
+                                      )}
+                                      <span>
+                                        {entry.evaluation.text} (
+                                        {entry.evaluation.mate
+                                          ? `#${entry.evaluation.mate}`
+                                          : (entry.evaluation.score / 100).toFixed(2)}
+                                        )
+                                      </span>
+                                    </div>
+                                    {entry.evaluation.bestMove && (
+                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                        {t('bestMove')}: {entry.evaluation.bestMove}
+                                      </div>
                                     )}
-                                    <span>
-                                      {entry.evaluation.text} (
-                                      {entry.evaluation.mate
-                                        ? `#${entry.evaluation.mate}`
-                                        : (entry.evaluation.score / 100).toFixed(2)}
-                                      )
-                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -1002,18 +1069,25 @@ export function PostmortemClient({
                               >
                                 <div className="text-muted-foreground">{moveNotation}</div>
                                 {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 flex items-center gap-1 mt-1">
-                                    {getEvaluationIcon(
-                                      entry.evaluation.loss,
-                                      entry.evaluation.mate !== undefined
+                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {getEvaluationIcon(
+                                        entry.evaluation.loss,
+                                        entry.evaluation.mate !== undefined
+                                      )}
+                                      <span>
+                                        {entry.evaluation.text} (
+                                        {entry.evaluation.mate
+                                          ? `#${entry.evaluation.mate}`
+                                          : (entry.evaluation.score / 100).toFixed(2)}
+                                        )
+                                      </span>
+                                    </div>
+                                    {entry.evaluation.bestMove && (
+                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                        {t('bestMove')}: {entry.evaluation.bestMove}
+                                      </div>
                                     )}
-                                    <span>
-                                      {entry.evaluation.text} (
-                                      {entry.evaluation.mate
-                                        ? `#${entry.evaluation.mate}`
-                                        : (entry.evaluation.score / 100).toFixed(2)}
-                                      )
-                                    </span>
                                   </div>
                                 )}
                               </div>

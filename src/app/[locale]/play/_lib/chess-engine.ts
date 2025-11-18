@@ -12,6 +12,7 @@ type EngineResponse = {
 export type EvaluationResult = {
   score: number; // Centipawn score from white's perspective
   mate?: number; // Mate in N moves (positive = white wins, negative = black wins)
+  bestMove?: string; // Best move in UCI format
 };
 
 export class ChessEngine {
@@ -223,6 +224,7 @@ export class ChessEngine {
 
         let latestScore: number | null = null;
         let latestMate: number | undefined;
+        let bestMoveUci: string | undefined;
 
         this.pendingCallbacks.set('evaluation', (response) => {
           const message = response.data;
@@ -246,10 +248,15 @@ export class ChessEngine {
         this.engine?.postMessage(`go depth ${depth}`);
 
         // Wait for bestmove to know evaluation is complete
-        this.pendingCallbacks.set('bestmove', () => {
+        this.pendingCallbacks.set('bestmove', (response) => {
           clearTimeout(timeoutId);
           this.pendingCallbacks.delete('evaluation');
           this.pendingCallbacks.delete('bestmove');
+
+          // Extract best move from response
+          if (response.move) {
+            bestMoveUci = response.move;
+          }
 
           if (latestScore !== null) {
             // Stockfish returns score from the perspective of the side to move
@@ -263,6 +270,7 @@ export class ChessEngine {
             resolve({
               score: scoreFromWhitePerspective,
               mate: mateFromWhitePerspective,
+              bestMove: bestMoveUci,
             });
           } else {
             reject(new Error('No evaluation score received'));
