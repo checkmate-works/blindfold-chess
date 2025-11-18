@@ -502,6 +502,7 @@
     "inputMove": "手を入力",
     "dontKnow": "わからない",
     "analyzeAll": "全て解析",
+    "autoFillAll": "全て自動入力",
     "analyzing": "解析中",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",

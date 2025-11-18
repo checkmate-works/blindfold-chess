@@ -285,6 +285,7 @@ export function PostmortemClient({
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
   const [showEvaluation, setShowEvaluation] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [showEvalInfo, setShowEvalInfo] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
@@ -554,6 +555,7 @@ export function PostmortemClient({
     if (isEvaluating) return;
 
     setIsEvaluating(true);
+    setIsAnalyzingAll(true);
 
     // Auto-fill all remaining moves
     const remainingMoves = originalMoves.slice(currentMoveIndex);
@@ -601,12 +603,18 @@ export function PostmortemClient({
     setCurrentMoveIndex(originalMoves.length);
     setIsCompleted(true);
     setIsEvaluating(false);
+    setIsAnalyzingAll(false);
   }, [currentMoveIndex, originalMoves, userMoves, moveLog, showEvaluation, isEvaluating, t]);
 
   // Handle back to game
   const handleBackToGame = useCallback(() => {
     router.push(`/${locale}/play`);
   }, [router, locale]);
+
+  // Check if any move has evaluation
+  const hasAnyEvaluation = useCallback(() => {
+    return moveLog.some((entry) => entry.evaluation !== undefined);
+  }, [moveLog]);
 
   // Filter move log based on selected filters
   const getFilteredMoveLog = useCallback(() => {
@@ -798,176 +806,190 @@ export function PostmortemClient({
 
             {!isCompleted ? (
               <>
-                {/* Loading indicator during evaluation */}
-                {isEvaluating && (
-                  <div className="mb-4 text-center">
+                {/* Loading indicator during "Analyze All" */}
+                {isAnalyzingAll ? (
+                  <div className="py-8 text-center">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <FaSpinner className="w-4 h-4 animate-spin" />
                       <span className="text-sm">{t('analyzing')}</span>
                     </div>
                   </div>
-                )}
-
-                {/* Move Input */}
-                <div className="mb-4">
-                  <div>
-                    <MoveInput
-                      value={moveInput}
-                      onChange={(value) => {
-                        setMoveInput(value);
-                      }}
-                      onSubmit={handleSubmitMove}
-                      disabled={isEvaluating}
-                      placeholder={t('inputMove')}
-                      showSuggestions={preferences.enableAutoComplete}
-                      showSubmitButton={true}
-                    />
-                  </div>
-                </div>
-
-                {/* Action Buttons and Settings */}
-                <div className="pb-2">
-                  {/* I don't know and Analyze All buttons */}
-                  <div className="flex gap-2 justify-center mb-4">
-                    <Button
-                      variant="secondary"
-                      onClick={handleDontKnow}
-                      icon={<FaQuestionCircle className="w-4 h-4" />}
-                      disabled={isEvaluating}
-                      className="px-4 py-2"
-                    >
-                      {t('dontKnow')}
-                    </Button>
-                    {dontKnowCount >= 2 && (
-                      <button
-                        onClick={handleAnalyzeAll}
-                        disabled={isEvaluating}
-                        className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
-                      >
-                        <FaCheck className="w-4 h-4" />
-                        {t('analyzeAll')}
-                      </button>
+                ) : (
+                  <>
+                    {/* Loading indicator during single move evaluation */}
+                    {isEvaluating && (
+                      <div className="mb-4 text-center">
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                          <FaSpinner className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">{t('analyzing')}</span>
+                        </div>
+                      </div>
                     )}
-                  </div>
 
-                  {/* Settings checkboxes */}
-                  <div className="flex flex-col gap-2 mb-4">
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={autoOpponent}
-                        onChange={(e) => setAutoOpponent(e.target.checked)}
-                        className="w-4 h-4 rounded border-border"
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {t('autoOpponentMoves')}
-                      </span>
-                    </label>
-                    <div className="inline-flex items-center gap-2">
-                      <label className="inline-flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={showEvaluation}
-                          onChange={(e) => setShowEvaluation(e.target.checked)}
-                          className="w-4 h-4 rounded border-border"
+                    {/* Move Input */}
+                    <div className="mb-4">
+                      <div>
+                        <MoveInput
+                          value={moveInput}
+                          onChange={(value) => {
+                            setMoveInput(value);
+                          }}
+                          onSubmit={handleSubmitMove}
+                          disabled={isEvaluating}
+                          placeholder={t('inputMove')}
+                          showSuggestions={preferences.enableAutoComplete}
+                          showSubmitButton={true}
                         />
-                        <span className="text-sm text-muted-foreground">{t('showEvaluation')}</span>
-                      </label>
-                      <button
-                        onClick={() => setShowEvalInfo(true)}
-                        className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                        aria-label="Evaluation information"
-                      >
-                        <FaInfoCircle className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Move Log */}
-                  {moveLog.length > 0 && (
-                    <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
-                      <div className="font-mono text-sm">
-                        {[...moveLog].reverse().map((entry, index) => {
-                          const moveNotation = entry.isWhiteMove
-                            ? `${entry.moveNumber}. ${entry.move}`
-                            : `${entry.moveNumber}... ${entry.move}`;
-
-                          if (entry.status === 'correct') {
-                            return (
-                              <div key={moveLog.length - 1 - index} className="mb-2">
-                                <div className="text-green-600 dark:text-green-400">
-                                  {moveNotation} <FaCheck className="inline w-3 h-3" />
-                                </div>
-                                {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
-                                    <div className="flex items-center gap-1">
-                                      {getEvaluationIcon(
-                                        entry.evaluation.loss,
-                                        entry.evaluation.mate !== undefined
-                                      )}
-                                      <span>
-                                        {entry.evaluation.text} (
-                                        {entry.evaluation.mate
-                                          ? `#${entry.evaluation.mate}`
-                                          : (entry.evaluation.score / 100).toFixed(2)}
-                                        )
-                                      </span>
-                                    </div>
-                                    {entry.evaluation.bestMove && (
-                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
-                                        {t('bestMove')}: {entry.evaluation.bestMove}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          } else if (entry.status === 'incorrect') {
-                            return (
-                              <div
-                                key={moveLog.length - 1 - index}
-                                className="text-red-600 dark:text-red-400 mb-2"
-                              >
-                                {entry.incorrectMove
-                                  ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
-                                  : `${moveNotation} ${t('logIncorrect')}`}
-                              </div>
-                            );
-                          } else {
-                            // auto
-                            return (
-                              <div key={moveLog.length - 1 - index} className="mb-2">
-                                <div className="text-muted-foreground">{moveNotation}</div>
-                                {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
-                                    <div className="flex items-center gap-1">
-                                      {getEvaluationIcon(
-                                        entry.evaluation.loss,
-                                        entry.evaluation.mate !== undefined
-                                      )}
-                                      <span>
-                                        {entry.evaluation.text} (
-                                        {entry.evaluation.mate
-                                          ? `#${entry.evaluation.mate}`
-                                          : (entry.evaluation.score / 100).toFixed(2)}
-                                        )
-                                      </span>
-                                    </div>
-                                    {entry.evaluation.bestMove && (
-                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
-                                        {t('bestMove')}: {entry.evaluation.bestMove}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }
-                        })}
                       </div>
                     </div>
-                  )}
-                </div>
+
+                    {/* Action Buttons and Settings */}
+                    <div className="pb-2">
+                      {/* I don't know and Analyze All buttons */}
+                      <div className="flex gap-2 justify-center mb-4">
+                        <Button
+                          variant="secondary"
+                          onClick={handleDontKnow}
+                          icon={<FaQuestionCircle className="w-4 h-4" />}
+                          disabled={isEvaluating}
+                          className="px-4 py-2"
+                        >
+                          {t('dontKnow')}
+                        </Button>
+                        {dontKnowCount >= 2 && (
+                          <button
+                            onClick={handleAnalyzeAll}
+                            disabled={isEvaluating}
+                            className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
+                          >
+                            <FaCheck className="w-4 h-4" />
+                            {showEvaluation ? t('analyzeAll') : t('autoFillAll')}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Settings checkboxes */}
+                      <div className="flex flex-col gap-2 mb-4">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={autoOpponent}
+                            onChange={(e) => setAutoOpponent(e.target.checked)}
+                            className="w-4 h-4 rounded border-border"
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            {t('autoOpponentMoves')}
+                          </span>
+                        </label>
+                        <div className="inline-flex items-center gap-2">
+                          <label className="inline-flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={showEvaluation}
+                              onChange={(e) => setShowEvaluation(e.target.checked)}
+                              className="w-4 h-4 rounded border-border"
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              {t('showEvaluation')}
+                            </span>
+                          </label>
+                          <button
+                            onClick={() => setShowEvalInfo(true)}
+                            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                            aria-label="Evaluation information"
+                          >
+                            <FaInfoCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Move Log */}
+                      {moveLog.length > 0 && (
+                        <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
+                          <div className="font-mono text-sm">
+                            {[...moveLog].reverse().map((entry, index) => {
+                              const moveNotation = entry.isWhiteMove
+                                ? `${entry.moveNumber}. ${entry.move}`
+                                : `${entry.moveNumber}... ${entry.move}`;
+
+                              if (entry.status === 'correct') {
+                                return (
+                                  <div key={moveLog.length - 1 - index} className="mb-2">
+                                    <div className="text-green-600 dark:text-green-400">
+                                      {moveNotation} <FaCheck className="inline w-3 h-3" />
+                                    </div>
+                                    {entry.evaluation && (
+                                      <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                        <div className="flex items-center gap-1">
+                                          {getEvaluationIcon(
+                                            entry.evaluation.loss,
+                                            entry.evaluation.mate !== undefined
+                                          )}
+                                          <span>
+                                            {entry.evaluation.text} (
+                                            {entry.evaluation.mate
+                                              ? `#${entry.evaluation.mate}`
+                                              : (entry.evaluation.score / 100).toFixed(2)}
+                                            )
+                                          </span>
+                                        </div>
+                                        {entry.evaluation.bestMove && (
+                                          <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                            {t('bestMove')}: {entry.evaluation.bestMove}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              } else if (entry.status === 'incorrect') {
+                                return (
+                                  <div
+                                    key={moveLog.length - 1 - index}
+                                    className="text-red-600 dark:text-red-400 mb-2"
+                                  >
+                                    {entry.incorrectMove
+                                      ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
+                                      : `${moveNotation} ${t('logIncorrect')}`}
+                                  </div>
+                                );
+                              } else {
+                                // auto
+                                return (
+                                  <div key={moveLog.length - 1 - index} className="mb-2">
+                                    <div className="text-muted-foreground">{moveNotation}</div>
+                                    {entry.evaluation && (
+                                      <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                        <div className="flex items-center gap-1">
+                                          {getEvaluationIcon(
+                                            entry.evaluation.loss,
+                                            entry.evaluation.mate !== undefined
+                                          )}
+                                          <span>
+                                            {entry.evaluation.text} (
+                                            {entry.evaluation.mate
+                                              ? `#${entry.evaluation.mate}`
+                                              : (entry.evaluation.score / 100).toFixed(2)}
+                                            )
+                                          </span>
+                                        </div>
+                                        {entry.evaluation.bestMove && (
+                                          <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                            {t('bestMove')}: {entry.evaluation.bestMove}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               /* Completion Message */
@@ -1271,107 +1293,109 @@ export function PostmortemClient({
             </div>
           </div>
 
-          {/* Evaluation Filter */}
-          <div>
-            <h3 className="font-semibold mb-3 text-sm">{t('filterEvaluation')}</h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.evaluation.best}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      evaluation: { ...prev.evaluation, best: e.target.checked },
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-border"
-                />
-                <span className="text-sm flex items-center gap-1">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
-                    <FaStar className="w-2 h-2 text-white" />
+          {/* Evaluation Filter - only show if any move has evaluation */}
+          {hasAnyEvaluation() && (
+            <div>
+              <h3 className="font-semibold mb-3 text-sm">{t('filterEvaluation')}</h3>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.evaluation.best}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        evaluation: { ...prev.evaluation, best: e.target.checked },
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+                      <FaStar className="w-2 h-2 text-white" />
+                    </span>
+                    {t('evalBest')}
                   </span>
-                  {t('evalBest')}
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.evaluation.good}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      evaluation: { ...prev.evaluation, good: e.target.checked },
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-border"
-                />
-                <span className="text-sm flex items-center gap-1">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
-                    <FaCheck className="w-2 h-2 text-white" />
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.evaluation.good}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        evaluation: { ...prev.evaluation, good: e.target.checked },
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
+                      <FaCheck className="w-2 h-2 text-white" />
+                    </span>
+                    {t('evalGood')}
                   </span>
-                  {t('evalGood')}
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.evaluation.inaccuracy}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      evaluation: { ...prev.evaluation, inaccuracy: e.target.checked },
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-border"
-                />
-                <span className="text-sm flex items-center gap-1">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
-                    ?!
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.evaluation.inaccuracy}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        evaluation: { ...prev.evaluation, inaccuracy: e.target.checked },
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
+                      ?!
+                    </span>
+                    {t('evalInaccuracy')}
                   </span>
-                  {t('evalInaccuracy')}
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.evaluation.mistake}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      evaluation: { ...prev.evaluation, mistake: e.target.checked },
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-border"
-                />
-                <span className="text-sm flex items-center gap-1">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
-                    ?
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.evaluation.mistake}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        evaluation: { ...prev.evaluation, mistake: e.target.checked },
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+                      ?
+                    </span>
+                    {t('evalMistake')}
                   </span>
-                  {t('evalMistake')}
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.evaluation.blunder}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      evaluation: { ...prev.evaluation, blunder: e.target.checked },
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-border"
-                />
-                <span className="text-sm flex items-center gap-1">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                    ??
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.evaluation.blunder}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        evaluation: { ...prev.evaluation, blunder: e.target.checked },
+                      }))
+                    }
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <span className="text-sm flex items-center gap-1">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+                      ??
+                    </span>
+                    {t('evalBlunder')}
                   </span>
-                  {t('evalBlunder')}
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">

@@ -502,6 +502,7 @@
     "inputMove": "Enter move",
     "dontKnow": "I don't know",
     "analyzeAll": "Analyze All",
+    "autoFillAll": "Auto-fill All",
     "analyzing": "Analyzing",
     "correctMove": "Correct!",
     "incorrectMove": "Incorrect move. Try again.",
