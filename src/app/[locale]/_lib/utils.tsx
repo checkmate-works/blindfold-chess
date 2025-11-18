@@ -1,4 +1,11 @@
-import { FaBook, FaDumbbell, FaGraduationCap, FaList, FaQuestionCircle } from 'react-icons/fa';
+import {
+  FaBook,
+  FaDumbbell,
+  FaEnvelope,
+  FaGraduationCap,
+  FaList,
+  FaQuestionCircle,
+} from 'react-icons/fa';
 
 import type { NavigationIconName } from './types';
 
@@ -16,5 +23,7 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaQuestionCircle className="h-5 w-5" />;
     case 'glossary':
       return <FaList className="h-5 w-5" />;
+    case 'contact':
+      return <FaEnvelope className="h-5 w-5" />;
   }
 };

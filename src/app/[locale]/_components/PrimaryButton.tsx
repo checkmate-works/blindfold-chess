@@ -3,6 +3,7 @@ import { type ButtonHTMLAttributes } from 'react';
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   fullWidth?: boolean;
+  variant?: 'primary' | 'secondary';
 };
 
 export function PrimaryButton({
@@ -11,17 +12,21 @@ export function PrimaryButton({
   disabled,
   loading = false,
   fullWidth = true,
+  variant = 'primary',
   ...props
 }: Props) {
+  const variantClasses =
+    variant === 'secondary'
+      ? 'bg-muted text-muted-foreground hover:bg-muted/80'
+      : 'bg-foreground text-background hover:bg-foreground/90';
+
   const baseClasses = [
     'px-6',
     'py-3',
-    'bg-foreground',
-    'text-background',
+    variantClasses,
     'font-semibold',
     'rounded-lg',
     'transition-colors',
-    'hover:bg-foreground/90',
     'disabled:opacity-50',
     'disabled:cursor-not-allowed',
     fullWidth ? 'w-full' : '',

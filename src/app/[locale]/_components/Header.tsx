@@ -15,7 +15,9 @@ type Props = {
 export async function Header({ locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'Header' });
 
-  const menuItems: NavigationItem[] = [
+  const isContactFormEnabled = !!process.env.RESEND_API_KEY;
+
+  const baseMenuItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
     { id: 'learn', href: `/${locale}/learn`, label: t('learn'), iconName: 'learn' },
     {
@@ -38,6 +40,18 @@ export async function Header({ locale }: Props) {
       iconName: 'glossary',
     },
   ];
+
+  const menuItems: NavigationItem[] = isContactFormEnabled
+    ? [
+        ...baseMenuItems,
+        {
+          id: 'contact',
+          href: `/${locale}/contact`,
+          label: t('contact'),
+          iconName: 'contact',
+        },
+      ]
+    : baseMenuItems;
 
   return (
     <header className="bg-card border-b border-border">

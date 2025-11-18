@@ -41,7 +41,9 @@
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "require-in-the-middle": "^8.0.1"
+    "require-in-the-middle": "^8.0.1",
+    "resend": "^6.4.2",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.2.0",

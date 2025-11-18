@@ -28,6 +28,10 @@
     "company": {
       "title": "運営者情報",
       "description": "Blindfold Chessの運営者情報"
+    },
+    "contact": {
+      "title": "お問い合わせ",
+      "description": "Blindfold Chessに関するお問い合わせフォーム"
     }
   },
   "Header": {
@@ -38,6 +42,7 @@
     "manual": "マニュアル",
     "faq": "よくある質問",
     "glossary": "用語集",
+    "contact": "お問い合わせ",
     "settings": "設定"
   },
   "Preferences": {
@@ -687,5 +692,42 @@
     "businessItem4": "ITコンサルティング事業（新規システム開発、検索エンジンマーケティング等）",
     "moreInfo": "詳細は",
     "corporateWebsite": "コーポレートサイト"
+  },
+  "contact": {
+    "title": "お問い合わせ",
+    "description": "ご質問やご意見がありましたら、お気軽にお問い合わせください。",
+    "form": {
+      "name": "お名前",
+      "namePlaceholder": "山田 太郎",
+      "nameRequired": "お名前を入力してください",
+      "email": "メールアドレス",
+      "emailPlaceholder": "example@email.com",
+      "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
+      "subject": "件名",
+      "subjectPlaceholder": "お問い合わせの件名",
+      "subjectRequired": "件名を入力してください",
+      "message": "お問い合わせ内容",
+      "messagePlaceholder": "お問い合わせ内容を詳しくご記入ください",
+      "messageRequired": "お問い合わせ内容を入力してください",
+      "messageMinLength": "お問い合わせ内容は10文字以上で入力してください",
+      "submit": "確認画面へ",
+      "submitting": "送信中...",
+      "backToForm": "入力画面に戻る",
+      "sendEmail": "送信する"
+    },
+    "confirm": {
+      "title": "送信内容の確認",
+      "description": "以下の内容で送信します。よろしければ「送信する」ボタンを押してください。"
+    },
+    "success": {
+      "title": "送信完了",
+      "message": "お問い合わせありがとうございます。内容を確認後、担当者よりご連絡させていただきます。",
+      "backToHome": "ホームに戻る"
+    },
+    "error": {
+      "title": "送信エラー",
+      "message": "申し訳ございません。送信中にエラーが発生しました。しばらく経ってから再度お試しください。"
+    }
   }
 }

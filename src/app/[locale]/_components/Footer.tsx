@@ -14,6 +14,9 @@ export async function Footer({ locale }: Props) {
   const tPrivacy = await getTranslations({ locale, namespace: 'privacy' });
   const tTerms = await getTranslations({ locale, namespace: 'terms' });
   const tCompany = await getTranslations({ locale, namespace: 'company' });
+  const tContact = await getTranslations({ locale, namespace: 'contact' });
+
+  const isContactFormEnabled = !!process.env.RESEND_API_KEY;
 
   return (
     <footer className="bg-card border-t border-border mt-auto">
@@ -49,6 +52,17 @@ export async function Footer({ locale }: Props) {
                   {tCompany('title')}
                 </Link>
               </li>
+              {isContactFormEnabled && (
+                <li>
+                  <Link
+                    href={`/${locale}/contact`}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  >
+                    <FaChevronRight className="h-2 w-2" />
+                    {tContact('title')}
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
 

@@ -1,0 +1,54 @@
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
+
+import { PageDescription } from '../../_components/PageDescription';
+import { PageTitle } from '../../_components/PageTitle';
+import { generateCanonicalMetadata } from '../../_lib/metadata';
+import type { Locale } from '../../_lib/types';
+import { ContactConfirm } from '../_components/ContactConfirm';
+
+type Props = {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'contact.confirm' });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'contact/confirm' }),
+    title: t('title'),
+    description: t('description'),
+    robots: 'noindex',
+  };
+}
+
+export default async function ContactConfirmPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const search = await searchParams;
+  const t = await getTranslations({ locale, namespace: 'contact' });
+
+  // Check if required data exists
+  if (!search.name || !search.email || !search.subject || !search.message) {
+    redirect(`/${locale}/contact`);
+  }
+
+  const formData = {
+    name: Array.isArray(search.name) ? search.name[0] : search.name,
+    email: Array.isArray(search.email) ? search.email[0] : search.email,
+    subject: Array.isArray(search.subject) ? search.subject[0] : search.subject,
+    message: Array.isArray(search.message) ? search.message[0] : search.message,
+  };
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('confirm.title')}</PageTitle>
+
+      <PageDescription>{t('confirm.description')}</PageDescription>
+
+      <ContactConfirm formData={formData} locale={locale} />
+    </div>
+  );
+}

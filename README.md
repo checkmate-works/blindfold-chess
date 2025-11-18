@@ -83,6 +83,60 @@ SENTRY_PROJECT=your-project-name
 
 **Note:** Error tracking is automatically disabled in development. Only `NEXT_PUBLIC_SENTRY_DSN` is required for basic error tracking. The auth token and related settings are optional but recommended for better debugging experience.
 
+#### Contact Form Email (Optional)
+
+The application includes a contact form that uses [Resend](https://resend.com/) to send emails. To enable the contact form:
+
+1. Create a free account at [resend.com](https://resend.com/)
+2. Verify your domain or use the testing domain provided by Resend
+3. Generate an API key from the Resend dashboard
+4. Add the following environment variables:
+
+```bash
+# Resend API Key
+# Get from: Resend Dashboard → API Keys
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Email address to send contact form emails FROM
+# Must be a verified domain in Resend
+CONTACT_FROM_EMAIL=noreply@yourdomain.com
+
+# Email address to send contact form emails TO
+# Where you want to receive inquiries
+CONTACT_TO_EMAIL=contact@yourdomain.com
+```
+
+**Note:** Without these environment variables, the contact form page will still be accessible, but form submissions will fail. For testing purposes, you can use Resend's test mode which doesn't require domain verification.
+
+##### Testing the Contact Form Locally
+
+When testing the contact form in development:
+
+1. **Test Mode Restrictions**: Resend's test mode only allows sending emails to the email address you used to sign up for Resend
+2. **Configuration**: Set `CONTACT_TO_EMAIL` to your Resend account email address:
+   ```bash
+   CONTACT_FROM_EMAIL=onboarding@resend.dev
+   CONTACT_TO_EMAIL=your-resend-signup-email@example.com
+   ```
+3. **Verification**: After submitting the form, check your inbox for the test email
+
+##### Production Setup
+
+For production use with custom recipient email addresses:
+
+1. **Verify Your Domain**: Add and verify your domain in the Resend dashboard
+   - Go to [resend.com/domains](https://resend.com/domains)
+   - Add DNS records (SPF, DKIM, DMARC) to your domain
+   - Wait for verification to complete
+
+2. **Update Environment Variables**:
+   ```bash
+   CONTACT_FROM_EMAIL=noreply@yourdomain.com  # Use your verified domain
+   CONTACT_TO_EMAIL=your-business-email@example.com  # Can be any email address
+   ```
+
+**Note**: The contact form only sends emails to `CONTACT_TO_EMAIL` (where you receive inquiries). Users who submit the form do not receive a copy. The `REPLY-TO` header is set to the user's email address, so you can reply directly from your email client.
+
 ## Available Scripts
 
 - `pnpm dev` - Start development server with Turbopack

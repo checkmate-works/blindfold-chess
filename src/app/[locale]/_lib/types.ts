@@ -4,7 +4,14 @@ import type { GlossaryCategory } from '@/app/[locale]/glossary/_lib/types';
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-export type NavigationIconName = 'home' | 'learn' | 'practice' | 'manual' | 'faq' | 'glossary';
+export type NavigationIconName =
+  | 'home'
+  | 'learn'
+  | 'practice'
+  | 'manual'
+  | 'faq'
+  | 'glossary'
+  | 'contact';
 
 export interface NavigationItem {
   id: string;

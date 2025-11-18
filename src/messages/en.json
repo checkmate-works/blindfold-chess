@@ -28,6 +28,10 @@
     "company": {
       "title": "Company Information",
       "description": "Information about the operator of Blindfold Chess"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "Contact form for Blindfold Chess inquiries"
     }
   },
   "Header": {
@@ -38,6 +42,7 @@
     "manual": "Manual",
     "faq": "FAQ",
     "glossary": "Glossary",
+    "contact": "Contact",
     "settings": "Settings"
   },
   "Preferences": {
@@ -687,5 +692,42 @@
     "businessItem4": "IT consulting business (new system development, search engine marketing, etc.)",
     "moreInfo": "For more details, please visit our",
     "corporateWebsite": "corporate website"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "If you have any questions or feedback, please feel free to contact us.",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "John Doe",
+      "nameRequired": "Please enter your name",
+      "email": "Email Address",
+      "emailPlaceholder": "example@email.com",
+      "emailRequired": "Please enter your email address",
+      "emailInvalid": "Please enter a valid email address",
+      "subject": "Subject",
+      "subjectPlaceholder": "Subject of your inquiry",
+      "subjectRequired": "Please enter a subject",
+      "message": "Message",
+      "messagePlaceholder": "Please describe your inquiry in detail",
+      "messageRequired": "Please enter your message",
+      "messageMinLength": "Message must be at least 10 characters",
+      "submit": "Proceed to Confirmation",
+      "submitting": "Submitting...",
+      "backToForm": "Back to Form",
+      "sendEmail": "Submit"
+    },
+    "confirm": {
+      "title": "Confirm Your Submission",
+      "description": "Please review the information below and click 'Submit' to send your inquiry."
+    },
+    "success": {
+      "title": "Submitted Successfully",
+      "message": "Thank you for contacting us. We will review your inquiry and get back to you shortly.",
+      "backToHome": "Back to Home"
+    },
+    "error": {
+      "title": "Submission Error",
+      "message": "We apologize, but an error occurred during submission. Please try again later."
+    }
   }
 }
