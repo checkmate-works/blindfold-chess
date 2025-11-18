@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Extract the first segment (potential locale)

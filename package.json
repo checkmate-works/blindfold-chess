@@ -30,7 +30,7 @@
     "@types/chess.js": "^0.13.7",
     "chess.js": "^1.4.0",
     "critters": "^0.0.25",
-    "import-in-the-middle": "^2.0.0",
+    "import-in-the-middle": "^1.15.0",
     "katex": "^0.16.25",
     "next": "16.0.1",
     "next-intl": "^4.4.0",
@@ -41,7 +41,7 @@
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "require-in-the-middle": "^8.0.1",
+    "require-in-the-middle": "^7.5.2",
     "resend": "^6.4.2",
     "zod": "^4.1.12"
   },
