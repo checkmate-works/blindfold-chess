@@ -20,6 +20,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages for each locale
   const staticPages = [
     '', // Home
+    '/privacy',
+    '/terms',
+    '/company',
+    '/contact',
     '/preferences',
     '/faq',
     '/glossary',
