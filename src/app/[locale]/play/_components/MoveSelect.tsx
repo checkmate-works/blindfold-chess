@@ -6,6 +6,8 @@ import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
+import { sortMoves } from '../_lib/move-sorter';
+
 type Props = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
@@ -22,17 +24,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
     try {
       const chess = new Chess(fen);
       const moves = chess.moves({ verbose: false });
-      // Sort moves for better usability
-      const sortedMoves = moves.sort((a, b) => {
-        // Prioritize captures
-        if (a.includes('x') && !b.includes('x')) return -1;
-        if (!a.includes('x') && b.includes('x')) return 1;
-        // Then checks
-        if (a.includes('+') && !b.includes('+')) return -1;
-        if (!a.includes('+') && b.includes('+')) return 1;
-        // Then alphabetically
-        return a.localeCompare(b);
-      });
+      const sortedMoves = sortMoves(moves);
       setLegalMoves(sortedMoves);
       setSelectedMove(''); // Reset selection when FEN changes
     } catch (error) {
