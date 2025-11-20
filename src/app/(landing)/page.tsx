@@ -28,7 +28,10 @@ const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
 
 export default function RootPage() {
   return (
-    <div className="fixed inset-0 min-h-screen w-screen flex flex-col items-center justify-center bg-gradient-to-br from-secondary via-background to-secondary">
+    <div className="fixed inset-0 min-h-screen w-screen flex flex-col items-center justify-between bg-gradient-to-br from-secondary via-background to-secondary">
+      {/* Spacer for centering */}
+      <div className="flex-shrink-0"></div>
+
       <div className="text-center px-6 py-6 md:px-4 w-full max-w-lg box-border">
         <div className="flex justify-center mb-6">
           <Image
@@ -58,7 +61,7 @@ export default function RootPage() {
       </div>
 
       {/* Copyright */}
-      <div className="absolute bottom-4 text-center text-xs text-muted-foreground">
+      <div className="pb-4 pt-6 text-center text-xs text-muted-foreground flex-shrink-0">
         © {new Date().getFullYear()} {SITE_DOMAIN}
       </div>
     </div>
