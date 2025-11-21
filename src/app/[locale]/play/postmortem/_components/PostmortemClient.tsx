@@ -3,7 +3,6 @@
 import { type ReactElement, useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
 import { Button, ChessBoard, InfoModal, ProgressBar } from '@/app/_components';
 import { Chess } from 'chess.js';
@@ -23,13 +22,11 @@ import {
 import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
 type Props = {
-  locale: Locale;
   pgn: string;
   playerColor: 'white' | 'black';
   autoOpponent: boolean;
@@ -228,8 +225,8 @@ async function getPositionEvaluation(
 
         if (isUciFormat) {
           bestMoveAlgebraic = engine.convertUciToAlgebraic(
-            evalBefore.bestMove as any,
-            fenBefore as any
+            evalBefore.bestMove as `${string}${number}${string}${number}`,
+            fenBefore
           );
         } else {
           // Already in algebraic notation, verify it's valid
@@ -263,7 +260,6 @@ async function getPositionEvaluation(
 }
 
 export function PostmortemClient({
-  locale,
   pgn,
   playerColor,
   autoOpponent: initialAutoOpponent,
@@ -271,7 +267,6 @@ export function PostmortemClient({
   onSelectedMoveChange,
 }: Props) {
   const t = useTranslations('postmortem');
-  const router = useRouter();
   const { preferences } = useGamePreferences();
 
   // Parse PGN to get original moves
@@ -439,6 +434,7 @@ export function PostmortemClient({
     isEvaluating,
     showEvaluation,
     t,
+    moveLog,
   ]);
 
   // Handle move submission
@@ -506,7 +502,7 @@ export function PostmortemClient({
         ]);
       }
     },
-    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t]
+    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, moveLog]
   );
 
   // Handle "I don't know" button
@@ -606,11 +602,6 @@ export function PostmortemClient({
     setIsAnalyzingAll(false);
   }, [currentMoveIndex, originalMoves, userMoves, moveLog, showEvaluation, isEvaluating, t]);
 
-  // Handle back to game
-  const handleBackToGame = useCallback(() => {
-    router.push(`/${locale}/play`);
-  }, [router, locale]);
-
   // Check if any move has evaluation
   const hasAnyEvaluation = useCallback(() => {
     return moveLog.some((entry) => entry.evaluation !== undefined);
@@ -662,22 +653,6 @@ export function PostmortemClient({
       },
     });
   }, []);
-
-  // Get selected move info
-  const getSelectedMoveInfo = useCallback(() => {
-    if (selectedMoveIndex === null) return null;
-    return moveLog.find((entry, idx) => {
-      // Calculate the actual move index in the game
-      let currentIndex = 0;
-      for (let i = 0; i <= idx; i++) {
-        if (i === idx && currentIndex === selectedMoveIndex) {
-          return true;
-        }
-        currentIndex++;
-      }
-      return false;
-    });
-  }, [selectedMoveIndex, moveLog]);
 
   // Handle move log click
   const handleMoveClick = useCallback(
@@ -1029,7 +1004,7 @@ export function PostmortemClient({
                     </div>
                     <div className="p-3 max-h-48 overflow-y-auto">
                       <div className="font-mono text-sm">
-                        {[...getFilteredMoveLog()].reverse().map((entry, index) => {
+                        {[...getFilteredMoveLog()].reverse().map((entry) => {
                           const moveNotation = entry.isWhiteMove
                             ? `${entry.moveNumber}. ${entry.move}`
                             : `${entry.moveNumber}... ${entry.move}`;
@@ -1137,7 +1112,7 @@ export function PostmortemClient({
             <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
               {formattedPgn.length > 0 ? (
                 <div className="space-y-0.5">
-                  {formattedPgn.map((move, index) => (
+                  {formattedPgn.map((move) => (
                     <div key={move.moveNumber} className="flex items-center text-sm">
                       <span className="w-10 text-right pr-2 text-muted-foreground">
                         {move.moveNumber}.

@@ -13,7 +13,9 @@ export function proxy(request: NextRequest) {
   // Check if the first segment exists
   if (firstSegment) {
     // Check if it's an invalid locale attempting to access the [locale] route
-    const isInvalidLocale = !SUPPORTED_LOCALES.includes(firstSegment as any);
+    const isInvalidLocale = !SUPPORTED_LOCALES.includes(
+      firstSegment as (typeof SUPPORTED_LOCALES)[number]
+    );
 
     // Return 404 for any path that starts with something other than valid locales
     // (excluding root path)

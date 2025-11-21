@@ -72,12 +72,13 @@ export function useMoveSuggestions({ enabled = true, onSelect }: UseMoveSuggesti
     setShowSuggestions(false);
   }, []);
 
-  // Clear suggestions when disabled
+  // Clear suggestions when disabled - using effect is necessary here for external data sync
   useEffect(() => {
     if (!enabled) {
-      clearSuggestions();
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-  }, [enabled, clearSuggestions]);
+  }, [enabled]);
 
   return {
     suggestions,

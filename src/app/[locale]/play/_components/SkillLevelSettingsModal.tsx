@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -27,20 +27,12 @@ export function SkillLevelSettingsModal({
   const t = useTranslations('play');
   const [tempSkillLevel, setTempSkillLevel] = useState<SkillLevel>(currentSkillLevel);
 
-  // Reset temp skill level when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setTempSkillLevel(currentSkillLevel);
-    }
-  }, [isOpen, currentSkillLevel]);
-
   const handleSave = () => {
     onSkillLevelChange(tempSkillLevel);
     onClose();
   };
 
   const handleCancel = () => {
-    setTempSkillLevel(currentSkillLevel);
     onClose();
   };
 
@@ -53,6 +45,7 @@ export function SkillLevelSettingsModal({
       title={t('configureSkillLevel')}
       onClose={handleCancel}
       maxWidth="max-w-md"
+      key={isOpen ? 'open' : 'closed'}
     >
       <div className="space-y-6">
         {/* Skill Level Selector */}

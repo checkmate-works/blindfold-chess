@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -22,15 +22,8 @@ export function GameSettingsModal({ isOpen, onClose, playerSide = 'white' }: Pro
   const t = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 
-  // Temporary settings state for preview
+  // Temporary settings state for preview - reset when modal opens using key prop
   const [tempSettings, setTempSettings] = useState(preferences);
-
-  // Reset temp settings when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setTempSettings(preferences);
-    }
-  }, [isOpen, preferences]);
 
   const handleSave = () => {
     updatePreferences(tempSettings);
@@ -38,7 +31,6 @@ export function GameSettingsModal({ isOpen, onClose, playerSide = 'white' }: Pro
   };
 
   const handleCancel = () => {
-    setTempSettings(preferences);
     onClose();
   };
 
@@ -48,6 +40,7 @@ export function GameSettingsModal({ isOpen, onClose, playerSide = 'white' }: Pro
       title={t('configureBoardAppearance')}
       onClose={handleCancel}
       maxWidth="max-w-4xl"
+      key={isOpen ? 'open' : 'closed'}
     >
       <div className="space-y-8">
         <GameSettingsContent

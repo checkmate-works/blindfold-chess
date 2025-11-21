@@ -16,12 +16,6 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactF
     // Validate form data
     const validatedData = contactFormSchema.parse(data);
 
-    console.log('Sending email with config:', {
-      from: process.env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev',
-      to: process.env.CONTACT_TO_EMAIL || 'delivered@resend.dev',
-      hasApiKey: !!process.env.RESEND_API_KEY,
-    });
-
     // Send email using Resend
     const result = await resend.emails.send({
       from: process.env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev',
@@ -37,8 +31,6 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactF
         <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
       `,
     });
-
-    console.log('Resend API response:', result);
 
     if (result.error) {
       console.error('Resend API error:', result.error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Chess } from 'chess.js';
 
@@ -18,19 +18,22 @@ type Props = {
 
 export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: Props) {
   const [selectedMove, setSelectedMove] = useState('');
-  const [legalMoves, setLegalMoves] = useState<string[]>([]);
 
-  useEffect(() => {
+  // Calculate legal moves from FEN (derived state)
+  const legalMoves = useMemo(() => {
     try {
       const chess = new Chess(fen);
       const moves = chess.moves({ verbose: false });
-      const sortedMoves = sortMoves(moves);
-      setLegalMoves(sortedMoves);
-      setSelectedMove(''); // Reset selection when FEN changes
+      return sortMoves(moves);
     } catch (error) {
       console.error('Error calculating legal moves:', error);
-      setLegalMoves([]);
+      return [];
     }
+  }, [fen]);
+
+  // Reset selection when FEN changes
+  useEffect(() => {
+    setSelectedMove('');
   }, [fen]);
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -34,7 +34,7 @@ export function useAutoSave({
   const gameRepository = useMemo(() => new LocalStorageGameRepository(), []);
   const pathname = usePathname();
 
-  const gameIdRef = useRef<string | undefined>(gameId);
+  const [currentGameId, setCurrentGameId] = useState<string | undefined>(gameId);
   const lastSavedMovesLength = useRef(moves.length);
   const lastSavedStatus = useRef(status);
   const hasPlayerInteracted = useRef(false);
@@ -49,18 +49,18 @@ export function useAutoSave({
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
-  // Update refs with current values
+  // Update current game ID and refs with current values
   useEffect(() => {
-    if (gameId && gameId !== gameIdRef.current) {
-      gameIdRef.current = gameId;
+    if (gameId && gameId !== currentGameId) {
+      setCurrentGameId(gameId);
     }
     currentMovesRef.current = moves;
     currentStatusRef.current = status;
-  }, [gameId, moves, status]);
+  }, [gameId, moves, status, currentGameId]);
 
   // Initial save when component mounts if saveOnInit is true
   useEffect(() => {
-    if (saveOnInit && enabled && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+    if (saveOnInit && enabled && !currentGameId && !hasInitialSaveExecuted.current) {
       // For new games (including PGN imports), save immediately
       // This ensures the game is saved even if player navigates away without making a move
       const performInitialSave = async () => {
@@ -74,12 +74,12 @@ export function useAutoSave({
               skillLevel,
               status: currentStatusRef.current,
             },
-            gameIdRef.current
+            currentGameId
           );
 
           // Update game ID if it was newly created
-          if (!gameIdRef.current) {
-            gameIdRef.current = savedGameId;
+          if (!currentGameId) {
+            setCurrentGameId(savedGameId);
           }
 
           lastSavedMovesLength.current = currentMovesRef.current.length;
@@ -119,7 +119,7 @@ export function useAutoSave({
       if (!enabled) return;
 
       // Skip if initial save is pending for a new game
-      if (saveOnInit && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+      if (saveOnInit && !currentGameId && !hasInitialSaveExecuted.current) {
         return;
       }
 
@@ -145,22 +145,22 @@ export function useAutoSave({
 
         let savedGameId: string;
 
-        if (gameIdRef.current) {
+        if (currentGameId) {
           // Check if game actually exists before updating
-          const existingGame = await gameRepository.load(gameIdRef.current);
+          const existingGame = await gameRepository.load(currentGameId);
           if (existingGame) {
             // Update existing game
-            await gameRepository.update(gameIdRef.current, gameData);
-            savedGameId = gameIdRef.current;
+            await gameRepository.update(currentGameId, gameData);
+            savedGameId = currentGameId;
           } else {
             // Game ID provided but doesn't exist - create new game
             savedGameId = await gameRepository.create(gameData);
-            gameIdRef.current = savedGameId;
+            setCurrentGameId(savedGameId);
           }
         } else {
           // Create new game
           savedGameId = await gameRepository.create(gameData);
-          gameIdRef.current = savedGameId;
+          setCurrentGameId(savedGameId);
         }
 
         lastSavedMovesLength.current = moves.length;
@@ -201,13 +201,13 @@ export function useAutoSave({
         }
       }
     },
-    [enabled, gameRepository, moves, playerColor, skillLevel, status, saveOnInit]
+    [currentGameId, enabled, gameRepository, moves, playerColor, skillLevel, status, saveOnInit]
   );
 
   // Auto-save on moves change or status change
   useEffect(() => {
     // Skip if initial save is pending for a new game
-    if (saveOnInit && !gameIdRef.current && !hasInitialSaveExecuted.current) {
+    if (saveOnInit && !currentGameId && !hasInitialSaveExecuted.current) {
       return;
     }
 
@@ -335,7 +335,7 @@ export function useAutoSave({
   return {
     saveGame: manualSave,
     markPlayerInteraction,
-    gameId: gameIdRef.current,
+    gameId: currentGameId,
     isSaving,
     lastSavedAt,
   };

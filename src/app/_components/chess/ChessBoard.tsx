@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
@@ -46,21 +46,18 @@ export function ChessBoard({
   boardTheme = 'default',
   className = '',
 }: Props) {
-  const [board, setBoard] = useState<BoardPiece[][]>([]);
   const themeColors = getBoardThemeColors(boardTheme);
 
-  useEffect(() => {
+  const board = useMemo(() => {
     try {
       const chess = new Chess(fen);
-      setBoard(chess.board());
+      return chess.board();
     } catch (error) {
       console.error('Invalid FEN:', error);
-      // Set empty board on error
-      setBoard(
-        Array(8)
-          .fill(null)
-          .map(() => Array(8).fill(null))
-      );
+      // Return empty board on error
+      return Array(8)
+        .fill(null)
+        .map(() => Array(8).fill(null)) as BoardPiece[][];
     }
   }, [fen]);
 

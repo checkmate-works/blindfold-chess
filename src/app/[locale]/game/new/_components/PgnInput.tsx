@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -19,7 +19,6 @@ export function PgnInput({ value, onChange }: Props) {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isPasteRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile device
@@ -30,16 +29,14 @@ export function PgnInput({ value, onChange }: Props) {
     checkMobile();
   }, []);
 
-  // Update suggestion when value changes
-  useEffect(() => {
-    const newSuggestion = getPgnSuggestion(value);
-    setSuggestion(newSuggestion);
-  }, [value]);
+  // Calculate suggestion from value
+  const suggestion = useMemo(() => getPgnSuggestion(value), [value]);
 
   // Update debounced value when value changes
   useEffect(() => {
     // If this was a paste operation, update immediately
     if (isPasteRef.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDebouncedValue(value);
       isPasteRef.current = false;
       return;

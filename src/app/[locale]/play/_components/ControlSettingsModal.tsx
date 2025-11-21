@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -19,15 +19,8 @@ export function ControlSettingsModal({ isOpen, onClose }: Props) {
   const t = useTranslations('play');
   const { preferences, updatePreferences } = useGamePreferences();
 
-  // Temporary settings state for preview
+  // Temporary settings state for preview - reset when modal opens using key prop
   const [tempSettings, setTempSettings] = useState(preferences);
-
-  // Reset temp settings when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setTempSettings(preferences);
-    }
-  }, [isOpen, preferences]);
 
   const handleSave = () => {
     updatePreferences(tempSettings);
@@ -35,7 +28,6 @@ export function ControlSettingsModal({ isOpen, onClose }: Props) {
   };
 
   const handleCancel = () => {
-    setTempSettings(preferences);
     onClose();
   };
 
@@ -45,6 +37,7 @@ export function ControlSettingsModal({ isOpen, onClose }: Props) {
       title={t('configureInputMethod')}
       onClose={handleCancel}
       maxWidth="max-w-2xl"
+      key={isOpen ? 'open' : 'closed'}
     >
       <div className="space-y-8">
         <ControlSettingsContent

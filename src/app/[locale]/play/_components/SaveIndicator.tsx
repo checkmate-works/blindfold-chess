@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -12,18 +12,29 @@ type Props = {
 export function SaveIndicator({ isSaving, lastSavedAt }: Props) {
   const t = useTranslations('play');
   const [isVisible, setIsVisible] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
     if (isSaving) {
       setIsVisible(true);
     } else if (lastSavedAt) {
       setIsVisible(true);
       // Fade out after 3 seconds
-      const timer = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         setIsVisible(false);
       }, 3000);
-      return () => clearTimeout(timer);
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [isSaving, lastSavedAt]);
 
   if (!isVisible) {

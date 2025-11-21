@@ -76,7 +76,6 @@ export default function PostmortemPage() {
         </div>
       </div>
       <PostmortemClient
-        locale={locale}
         pgn={pgn}
         playerColor={playerColor}
         autoOpponent={autoOpponent}

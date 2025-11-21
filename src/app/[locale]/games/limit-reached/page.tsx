@@ -152,7 +152,7 @@ export default function ManageLimitPage() {
           router.push(targetUrl.pathname);
         }
         // If not confirmed, do nothing (navigation is already prevented)
-      } catch (error) {
+      } catch {
         // Invalid URL, allow default behavior
         return;
       }
@@ -164,7 +164,7 @@ export default function ManageLimitPage() {
     return () => {
       document.removeEventListener('click', handleClick, true);
     };
-  }, [pathname]);
+  }, [pathname, router]);
 
   const handleDeleteAndSave = async (gameIdsToDelete: string[]) => {
     if (!pendingGame) return;

@@ -29,8 +29,19 @@ export default function SquareColors({ locale }: Props) {
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
 
-  // Default settings (will be updated from localStorage in useEffect)
-  const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
+  // Load settings from localStorage using lazy initializer
+  const [timeLimit, setTimeLimit] = useState(() => {
+    if (typeof window === 'undefined') return 60;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        return settings.timeLimit || 60;
+      } catch {}
+    }
+    return 60;
+  });
+
   const [timeRemaining, setTimeRemaining] = useState(timeLimit);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [squares, setSquares] = useState<string[]>([]);
@@ -41,30 +52,13 @@ export default function SquareColors({ locale }: Props) {
   const [showResult, setShowResult] = useState<boolean>(false);
   const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; square: string } | null>(null);
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
-  // Load settings from localStorage on mount
+  // Save settings to localStorage when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const settings = JSON.parse(saved);
-          if (settings.timeLimit) {
-            setTimeLimit(settings.timeLimit);
-          }
-        } catch {}
-      }
-      setSettingsLoaded(true);
-    }
-  }, []);
-
-  // Save settings to localStorage when they change (after initial load)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && settingsLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit }));
     }
-  }, [timeLimit, settingsLoaded]);
+  }, [timeLimit]);
 
   const startGame = useCallback(() => {
     // Generate a large pool of squares
@@ -84,7 +78,7 @@ export default function SquareColors({ locale }: Props) {
   useEffect(() => {
     if (gameState === 'playing') {
       timerRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
+        setTimeRemaining((prev: number) => {
           if (prev <= 1) {
             setGameState('finished');
             return 0;

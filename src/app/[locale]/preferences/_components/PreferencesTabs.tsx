@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { isAdsSystemEnabled } from '@/lib/ads/config';
 
@@ -16,19 +14,21 @@ type Props = {
   locale: string;
 };
 
-export function PreferencesTabs({}: Props) {
+export function PreferencesTabs({ locale }: Props) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabParam || 'game');
   const t = useTranslations('Preferences');
   const adsSystemEnabled = isAdsSystemEnabled();
 
-  // URLパラメータが変更されたらタブを更新
-  useEffect(() => {
-    if (tabParam) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
+  // Use URL parameter directly, fallback to 'game'
+  const activeTab = tabParam || 'game';
+
+  const handleTabChange = (tabId: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tabId);
+    router.push(`/${locale}/preferences?${params.toString()}`, { scroll: false });
+  };
 
   const tabs = [
     { id: 'game', label: t('tabs.board') },
@@ -46,7 +46,7 @@ export function PreferencesTabs({}: Props) {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === tab.id
                   ? 'border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'

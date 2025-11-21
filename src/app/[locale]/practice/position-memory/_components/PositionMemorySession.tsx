@@ -44,31 +44,26 @@ export function PositionMemorySession({
     [t]
   );
 
+  // Initialize positions using lazy initializer
+  const [positions] = useState<PositionData[]>(() => {
+    if (fens && fens.length > 0) {
+      return getCustomPositions(fens, fens.length, shuffle);
+    } else {
+      return getRandomPositions(problemCount, shuffle);
+    }
+  });
+
   // Game state
   const [phase, setPhase] = useState<ExtendedGamePhase>('memorize');
-  const [positions, setPositions] = useState<PositionData[]>([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [originalPosition, setOriginalPosition] = useState<PositionData | null>(null);
+  const [originalPosition, setOriginalPosition] = useState<PositionData | null>(
+    positions[0] || null
+  );
   const [recreatedPosition, setRecreatedPosition] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
   const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
-
-  // Initialize positions on mount
-  useEffect(() => {
-    let newPositions: PositionData[];
-
-    if (fens && fens.length > 0) {
-      newPositions = getCustomPositions(fens, fens.length, shuffle);
-    } else {
-      newPositions = getRandomPositions(problemCount, shuffle);
-    }
-
-    setPositions(newPositions);
-    setOriginalPosition(newPositions[0]);
-    setMemorizeTimeLeft(timeLimit);
-  }, [fens, problemCount, shuffle, timeLimit]);
 
   const handleMemorized = useCallback(() => {
     setPhase('recreate');

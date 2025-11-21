@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { STORAGE_KEYS } from '@/config';
 
@@ -28,7 +28,7 @@ export function useGameList(sortBy: GameSortOption, sortDirection: SortDirection
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadGames = async () => {
+  const loadGames = useCallback(async () => {
     setIsLoading(true);
     try {
       const gameRepository = new LocalStorageGameRepository();
@@ -40,7 +40,7 @@ export function useGameList(sortBy: GameSortOption, sortDirection: SortDirection
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [sortBy, sortDirection]);
 
   useEffect(() => {
     loadGames();
@@ -69,7 +69,7 @@ export function useGameList(sortBy: GameSortOption, sortDirection: SortDirection
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [sortBy, sortDirection]);
+  }, [loadGames]);
 
   return {
     games,

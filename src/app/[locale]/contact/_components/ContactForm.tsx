@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,21 +17,12 @@ export function ContactForm({ locale }: Props) {
   const searchParams = useSearchParams();
 
   // Pre-fill form from URL params (when coming back from confirm page)
-  const [formData, setFormData] = useState({
+  const [formData] = useState(() => ({
     name: searchParams.get('name') || '',
     email: searchParams.get('email') || '',
     subject: searchParams.get('subject') || '',
     message: searchParams.get('message') || '',
-  });
-
-  useEffect(() => {
-    setFormData({
-      name: searchParams.get('name') || '',
-      email: searchParams.get('email') || '',
-      subject: searchParams.get('subject') || '',
-      message: searchParams.get('message') || '',
-    });
-  }, [searchParams]);
+  }));
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -34,51 +34,60 @@ export function PositionMemorySetup({
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
 
-  // Game settings
-  const [timeLimit, setTimeLimit] = useState(10);
-  const [problemCount, setProblemCount] = useState(1);
-  const [shuffleProblems, setShuffleProblems] = useState(true);
-  const [useCustomFen, setUseCustomFen] = useState(false);
-  const [customFenInput, setCustomFenInput] = useState('');
-  const [customFenError, setCustomFenError] = useState<string | null>(null);
-  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
-
-  // Load saved settings from localStorage or URL params
-  useEffect(() => {
-    // URL params take priority over localStorage
+  // Load settings from localStorage or URL params - URL params take priority
+  const initialSettings = (() => {
+    // URL params take priority
     if (urlFens) {
-      setUseCustomFen(true);
-      setCustomFenInput(urlFens.join('\n'));
-      setTimeLimit(urlTimeLimit ?? 10);
-      setShuffleProblems(urlShuffle ?? true);
-      setHasLoadedSettings(true);
-      return;
-    }
-
-    // Handle URL errors
-    if (urlError) {
-      setCustomFenError(urlError);
-      setHasLoadedSettings(true);
-      return;
+      return {
+        timeLimit: urlTimeLimit ?? 10,
+        problemCount: 1,
+        shuffleProblems: urlShuffle ?? true,
+        useCustomFen: true,
+        customFenInput: urlFens.join('\n'),
+        hasLoadedSettings: true,
+      };
     }
 
     // Load from localStorage if no URL params
-    const savedSettings = localStorage.getItem('positionMemorySettings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setTimeLimit(settings.timeLimit ?? 10);
-        setProblemCount(settings.problemCount ?? 1);
-        setShuffleProblems(settings.shuffleProblems ?? true);
-        setUseCustomFen(settings.useCustomFen ?? false);
-        setCustomFenInput(settings.customFenInput ?? '');
-      } catch (error) {
-        console.error('Failed to load position memory settings:', error);
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem('positionMemorySettings');
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          return {
+            timeLimit: settings.timeLimit ?? 10,
+            problemCount: settings.problemCount ?? 1,
+            shuffleProblems: settings.shuffleProblems ?? true,
+            useCustomFen: settings.useCustomFen ?? false,
+            customFenInput: settings.customFenInput ?? '',
+            hasLoadedSettings: true,
+          };
+        } catch (error) {
+          console.error('Failed to load position memory settings:', error);
+        }
       }
     }
-    setHasLoadedSettings(true);
-  }, [urlFens, urlTimeLimit, urlShuffle, urlError]);
+
+    // Default values
+    return {
+      timeLimit: 10,
+      problemCount: 1,
+      shuffleProblems: true,
+      useCustomFen: false,
+      customFenInput: '',
+      hasLoadedSettings: true,
+    };
+  })();
+
+  // Game settings
+  const [timeLimit, setTimeLimit] = useState(initialSettings.timeLimit);
+  const [problemCount, setProblemCount] = useState(initialSettings.problemCount);
+  const [shuffleProblems, setShuffleProblems] = useState(initialSettings.shuffleProblems);
+  const [useCustomFen, setUseCustomFen] = useState(initialSettings.useCustomFen);
+  const [customFenInput, setCustomFenInput] = useState(initialSettings.customFenInput);
+  const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
+  const [hasLoadedSettings] = useState(initialSettings.hasLoadedSettings);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
 
   // Save settings to localStorage whenever they change
   useEffect(() => {
@@ -116,10 +125,10 @@ export function PositionMemorySetup({
       const lines = customFenInput
         .trim()
         .split('\n')
-        .filter((line) => line.trim());
+        .filter((line: string) => line.trim());
       const invalidLines: number[] = [];
 
-      lines.forEach((line, index) => {
+      lines.forEach((line: string, index: number) => {
         if (!validateFEN(line.trim())) {
           invalidLines.push(index + 1);
         }
@@ -147,7 +156,7 @@ export function PositionMemorySetup({
     const fens = customFenInput
       .trim()
       .split('\n')
-      .filter((line) => line.trim());
+      .filter((line: string) => line.trim());
 
     const { url, isTooLong } = generateShareUrl(locale, fens, timeLimit, shuffleProblems);
 
@@ -179,9 +188,9 @@ export function PositionMemorySetup({
       const fens = customFenInput
         .trim()
         .split('\n')
-        .filter((line) => line.trim());
+        .filter((line: string) => line.trim());
 
-      if (fens.length === 0 || fens.some((fen) => !validateFEN(fen.trim()))) {
+      if (fens.length === 0 || fens.some((fen: string) => !validateFEN(fen.trim()))) {
         return;
       }
 

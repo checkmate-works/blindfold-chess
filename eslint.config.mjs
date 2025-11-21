@@ -1,18 +1,20 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextVitals,
+  ...nextTs,
   {
-    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts', 'public/stockfish.js', 'public/stockfish.wasm', 'public/stockfish.wasm.js'],
+    ignores: [
+      '.next/**',
+      'out/**',
+      'build/**',
+      'next-env.d.ts',
+      'node_modules/**',
+      'public/stockfish.js',
+      'public/stockfish.wasm',
+      'public/stockfish.wasm.js',
+    ],
   },
   {
     rules: {
@@ -21,6 +23,8 @@ const eslintConfig = [
       'no-console': ['warn', { allow: ['error', 'warn'] }],
       // Allow unused variables that start with underscore
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Relax set-state-in-effect rule - many legitimate use cases for debouncing, etc.
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
 ];

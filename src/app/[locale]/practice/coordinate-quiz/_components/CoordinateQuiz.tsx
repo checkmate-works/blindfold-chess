@@ -24,9 +24,31 @@ const STORAGE_KEY = 'coordinateQuiz_settings';
 export default function CoordinateQuiz({ locale }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
-  // Game settings - Default values (will be updated from localStorage in useEffect)
-  const [timeLimit, setTimeLimit] = useState(60); // Default to 60 seconds
-  const [boardOrientation, setBoardOrientation] = useState<BoardOrientation>('white');
+
+  // Load settings from localStorage using lazy initializer
+  const [timeLimit, setTimeLimit] = useState(() => {
+    if (typeof window === 'undefined') return 60;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        return settings.timeLimit || 60;
+      } catch {}
+    }
+    return 60;
+  });
+
+  const [boardOrientation, setBoardOrientation] = useState<BoardOrientation>(() => {
+    if (typeof window === 'undefined') return 'white';
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        return settings.boardOrientation || 'white';
+      } catch {}
+    }
+    return 'white';
+  });
 
   // Game state
   const [gameState, setGameState] = useState<GameState>('setup');
@@ -41,33 +63,13 @@ export default function CoordinateQuiz({ locale }: Props) {
   const [isCorrect, setIsCorrect] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
-  // Load settings from localStorage on mount
+  // Save settings to localStorage when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          const settings = JSON.parse(saved);
-          if (settings.timeLimit) {
-            setTimeLimit(settings.timeLimit);
-          }
-          if (settings.boardOrientation) {
-            setBoardOrientation(settings.boardOrientation);
-          }
-        } catch {}
-      }
-      setSettingsLoaded(true);
-    }
-  }, []);
-
-  // Save settings to localStorage when they change (after initial load)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && settingsLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit, boardOrientation }));
     }
-  }, [timeLimit, boardOrientation, settingsLoaded]);
+  }, [timeLimit, boardOrientation]);
 
   // Start timer
   useEffect(() => {

@@ -17,8 +17,6 @@ async function copyStockfishFiles() {
     join(sourceDir, 'stockfish-17.1-lite-single-03e3232.wasm'),
     join(targetDir, 'stockfish.wasm')
   );
-
-  console.log('✓ Stockfish 17 Lite files copied successfully');
 }
 
 copyStockfishFiles().catch((error) => {

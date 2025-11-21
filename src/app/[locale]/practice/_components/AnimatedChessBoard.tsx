@@ -42,6 +42,7 @@ export function AnimatedChessBoard({
   const [showPlayButton, setShowPlayButton] = useState(!autoPlay);
   const [animatingPiece, setAnimatingPiece] = useState<AnimatingPiece | null>(null);
   const [hiddenSquare, setHiddenSquare] = useState<string | null>(null);
+  const [animationProgress, setAnimationProgress] = useState(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const boardRef = useRef<HTMLDivElement>(null);
   const themeColors = getBoardThemeColors(boardTheme);
@@ -195,12 +196,16 @@ export function AnimatedChessBoard({
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / animationDuration, 1);
 
+      // Update progress state to trigger re-render
+      setAnimationProgress(progress);
+
       if (progress >= 1) {
         // Animation complete
         setCurrentFen(moveDetails.finalFen);
         setAnimatingPiece(null);
         setHiddenSquare(null);
         setIsAnimating(false);
+        setAnimationProgress(0);
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
@@ -265,38 +270,37 @@ export function AnimatedChessBoard({
     );
   };
 
-  // Calculate position for animating piece
-  const getAnimatingPieceStyle = () => {
-    if (!animatingPiece || !boardRef.current) return {};
+  // Calculate position for animating piece using pixel positions stored in state
+  // This avoids accessing boardRef.current during render
+  const animatingPieceStyle = useMemo(() => {
+    if (!animatingPiece) return {};
 
-    const elapsed = Date.now() - animatingPiece.startTime;
-    const progress = Math.min(elapsed / animationDuration, 1);
+    // Use state-based progress instead of Date.now()
+    const progress = animationProgress;
 
     // Ease-in-out animation
     const easeProgress =
       progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
+    // Calculate current position based on stored pixel coordinates
     const currentX =
       animatingPiece.from.x + (animatingPiece.to.x - animatingPiece.from.x) * easeProgress;
     const currentY =
       animatingPiece.from.y + (animatingPiece.to.y - animatingPiece.from.y) * easeProgress;
 
-    const boardRect = boardRef.current.getBoundingClientRect();
-    const squareSize = boardRect.width / 8;
-
     return {
       position: 'absolute' as const,
       left: `${currentX}px`,
       top: `${currentY}px`,
-      width: `${squareSize}px`,
-      height: `${squareSize}px`,
+      width: '12.5%',
+      height: '12.5%',
       zIndex: 1000,
       pointerEvents: 'none' as const,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
     };
-  };
+  }, [animatingPiece, animationProgress]);
 
   // Get piece component for animating piece
   const renderAnimatingPiece = () => {
@@ -367,7 +371,7 @@ export function AnimatedChessBoard({
           )}
 
           {/* Animating piece */}
-          {animatingPiece && <div style={getAnimatingPieceStyle()}>{renderAnimatingPiece()}</div>}
+          {animatingPiece && <div style={animatingPieceStyle}>{renderAnimatingPiece()}</div>}
         </div>
       </div>
 
