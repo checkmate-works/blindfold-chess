@@ -5,8 +5,10 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { fenToLichessUrl } from '@/lib/lichess';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
@@ -132,27 +134,44 @@ export function PositionMemoryProblemResult({
           </div>
         </div>
 
-        {isLastProblem ? (
+        <div className="mt-6 space-y-3">
+          {isLastProblem ? (
+            <Button
+              onClick={onViewResults}
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="rounded-xl"
+            >
+              {t('viewResults')}
+            </Button>
+          ) : (
+            <Button
+              onClick={onNextProblem}
+              variant="primary"
+              size="lg"
+              fullWidth
+              className="rounded-xl"
+            >
+              {t('nextProblem')}
+            </Button>
+          )}
+
+          {/* Analyze on Lichess Button */}
           <Button
-            onClick={onViewResults}
-            variant="primary"
+            onClick={() => {
+              const lichessUrl = fenToLichessUrl(originalPosition.fen);
+              window.open(lichessUrl, '_blank');
+            }}
+            variant="secondary"
             size="lg"
             fullWidth
-            className="mt-6 rounded-xl"
+            icon={<FaExternalLinkAlt className="w-4 h-4" />}
+            className="rounded-xl"
           >
-            {t('viewResults')}
+            {t('analyzeOnLichess')}
           </Button>
-        ) : (
-          <Button
-            onClick={onNextProblem}
-            variant="primary"
-            size="lg"
-            fullWidth
-            className="mt-6 rounded-xl"
-          >
-            {t('nextProblem')}
-          </Button>
-        )}
+        </div>
       </div>
     </div>
   );

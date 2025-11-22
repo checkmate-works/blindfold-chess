@@ -330,6 +330,7 @@
       "extraDescription": "Extra pieces placed in empty squares",
       "nextProblem": "Next Problem",
       "viewResults": "View Results",
+      "analyzeOnLichess": "Analyze on Lichess",
       "original": "Original",
       "yourRecreation": "Your Recreation",
       "pieceNames": {

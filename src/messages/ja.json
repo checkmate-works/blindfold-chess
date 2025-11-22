@@ -330,6 +330,7 @@
       "extraDescription": "空白のマスに配置された余分な駒",
       "nextProblem": "次の問題",
       "viewResults": "結果を見る",
+      "analyzeOnLichess": "Lichessで解析",
       "original": "正解",
       "yourRecreation": "あなたの再現",
       "pieceNames": {
