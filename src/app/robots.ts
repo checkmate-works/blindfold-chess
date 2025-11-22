@@ -11,7 +11,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/_next/', '/_vercel/'],
+      disallow: [
+        '/api/',
+        '/_vercel/',
+        // Block manifest files to optimize crawl budget
+        '/*_buildManifest.js$',
+        '/*_middlewareManifest.js$',
+        '/*_ssgManifest.js$',
+        // Block Next.js internal JSON files
+        '/_next/data/',
+      ],
     },
     sitemap: `${BASE_URL}/sitemap.xml`,
   };
