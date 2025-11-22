@@ -139,21 +139,36 @@ For production use with custom recipient email addresses:
 
 ## Available Scripts
 
+### Development
 - `pnpm dev` - Start development server with Turbopack
 - `pnpm build` - Build for production (automatically copies Stockfish files)
 - `pnpm start` - Start production server
 - `pnpm lint` - Run ESLint
+- `pnpm run copy-stockfish` - Manually copy Stockfish AI engine files
+
+### Testing
+
+#### Unit Tests (Vitest)
 - `pnpm test` - Run tests in watch mode
 - `pnpm test:run` - Run tests once (CI mode)
 - `pnpm test:ui` - Run tests with UI
-- `pnpm run copy-stockfish` - Manually copy Stockfish AI engine files
+
+#### E2E Tests (Playwright)
+- `pnpm test:e2e` - Run E2E tests in headless mode (CI/CD)
+- `pnpm test:e2e:ui` - Run E2E tests with Playwright UI (debugging)
+- `pnpm test:e2e:headed` - Run E2E tests with browser visible
+- `pnpm test:e2e:debug` - Run E2E tests in debug mode
+
+**Note:** E2E tests automatically start the development server. The first run will download the Chromium browser (~130MB).
 
 ## Tech Stack
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS v4
 - React 19
+- Playwright (E2E Testing)
+- Vitest (Unit Testing)
 
 ## License
 
