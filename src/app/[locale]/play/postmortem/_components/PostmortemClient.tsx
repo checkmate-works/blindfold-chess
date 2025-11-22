@@ -10,6 +10,7 @@ import {
   FaCheck,
   FaChevronDown,
   FaCopy,
+  FaExternalLinkAlt,
   FaEye,
   FaEyeSlash,
   FaFilter,
@@ -19,10 +20,12 @@ import {
   FaStar,
 } from 'react-icons/fa';
 
+import { fenToLichessUrl } from '@/lib/lichess';
 import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
+import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
@@ -296,6 +299,8 @@ export function PostmortemClient({
       blunder: true,
     },
   });
+  const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
+  const [displayFen, setDisplayFen] = useState<string | null>(null);
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -348,6 +353,90 @@ export function PostmortemClient({
     }
     return chess.fen();
   }, [userMoves, originalMoves, selectedMoveIndex]);
+
+  // Navigation functions for move history
+  const navigateToPosition = useCallback(
+    (position: number) => {
+      const chess = new Chess();
+
+      // Reset board
+      if (position === -1 || position >= originalMoves.length) {
+        // Show latest position
+        setCurrentPosition(-1);
+        setDisplayFen(null);
+        setSelectedMoveIndex(null);
+        return;
+      }
+
+      // Apply moves up to the specified position
+      const movesToApply = originalMoves.slice(0, position + 1);
+      try {
+        for (const move of movesToApply) {
+          chess.move(move);
+        }
+        setCurrentPosition(position);
+        setDisplayFen(chess.fen());
+        setSelectedMoveIndex(position);
+      } catch (error) {
+        console.error('Error navigating to position:', error);
+        setCurrentPosition(-1);
+        setDisplayFen(null);
+        setSelectedMoveIndex(null);
+      }
+    },
+    [originalMoves]
+  );
+
+  const navigateToStart = useCallback(() => {
+    // Show initial position (before any moves)
+    const chess = new Chess();
+    setDisplayFen(chess.fen());
+    setCurrentPosition(-2); // Special value to indicate start position
+    setSelectedMoveIndex(null);
+  }, []);
+
+  const navigateToEnd = useCallback(() => {
+    setCurrentPosition(-1);
+    setDisplayFen(null);
+    setSelectedMoveIndex(null);
+  }, []);
+
+  const navigatePrevious = useCallback(() => {
+    if (currentPosition === -2) {
+      // Already at start, can't go back further
+      return;
+    }
+
+    if (currentPosition === -1) {
+      // From latest position, go to the move before the last
+      if (originalMoves.length > 0) {
+        navigateToPosition(originalMoves.length - 2);
+      }
+    } else if (currentPosition === 0) {
+      // From first move, go to start position
+      navigateToStart();
+    } else {
+      // Normal navigation
+      navigateToPosition(currentPosition - 1);
+    }
+  }, [currentPosition, originalMoves.length, navigateToPosition, navigateToStart]);
+
+  const navigateNext = useCallback(() => {
+    if (currentPosition === -2) {
+      // From start position, go to first move
+      if (originalMoves.length > 0) {
+        navigateToPosition(0);
+      }
+    } else if (currentPosition === -1) {
+      // Already at latest position, can't go forward
+      return;
+    } else {
+      const newPosition = currentPosition + 1;
+      if (newPosition < originalMoves.length) {
+        navigateToPosition(newPosition);
+      }
+    }
+  }, [currentPosition, originalMoves.length, navigateToPosition]);
 
   // Check if current move is player's turn
   const isPlayerTurn = useCallback(() => {
@@ -757,7 +846,7 @@ export function PostmortemClient({
             >
               <div className="p-4">
                 <ChessBoard
-                  fen={currentFen}
+                  fen={displayFen || currentFen}
                   flipped={playerColor === 'black'}
                   playerSide={playerColor}
                   showCoordinates={preferences.showCoordinates}
@@ -768,6 +857,23 @@ export function PostmortemClient({
                   boardTheme={preferences.boardTheme}
                   className="max-w-2xl mx-auto"
                 />
+
+                {/* Navigation Controls (below board) */}
+                {originalMoves.length > 0 && (
+                  <div className="mt-4">
+                    <MoveNavigationControls
+                      onNavigateToStart={navigateToStart}
+                      onNavigatePrevious={navigatePrevious}
+                      onNavigateNext={navigateNext}
+                      onNavigateToEnd={navigateToEnd}
+                      isPreviousDisabled={
+                        currentPosition === -2 ||
+                        (currentPosition === -1 && originalMoves.length === 0)
+                      }
+                      isNextDisabled={currentPosition === -1}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1111,48 +1217,105 @@ export function PostmortemClient({
             {/* Moves Content */}
             <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
               {formattedPgn.length > 0 ? (
-                <div className="space-y-0.5">
-                  {formattedPgn.map((move) => (
-                    <div key={move.moveNumber} className="flex items-center text-sm">
-                      <span className="w-10 text-right pr-2 text-muted-foreground">
-                        {move.moveNumber}.
-                      </span>
-                      <span className="flex-1 px-2 py-0.5">{move.whiteMove}</span>
-                      <span className="flex-1 px-2 py-0.5">{move.blackMove || ''}</span>
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className="space-y-0.5">
+                    {formattedPgn.map((move, index) => {
+                      const whiteIndex = index * 2;
+                      const blackIndex = index * 2 + 1;
+                      const isWhiteHighlighted = currentPosition === whiteIndex;
+                      const isBlackHighlighted = currentPosition === blackIndex;
+
+                      return (
+                        <div key={move.moveNumber} className="flex items-center text-sm">
+                          <span className="w-10 text-right pr-2 text-muted-foreground">
+                            {move.moveNumber}.
+                          </span>
+                          <span
+                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                              isWhiteHighlighted
+                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                : 'hover:bg-muted/40'
+                            }`}
+                            onClick={() => navigateToPosition(whiteIndex)}
+                          >
+                            {move.whiteMove}
+                          </span>
+                          <span
+                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                              isBlackHighlighted
+                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                : move.blackMove
+                                  ? 'hover:bg-muted/40'
+                                  : ''
+                            } ${!move.blackMove ? 'pointer-events-none' : ''}`}
+                            onClick={() => move.blackMove && navigateToPosition(blackIndex)}
+                          >
+                            {move.blackMove || ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Navigation Controls */}
+                  <div className="mt-4">
+                    <MoveNavigationControls
+                      onNavigateToStart={navigateToStart}
+                      onNavigatePrevious={navigatePrevious}
+                      onNavigateNext={navigateNext}
+                      onNavigateToEnd={navigateToEnd}
+                      isPreviousDisabled={
+                        currentPosition === -2 ||
+                        (currentPosition === -1 && originalMoves.length === 0)
+                      }
+                      isNextDisabled={currentPosition === -1}
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-4 flex flex-col gap-4">
+                    {/* Analyze on Lichess Button - only show when navigating */}
+                    {currentPosition !== -1 && currentPosition !== -2 && (
+                      <Button
+                        variant="secondary"
+                        icon={<FaExternalLinkAlt className="w-3 h-3" />}
+                        onClick={() => {
+                          const fenToAnalyze = displayFen || currentFen;
+                          const lichessUrl = fenToLichessUrl(fenToAnalyze);
+                          window.open(lichessUrl, '_blank');
+                        }}
+                      >
+                        {t('analyzeOnLichess')}
+                      </Button>
+                    )}
+
+                    {/* Copy PGN Button */}
+                    <Button
+                      variant="secondary"
+                      icon={
+                        isCopied ? (
+                          <FaCheck className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <FaCopy className="w-3 h-3" />
+                        )
+                      }
+                      onClick={() => {
+                        const pgnText = formatPgnToText(formattedPgn);
+
+                        navigator.clipboard.writeText(pgnText).then(() => {
+                          setIsCopied(true);
+                          setTimeout(() => setIsCopied(false), 2000);
+                        });
+                      }}
+                    >
+                      {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <p className="text-muted-foreground text-sm">No moves yet</p>
               )}
             </div>
-
-            {/* Copy PGN Button */}
-            {formattedPgn.length > 0 && (
-              <div className="px-4 pb-4">
-                <Button
-                  variant="secondary"
-                  icon={
-                    isCopied ? (
-                      <FaCheck className="w-3 h-3 text-green-500" />
-                    ) : (
-                      <FaCopy className="w-3 h-3" />
-                    )
-                  }
-                  onClick={() => {
-                    const pgnText = formatPgnToText(formattedPgn);
-
-                    navigator.clipboard.writeText(pgnText).then(() => {
-                      setIsCopied(true);
-                      setTimeout(() => setIsCopied(false), 2000);
-                    });
-                  }}
-                  className="w-full"
-                >
-                  {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>

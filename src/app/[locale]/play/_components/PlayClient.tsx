@@ -12,6 +12,7 @@ import {
   FaCheck,
   FaChevronDown,
   FaCopy,
+  FaExternalLinkAlt,
   FaEye,
   FaEyeSlash,
   FaPlay,
@@ -19,6 +20,7 @@ import {
   FaPlusCircle,
 } from 'react-icons/fa';
 
+import { fenToLichessUrl } from '@/lib/lichess';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
@@ -1030,6 +1032,27 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                         </Button>
                       </>
                     )}
+
+                    {/* Analyze on Lichess Button */}
+                    <Button
+                      variant="secondary"
+                      icon={<FaExternalLinkAlt className="w-3 h-3" />}
+                      onClick={() => {
+                        // Get FEN for current position
+                        let fenToAnalyze: string;
+                        if (currentPosition === -1 || displayFen === null) {
+                          // Latest position
+                          fenToAnalyze = currentFen;
+                        } else {
+                          // Historical position
+                          fenToAnalyze = displayFen;
+                        }
+                        const lichessUrl = fenToLichessUrl(fenToAnalyze);
+                        window.open(lichessUrl, '_blank');
+                      }}
+                    >
+                      {t('analyzeOnLichess')}
+                    </Button>
 
                     {/* Copy PGN Button */}
                     <Button
