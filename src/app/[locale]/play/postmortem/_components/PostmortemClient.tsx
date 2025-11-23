@@ -286,6 +286,7 @@ export function PostmortemClient({
   const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [showEvalInfo, setShowEvalInfo] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isFenCopied, setIsFenCopied] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
@@ -1309,6 +1310,29 @@ export function PostmortemClient({
                       }}
                     >
                       {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                    </Button>
+
+                    {/* Copy FEN Button */}
+                    <Button
+                      variant="secondary"
+                      icon={
+                        isFenCopied ? (
+                          <FaCheck className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <FaCopy className="w-3 h-3" />
+                        )
+                      }
+                      onClick={() => {
+                        // Use the same FEN that is sent to Lichess
+                        const fenToCopy = displayFen || currentFen;
+
+                        navigator.clipboard.writeText(fenToCopy).then(() => {
+                          setIsFenCopied(true);
+                          setTimeout(() => setIsFenCopied(false), 2000);
+                        });
+                      }}
+                    >
+                      {isFenCopied ? t('copied') || 'Copied!' : t('copyFen')}
                     </Button>
                   </div>
                 </>

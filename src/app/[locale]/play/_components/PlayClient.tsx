@@ -140,6 +140,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isMovesVisible, setIsMovesVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isFenCopied, setIsFenCopied] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
   const [restartPosition, setRestartPosition] = useState<number | null>(null);
 
@@ -1074,6 +1075,36 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       }}
                     >
                       {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                    </Button>
+
+                    {/* Copy FEN Button */}
+                    <Button
+                      variant="secondary"
+                      icon={
+                        isFenCopied ? (
+                          <FaCheck className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <FaCopy className="w-3 h-3" />
+                        )
+                      }
+                      onClick={() => {
+                        // Use the same FEN that is sent to Lichess
+                        let fenToCopy: string;
+                        if (currentPosition === -1) {
+                          // Current position
+                          fenToCopy = currentFen;
+                        } else {
+                          // Historical position
+                          fenToCopy = displayFen || currentFen;
+                        }
+
+                        navigator.clipboard.writeText(fenToCopy).then(() => {
+                          setIsFenCopied(true);
+                          setTimeout(() => setIsFenCopied(false), 2000);
+                        });
+                      }}
+                    >
+                      {isFenCopied ? t('copied') || 'Copied!' : t('copyFen')}
                     </Button>
                   </div>
                 )}
