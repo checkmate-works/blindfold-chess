@@ -129,6 +129,7 @@ export function PositionMemoryProblemResult({
                 fen={recreatedPosition}
                 flipped={originalPosition.isBlackToMove}
                 squareDifferences={squareDifferences}
+                boardTheme={boardTheme}
               />
             </div>
           </div>

@@ -7,6 +7,9 @@ import { useTranslations } from 'next-intl';
 import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
 type Props = {
   fen: string;
   onFenChange: (fen: string) => void;
@@ -14,6 +17,7 @@ type Props = {
   editable?: boolean;
   preserveTurnInfo?: boolean; // Whether to preserve turn info from original position
   originalPosition?: string; // Original position to preserve turn info from
+  boardTheme?: BoardTheme;
 };
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
@@ -101,10 +105,12 @@ export function EditableChessBoard({
   editable = false,
   preserveTurnInfo = false,
   originalPosition,
+  boardTheme = 'default',
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));
   const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
+  const themeColors = getBoardThemeColors(boardTheme);
 
   useEffect(() => {
     setBoard(fenToBoard(fen));
@@ -241,6 +247,7 @@ export function EditableChessBoard({
                   isLight={isLight}
                   onClick={() => handleSquareClick(displayIndex)}
                   layoutMode="grid"
+                  themeColors={themeColors}
                 >
                   {renderPiece(displayPiece)}
                 </Square>

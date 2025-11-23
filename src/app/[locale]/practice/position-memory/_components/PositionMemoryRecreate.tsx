@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
@@ -15,6 +17,7 @@ type Props = {
   recreatedPosition: string;
   currentProblemIndex: number;
   problemCount: number;
+  boardTheme?: BoardTheme;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
@@ -26,6 +29,7 @@ export function PositionMemoryRecreate({
   recreatedPosition,
   currentProblemIndex,
   problemCount,
+  boardTheme = 'default',
   onPositionChange,
   onSubmit,
   onViewAgain,
@@ -49,6 +53,7 @@ export function PositionMemoryRecreate({
             editable={true}
             preserveTurnInfo={true}
             originalPosition={originalPosition.fen}
+            boardTheme={boardTheme}
           />
         </div>
       </div>

@@ -3,12 +3,16 @@
 import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
 import type { SquareDiff } from '../_lib/types';
 
 type Props = {
   fen: string;
   flipped?: boolean;
   squareDifferences?: SquareDiff[];
+  boardTheme?: BoardTheme;
 };
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
@@ -36,8 +40,14 @@ function fenToBoard(fen: string): PieceType[] {
   return board;
 }
 
-export function ChessBoardWithOverlay({ fen, flipped = false, squareDifferences = [] }: Props) {
+export function ChessBoardWithOverlay({
+  fen,
+  flipped = false,
+  squareDifferences = [],
+  boardTheme = 'default',
+}: Props) {
   const board = fenToBoard(fen);
+  const themeColors = getBoardThemeColors(boardTheme);
 
   const isLightSquare = (squareIndex: number) => {
     const rank = Math.floor(squareIndex / 8);
@@ -107,7 +117,13 @@ export function ChessBoardWithOverlay({ fen, flipped = false, squareDifferences 
 
             return (
               <div key={squareIndex} className="relative">
-                <Square file={file} rank={rank} isLight={isLight} layoutMode="grid">
+                <Square
+                  file={file}
+                  rank={rank}
+                  isLight={isLight}
+                  layoutMode="grid"
+                  themeColors={themeColors}
+                >
                   {renderPiece(displayPiece)}
                 </Square>
                 {status && (

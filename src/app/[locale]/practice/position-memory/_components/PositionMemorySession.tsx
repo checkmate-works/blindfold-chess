@@ -189,6 +189,7 @@ export function PositionMemorySession({
           recreatedPosition={recreatedPosition}
           currentProblemIndex={currentProblemIndex}
           problemCount={positions.length}
+          boardTheme={preferences.boardTheme}
           onPositionChange={setRecreatedPosition}
           onSubmit={handleSubmit}
           onViewAgain={handleViewAgain}
