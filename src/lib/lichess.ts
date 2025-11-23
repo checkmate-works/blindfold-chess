@@ -1,10 +1,10 @@
 /**
  * Convert a FEN string to a Lichess analysis URL
  * @param fen - The FEN string representing the chess position
- * @returns The Lichess analysis URL
+ * @returns The Lichess analysis URL compatible with both web and mobile app
  */
 export function fenToLichessUrl(fen: string): string {
   // Replace spaces with underscores for URL encoding
   const encodedFen = fen.replace(/ /g, '_');
-  return `https://lichess.org/analysis/standard/${encodedFen}`;
+  return `https://lichess.org/analysis/${encodedFen}`;
 }
