@@ -21,6 +21,7 @@ type Props = {
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
+  onSkip: () => void;
   onQuit: () => void;
 };
 
@@ -33,6 +34,7 @@ export function PositionMemoryRecreate({
   onPositionChange,
   onSubmit,
   onViewAgain,
+  onSkip,
   onQuit,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
@@ -58,26 +60,28 @@ export function PositionMemoryRecreate({
         </div>
       </div>
 
-      <div className="text-center mt-6 space-y-4">
+      <div className="flex flex-col items-center gap-4 mt-6">
         <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-lg">
           {t('submit')}
         </Button>
-        <div>
-          <button
-            onClick={onViewAgain}
-            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
-            {t('viewAgain')}
-          </button>
-        </div>
-        <div>
-          <button
-            onClick={onQuit}
-            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
-            {t('quit')}
-          </button>
-        </div>
+        <button
+          onClick={onViewAgain}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {t('viewAgain')}
+        </button>
+        <button
+          onClick={onSkip}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {t('skip')}
+        </button>
+        <button
+          onClick={onQuit}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {t('quit')}
+        </button>
       </div>
     </div>
   );

@@ -123,6 +123,23 @@ export function PositionMemorySession({
     setPhase('problem-result');
   }, [originalPosition, recreatedPosition, t, getScoreDescription]);
 
+  const handleSkip = useCallback(() => {
+    const nextIndex = currentProblemIndex + 1;
+
+    // If there are more problems, move to the next one
+    if (nextIndex < positions.length) {
+      setCurrentProblemIndex(nextIndex);
+      setOriginalPosition(positions[nextIndex]);
+      setMemorizeTimeLeft(timeLimit);
+      setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
+      setCurrentAccuracy(null);
+      setPhase('memorize');
+    } else {
+      // No more problems, go to results
+      setPhase('result');
+    }
+  }, [currentProblemIndex, positions, timeLimit]);
+
   const handleNextProblem = useCallback(() => {
     const nextIndex = currentProblemIndex + 1;
     setCurrentProblemIndex(nextIndex);
@@ -169,6 +186,7 @@ export function PositionMemorySession({
           problemCount={positions.length}
           boardTheme={preferences.boardTheme}
           onMemorized={handleMemorized}
+          onSkip={handleSkip}
           onQuit={handleQuitClick}
         />
         <QuitConfirmModal
@@ -193,6 +211,7 @@ export function PositionMemorySession({
           onPositionChange={setRecreatedPosition}
           onSubmit={handleSubmit}
           onViewAgain={handleViewAgain}
+          onSkip={handleSkip}
           onQuit={handleQuitClick}
         />
         <QuitConfirmModal

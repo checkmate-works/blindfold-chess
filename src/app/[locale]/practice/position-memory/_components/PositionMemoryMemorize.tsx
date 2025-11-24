@@ -19,6 +19,7 @@ type Props = {
   problemCount: number;
   boardTheme?: BoardTheme;
   onMemorized: () => void;
+  onSkip: () => void;
   onQuit: () => void;
 };
 
@@ -29,6 +30,7 @@ export function PositionMemoryMemorize({
   problemCount,
   boardTheme = 'default',
   onMemorized,
+  onSkip,
   onQuit,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
@@ -55,18 +57,22 @@ export function PositionMemoryMemorize({
         </div>
       </div>
 
-      <div className="text-center space-y-4">
+      <div className="flex flex-col items-center gap-4">
         <Button onClick={onMemorized} variant="primary" size="lg" fullWidth className="rounded-lg">
           {t('memorized')}
         </Button>
-        <div>
-          <button
-            onClick={onQuit}
-            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
-            {t('quit')}
-          </button>
-        </div>
+        <button
+          onClick={onSkip}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {t('skip')}
+        </button>
+        <button
+          onClick={onQuit}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {t('quit')}
+        </button>
       </div>
     </div>
   );
