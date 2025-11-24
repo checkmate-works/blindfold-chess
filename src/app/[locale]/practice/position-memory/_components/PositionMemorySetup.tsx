@@ -34,60 +34,60 @@ export function PositionMemorySetup({
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
 
-  // Load settings from localStorage or URL params - URL params take priority
-  const initialSettings = (() => {
-    // URL params take priority
-    if (urlFens) {
-      return {
-        timeLimit: urlTimeLimit ?? 10,
-        problemCount: 1,
-        shuffleProblems: urlShuffle ?? true,
+  // Default values (used for SSR and initial render)
+  const defaultSettings = {
+    timeLimit: 10,
+    problemCount: 1,
+    shuffleProblems: true,
+    useCustomFen: false,
+    customFenInput: '',
+  };
+
+  // URL params override defaults
+  const urlSettings = urlFens
+    ? {
+        timeLimit: urlTimeLimit ?? defaultSettings.timeLimit,
+        problemCount: defaultSettings.problemCount,
+        shuffleProblems: urlShuffle ?? defaultSettings.shuffleProblems,
         useCustomFen: true,
         customFenInput: urlFens.join('\n'),
-        hasLoadedSettings: true,
-      };
+      }
+    : null;
+
+  // Game settings - initialize with defaults or URL params
+  const initialValues = urlSettings ?? defaultSettings;
+  const [timeLimit, setTimeLimit] = useState(initialValues.timeLimit);
+  const [problemCount, setProblemCount] = useState(initialValues.problemCount);
+  const [shuffleProblems, setShuffleProblems] = useState(initialValues.shuffleProblems);
+  const [useCustomFen, setUseCustomFen] = useState(initialValues.useCustomFen);
+  const [customFenInput, setCustomFenInput] = useState(initialValues.customFenInput);
+  const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
+  const [hasLoadedSettings, setHasLoadedSettings] = useState(!!urlFens);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
+
+  // Load settings from localStorage on mount (client-side only)
+  useEffect(() => {
+    // Skip if we already have URL params
+    if (urlFens) {
+      return;
     }
 
-    // Load from localStorage if no URL params
-    if (typeof window !== 'undefined') {
-      const savedSettings = localStorage.getItem('positionMemorySettings');
-      if (savedSettings) {
-        try {
-          const settings = JSON.parse(savedSettings);
-          return {
-            timeLimit: settings.timeLimit ?? 10,
-            problemCount: settings.problemCount ?? 1,
-            shuffleProblems: settings.shuffleProblems ?? true,
-            useCustomFen: settings.useCustomFen ?? false,
-            customFenInput: settings.customFenInput ?? '',
-            hasLoadedSettings: true,
-          };
-        } catch (error) {
-          console.error('Failed to load position memory settings:', error);
-        }
+    const savedSettings = localStorage.getItem('positionMemorySettings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        setTimeLimit(settings.timeLimit ?? defaultSettings.timeLimit);
+        setProblemCount(settings.problemCount ?? defaultSettings.problemCount);
+        setShuffleProblems(settings.shuffleProblems ?? defaultSettings.shuffleProblems);
+        setUseCustomFen(settings.useCustomFen ?? defaultSettings.useCustomFen);
+        setCustomFenInput(settings.customFenInput ?? defaultSettings.customFenInput);
+      } catch (error) {
+        console.error('Failed to load position memory settings:', error);
       }
     }
-
-    // Default values
-    return {
-      timeLimit: 10,
-      problemCount: 1,
-      shuffleProblems: true,
-      useCustomFen: false,
-      customFenInput: '',
-      hasLoadedSettings: true,
-    };
-  })();
-
-  // Game settings
-  const [timeLimit, setTimeLimit] = useState(initialSettings.timeLimit);
-  const [problemCount, setProblemCount] = useState(initialSettings.problemCount);
-  const [shuffleProblems, setShuffleProblems] = useState(initialSettings.shuffleProblems);
-  const [useCustomFen, setUseCustomFen] = useState(initialSettings.useCustomFen);
-  const [customFenInput, setCustomFenInput] = useState(initialSettings.customFenInput);
-  const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
-  const [hasLoadedSettings] = useState(initialSettings.hasLoadedSettings);
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
+    setHasLoadedSettings(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Save settings to localStorage whenever they change
   useEffect(() => {
