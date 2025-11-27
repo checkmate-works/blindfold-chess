@@ -58,6 +58,56 @@ The application supports Google Analytics 4 for usage tracking. To enable it:
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
+#### Cookie Consent Banner (Required for EU/US users and AdSense)
+
+The application uses CookieYes, a Google-certified Consent Management Platform (CMP) for GDPR/CCPA compliance. This is **required** for Google AdSense approval.
+
+**Setup Instructions:**
+
+1. **Create a CookieYes Account**
+   - Go to [cookieyes.com](https://www.cookieyes.com/)
+   - Sign up for free (no credit card required)
+   - Free plan: Up to 25,000 page views/month
+
+2. **Add Your Website**
+   - Click "Add Website"
+   - Enter your website URL
+   - Select default language: **English**
+   - Choose plan: **Free**
+
+3. **Configure Cookie Banner**
+   - Select cookie categories: Necessary, Analytics, Advertisement
+   - Cookie scanner will auto-detect Google Analytics and AdSense
+   - Customize banner design (optional)
+   - Enable **Google Consent Mode v2** (Settings → Integrations)
+   - Select **"Advanced Implementation"** for AdSense
+
+4. **Configure Multi-Language (English + Japanese)**
+   - Go to Settings → Languages → Add Language → Japanese
+   - Manually translate banner text to Japanese
+   - The banner will automatically switch based on page URL (`/en` or `/ja`)
+
+5. **Get Your CookieYes ID**
+   - Go to Settings → Install on Website
+   - Select **"Manual Installation"** (not Google Tag Manager)
+   - Copy the ID from the script URL (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+
+6. **Add to Environment Variables**
+   ```bash
+   # CookieYes ID from dashboard
+   NEXT_PUBLIC_COOKIEYES_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   ```
+
+7. **Publish the Banner**
+   - In CookieYes dashboard, click **"Publish"** or **"Activate Banner"**
+   - Without publishing, the banner won't appear even with correct ID
+
+**Important Notes:**
+- Multi-language support works on the free plan (language detection from HTML `lang` attribute)
+- Google Consent Mode v2 integration is automatic
+- Required for Google AdSense approval and GDPR/CCPA compliance
+- For detailed setup instructions, see `docs/COOKIE_CONSENT_SETUP.md`
+
 #### Error Tracking (Optional)
 
 The application supports Sentry for error tracking in production. To enable it:

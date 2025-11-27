@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 
-import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import '../globals.css';
+import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { Providers } from './_lib/providers';
@@ -98,6 +99,7 @@ export default async function Layout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers locale={locale} messages={messages}>
           <div className="flex flex-col min-h-screen">

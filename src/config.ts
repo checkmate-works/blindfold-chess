@@ -3,6 +3,7 @@ export const SITE_NAME = 'Blindfold Chess';
 export const SITE_DOMAIN = 'blindfold-chess.online';
 export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+export const COOKIEYES_ID = process.env.NEXT_PUBLIC_COOKIEYES_ID;
 
 export const SUPPORTED_LOCALES = ['en', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
