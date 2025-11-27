@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 
-import { AUTHOR_NAME, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
 import { GoogleAnalytics } from '@next/third-parties/google';
+
+import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
 
 import '../globals.css';
 import { Providers } from './_lib/providers';
@@ -45,6 +47,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
+        {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale="en" />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers>{children}</Providers>
       </body>
