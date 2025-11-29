@@ -200,6 +200,16 @@ export function PositionMemorySetup({
       params.set('c', problemCount.toString());
     }
 
+    // Save current settings to localStorage on start (including URL-loaded settings)
+    const settings = {
+      timeLimit,
+      problemCount,
+      shuffleProblems,
+      useCustomFen,
+      customFenInput,
+    };
+    localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
+
     // Navigate to session page
     router.push(`/${locale}/practice/position-memory/session?${params.toString()}`);
   };
