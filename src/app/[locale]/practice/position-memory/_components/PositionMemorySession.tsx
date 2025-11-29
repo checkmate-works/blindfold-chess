@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -44,26 +44,37 @@ export function PositionMemorySession({
     [t]
   );
 
-  // Initialize positions using lazy initializer
-  const [positions] = useState<PositionData[]>(() => {
-    if (fens && fens.length > 0) {
-      return getCustomPositions(fens, fens.length, shuffle);
-    } else {
-      return getRandomPositions(problemCount, shuffle);
+  // Track if component has mounted (to avoid SSR/hydration mismatch)
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Initialize positions only on client side to avoid hydration mismatch with Math.random()
+  const [positions, setPositions] = useState<PositionData[]>([]);
+
+  // Initialize positions after mount
+  useEffect(() => {
+    if (!hasMounted) {
+      setHasMounted(true);
+      const initialPositions =
+        fens && fens.length > 0
+          ? getCustomPositions(fens, fens.length, shuffle)
+          : getRandomPositions(problemCount, shuffle);
+      setPositions(initialPositions);
     }
-  });
+  }, [hasMounted, fens, shuffle, problemCount]);
 
   // Game state
   const [phase, setPhase] = useState<ExtendedGamePhase>('memorize');
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [originalPosition, setOriginalPosition] = useState<PositionData | null>(
-    positions[0] || null
-  );
   const [recreatedPosition, setRecreatedPosition] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
   const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
+
+  // Derive originalPosition from positions and currentProblemIndex
+  const originalPosition = useMemo<PositionData | null>(() => {
+    return positions[currentProblemIndex] || null;
+  }, [positions, currentProblemIndex]);
 
   const handleMemorized = useCallback(() => {
     setPhase('recreate');
@@ -129,7 +140,6 @@ export function PositionMemorySession({
     // If there are more problems, move to the next one
     if (nextIndex < positions.length) {
       setCurrentProblemIndex(nextIndex);
-      setOriginalPosition(positions[nextIndex]);
       setMemorizeTimeLeft(timeLimit);
       setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
       setCurrentAccuracy(null);
@@ -143,12 +153,11 @@ export function PositionMemorySession({
   const handleNextProblem = useCallback(() => {
     const nextIndex = currentProblemIndex + 1;
     setCurrentProblemIndex(nextIndex);
-    setOriginalPosition(positions[nextIndex]);
     setMemorizeTimeLeft(timeLimit);
     setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
     setCurrentAccuracy(null);
     setPhase('memorize');
-  }, [currentProblemIndex, positions, timeLimit]);
+  }, [currentProblemIndex, timeLimit]);
 
   const handlePlayAgain = useCallback(() => {
     // Restart the session with the same settings
@@ -174,6 +183,11 @@ export function PositionMemorySession({
   const handleQuitCancel = useCallback(() => {
     setShowQuitModal(false);
   }, []);
+
+  // Wait for positions to be initialized (avoid SSR/hydration mismatch)
+  if (!hasMounted || positions.length === 0) {
+    return null;
+  }
 
   // Memorize phase
   if (phase === 'memorize' && originalPosition) {
