@@ -73,9 +73,9 @@
       "pieceShape": "駒の形状",
       "pieceShapes": {
         "normal": "通常の駒",
-        "circles-all": "全ての駒を円で表示",
-        "circles-own": "自分の駒を円で表示",
-        "circles-opponent": "相手の駒を円で表示"
+        "circles-all": "全ての駒を石で表示",
+        "circles-own": "自分の駒を石で表示",
+        "circles-opponent": "相手の駒を石で表示"
       },
       "pieceColor": "駒の色",
       "pieceColors": {

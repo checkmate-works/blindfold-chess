@@ -73,9 +73,9 @@
       "pieceShape": "Piece Shape",
       "pieceShapes": {
         "normal": "Normal pieces",
-        "circles-all": "Show all pieces as circles",
-        "circles-own": "Show own pieces as circles",
-        "circles-opponent": "Show opponent pieces as circles"
+        "circles-all": "Show all pieces as stones",
+        "circles-own": "Show own pieces as stones",
+        "circles-opponent": "Show opponent pieces as stones"
       },
       "pieceColor": "Piece Color",
       "pieceColors": {

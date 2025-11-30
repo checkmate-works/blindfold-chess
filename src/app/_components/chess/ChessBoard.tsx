@@ -87,10 +87,31 @@ export function ChessBoard({
     }
 
     if (shouldShowAsCircle) {
-      // Show as circle with consistent appearance regardless of square color
-      const circleColor =
-        displayColor === 'w' ? 'bg-white border-gray-800' : 'bg-gray-900 border-gray-300';
-      return <div className={`w-[60%] h-[60%] rounded-full border-4 ${circleColor} shadow-md`} />;
+      // Show as Go stone-like circle with subtle gradient and shadow
+      if (displayColor === 'w') {
+        return (
+          <div
+            className="w-[60%] h-[60%] rounded-full shadow-lg"
+            style={{
+              background:
+                'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
+              boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          />
+        );
+      } else {
+        return (
+          <div
+            className="w-[60%] h-[60%] rounded-full shadow-lg"
+            style={{
+              background:
+                'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+              boxShadow:
+                '2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1)',
+            }}
+          />
+        );
+      }
     }
 
     // Show normal piece
