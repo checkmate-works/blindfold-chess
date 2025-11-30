@@ -128,6 +128,18 @@ pnpm build      # Production build
 pnpm lint       # Run ESLint
 ```
 
+## Feature Documentation
+
+Feature-specific documentation is written as TSDoc comments in each feature's `page.tsx` file.
+This keeps documentation close to the code and avoids bloating this global file.
+
+### Convention
+- **Feature Name** - First line format: `Feature Name (日本語名)`. The Japanese subtitle enables Japanese prompt engineering while keeping the primary name in English for OSS compatibility.
+- **@description** - What the feature does (purpose and goals)
+- **@flow** - How the feature works (user journey / phase transitions)
+
+Avoid documenting information that is self-evident from the code (routes, components, query params with meaningful names).
+
 ## Important Notes
 - Always maintain latest package versions unless there's a breaking change
 - Prioritize performance and SEO in all decisions

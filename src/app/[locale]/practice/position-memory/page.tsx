@@ -1,3 +1,17 @@
+/**
+ * Position Memory (ポジションの記憶)
+ *
+ * @description
+ * A blindfold chess training mode where users memorize chess positions
+ * and then recreate them from memory. This practice strengthens visual
+ * memory and board visualization skills essential for blindfold chess.
+ *
+ * @flow
+ * 1. Setup Phase (this page): Configure time limit, problem source
+ *    (built-in or custom FEN), and shuffle option
+ * 2. Session Phase: Memorize position → Recreate from memory → View accuracy result
+ *    Repeat for each problem in the set
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
