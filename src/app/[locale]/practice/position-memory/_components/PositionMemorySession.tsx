@@ -69,6 +69,7 @@ export function PositionMemorySession({
   const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
   const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
+  const [recreatedPositions, setRecreatedPositions] = useState<string[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   // Derive originalPosition from positions and currentProblemIndex
@@ -129,6 +130,7 @@ export function PositionMemorySession({
 
     setCurrentAccuracy(accuracy);
     setProblemResults((prev) => [...prev, accuracy]);
+    setRecreatedPositions((prev) => [...prev, recreatedPosition]);
 
     // Always show problem-result phase first
     setPhase('problem-result');
@@ -281,6 +283,19 @@ export function PositionMemorySession({
     const totalMissing = problemResults.reduce((sum, r) => sum + r.missingPieces, 0);
     const totalExtra = problemResults.reduce((sum, r) => sum + r.extraPieces, 0);
 
+    // Build individual problem results with FEN
+    const individualResults = problemResults.map((result, index) => ({
+      fen: positions[index]?.fen || '',
+      recreatedFen: recreatedPositions[index] || '',
+      isBlackToMove: positions[index]?.isBlackToMove || false,
+      accuracy: result.accuracy,
+      correctPieces: result.correctPieces,
+      totalPieces: result.totalPieces,
+      incorrectPieces: result.incorrectPieces,
+      missingPieces: result.missingPieces,
+      extraPieces: result.extraPieces,
+    }));
+
     return (
       <PracticeComplete
         score={Math.round(totalAccuracy)}
@@ -298,6 +313,10 @@ export function PositionMemorySession({
           missing: t('missing'),
           extra: t('extra'),
           extraDescription: t('extraDescription'),
+          problemDetails: t('problemDetails'),
+          problem: t('problem'),
+          original: t('original'),
+          yourRecreation: t('yourRecreation'),
         }}
         detailedStats={{
           correctPieces: totalCorrect,
@@ -306,6 +325,7 @@ export function PositionMemorySession({
           missingPieces: totalMissing,
           extraPieces: totalExtra,
         }}
+        problemResults={individualResults}
       />
     );
   }

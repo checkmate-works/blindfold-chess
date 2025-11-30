@@ -371,7 +371,9 @@
       "urlTooLong": "URL is too long (must be under 1000 characters)",
       "url_too_long": "Share URL is too long. Please reduce the number of problems.",
       "invalid_base64": "Invalid share URL",
-      "invalid_fen": "Contains invalid FEN format"
+      "invalid_fen": "Contains invalid FEN format",
+      "problemDetails": "Problem Details",
+      "problem": "Problem"
     }
   },
   "home": {

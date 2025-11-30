@@ -371,7 +371,9 @@
       "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
       "url_too_long": "共有URLが長すぎます。問題数を減らしてください。",
       "invalid_base64": "無効な共有URLです",
-      "invalid_fen": "無効なFEN形式が含まれています"
+      "invalid_fen": "無効なFEN形式が含まれています",
+      "problemDetails": "問題ごとの結果",
+      "problem": "問題"
     }
   },
   "home": {
