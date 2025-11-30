@@ -373,7 +373,12 @@
       "invalid_base64": "Invalid share URL",
       "invalid_fen": "Contains invalid FEN format",
       "problemDetails": "Problem Details",
-      "problem": "Problem"
+      "problem": "Problem",
+      "deleteFenTitle": "Delete Problem",
+      "deleteFenMessage": "Are you sure you want to delete this problem from your custom FEN list?",
+      "deleteFenConfirm": "Delete",
+      "deleteFenCancel": "Cancel",
+      "skipped": "Skipped"
     }
   },
   "home": {

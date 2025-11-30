@@ -9,7 +9,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
 import type { GamePhase, PositionAccuracy, PositionData } from '../_lib/types';
-import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
+import {
+  calculateAccuracy,
+  encodeFensToBase64,
+  getCustomPositions,
+  getRandomPositions,
+} from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
@@ -68,8 +73,9 @@ export function PositionMemorySession({
   const [recreatedPosition, setRecreatedPosition] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
   const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
   const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
-  const [problemResults, setProblemResults] = useState<PositionAccuracy[]>([]);
-  const [recreatedPositions, setRecreatedPositions] = useState<string[]>([]);
+  const [problemResults, setProblemResults] = useState<Map<number, PositionAccuracy>>(new Map());
+  const [recreatedPositions, setRecreatedPositions] = useState<Map<number, string>>(new Map());
+  const [skippedProblems, setSkippedProblems] = useState<Set<number>>(new Set());
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   // Derive originalPosition from positions and currentProblemIndex
@@ -129,14 +135,17 @@ export function PositionMemorySession({
     );
 
     setCurrentAccuracy(accuracy);
-    setProblemResults((prev) => [...prev, accuracy]);
-    setRecreatedPositions((prev) => [...prev, recreatedPosition]);
+    setProblemResults((prev) => new Map(prev).set(currentProblemIndex, accuracy));
+    setRecreatedPositions((prev) => new Map(prev).set(currentProblemIndex, recreatedPosition));
 
     // Always show problem-result phase first
     setPhase('problem-result');
-  }, [originalPosition, recreatedPosition, t, getScoreDescription]);
+  }, [originalPosition, recreatedPosition, currentProblemIndex, t, getScoreDescription]);
 
   const handleSkip = useCallback(() => {
+    // Mark current problem as skipped
+    setSkippedProblems((prev) => new Set(prev).add(currentProblemIndex));
+
     const nextIndex = currentProblemIndex + 1;
 
     // If there are more problems, move to the next one
@@ -162,9 +171,36 @@ export function PositionMemorySession({
   }, [currentProblemIndex, timeLimit]);
 
   const handlePlayAgain = useCallback(() => {
-    // Restart the session with the same settings
+    // For custom FEN, rebuild URL from localStorage to reflect any deletions
+    if (fens && fens.length > 0) {
+      try {
+        const savedSettings = localStorage.getItem('positionMemorySettings');
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          if (settings.customFenInput) {
+            const updatedFens = settings.customFenInput
+              .trim()
+              .split('\n')
+              .filter((line: string) => line.trim());
+
+            if (updatedFens.length > 0) {
+              const params = new URLSearchParams();
+              params.set('timeLimit', timeLimit.toString());
+              params.set('shuffle', shuffle ? '1' : '0');
+              params.set('problems', encodeFensToBase64(updatedFens));
+              window.location.href = `/${locale}/practice/position-memory/session?${params.toString()}`;
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to rebuild URL from localStorage:', error);
+      }
+    }
+
+    // Fallback: simple reload
     window.location.reload();
-  }, []);
+  }, [fens, timeLimit, shuffle, locale]);
 
   const handleViewAgain = useCallback(() => {
     // Go back to memorize phase to view the position again
@@ -185,6 +221,30 @@ export function PositionMemorySession({
   const handleQuitCancel = useCallback(() => {
     setShowQuitModal(false);
   }, []);
+
+  // Delete FEN from localStorage
+  const handleDeleteFen = useCallback((fenToDelete: string) => {
+    try {
+      const savedSettings = localStorage.getItem('positionMemorySettings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        if (settings.customFenInput) {
+          const fens = settings.customFenInput
+            .trim()
+            .split('\n')
+            .filter((line: string) => line.trim());
+          const updatedFens = fens.filter((fen: string) => fen.trim() !== fenToDelete.trim());
+          settings.customFenInput = updatedFens.join('\n');
+          localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete FEN from localStorage:', error);
+    }
+  }, []);
+
+  // Check if custom FEN is being used
+  const isCustomFen = !!(fens && fens.length > 0);
 
   // Wait for positions to be initialized (avoid SSR/hydration mismatch)
   if (!hasMounted || positions.length === 0) {
@@ -257,8 +317,11 @@ export function PositionMemorySession({
 
   // Final result phase
   if (phase === 'result') {
+    // Convert Map to array for calculations
+    const resultsArray = Array.from(problemResults.values());
+
     // If no results yet (quit before solving any problem), show 0 score
-    if (problemResults.length === 0) {
+    if (resultsArray.length === 0 && skippedProblems.size === 0) {
       return (
         <PracticeComplete
           score={0}
@@ -276,25 +339,34 @@ export function PositionMemorySession({
     }
 
     const totalAccuracy =
-      problemResults.reduce((sum, r) => sum + r.accuracy, 0) / problemResults.length;
-    const totalCorrect = problemResults.reduce((sum, r) => sum + r.correctPieces, 0);
-    const totalPieces = problemResults.reduce((sum, r) => sum + r.totalPieces, 0);
-    const totalIncorrect = problemResults.reduce((sum, r) => sum + r.incorrectPieces, 0);
-    const totalMissing = problemResults.reduce((sum, r) => sum + r.missingPieces, 0);
-    const totalExtra = problemResults.reduce((sum, r) => sum + r.extraPieces, 0);
+      resultsArray.length > 0
+        ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
+        : 0;
+    const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
+    const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
+    const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
+    const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
+    const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
 
-    // Build individual problem results with FEN
-    const individualResults = problemResults.map((result, index) => ({
-      fen: positions[index]?.fen || '',
-      recreatedFen: recreatedPositions[index] || '',
-      isBlackToMove: positions[index]?.isBlackToMove || false,
-      accuracy: result.accuracy,
-      correctPieces: result.correctPieces,
-      totalPieces: result.totalPieces,
-      incorrectPieces: result.incorrectPieces,
-      missingPieces: result.missingPieces,
-      extraPieces: result.extraPieces,
-    }));
+    // Build individual problem results with FEN (including skipped problems)
+    const individualResults = positions.map((position, index) => {
+      const result = problemResults.get(index);
+      const isSkipped = skippedProblems.has(index);
+
+      return {
+        fen: position.fen,
+        recreatedFen: recreatedPositions.get(index) || '',
+        isBlackToMove: position.isBlackToMove,
+        accuracy: result?.accuracy ?? 0,
+        correctPieces: result?.correctPieces ?? 0,
+        totalPieces: result?.totalPieces ?? 0,
+        incorrectPieces: result?.incorrectPieces ?? 0,
+        missingPieces: result?.missingPieces ?? 0,
+        extraPieces: result?.extraPieces ?? 0,
+        originalIndex: index,
+        skipped: isSkipped,
+      };
+    });
 
     return (
       <PracticeComplete
@@ -317,6 +389,11 @@ export function PositionMemorySession({
           problem: t('problem'),
           original: t('original'),
           yourRecreation: t('yourRecreation'),
+          deleteFenTitle: t('deleteFenTitle'),
+          deleteFenMessage: t('deleteFenMessage'),
+          deleteFenConfirm: t('deleteFenConfirm'),
+          deleteFenCancel: t('deleteFenCancel'),
+          skipped: t('skipped'),
         }}
         detailedStats={{
           correctPieces: totalCorrect,
@@ -326,6 +403,8 @@ export function PositionMemorySession({
           extraPieces: totalExtra,
         }}
         problemResults={individualResults}
+        isCustomFen={isCustomFen}
+        onDeleteFen={handleDeleteFen}
       />
     );
   }

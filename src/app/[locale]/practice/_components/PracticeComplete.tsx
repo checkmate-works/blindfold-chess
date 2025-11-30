@@ -5,11 +5,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaTrash } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
+import { DeleteFenConfirmModal } from '@/app/[locale]/practice/_components/DeleteFenConfirmModal';
 
 type ProblemResult = {
   fen: string;
@@ -21,6 +22,8 @@ type ProblemResult = {
   incorrectPieces: number;
   missingPieces: number;
   extraPieces: number;
+  originalIndex: number;
+  skipped?: boolean;
 };
 
 type Props = {
@@ -43,6 +46,11 @@ type Props = {
     problem?: string;
     original?: string;
     yourRecreation?: string;
+    deleteFenTitle?: string;
+    deleteFenMessage?: string;
+    deleteFenConfirm?: string;
+    deleteFenCancel?: string;
+    skipped?: string;
   };
   relatedModule?: {
     href: string;
@@ -61,6 +69,10 @@ type Props = {
   };
   // Individual problem results (for position memory practice)
   problemResults?: ProblemResult[];
+  // Whether custom FEN is being used (enables delete functionality)
+  isCustomFen?: boolean;
+  // Callback when a FEN is deleted
+  onDeleteFen?: (fen: string) => void;
 };
 
 export function PracticeComplete({
@@ -72,9 +84,16 @@ export function PracticeComplete({
   relatedModule,
   detailedStats,
   problemResults,
+  isCustomFen,
+  onDeleteFen,
 }: Props) {
   const router = useRouter();
   const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
+  const [deleteModalFen, setDeleteModalFen] = useState<string | null>(null);
+  const [deletedFens, setDeletedFens] = useState<Set<string>>(new Set());
+
+  // Filter out deleted problems
+  const visibleProblemResults = problemResults?.filter((result) => !deletedFens.has(result.fen));
 
   const toggleProblem = (index: number) => {
     setExpandedProblems((prev) => {
@@ -86,6 +105,23 @@ export function PracticeComplete({
       }
       return next;
     });
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, fen: string) => {
+    e.stopPropagation();
+    setDeleteModalFen(fen);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteModalFen && onDeleteFen) {
+      onDeleteFen(deleteModalFen);
+      setDeletedFens((prev) => new Set(prev).add(deleteModalFen));
+    }
+    setDeleteModalFen(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalFen(null);
   };
 
   return (
@@ -175,18 +211,21 @@ export function PracticeComplete({
         )}
 
         {/* Individual problem results (for position memory) */}
-        {problemResults && problemResults.length > 0 && labels.problemDetails && (
+        {visibleProblemResults && visibleProblemResults.length > 0 && labels.problemDetails && (
           <div className="mb-6">
             <p className="text-sm font-medium text-muted-foreground mb-2 text-left">
               {labels.problemDetails}
             </p>
             <div className="space-y-2">
-              {problemResults.map((result, index) => {
-                const isExpanded = expandedProblems.has(index);
+              {visibleProblemResults.map((result) => {
+                const isExpanded = expandedProblems.has(result.originalIndex);
                 return (
-                  <div key={index} className="border border-border rounded-lg overflow-hidden">
+                  <div
+                    key={result.originalIndex}
+                    className="border border-border rounded-lg overflow-hidden"
+                  >
                     <button
-                      onClick={() => toggleProblem(index)}
+                      onClick={() => toggleProblem(result.originalIndex)}
                       className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -195,14 +234,22 @@ export function PracticeComplete({
                         ) : (
                           <FaChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                         )}
-                        <span className="font-medium whitespace-nowrap">No.{index + 1}</span>
+                        <span className="font-medium whitespace-nowrap">
+                          No.{result.originalIndex + 1}
+                        </span>
                         <span className="text-xs text-muted-foreground truncate">{result.fen}</span>
                       </div>
-                      <span className="font-semibold text-sm flex-shrink-0 ml-2">
-                        {result.accuracy.toFixed(1)}%
-                      </span>
+                      {result.skipped ? (
+                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                          {labels.skipped}
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-sm flex-shrink-0 ml-2">
+                          {result.accuracy.toFixed(1)}%
+                        </span>
+                      )}
                     </button>
-                    {isExpanded && (
+                    {isExpanded && !result.skipped && (
                       <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
                         {/* Chess boards: Original and Recreation */}
                         {labels.original && labels.yourRecreation && (
@@ -282,6 +329,33 @@ export function PracticeComplete({
                             {labels.extra}: +{result.extraPieces}
                           </p>
                         )}
+
+                        {/* Delete button (only for custom FEN) */}
+                        {isCustomFen && onDeleteFen && (
+                          <div className="flex justify-end mt-3">
+                            <button
+                              onClick={(e) => handleDeleteClick(e, result.fen)}
+                              className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              title="Delete FEN"
+                            >
+                              <FaTrash className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Skipped problem expanded content (only delete button) */}
+                    {isExpanded && result.skipped && isCustomFen && onDeleteFen && (
+                      <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={(e) => handleDeleteClick(e, result.fen)}
+                            className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            title="Delete FEN"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -290,6 +364,26 @@ export function PracticeComplete({
             </div>
           </div>
         )}
+
+        {/* Delete FEN confirmation modal */}
+        {deleteModalFen &&
+          labels.deleteFenTitle &&
+          labels.deleteFenMessage &&
+          labels.deleteFenConfirm &&
+          labels.deleteFenCancel && (
+            <DeleteFenConfirmModal
+              isOpen={!!deleteModalFen}
+              fen={deleteModalFen}
+              onConfirm={handleDeleteConfirm}
+              onCancel={handleDeleteCancel}
+              labels={{
+                title: labels.deleteFenTitle,
+                message: labels.deleteFenMessage,
+                confirm: labels.deleteFenConfirm,
+                cancel: labels.deleteFenCancel,
+              }}
+            />
+          )}
 
         <div className="space-y-4 mt-6">
           <Button onClick={onTryAgain} variant="primary" size="lg" fullWidth className="rounded-lg">
