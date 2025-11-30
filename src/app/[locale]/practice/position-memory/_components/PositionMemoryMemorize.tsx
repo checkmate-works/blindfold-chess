@@ -41,7 +41,8 @@ export function PositionMemoryMemorize({
       <div className="text-center mb-6">
         <SectionTitle className="text-2xl font-bold mb-2">{t('memorizing')}</SectionTitle>
         <p className="text-lg text-muted-foreground">
-          {t('timeRemaining')}: {memorizeTimeLeft}
+          {t('timeRemaining')}:{' '}
+          <span className={memorizeTimeLeft <= 5 ? 'font-bold' : ''}>{memorizeTimeLeft}</span>{' '}
           {t('seconds')}
         </p>
       </div>
