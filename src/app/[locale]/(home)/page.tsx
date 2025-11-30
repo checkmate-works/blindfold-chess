@@ -1,3 +1,17 @@
+/**
+ * Home Page (ホーム)
+ *
+ * @description
+ * The main landing page for authenticated users. Provides quick access to
+ * start new blindfold chess games and manage existing game history.
+ *
+ * @flow
+ * - New Game Button: Navigate to game setup to start a new blindfold chess game
+ * - Game List: View, resume, or delete past games stored in localStorage
+ *   - Each game item shows: status (win/loss/draw/in-progress), player color,
+ *     last move, and skill level
+ *   - Trash icon button allows deletion of individual games
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
