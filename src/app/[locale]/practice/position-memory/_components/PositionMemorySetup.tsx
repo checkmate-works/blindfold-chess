@@ -181,8 +181,8 @@ export function PositionMemorySetup({
   const handleStart = () => {
     // Build URL params
     const params = new URLSearchParams();
-    params.set('t', timeLimit.toString());
-    params.set('s', shuffleProblems ? '1' : '0');
+    params.set('timeLimit', timeLimit.toString());
+    params.set('shuffle', shuffleProblems ? '1' : '0');
 
     if (useCustomFen) {
       const fens = customFenInput
@@ -195,9 +195,9 @@ export function PositionMemorySetup({
       }
 
       const encoded = encodeFensToBase64(fens);
-      params.set('p', encoded);
+      params.set('problems', encoded);
     } else {
-      params.set('c', problemCount.toString());
+      params.set('count', problemCount.toString());
     }
 
     // Save current settings to localStorage on start (including URL-loaded settings)

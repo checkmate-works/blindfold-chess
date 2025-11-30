@@ -30,10 +30,10 @@ export default async function PositionMemorySessionPage({ params, searchParams }
   const t = await getTranslations({ locale });
 
   // Parse query parameters
-  const problemsParam = search.p;
-  const timeLimitParam = search.t;
-  const shuffleParam = search.s;
-  const problemCountParam = search.c;
+  const problemsParam = search.problems;
+  const timeLimitParam = search.timeLimit;
+  const shuffleParam = search.shuffle;
+  const problemCountParam = search.count;
 
   // Parse FENs if provided
   let fens: string[] | undefined;

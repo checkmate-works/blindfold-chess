@@ -49,9 +49,9 @@ export default async function PositionMemoryPage({ params, searchParams }: Props
   let urlTimeLimit: number | null = null;
   let urlShuffle: boolean | null = null;
 
-  const problemsParam = search.p;
-  const timeLimitParam = search.t;
-  const shuffleParam = search.s;
+  const problemsParam = search.problems;
+  const timeLimitParam = search.timeLimit;
+  const shuffleParam = search.shuffle;
 
   if (problemsParam && typeof problemsParam === 'string') {
     // Check if query is too long

@@ -260,9 +260,9 @@ export function generateShareUrl(
   const encoded = encodeFensToBase64(fens);
   const params = new URLSearchParams();
 
-  params.set('p', encoded);
-  params.set('t', timeLimit.toString());
-  params.set('s', shuffle ? '1' : '0');
+  params.set('problems', encoded);
+  params.set('timeLimit', timeLimit.toString());
+  params.set('shuffle', shuffle ? '1' : '0');
 
   const queryString = params.toString();
   const baseUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/practice/position-memory`;
