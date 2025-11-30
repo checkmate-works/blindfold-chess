@@ -552,7 +552,10 @@
     "filterEvaluation": "Evaluation",
     "resetFilters": "Reset",
     "applyFilters": "Apply",
-    "backToCurrentPosition": "Back to current position"
+    "backToCurrentPosition": "Back to current position",
+    "configureBoardAppearance": "Configure board appearance",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "playError": {
     "title": "Game Recovery",

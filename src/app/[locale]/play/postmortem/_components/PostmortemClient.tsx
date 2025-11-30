@@ -24,6 +24,7 @@ import { fenToLichessUrl } from '@/lib/lichess';
 import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
@@ -302,6 +303,7 @@ export function PostmortemClient({
   });
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
   const [displayFen, setDisplayFen] = useState<string | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -875,6 +877,16 @@ export function PostmortemClient({
                     />
                   </div>
                 )}
+
+                {/* Settings Link */}
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => setShowSettingsModal(true)}
+                    className="text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    {t('configureBoardAppearance')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1412,6 +1424,14 @@ export function PostmortemClient({
           </div>
         </div>
       </InfoModal>
+
+      {/* Settings Modal */}
+      <GameSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        playerSide={playerColor}
+        translationNamespace="postmortem"
+      />
 
       {/* Filter Modal */}
       <InfoModal

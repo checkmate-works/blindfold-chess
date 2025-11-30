@@ -552,7 +552,10 @@
     "filterEvaluation": "評価",
     "resetFilters": "リセット",
     "applyFilters": "適用",
-    "backToCurrentPosition": "現在の局面に戻る"
+    "backToCurrentPosition": "現在の局面に戻る",
+    "configureBoardAppearance": "ボードの外観を設定する",
+    "cancel": "キャンセル",
+    "save": "保存"
   },
   "playError": {
     "title": "ゲームの復旧",
