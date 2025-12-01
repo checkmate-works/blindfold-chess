@@ -394,6 +394,7 @@ export function PositionMemorySession({
           deleteFenConfirm: t('deleteFenConfirm'),
           deleteFenCancel: t('deleteFenCancel'),
           skipped: t('skipped'),
+          analyzeOnLichess: t('analyzeOnLichess'),
         }}
         detailedStats={{
           correctPieces: totalCorrect,

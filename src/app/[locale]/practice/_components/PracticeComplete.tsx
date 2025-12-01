@@ -5,7 +5,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { FaChevronDown, FaChevronRight, FaTrash } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaTrash } from 'react-icons/fa';
+
+import { fenToLichessUrl } from '@/lib/lichess';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -51,6 +53,7 @@ type Props = {
     deleteFenConfirm?: string;
     deleteFenCancel?: string;
     skipped?: string;
+    analyzeOnLichess?: string;
   };
   relatedModule?: {
     href: string;
@@ -328,6 +331,24 @@ export function PracticeComplete({
                           <p className="text-xs text-muted-foreground mt-2">
                             {labels.extra}: +{result.extraPieces}
                           </p>
+                        )}
+
+                        {/* Analyze on Lichess button */}
+                        {labels.analyzeOnLichess && (
+                          <div className="flex justify-center mt-3">
+                            <Button
+                              onClick={() => {
+                                const lichessUrl = fenToLichessUrl(result.fen);
+                                window.open(lichessUrl, '_blank');
+                              }}
+                              variant="secondary"
+                              size="sm"
+                              icon={<FaExternalLinkAlt className="w-3 h-3" />}
+                              className="rounded-lg"
+                            >
+                              {labels.analyzeOnLichess}
+                            </Button>
+                          </div>
                         )}
 
                         {/* Delete button (only for custom FEN) */}
