@@ -357,7 +357,8 @@ export function PositionMemorySession({
     // Build individual problem results with FEN (including skipped problems)
     const individualResults = positions.map((position, index) => {
       const result = problemResults.get(index);
-      const isSkipped = skippedProblems.has(index);
+      // Mark as skipped if explicitly skipped OR if no result exists (quit before answering)
+      const isSkipped = skippedProblems.has(index) || !result;
 
       return {
         fen: position.fen,

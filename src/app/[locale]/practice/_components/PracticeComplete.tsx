@@ -365,18 +365,39 @@ export function PracticeComplete({
                         )}
                       </div>
                     )}
-                    {/* Skipped problem expanded content (only delete button) */}
-                    {isExpanded && result.skipped && isCustomFen && onDeleteFen && (
+                    {/* Skipped problem expanded content */}
+                    {isExpanded && result.skipped && (
                       <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
-                        <div className="flex justify-end">
-                          <button
-                            onClick={(e) => handleDeleteClick(e, result.fen)}
-                            className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                            title="Delete FEN"
-                          >
-                            <FaTrash className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {/* Analyze on Lichess button */}
+                        {labels.analyzeOnLichess && (
+                          <div className="flex justify-center">
+                            <Button
+                              onClick={() => {
+                                const lichessUrl = fenToLichessUrl(result.fen);
+                                window.open(lichessUrl, '_blank');
+                              }}
+                              variant="secondary"
+                              size="sm"
+                              icon={<FaExternalLinkAlt className="w-3 h-3" />}
+                              className="rounded-lg"
+                            >
+                              {labels.analyzeOnLichess}
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Delete button (only for custom FEN) */}
+                        {isCustomFen && onDeleteFen && (
+                          <div className="flex justify-end mt-3">
+                            <button
+                              onClick={(e) => handleDeleteClick(e, result.fen)}
+                              className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              title="Delete FEN"
+                            >
+                              <FaTrash className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
