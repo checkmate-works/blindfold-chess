@@ -177,23 +177,26 @@ export function PositionMemorySession({
         const savedSettings = localStorage.getItem('positionMemorySettings');
         if (savedSettings) {
           const settings = JSON.parse(savedSettings);
-          if (settings.customFenInput) {
-            const updatedFens = settings.customFenInput
-              .trim()
-              .split('\n')
-              .filter((line: string) => line.trim());
+          const customFenInput = settings.customFenInput ?? '';
+          const updatedFens = customFenInput
+            .trim()
+            .split('\n')
+            .filter((line: string) => line.trim());
 
-            if (updatedFens.length > 0) {
-              const params = new URLSearchParams();
-              params.set('timeLimit', timeLimit.toString());
-              params.set('shuffle', shuffle ? '1' : '0');
-              params.set('problems', encodeFensToBase64(updatedFens));
-              // Use problemCount, capped at the number of available FENs
-              const effectiveCount = Math.min(problemCount, updatedFens.length);
-              params.set('count', effectiveCount.toString());
-              window.location.href = `/${locale}/practice/position-memory/session?${params.toString()}`;
-              return;
-            }
+          if (updatedFens.length > 0) {
+            const params = new URLSearchParams();
+            params.set('timeLimit', timeLimit.toString());
+            params.set('shuffle', shuffle ? '1' : '0');
+            params.set('problems', encodeFensToBase64(updatedFens));
+            // Use problemCount, capped at the number of available FENs
+            const effectiveCount = Math.min(problemCount, updatedFens.length);
+            params.set('count', effectiveCount.toString());
+            window.location.href = `/${locale}/practice/position-memory/session?${params.toString()}`;
+            return;
+          } else {
+            // All FENs deleted, redirect to setup page
+            window.location.href = `/${locale}/practice/position-memory`;
+            return;
           }
         }
       } catch (error) {
