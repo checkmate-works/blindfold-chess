@@ -196,6 +196,9 @@ export function PositionMemorySetup({
 
       const encoded = encodeFensToBase64(fens);
       params.set('problems', encoded);
+      // Use problemCount for custom FEN, capped at the number of FENs
+      const effectiveCount = Math.min(problemCount, fens.length);
+      params.set('count', effectiveCount.toString());
     } else {
       params.set('count', problemCount.toString());
     }

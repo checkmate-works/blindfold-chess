@@ -140,28 +140,48 @@ export function PositionMemorySettings({
         </div>
       )}
 
-      {/* Problem Count - only show if not using custom FEN */}
-      {!useCustomFen && (
-        <div>
-          <label htmlFor="problemCount" className="block text-sm font-medium text-foreground mb-2">
-            {t('problemCount')}: {problemCount} {problemCount > 1 ? t('problems') : ''}
-          </label>
-          <input
-            id="problemCount"
-            type="range"
-            min="1"
-            max={maxProblems}
-            step="1"
-            value={problemCount}
-            onChange={(e) => onProblemCountChange(parseInt(e.target.value))}
-            className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>1</span>
-            <span>{maxProblems}</span>
-          </div>
-        </div>
-      )}
+      {/* Problem Count */}
+      {(() => {
+        const customFenCount = useCustomFen
+          ? customFenInput
+              .trim()
+              .split('\n')
+              .filter((line) => line.trim()).length
+          : 0;
+        const effectiveMaxProblems = useCustomFen ? customFenCount : maxProblems;
+
+        // Show problem count slider when:
+        // - Not using custom FEN, OR
+        // - Using custom FEN with 2+ valid FENs
+        if (!useCustomFen || customFenCount >= 2) {
+          return (
+            <div>
+              <label
+                htmlFor="problemCount"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
+                {t('problemCount')}: {Math.min(problemCount, effectiveMaxProblems)}{' '}
+                {Math.min(problemCount, effectiveMaxProblems) > 1 ? t('problems') : ''}
+              </label>
+              <input
+                id="problemCount"
+                type="range"
+                min="1"
+                max={effectiveMaxProblems}
+                step="1"
+                value={Math.min(problemCount, effectiveMaxProblems)}
+                onChange={(e) => onProblemCountChange(parseInt(e.target.value))}
+                className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>1</span>
+                <span>{effectiveMaxProblems}</span>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       {/* Shuffle Problems */}
       {((useCustomFen &&

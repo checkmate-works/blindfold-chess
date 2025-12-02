@@ -61,7 +61,7 @@ export function PositionMemorySession({
       setHasMounted(true);
       const initialPositions =
         fens && fens.length > 0
-          ? getCustomPositions(fens, fens.length, shuffle)
+          ? getCustomPositions(fens, problemCount, shuffle)
           : getRandomPositions(problemCount, shuffle);
       setPositions(initialPositions);
     }
@@ -188,6 +188,9 @@ export function PositionMemorySession({
               params.set('timeLimit', timeLimit.toString());
               params.set('shuffle', shuffle ? '1' : '0');
               params.set('problems', encodeFensToBase64(updatedFens));
+              // Use problemCount, capped at the number of available FENs
+              const effectiveCount = Math.min(problemCount, updatedFens.length);
+              params.set('count', effectiveCount.toString());
               window.location.href = `/${locale}/practice/position-memory/session?${params.toString()}`;
               return;
             }
@@ -200,7 +203,7 @@ export function PositionMemorySession({
 
     // Fallback: simple reload
     window.location.reload();
-  }, [fens, timeLimit, shuffle, locale]);
+  }, [fens, timeLimit, shuffle, locale, problemCount]);
 
   const handleViewAgain = useCallback(() => {
     // Go back to memorize phase to view the position again
