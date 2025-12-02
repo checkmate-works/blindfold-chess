@@ -368,6 +368,32 @@ export function PracticeComplete({
                     {/* Skipped problem expanded content */}
                     {isExpanded && result.skipped && (
                       <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
+                        {/* Chess boards: Original and Empty Recreation */}
+                        {labels.original && labels.yourRecreation && (
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
+                                {labels.original}
+                              </p>
+                              <AnimatedChessBoard
+                                initialFen={result.fen}
+                                showCoordinates={false}
+                                flipped={result.isBlackToMove}
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
+                                {labels.yourRecreation}
+                              </p>
+                              <AnimatedChessBoard
+                                initialFen="8/8/8/8/8/8/8/8 w - - 0 1"
+                                showCoordinates={false}
+                                flipped={result.isBlackToMove}
+                              />
+                            </div>
+                          </div>
+                        )}
+
                         {/* Analyze on Lichess button */}
                         {labels.analyzeOnLichess && (
                           <div className="flex justify-center">
