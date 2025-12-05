@@ -17,12 +17,6 @@ This document outlines the technical decisions and implementation guidelines for
 
 ## Technology Stack
 
-### Core Technologies
-- **Next.js 15.5+** - Latest stable version
-- **TypeScript** - Strict mode enabled
-- **Turbopack** - Use for development builds (`--turbopack` flag)
-- **pnpm** - Package manager
-
 ### Styling
 - **Tailwind CSS v4** - Latest alpha version, maintain latest updates
 - **CSS Variables** - Define theme colors in `globals.css`
@@ -120,13 +114,6 @@ import { Button } from './Button';
 - **Unopinionated Approach** - Follow Next.js flexibility
 - **No Forced Structure** - Organize based on project needs
 - **Global Styles** - Keep in `src/app/globals.css`
-
-## Development Commands
-```bash
-pnpm dev        # Start development server with Turbopack
-pnpm build      # Production build
-pnpm lint       # Run ESLint
-```
 
 ## Feature Documentation
 
