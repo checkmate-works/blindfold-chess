@@ -9,7 +9,7 @@ const content = `# 機能紹介: 駒の外観の変更
 
 盤面がイメージできなくなった場合はこの機能を活用してください。
 
-また、この盤面の表示は[設定](/preferences?tab=game-settings)で変えることができます。
+また、この盤面の表示は[設定](/ja/preferences?tab=game)で変えることができます。
 例えば、駒の色を一色にすることも可能です。
 
 ![一色駒](/images/articles/screenshots/single-colored-pieces.png)
@@ -23,6 +23,6 @@ const content = `# 機能紹介: 駒の外観の変更
 
 視覚情報を制限することができる機能というのは具体的にはこれらのことです。
 
-[設定画面で駒の外観をカスタマイズする](/preferences?tab=game-settings)`;
+[設定画面で駒の外観をカスタマイズする](/ja/preferences?tab=game)`;
 
 export default content;

@@ -9,7 +9,7 @@ For example, on the game screen, there's a form for submitting moves, but you ca
 
 If you find yourself unable to visualize the board, please make use of this feature.
 
-Furthermore, the display of this board can be customized in the [settings](/preferences?tab=game-settings).
+Furthermore, the display of this board can be customized in the [settings](/en/preferences?tab=game).
 For instance, it's possible to make all pieces a single color.
 
 ![Single-Colored Pieces](/images/articles/screenshots/single-colored-pieces.png)
@@ -23,6 +23,6 @@ With this, distinguishing pieces becomes impossible, and only the squares provid
 
 These are the specific features that allow you to limit visual information.
 
-[Customize piece appearance in settings](/preferences?tab=game-settings)`;
+[Customize piece appearance in settings](/en/preferences?tab=game)`;
 
 export default content;

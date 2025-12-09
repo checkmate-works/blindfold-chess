@@ -35,7 +35,7 @@ export default async function FAQPage({ params }: Props) {
       answer: t.rich('items.invalidMove.answer', {
         settingsLink: (chunks) => (
           <Link
-            href="/preferences?tab=game-settings"
+            href="/preferences?tab=game"
             className="text-foreground underline hover:opacity-80 transition-colors"
           >
             {chunks}
