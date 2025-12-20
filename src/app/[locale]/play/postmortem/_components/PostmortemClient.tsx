@@ -27,6 +27,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
+import { MoveSelect } from '@/app/[locale]/play/_components/MoveSelect';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
@@ -923,17 +924,26 @@ export function PostmortemClient({
                     {/* Move Input */}
                     <div className="mb-4">
                       <div>
-                        <MoveInput
-                          value={moveInput}
-                          onChange={(value) => {
-                            setMoveInput(value);
-                          }}
-                          onSubmit={handleSubmitMove}
-                          disabled={isEvaluating}
-                          placeholder={t('inputMove')}
-                          showSuggestions={preferences.enableAutoComplete}
-                          showSubmitButton={true}
-                        />
+                        {preferences.moveInputMode === 'select' ? (
+                          <MoveSelect
+                            fen={displayFen || currentFen}
+                            onSubmit={handleSubmitMove}
+                            disabled={isEvaluating}
+                            placeholder={t('selectMove')}
+                          />
+                        ) : (
+                          <MoveInput
+                            value={moveInput}
+                            onChange={(value) => {
+                              setMoveInput(value);
+                            }}
+                            onSubmit={handleSubmitMove}
+                            disabled={isEvaluating}
+                            placeholder={t('inputMove')}
+                            showSuggestions={preferences.enableAutoComplete}
+                            showSubmitButton={true}
+                          />
+                        )}
                       </div>
                     </div>
 

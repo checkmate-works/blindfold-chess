@@ -511,6 +511,7 @@
     "evalMistakeCriteria": "評価値の損失が1.0〜3.0ポーン",
     "evalBlunderCriteria": "評価値の損失が3.0ポーン以上",
     "inputMove": "手を入力",
+    "selectMove": "手を選択",
     "dontKnow": "わからない",
     "analyzeAll": "全て解析",
     "autoFillAll": "全て自動入力",
