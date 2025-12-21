@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactElement, useCallback, useEffect, useState } from 'react';
+import { type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -750,17 +750,32 @@ export function PostmortemClient({
   // Handle move log click
   const handleMoveClick = useCallback(
     (entry: MoveLogEntry) => {
-      // Find the index of this move in the original moves
-      let moveIndex = 0;
+      // Calculate the correct index in originalMoves
+      // Incorrect entries don't correspond to moves in originalMoves
+      let originalMoveIndex = 0;
       for (const logEntry of moveLog) {
         if (logEntry === entry) {
-          setSelectedMoveIndex(moveIndex);
+          if (entry.status === 'incorrect') {
+            // For incorrect entries, navigate to the position before this move was attempted
+            if (originalMoveIndex > 0) {
+              navigateToPosition(originalMoveIndex - 1);
+            } else {
+              navigateToStart();
+            }
+            return;
+          }
+          // Use navigateToPosition to update all states consistently
+          // (currentPosition, displayFen, selectedMoveIndex)
+          navigateToPosition(originalMoveIndex);
           return;
         }
-        moveIndex++;
+        // Only increment for correct/auto entries (moves that were actually made)
+        if (logEntry.status !== 'incorrect') {
+          originalMoveIndex++;
+        }
       }
     },
-    [moveLog]
+    [moveLog, navigateToPosition, navigateToStart]
   );
 
   // Update parent component with selected move display
@@ -813,6 +828,35 @@ export function PostmortemClient({
 
   const formattedPgn = getFormattedPgn();
 
+  // Calculate last move for highlighting based on current position
+  const currentLastMove = useMemo(() => {
+    // No highlight for start position
+    if (currentPosition === -2) return null;
+
+    // Determine which moves to use and how many
+    const movesToCheck =
+      currentPosition === -1 ? userMoves : originalMoves.slice(0, currentPosition + 1);
+
+    if (movesToCheck.length === 0) return null;
+
+    try {
+      const chess = new Chess();
+      let lastMoveDetails: { from: string; to: string } | null = null;
+
+      for (let i = 0; i < movesToCheck.length; i++) {
+        const move = chess.move(movesToCheck[i]);
+        if (i === movesToCheck.length - 1 && move) {
+          lastMoveDetails = { from: move.from, to: move.to };
+        }
+      }
+
+      return lastMoveDetails;
+    } catch (error) {
+      console.error('Error getting last move details:', error);
+      return null;
+    }
+  }, [currentPosition, userMoves, originalMoves]);
+
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -853,6 +897,7 @@ export function PostmortemClient({
                   fen={displayFen || currentFen}
                   flipped={playerColor === 'black'}
                   playerSide={playerColor}
+                  lastMove={preferences.highlightLastMove ? currentLastMove : null}
                   showCoordinates={preferences.showCoordinates}
                   showOwnPieces={preferences.showOwnPieces}
                   showOpponentPieces={preferences.showOpponentPieces}
