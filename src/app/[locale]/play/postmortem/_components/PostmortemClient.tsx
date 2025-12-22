@@ -787,7 +787,21 @@ export function PostmortemClient({
       return;
     }
 
-    const entry = moveLog[selectedMoveIndex];
+    // Find the correct moveLog entry that corresponds to selectedMoveIndex
+    // selectedMoveIndex is an index into originalMoves, not moveLog
+    // We need to find the moveLog entry by counting non-incorrect entries
+    let entry: MoveLogEntry | null = null;
+    let originalMoveCounter = 0;
+    for (const logEntry of moveLog) {
+      if (logEntry.status !== 'incorrect') {
+        if (originalMoveCounter === selectedMoveIndex) {
+          entry = logEntry;
+          break;
+        }
+        originalMoveCounter++;
+      }
+    }
+
     if (!entry) {
       onSelectedMoveChange(null);
       return;
