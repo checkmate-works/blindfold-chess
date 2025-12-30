@@ -11,8 +11,7 @@ import type { BoardTheme } from '@/lib/boardThemes';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
-
-import type { PositionData } from '../_lib/types';
+import type { PositionData } from '@/app/[locale]/practice/_lib/types';
 
 type Props = {
   originalPosition: PositionData;
@@ -22,12 +21,11 @@ type Props = {
   boardTheme?: BoardTheme;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
-  onViewAgain: () => void;
   onSkip: () => void;
   onQuit: () => void;
 };
 
-export function PositionMemoryRecreate({
+export function FenRecreate({
   originalPosition,
   recreatedPosition,
   currentProblemIndex,
@@ -35,11 +33,10 @@ export function PositionMemoryRecreate({
   boardTheme = 'default',
   onPositionChange,
   onSubmit,
-  onViewAgain,
   onSkip,
   onQuit,
 }: Props) {
-  const t = useTranslations('practice.positionMemory');
+  const t = useTranslations('practice.fen');
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -56,7 +53,27 @@ export function PositionMemoryRecreate({
       {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
 
       <div className="text-center mb-6">
-        <SectionTitle className="text-2xl font-bold mb-2">{t('recreatePosition')}</SectionTitle>
+        <SectionTitle className="text-2xl font-bold mb-2">{t('recreateFromFen')}</SectionTitle>
+      </div>
+
+      {/* FEN Display - readonly textbox */}
+      <div className="mb-6 max-w-md mx-auto">
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
+          {t('fenString')}
+        </label>
+        <div
+          onClick={() => {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(document.getElementById('fen-display')!);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+          }}
+          id="fen-display"
+          className="w-full px-3 py-2 bg-muted border border-border rounded-lg font-mono text-sm cursor-pointer break-all"
+        >
+          {originalPosition.fen}
+        </div>
       </div>
 
       <div className="flex justify-center">
@@ -78,12 +95,6 @@ export function PositionMemoryRecreate({
         <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-lg">
           {t('submit')}
         </Button>
-        <button
-          onClick={onViewAgain}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('viewAgain')}
-        </button>
         <button
           onClick={onSkip}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"

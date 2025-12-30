@@ -39,6 +39,12 @@ export default async function PracticePage({ params }: Props) {
       id: 'algebraic-notation',
       title: t('practice.algebraicNotation.title'),
       description: t('practice.algebraicNotation.description'),
+      icon: '🔤',
+    },
+    {
+      id: 'fen',
+      title: t('practice.fen.title'),
+      description: t('practice.fen.description'),
       icon: '📝',
     },
     {

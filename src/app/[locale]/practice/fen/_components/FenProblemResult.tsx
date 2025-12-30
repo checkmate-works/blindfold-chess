@@ -5,17 +5,14 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
-import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { fenToLichessUrl } from '@/lib/lichess';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ChessBoardWithOverlay } from '@/app/[locale]/practice/_components/ChessBoardWithOverlay';
-
-import type { PositionAccuracy, PositionData } from '../_lib/types';
-import { calculateSquareDifferences } from '../_lib/utils';
+import { calculateSquareDifferences } from '@/app/[locale]/practice/_lib/accuracy';
+import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_lib/types';
 
 type Props = {
   accuracy: PositionAccuracy;
@@ -28,7 +25,7 @@ type Props = {
   onViewResults: () => void;
 };
 
-export function PositionMemoryProblemResult({
+export function FenProblemResult({
   accuracy,
   originalPosition,
   recreatedPosition,
@@ -38,7 +35,7 @@ export function PositionMemoryProblemResult({
   onNextProblem,
   onViewResults,
 }: Props) {
-  const t = useTranslations('practice.positionMemory');
+  const t = useTranslations('practice.fen');
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
 
   // Calculate square differences for overlay display
@@ -55,7 +52,7 @@ export function PositionMemoryProblemResult({
           {accuracy.totalPieces})
         </SectionTitle>
 
-        {/* 元の配置の再現度プログレスバー */}
+        {/* Recreation Progress bar */}
         <div className="mb-6">
           <p className="text-sm font-medium text-muted-foreground mb-2">
             {t('recreationProgress')}
@@ -101,7 +98,7 @@ export function PositionMemoryProblemResult({
             </div>
           </div>
 
-          {/* 余分な駒の表示 - 控えめに */}
+          {/* Extra pieces note */}
           {accuracy.extraPieces > 0 && (
             <p className="text-xs text-muted-foreground mt-3">
               {t('extra')}: <span className="font-semibold">+{accuracy.extraPieces}</span> (
@@ -157,21 +154,6 @@ export function PositionMemoryProblemResult({
               {t('nextProblem')}
             </Button>
           )}
-
-          {/* Analyze on Lichess Button */}
-          <Button
-            onClick={() => {
-              const lichessUrl = fenToLichessUrl(originalPosition.fen);
-              window.open(lichessUrl, '_blank');
-            }}
-            variant="secondary"
-            size="lg"
-            fullWidth
-            icon={<FaExternalLinkAlt className="w-4 h-4" />}
-            className="rounded-xl"
-          >
-            {t('analyzeOnLichess')}
-          </Button>
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@
 export const PRACTICE_MODULES = {
   ALGEBRAIC_NOTATION: 'algebraic-notation',
   COORDINATE_QUIZ: 'coordinate-quiz',
+  FEN: 'fen',
   LEGAL_MOVES: 'legal-moves',
   POSITION_MEMORY: 'position-memory',
   SQUARE_COLORS: 'square-colors',
@@ -20,6 +21,7 @@ export type PracticeModuleId = (typeof PRACTICE_MODULES)[keyof typeof PRACTICE_M
 export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> = {
   [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: 'algebraicNotation',
   [PRACTICE_MODULES.COORDINATE_QUIZ]: 'coordinateQuiz',
+  [PRACTICE_MODULES.FEN]: 'fen',
   [PRACTICE_MODULES.LEGAL_MOVES]: 'legalMoves',
   [PRACTICE_MODULES.POSITION_MEMORY]: 'positionMemory',
   [PRACTICE_MODULES.SQUARE_COLORS]: 'squareColors',
@@ -27,8 +29,9 @@ export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> 
 
 // Icon mapping for visual representation
 export const PRACTICE_MODULE_ICONS: Record<PracticeModuleId, string> = {
-  [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: '📝',
+  [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: '🔤',
   [PRACTICE_MODULES.COORDINATE_QUIZ]: '🎯',
+  [PRACTICE_MODULES.FEN]: '📝',
   [PRACTICE_MODULES.LEGAL_MOVES]: '♗',
   [PRACTICE_MODULES.POSITION_MEMORY]: '🧠',
   [PRACTICE_MODULES.SQUARE_COLORS]: '🏁',

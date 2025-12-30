@@ -2,17 +2,23 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { getBoardThemeColors } from '@/lib/boardThemes';
 
+export type EditableChessBoardLabels = {
+  whitePieces: string;
+  blackPieces: string;
+  removePieceMode: string;
+  placingPiece: string;
+};
+
 type Props = {
   fen: string;
   onFenChange: (fen: string) => void;
+  labels: EditableChessBoardLabels;
   flipped?: boolean;
   editable?: boolean;
   preserveTurnInfo?: boolean; // Whether to preserve turn info from original position
@@ -101,13 +107,13 @@ function boardToFen(
 export function EditableChessBoard({
   fen,
   onFenChange,
+  labels,
   flipped = false,
   editable = false,
   preserveTurnInfo = false,
   originalPosition,
   boardTheme = 'default',
 }: Props) {
-  const t = useTranslations('practice.positionMemory');
   const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));
   const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
   const themeColors = getBoardThemeColors(boardTheme);
@@ -175,12 +181,12 @@ export function EditableChessBoard({
 
   // Determine palette order based on board orientation
   const topPalette = flipped
-    ? { pieces: WHITE_PIECES, label: t('whitePieces') }
-    : { pieces: BLACK_PIECES, label: t('blackPieces') };
+    ? { pieces: WHITE_PIECES, label: labels.whitePieces }
+    : { pieces: BLACK_PIECES, label: labels.blackPieces };
 
   const bottomPalette = flipped
-    ? { pieces: BLACK_PIECES, label: t('blackPieces') }
-    : { pieces: WHITE_PIECES, label: t('whitePieces') };
+    ? { pieces: BLACK_PIECES, label: labels.blackPieces }
+    : { pieces: WHITE_PIECES, label: labels.whitePieces };
 
   const renderPalette = (pieces: PieceType[], title: string) => (
     <div className="flex flex-col items-center gap-2">
@@ -261,9 +267,9 @@ export function EditableChessBoard({
       {editable && (
         <p className="text-sm text-muted-foreground text-center">
           {selectedPiece === ''
-            ? t('removePieceMode')
+            ? labels.removePieceMode
             : selectedPiece
-              ? `${t('placingPiece')} ${selectedPiece.toUpperCase()}`
+              ? `${labels.placingPiece} ${selectedPiece.toUpperCase()}`
               : 'Select a piece above'}
         </p>
       )}

@@ -20,7 +20,7 @@ FENのようなフォーマットがコンピュータにとっても処理が�
 
 FENの仕様の解説は公式なドキュメントが潤沢なので、他所に譲ります。
 
-- [Forsyth–Edwards Notation - Wikipedia](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
+- [Forsyth–Edwards Notation - Wikipedia](https://ja.wikipedia.org/wiki/Forsyth-Edwards_Notation)
 - [Standard: Portable Game Notation Specification and Implementation Guide](https://www.thechessdrum.net/PGN_Reference.txt) - FENはPGN仕様の一部として定義されています
 
 ## トレーニングで理解を深めよう

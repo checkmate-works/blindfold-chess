@@ -50,7 +50,7 @@ export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
 export const ARTICLE_PRACTICE_MAPPING: Partial<Record<ArticleSlug, PracticeModuleId[]>> = {
   'algebraic-notation': ['algebraic-notation', 'coordinate-quiz'],
   'bishop-movement': ['legal-moves'],
-  'fen-notation': ['position-memory'],
+  'fen-notation': ['fen', 'position-memory'],
   'king-movement': ['legal-moves'],
   'knight-movement': ['legal-moves'],
   'rook-movement': ['legal-moves'],
