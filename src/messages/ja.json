@@ -393,6 +393,8 @@
       "settings": "設定",
       "startingSquare": "開始マス",
       "randomSquare": "ランダム",
+      "blindfoldMode": "ブラインドモード",
+      "blindfoldModeHint": "盤面を見ずに座標だけで練習します",
       "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。",
       "start": "開始",
       "progress": "進捗",
@@ -406,7 +408,11 @@
       "incompleteMessage": "{count}マスを訪問した時点で行き詰まりました。",
       "squaresVisited": "訪問マス数",
       "startedFrom": "開始マス",
-      "finalBoard": "最終盤面"
+      "finalBoard": "最終盤面",
+      "currentPosition": "現在位置",
+      "availableMoves": "移動可能なマス",
+      "confirmMove": "{square}に移動",
+      "moveHistory": "移動履歴"
     },
     "fen": {
       "title": "FEN再構築",

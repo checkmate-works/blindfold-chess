@@ -10,13 +10,21 @@ import { SectionTitle } from '@/app/[locale]/_components';
 type Props = {
   startingSquare: string;
   onStartingSquareChange: (square: string) => void;
+  blindfoldMode: boolean;
+  onBlindfoldModeChange: (value: boolean) => void;
   onStart: () => void;
 };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
-export function KnightTourSetup({ startingSquare, onStartingSquareChange, onStart }: Props) {
+export function KnightTourSetup({
+  startingSquare,
+  onStartingSquareChange,
+  blindfoldMode,
+  onBlindfoldModeChange,
+  onStart,
+}: Props) {
   const t = useTranslations('practice.knightTour');
 
   return (
@@ -45,9 +53,25 @@ export function KnightTourSetup({ startingSquare, onStartingSquareChange, onStar
               )}
             </select>
           </div>
-
-          <p className="text-sm text-muted-foreground">{t('setupHint')}</p>
         </div>
+
+        {/* Blindfold Mode Toggle */}
+        <div className="mb-6">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={blindfoldMode}
+              onChange={(e) => onBlindfoldModeChange(e.target.checked)}
+              className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+            />
+            <div>
+              <span className="text-sm font-medium text-foreground">{t('blindfoldMode')}</span>
+              <p className="text-sm text-muted-foreground">{t('blindfoldModeHint')}</p>
+            </div>
+          </label>
+        </div>
+
+        <p className="text-sm text-muted-foreground mb-6">{t('setupHint')}</p>
 
         <Button
           onClick={onStart}

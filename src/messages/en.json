@@ -393,6 +393,8 @@
       "settings": "Settings",
       "startingSquare": "Starting Square",
       "randomSquare": "Random",
+      "blindfoldMode": "Blindfold Mode",
+      "blindfoldModeHint": "Practice using only coordinates without seeing the board",
       "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves.",
       "start": "Start Tour",
       "progress": "Progress",
@@ -406,7 +408,11 @@
       "incompleteMessage": "You visited {count} squares before getting stuck.",
       "squaresVisited": "Squares Visited",
       "startedFrom": "Started From",
-      "finalBoard": "Final Position"
+      "finalBoard": "Final Position",
+      "currentPosition": "Current Position",
+      "availableMoves": "Available Moves",
+      "confirmMove": "Move to {square}",
+      "moveHistory": "Move History"
     },
     "fen": {
       "title": "FEN Reconstruction",

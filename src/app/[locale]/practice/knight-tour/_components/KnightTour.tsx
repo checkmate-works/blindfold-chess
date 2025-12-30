@@ -14,6 +14,7 @@ import {
   isTourComplete,
   isValidKnightMove,
 } from '../_lib/utils';
+import { KnightTourBlindPlaying } from './KnightTourBlindPlaying';
 import { KnightTourPlaying } from './KnightTourPlaying';
 import { KnightTourResult } from './KnightTourResult';
 import { KnightTourSetup } from './KnightTourSetup';
@@ -45,6 +46,23 @@ export default function KnightTour({ locale }: Props) {
     return 'random';
   });
 
+  const [blindfoldMode, setBlindfoldMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        return settings.blindfoldMode || false;
+      } catch {
+        // ignore parse errors
+      }
+    }
+    return false;
+  });
+
+  // Track if blindfold mode is active for current game
+  const [isBlindfolded, setIsBlindfolded] = useState(false);
+
   // Game state
   const [gameState, setGameState] = useState<GameState>('setup');
   const [startingSquare, setStartingSquare] = useState('');
@@ -56,9 +74,12 @@ export default function KnightTour({ locale }: Props) {
   // Save settings when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ startingSquare: startingSquareOption }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ startingSquare: startingSquareOption, blindfoldMode })
+      );
     }
-  }, [startingSquareOption]);
+  }, [startingSquareOption, blindfoldMode]);
 
   const startGame = useCallback(() => {
     const square = startingSquareOption === 'random' ? getRandomSquare() : startingSquareOption;
@@ -66,8 +87,9 @@ export default function KnightTour({ locale }: Props) {
     setCurrentSquare(square);
     setVisitedSquares(new Map([[square, 1]]));
     setMoveHistory([square]);
+    setIsBlindfolded(blindfoldMode);
     setGameState('playing');
-  }, [startingSquareOption]);
+  }, [startingSquareOption, blindfoldMode]);
 
   const handleSquareClick = useCallback(
     (targetSquare: string) => {
@@ -124,6 +146,7 @@ export default function KnightTour({ locale }: Props) {
     setMoveHistory([]);
     setCurrentSquare('');
     setStartingSquare('');
+    setIsBlindfolded(false);
   }, []);
 
   // Compute available moves
@@ -153,14 +176,18 @@ export default function KnightTour({ locale }: Props) {
       <KnightTourSetup
         startingSquare={startingSquareOption}
         onStartingSquareChange={setStartingSquareOption}
+        blindfoldMode={blindfoldMode}
+        onBlindfoldModeChange={setBlindfoldMode}
         onStart={startGame}
       />
     );
   }
 
+  const PlayingComponent = isBlindfolded ? KnightTourBlindPlaying : KnightTourPlaying;
+
   return (
     <>
-      <KnightTourPlaying
+      <PlayingComponent
         currentSquare={currentSquare}
         visitedSquares={visitedSquares}
         availableMoves={availableMoves}
