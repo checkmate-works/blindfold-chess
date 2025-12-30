@@ -55,6 +55,7 @@ export const ARTICLE_PRACTICE_MAPPING: Partial<Record<ArticleSlug, PracticeModul
   'fen-notation': ['fen', 'position-memory'],
   'king-movement': ['legal-moves'],
   'knight-movement': ['legal-moves'],
+  'knight-tour': ['knight-tour'],
   'rook-movement': ['legal-moves'],
   'square-colors': ['square-colors'],
   'position-memory': ['position-memory'],

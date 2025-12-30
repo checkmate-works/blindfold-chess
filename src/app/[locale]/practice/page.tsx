@@ -71,6 +71,12 @@ export default async function PracticePage({ params }: Props) {
       description: t('practice.coordinateQuiz.description'),
       icon: '🎯',
     },
+    {
+      id: 'knight-tour',
+      title: t('practice.knightTour.title'),
+      description: t('practice.knightTour.description'),
+      icon: '♞',
+    },
   ];
 
   return (

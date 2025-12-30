@@ -207,6 +207,13 @@
     "result": "Result",
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
+    "quit": "Quit",
+    "quitConfirmModal": {
+      "title": "Quit Practice?",
+      "message": "Your progress will be lost. Are you sure you want to quit?",
+      "confirmButton": "Quit",
+      "cancelButton": "Continue"
+    },
     "difficulty": {
       "beginner": "Beginner",
       "intermediate": "Intermediate",
@@ -379,6 +386,27 @@
       "deleteFenConfirm": "Delete",
       "deleteFenCancel": "Cancel",
       "skipped": "Skipped"
+    },
+    "knightTour": {
+      "title": "Knight's Tour",
+      "description": "Visit all 64 squares with a knight, moving each square exactly once",
+      "settings": "Settings",
+      "startingSquare": "Starting Square",
+      "randomSquare": "Random",
+      "setupHint": "The knight must visit all 64 squares exactly once using only legal knight moves.",
+      "start": "Start Tour",
+      "progress": "Progress",
+      "undo": "Undo",
+      "stuck": "No more moves available!",
+      "stuckHint": "Use Undo to go back and try a different path.",
+      "success": "Tour Complete!",
+      "incomplete": "Tour Incomplete",
+      "closedTourMessage": "Amazing! You completed a closed tour - the knight can return to its starting square!",
+      "openTourMessage": "Congratulations! You visited all 64 squares!",
+      "incompleteMessage": "You visited {count} squares before getting stuck.",
+      "squaresVisited": "Squares Visited",
+      "startedFrom": "Started From",
+      "finalBoard": "Final Position"
     },
     "fen": {
       "title": "FEN Reconstruction",

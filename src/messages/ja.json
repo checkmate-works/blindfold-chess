@@ -207,6 +207,13 @@
     "result": "結果",
     "secondsFormat": "{seconds}秒",
     "minutesFormat": "{minutes}分",
+    "quit": "終了",
+    "quitConfirmModal": {
+      "title": "練習を終了しますか？",
+      "message": "進捗は失われます。本当に終了しますか？",
+      "confirmButton": "終了する",
+      "cancelButton": "続ける"
+    },
     "difficulty": {
       "beginner": "初級",
       "intermediate": "中級",
@@ -379,6 +386,27 @@
       "deleteFenConfirm": "削除",
       "deleteFenCancel": "キャンセル",
       "skipped": "スキップ"
+    },
+    "knightTour": {
+      "title": "ナイトツアー",
+      "description": "ナイトを使って64マス全てを1回ずつ訪問する",
+      "settings": "設定",
+      "startingSquare": "開始マス",
+      "randomSquare": "ランダム",
+      "setupHint": "ナイトの合法手のみを使って、全64マスをちょうど1回ずつ訪問します。",
+      "start": "開始",
+      "progress": "進捗",
+      "undo": "戻る",
+      "stuck": "移動できるマスがありません！",
+      "stuckHint": "「戻る」で別のルートを試してください。",
+      "success": "ツアー完了！",
+      "incomplete": "ツアー未完了",
+      "closedTourMessage": "素晴らしい！閉じたツアーを達成しました - ナイトが開始マスに戻ることができます！",
+      "openTourMessage": "おめでとうございます！64マス全てを訪問しました！",
+      "incompleteMessage": "{count}マスを訪問した時点で行き詰まりました。",
+      "squaresVisited": "訪問マス数",
+      "startedFrom": "開始マス",
+      "finalBoard": "最終盤面"
     },
     "fen": {
       "title": "FEN再構築",
