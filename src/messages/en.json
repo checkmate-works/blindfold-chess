@@ -570,6 +570,7 @@
     "evalMistakeCriteria": "Loss of 1.0 to 3.0 pawns",
     "evalBlunderCriteria": "Loss of more than 3.0 pawns",
     "inputMove": "Enter move",
+    "selectMove": "Select a move",
     "dontKnow": "I don't know",
     "analyzeAll": "Analyze All",
     "autoFillAll": "Auto-fill All",
