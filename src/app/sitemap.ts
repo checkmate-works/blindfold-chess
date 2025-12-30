@@ -35,6 +35,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/practice/square-colors',
     '/practice/legal-moves',
     '/practice/position-memory',
+    '/practice/fen',
+    '/practice/knight-tour',
     '/game/new',
     '/play',
   ];
