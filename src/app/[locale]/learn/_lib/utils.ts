@@ -28,6 +28,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
     en: () => import('../_content/knight-movement/en').then((m) => m.default),
     ja: () => import('../_content/knight-movement/ja').then((m) => m.default),
   },
+  'knight-tour': {
+    en: () => import('../_content/knight-tour/en').then((m) => m.default),
+    ja: () => import('../_content/knight-tour/ja').then((m) => m.default),
+  },
   'position-memory': {
     en: () => import('../_content/position-memory/en').then((m) => m.default),
     ja: () => import('../_content/position-memory/ja').then((m) => m.default),
@@ -63,6 +67,10 @@ const articleRegistry = {
   'knight-movement': {
     en: () => import('../_content/knight-movement/metadata.en'),
     ja: () => import('../_content/knight-movement/metadata.ja'),
+  },
+  'knight-tour': {
+    en: () => import('../_content/knight-tour/metadata.en'),
+    ja: () => import('../_content/knight-tour/metadata.ja'),
   },
   'position-memory': {
     en: () => import('../_content/position-memory/metadata.en'),
