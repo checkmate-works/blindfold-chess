@@ -412,7 +412,14 @@
       "currentPosition": "Current Position",
       "availableMoves": "Available Moves",
       "confirmMove": "Move to {square}",
-      "moveHistory": "Move History"
+      "moveHistory": "Move History",
+      "inputSquare": "e.g., e4, f6",
+      "selectSquare": "Select a square...",
+      "noMovesAvailable": "No moves available",
+      "submitMove": "Submit",
+      "inputSettings": "Input Settings",
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "fen": {
       "title": "FEN Reconstruction",

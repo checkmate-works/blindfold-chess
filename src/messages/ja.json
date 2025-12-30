@@ -412,7 +412,14 @@
       "currentPosition": "現在位置",
       "availableMoves": "移動可能なマス",
       "confirmMove": "{square}に移動",
-      "moveHistory": "移動履歴"
+      "moveHistory": "移動履歴",
+      "inputSquare": "例: e4, f6",
+      "selectSquare": "マスを選択...",
+      "noMovesAvailable": "移動可能なマスがありません",
+      "submitMove": "決定",
+      "inputSettings": "入力設定",
+      "cancel": "キャンセル",
+      "save": "保存"
     },
     "fen": {
       "title": "FEN再構築",

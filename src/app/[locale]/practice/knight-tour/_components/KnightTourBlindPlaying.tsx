@@ -5,9 +5,14 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
-import { FaUndo } from 'react-icons/fa';
+import { FaCog, FaUndo } from 'react-icons/fa';
 
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
+
+import { ControlSettingsModal } from './ControlSettingsModal';
+import { SquareInput } from './SquareInput';
+import { SquareSelect } from './SquareSelect';
 
 type Props = {
   currentSquare: string;
@@ -32,23 +37,22 @@ export function KnightTourBlindPlaying({
 }: Props) {
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
-  const [selectedMove, setSelectedMove] = useState<string>('');
-
-  const handleMoveSelect = (move: string) => {
-    setSelectedMove(move);
-  };
-
-  const handleSubmit = () => {
-    if (selectedMove && availableMoves.includes(selectedMove)) {
-      onSquareClick(selectedMove);
-      setSelectedMove('');
-    }
-  };
+  const tPreferences = useTranslations('Preferences');
+  const { preferences, updatePreferences } = useGamePreferences();
+  const [inputValue, setInputValue] = useState('');
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Get move history as array of squares
   const moveHistory = Array.from(visitedSquares.entries())
     .sort((a, b) => a[1] - b[1])
     .map(([square, num]) => ({ square, num }));
+
+  const handleSubmit = (square: string) => {
+    if (availableMoves.includes(square)) {
+      onSquareClick(square);
+      setInputValue('');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -64,28 +68,41 @@ export function KnightTourBlindPlaying({
         <p className="text-5xl font-bold text-foreground font-mono">{currentSquare}</p>
       </div>
 
-      {/* Available Moves */}
+      {/* Move Input */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('availableMoves')}</h3>
+
         {availableMoves.length > 0 ? (
-          <div className="grid grid-cols-4 gap-2">
-            {availableMoves.map((move) => (
-              <button
-                key={move}
-                onClick={() => handleMoveSelect(move)}
-                className={`
-                  py-3 px-4 text-lg font-mono font-bold rounded-lg transition-colors
-                  ${
-                    selectedMove === move
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-secondary text-foreground'
-                  }
-                `}
-              >
-                {move}
-              </button>
-            ))}
-          </div>
+          preferences.moveInputMode === 'select' ? (
+            <SquareSelect
+              onSubmit={handleSubmit}
+              availableMoves={availableMoves}
+              disabled={false}
+            />
+          ) : (
+            <>
+              <SquareInput
+                value={inputValue}
+                onChange={setInputValue}
+                onSubmit={handleSubmit}
+                availableMoves={availableMoves}
+                disabled={false}
+                showSuggestions={preferences.enableAutoComplete}
+              />
+              {/* Autocomplete checkbox */}
+              <label className="flex items-center mt-3">
+                <input
+                  type="checkbox"
+                  checked={preferences.enableAutoComplete}
+                  onChange={(e) => updatePreferences({ enableAutoComplete: e.target.checked })}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {tPreferences('controls.enableAutoComplete')}
+                </span>
+              </label>
+            </>
+          )
         ) : (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-center">
             <p className="text-destructive font-medium">{t('stuck')}</p>
@@ -93,13 +110,16 @@ export function KnightTourBlindPlaying({
           </div>
         )}
 
-        {selectedMove && (
-          <div className="mt-4">
-            <Button onClick={handleSubmit} variant="primary" size="lg" className="w-full">
-              {t('confirmMove', { square: selectedMove })}
-            </Button>
-          </div>
-        )}
+        {/* Settings link */}
+        <div className="mt-3 text-center">
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <FaCog className="w-3 h-3" />
+            {t('inputSettings')}
+          </button>
+        </div>
       </div>
 
       {/* Move History */}
@@ -136,6 +156,12 @@ export function KnightTourBlindPlaying({
           {tPractice('quit')}
         </Button>
       </div>
+
+      {/* Control Settings Modal */}
+      <ControlSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+      />
     </div>
   );
 }
