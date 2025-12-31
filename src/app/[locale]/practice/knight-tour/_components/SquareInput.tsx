@@ -41,9 +41,9 @@ export function SquareInput({
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const trimmed = value.trim().toLowerCase();
-    if (trimmed && availableMoves.includes(trimmed)) {
+    if (trimmed) {
+      // Always call onSubmit - let parent handle validation
       onSubmit(trimmed);
-      onChange('');
     }
   };
 
@@ -106,9 +106,7 @@ export function SquareInput({
 
         <button
           type="submit"
-          disabled={
-            disabled || !value.trim() || !availableMoves.includes(value.trim().toLowerCase())
-          }
+          disabled={disabled || !value.trim()}
           className="w-14 h-14 bg-muted hover:bg-foreground hover:text-background disabled:bg-muted disabled:cursor-not-allowed text-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
           title={t('submitMove')}
         >

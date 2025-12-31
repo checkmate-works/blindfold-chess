@@ -419,7 +419,9 @@
       "submitMove": "決定",
       "inputSettings": "入力設定",
       "cancel": "キャンセル",
-      "save": "保存"
+      "save": "保存",
+      "invalidSquareFormat": "無効なマスです。正しい形式で入力してください（例: e4, f6）",
+      "alreadyVisited": "このマスはすでに訪問済みです。"
     },
     "fen": {
       "title": "FEN再構築",

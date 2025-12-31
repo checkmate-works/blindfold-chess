@@ -419,7 +419,9 @@
       "submitMove": "Submit",
       "inputSettings": "Input Settings",
       "cancel": "Cancel",
-      "save": "Save"
+      "save": "Save",
+      "invalidSquareFormat": "Invalid square. Please enter a valid square (e.g., e4, f6).",
+      "alreadyVisited": "This square has already been visited."
     },
     "fen": {
       "title": "FEN Reconstruction",

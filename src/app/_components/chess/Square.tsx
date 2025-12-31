@@ -57,7 +57,7 @@ export function Square({
     highlightType === 'last-move'
       ? 'ring-2 ring-yellow-400 ring-inset'
       : highlightType === 'selectable'
-        ? 'ring-2 ring-green-400 ring-inset'
+        ? 'ring-2 ring-foreground/50 ring-inset'
         : '';
 
   const coordinateColorClass = isLight ? colors.lightCoordinates : colors.darkCoordinates;

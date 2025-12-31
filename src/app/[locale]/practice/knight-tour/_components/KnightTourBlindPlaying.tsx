@@ -37,20 +37,57 @@ export function KnightTourBlindPlaying({
 }: Props) {
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
+  const tPlay = useTranslations('play');
   const tPreferences = useTranslations('Preferences');
   const { preferences, updatePreferences } = useGamePreferences();
   const [inputValue, setInputValue] = useState('');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get move history as array of squares
   const moveHistory = Array.from(visitedSquares.entries())
     .sort((a, b) => a[1] - b[1])
     .map(([square, num]) => ({ square, num }));
 
+  // Valid chess squares
+  const isValidSquare = (square: string): boolean => {
+    const file = square[0];
+    const rank = square[1];
+    return square.length === 2 && file >= 'a' && file <= 'h' && rank >= '1' && rank <= '8';
+  };
+
   const handleSubmit = (square: string) => {
-    if (availableMoves.includes(square)) {
-      onSquareClick(square);
-      setInputValue('');
+    // Clear any previous error
+    setError(null);
+
+    // Check if it's a valid square format
+    if (!isValidSquare(square)) {
+      setError(t('invalidSquareFormat'));
+      return;
+    }
+
+    // Check if already visited
+    if (visitedSquares.has(square)) {
+      setError(t('alreadyVisited'));
+      return;
+    }
+
+    // Check if it's a legal knight move
+    if (!availableMoves.includes(square)) {
+      setError(tPlay('invalidMove'));
+      return;
+    }
+
+    // Valid move
+    onSquareClick(square);
+    setInputValue('');
+  };
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
     }
   };
 
@@ -83,12 +120,14 @@ export function KnightTourBlindPlaying({
             <>
               <SquareInput
                 value={inputValue}
-                onChange={setInputValue}
+                onChange={handleInputChange}
                 onSubmit={handleSubmit}
                 availableMoves={availableMoves}
                 disabled={false}
                 showSuggestions={preferences.enableAutoComplete}
               />
+              {/* Error message */}
+              {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
               {/* Autocomplete checkbox */}
               <label className="flex items-center mt-3">
                 <input

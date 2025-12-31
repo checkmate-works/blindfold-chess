@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { FaCheckCircle, FaRedo, FaTimesCircle } from 'react-icons/fa';
 
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 import { KnightTourBoard } from './KnightTourBoard';
 
 type Props = {
@@ -28,6 +30,7 @@ export function KnightTourResult({
 }: Props) {
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
+  const { preferences } = useGamePreferences();
 
   return (
     <div className="space-y-6">
@@ -75,6 +78,8 @@ export function KnightTourResult({
           currentSquare={lastSquare}
           visitedSquares={visitedSquares}
           availableMoves={[]}
+          showCoordinates={preferences.showCoordinates}
+          boardTheme={preferences.boardTheme}
         />
       </div>
 
