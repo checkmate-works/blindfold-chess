@@ -134,28 +134,30 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
   return (
     <div className="space-y-4">
       {/* Board */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        <div className="relative">
-          <ChessBoard
-            fen={currentFen}
-            flipped={flipped}
-            showCoordinates={preferences.showCoordinates}
-            boardTheme={preferences.boardTheme}
-            lastMove={preferences.highlightLastMove ? lastMove : null}
-          />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="relative">
+            <ChessBoard
+              fen={currentFen}
+              flipped={flipped}
+              showCoordinates={preferences.showCoordinates}
+              boardTheme={preferences.boardTheme}
+              lastMove={preferences.highlightLastMove ? lastMove : null}
+            />
 
-          {/* Play button overlay */}
-          {!isPlaying && !hasPlayed && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
-              <button
-                onClick={handlePlay}
-                className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110"
-                aria-label={t('play')}
-              >
-                <FaPlay className="w-12 h-12" />
-              </button>
-            </div>
-          )}
+            {/* Play button overlay */}
+            {!isPlaying && !hasPlayed && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
+                <button
+                  onClick={handlePlay}
+                  className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110"
+                  aria-label={t('play')}
+                >
+                  <FaPlay className="w-12 h-12" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

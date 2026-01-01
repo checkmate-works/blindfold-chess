@@ -72,15 +72,17 @@ export function KnightTourResult({
       </div>
 
       {/* Final Board */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('finalBoard')}</h3>
-        <KnightTourBoard
-          currentSquare={lastSquare}
-          visitedSquares={visitedSquares}
-          availableMoves={[]}
-          showCoordinates={preferences.showCoordinates}
-          boardTheme={preferences.boardTheme}
-        />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <KnightTourBoard
+            currentSquare={lastSquare}
+            visitedSquares={visitedSquares}
+            availableMoves={[]}
+            showCoordinates={preferences.showCoordinates}
+            showMoveNumbers={true}
+            boardTheme={preferences.boardTheme}
+          />
+        </div>
       </div>
 
       {/* Actions */}

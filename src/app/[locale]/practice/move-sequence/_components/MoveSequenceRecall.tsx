@@ -213,14 +213,16 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
         <div
           className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-xl`}
         >
-          <div className="p-4">
-            <ChessBoard
-              fen={currentFen}
-              flipped={flipped}
-              showCoordinates={preferences.showCoordinates}
-              boardTheme={preferences.boardTheme}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
-            />
+          <div className="flex justify-center py-4">
+            <div className="w-full max-w-md">
+              <ChessBoard
+                fen={currentFen}
+                flipped={flipped}
+                showCoordinates={preferences.showCoordinates}
+                boardTheme={preferences.boardTheme}
+                lastMove={preferences.highlightLastMove ? lastMove : null}
+              />
+            </div>
           </div>
         </div>
       </div>

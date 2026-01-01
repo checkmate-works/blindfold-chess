@@ -13,6 +13,7 @@ type Props = {
   availableMoves: string[];
   onSquareClick?: (square: string) => void;
   showCoordinates?: boolean;
+  showMoveNumbers?: boolean; // Show move numbers on visited squares (for result screen)
   boardTheme?: BoardTheme;
   flipped?: boolean;
 };
@@ -26,6 +27,7 @@ export function KnightTourBoard({
   availableMoves,
   onSquareClick,
   showCoordinates = true,
+  showMoveNumbers = false,
   boardTheme = 'default',
   flipped = false,
 }: Props) {
@@ -54,20 +56,20 @@ export function KnightTourBoard({
       );
     }
 
-    // Show move number on visited squares
+    // Show marker on visited squares
     const moveNumber = visitedSquares.get(square);
     if (moveNumber !== undefined) {
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <span className="text-xs sm:text-sm font-bold text-white bg-blue-600 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md">
-            {moveNumber}
-          </span>
-        </div>
-      );
-    }
-
-    // Show X mark on available moves
-    if (availableMoves.includes(square)) {
+      if (showMoveNumbers) {
+        // Show move number (for result screen)
+        return (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-xs sm:text-sm font-bold text-white bg-black/50 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md">
+              {moveNumber}
+            </span>
+          </div>
+        );
+      }
+      // Show X mark (during play)
       return (
         <div className="w-full h-full flex items-center justify-center">
           <svg
@@ -109,7 +111,6 @@ export function KnightTourBoard({
                   showRankCoordinate={fileIndex === 0}
                   showFileCoordinate={rankIndex === 7}
                   onClick={isAvailable && onSquareClick ? () => onSquareClick(square) : undefined}
-                  highlightType={isAvailable ? 'selectable' : 'none'}
                   themeColors={themeColors}
                 >
                   {renderSquareContent(square)}

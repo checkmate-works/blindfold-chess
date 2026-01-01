@@ -38,21 +38,20 @@ export function KnightTourPlaying({
   return (
     <div className="space-y-4">
       {/* Progress */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('progress')}</h3>
-        <ProgressBar current={moveCount} total={64} />
-      </div>
+      <ProgressBar current={moveCount} total={64} />
 
       {/* Board */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        <KnightTourBoard
-          currentSquare={currentSquare}
-          visitedSquares={visitedSquares}
-          availableMoves={availableMoves}
-          onSquareClick={onSquareClick}
-          showCoordinates={preferences.showCoordinates}
-          boardTheme={preferences.boardTheme}
-        />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <KnightTourBoard
+            currentSquare={currentSquare}
+            visitedSquares={visitedSquares}
+            availableMoves={availableMoves}
+            onSquareClick={onSquareClick}
+            showCoordinates={preferences.showCoordinates}
+            boardTheme={preferences.boardTheme}
+          />
+        </div>
       </div>
 
       {/* Controls */}
