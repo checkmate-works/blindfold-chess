@@ -1,4 +1,11 @@
-import { ALL_FILES, ALL_RANKS, AlgebraicNotation, File, PIECES, Rank } from '@/lib/types';
+import {
+  ALL_FILES,
+  ALL_PIECE_SYMBOLS,
+  ALL_RANKS,
+  AlgebraicNotation,
+  File,
+  Rank,
+} from '@/lib/types';
 
 /**
  * Generate move suggestions based on partial input
@@ -19,7 +26,7 @@ export function generateMoveSuggestions(input: string): AlgebraicNotation[] {
   }
 
   // Handle piece moves
-  if (PIECES.some((piece) => trimmedInput.startsWith(piece))) {
+  if (ALL_PIECE_SYMBOLS.some((piece) => trimmedInput.startsWith(piece))) {
     return generatePieceMoveSuggestions(trimmedInput);
   }
 
@@ -67,7 +74,7 @@ function isCompleteMove(input: string): boolean {
  * Generate suggestions for piece moves (K, Q, R, B, N)
  */
 function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
-  const piece = input[0] as (typeof PIECES)[number];
+  const piece = input[0] as (typeof ALL_PIECE_SYMBOLS)[number];
   const rest = input.slice(1);
 
   // Handle captures: Bx, Bxb, Nfx, N1x, Nb1x, etc.
@@ -126,7 +133,7 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
  * Generate suggestions for piece captures
  */
 function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
-  const piece = input[0] as (typeof PIECES)[number];
+  const piece = input[0] as (typeof ALL_PIECE_SYMBOLS)[number];
   const rest = input.slice(1);
   const suggestions: string[] = [];
 
