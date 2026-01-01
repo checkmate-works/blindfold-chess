@@ -77,6 +77,12 @@ export default async function PracticePage({ params }: Props) {
       description: t('practice.knightTour.description'),
       icon: '♞',
     },
+    {
+      id: 'move-sequence',
+      title: t('practice.moveSequence.title'),
+      description: t('practice.moveSequence.description'),
+      icon: '🥋',
+    },
   ];
 
   return (
