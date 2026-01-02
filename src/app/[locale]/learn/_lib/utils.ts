@@ -12,6 +12,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
     en: () => import('../_content/algebraic-notation/en').then((m) => m.default),
     ja: () => import('../_content/algebraic-notation/ja').then((m) => m.default),
   },
+  'anchor-squares': {
+    en: () => import('../_content/anchor-squares/en').then((m) => m.default),
+    ja: () => import('../_content/anchor-squares/ja').then((m) => m.default),
+  },
   'bishop-movement': {
     en: () => import('../_content/bishop-movement/en').then((m) => m.default),
     ja: () => import('../_content/bishop-movement/ja').then((m) => m.default),
@@ -55,6 +59,10 @@ const articleRegistry = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/metadata.en'),
     ja: () => import('../_content/algebraic-notation/metadata.ja'),
+  },
+  'anchor-squares': {
+    en: () => import('../_content/anchor-squares/metadata.en'),
+    ja: () => import('../_content/anchor-squares/metadata.ja'),
   },
   'bishop-movement': {
     en: () => import('../_content/bishop-movement/metadata.en'),
