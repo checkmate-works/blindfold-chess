@@ -17,8 +17,13 @@ import {
 } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { ArticleSlug } from '../_lib/types';
-import { getArticle, getAvailableArticles, getPracticeModulesForArticle } from '../_lib/utils';
+import { ARTICLE_ICONS, type ArticleSlug } from '../_lib/types';
+import {
+  getArticle,
+  getArticlesByCategory,
+  getAvailableArticles,
+  getPracticeModulesForArticle,
+} from '../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -67,6 +72,12 @@ export default async function LearnArticlePage({ params }: Props) {
 
   const relatedPracticeModules = getPracticeModulesForArticle(slug as ArticleSlug);
 
+  // Get related articles from the same category
+  const category = article.metadata.category;
+  const relatedArticles = category
+    ? (await getArticlesByCategory(category, locale)).filter((a) => a.slug !== slug)
+    : [];
+
   return (
     <div className="space-y-8">
       <PageTitle>{article.metadata.title}</PageTitle>
@@ -95,6 +106,25 @@ export default async function LearnArticlePage({ params }: Props) {
                 />
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {relatedArticles.length > 0 && (
+        <div className="space-y-4">
+          <Divider />
+          <SectionTitle>{t('learn.relatedArticles')}</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {relatedArticles.map((relatedArticle) => (
+              <CardLink
+                key={relatedArticle.slug}
+                href={`/learn/${relatedArticle.slug}`}
+                icon={ARTICLE_ICONS[relatedArticle.slug as ArticleSlug] || '📚'}
+                title={relatedArticle.title}
+                description={relatedArticle.excerpt}
+                locale={locale}
+              />
+            ))}
           </div>
         </div>
       )}
