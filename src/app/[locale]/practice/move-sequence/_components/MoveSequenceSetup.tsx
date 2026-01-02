@@ -30,11 +30,12 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
 
   const [fen, setFen] = useState('');
   const [pgn, setPgn] = useState('');
+  const [includeOpponentMoves, setIncludeOpponentMoves] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
 
-  // Load settings from localStorage or URL on mount
+  // Load settings from localStorage on mount (URL params handled separately in page.tsx)
   useEffect(() => {
     // URL params take priority
     if (urlFen !== null && urlPgn !== null) {
@@ -54,6 +55,8 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPgn(settings.pgn);
     // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIncludeOpponentMoves(settings.includeOpponentMoves);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasLoaded(true);
   }, [urlFen, urlPgn]);
 
@@ -68,8 +71,8 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
   // Save settings when they change
   useEffect(() => {
     if (!hasLoaded) return;
-    saveSettings({ fen, pgn });
-  }, [fen, pgn, hasLoaded]);
+    saveSettings({ fen, pgn, includeOpponentMoves });
+  }, [fen, pgn, includeOpponentMoves, hasLoaded]);
 
   const handleStart = () => {
     setError(null);
@@ -91,7 +94,10 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
       return;
     }
 
-    onStart(result.data);
+    onStart({
+      ...result.data,
+      includeOpponentMoves,
+    });
   };
 
   const handleFenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,6 +192,30 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
             {copyStatus === 'too_long' && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t('urlTooLong')}</p>
             )}
+          </div>
+
+          {/* Include Opponent Moves Toggle */}
+          <div className="flex items-center justify-between">
+            <label htmlFor="includeOpponentMoves" className="text-sm font-medium text-foreground">
+              {t('includeOpponentMoves')}
+            </label>
+            <button
+              id="includeOpponentMoves"
+              type="button"
+              role="switch"
+              aria-checked={includeOpponentMoves}
+              onClick={() => setIncludeOpponentMoves(!includeOpponentMoves)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                includeOpponentMoves ? 'bg-foreground' : 'bg-secondary'
+              }`}
+            >
+              <span className="sr-only">{t('includeOpponentMoves')}</span>
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                  includeOpponentMoves ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
 
           {/* Error Message */}

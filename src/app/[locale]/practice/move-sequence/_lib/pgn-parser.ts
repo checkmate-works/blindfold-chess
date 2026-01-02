@@ -2,7 +2,7 @@ import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
-import type { MoveSequenceData, ParsedMove } from './types';
+import type { ParsedMove, ParsedMoveSequence } from './types';
 
 /**
  * Parse PGN move text into structured moves
@@ -109,7 +109,7 @@ export function validateMoves(
 export function parseMoveSequence(
   fen: string,
   pgn: string
-): { success: true; data: MoveSequenceData } | { success: false; error: string } {
+): { success: true; data: ParsedMoveSequence } | { success: false; error: string } {
   // Validate FEN
   try {
     const chess = new Chess(fen);

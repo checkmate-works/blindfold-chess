@@ -5,6 +5,7 @@ const STORAGE_KEY = 'moveSequenceSettings';
 const defaultSettings: MoveSequenceSettings = {
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   pgn: '',
+  includeOpponentMoves: false,
 };
 
 export function loadSettings(): MoveSequenceSettings {
@@ -19,6 +20,7 @@ export function loadSettings(): MoveSequenceSettings {
       return {
         fen: parsed.fen ?? defaultSettings.fen,
         pgn: parsed.pgn ?? defaultSettings.pgn,
+        includeOpponentMoves: parsed.includeOpponentMoves ?? defaultSettings.includeOpponentMoves,
       };
     }
   } catch {

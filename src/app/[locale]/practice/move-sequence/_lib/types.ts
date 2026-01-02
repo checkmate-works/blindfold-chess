@@ -5,6 +5,7 @@ export type MoveSequencePhase = 'setup' | 'memorize' | 'recall' | 'result';
 export type MoveSequenceSettings = {
   fen: string;
   pgn: string;
+  includeOpponentMoves: boolean;
 };
 
 export type ParsedMove = {
@@ -13,10 +14,14 @@ export type ParsedMove = {
   black: AlgebraicNotation | null;
 };
 
-export type MoveSequenceData = {
+export type ParsedMoveSequence = {
   fen: string;
   moves: AlgebraicNotation[];
   playerColor: 'w' | 'b';
+};
+
+export type MoveSequenceData = ParsedMoveSequence & {
+  includeOpponentMoves: boolean;
 };
 
 export type RecallResult = {

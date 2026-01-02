@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -35,34 +35,42 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
   const [results, setResults] = useState<RecallResult[]>([]);
   const [currentAttempts, setCurrentAttempts] = useState(1);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [completedMoves, setCompletedMoves] = useState<AlgebraicNotation[]>([]);
 
   const chessRef = useRef<Chess | null>(null);
 
-  // Get player's moves only
+  // Determine which moves the user needs to input
+  const targetMoveIndices = useMemo(() => {
+    if (data.includeOpponentMoves) {
+      // All moves
+      return data.moves.map((_, i) => i);
+    } else {
+      // Only player's moves
+      return data.playerColor === 'w'
+        ? data.moves.map((_, i) => i).filter((i) => i % 2 === 0)
+        : data.moves.map((_, i) => i).filter((i) => i % 2 === 1);
+    }
+  }, [data.moves, data.playerColor, data.includeOpponentMoves]);
+
+  // Get player's moves for legacy mode
   const playerMoves = getPlayerMoves(data.moves, data.playerColor);
-  const playerMoveIndices =
-    data.playerColor === 'w'
-      ? data.moves.map((_, i) => i).filter((i) => i % 2 === 0)
-      : data.moves.map((_, i) => i).filter((i) => i % 2 === 1);
 
-  // Current expected move in player's sequence
-  const currentPlayerMoveIndex = playerMoveIndices.findIndex((i) => i >= currentMoveIndex);
-  const expectedMove = currentPlayerMoveIndex >= 0 ? playerMoves[currentPlayerMoveIndex] : null;
-  const isPlayerTurn = playerMoveIndices.includes(currentMoveIndex);
+  // Current expected move
+  const expectedMove = data.moves[currentMoveIndex] ?? null;
 
-  // Total player moves for progress
-  const totalPlayerMoves = playerMoves.length;
-  const completedPlayerMoves = results.length;
+  // Check if current move requires user input
+  const requiresUserInput = targetMoveIndices.includes(currentMoveIndex);
+
+  // Total moves for progress (based on mode)
+  const totalTargetMoves = targetMoveIndices.length;
+  const completedTargetMoves = results.length;
 
   // Initialize chess instance
   useEffect(() => {
     chessRef.current = new Chess(data.fen);
-
-    // Apply moves up to the starting point if needed
-    // (in case we start from a position where it's not the first move)
   }, [data.fen]);
 
-  // Auto-play opponent's move
+  // Auto-play opponent's move (only when includeOpponentMoves is false)
   const playOpponentMove = useCallback(() => {
     if (!chessRef.current || currentMoveIndex >= data.moves.length) return;
 
@@ -72,20 +80,21 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
       if (result) {
         setCurrentFen(chessRef.current.fen());
         setLastMove({ from: result.from, to: result.to });
+        setCompletedMoves((prev) => [...prev, move]);
         setCurrentMoveIndex((prev) => prev + 1);
       }
-    } catch (error) {
-      console.error('Error playing opponent move:', error);
+    } catch (err) {
+      console.error('Error playing opponent move:', err);
     }
   }, [currentMoveIndex, data.moves]);
 
-  // If it's opponent's turn, auto-play their move
+  // If it's not a move that requires user input, auto-play
   useEffect(() => {
-    if (!isPlayerTurn && currentMoveIndex < data.moves.length) {
+    if (!requiresUserInput && currentMoveIndex < data.moves.length) {
       const timer = setTimeout(playOpponentMove, 500);
       return () => clearTimeout(timer);
     }
-  }, [isPlayerTurn, currentMoveIndex, data.moves.length, playOpponentMove]);
+  }, [requiresUserInput, currentMoveIndex, data.moves.length, playOpponentMove]);
 
   // Check if all moves are complete
   useEffect(() => {
@@ -93,13 +102,13 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
       // Calculate final results
       const correctMoves = results.filter((r) => r.isCorrect).length;
       onComplete({
-        totalMoves: totalPlayerMoves,
+        totalMoves: totalTargetMoves,
         correctMoves,
-        accuracy: totalPlayerMoves > 0 ? Math.round((correctMoves / totalPlayerMoves) * 100) : 0,
+        accuracy: totalTargetMoves > 0 ? Math.round((correctMoves / totalTargetMoves) * 100) : 0,
         results,
       });
     }
-  }, [currentMoveIndex, data.moves.length, results, totalPlayerMoves, onComplete]);
+  }, [currentMoveIndex, data.moves.length, results, totalTargetMoves, onComplete]);
 
   // Handle move submission
   const handleSubmit = (move: AlgebraicNotation) => {
@@ -132,6 +141,7 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
           ]);
           setCurrentFen(chessRef.current.fen());
           setLastMove({ from: result.from, to: result.to });
+          setCompletedMoves((prev) => [...prev, normalizedInput as AlgebraicNotation]);
           setCurrentMoveIndex((prev) => prev + 1);
           setMoveInput('');
           setCurrentAttempts(1);
@@ -160,6 +170,31 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
 
   const flipped = data.playerColor === 'b';
 
+  // Format completed moves as PGN notation
+  const formattedMoveHistory = useMemo(() => {
+    const parts: string[] = [];
+    for (let i = 0; i < completedMoves.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = completedMoves[i];
+      const blackMove = completedMoves[i + 1];
+
+      if (blackMove) {
+        parts.push(`${moveNumber}. ${whiteMove} ${blackMove}`);
+      } else {
+        parts.push(`${moveNumber}. ${whiteMove}`);
+      }
+    }
+    return parts.join(' ');
+  }, [completedMoves]);
+
+  // Determine whose turn it is for the prompt
+  const isWhiteTurn = currentMoveIndex % 2 === 0;
+  const turnLabel = data.includeOpponentMoves
+    ? isWhiteTurn
+      ? t('whiteTurn')
+      : t('blackTurn')
+    : t('yourMove');
+
   // If all moves are complete, show loading while transitioning
   if (currentMoveIndex >= data.moves.length) {
     return (
@@ -175,13 +210,21 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
       <div className="bg-card rounded-xl shadow-sm border border-border p-3">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <ProgressBar current={completedPlayerMoves} total={totalPlayerMoves} />
+            <ProgressBar current={completedTargetMoves} total={totalTargetMoves} />
           </div>
           <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {completedPlayerMoves} / {totalPlayerMoves}
+            {completedTargetMoves} / {totalTargetMoves}
           </span>
         </div>
       </div>
+
+      {/* Move History */}
+      {completedMoves.length > 0 && (
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('moveHistory')}</h3>
+          <p className="font-mono text-sm text-foreground break-words">{formattedMoveHistory}</p>
+        </div>
+      )}
 
       {/* Board Toggle */}
       <div className="bg-card rounded-xl shadow-sm border border-border">
@@ -229,9 +272,9 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
 
       {/* Move Input */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        {isPlayerTurn ? (
+        {requiresUserInput ? (
           <>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('yourMove')}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">{turnLabel}</h3>
             {preferences.moveInputMode === 'select' ? (
               <MoveSelect fen={currentFen} onSubmit={handleSubmit} disabled={false} />
             ) : (
