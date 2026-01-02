@@ -28,6 +28,8 @@ import {
   getPracticeModulesForArticle,
 } from '../_lib/utils';
 
+export const dynamic = 'force-static';
+
 type Props = {
   params: Promise<{
     locale: Locale;
@@ -88,6 +90,7 @@ export default async function LearnArticlePage({ params }: Props) {
     category: cat,
     label: t(`learn.categories.${cat}`),
     count: categoryCounts[cat],
+    countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
   }));
 
   return (
@@ -149,7 +152,6 @@ export default async function LearnArticlePage({ params }: Props) {
           selectedCategory={category}
           locale={locale}
           allLabel={t('learn.allCategories')}
-          countLabel={(count) => t('learn.articleCount', { count })}
           variant="cards"
         />
       </div>

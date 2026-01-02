@@ -29,10 +29,18 @@ type Props = {
   }>;
 };
 
+export const dynamic = 'force-static';
+
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
+const locales = ['en', 'ja'] as const;
 
 export async function generateStaticParams() {
-  return validCategories.map((category) => ({ category }));
+  return validCategories.flatMap((category) =>
+    locales.map((locale) => ({
+      locale,
+      category,
+    }))
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -70,6 +78,7 @@ export default async function LearnCategoryPage({ params }: Props) {
     category: cat,
     label: t(`learn.categories.${cat}`),
     count: categoryCounts[cat],
+    countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
   }));
 
   return (
@@ -83,7 +92,6 @@ export default async function LearnCategoryPage({ params }: Props) {
         selectedCategory={category as ArticleCategory}
         locale={locale}
         allLabel={t('learn.allCategories')}
-        countLabel={(count) => t('learn.articleCount', { count })}
       />
 
       <SectionTitle>{t('learn.categoryTitle', { category: categoryLabel })}</SectionTitle>

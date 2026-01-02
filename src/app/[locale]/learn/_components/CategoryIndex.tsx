@@ -7,6 +7,7 @@ type CategoryInfo = {
   category: ArticleCategory;
   label: string;
   count: number;
+  countLabel: string;
 };
 
 type Props = {
@@ -14,7 +15,6 @@ type Props = {
   selectedCategory?: ArticleCategory;
   locale: string;
   allLabel: string;
-  countLabel: (count: number) => string;
   variant?: 'tags' | 'cards';
 };
 
@@ -23,7 +23,6 @@ export function CategoryIndex({
   selectedCategory,
   locale,
   allLabel,
-  countLabel,
   variant = 'tags',
 }: Props) {
   if (variant === 'cards') {
@@ -43,7 +42,7 @@ export function CategoryIndex({
             <span className="font-medium text-foreground">{allLabel}</span>
           </div>
         </Link>
-        {categories.map(({ category, label, count }) => {
+        {categories.map(({ category, label, countLabel }) => {
           const style = CATEGORY_STYLES[category];
           const isSelected = selectedCategory === category;
           return (
@@ -60,7 +59,7 @@ export function CategoryIndex({
               <div className="flex flex-col items-center text-center gap-2">
                 <span className="text-2xl">{style.icon}</span>
                 <span className="font-medium text-foreground">{label}</span>
-                <span className="text-xs text-muted-foreground">{countLabel(count)}</span>
+                <span className="text-xs text-muted-foreground">{countLabel}</span>
               </div>
             </Link>
           );
