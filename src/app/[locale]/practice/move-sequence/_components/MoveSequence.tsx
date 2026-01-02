@@ -2,13 +2,22 @@
 
 import { useState } from 'react';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import type { MoveSequenceData, MoveSequencePhase, MoveSequenceSessionResult } from '../_lib/types';
 import { MoveSequenceMemorize } from './MoveSequenceMemorize';
 import { MoveSequenceRecall } from './MoveSequenceRecall';
 import { MoveSequenceResult } from './MoveSequenceResult';
 import { MoveSequenceSetup } from './MoveSequenceSetup';
 
-export default function MoveSequence() {
+type Props = {
+  locale: Locale;
+  urlFen: string | null;
+  urlPgn: string | null;
+  urlError: string | null;
+};
+
+export default function MoveSequence({ locale, urlFen, urlPgn, urlError }: Props) {
   const [phase, setPhase] = useState<MoveSequencePhase>('setup');
   const [data, setData] = useState<MoveSequenceData | null>(null);
   const [result, setResult] = useState<MoveSequenceSessionResult | null>(null);
@@ -41,7 +50,15 @@ export default function MoveSequence() {
 
   switch (phase) {
     case 'setup':
-      return <MoveSequenceSetup onStart={handleStart} />;
+      return (
+        <MoveSequenceSetup
+          locale={locale}
+          urlFen={urlFen}
+          urlPgn={urlPgn}
+          urlError={urlError}
+          onStart={handleStart}
+        />
+      );
 
     case 'memorize':
       if (!data) return null;

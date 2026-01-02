@@ -8,6 +8,7 @@ export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';
 export { PageDescription } from './PageDescription';
 export { PageTitle } from './PageTitle';
+export { PgnInput } from './PgnInput';
 export { PrimaryButton } from './PrimaryButton';
 export { SectionTitle } from './SectionTitle';
 export { SubsectionTitle } from './SubsectionTitle';

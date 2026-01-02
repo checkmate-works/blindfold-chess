@@ -20,11 +20,13 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import MoveSequence from './_components/MoveSequence';
+import { decodeMoveSequenceFromBase64, isQueryTooLong, validateFEN } from './_lib/share';
 
 type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,9 +40,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function MoveSequencePage({ params }: Props) {
+export default async function MoveSequencePage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const search = await searchParams;
   const t = await getTranslations({ locale });
+
+  // Parse query parameters for shared links
+  let urlError: string | null = null;
+  let urlFen: string | null = null;
+  let urlPgn: string | null = null;
+
+  const dataParam = search.data;
+
+  if (dataParam && typeof dataParam === 'string') {
+    // Check if query is too long
+    if (isQueryTooLong(dataParam)) {
+      urlError = 'url_too_long';
+    } else {
+      // Try to decode
+      const decoded = decodeMoveSequenceFromBase64(dataParam);
+
+      if (!decoded) {
+        urlError = 'invalid_data';
+      } else {
+        // Validate FEN
+        if (!validateFEN(decoded.fen)) {
+          urlError = 'invalid_fen';
+        } else {
+          urlFen = decoded.fen;
+          urlPgn = decoded.pgn;
+        }
+      }
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -48,7 +80,7 @@ export default async function MoveSequencePage({ params }: Props) {
 
       <PageDescription>{t('practice.moveSequence.description')}</PageDescription>
 
-      <MoveSequence />
+      <MoveSequence locale={locale} urlFen={urlFen} urlPgn={urlPgn} urlError={urlError} />
 
       <Divider />
 

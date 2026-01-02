@@ -10,12 +10,11 @@ import { Chess } from 'chess.js';
 
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { parsePgn, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { ColorSelector } from './ColorSelector';
-import { PgnInput } from './PgnInput';
 import { SkillLevelSelector } from './SkillLevelSelector';
 import { StartMethodSelector } from './StartMethodSelector';
 

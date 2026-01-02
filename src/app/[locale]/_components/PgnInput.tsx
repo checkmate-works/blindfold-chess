@@ -9,12 +9,28 @@ import { getPgnSuggestion, validatePgnWithDetails } from '@/app/[locale]/play/_l
 type Props = {
   value: string;
   onChange: (value: string) => void;
+  /** Custom placeholder text. If not provided, uses default from translations */
+  placeholder?: string;
+  /** Custom height class for textarea (e.g., 'h-40', 'h-32'). Defaults to 'h-40' */
+  heightClass?: string;
+  /**
+   * Whether to show real-time validation feedback.
+   * Set to false when PGN validation depends on external context (e.g., custom FEN).
+   * Defaults to true.
+   */
+  showValidation?: boolean;
 };
 
 const DEBOUNCE_DELAY = 1000;
 
-export function PgnInput({ value, onChange }: Props) {
-  const t = useTranslations('newGame');
+export function PgnInput({
+  value,
+  onChange,
+  placeholder,
+  heightClass = 'h-40',
+  showValidation = true,
+}: Props) {
+  const t = useTranslations('pgnInput');
   const [debouncedValue, setDebouncedValue] = useState(value);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isPasteRef = useRef(false);
@@ -58,9 +74,10 @@ export function PgnInput({ value, onChange }: Props) {
     };
   }, [value]);
 
-  const validationResult = debouncedValue.trim() ? validatePgnWithDetails(debouncedValue) : null;
-  const showSuccess = validationResult?.isValid && debouncedValue.trim();
-  const showError = validationResult && !validationResult.isValid;
+  const validationResult =
+    showValidation && debouncedValue.trim() ? validatePgnWithDetails(debouncedValue) : null;
+  const showSuccess = showValidation && validationResult?.isValid && debouncedValue.trim();
+  const showError = showValidation && validationResult && !validationResult.isValid;
 
   const handlePaste = () => {
     isPasteRef.current = true;
@@ -82,13 +99,15 @@ export function PgnInput({ value, onChange }: Props) {
     }
   };
 
+  const defaultPlaceholder = t('placeholder');
+
   return (
     <div className="space-y-3">
       <div className="relative">
         {/* Background layer for suggestion display */}
         <div className="relative">
           <div
-            className="absolute inset-0 px-4 py-3 font-mono text-base pointer-events-none whitespace-pre-wrap break-words overflow-hidden"
+            className={`absolute inset-0 px-4 py-3 font-mono text-base pointer-events-none whitespace-pre-wrap break-words overflow-hidden`}
             aria-hidden="true"
           >
             <span className="invisible">{value}</span>
@@ -102,14 +121,14 @@ export function PgnInput({ value, onChange }: Props) {
             onChange={(e) => onChange(e.target.value)}
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
-            placeholder={t('pgnPlaceholder')}
+            placeholder={placeholder || defaultPlaceholder}
             inputMode="text"
             spellCheck={false}
             autoComplete="off"
             autoCapitalize="none"
             autoCorrect="off"
             className={`
-              relative w-full h-40 px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-base resize-none
+              relative w-full ${heightClass} px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-base resize-none
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
               ${showError ? 'border-red-500' : 'border-border focus:border-foreground'}
             `}
@@ -143,21 +162,21 @@ export function PgnInput({ value, onChange }: Props) {
           onClick={applySuggestion}
           className="w-full px-4 py-2 text-sm font-medium text-foreground bg-muted/50 border border-border rounded-lg hover:bg-muted transition-colors"
         >
-          ✨ {t('completeSuggestion', { suggestion })}
+          {t('completeSuggestion', { suggestion })}
         </button>
       )}
 
       {/* Desktop hint */}
       {suggestion && !isMobile && (
-        <p className="text-xs text-muted-foreground">💡 {t('tabToComplete', { suggestion })}</p>
+        <p className="text-xs text-muted-foreground">{t('tabToComplete', { suggestion })}</p>
       )}
 
       {showSuccess && validationResult?.moveCount !== undefined && (
         <p className="text-sm text-muted-foreground">
-          ✓ {t('validWithMoves')} {validationResult.moveCount} {t('validWithMovesCount')}
+          {t('validWithMoves', { count: validationResult.moveCount })}
         </p>
       )}
-      {showError && <p className="text-sm text-red-600">✗ {t('invalidPgn')}</p>}
+      {showError && <p className="text-sm text-red-600">{t('invalidPgn')}</p>}
     </div>
   );
 }

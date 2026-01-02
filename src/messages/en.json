@@ -173,6 +173,13 @@
     "relatedTerms": "Related terms",
     "alphabeticalIndexTitle": "Alphabetical"
   },
+  "pgnInput": {
+    "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "completeSuggestion": "✨ Complete \"{suggestion}\"",
+    "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
+    "validWithMoves": "✓ Valid PGN with {count} moves",
+    "invalidPgn": "✗ Invalid PGN format"
+  },
   "error": {
     "title": "Something went wrong!",
     "description": "We apologize for the inconvenience. An error occurred while processing your request.",
@@ -532,7 +539,14 @@
       "moveDetails": "Move Details",
       "correct": "Correct",
       "attempts": "{count} attempts",
-      "backToSetup": "Back to Setup"
+      "backToSetup": "Back to Setup",
+      "copyShareLink": "Copy Share Link",
+      "linkCopied": "Link copied to clipboard",
+      "copyFailed": "Failed to copy link",
+      "urlTooLong": "URL is too long (must be under 1000 characters)",
+      "url_too_long": "Share URL is too long. Please reduce the PGN length.",
+      "invalid_data": "Invalid share URL",
+      "invalid_fen": "Contains invalid FEN format"
     }
   },
   "home": {

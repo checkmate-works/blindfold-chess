@@ -173,6 +173,13 @@
     "relatedTerms": "関連用語",
     "alphabeticalIndexTitle": "アルファベット順"
   },
+  "pgnInput": {
+    "placeholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "completeSuggestion": "✨ \"{suggestion}\" を補完",
+    "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
+    "validWithMoves": "✓ 有効なPGN（{count}手）",
+    "invalidPgn": "✗ 無効なPGN形式"
+  },
   "error": {
     "title": "エラーが発生しました",
     "description": "ご不便をおかけして申し訳ございません。リクエストの処理中にエラーが発生しました。",
@@ -532,7 +539,14 @@
       "moveDetails": "手順の詳細",
       "correct": "正解",
       "attempts": "{count}回試行",
-      "backToSetup": "設定に戻る"
+      "backToSetup": "設定に戻る",
+      "copyShareLink": "共有リンクをコピー",
+      "linkCopied": "リンクをクリップボードにコピーしました",
+      "copyFailed": "コピーに失敗しました",
+      "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
+      "url_too_long": "共有URLが長すぎます。PGNを短くしてください。",
+      "invalid_data": "無効な共有URLです",
+      "invalid_fen": "無効なFEN形式が含まれています"
     }
   },
   "home": {
