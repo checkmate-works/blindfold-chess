@@ -20,6 +20,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
     en: () => import('../_content/bishop-movement/en').then((m) => m.default),
     ja: () => import('../_content/bishop-movement/ja').then((m) => m.default),
   },
+  'board-symmetry': {
+    en: () => import('../_content/board-symmetry/en').then((m) => m.default),
+    ja: () => import('../_content/board-symmetry/ja').then((m) => m.default),
+  },
   'de-groot-experiment': {
     en: () => import('../_content/de-groot-experiment/en').then((m) => m.default),
     ja: () => import('../_content/de-groot-experiment/ja').then((m) => m.default),
@@ -67,6 +71,10 @@ const articleRegistry = {
   'bishop-movement': {
     en: () => import('../_content/bishop-movement/metadata.en'),
     ja: () => import('../_content/bishop-movement/metadata.ja'),
+  },
+  'board-symmetry': {
+    en: () => import('../_content/board-symmetry/metadata.en'),
+    ja: () => import('../_content/board-symmetry/metadata.ja'),
   },
   'de-groot-experiment': {
     en: () => import('../_content/de-groot-experiment/metadata.en'),
