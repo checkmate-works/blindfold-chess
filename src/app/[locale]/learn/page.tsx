@@ -52,7 +52,12 @@ export default async function LearnPage({ params }: Props) {
 
       <PageDescription>{t('learn.description')}</PageDescription>
 
-      <CategoryIndex categories={categoryInfos} locale={locale} />
+      <CategoryIndex
+        categories={categoryInfos}
+        locale={locale}
+        allLabel={t('learn.allCategories')}
+        countLabel={(count) => t('learn.articleCount', { count })}
+      />
 
       <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 

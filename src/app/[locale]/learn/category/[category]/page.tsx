@@ -82,6 +82,8 @@ export default async function LearnCategoryPage({ params }: Props) {
         categories={categoryInfos}
         selectedCategory={category as ArticleCategory}
         locale={locale}
+        allLabel={t('learn.allCategories')}
+        countLabel={(count) => t('learn.articleCount', { count })}
       />
 
       <SectionTitle>{t('learn.categoryTitle', { category: categoryLabel })}</SectionTitle>

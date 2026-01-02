@@ -17,11 +17,14 @@ import {
 } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { CategoryIndex } from '../_components';
 import { ARTICLE_ICONS, type ArticleSlug } from '../_lib/types';
 import {
   getArticle,
   getArticlesByCategory,
   getAvailableArticles,
+  getAvailableCategories,
+  getCategoryCounts,
   getPracticeModulesForArticle,
 } from '../_lib/utils';
 
@@ -78,6 +81,15 @@ export default async function LearnArticlePage({ params }: Props) {
     ? (await getArticlesByCategory(category, locale)).filter((a) => a.slug !== slug)
     : [];
 
+  // Get category data for CategoryIndex
+  const categoryCounts = await getCategoryCounts(locale);
+  const availableCategories = getAvailableCategories();
+  const categoryInfos = availableCategories.map((cat) => ({
+    category: cat,
+    label: t(`learn.categories.${cat}`),
+    count: categoryCounts[cat],
+  }));
+
   return (
     <div className="space-y-8">
       <PageTitle>{article.metadata.title}</PageTitle>
@@ -128,6 +140,18 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
       )}
+
+      <div className="space-y-4">
+        <Divider />
+        <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
+        <CategoryIndex
+          categories={categoryInfos}
+          selectedCategory={category}
+          locale={locale}
+          allLabel={t('learn.allCategories')}
+          countLabel={(count) => t('learn.articleCount', { count })}
+        />
+      </div>
 
       <Divider />
 

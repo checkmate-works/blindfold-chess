@@ -195,7 +195,9 @@
     "relatedLearning": "Learn More",
     "articlesTitle": "Articles",
     "relatedArticles": "Related Articles",
+    "browseByCategory": "Browse by Category",
     "allCategories": "All",
+    "articleCount": "{count, plural, one {# article} other {# articles}}",
     "categories": {
       "piece-movement": "Piece Movement",
       "coordinates": "Coordinates",
