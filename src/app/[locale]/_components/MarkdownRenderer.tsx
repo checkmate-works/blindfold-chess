@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { PageTitle } from './PageTitle';
@@ -14,7 +15,7 @@ type Props = {
 export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkMath]}
+      remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeKatex]}
       components={{
         h1: ({ children, node }) => {
@@ -73,6 +74,22 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         img: ({ src, alt }) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt={alt} className="rounded-lg shadow-md max-w-full mx-auto block my-8" />
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-6">
+            <table className="min-w-full border-collapse border border-border">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => <thead className="bg-secondary">{children}</thead>,
+        tbody: ({ children }) => <tbody>{children}</tbody>,
+        tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
+        th: ({ children }) => (
+          <th className="px-4 py-2 text-left font-semibold text-foreground border border-border">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-4 py-2 text-foreground/90 border border-border">{children}</td>
         ),
       }}
     >

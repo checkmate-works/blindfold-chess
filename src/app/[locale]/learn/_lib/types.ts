@@ -20,6 +20,7 @@ export type Article = {
 export const ARTICLE_SLUGS = {
   ALGEBRAIC_NOTATION: 'algebraic-notation',
   BISHOP_MOVEMENT: 'bishop-movement',
+  DE_GROOT_EXPERIMENT: 'de-groot-experiment',
   FEN_NOTATION: 'fen-notation',
   KING_MOVEMENT: 'king-movement',
   KNIGHT_MOVEMENT: 'knight-movement',
@@ -34,6 +35,7 @@ export type ArticleSlug = (typeof ARTICLE_SLUGS)[keyof typeof ARTICLE_SLUGS];
 export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
   [ARTICLE_SLUGS.ALGEBRAIC_NOTATION]: '🔤',
   [ARTICLE_SLUGS.BISHOP_MOVEMENT]: '♗',
+  [ARTICLE_SLUGS.DE_GROOT_EXPERIMENT]: '🔬',
   [ARTICLE_SLUGS.FEN_NOTATION]: '📝',
   [ARTICLE_SLUGS.KING_MOVEMENT]: '♔',
   [ARTICLE_SLUGS.KNIGHT_MOVEMENT]: '♘',
@@ -52,6 +54,7 @@ export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
 export const ARTICLE_PRACTICE_MAPPING: Partial<Record<ArticleSlug, PracticeModuleId[]>> = {
   'algebraic-notation': ['algebraic-notation', 'coordinate-quiz'],
   'bishop-movement': ['legal-moves'],
+  'de-groot-experiment': ['position-memory'],
   'fen-notation': ['fen', 'position-memory'],
   'king-movement': ['legal-moves'],
   'knight-movement': ['legal-moves'],
