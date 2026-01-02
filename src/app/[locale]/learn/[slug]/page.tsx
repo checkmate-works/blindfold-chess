@@ -150,6 +150,7 @@ export default async function LearnArticlePage({ params }: Props) {
           locale={locale}
           allLabel={t('learn.allCategories')}
           countLabel={(count) => t('learn.articleCount', { count })}
+          variant="cards"
         />
       </div>
 
