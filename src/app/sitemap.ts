@@ -3,6 +3,7 @@ import { MetadataRoute } from 'next';
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 import { chessTerms } from './[locale]/glossary/_data/chess-terms';
+import { ARTICLE_CATEGORIES } from './[locale]/learn/_lib/types';
 import { getAllArticles } from './[locale]/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/manual/_lib/utils';
 
@@ -62,6 +63,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     } catch (error) {
       console.error(`Error fetching learn articles for locale ${locale}:`, error);
+    }
+  }
+
+  // Dynamic pages - Learn category pages
+  const learnCategories = Object.values(ARTICLE_CATEGORIES);
+  for (const locale of SUPPORTED_LOCALES) {
+    for (const category of learnCategories) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}/learn/category/${category}`,
+      });
     }
   }
 
