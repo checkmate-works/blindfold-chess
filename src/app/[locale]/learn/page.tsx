@@ -12,8 +12,9 @@ import {
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
+import { CategoryIndex } from './_components';
 import { ARTICLE_ICONS, type ArticleSlug } from './_lib/types';
-import { getAllArticles } from './_lib/utils';
+import { getAllArticles, getAvailableCategories, getCategoryCounts } from './_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -36,12 +37,22 @@ export default async function LearnPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
   const articles = await getAllArticles(locale);
+  const categoryCounts = await getCategoryCounts(locale);
+  const availableCategories = getAvailableCategories();
+
+  const categoryInfos = availableCategories.map((cat) => ({
+    category: cat,
+    label: t(`learn.categories.${cat}`),
+    count: categoryCounts[cat],
+  }));
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('learn.title')}</PageTitle>
 
       <PageDescription>{t('learn.description')}</PageDescription>
+
+      <CategoryIndex categories={categoryInfos} locale={locale} />
 
       <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 

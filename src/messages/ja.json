@@ -193,7 +193,16 @@
     "description": "チェスの理解を深めるための教育記事とガイド",
     "practiceYourSkills": "関連する練習メニュー",
     "relatedLearning": "学習する",
-    "articlesTitle": "記事一覧"
+    "articlesTitle": "記事一覧",
+    "allCategories": "すべて",
+    "categories": {
+      "piece-movement": "駒の動き",
+      "coordinates": "座標",
+      "notation": "記法",
+      "memory": "記憶",
+      "practice": "練習"
+    },
+    "categoryTitle": "{category}の記事"
   },
   "practice": {
     "title": "練習",

@@ -3,10 +3,55 @@
  */
 import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 
+/**
+ * Article categories for filtering
+ */
+export const ARTICLE_CATEGORIES = {
+  PIECE_MOVEMENT: 'piece-movement',
+  COORDINATES: 'coordinates',
+  NOTATION: 'notation',
+  MEMORY: 'memory',
+  PRACTICE: 'practice',
+} as const;
+
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[keyof typeof ARTICLE_CATEGORIES];
+
+export const CATEGORY_STYLES: Record<
+  ArticleCategory,
+  { icon: string; color: string; bgColor: string }
+> = {
+  [ARTICLE_CATEGORIES.PIECE_MOVEMENT]: {
+    icon: '♟',
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+  },
+  [ARTICLE_CATEGORIES.COORDINATES]: {
+    icon: '🎯',
+    color: 'text-green-600 dark:text-green-400',
+    bgColor: 'bg-green-100 dark:bg-green-900/30',
+  },
+  [ARTICLE_CATEGORIES.NOTATION]: {
+    icon: '📝',
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+  },
+  [ARTICLE_CATEGORIES.MEMORY]: {
+    icon: '🧠',
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-100 dark:bg-orange-900/30',
+  },
+  [ARTICLE_CATEGORIES.PRACTICE]: {
+    icon: '🏋️',
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-100 dark:bg-red-900/30',
+  },
+};
+
 export type ArticleMetadata = {
   title: string;
   slug: string;
   tags: readonly string[];
+  category?: ArticleCategory;
   publishedAt: string;
   excerpt: string;
   order?: number;

@@ -4,8 +4,8 @@
 import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { Article, ArticleMetadata, ArticleSlug } from './types';
-import { ARTICLE_ICONS, ARTICLE_PRACTICE_MAPPING } from './types';
+import type { Article, ArticleCategory, ArticleMetadata, ArticleSlug } from './types';
+import { ARTICLE_CATEGORIES, ARTICLE_ICONS, ARTICLE_PRACTICE_MAPPING } from './types';
 
 const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
   'algebraic-notation': {
@@ -208,4 +208,50 @@ export function getPracticeModulesForArticle(
   articleSlug: ArticleSlug
 ): PracticeModuleId[] | undefined {
   return ARTICLE_PRACTICE_MAPPING[articleSlug];
+}
+
+/**
+ * Get all available categories
+ * @returns Array of category strings
+ */
+export function getAvailableCategories(): ArticleCategory[] {
+  return Object.values(ARTICLE_CATEGORIES);
+}
+
+/**
+ * Get articles filtered by category
+ * @param category - The category to filter by
+ * @param locale - Locale
+ * @returns Array of article metadata matching the category
+ */
+export async function getArticlesByCategory(
+  category: ArticleCategory,
+  locale: Locale
+): Promise<ArticleMetadata[]> {
+  const allArticles = await getAllArticles(locale);
+  return allArticles.filter((article) => article.category === category);
+}
+
+/**
+ * Get count of articles per category
+ * @param locale - Locale
+ * @returns Record of category to count
+ */
+export async function getCategoryCounts(locale: Locale): Promise<Record<ArticleCategory, number>> {
+  const allArticles = await getAllArticles(locale);
+  const counts = {} as Record<ArticleCategory, number>;
+
+  // Initialize all categories with 0
+  for (const category of Object.values(ARTICLE_CATEGORIES)) {
+    counts[category] = 0;
+  }
+
+  // Count articles per category
+  for (const article of allArticles) {
+    if (article.category) {
+      counts[article.category]++;
+    }
+  }
+
+  return counts;
 }

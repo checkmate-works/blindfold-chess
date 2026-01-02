@@ -1,0 +1,1 @@
+export { CategoryIndex } from './CategoryIndex';

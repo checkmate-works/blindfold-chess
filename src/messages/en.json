@@ -193,7 +193,16 @@
     "description": "Educational articles and guides to improve your chess understanding",
     "practiceYourSkills": "Related Practice",
     "relatedLearning": "Learn More",
-    "articlesTitle": "Articles"
+    "articlesTitle": "Articles",
+    "allCategories": "All",
+    "categories": {
+      "piece-movement": "Piece Movement",
+      "coordinates": "Coordinates",
+      "notation": "Notation",
+      "memory": "Memory",
+      "practice": "Practice"
+    },
+    "categoryTitle": "{category} Articles"
   },
   "practice": {
     "title": "Practice",
