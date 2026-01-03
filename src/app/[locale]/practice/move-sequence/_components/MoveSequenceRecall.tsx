@@ -33,11 +33,14 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [results, setResults] = useState<RecallResult[]>([]);
-  const [currentAttempts, setCurrentAttempts] = useState(1);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [completedMoves, setCompletedMoves] = useState<AlgebraicNotation[]>([]);
 
   const chessRef = useRef<Chess | null>(null);
+  // Track attempts per move index using a Map (synchronous access)
+  const attemptsMapRef = useRef<Map<number, number>>(new Map());
+  // Track wrong attempts per move index using a Map
+  const wrongAttemptsMapRef = useRef<Map<number, AlgebraicNotation[]>>(new Map());
 
   // Determine which moves the user needs to input
   const targetMoveIndices = useMemo(() => {
@@ -129,36 +132,70 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
         const isCorrect = normalizedInput === normalizedExpected;
 
         if (isCorrect) {
-          // Correct move
+          // Get current attempts for this move (synchronous read from ref)
+          const attemptCount = attemptsMapRef.current.get(currentMoveIndex) ?? 1;
+          // Correct move - only count as "correct" if first attempt
+          const isFirstTryCorrect = attemptCount === 1;
+          // Get wrong attempts for this specific move index
+          const wrongAttemptsForThisMove = wrongAttemptsMapRef.current.get(currentMoveIndex) ?? [];
           setResults((prev) => [
             ...prev,
             {
               expectedMove: expectedMove,
               userMove: normalizedInput as AlgebraicNotation,
-              isCorrect: true,
-              attempts: currentAttempts,
+              isCorrect: isFirstTryCorrect,
+              attempts: attemptCount,
+              wrongAttempts: [...wrongAttemptsForThisMove],
             },
           ]);
           setCurrentFen(chessRef.current.fen());
           setLastMove({ from: result.from, to: result.to });
           setCompletedMoves((prev) => [...prev, normalizedInput as AlgebraicNotation]);
+          // Clean up refs for this move
+          attemptsMapRef.current.delete(currentMoveIndex);
+          wrongAttemptsMapRef.current.delete(currentMoveIndex);
           setCurrentMoveIndex((prev) => prev + 1);
           setMoveInput('');
-          setCurrentAttempts(1);
         } else {
           // Valid move but not the expected one
           // Undo the move
           chessRef.current.undo();
           setError(t('wrongMove', { move: normalizedInput }));
-          setCurrentAttempts((prev) => prev + 1);
+          // Increment attempts in ref (synchronous)
+          const currentCount = attemptsMapRef.current.get(currentMoveIndex) ?? 1;
+          attemptsMapRef.current.set(currentMoveIndex, currentCount + 1);
+          // Add wrong attempt to the Map for current move index
+          const existing = wrongAttemptsMapRef.current.get(currentMoveIndex) ?? [];
+          wrongAttemptsMapRef.current.set(currentMoveIndex, [
+            ...existing,
+            normalizedInput as AlgebraicNotation,
+          ]);
           setMoveInput('');
         }
       } else {
+        // Invalid move (not a legal chess move)
         setError(t('invalidMove'));
+        // Still count as a wrong attempt
+        const currentCount = attemptsMapRef.current.get(currentMoveIndex) ?? 1;
+        attemptsMapRef.current.set(currentMoveIndex, currentCount + 1);
+        const existing = wrongAttemptsMapRef.current.get(currentMoveIndex) ?? [];
+        wrongAttemptsMapRef.current.set(currentMoveIndex, [
+          ...existing,
+          normalizedInput as AlgebraicNotation,
+        ]);
         setMoveInput('');
       }
     } catch {
+      // Exception during move (also invalid)
       setError(t('invalidMove'));
+      // Still count as a wrong attempt
+      const currentCount = attemptsMapRef.current.get(currentMoveIndex) ?? 1;
+      attemptsMapRef.current.set(currentMoveIndex, currentCount + 1);
+      const existing = wrongAttemptsMapRef.current.get(currentMoveIndex) ?? [];
+      wrongAttemptsMapRef.current.set(currentMoveIndex, [
+        ...existing,
+        normalizedInput as AlgebraicNotation,
+      ]);
       setMoveInput('');
     }
   };

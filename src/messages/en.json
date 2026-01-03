@@ -550,7 +550,11 @@
       "urlTooLong": "URL is too long (must be under 1000 characters)",
       "url_too_long": "Share URL is too long. Please reduce the PGN length.",
       "invalid_data": "Invalid share URL",
-      "invalid_fen": "Contains invalid FEN format"
+      "invalid_fen": "Contains invalid FEN format",
+      "session": "Session",
+      "replay": "Replay",
+      "clickMoveToJump": "Click a move to jump to that position",
+      "wrongAttempts": "Wrong attempts"
     }
   },
   "home": {

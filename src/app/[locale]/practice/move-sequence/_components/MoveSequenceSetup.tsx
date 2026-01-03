@@ -3,17 +3,17 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { FaLink } from 'react-icons/fa';
+import { FaLink, FaPlay } from 'react-icons/fa';
 
 import { PgnInput } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { parseMoveSequence } from '../_lib/pgn-parser';
-import { generateShareUrl } from '../_lib/share';
+import { encodeMoveSequenceToBase64, generateShareUrl } from '../_lib/share';
 import { loadSettings, saveSettings } from '../_lib/storage';
-import type { MoveSequenceData } from '../_lib/types';
 
 type CopyStatus = 'idle' | 'success' | 'error' | 'too_long';
 
@@ -22,11 +22,11 @@ type Props = {
   urlFen: string | null;
   urlPgn: string | null;
   urlError: string | null;
-  onStart: (data: MoveSequenceData) => void;
 };
 
-export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }: Props) {
+export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const t = useTranslations('practice.moveSequence');
+  const router = useRouter();
 
   const [fen, setFen] = useState('');
   const [pgn, setPgn] = useState('');
@@ -94,10 +94,19 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
       return;
     }
 
-    onStart({
-      ...result.data,
-      includeOpponentMoves,
-    });
+    // Save settings before navigating
+    saveSettings({ fen: fen.trim(), pgn: pgn.trim(), includeOpponentMoves });
+
+    // Build URL params
+    const params = new URLSearchParams();
+    const encoded = encodeMoveSequenceToBase64(fen.trim(), pgn.trim());
+    params.set('data', encoded);
+    if (includeOpponentMoves) {
+      params.set('includeOpponentMoves', '1');
+    }
+
+    // Navigate to session page
+    router.push(`/${locale}/practice/move-sequence/session?${params.toString()}`);
   };
 
   const handleFenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,7 +235,13 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError, onStart }:
           )}
 
           {/* Start Button */}
-          <Button onClick={handleStart} variant="primary" size="lg" className="w-full">
+          <Button
+            onClick={handleStart}
+            variant="primary"
+            size="lg"
+            className="w-full"
+            icon={<FaPlay />}
+          >
             {t('start')}
           </Button>
         </div>

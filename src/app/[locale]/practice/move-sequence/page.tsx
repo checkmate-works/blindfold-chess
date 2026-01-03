@@ -19,7 +19,7 @@ import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import MoveSequence from './_components/MoveSequence';
+import { MoveSequenceSetup } from './_components/MoveSequenceSetup';
 import { decodeMoveSequenceFromBase64, isQueryTooLong, validateFEN } from './_lib/share';
 
 type Props = {
@@ -80,7 +80,7 @@ export default async function MoveSequencePage({ params, searchParams }: Props) 
 
       <PageDescription>{t('practice.moveSequence.description')}</PageDescription>
 
-      <MoveSequence locale={locale} urlFen={urlFen} urlPgn={urlPgn} urlError={urlError} />
+      <MoveSequenceSetup locale={locale} urlFen={urlFen} urlPgn={urlPgn} urlError={urlError} />
 
       <Divider />
 

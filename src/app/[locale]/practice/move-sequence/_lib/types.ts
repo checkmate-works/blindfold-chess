@@ -29,6 +29,7 @@ export type RecallResult = {
   userMove: AlgebraicNotation | null;
   isCorrect: boolean;
   attempts: number;
+  wrongAttempts: AlgebraicNotation[];
 };
 
 export type MoveSequenceSessionResult = {

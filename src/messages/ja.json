@@ -550,7 +550,11 @@
       "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
       "url_too_long": "共有URLが長すぎます。PGNを短くしてください。",
       "invalid_data": "無効な共有URLです",
-      "invalid_fen": "無効なFEN形式が含まれています"
+      "invalid_fen": "無効なFEN形式が含まれています",
+      "session": "練習中",
+      "replay": "再生",
+      "clickMoveToJump": "クリックで局面を表示",
+      "wrongAttempts": "間違い入力"
     }
   },
   "home": {

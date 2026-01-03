@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
-import { FaPlay } from 'react-icons/fa';
+import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
@@ -30,6 +30,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
+  const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const chessRef = useRef<Chess | null>(null);
@@ -39,40 +40,44 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
     chessRef.current = new Chess(data.fen);
   }, [data.fen]);
 
-  // Play moves one by one
-  const playNextMove = useCallback(() => {
-    if (!chessRef.current) return;
+  // Play moves one by one (optionally from a specific index for replay)
+  const playNextMove = useCallback(
+    (fromIndex?: number) => {
+      if (!chessRef.current) return;
 
-    const nextIndex = currentMoveIndex + 1;
+      const nextIndex = fromIndex !== undefined ? fromIndex : currentMoveIndex + 1;
 
-    if (nextIndex >= data.moves.length) {
-      // All moves played
-      setIsPlaying(false);
-      setHasPlayed(true);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      if (nextIndex >= data.moves.length) {
+        // All moves played
+        setIsPlaying(false);
+        setHasPlayed(true);
+        setSelectedMoveIndex(data.moves.length - 1);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        return;
       }
-      return;
-    }
 
-    const move = data.moves[nextIndex];
-    try {
-      const result = chessRef.current.move(move);
-      if (result) {
-        setCurrentFen(chessRef.current.fen());
-        setCurrentMoveIndex(nextIndex);
-        setLastMove({ from: result.from, to: result.to });
+      const move = data.moves[nextIndex];
+      try {
+        const result = chessRef.current.move(move);
+        if (result) {
+          setCurrentFen(chessRef.current.fen());
+          setCurrentMoveIndex(nextIndex);
+          setLastMove({ from: result.from, to: result.to });
+        }
+      } catch (error) {
+        console.error('Error playing move:', error);
+        setIsPlaying(false);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       }
-    } catch (error) {
-      console.error('Error playing move:', error);
-      setIsPlaying(false);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    }
-  }, [currentMoveIndex, data.moves]);
+    },
+    [currentMoveIndex, data.moves]
+  );
 
   // Handle play button click
   const handlePlay = () => {
@@ -84,11 +89,40 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
     setCurrentMoveIndex(-1);
     setLastMove(null);
     setIsPlaying(true);
+    setSelectedMoveIndex(null);
 
-    // Play first move immediately, then set interval
+    // Play first move immediately (pass 0 explicitly for replay)
     setTimeout(() => {
-      playNextMove();
+      playNextMove(0);
     }, 500);
+  };
+
+  // Jump to a specific move position
+  const jumpToMove = (targetIndex: number) => {
+    if (isPlaying) return;
+
+    // Reset chess instance and replay moves up to target
+    const chess = new Chess(data.fen);
+    let lastMoveResult: { from: string; to: string } | null = null;
+
+    for (let i = 0; i <= targetIndex; i++) {
+      try {
+        const result = chess.move(data.moves[i]);
+        if (result) {
+          lastMoveResult = { from: result.from, to: result.to };
+        }
+      } catch (error) {
+        console.error('Error replaying move:', error);
+        return;
+      }
+    }
+
+    chessRef.current = chess;
+    setCurrentFen(chess.fen());
+    setCurrentMoveIndex(targetIndex);
+    setSelectedMoveIndex(targetIndex);
+    setLastMove(lastMoveResult);
+    setHasPlayed(true);
   };
 
   // Continue playing moves at interval
@@ -114,22 +148,50 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
     };
   }, []);
 
-  // Format move display
-  const formatMoveDisplay = (moves: AlgebraicNotation[], currentIndex: number) => {
-    const displayMoves: string[] = [];
-    for (let i = 0; i <= currentIndex && i < moves.length; i++) {
+  const flipped = data.playerColor === 'b';
+
+  // Render clickable move list
+  const renderMoveList = () => {
+    const elements: React.ReactNode[] = [];
+
+    for (let i = 0; i < data.moves.length; i++) {
       const moveNum = Math.floor(i / 2) + 1;
       const isWhite = i % 2 === 0;
-      if (isWhite) {
-        displayMoves.push(`${moveNum}. ${moves[i]}`);
-      } else {
-        displayMoves[displayMoves.length - 1] += ` ${moves[i]}`;
-      }
-    }
-    return displayMoves.join(' ');
-  };
+      const isPlayed = i <= currentMoveIndex;
+      const isSelected = i === selectedMoveIndex;
 
-  const flipped = data.playerColor === 'b';
+      if (isWhite) {
+        // Add move number before white's move
+        elements.push(
+          <span key={`num-${moveNum}`} className="text-muted-foreground mr-1">
+            {moveNum}.
+          </span>
+        );
+      }
+
+      elements.push(
+        <button
+          key={`move-${i}`}
+          onClick={() => jumpToMove(i)}
+          disabled={isPlaying || !hasPlayed}
+          className={`font-mono text-sm px-1 rounded transition-colors ${
+            isSelected
+              ? 'bg-primary text-primary-foreground'
+              : isPlayed
+                ? 'text-foreground hover:bg-muted cursor-pointer'
+                : 'text-muted-foreground'
+          } ${!isPlaying && hasPlayed ? 'hover:bg-muted' : ''} disabled:cursor-default`}
+        >
+          {data.moves[i]}
+        </button>
+      );
+
+      // Add space after each move
+      elements.push(<span key={`space-${i}`}> </span>);
+    }
+
+    return elements;
+  };
 
   return (
     <div className="space-y-4">
@@ -145,7 +207,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
               lastMove={preferences.highlightLastMove ? lastMove : null}
             />
 
-            {/* Play button overlay */}
+            {/* Play button overlay - show when not playing */}
             {!isPlaying && !hasPlayed && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
@@ -153,7 +215,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
                   className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110"
                   aria-label={t('play')}
                 >
-                  <FaPlay className="w-12 h-12" />
+                  <FaPlay className="w-12 h-12 ml-1" />
                 </button>
               </div>
             )}
@@ -163,12 +225,25 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
 
       {/* Move display */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('moves')}</h3>
-        <p className="font-mono text-sm min-h-[2rem]">
-          {currentMoveIndex >= 0
-            ? formatMoveDisplay(data.moves, currentMoveIndex)
-            : t('pressPlayToStart')}
-        </p>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-medium text-muted-foreground">{t('moves')}</h3>
+          {hasPlayed && !isPlaying && (
+            <button
+              onClick={handlePlay}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={t('replay')}
+            >
+              <FaRedo className="w-3 h-3" />
+              <span>{t('replay')}</span>
+            </button>
+          )}
+        </div>
+        <div className="font-mono text-sm min-h-[2rem] flex flex-wrap items-center">
+          {hasPlayed || currentMoveIndex >= 0 ? renderMoveList() : t('pressPlayToStart')}
+        </div>
+        {hasPlayed && !isPlaying && (
+          <p className="text-xs text-muted-foreground mt-2">{t('clickMoveToJump')}</p>
+        )}
       </div>
 
       {/* Progress */}
@@ -181,7 +256,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
       )}
 
       {/* Continue button */}
-      {hasPlayed && (
+      {hasPlayed && !isPlaying && (
         <Button onClick={onComplete} variant="primary" size="lg" className="w-full">
           {t('startRecall')}
         </Button>

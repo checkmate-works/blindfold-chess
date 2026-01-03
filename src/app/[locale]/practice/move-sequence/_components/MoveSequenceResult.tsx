@@ -61,25 +61,35 @@ export function MoveSequenceResult({ result, onTryAgain, onBackToSetup }: Props)
         <div className="bg-card rounded-xl shadow-sm border border-border p-4">
           <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('moveDetails')}</h3>
           <div className="space-y-2">
-            {result.results.map((r, index) => (
-              <div
-                key={index}
-                className={`flex items-center justify-between p-2 rounded ${
-                  r.isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'
-                }`}
-              >
-                <span className="font-mono text-sm">
-                  {index + 1}. {r.expectedMove}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {r.isCorrect ? (
-                    <span className="text-green-600">{t('correct')}</span>
-                  ) : (
-                    <span className="text-red-600">{t('attempts', { count: r.attempts })}</span>
+            {result.results.map((r, index) => {
+              const bgColor = r.isCorrect ? 'bg-green-500/10' : 'bg-yellow-500/10';
+
+              return (
+                <div key={index} className={`p-3 rounded ${bgColor}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-sm font-medium">
+                      {index + 1}. {r.expectedMove}
+                    </span>
+                    <span className="text-xs">
+                      {r.isCorrect ? (
+                        <span className="text-green-600 dark:text-green-400">{t('correct')}</span>
+                      ) : (
+                        <span className="text-yellow-600 dark:text-yellow-400">
+                          {t('attempts', { count: r.attempts })}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  {r.wrongAttempts && r.wrongAttempts.length > 0 && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <span className="text-red-500 dark:text-red-400">
+                        {t('wrongAttempts')}: {r.wrongAttempts.join(', ')}
+                      </span>
+                    </div>
                   )}
-                </span>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
