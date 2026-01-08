@@ -1,8 +1,14 @@
 'use client';
-
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
-export function EmptyGameList() {
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+type Props = {
+  locale: Locale;
+};
+
+export function EmptyGameList({ locale }: Props) {
   const t = useTranslations('home.gameList');
 
   return (
@@ -13,6 +19,18 @@ export function EmptyGameList() {
             <span className="text-2xl">♔</span>
           </div>
           <h3 className="text-xl font-semibold text-foreground mb-2">{t('noGames')}</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {t.rich('startGuidance', {
+              link: (chunks) => (
+                <Link
+                  href={`/${locale}/game/new`}
+                  className="text-primary font-medium hover:underline focus-visible:underline focus:outline-none"
+                >
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
         </div>
       </div>
     </div>

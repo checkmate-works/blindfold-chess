@@ -567,7 +567,8 @@
       "loss": "Loss",
       "draw": "Draw",
       "inProgress": "In Progress",
-      "bulkDelete": "Bulk Delete"
+      "bulkDelete": "Bulk Delete",
+      "startGuidance": "You can start a blindfold chess game against AI from <link>here</link>."
     },
     "sortBy": "Sort by",
     "lastPlayedDesc": "Last played ↓",

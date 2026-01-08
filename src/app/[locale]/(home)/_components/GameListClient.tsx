@@ -78,7 +78,7 @@ export function GameListClient({ locale }: Props) {
       {isLoading ? (
         <GameListSkeleton />
       ) : games.length === 0 ? (
-        <EmptyGameList />
+        <EmptyGameList locale={locale} />
       ) : (
         <>
           <GameList games={games} locale={locale} onDeleteGame={handleDeleteGame} />

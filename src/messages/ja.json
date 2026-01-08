@@ -567,7 +567,8 @@
       "loss": "敗北",
       "draw": "引き分け",
       "inProgress": "進行中",
-      "bulkDelete": "一括削除"
+      "bulkDelete": "一括削除",
+      "startGuidance": "AIとの目隠しチェス対局は<link>ここ</link>から開始できます。"
     },
     "sortBy": "並び替え",
     "lastPlayedDesc": "最終プレイ ↓",
