@@ -4,6 +4,8 @@ import { SITE_DOMAIN, SITE_NAME } from '@/config';
 import { FaBrain, FaChessKnight, FaGraduationCap, FaRobot } from 'react-icons/fa';
 
 import { LanguageButton } from './_components/LanguageButton';
+import { SmartCtaButton } from './_components/SmartCtaButton';
+import { SmartLink } from './_components/SmartLink';
 
 // Language configuration
 type LanguageOption = {
@@ -94,6 +96,9 @@ export default function RootPage() {
               定番のチェスエンジン Stockfish と目隠しチェスで対戦できます。
             </span>
           </p>
+          <div className="pt-4 flex justify-center">
+            <SmartCtaButton href="/game/new" label="Play Now" />
+          </div>
         </div>
       </section>
 
@@ -104,16 +109,19 @@ export default function RootPage() {
             <h2 className="text-3xl md:text-4xl font-bold">Extensive Training Modes</h2>
             <h3 className="text-xl text-muted-foreground">目隠しチェスのトレーニングが満載</h3>
           </div>
+          <div className="flex justify-center mb-8">
+            <SmartCtaButton href="/practice" label="View All Trainings" variant="outline" />
+          </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Position Memory */}
-            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm">
+            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mb-6">
                 <FaBrain />
               </div>
               <h4 className="text-xl font-bold mb-1">Position Memory</h4>
               <h5 className="text-sm text-muted-foreground mb-4">ポジションの記憶</h5>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground flex-grow">
                 Practice memorizing board positions and recreating them on an empty board. Develops
                 crucial pattern recognition skills for blindfold chess.
                 <br />
@@ -121,16 +129,23 @@ export default function RootPage() {
                   盤面を記憶して、空のボード上に再現する練習メニューがあります。目隠しチェスをする上で重要となるパターン認識能力を養うことができます。
                 </span>
               </p>
+              <div className="mt-8 flex justify-center">
+                <SmartCtaButton
+                  href="/practice/position-memory"
+                  label="Try Practice"
+                  variant="secondary"
+                />
+              </div>
             </div>
 
             {/* Knight's Tour */}
-            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm">
+            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-2xl mb-6">
                 <FaChessKnight />
               </div>
               <h4 className="text-xl font-bold mb-1">Knight's Tour</h4>
               <h5 className="text-sm text-muted-foreground mb-4">ナイトツアー</h5>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground flex-grow">
                 Knight's Tour is a classic puzzle where you visit every square on the board exactly
                 once. Use it to train your board visualization.
                 <br />
@@ -138,6 +153,13 @@ export default function RootPage() {
                   ナイトツアーはナイトを使って盤上の全てのマスを一度ずつ訪れる古典的なパズルです。目隠しチェスのトレーニングとして活用できます。
                 </span>
               </p>
+              <div className="mt-8 flex justify-center">
+                <SmartCtaButton
+                  href="/practice/knight-tour"
+                  label="Try Puzzle"
+                  variant="secondary"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -157,12 +179,28 @@ export default function RootPage() {
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Gain insights into blindfold chess, including introduction to famous research results
-            like the de Groot experiment.
+            like the{' '}
+            <SmartLink
+              href="/learn/de-groot-experiment"
+              className="text-muted-foreground underline hover:text-foreground"
+            >
+              de Groot experiment
+            </SmartLink>
+            .
             <br />
             <span className="text-sm opacity-80 mt-2 block">
-              有名なデ・グロートのチェスに関する実験結果の紹介など、目隠しチェスのヒントとなる知識が収集できます。
+              <SmartLink
+                href="/learn/de-groot-experiment"
+                className="text-muted-foreground underline hover:text-foreground"
+              >
+                有名なデ・グロートのチェスに関する実験結果の紹介
+              </SmartLink>
+              など、目隠しチェスのヒントとなる知識が収集できます。
             </span>
           </p>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
+            <SmartCtaButton href="/learn" label="Read All Articles" />
+          </div>
         </div>
       </section>
 
