@@ -33,6 +33,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 When deploying to Vercel, you must configure the **Root Directory** in the project settings.
 
 - **Root Directory**: `apps/web`
+- **Include files outside of the root directory in the build step**: **Yes** (Check this option)
+- **Install Command**: `cd ../.. && pnpm install` (Override default)
 - **Build Command**: `next build` (default) or `cd apps/web && pnpm build`
 - **Output Directory**: `.next` (default)
 
