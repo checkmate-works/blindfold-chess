@@ -18,8 +18,8 @@ This repository is a Monorepo managed by [Turborepo](https://turbo.build/).
 - pnpm 10.x
 
 > [!TIP]
-> This project uses [Volta](https://volta.sh/) to pin Node.js and pnpm versions.
-> If you have Volta installed, it will automatically switch to the correct versions defined in `package.json`.
+> This project uses [Volta](https://volta.sh/) to pin the Node.js version.
+> If you have Volta installed, it will automatically switch to the correct Node.js version defined in `package.json`.
 >
 > To pin versions (updates package.json):
 > ```bash
