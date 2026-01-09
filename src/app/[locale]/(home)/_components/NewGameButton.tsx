@@ -12,10 +12,10 @@ export async function NewGameButton({ locale }: { locale: Locale }) {
   return (
     <Link href={`/${locale}/game/new`} className="w-full">
       <Button
-        variant="secondary"
+        variant="primary"
         size="lg"
         icon={<FaPlus className="w-5 h-5" />}
-        className="w-full py-4 rounded-xl font-medium touch-manipulation bg-card hover:bg-background dark:hover:bg-muted"
+        className="w-full py-4 rounded-xl font-medium touch-manipulation"
       >
         {t('newGame')}
       </Button>

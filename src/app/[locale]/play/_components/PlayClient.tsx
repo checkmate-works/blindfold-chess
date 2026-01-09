@@ -876,11 +876,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             {gameStatus !== 'in_progress' && (
               <div className="mt-4 pb-4 px-4 space-y-3">
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   size="lg"
                   icon={<FaPlus className="w-5 h-5" />}
                   onClick={() => (window.location.href = `/${locale}/game/new`)}
-                  className="w-full rounded-xl font-medium bg-card hover:bg-background dark:hover:bg-muted"
+                  className="w-full rounded-xl font-medium"
                 >
                   {t('newGame')}
                 </Button>

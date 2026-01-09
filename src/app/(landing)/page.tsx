@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { SITE_DOMAIN, SITE_NAME } from '@/config';
 import { FaBrain, FaChessKnight, FaGraduationCap, FaRobot } from 'react-icons/fa';
 
@@ -117,11 +118,17 @@ export default async function RootPage() {
 
           {/* Call to Action */}
           <div className="flex flex-col items-center gap-6">
-            <Link
-              href={`/${locale}/getting-started`}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
+            <Link href={`/${locale}/getting-started`}>
+              <Button
+                variant="primary"
+                size="lg"
+                asChild
+                className="rounded-lg shadow-lg hover:shadow-xl hover:scale-105 font-semibold"
+              >
+                <span className="flex items-center gap-2">
+                  🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
+                </span>
+              </Button>
             </Link>
 
             {/* Language Selector */}
@@ -173,7 +180,7 @@ export default async function RootPage() {
           <div className="flex justify-center mb-8">
             <Link
               href={`/${locale}/practice`}
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               {t.training.viewAll}
             </Link>
@@ -253,11 +260,17 @@ export default async function RootPage() {
       <footer className="py-12 bg-secondary/30 border-t border-border space-y-8 text-center">
         {/* Getting Started CTA */}
         <div className="flex justify-center">
-          <Link
-            href={`/${locale}/getting-started`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
+          <Link href={`/${locale}/getting-started`}>
+            <Button
+              variant="primary"
+              size="lg"
+              asChild
+              className="rounded-lg shadow-lg hover:shadow-xl hover:scale-105 font-semibold"
+            >
+              <span className="flex items-center gap-2">
+                🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
+              </span>
+            </Button>
           </Link>
         </div>
 
