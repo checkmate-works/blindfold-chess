@@ -1,0 +1,30 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "dev": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.4",
+    "@blindfold-chess/core": "workspace:^",
+    "expo": "~54.0.31",
+    "expo-modules-core": "^3.0.29",
+    "expo-status-bar": "~3.0.9",
+    "invariant": "^2.2.4",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "react-native": "0.81.5",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
