@@ -31,7 +31,7 @@
     --color-foreground: #ffffff;
     --color-card: #383838;
     --color-card-foreground: #ffffff;
-    --color-primary: #3962e2;
+    --color-primary: #4b5563;
     --color-primary-foreground: #ffffff;
     --color-secondary: #404040;
     --color-secondary-foreground: #ffffff;
@@ -43,7 +43,7 @@
     --color-destructive-foreground: #ffffff;
     --color-border: #525252;
     --color-input: #3a3a3a;
-    --color-ring: #3962e2;
+    --color-ring: #4b5563;
   }
 }
 

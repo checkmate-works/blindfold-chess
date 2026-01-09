@@ -115,15 +115,25 @@ export default async function RootPage() {
             </h1>
           </div>
 
-          {/* Language Selector */}
-          <div className="flex flex-col items-center gap-4">
-            <LanguageSelector currentLocale={locale} />
+          {/* Call to Action */}
+          <div className="flex flex-col items-center gap-6">
             <Link
-              href={`/${locale}`}
-              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+              href={`/${locale}/getting-started`}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {locale === 'ja' ? 'トップページへ' : 'Go to Top Page'}
+              🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
             </Link>
+
+            {/* Language Selector */}
+            <div className="flex flex-col items-center gap-4">
+              <LanguageSelector currentLocale={locale} />
+              <Link
+                href={`/${locale}`}
+                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                {locale === 'ja' ? 'トップページへ' : 'Go to Top Page'}
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -241,6 +251,16 @@ export default async function RootPage() {
 
       {/* Footer */}
       <footer className="py-12 bg-secondary/30 border-t border-border space-y-8 text-center">
+        {/* Getting Started CTA */}
+        <div className="flex justify-center">
+          <Link
+            href={`/${locale}/getting-started`}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
+          </Link>
+        </div>
+
         {/* Language Selector */}
         <div className="flex justify-center">
           <LanguageSelector currentLocale={locale} />

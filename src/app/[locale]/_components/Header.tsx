@@ -17,6 +17,12 @@ export async function Header({ locale }: Props) {
 
   const menuItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
+    {
+      id: 'getting-started',
+      href: `/${locale}/getting-started`,
+      label: t('gettingStarted'),
+      iconName: 'getting-started',
+    },
     { id: 'learn', href: `/${locale}/learn`, label: t('learn'), iconName: 'learn' },
     {
       id: 'practice',

@@ -37,6 +37,7 @@
   "Header": {
     "title": "目隠しチェス",
     "home": "ホーム",
+    "gettingStarted": "はじめに",
     "learn": "学ぶ",
     "practice": "練習",
     "manual": "マニュアル",
@@ -193,7 +194,12 @@
   },
   "navigation": {
     "practice": "練習",
-    "learn": "学習"
+    "learn": "学習",
+    "gettingStarted": "はじめに"
+  },
+  "gettingStarted": {
+    "title": "はじめに",
+    "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。"
   },
   "learn": {
     "title": "チェスを学ぶ",

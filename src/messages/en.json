@@ -37,6 +37,7 @@
   "Header": {
     "title": "Blindfold Chess",
     "home": "Home",
+    "gettingStarted": "Getting Started",
     "learn": "Learn",
     "practice": "Practice",
     "manual": "Manual",
@@ -193,7 +194,12 @@
   },
   "navigation": {
     "practice": "Practice",
-    "learn": "Learn"
+    "learn": "Learn",
+    "gettingStarted": "Getting Started"
+  },
+  "gettingStarted": {
+    "title": "Getting Started",
+    "description": "Learn how to get started with blindfold chess training and improve your visualization skills."
   },
   "learn": {
     "title": "Learn Chess",
