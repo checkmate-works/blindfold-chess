@@ -1,36 +1,99 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { SITE_DOMAIN, SITE_NAME } from '@/config';
 import { FaBrain, FaChessKnight, FaGraduationCap, FaRobot } from 'react-icons/fa';
 
-import { LanguageButton } from './_components/LanguageButton';
-import { SmartCtaButton } from './_components/SmartCtaButton';
-import { SmartLink } from './_components/SmartLink';
+import { getLocaleFromRequest } from '@/lib/locale';
 
-// Language configuration
-type LanguageOption = {
-  code: 'en' | 'ja';
-  label: string;
-  flag: string;
-  subtitle: string;
-};
+import { LanguageSelector } from './_components/LanguageSelector';
+import { ScrollIndicator } from './_components/ScrollIndicator';
 
-const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
-  {
-    code: 'en',
-    label: 'English',
-    flag: '🇬🇧',
-    subtitle: 'Continue in English',
+// Content definition for each locale
+const content = {
+  en: {
+    hero: {
+      title: SITE_NAME,
+    },
+    aiBattle: {
+      title: 'Play against AI',
+      subtitle: '',
+      description: 'Play blindfold chess against the standard chess engine, Stockfish.',
+      cta: 'Play Now',
+    },
+    training: {
+      title: 'Extensive Training Modes',
+      subtitle: '',
+      viewAll: 'View All Trainings',
+      positionMemory: {
+        title: 'Position Memory',
+        subtitle: '',
+        description:
+          'Practice memorizing board positions and recreating them on an empty board. Develops crucial pattern recognition skills for blindfold chess.',
+        cta: 'Try Practice',
+      },
+      knightTour: {
+        title: "Knight's Tour",
+        subtitle: '',
+        description:
+          "Knight's Tour is a classic puzzle where you visit every square on the board exactly once. Use it to train your board visualization.",
+        cta: 'Try Puzzle',
+      },
+    },
+    learn: {
+      title: 'Tips for Visualization Skills',
+      subtitle: '',
+      description:
+        'Gain insights into blindfold chess, including introduction to famous research results like the ',
+      deGrootLink: 'de Groot experiment',
+      descriptionSuffix: '.',
+      cta: 'Read All Articles',
+    },
   },
-  {
-    code: 'ja',
-    label: '日本語',
-    flag: '🇯🇵',
-    subtitle: '日本語で続ける',
+  ja: {
+    hero: {
+      title: SITE_NAME,
+    },
+    aiBattle: {
+      title: 'AIと目隠しチェスで対戦',
+      subtitle: '',
+      description: '定番のチェスエンジン Stockfish と目隠しチェスで対戦できます。',
+      cta: '今すぐプレイ',
+    },
+    training: {
+      title: '目隠しチェスのトレーニングが満載',
+      subtitle: '',
+      viewAll: '全てのメニューを見る',
+      positionMemory: {
+        title: 'ポジションの記憶',
+        subtitle: '',
+        description:
+          '盤面を記憶して、空のボード上に再現する練習メニューがあります。目隠しチェスをする上で重要となるパターン認識能力を養うことができます。',
+        cta: '練習する',
+      },
+      knightTour: {
+        title: 'ナイトツアー',
+        subtitle: '',
+        description:
+          'ナイトツアーはナイトを使って盤上の全てのマスを一度ずつ訪れる古典的なパズルです。目隠しチェスのトレーニングとして活用できます。',
+        cta: 'パズルに挑戦',
+      },
+    },
+    learn: {
+      title: 'ビジュアライゼーションスキルアップのヒントが満載',
+      subtitle: '',
+      description: '有名な',
+      deGrootLink: 'デ・グロートのチェスに関する実験結果の紹介',
+      descriptionSuffix: 'など、目隠しチェスのヒントとなる知識が収集できます。',
+      cta: '記事一覧を読む',
+    },
   },
-] as const;
+} as const;
 
-export default function RootPage() {
+export default async function RootPage() {
+  const locale = await getLocaleFromRequest();
+  const t = content[locale];
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Hero Section */}
@@ -48,35 +111,24 @@ export default function RootPage() {
               />
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
-              {SITE_NAME}
+              {t.hero.title}
             </h1>
           </div>
 
-          {/* Language Selection */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-lg mx-auto w-full">
-            {LANGUAGE_OPTIONS.map((locale) => (
-              <LanguageButton
-                key={locale.code}
-                href={`/${locale.code}`}
-                flag={locale.flag}
-                language={locale.label}
-                subtitle={locale.subtitle}
-              />
-            ))}
+          {/* Language Selector */}
+          <div className="flex flex-col items-center gap-4">
+            <LanguageSelector currentLocale={locale} />
+            <Link
+              href={`/${locale}`}
+              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+            >
+              {locale === 'ja' ? 'トップページへ' : 'Go to Top Page'}
+            </Link>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
-          </svg>
-        </div>
+        <ScrollIndicator />
       </section>
 
       {/* Feature 1: AI Battle */}
@@ -86,18 +138,18 @@ export default function RootPage() {
             <FaRobot />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold">Play against AI</h2>
-            <h3 className="text-xl text-muted-foreground">AIと目隠しチェスで対戦</h3>
+            <h2 className="text-3xl font-bold">{t.aiBattle.title}</h2>
           </div>
           <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            Play blindfold chess against the standard chess engine, Stockfish.
-            <br />
-            <span className="text-sm opacity-80 mt-2 block">
-              定番のチェスエンジン Stockfish と目隠しチェスで対戦できます。
-            </span>
+            {t.aiBattle.description}
           </p>
           <div className="pt-4 flex justify-center">
-            <SmartCtaButton href="/game/new" label="Play Now" />
+            <Link
+              href={`/${locale}/game/new`}
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {t.aiBattle.cta}
+            </Link>
           </div>
         </div>
       </section>
@@ -106,59 +158,51 @@ export default function RootPage() {
       <section className="py-24 px-6 bg-background">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Extensive Training Modes</h2>
-            <h3 className="text-xl text-muted-foreground">目隠しチェスのトレーニングが満載</h3>
+            <h2 className="text-3xl md:text-4xl font-bold">{t.training.title}</h2>
           </div>
           <div className="flex justify-center mb-8">
-            <SmartCtaButton href="/practice" label="View All Trainings" variant="outline" />
+            <Link
+              href={`/${locale}/practice`}
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {t.training.viewAll}
+            </Link>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Position Memory */}
-            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm flex flex-col">
+            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mb-6">
                 <FaBrain />
               </div>
-              <h4 className="text-xl font-bold mb-1">Position Memory</h4>
-              <h5 className="text-sm text-muted-foreground mb-4">ポジションの記憶</h5>
+              <h4 className="text-xl font-bold mb-1">{t.training.positionMemory.title}</h4>
               <p className="text-muted-foreground flex-grow">
-                Practice memorizing board positions and recreating them on an empty board. Develops
-                crucial pattern recognition skills for blindfold chess.
-                <br />
-                <span className="text-xs opacity-70 mt-2 block">
-                  盤面を記憶して、空のボード上に再現する練習メニューがあります。目隠しチェスをする上で重要となるパターン認識能力を養うことができます。
-                </span>
+                {t.training.positionMemory.description}
               </p>
               <div className="mt-8 flex justify-center">
-                <SmartCtaButton
-                  href="/practice/position-memory"
-                  label="Try Practice"
-                  variant="secondary"
-                />
+                <Link
+                  href={`/${locale}/practice/position-memory`}
+                  className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  {t.training.positionMemory.cta}
+                </Link>
               </div>
             </div>
 
             {/* Knight's Tour */}
-            <div className="bg-card p-8 rounded-2xl border border-border hover:border-primary/50 transition-colors shadow-sm flex flex-col">
+            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm flex flex-col">
               <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-2xl mb-6">
                 <FaChessKnight />
               </div>
-              <h4 className="text-xl font-bold mb-1">Knight's Tour</h4>
-              <h5 className="text-sm text-muted-foreground mb-4">ナイトツアー</h5>
-              <p className="text-muted-foreground flex-grow">
-                Knight's Tour is a classic puzzle where you visit every square on the board exactly
-                once. Use it to train your board visualization.
-                <br />
-                <span className="text-xs opacity-70 mt-2 block">
-                  ナイトツアーはナイトを使って盤上の全てのマスを一度ずつ訪れる古典的なパズルです。目隠しチェスのトレーニングとして活用できます。
-                </span>
-              </p>
+              <h4 className="text-xl font-bold mb-1">{t.training.knightTour.title}</h4>
+              <p className="text-muted-foreground flex-grow">{t.training.knightTour.description}</p>
               <div className="mt-8 flex justify-center">
-                <SmartCtaButton
-                  href="/practice/knight-tour"
-                  label="Try Puzzle"
-                  variant="secondary"
-                />
+                <Link
+                  href={`/${locale}/practice/knight-tour`}
+                  className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  {t.training.knightTour.cta}
+                </Link>
               </div>
             </div>
           </div>
@@ -172,51 +216,34 @@ export default function RootPage() {
             <FaGraduationCap />
           </div>
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold">Tips for Visualization Skills</h2>
-            <h3 className="text-xl text-muted-foreground">
-              ビジュアライゼーションスキルアップのヒントが満載
-            </h3>
+            <h2 className="text-3xl font-bold">{t.learn.title}</h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Gain insights into blindfold chess, including introduction to famous research results
-            like the{' '}
-            <SmartLink
-              href="/learn/de-groot-experiment"
-              className="text-muted-foreground underline hover:text-foreground"
+            {t.learn.description}
+            <Link
+              href={`/${locale}/learn/de-groot-experiment`}
+              className="text-muted-foreground underline hover:text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm transition-colors"
             >
-              de Groot experiment
-            </SmartLink>
-            .
-            <br />
-            <span className="text-sm opacity-80 mt-2 block">
-              <SmartLink
-                href="/learn/de-groot-experiment"
-                className="text-muted-foreground underline hover:text-foreground"
-              >
-                有名なデ・グロートのチェスに関する実験結果の紹介
-              </SmartLink>
-              など、目隠しチェスのヒントとなる知識が収集できます。
-            </span>
+              {t.learn.deGrootLink}
+            </Link>
+            {t.learn.descriptionSuffix}
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
-            <SmartCtaButton href="/learn" label="Read All Articles" />
+            <Link
+              href={`/${locale}/learn`}
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              {t.learn.cta}
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="py-12 bg-secondary/30 border-t border-border space-y-8 text-center">
-        {/* Language Selection */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-lg mx-auto w-full px-6">
-          {LANGUAGE_OPTIONS.map((locale) => (
-            <LanguageButton
-              key={locale.code}
-              href={`/${locale.code}`}
-              flag={locale.flag}
-              language={locale.label}
-              subtitle={locale.subtitle}
-            />
-          ))}
+        {/* Language Selector */}
+        <div className="flex justify-center">
+          <LanguageSelector currentLocale={locale} />
         </div>
 
         <div className="text-sm text-muted-foreground">
