@@ -151,15 +151,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/logic:
-    devDependencies:
-      eslint:
-        specifier: ^9.39.1
-        version: 9.39.1(jiti@2.6.1)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
 packages:
 
   '@acemir/cssom@0.9.23':

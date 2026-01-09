@@ -14,8 +14,21 @@ This repository is a Monorepo managed by [Turborepo](https://turbo.build/).
 
 ### Prerequisites
 
-- Node.js 22.x
+- Node.js 24.x
 - pnpm 10.x
+
+> [!TIP]
+> This project uses [Volta](https://volta.sh/) to pin Node.js and pnpm versions.
+> If you have Volta installed, it will automatically switch to the correct versions defined in `package.json`.
+>
+> To pin versions (updates package.json):
+> ```bash
+> volta pin node@24
+> ```
+> For pnpm, use `volta install` to ensure the correct version is active, as `volta pin` may not support pnpm in all environments:
+> ```bash
+> volta install pnpm@10
+> ```
 
 ### Installation
 

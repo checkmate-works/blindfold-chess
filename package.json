@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": ">=22.17.1 <23"
+    "node": ">=24.0.0 <25"
   },
   "scripts": {
     "build": "turbo run build",
@@ -25,5 +25,9 @@
     "**/*.{js,jsx,ts,tsx}": [
       "prettier --write"
     ]
+  },
+  "volta": {
+    "node": "24.12.0",
+    "pnpm": "10.13.1"
   }
 }
