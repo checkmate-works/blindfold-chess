@@ -60,11 +60,5 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.12"
-  },
-  "pnpm": {
-    "overrides": {
-      "import-in-the-middle": "^2.0.0",
-      "require-in-the-middle": "^8.0.1"
-    }
   }
 }
