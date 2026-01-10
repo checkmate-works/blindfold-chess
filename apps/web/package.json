@@ -41,6 +41,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@blindfold-chess/eslint-config": "workspace:*",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.17",
     "@testing-library/jest-dom": "^6.9.1",

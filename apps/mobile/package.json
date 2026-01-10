@@ -8,6 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,7 +24,9 @@
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
+    "@blindfold-chess/eslint-config": "workspace:*",
     "@types/react": "~19.1.0",
+    "eslint": "^9.39.2",
     "typescript": "~5.9.2"
   },
   "private": true

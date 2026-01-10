@@ -1,15 +1,16 @@
 {
-    "name": "@blindfold-chess/core",
-    "version": "0.0.0",
-    "private": true,
-    "main": "./src/index.ts",
-    "types": "./src/index.ts",
-    "scripts": {
-        "lint": "eslint",
-        "typecheck": "tsc --noEmit"
-    },
-    "devDependencies": {
-        "eslint": "^9.39.1",
-        "typescript": "^5.9.3"
-    }
+  "name": "@blindfold-chess/core",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@blindfold-chess/eslint-config": "workspace:*",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3"
+  }
 }
