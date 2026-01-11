@@ -34,11 +34,17 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
     const chess = new Chess();
     try {
       for (const move of moves) {
-        chess.move(move);
+        try {
+          chess.move(move);
+        } catch (error) {
+          console.warn('[getFen] Error applying move, stopping at last valid state:', move, error);
+          break;
+        }
       }
     } catch (error) {
-      console.error('[getFen] Error applying moves:', error);
-      return 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // fallback to starting position
+      console.error('[getFen] Critical error:', error);
+      // fallback to starting position ONLY if even the empty board crashed (highly unlikely)
+      // or we can just return whatever state we have
     }
 
     const fen = chess.fen();
@@ -49,11 +55,15 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
     const chess = new Chess();
     try {
       for (const move of moves) {
-        chess.move(move);
+        try {
+          chess.move(move);
+        } catch (error) {
+          console.warn('[getPgn] Error applying move, stopping at last valid state:', move, error);
+          break;
+        }
       }
     } catch (error) {
-      console.error('[getPgn] Error applying moves:', error);
-      return ''; // Return empty string on error
+      console.error('[getPgn] Critical error:', error);
     }
 
     const pgn = chess.pgn();

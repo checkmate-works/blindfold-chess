@@ -68,7 +68,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   let shouldRedirectToError = false;
   let errorDetails = null;
 
-  if (!initialGameId && parsedMoves.length > 0) {
+  if (parsedMoves.length > 0) {
     const validMoves: AlgebraicNotation[] = [];
     const chess = new Chess();
 
