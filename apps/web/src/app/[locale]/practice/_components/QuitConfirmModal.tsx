@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/app/_components';
+
 export type QuitConfirmModalLabels = {
   title: string;
   message: string;
@@ -28,18 +30,12 @@ export function QuitConfirmModal({ isOpen, onConfirm, onCancel, labels }: Props)
         <p className="text-muted-foreground mb-6">{labels.message}</p>
 
         <div className="flex gap-4 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-secondary transition-colors"
-          >
+          <Button onClick={onCancel} variant="secondary" size="sm">
             {labels.cancelButton}
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
+          </Button>
+          <Button onClick={onConfirm} variant="destructive" size="sm">
             {labels.confirmButton}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

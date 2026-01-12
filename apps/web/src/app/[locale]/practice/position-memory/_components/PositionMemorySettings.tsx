@@ -53,7 +53,7 @@ export function PositionMemorySettings({
           step="5"
           value={timeLimit}
           onChange={(e) => onTimeLimitChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
+          className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
           <span>{t('fiveSeconds')}</span>
@@ -107,7 +107,7 @@ export function PositionMemorySettings({
             value={customFenInput}
             onChange={(e) => onCustomFenInputChange(e.target.value)}
             placeholder={t('customFenPlaceholder')}
-            className="w-full h-32 px-3 py-2 border border-border rounded-lg bg-background text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-foreground resize-none"
+            className="w-full h-32 px-3 py-2 border border-border rounded-md bg-background text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-foreground resize-none"
             spellCheck="false"
           />
           {customFenError && (
@@ -119,7 +119,7 @@ export function PositionMemorySettings({
             <div className="mt-3 flex justify-end">
               <button
                 onClick={onCopyShareLink}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-md hover:bg-secondary/80 transition-colors"
               >
                 <FaLink />
                 <span>{t('copyShareLink')}</span>
@@ -171,7 +171,7 @@ export function PositionMemorySettings({
                 step="1"
                 value={Math.min(problemCount, effectiveMaxProblems)}
                 onChange={(e) => onProblemCountChange(parseInt(e.target.value))}
-                className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
+                className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>1</span>

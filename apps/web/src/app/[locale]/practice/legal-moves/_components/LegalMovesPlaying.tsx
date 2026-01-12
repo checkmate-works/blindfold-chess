@@ -78,7 +78,7 @@ export function LegalMovesPlaying({
           <button
             onClick={() => onAnswer(true)}
             disabled={showResult}
-            className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
+            className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">○</span>
             <span>{t('legal')}</span>
@@ -86,7 +86,7 @@ export function LegalMovesPlaying({
           <button
             onClick={() => onAnswer(false)}
             disabled={showResult}
-            className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-xl font-medium text-lg transition-colors flex items-center justify-center gap-2"
+            className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">×</span>
             <span>{t('illegal')}</span>

@@ -75,7 +75,7 @@ export function PositionMemoryRecreate({
       </div>
 
       <div className="flex flex-col items-center gap-4 mt-6">
-        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-lg">
+        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-md">
           {t('submit')}
         </Button>
         <button
