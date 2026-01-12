@@ -31,7 +31,7 @@ export function FAQClient({ items }: Props) {
         const isExpanded = expandedItems.has(item.id);
 
         return (
-          <div key={item.id} className="bg-card rounded-lg border border-border overflow-hidden">
+          <div key={item.id} className="bg-card rounded-md border border-border overflow-hidden">
             <button
               onClick={() => toggleItem(item.id)}
               className="w-full px-6 py-4 text-left hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset"

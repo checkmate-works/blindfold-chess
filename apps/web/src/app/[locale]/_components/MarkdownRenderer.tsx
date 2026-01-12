@@ -64,7 +64,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           return <code className={className}>{children}</code>;
         },
         pre: ({ children }) => (
-          <pre className="bg-secondary p-4 rounded-lg overflow-x-auto">{children}</pre>
+          <pre className="bg-secondary p-4 rounded-md overflow-x-auto">{children}</pre>
         ),
         blockquote: ({ children }) => (
           <blockquote className="border-l-4 border-border pl-4 py-2 my-6 bg-secondary/50 text-foreground/90 italic">
@@ -73,7 +73,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         ),
         img: ({ src, alt }) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="rounded-lg shadow-md max-w-full mx-auto block my-8" />
+          <img src={src} alt={alt} className="rounded-md shadow-md max-w-full mx-auto block my-8" />
         ),
         table: ({ children }) => (
           <div className="overflow-x-auto my-6">

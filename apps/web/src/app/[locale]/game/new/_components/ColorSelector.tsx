@@ -17,7 +17,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
       <button
         onClick={() => onChange('white')}
         disabled={disabled}
-        className={`p-6 rounded-lg border-2 transition-all ${
+        className={`p-6 rounded-md border-2 transition-all ${
           value === 'white'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -50,7 +50,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
               </g>
             </svg>
           </div>
-          <h3 className="font-semibold text-lg mb-2">{t('playAsWhite')}</h3>
+          <h3 className="font-medium text-lg mb-2">{t('playAsWhite')}</h3>
           <p className="text-sm text-muted-foreground text-center">{t('whiteDescription')}</p>
         </div>
       </button>
@@ -58,7 +58,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
       <button
         onClick={() => onChange('black')}
         disabled={disabled}
-        className={`p-6 rounded-lg border-2 transition-all ${
+        className={`p-6 rounded-md border-2 transition-all ${
           value === 'black'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -99,7 +99,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
               </g>
             </svg>
           </div>
-          <h3 className="font-semibold text-lg mb-2">{t('playAsBlack')}</h3>
+          <h3 className="font-medium text-lg mb-2">{t('playAsBlack')}</h3>
           <p className="text-sm text-muted-foreground text-center">{t('blackDescription')}</p>
         </div>
       </button>

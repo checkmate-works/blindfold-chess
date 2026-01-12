@@ -4,7 +4,7 @@ type Props = {
 
 export function GameListSkeleton({ rows = 5 }: Props = {}) {
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+    <div className="bg-card rounded-md border border-border overflow-hidden">
       <div className="animate-pulse">
         {Array.from({ length: rows }, (_, i) => (
           <div key={i} className="px-4 sm:px-6 py-3 border-b border-border last:border-b-0">

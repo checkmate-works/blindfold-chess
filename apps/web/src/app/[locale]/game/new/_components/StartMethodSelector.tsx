@@ -13,7 +13,7 @@ export function StartMethodSelector({ value, onChange }: Props) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <button
         onClick={() => onChange('new')}
-        className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+        className={`relative p-4 rounded-md border-2 text-left transition-all ${
           value === 'new'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -39,14 +39,14 @@ export function StartMethodSelector({ value, onChange }: Props) {
           </div>
         )}
         <div className="pr-8">
-          <h3 className="font-semibold mb-1">{t('newGame')}</h3>
+          <h3 className="font-medium mb-1">{t('newGame')}</h3>
           <p className="text-sm text-muted-foreground">{t('newGameDescription')}</p>
         </div>
       </button>
 
       <button
         onClick={() => onChange('pgn')}
-        className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+        className={`relative p-4 rounded-md border-2 text-left transition-all ${
           value === 'pgn'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -72,7 +72,7 @@ export function StartMethodSelector({ value, onChange }: Props) {
           </div>
         )}
         <div className="pr-8">
-          <h3 className="font-semibold mb-1">{t('fromPgn')}</h3>
+          <h3 className="font-medium mb-1">{t('fromPgn')}</h3>
           <p className="text-sm text-muted-foreground">{t('fromPgnDescription')}</p>
         </div>
       </button>

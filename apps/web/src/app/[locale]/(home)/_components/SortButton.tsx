@@ -24,7 +24,7 @@ export function SortButton({ sortBy, sortDirection, onSortChange }: Props) {
         id="sort-select"
         value={`${sortBy}-${sortDirection}`}
         onChange={(e) => onSortChange(e.target.value)}
-        className="text-sm bg-card border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground cursor-pointer hover:border-muted-foreground transition-colors"
+        className="text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground cursor-pointer hover:border-muted-foreground transition-colors"
       >
         <option value="lastPlayed-desc">{t('lastPlayedDesc')}</option>
         <option value="lastPlayed-asc">{t('lastPlayedAsc')}</option>

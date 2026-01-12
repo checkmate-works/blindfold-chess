@@ -13,7 +13,7 @@ type Props = {
 export function ControlSettingsContent({ settings, onSettingsChange, compact = false }: Props) {
   const t = useTranslations('Preferences');
 
-  const containerClass = compact ? '' : 'bg-card rounded-xl p-6 shadow-sm border border-border';
+  const containerClass = compact ? '' : 'bg-card rounded-md p-6 shadow-sm border border-border';
 
   return (
     <div className={containerClass}>

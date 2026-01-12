@@ -19,7 +19,7 @@ export function ThemeSelector() {
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+          <div key={i} className="h-16 bg-muted animate-pulse rounded-md" />
         ))}
       </div>
     );
@@ -48,7 +48,7 @@ export function ThemeSelector() {
       {themes.map((themeOption) => (
         <label
           key={themeOption.id}
-          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent cursor-pointer"
+          className="flex items-center justify-between p-3 border border-border rounded-md hover:bg-accent cursor-pointer"
         >
           <div className="flex items-center">
             <input

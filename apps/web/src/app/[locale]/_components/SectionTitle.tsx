@@ -4,5 +4,5 @@ type Props = {
 };
 
 export function SectionTitle({ children, className = '' }: Props) {
-  return <h2 className={`font-semibold ${className}`}>{children}</h2>;
+  return <h2 className={`font-medium ${className}`}>{children}</h2>;
 }

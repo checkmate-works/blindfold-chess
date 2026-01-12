@@ -72,7 +72,7 @@ export function ConfirmationModal({
 
       {/* Modal */}
       <div
-        className="relative bg-card rounded-2xl shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative bg-card rounded-md shadow-xl max-w-md w-full mx-4 p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
