@@ -24,12 +24,8 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           }
           return <PageTitle>{children}</PageTitle>;
         },
-        h2: ({ children }) => (
-          <SectionTitle className="text-xl mb-4 mt-10">{children}</SectionTitle>
-        ),
-        h3: ({ children }) => (
-          <SubsectionTitle className="text-lg mb-3 mt-8">{children}</SubsectionTitle>
-        ),
+        h2: ({ children }) => <SectionTitle className="mb-4 mt-10">{children}</SectionTitle>,
+        h3: ({ children }) => <SubsectionTitle className="mb-3 mt-8">{children}</SubsectionTitle>,
         p: ({ children }) => {
           if (
             Array.isArray(children) &&
