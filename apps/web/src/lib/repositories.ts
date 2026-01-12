@@ -1,4 +1,5 @@
 import { MAX_GAMES } from '@/config';
+import { Chess } from 'chess.js';
 
 import { GameLimitError } from '@/lib/errors';
 import type { AlgebraicNotation } from '@/lib/types';
@@ -23,6 +24,9 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string> {
     try {
+      // Validate moves before creating
+      this.validateMoves(game.moves);
+
       const games = await this.loadAll();
 
       // Check game limit before creating new game
@@ -38,8 +42,11 @@ export class LocalStorageGameRepository implements IGameRepository {
 
       return gameId;
     } catch (error) {
-      // Re-throw GameLimitError as-is
-      if (error instanceof GameLimitError) {
+      // Re-throw GameLimitError and validation errors as-is
+      if (
+        error instanceof GameLimitError ||
+        (error instanceof Error && error.message.includes('Invalid move'))
+      ) {
         throw error;
       }
       console.error('Failed to create game:', error);
@@ -49,6 +56,9 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void> {
     try {
+      // Validate moves before updating
+      this.validateMoves(game.moves);
+
       const games = await this.loadAll();
       const index = games.findIndex((g) => g.id === id);
 
@@ -185,6 +195,10 @@ export class LocalStorageGameRepository implements IGameRepository {
       }
 
       const updatedMoves = [...game.moves, move];
+
+      // Validate the move sequence before saving
+      this.validateMoves(updatedMoves);
+
       await this.update(gameId, {
         moves: updatedMoves,
         playerColor: game.playerColor,
@@ -203,6 +217,21 @@ export class LocalStorageGameRepository implements IGameRepository {
     } catch (error) {
       console.error('Failed to save to localStorage:', error);
       throw new Error('Failed to save to localStorage');
+    }
+  }
+
+  private validateMoves(moves: string[]): void {
+    const chess = new Chess();
+    for (let i = 0; i < moves.length; i++) {
+      const move = moves[i];
+      try {
+        const result = chess.move(move);
+        if (!result) {
+          throw new Error(`Invalid move detected: ${move} at index ${i}`);
+        }
+      } catch {
+        throw new Error(`Invalid move detected during validation: ${move} at index ${i}`);
+      }
     }
   }
 
