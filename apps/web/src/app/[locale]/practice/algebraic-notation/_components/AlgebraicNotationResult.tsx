@@ -57,13 +57,7 @@ export function AlgebraicNotationResult({
         </div>
       </div>
 
-      <Button
-        onClick={onNext}
-        variant="primary"
-        size="lg"
-        fullWidth
-        className="rounded-lg font-semibold"
-      >
+      <Button onClick={onNext} variant="primary" size="lg" fullWidth>
         {currentQuestionIndex < totalQuestions - 1 ? t('nextExercise') : t('complete')}
       </Button>
     </>

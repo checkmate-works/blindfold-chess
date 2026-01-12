@@ -42,7 +42,7 @@ export function CoordinateQuizSetup({
           onClick={onStart}
           variant="primary"
           size="lg"
-          className="w-full rounded-lg font-semibold mt-6"
+          className="w-full mt-6"
           icon={<FaPlay />}
         >
           {t('start')}

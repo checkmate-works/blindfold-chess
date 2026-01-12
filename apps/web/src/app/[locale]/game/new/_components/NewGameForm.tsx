@@ -178,7 +178,7 @@ export function NewGameForm({ locale }: Props) {
         loading={isLoading}
         variant="primary"
         size="lg"
-        className="w-full rounded-lg font-semibold"
+        className="w-full"
       >
         {t('startGame')}
       </Button>

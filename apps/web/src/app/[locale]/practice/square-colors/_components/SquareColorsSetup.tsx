@@ -32,13 +32,7 @@ export function SquareColorsSetup({ timeLimit, onTimeLimitChange, onStart }: Pro
           />
         </div>
 
-        <Button
-          onClick={onStart}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full rounded-lg font-semibold"
-        >
+        <Button onClick={onStart} variant="primary" size="lg" icon={<FaPlay />} className="w-full">
           {t('start')}
         </Button>
       </div>
