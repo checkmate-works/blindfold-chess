@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -81,14 +81,14 @@ export function SquareInput({
             onBlur={() => setTimeout(() => setIsFocused(false), 150)}
             disabled={disabled}
             placeholder={placeholder || t('inputSquare')}
-            className="w-full px-4 py-3 border border-border rounded-lg bg-background font-mono text-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 border border-border rounded-md bg-background font-mono text-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed"
             autoComplete="off"
             spellCheck="false"
           />
 
           {/* Suggestions Dropdown */}
           {displaySuggestions && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
@@ -107,7 +107,7 @@ export function SquareInput({
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="w-14 h-14 bg-muted hover:bg-foreground hover:text-background disabled:bg-muted disabled:cursor-not-allowed text-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
+          className="w-14 h-14 bg-muted hover:bg-foreground hover:text-background disabled:bg-muted disabled:cursor-not-allowed text-foreground font-medium rounded-md transition-all duration-150 flex items-center justify-center text-xl border border-border"
           title={t('submitMove')}
         >
           ♞

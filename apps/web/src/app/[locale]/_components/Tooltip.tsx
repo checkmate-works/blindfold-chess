@@ -27,7 +27,7 @@ export function Tooltip({ content, className = '' }: Props) {
       </button>
 
       {isVisible && (
-        <div className="absolute z-50 w-64 p-3 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg left-1/2 -translate-x-1/2 bottom-full mb-2">
+        <div className="absolute z-50 w-64 p-3 bg-popover text-popover-foreground border border-border rounded-md shadow-lg left-1/2 -translate-x-1/2 bottom-full mb-2">
           <div className="text-sm">{content}</div>
           {/* Arrow */}
           <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-border" />

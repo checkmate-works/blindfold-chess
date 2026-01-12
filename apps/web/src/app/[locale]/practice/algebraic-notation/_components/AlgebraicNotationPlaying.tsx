@@ -59,7 +59,7 @@ export function AlgebraicNotationPlaying({
               onClick={() => !showResult && onOptionSelect(option)}
               disabled={showResult}
               className={`
-                w-full text-left p-3 rounded-lg transition-colors font-mono text-lg font-medium
+                w-full text-left p-3 rounded-md transition-colors font-mono text-lg font-medium
                 ${
                   showResult
                     ? selectedAnswer === option

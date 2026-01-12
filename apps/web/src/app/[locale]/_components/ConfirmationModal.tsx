@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { Button } from '@/app/_components';
+
 type Props = {
   isOpen: boolean;
   title: string;
@@ -47,18 +49,14 @@ export function ConfirmationModal({
 
   if (!isOpen) return null;
 
-  const getConfirmButtonStyles = () => {
-    const baseStyles =
-      'px-6 py-3 font-medium rounded-xl transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
-
+  const getConfirmVariant = (): 'primary' | 'destructive' => {
     switch (confirmVariant) {
       case 'danger':
-        return `${baseStyles} bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white`;
+        return 'destructive';
       case 'warning':
-        return `${baseStyles} bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white`;
       case 'primary':
       default:
-        return `${baseStyles} bg-foreground hover:bg-foreground/90 text-background`;
+        return 'primary';
     }
   };
 
@@ -74,7 +72,7 @@ export function ConfirmationModal({
 
       {/* Modal */}
       <div
-        className="relative bg-card rounded-2xl shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative bg-card rounded-md shadow-xl max-w-md w-full mx-4 p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -96,30 +94,19 @@ export function ConfirmationModal({
 
         {/* Actions */}
         <div className="flex gap-3 justify-end">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isLoading}
-            className="px-6 py-3 bg-muted hover:bg-muted/80 text-foreground font-medium rounded-xl transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <Button type="button" onClick={onCancel} disabled={isLoading} variant="secondary">
             {cancelText}
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={onConfirm}
             disabled={isLoading}
-            className={getConfirmButtonStyles()}
+            loading={isLoading}
+            variant={getConfirmVariant()}
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Processing...
-              </div>
-            ) : (
-              confirmText
-            )}
-          </button>
+            {confirmText}
+          </Button>
         </div>
       </div>
     </div>

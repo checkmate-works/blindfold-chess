@@ -47,7 +47,7 @@ export function SkillLevelSelector({ value, onChange }: Props) {
         <select
           value={value}
           onChange={handleChange}
-          className="w-full p-3 rounded-lg border-2 border-border bg-background text-foreground hover:border-muted-foreground focus:border-foreground focus:outline-none transition-all"
+          className="w-full p-3 rounded-md border-2 border-border bg-background text-foreground hover:border-muted-foreground focus:border-foreground focus:outline-none transition-all"
         >
           {SKILL_LEVELS.map((level) => (
             <option key={level} value={level}>

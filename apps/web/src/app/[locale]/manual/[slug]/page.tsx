@@ -66,25 +66,29 @@ export default async function ManualArticlePage({ params }: Props) {
   const excerpt = article.metadata.excerpt;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{title}</PageTitle>
+    <div className="space-y-12">
+      {/* Article header */}
+      <header className="space-y-4 max-w-3xl">
+        <PageTitle>{title}</PageTitle>
 
-      <PageDescription>{excerpt}</PageDescription>
+        <PageDescription>{excerpt}</PageDescription>
 
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </header>
 
-      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
+      {/* Article content with narrower width for readability */}
+      <article className="prose prose-slate dark:prose-invert max-w-2xl">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 

@@ -39,7 +39,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'rounded-md transition-colors duration-150 flex items-center justify-center gap-2';
+    'rounded-md font-medium transition-colors duration-150 flex items-center justify-center gap-2';
   const disabledStyles =
     disabled || loading ? 'opacity-50 cursor-not-allowed shadow-none text-muted-foreground' : '';
   const widthStyles = fullWidth ? 'w-full' : '';

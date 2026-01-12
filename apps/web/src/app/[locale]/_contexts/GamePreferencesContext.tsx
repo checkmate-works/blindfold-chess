@@ -27,7 +27,7 @@ export type GamePreferences = {
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
-  boardTheme: 'default',
+  boardTheme: 'lichess',
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',

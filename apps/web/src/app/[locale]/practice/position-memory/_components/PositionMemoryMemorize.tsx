@@ -59,7 +59,7 @@ export function PositionMemoryMemorize({
       </div>
 
       <div className="flex flex-col items-center gap-4">
-        <Button onClick={onMemorized} variant="primary" size="lg" fullWidth className="rounded-lg">
+        <Button onClick={onMemorized} variant="primary" size="lg" fullWidth className="rounded-md">
           {t('memorized')}
         </Button>
         <button

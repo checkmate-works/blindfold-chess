@@ -15,7 +15,6 @@ import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveSelect } from '@/app/[locale]/play/_components/MoveSelect';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
-import { getPlayerMoves } from '../_lib/pgn-parser';
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
 
 type Props = {
@@ -54,9 +53,6 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
         : data.moves.map((_, i) => i).filter((i) => i % 2 === 1);
     }
   }, [data.moves, data.playerColor, data.includeOpponentMoves]);
-
-  // Get player's moves for legacy mode
-  const playerMoves = getPlayerMoves(data.moves, data.playerColor);
 
   // Current expected move
   const expectedMove = data.moves[currentMoveIndex] ?? null;
@@ -244,7 +240,7 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
   return (
     <div className="space-y-4">
       {/* Progress */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-3">
+      <div className="bg-card rounded-md shadow-sm border border-border p-3">
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <ProgressBar current={completedTargetMoves} total={totalTargetMoves} />
@@ -257,14 +253,14 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
 
       {/* Move History */}
       {completedMoves.length > 0 && (
-        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+        <div className="bg-card rounded-md shadow-sm border border-border p-4">
           <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('moveHistory')}</h3>
           <p className="font-mono text-sm text-foreground break-words">{formattedMoveHistory}</p>
         </div>
       )}
 
       {/* Board Toggle */}
-      <div className="bg-card rounded-xl shadow-sm border border-border">
+      <div className="bg-card rounded-md shadow-sm border border-border">
         <button
           onClick={() => setIsBoardVisible(!isBoardVisible)}
           className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-xl ${!isBoardVisible ? 'rounded-b-xl' : ''}`}
@@ -308,7 +304,7 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
       </div>
 
       {/* Move Input */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
         {requiresUserInput ? (
           <>
             <h3 className="text-sm font-medium text-muted-foreground mb-3">{turnLabel}</h3>

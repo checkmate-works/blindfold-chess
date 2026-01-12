@@ -24,8 +24,8 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           }
           return <PageTitle>{children}</PageTitle>;
         },
-        h2: ({ children }) => <SectionTitle>{children}</SectionTitle>,
-        h3: ({ children }) => <SubsectionTitle>{children}</SubsectionTitle>,
+        h2: ({ children }) => <SectionTitle className="mb-4 mt-10">{children}</SectionTitle>,
+        h3: ({ children }) => <SubsectionTitle className="mb-3 mt-8">{children}</SubsectionTitle>,
         p: ({ children }) => {
           if (
             Array.isArray(children) &&
@@ -33,11 +33,13 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           ) {
             return <>{children}</>;
           }
-          return <p className="text-foreground/90">{children}</p>;
+          return <p className="text-foreground/90 leading-relaxed mb-6">{children}</p>;
         },
-        ul: ({ children }) => <ul className="list-disc ml-6 space-y-2">{children}</ul>,
-        ol: ({ children }) => <ol className="list-decimal ml-6 space-y-2">{children}</ol>,
-        li: ({ children }) => <li className="text-foreground/90 pl-2">{children}</li>,
+        ul: ({ children }) => <ul className="list-disc ml-6 space-y-2 mb-6">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal ml-6 space-y-2 mb-6">{children}</ol>,
+        li: ({ children }) => (
+          <li className="text-foreground/90 pl-2 leading-relaxed">{children}</li>
+        ),
         strong: ({ children }) => (
           <strong className="font-semibold text-foreground">{children}</strong>
         ),
@@ -47,7 +49,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground underline hover:opacity-80"
+            className="text-primary no-underline hover:underline transition-all"
           >
             {children}
           </a>
@@ -64,7 +66,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           return <code className={className}>{children}</code>;
         },
         pre: ({ children }) => (
-          <pre className="bg-secondary p-4 rounded-lg overflow-x-auto">{children}</pre>
+          <pre className="bg-secondary p-4 rounded-md overflow-x-auto">{children}</pre>
         ),
         blockquote: ({ children }) => (
           <blockquote className="border-l-4 border-border pl-4 py-2 my-6 bg-secondary/50 text-foreground/90 italic">
@@ -73,7 +75,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         ),
         img: ({ src, alt }) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="rounded-lg shadow-md max-w-full mx-auto block my-8" />
+          <img src={src} alt={alt} className="rounded-md shadow-md max-w-full mx-auto block my-8" />
         ),
         table: ({ children }) => (
           <div className="overflow-x-auto my-6">
@@ -84,7 +86,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         tbody: ({ children }) => <tbody>{children}</tbody>,
         tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
         th: ({ children }) => (
-          <th className="px-4 py-2 text-left font-semibold text-foreground border border-border">
+          <th className="px-4 py-2 text-left font-medium text-foreground border border-border">
             {children}
           </th>
         ),

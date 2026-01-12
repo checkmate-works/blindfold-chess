@@ -73,13 +73,7 @@ export function KnightTourSetup({
 
         <p className="text-sm text-muted-foreground mb-6">{t('setupHint')}</p>
 
-        <Button
-          onClick={onStart}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full rounded-lg font-semibold"
-        >
+        <Button onClick={onStart} variant="primary" size="lg" icon={<FaPlay />} className="w-full">
           {t('start')}
         </Button>
       </div>

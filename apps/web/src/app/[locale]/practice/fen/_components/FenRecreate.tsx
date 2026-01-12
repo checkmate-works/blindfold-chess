@@ -70,7 +70,7 @@ export function FenRecreate({
             selection?.addRange(range);
           }}
           id="fen-display"
-          className="w-full px-3 py-2 bg-muted border border-border rounded-lg font-mono text-sm cursor-pointer break-all"
+          className="w-full px-3 py-2 bg-muted border border-border rounded-md font-mono text-sm cursor-pointer break-all"
         >
           {originalPosition.fen}
         </div>
@@ -92,7 +92,7 @@ export function FenRecreate({
       </div>
 
       <div className="flex flex-col items-center gap-4 mt-6">
-        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-lg">
+        <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-md">
           {t('submit')}
         </Button>
         <button

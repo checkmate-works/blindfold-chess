@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
 
@@ -57,20 +59,22 @@ export function SquareColorsPlaying({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <button
+          <Button
             onClick={() => onAnswer('light')}
             disabled={showResult}
-            className="px-6 py-4 bg-gray-100 dark:bg-gray-200 hover:bg-gray-200 dark:hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-900 rounded-lg font-medium text-lg transition-colors"
+            size="lg"
+            className="bg-gray-100 dark:bg-gray-200 hover:bg-gray-200 dark:hover:bg-gray-300 text-gray-900 dark:text-gray-900 py-4 text-lg"
           >
             {t('white')}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onAnswer('dark')}
             disabled={showResult}
-            className="px-6 py-4 bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium text-lg transition-colors"
+            size="lg"
+            className="bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 text-white py-4 text-lg"
           >
             {t('black')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

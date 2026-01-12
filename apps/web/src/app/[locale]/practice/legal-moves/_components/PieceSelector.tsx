@@ -20,7 +20,7 @@ export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
         <button
           key={piece}
           onClick={() => onPieceToggle(piece)}
-          className={`flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-md transition-all ${
             selectedPieces[piece]
               ? 'bg-foreground text-background shadow-lg scale-105'
               : 'bg-secondary hover:bg-muted border-2 border-border'

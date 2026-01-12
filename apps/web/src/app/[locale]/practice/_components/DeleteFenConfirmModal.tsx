@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/app/_components';
+
 type Props = {
   isOpen: boolean;
   fen: string;
@@ -30,18 +32,12 @@ export function DeleteFenConfirmModal({ isOpen, fen, onConfirm, onCancel, labels
         </p>
 
         <div className="flex gap-4 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-secondary transition-colors"
-          >
+          <Button onClick={onCancel} variant="secondary" size="sm">
             {labels.cancel}
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
+          </Button>
+          <Button onClick={onConfirm} variant="destructive" size="sm">
             {labels.confirm}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

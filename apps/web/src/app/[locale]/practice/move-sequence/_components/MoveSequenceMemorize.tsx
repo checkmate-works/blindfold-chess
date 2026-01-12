@@ -8,8 +8,6 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
-import type { AlgebraicNotation } from '@/lib/types';
-
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { MoveSequenceData } from '../_lib/types';
@@ -224,7 +222,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
       </div>
 
       {/* Move display */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-muted-foreground">{t('moves')}</h3>
           {hasPlayed && !isPlaying && (
@@ -248,7 +246,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
 
       {/* Progress */}
       {isPlaying && (
-        <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+        <div className="bg-card rounded-md shadow-sm border border-border p-4">
           <p className="text-sm text-center text-muted-foreground">
             {t('playingMove', { current: currentMoveIndex + 1, total: data.moves.length })}
           </p>

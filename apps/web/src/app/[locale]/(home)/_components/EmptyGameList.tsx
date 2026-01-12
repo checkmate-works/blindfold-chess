@@ -12,7 +12,7 @@ export function EmptyGameList({ locale }: Props) {
   const t = useTranslations('home.gameList');
 
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+    <div className="bg-card rounded-md border border-border overflow-hidden">
       <div className="p-8 sm:p-12">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">

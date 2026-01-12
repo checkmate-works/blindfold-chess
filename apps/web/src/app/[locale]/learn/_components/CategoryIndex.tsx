@@ -31,7 +31,7 @@ export function CategoryIndex({
         <Link
           href="/learn"
           locale={locale}
-          className={`group block p-4 rounded-xl border transition-all ${
+          className={`group block p-4 rounded-md border transition-all ${
             !selectedCategory
               ? 'bg-foreground/10 border-foreground/30'
               : 'bg-card border-border hover:shadow-md hover:border-foreground/20'
@@ -50,7 +50,7 @@ export function CategoryIndex({
               key={category}
               href={`/learn/category/${category}`}
               locale={locale}
-              className={`group block p-4 rounded-xl border transition-all ${
+              className={`group block p-4 rounded-md border transition-all ${
                 isSelected
                   ? 'bg-foreground/10 border-foreground/30'
                   : 'bg-card border-border hover:shadow-md hover:border-foreground/20'

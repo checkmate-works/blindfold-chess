@@ -94,19 +94,19 @@ export function KnightTourBlindPlaying({
   return (
     <div className="space-y-4">
       {/* Progress */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
         <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('progress')}</h3>
         <ProgressBar current={moveCount} total={64} />
       </div>
 
       {/* Current Position */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6 text-center">
+      <div className="bg-card rounded-md shadow-sm border border-border p-6 text-center">
         <p className="text-sm text-muted-foreground mb-2">{t('currentPosition')}</p>
         <p className="text-5xl font-bold text-foreground font-mono">{currentSquare}</p>
       </div>
 
       {/* Move Input */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('availableMoves')}</h3>
 
         {availableMoves.length > 0 ? (
@@ -143,7 +143,7 @@ export function KnightTourBlindPlaying({
             </>
           )
         ) : (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-center">
+          <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4 text-center">
             <p className="text-destructive font-medium">{t('stuck')}</p>
             <p className="text-sm text-muted-foreground mt-1">{t('stuckHint')}</p>
           </div>
@@ -162,7 +162,7 @@ export function KnightTourBlindPlaying({
       </div>
 
       {/* Move History */}
-      <div className="bg-card rounded-xl shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('moveHistory')}</h3>
         <div className="max-h-32 overflow-y-auto">
           <div className="flex flex-wrap gap-1">

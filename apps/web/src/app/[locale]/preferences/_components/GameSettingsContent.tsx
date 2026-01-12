@@ -36,7 +36,7 @@ export function GameSettingsContent({
   // Demo position for preview
   const demoFen = 'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2';
 
-  const containerClass = compact ? '' : 'bg-card rounded-xl p-6 shadow-sm border border-border';
+  const containerClass = compact ? '' : 'bg-card rounded-md p-6 shadow-sm border border-border';
 
   return (
     <div className={containerClass}>
@@ -220,7 +220,7 @@ export function GameSettingsContent({
 
               {/* Perspective toggle */}
               <div className="flex justify-center mb-4">
-                <div className="inline-flex rounded-lg bg-muted p-1">
+                <div className="inline-flex rounded-md bg-muted p-1">
                   <button
                     onClick={() => setPreviewPerspective('white')}
                     className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${

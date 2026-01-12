@@ -17,15 +17,15 @@ export function PrimaryButton({
 }: Props) {
   const variantClasses =
     variant === 'secondary'
-      ? 'bg-muted text-muted-foreground hover:bg-muted/80'
-      : 'bg-foreground text-background hover:bg-foreground/90';
+      ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+      : 'bg-primary text-primary-foreground hover:bg-primary/90';
 
   const baseClasses = [
     'px-6',
     'py-3',
     variantClasses,
-    'font-semibold',
-    'rounded-lg',
+    'font-medium',
+    'rounded-md',
     'transition-colors',
     'disabled:opacity-50',
     'disabled:cursor-not-allowed',

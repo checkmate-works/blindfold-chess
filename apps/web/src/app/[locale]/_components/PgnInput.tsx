@@ -52,7 +52,6 @@ export function PgnInput({
   useEffect(() => {
     // If this was a paste operation, update immediately
     if (isPasteRef.current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDebouncedValue(value);
       isPasteRef.current = false;
       return;
@@ -128,7 +127,7 @@ export function PgnInput({
             autoCapitalize="none"
             autoCorrect="off"
             className={`
-              relative w-full ${heightClass} px-4 py-3 border-2 rounded-lg bg-transparent font-mono text-base resize-none
+              relative w-full ${heightClass} px-4 py-3 border-2 rounded-md bg-transparent font-mono text-base resize-none
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
               ${showError ? 'border-red-500' : 'border-border focus:border-foreground'}
             `}
@@ -160,7 +159,7 @@ export function PgnInput({
         <button
           type="button"
           onClick={applySuggestion}
-          className="w-full px-4 py-2 text-sm font-medium text-foreground bg-muted/50 border border-border rounded-lg hover:bg-muted transition-colors"
+          className="w-full px-4 py-2 text-sm font-medium text-foreground bg-muted/50 border border-border rounded-md hover:bg-muted transition-colors"
         >
           {t('completeSuggestion', { suggestion })}
         </button>

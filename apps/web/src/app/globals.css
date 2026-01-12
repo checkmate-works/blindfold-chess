@@ -4,46 +4,48 @@
 /* Define dark mode variant for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* CSS Variables for theme colors */
+/* CSS Variables for theme colors - Lichess-inspired design */
 @layer base {
   :root {
-    --color-background: #ffffff;
-    --color-foreground: #000000;
+    /* Light mode - inspired by lichess warm neutral palette */
+    --color-background: #f0f0f0;
+    --color-foreground: #3d3d3d;
     --color-card: #ffffff;
-    --color-card-foreground: #000000;
-    --color-primary: #f3f4f6;
-    --color-primary-foreground: #000000;
-    --color-secondary: #ffffff;
-    --color-secondary-foreground: #1f2937;
-    --color-muted: #f3f4f6;
-    --color-muted-foreground: #6b7280;
-    --color-accent: #f3f4f6;
-    --color-accent-foreground: #000000;
-    --color-destructive: #ef4444;
+    --color-card-foreground: #3d3d3d;
+    --color-primary: #3893E8;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #e8e8e8;
+    --color-secondary-foreground: #3d3d3d;
+    --color-muted: #e8e8e8;
+    --color-muted-foreground: #7f7f7f;
+    --color-accent: #f0f0f0;
+    --color-accent-foreground: #3d3d3d;
+    --color-destructive: #dc524a;
     --color-destructive-foreground: #ffffff;
-    --color-border: #e5e7eb;
-    --color-input: #e5e7eb;
-    --color-ring: #374151;
+    --color-border: #cccccc;
+    --color-input: #ffffff;
+    --color-ring: #3893E8;
   }
 
   .dark {
-    --color-background: #2d2d2d;
-    --color-foreground: #ffffff;
-    --color-card: #383838;
-    --color-card-foreground: #ffffff;
-    --color-primary: #9ca3af;
-    --color-primary-foreground: #1f2937;
-    --color-secondary: #404040;
-    --color-secondary-foreground: #ffffff;
-    --color-muted: #3a3a3a;
-    --color-muted-foreground: #a1a1aa;
-    --color-accent: #3a3a3a;
-    --color-accent-foreground: #ffffff;
-    --color-destructive: #7f1d1d;
+    /* Dark mode - inspired by lichess signature warm dark theme */
+    --color-background: #161512;
+    --color-foreground: #bababa;
+    --color-card: #262421;
+    --color-card-foreground: #bababa;
+    --color-primary: #3893E8;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #2b2926;
+    --color-secondary-foreground: #bababa;
+    --color-muted: #2b2926;
+    --color-muted-foreground: #7f7f7f;
+    --color-accent: #2b2926;
+    --color-accent-foreground: #bababa;
+    --color-destructive: #dc524a;
     --color-destructive-foreground: #ffffff;
-    --color-border: #525252;
-    --color-input: #3a3a3a;
-    --color-ring: #9ca3af;
+    --color-border: #3d3d3d;
+    --color-input: #2b2926;
+    --color-ring: #3893E8;
   }
 }
 
