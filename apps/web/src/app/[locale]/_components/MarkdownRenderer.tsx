@@ -24,8 +24,12 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           }
           return <PageTitle>{children}</PageTitle>;
         },
-        h2: ({ children }) => <SectionTitle>{children}</SectionTitle>,
-        h3: ({ children }) => <SubsectionTitle>{children}</SubsectionTitle>,
+        h2: ({ children }) => (
+          <SectionTitle className="text-xl mb-4 mt-10">{children}</SectionTitle>
+        ),
+        h3: ({ children }) => (
+          <SubsectionTitle className="text-lg mb-3 mt-8">{children}</SubsectionTitle>
+        ),
         p: ({ children }) => {
           if (
             Array.isArray(children) &&
@@ -33,11 +37,13 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           ) {
             return <>{children}</>;
           }
-          return <p className="text-foreground/90">{children}</p>;
+          return <p className="text-foreground/90 leading-relaxed mb-6">{children}</p>;
         },
-        ul: ({ children }) => <ul className="list-disc ml-6 space-y-2">{children}</ul>,
-        ol: ({ children }) => <ol className="list-decimal ml-6 space-y-2">{children}</ol>,
-        li: ({ children }) => <li className="text-foreground/90 pl-2">{children}</li>,
+        ul: ({ children }) => <ul className="list-disc ml-6 space-y-2 mb-6">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal ml-6 space-y-2 mb-6">{children}</ol>,
+        li: ({ children }) => (
+          <li className="text-foreground/90 pl-2 leading-relaxed">{children}</li>
+        ),
         strong: ({ children }) => (
           <strong className="font-semibold text-foreground">{children}</strong>
         ),
@@ -47,7 +53,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground underline hover:opacity-80"
+            className="text-primary no-underline hover:underline transition-all"
           >
             {children}
           </a>
@@ -84,7 +90,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         tbody: ({ children }) => <tbody>{children}</tbody>,
         tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
         th: ({ children }) => (
-          <th className="px-4 py-2 text-left font-semibold text-foreground border border-border">
+          <th className="px-4 py-2 text-left font-medium text-foreground border border-border">
             {children}
           </th>
         ),

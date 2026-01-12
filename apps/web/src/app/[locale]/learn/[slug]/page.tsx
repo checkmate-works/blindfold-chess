@@ -94,10 +94,19 @@ export default async function LearnArticlePage({ params }: Props) {
   }));
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{article.metadata.title}</PageTitle>
+    <div className="space-y-12">
+      {/* Article header */}
+      <header className="space-y-4 max-w-3xl">
+        <PageTitle>{article.metadata.title}</PageTitle>
+        {article.metadata.excerpt && (
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            {article.metadata.excerpt}
+          </p>
+        )}
+      </header>
 
-      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
+      {/* Article content with narrower width for readability */}
+      <article className="prose prose-slate dark:prose-invert max-w-2xl">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
