@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Chess } from 'chess.js';
+import { FaChevronDown } from 'react-icons/fa';
 
 import type { AlgebraicNotation } from '@/lib/types';
 
@@ -18,6 +19,8 @@ type Props = {
 
 export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: Props) {
   const [selectedMove, setSelectedMove] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Calculate legal moves from FEN (derived state)
   const legalMoves = useMemo(() => {
@@ -34,21 +37,28 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
   // Reset selection when FEN changes
   useEffect(() => {
     setSelectedMove('');
+    setIsOpen(false);
   }, [fen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedMove && !disabled) {
-      onSubmit(selectedMove as AlgebraicNotation);
-      setSelectedMove('');
-    }
-  };
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const move = e.target.value;
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (move: string) => {
     setSelectedMove(move);
+    setIsOpen(false);
 
-    // Call onChange callback if provided (e.g., to clear errors)
+    // Call onChange callback if provided
     if (onChange) {
       onChange();
     }
@@ -60,23 +70,51 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
     }
   };
 
+  const toggleOpen = () => {
+    if (!disabled && legalMoves.length > 0) {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  const isDisabled = disabled || legalMoves.length === 0;
+
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <select
-        value={selectedMove}
-        onChange={handleSelectChange}
-        disabled={disabled || legalMoves.length === 0}
-        className="flex-1 px-4 py-3.5 md:py-3 border border-border rounded-lg bg-background text-lg md:text-base text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+    <div ref={containerRef} className="relative flex-1">
+      <button
+        type="button"
+        onClick={toggleOpen}
+        disabled={isDisabled}
+        className={`w-full flex items-center justify-between px-4 py-3.5 md:py-3 border rounded-lg bg-background text-lg md:text-base text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors ${
+          isDisabled
+            ? 'opacity-50 cursor-not-allowed border-border'
+            : 'border-border hover:bg-muted/50'
+        } ${isOpen ? 'ring-2 ring-ring border-ring' : ''}`}
       >
-        <option value="">
-          {legalMoves.length === 0 ? 'No legal moves available' : placeholder || 'Select a move...'}
-        </option>
-        {legalMoves.map((move) => (
-          <option key={move} value={move}>
-            {move}
-          </option>
-        ))}
-      </select>
-    </form>
+        <span className={!selectedMove ? 'text-muted-foreground' : 'text-foreground'}>
+          {selectedMove ||
+            (legalMoves.length === 0
+              ? 'No legal moves available'
+              : placeholder || 'Select a move...')}
+        </span>
+        <FaChevronDown
+          className={`w-4 h-4 ml-2 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto w-full">
+          {legalMoves.map((move) => (
+            <button
+              key={move}
+              type="button"
+              onClick={() => handleSelect(move)}
+              className="w-full px-4 py-4 md:py-2 text-left font-mono text-lg md:text-base text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted"
+            >
+              {move}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
