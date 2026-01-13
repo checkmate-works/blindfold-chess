@@ -618,10 +618,12 @@
       "errorSaving": "Failed to save. Please try again."
     },
     "bulkDelete": {
-      "title": "Organize Games",
+      "title": "Bulk Delete Games",
       "explanation": "Select and delete unwanted games in bulk.",
       "noGames": "No games to delete",
       "selectedCount": "{count} games selected",
+      "selectAll": "Select All",
+      "unselectAll": "Unselect All",
       "delete": "Delete",
       "cancel": "Cancel",
       "processing": "Processing...",

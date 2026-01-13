@@ -618,10 +618,12 @@
       "errorSaving": "保存に失敗しました。もう一度お試しください。"
     },
     "bulkDelete": {
-      "title": "ゲームを整理",
+      "title": "ゲームの一括削除",
       "explanation": "不要なゲームを選択して一括削除できます。",
       "noGames": "削除できるゲームがありません",
       "selectedCount": "{count}個のゲームを選択中",
+      "selectAll": "すべて選択",
+      "unselectAll": "選択を解除",
       "delete": "削除",
       "cancel": "キャンセル",
       "processing": "処理中...",

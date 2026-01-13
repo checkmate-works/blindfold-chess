@@ -12,6 +12,8 @@ export type GameListProps = {
   selectedGameIds: Set<string>;
   onToggleGame: (gameId: string) => void;
   isDisabled?: boolean;
+  onToggleAll?: () => void;
+  isAllSelected?: boolean;
 };
 
 export function getStatusStyles(status: Game['status']): string {

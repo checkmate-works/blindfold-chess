@@ -8,7 +8,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game } from '@/lib/types';
 
-import { PageTitle } from '@/app/[locale]/_components';
+import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameSelector } from './_components/GameSelector';
@@ -58,11 +59,6 @@ export default function BulkDeletePage() {
     }
   };
 
-  const handleCancel = () => {
-    // Redirect to home
-    router.push(`/${locale}`);
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -89,16 +85,18 @@ export default function BulkDeletePage() {
     <div className="space-y-8">
       <div className="space-y-4">
         <PageTitle>{t('title')}</PageTitle>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-          <p className="text-sm text-foreground">{t('explanation')}</p>
-        </div>
+        <p className="text-lg text-muted-foreground leading-relaxed">{t('explanation')}</p>
       </div>
 
-      <GameSelector
-        games={games}
-        onDelete={handleDelete}
-        onCancel={handleCancel}
-        isProcessing={isProcessing}
+      <GameSelector games={games} onDelete={handleDelete} isProcessing={isProcessing} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('title'), href: undefined }, // "Organize Games"
+        ]}
+        locale={locale}
       />
     </div>
   );

@@ -9,11 +9,10 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 type Props = {
   selectedGameIds: Set<string>;
   onDelete: (gameIdsToDelete: string[]) => Promise<void>;
-  onCancel: () => void;
   isProcessing: boolean;
 };
 
-export function BulkDeleteActions({ selectedGameIds, onDelete, onCancel, isProcessing }: Props) {
+export function BulkDeleteActions({ selectedGameIds, onDelete, isProcessing }: Props) {
   const t = useTranslations('home.bulkDelete');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -46,18 +45,9 @@ export function BulkDeleteActions({ selectedGameIds, onDelete, onCancel, isProce
           onClick={handleDeleteClick}
           disabled={selectedGameIds.size === 0 || isProcessing}
           loading={isProcessing}
-          className="flex-1"
+          className="flex-1 sm:flex-none sm:w-64"
         >
           {t('delete')}
-        </Button>
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={onCancel}
-          disabled={isProcessing}
-          className="sm:w-auto"
-        >
-          {t('cancel')}
         </Button>
       </div>
 
