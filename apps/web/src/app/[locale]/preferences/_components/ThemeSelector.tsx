@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 
+import { PreferenceOption } from './PreferenceOption';
+
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -46,23 +48,16 @@ export function ThemeSelector() {
   return (
     <div className="space-y-2">
       {themes.map((themeOption) => (
-        <label
+        <PreferenceOption
           key={themeOption.id}
-          className="flex items-center justify-between p-3 border border-border rounded-md hover:bg-accent cursor-pointer"
-        >
-          <div className="flex items-center">
-            <input
-              type="radio"
-              name="themeMode"
-              value={themeOption.id}
-              checked={theme === themeOption.id}
-              onChange={() => setTheme(themeOption.id)}
-              className="h-4 w-4 text-primary focus:ring-primary border-border"
-            />
-            <span className="ml-3 text-sm text-foreground">{themeOption.label}</span>
-          </div>
-          <span className="text-xs text-muted-foreground">{themeOption.description}</span>
-        </label>
+          type="radio"
+          name="themeMode"
+          value={themeOption.id}
+          checked={theme === themeOption.id}
+          onChange={() => setTheme(themeOption.id)}
+          label={themeOption.label}
+          description={themeOption.description}
+        />
       ))}
     </div>
   );

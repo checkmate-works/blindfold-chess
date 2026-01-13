@@ -65,7 +65,7 @@ export function GameListClient({ locale }: Props) {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <PageTitle>{tGameList('title')}</PageTitle>
+        <PageTitle className="!mb-0 !text-left">{tGameList('title')}</PageTitle>
         {!isLoading && games.length > 0 && (
           <SortButton
             sortBy={sortBy}

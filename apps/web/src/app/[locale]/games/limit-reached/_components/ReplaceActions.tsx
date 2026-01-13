@@ -1,8 +1,7 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
+import { FaSpinner } from 'react-icons/fa';
 
 type Props = {
   selectedGameIds: Set<string>;
@@ -42,7 +41,7 @@ export function ReplaceActions({
           disabled={selectedGameIds.size === 0 || isProcessing}
           variant="primary"
           size="lg"
-          icon={isProcessing ? <span className="animate-spin">⏳</span> : undefined}
+          icon={isProcessing ? <FaSpinner className="animate-spin" /> : undefined}
           className="flex-1 font-medium"
         >
           {isProcessing ? t('processing') : t('deleteAndSave')}

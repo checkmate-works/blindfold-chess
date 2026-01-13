@@ -7,6 +7,7 @@ import {
   CardLink,
   Divider,
   MarkdownRenderer,
+  PageDescription,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -98,11 +99,7 @@ export default async function LearnArticlePage({ params }: Props) {
       {/* Article header */}
       <header className="space-y-4 max-w-3xl">
         <PageTitle>{article.metadata.title}</PageTitle>
-        {article.metadata.excerpt && (
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {article.metadata.excerpt}
-          </p>
-        )}
+        {article.metadata.excerpt && <PageDescription>{article.metadata.excerpt}</PageDescription>}
       </header>
 
       {/* Article content with narrower width for readability */}

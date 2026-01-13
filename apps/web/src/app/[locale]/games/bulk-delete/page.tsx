@@ -8,11 +8,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game } from '@/lib/types';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameSelector } from './_components/GameSelector';
+import { GameSelectorSkeleton } from './_components/GameSelectorSkeleton';
 
 export default function BulkDeletePage() {
   const params = useParams();
@@ -63,9 +64,7 @@ export default function BulkDeletePage() {
     return (
       <div className="space-y-8">
         <PageTitle>{t('title')}</PageTitle>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin text-4xl">⏳</div>
-        </div>
+        <GameSelectorSkeleton />
       </div>
     );
   }
@@ -85,7 +84,7 @@ export default function BulkDeletePage() {
     <div className="space-y-8">
       <div className="space-y-4">
         <PageTitle>{t('title')}</PageTitle>
-        <p className="text-lg text-muted-foreground leading-relaxed">{t('explanation')}</p>
+        <PageDescription>{t('explanation')}</PageDescription>
       </div>
 
       <GameSelector games={games} onDelete={handleDelete} isProcessing={isProcessing} />

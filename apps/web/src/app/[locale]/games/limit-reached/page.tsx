@@ -14,6 +14,7 @@ import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 import { PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { GameSelectorSkeleton } from '../bulk-delete/_components/GameSelectorSkeleton';
 import { GameSelector } from './_components/GameSelector';
 
 type PendingGame = {
@@ -216,13 +217,13 @@ export default function ManageLimitPage() {
     router.push(`/${locale}`);
   };
 
+  // ... existing code ...
+
   if (isLoading) {
     return (
       <div className="space-y-8">
         <PageTitle>{t('title')}</PageTitle>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin text-4xl">⏳</div>
-        </div>
+        <GameSelectorSkeleton />
       </div>
     );
   }

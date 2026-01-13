@@ -10,6 +10,8 @@ import type { Side } from '@/lib/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { PreferenceOption } from './PreferenceOption';
+
 type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
@@ -54,23 +56,19 @@ export function GameSettingsContent({
             </h5>
             <div className="space-y-2">
               {(['default', 'lichess', 'chesscom'] as const).map((theme) => (
-                <label key={theme} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="boardTheme"
-                    value={theme}
-                    checked={settings.boardTheme === theme}
-                    onChange={(e) =>
-                      onSettingsChange({
-                        boardTheme: e.target.value as typeof theme,
-                      })
-                    }
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {t(`game.boardThemes.${theme}`)}
-                  </span>
-                </label>
+                <PreferenceOption
+                  key={theme}
+                  type="radio"
+                  name="boardTheme"
+                  value={theme}
+                  checked={settings.boardTheme === theme}
+                  onChange={(e) =>
+                    onSettingsChange({
+                      boardTheme: e.target.value as typeof theme,
+                    })
+                  }
+                  label={t(`game.boardThemes.${theme}`)}
+                />
               ))}
             </div>
           </div>
@@ -81,28 +79,18 @@ export function GameSettingsContent({
               {t('game.displayOptions')}
             </h5>
             <div className="space-y-3">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={settings.showCoordinates}
-                  onChange={(e) => onSettingsChange({ showCoordinates: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('game.showCoordinates')}
-                </span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={settings.highlightLastMove}
-                  onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('game.highlightLastMove')}
-                </span>
-              </label>
+              <PreferenceOption
+                type="checkbox"
+                checked={settings.showCoordinates}
+                onChange={(e) => onSettingsChange({ showCoordinates: e.target.checked })}
+                label={t('game.showCoordinates')}
+              />
+              <PreferenceOption
+                type="checkbox"
+                checked={settings.highlightLastMove}
+                onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
+                label={t('game.highlightLastMove')}
+              />
             </div>
           </div>
         </div>
@@ -116,26 +104,18 @@ export function GameSettingsContent({
             {t('game.pieceVisibility')}
           </h4>
           <div className="space-y-3">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.showOwnPieces}
-                onChange={(e) => onSettingsChange({ showOwnPieces: e.target.checked })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">{t('game.showOwnPieces')}</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={settings.showOpponentPieces}
-                onChange={(e) => onSettingsChange({ showOpponentPieces: e.target.checked })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {t('game.showOpponentPieces')}
-              </span>
-            </label>
+            <PreferenceOption
+              type="checkbox"
+              checked={settings.showOwnPieces}
+              onChange={(e) => onSettingsChange({ showOwnPieces: e.target.checked })}
+              label={t('game.showOwnPieces')}
+            />
+            <PreferenceOption
+              type="checkbox"
+              checked={settings.showOpponentPieces}
+              onChange={(e) => onSettingsChange({ showOpponentPieces: e.target.checked })}
+              label={t('game.showOpponentPieces')}
+            />
           </div>
         </div>
 
@@ -156,23 +136,19 @@ export function GameSettingsContent({
             <div className="space-y-2">
               {(['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const).map(
                 (mode) => (
-                  <label key={mode} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="pieceShapeMode"
-                      value={mode}
-                      checked={settings.pieceShapeMode === mode}
-                      onChange={(e) =>
-                        onSettingsChange({
-                          pieceShapeMode: e.target.value as typeof mode,
-                        })
-                      }
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      {t(`game.pieceShapes.${mode}`)}
-                    </span>
-                  </label>
+                  <PreferenceOption
+                    key={mode}
+                    type="radio"
+                    name="pieceShapeMode"
+                    value={mode}
+                    checked={settings.pieceShapeMode === mode}
+                    onChange={(e) =>
+                      onSettingsChange({
+                        pieceShapeMode: e.target.value as typeof mode,
+                      })
+                    }
+                    label={t(`game.pieceShapes.${mode}`)}
+                  />
                 )
               )}
             </div>
@@ -185,23 +161,19 @@ export function GameSettingsContent({
             </h5>
             <div className="space-y-2">
               {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
-                <label key={colors} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="pieceColors"
-                    value={colors}
-                    checked={settings.pieceColors === colors}
-                    onChange={(e) =>
-                      onSettingsChange({
-                        pieceColors: e.target.value as typeof colors,
-                      })
-                    }
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {t(`game.pieceColors.${colors}`)}
-                  </span>
-                </label>
+                <PreferenceOption
+                  key={colors}
+                  type="radio"
+                  name="pieceColors"
+                  value={colors}
+                  checked={settings.pieceColors === colors}
+                  onChange={(e) =>
+                    onSettingsChange({
+                      pieceColors: e.target.value as typeof colors,
+                    })
+                  }
+                  label={t(`game.pieceColors.${colors}`)}
+                />
               ))}
             </div>
           </div>

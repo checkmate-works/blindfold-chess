@@ -25,6 +25,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { InfoModal } from '@/app/_components';
 import { FaInfoCircle } from 'react-icons/fa';
 
+import { Divider } from '@/app/[locale]/_components/Divider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PageTitle } from '../../_components/PageTitle';
@@ -99,6 +100,7 @@ export default function PostmortemPage() {
         initialOffset={offset}
         onSelectedMoveChange={setSelectedMoveDisplay}
       />
+      <Divider />
       <ClientBreadcrumb
         items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
         locale={locale}

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -55,6 +55,8 @@ export default async function FenSessionPage({ params, searchParams }: Props) {
       <PageTitle>{t('practice.fen.session')}</PageTitle>
 
       <FenSession locale={locale} problemCount={problemCount} shuffle={shuffle} />
+
+      <Divider />
 
       <Breadcrumb items={breadcrumbItems} locale={locale} />
     </div>

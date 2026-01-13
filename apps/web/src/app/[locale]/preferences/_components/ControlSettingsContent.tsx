@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { PreferenceOption } from './PreferenceOption';
+
 type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
@@ -21,48 +23,38 @@ export function ControlSettingsContent({ settings, onSettingsChange, compact = f
         <div>
           <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.moveInput')}</h4>
           <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="moveInputMode"
-                value="text"
-                checked={settings.moveInputMode === 'text'}
-                onChange={() => onSettingsChange({ moveInputMode: 'text' })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {t('controls.textInput')} - {t('controls.textInputDescription')}
-              </span>
-            </label>
-
-            {/* Auto-complete checkbox - shown only when text input is selected */}
-            {settings.moveInputMode === 'text' && (
-              <label className="flex items-center ml-6">
-                <input
+            <PreferenceOption
+              type="radio"
+              name="moveInputMode"
+              value="text"
+              checked={settings.moveInputMode === 'text'}
+              onChange={() => onSettingsChange({ moveInputMode: 'text' })}
+              label={t('controls.textInput')}
+              description={t('controls.textInputDescription')}
+              descriptionPosition="bottom"
+            >
+              {settings.moveInputMode === 'text' && (
+                <PreferenceOption
                   type="checkbox"
                   checked={settings.enableAutoComplete}
                   onChange={(e) => onSettingsChange({ enableAutoComplete: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  label={t('controls.enableAutoComplete')}
+                  variant="plain"
+                  className="ml-6"
                 />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {t('controls.enableAutoComplete')}
-                </span>
-              </label>
-            )}
+              )}
+            </PreferenceOption>
 
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="moveInputMode"
-                value="select"
-                checked={settings.moveInputMode === 'select'}
-                onChange={() => onSettingsChange({ moveInputMode: 'select' })}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-              />
-              <span className="ml-2 text-sm text-muted-foreground">
-                {t('controls.selectInput')} - {t('controls.selectInputDescription')}
-              </span>
-            </label>
+            <PreferenceOption
+              type="radio"
+              name="moveInputMode"
+              value="select"
+              checked={settings.moveInputMode === 'select'}
+              onChange={() => onSettingsChange({ moveInputMode: 'select' })}
+              label={t('controls.selectInput')}
+              description={t('controls.selectInputDescription')}
+              descriptionPosition="bottom"
+            />
           </div>
         </div>
       </div>

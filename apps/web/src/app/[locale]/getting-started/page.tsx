@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -40,6 +40,8 @@ export default async function GettingStartedPage({ params }: Props) {
       <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
         <MarkdownRenderer content={content} skipFirstH1={true} />
       </article>
+
+      <Divider />
 
       <Breadcrumb items={[{ label: t('gettingStarted.title') }]} locale={locale} />
     </div>
