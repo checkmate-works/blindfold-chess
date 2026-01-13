@@ -48,6 +48,7 @@
   },
   "Preferences": {
     "title": "設定",
+    "cancel": "キャンセル",
     "tabs": {
       "board": "ボード",
       "controls": "コントロール",
@@ -89,7 +90,11 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
-      "resetDefaults": "デフォルトに戻す"
+      "resetDefaults": "デフォルトに戻す",
+      "resetDefaultsConfirm": {
+        "title": "ボード設定をリセットしますか？",
+        "message": "すべてのボード設定と外観設定をデフォルト値に戻します。この操作は取り消せません。"
+      }
     },
     "appearance": {
       "theme": "テーマ",
@@ -620,7 +625,9 @@
       "delete": "削除",
       "cancel": "キャンセル",
       "processing": "処理中...",
-      "errorDeleting": "削除に失敗しました。もう一度お試しください。"
+      "errorDeleting": "削除に失敗しました。もう一度お試しください。",
+      "confirmTitle": "選択したゲームを削除しますか？",
+      "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。"
     }
   },
   "play": {

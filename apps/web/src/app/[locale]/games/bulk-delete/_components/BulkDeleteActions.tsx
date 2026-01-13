@@ -1,6 +1,10 @@
-'use client';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+
+import { Button } from '@/app/_components';
+
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 type Props = {
   selectedGameIds: Set<string>;
@@ -11,9 +15,15 @@ type Props = {
 
 export function BulkDeleteActions({ selectedGameIds, onDelete, onCancel, isProcessing }: Props) {
   const t = useTranslations('home.bulkDelete');
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
     if (selectedGameIds.size === 0) return;
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsConfirmOpen(false);
     await onDelete(Array.from(selectedGameIds));
   };
 
@@ -30,28 +40,38 @@ export function BulkDeleteActions({ selectedGameIds, onDelete, onCancel, isProce
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={handleDelete}
+        <Button
+          variant="destructive"
+          size="lg"
+          onClick={handleDeleteClick}
           disabled={selectedGameIds.size === 0 || isProcessing}
-          className="flex-1 px-6 py-3 bg-red-600 dark:bg-red-600 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
+          loading={isProcessing}
+          className="flex-1"
         >
-          {isProcessing ? (
-            <>
-              <span className="animate-spin">⏳</span>
-              {t('processing')}
-            </>
-          ) : (
-            <>{t('delete')}</>
-          )}
-        </button>
-        <button
+          {t('delete')}
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
           onClick={onCancel}
           disabled={isProcessing}
-          className="sm:w-auto px-6 py-3 bg-white dark:bg-white text-black border border-border rounded-md hover:bg-gray-100 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="sm:w-auto"
         >
           {t('cancel')}
-        </button>
+        </Button>
       </div>
+
+      <ConfirmationModal
+        isOpen={isConfirmOpen}
+        title={t('confirmTitle')}
+        message={t('confirmMessage', { count: selectedGameIds.size })}
+        confirmText={t('delete')}
+        cancelText={t('cancel')}
+        confirmVariant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsConfirmOpen(false)}
+        isLoading={isProcessing}
+      />
     </div>
   );
 }
