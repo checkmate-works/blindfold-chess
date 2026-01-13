@@ -68,8 +68,45 @@ export function ToastContainer() {
       }
     };
 
+    const handleGameLimitReached = () => {
+      // Immediate redirect for game limit
+      if (processingToastRef.current) return;
+
+      const gameLimitReached = sessionStorage.getItem('blindfold_chess_game_limit_reached');
+      if (gameLimitReached === 'true') {
+        processingToastRef.current = true;
+        router.push(`/${locale}/games/limit-reached`);
+
+        // Reset flag after redirect
+        setTimeout(() => {
+          processingToastRef.current = false;
+        }, 1000);
+      }
+    };
+
+    const handleGameLimitStartError = () => {
+      if (processingToastRef.current) return;
+      processingToastRef.current = true;
+      router.push(`/${locale}/game/new`);
+      setTimeout(() => {
+        processingToastRef.current = false;
+      }, 1000);
+    };
+
     // Check when pathname changes (navigation occurred)
     checkForToast();
+
+    // Listen for custom event
+    window.addEventListener('blindfold-chess:game-limit-reached', handleGameLimitReached);
+    window.addEventListener('blindfold-chess:game-limit-start-error', handleGameLimitStartError);
+
+    return () => {
+      window.removeEventListener('blindfold-chess:game-limit-reached', handleGameLimitReached);
+      window.removeEventListener(
+        'blindfold-chess:game-limit-start-error',
+        handleGameLimitStartError
+      );
+    };
   }, [pathname, showToast, t, router, locale]); // Re-run when pathname changes
 
   return (

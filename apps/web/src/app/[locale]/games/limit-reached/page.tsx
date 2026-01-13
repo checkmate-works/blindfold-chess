@@ -11,11 +11,13 @@ import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, GameStatus } from '@/lib/types';
 import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
 
-import { PageTitle } from '@/app/[locale]/_components';
+import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { GameSelector } from '@/app/[locale]/games/_components';
 
 import { GameSelectorSkeleton } from '../bulk-delete/_components/GameSelectorSkeleton';
-import { GameSelector } from './_components/GameSelector';
+import { ReplaceActions } from './_components/ReplaceActions';
 
 type PendingGame = {
   moves: AlgebraicNotation[];
@@ -236,17 +238,25 @@ export default function ManageLimitPage() {
     <div className="space-y-8">
       <div className="space-y-4">
         <PageTitle>{t('title')}</PageTitle>
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-          <p className="text-sm text-foreground">{t('explanation', { limit: MAX_GAMES })}</p>
-        </div>
+        <PageDescription>{t('explanation', { limit: MAX_GAMES })}</PageDescription>
       </div>
 
       <GameSelector
         games={games}
-        onDeleteAndSave={handleDeleteAndSave}
-        onSkipSave={handleSkipSave}
         isProcessing={isProcessing}
+        renderActions={(selectedGameIds) => (
+          <ReplaceActions
+            selectedGameIds={selectedGameIds}
+            onDeleteAndSave={handleDeleteAndSave}
+            onSkipSave={handleSkipSave}
+            isProcessing={isProcessing}
+          />
+        )}
       />
+
+      <Divider />
+
+      <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
     </div>
   );
 }

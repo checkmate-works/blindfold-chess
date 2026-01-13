@@ -615,7 +615,10 @@
       "deleteAndSave": "Delete Selected & Save",
       "skipSave": "Don't Save",
       "processing": "Processing...",
-      "errorSaving": "Failed to save. Please try again."
+      "errorSaving": "Failed to save. Please try again.",
+      "confirmSkipTitle": "Discard Game?",
+      "confirmSkipMessage": "This game will not be saved. Are you sure you want to discard it?",
+      "confirmSkipButton": "Discard"
     },
     "bulkDelete": {
       "title": "Bulk Delete Games",

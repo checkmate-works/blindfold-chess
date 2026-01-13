@@ -92,16 +92,24 @@ export function useAutoSave({
           if (error instanceof GameLimitError) {
             // Game limit reached - store pending game data for later
             console.warn('Game limit reached, cannot save game:', error.message);
-            sessionStorage.setItem(
-              'blindfold_chess_pending_game',
-              JSON.stringify({
-                moves: currentMovesRef.current,
-                playerColor,
-                skillLevel,
-                status: currentStatusRef.current,
-              })
-            );
-            sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
+            // If new game with no moves (direct access to /play), redirect to new game page limit error
+            // Otherwise redirect to rescue page
+            if (currentMovesRef.current.length === 0) {
+              window.dispatchEvent(new Event('blindfold-chess:game-limit-start-error'));
+            } else {
+              sessionStorage.setItem(
+                'blindfold_chess_pending_game',
+                JSON.stringify({
+                  moves: currentMovesRef.current,
+                  playerColor,
+                  skillLevel,
+                  status: currentStatusRef.current,
+                })
+              );
+              sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
+              // Dispatch event for immediate redirect
+              window.dispatchEvent(new Event('blindfold-chess:game-limit-reached'));
+            }
           } else {
             console.error('Failed to save initial game state:', error);
           }
@@ -196,6 +204,8 @@ export function useAutoSave({
             })
           );
           sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
+          // Dispatch event for immediate redirect
+          window.dispatchEvent(new Event('blindfold-chess:game-limit-reached'));
         } else {
           console.error('Failed to auto-save game:', error);
         }
@@ -236,7 +246,7 @@ export function useAutoSave({
       // Save immediately to ensure both player and AI moves are saved
       saveGame(false); // Don't show notification on auto-save
     }
-  }, [moves.length, status, saveGame, saveOnInit]);
+  }, [moves.length, status, saveGame, saveOnInit, currentGameId]);
 
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {

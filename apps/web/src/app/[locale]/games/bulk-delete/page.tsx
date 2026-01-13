@@ -11,8 +11,9 @@ import type { Game } from '@/lib/types';
 import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { GameSelector } from '@/app/[locale]/games/_components';
 
-import { GameSelector } from './_components/GameSelector';
+import { BulkDeleteActions } from './_components/BulkDeleteActions';
 import { GameSelectorSkeleton } from './_components/GameSelectorSkeleton';
 
 export default function BulkDeletePage() {
@@ -87,7 +88,17 @@ export default function BulkDeletePage() {
         <PageDescription>{t('explanation')}</PageDescription>
       </div>
 
-      <GameSelector games={games} onDelete={handleDelete} isProcessing={isProcessing} />
+      <GameSelector
+        games={games}
+        isProcessing={isProcessing}
+        renderActions={(selectedGameIds) => (
+          <BulkDeleteActions
+            selectedGameIds={selectedGameIds}
+            onDelete={handleDelete}
+            isProcessing={isProcessing}
+          />
+        )}
+      />
 
       <Divider />
 

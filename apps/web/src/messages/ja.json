@@ -615,7 +615,10 @@
       "deleteAndSave": "選択したゲームを削除して保存",
       "skipSave": "保存しない",
       "processing": "処理中...",
-      "errorSaving": "保存に失敗しました。もう一度お試しください。"
+      "errorSaving": "保存に失敗しました。もう一度お試しください。",
+      "confirmSkipTitle": "保存せずに終了しますか？",
+      "confirmSkipMessage": "この対局は保存されません。本当に終了しますか？",
+      "confirmSkipButton": "終了する"
     },
     "bulkDelete": {
       "title": "ゲームの一括削除",

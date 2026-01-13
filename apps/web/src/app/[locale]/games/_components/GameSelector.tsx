@@ -1,18 +1,19 @@
+'use client';
+
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 
 import type { Game } from '@/lib/types';
 
-import { GameList } from '@/app/[locale]/games/_components';
-
-import { BulkDeleteActions } from './BulkDeleteActions';
+import { GameList } from './GameList';
 
 type Props = {
   games: Game[];
-  onDelete: (gameIdsToDelete: string[]) => Promise<void>;
   isProcessing: boolean;
+  renderActions: (selectedGameIds: Set<string>) => ReactNode;
 };
 
-export function GameSelector({ games, onDelete, isProcessing }: Props) {
+export function GameSelector({ games, isProcessing, renderActions }: Props) {
   const [selectedGameIds, setSelectedGameIds] = useState<Set<string>>(new Set());
 
   const handleToggleGame = (gameId: string) => {
@@ -47,11 +48,7 @@ export function GameSelector({ games, onDelete, isProcessing }: Props) {
         isAllSelected={areAllSelected}
       />
 
-      <BulkDeleteActions
-        selectedGameIds={selectedGameIds}
-        onDelete={onDelete}
-        isProcessing={isProcessing}
-      />
+      {renderActions(selectedGameIds)}
     </div>
   );
 }
