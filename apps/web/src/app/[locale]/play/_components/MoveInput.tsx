@@ -138,7 +138,7 @@ export function MoveInput({
                 <button
                   key={`${suggestion}-${index}`}
                   type="button"
-                  className="w-full px-4 py-2 text-left font-mono text-sm text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted"
+                  className="w-full px-4 py-4 md:py-2 text-left font-mono text-base md:text-sm text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted"
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                 >

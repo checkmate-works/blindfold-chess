@@ -831,7 +831,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
             {/* Action Buttons and Settings */}
             {gameStatus === 'in_progress' && (
-              <div className="mt-4 pb-4 px-4">
+              <div className="mt-4 pb-6 px-4">
                 <div className="flex gap-2 justify-center">
                   <button
                     onClick={handleUndo}
@@ -851,7 +851,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 </div>
 
                 {/* Control Settings Link */}
-                <div className="mt-2 text-center">
+                <div className="mt-6 text-center">
                   <button
                     onClick={() => setShowControlSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
@@ -861,7 +861,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 </div>
 
                 {/* Skill Level Settings Link */}
-                <div className="mt-2 text-center">
+                <div className="mt-6 text-center">
                   <button
                     onClick={() => setShowSkillLevelSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
