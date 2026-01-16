@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
@@ -44,16 +46,29 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           <strong className="font-semibold text-foreground">{children}</strong>
         ),
         em: ({ children }) => <em className="italic text-foreground/90">{children}</em>,
-        a: ({ href, children }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary no-underline hover:underline transition-all"
-          >
-            {children}
-          </a>
-        ),
+        a: ({ href, children }) => {
+          const isInternalLink = href?.startsWith('/') || href?.startsWith('#');
+          if (isInternalLink) {
+            return (
+              <Link
+                href={href || ''}
+                className="text-primary no-underline hover:underline transition-all"
+              >
+                {children}
+              </Link>
+            );
+          }
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary no-underline hover:underline transition-all"
+            >
+              {children}
+            </a>
+          );
+        },
         code: ({ children, className }) => {
           const isInline = !className;
           if (isInline) {
