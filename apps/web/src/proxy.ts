@@ -44,6 +44,6 @@ export const config = {
   matcher: [
     // Skip all internal paths (_next), API routes, static files, and images
     // Note: We need to process .xml files to return 404 for invalid ones like sitemap-0.xml
-    '/((?!_next|api|images|favicon.ico|logo.png|apple-icon.png|icon.png|icon-192x192.png|icon-512x512.png|manifest.webmanifest|robots.txt|sitemap.xml|stockfish.js|stockfish.wasm|ads.txt|googlece2bfd2bbd1ad539.html).*)',
+    '/((?!_next|api|images|favicon.ico|logo.png|apple-icon.png|icon.png|icon-192x192.png|icon-512x512.png|manifest.webmanifest|robots.txt|sitemap.xml|stockfish.js|stockfish.wasm|ads.txt|google9cbea86c89b56a83.html).*)',
   ],
 };
