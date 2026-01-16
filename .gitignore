@@ -49,9 +49,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# stockfish files (copied from node_modules)
-/public/stockfish.js
-/public/stockfish.wasm
-
 # turbo
 .turbo
