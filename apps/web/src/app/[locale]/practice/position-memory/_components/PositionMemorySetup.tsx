@@ -18,6 +18,8 @@ import { encodeFensToBase64, generateShareUrl, validateFEN } from '../_lib/utils
 import { PositionMemorySettings } from './PositionMemorySettings';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
+const MAX_FEN_COUNT = 10;
+
 type Props = {
   locale: Locale;
   urlError?: string | null;
@@ -130,6 +132,13 @@ export function PositionMemorySetup({
         .trim()
         .split('\n')
         .filter((line: string) => line.trim());
+
+      // Check line count limit
+      if (lines.length > MAX_FEN_COUNT) {
+        setCustomFenError(t('tooManyFens', { max: MAX_FEN_COUNT }));
+        return;
+      }
+
       const invalidLines: number[] = [];
 
       lines.forEach((line: string, index: number) => {
