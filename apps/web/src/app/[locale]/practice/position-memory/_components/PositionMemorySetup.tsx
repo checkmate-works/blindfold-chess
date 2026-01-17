@@ -37,9 +37,9 @@ export function PositionMemorySetup({
 
   // Default values (used for SSR and initial render)
   const defaultSettings = {
-    timeLimit: 10,
-    problemCount: 1,
-    shuffleProblems: true,
+    timeLimit: 30,
+    problemCount: 5,
+    shuffleProblems: false,
     useCustomFen: false,
     customFenInput: '',
   };
