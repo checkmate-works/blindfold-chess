@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
+import { Link } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -25,6 +26,7 @@ export function KnightTourSetup({
   onBlindfoldModeChange,
   onStart,
 }: Props) {
+  const locale = useLocale();
   const t = useTranslations('practice.knightTour');
 
   return (
@@ -76,6 +78,16 @@ export function KnightTourSetup({
         <Button onClick={onStart} variant="primary" size="lg" icon={<FaPlay />} className="w-full">
           {t('start')}
         </Button>
+      </div>
+
+      <div className="mt-4 text-center">
+        <Link
+          href="/practice/knight-tour/tutorial"
+          locale={locale}
+          className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
+        >
+          {t('viewTutorial')}
+        </Link>
       </div>
     </div>
   );

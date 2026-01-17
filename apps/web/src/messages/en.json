@@ -480,7 +480,18 @@
       "cancel": "Cancel",
       "save": "Save",
       "invalidSquareFormat": "Invalid square. Please enter a valid square (e.g., e4, f6).",
-      "alreadyVisited": "This square has already been visited."
+      "alreadyVisited": "This square has already been visited.",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "The Knight's Tour is a classic chess puzzle.\n\nUsing a knight, try to visit all 64 squares of the board exactly once.",
+        "exampleTitle": "Here is an example solution",
+        "startHint": "For blindfold chess training, it's effective to answer using only coordinates while visualizing the board in your mind, but let's start by playing with the board visible.",
+        "start": "Try It",
+        "skip": "Skip"
+      },
+      "tutorialComplete": "That's the basics!\nOnce you're comfortable, try randomizing the starting square or challenging yourself with blindfold mode.",
+      "finishTutorial": "Finish Tutorial",
+      "viewTutorial": "View Tutorial"
     },
     "fen": {
       "title": "FEN Reconstruction",

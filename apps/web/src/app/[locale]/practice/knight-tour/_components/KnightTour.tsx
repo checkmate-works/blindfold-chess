@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
@@ -20,9 +20,20 @@ import { KnightTourSetup } from './KnightTourSetup';
 
 type GameState = 'setup' | 'playing' | 'finished';
 
+type Props = {
+  autoStart?: boolean;
+  initialStartingSquare?: string;
+  initialBlindfoldMode?: boolean;
+};
+
 const STORAGE_KEY = 'knightTour_settings';
 
-export default function KnightTour() {
+export default function KnightTour({
+  autoStart = false,
+  initialStartingSquare,
+  initialBlindfoldMode,
+}: Props = {}) {
+  const locale = useLocale();
   const tQuit = useTranslations('practice.quitConfirmModal');
 
   // Settings
@@ -65,15 +76,29 @@ export default function KnightTour() {
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
 
-  // Save settings when they change
+  // Save settings when they change (only if not autoStart mode)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !autoStart) {
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ startingSquare: startingSquareOption, blindfoldMode })
       );
     }
-  }, [startingSquareOption, blindfoldMode]);
+  }, [startingSquareOption, blindfoldMode, autoStart]);
+
+  // Auto-start game when autoStart is true (for tutorial mode)
+  useEffect(() => {
+    if (autoStart && gameState === 'setup') {
+      const square = initialStartingSquare || 'a1';
+      const blindfolded = initialBlindfoldMode ?? false;
+      setStartingSquare(square);
+      setCurrentSquare(square);
+      setVisitedSquares(new Map([[square, 1]]));
+      setMoveHistory([square]);
+      setIsBlindfolded(blindfolded);
+      setGameState('playing');
+    }
+  }, [autoStart, initialStartingSquare, initialBlindfoldMode, gameState]);
 
   const startGame = useCallback(() => {
     const square = startingSquareOption === 'random' ? getRandomSquare() : startingSquareOption;
@@ -151,6 +176,11 @@ export default function KnightTour() {
   const isComplete = isTourComplete(visitedSquares);
   const isClosedTour = isClosedTourPossible(currentSquare, startingSquare, visitedSquares);
 
+  const handleFinishTutorial = useCallback(() => {
+    // Use window.location to ensure full page reload and state reset
+    window.location.href = `/${locale}/practice/knight-tour`;
+  }, [locale]);
+
   if (gameState === 'finished') {
     return (
       <KnightTourResult
@@ -160,7 +190,9 @@ export default function KnightTour() {
         lastSquare={currentSquare}
         startingSquare={startingSquare}
         isClosedTour={isClosedTour}
+        isTutorial={autoStart}
         onPlayAgain={handlePlayAgain}
+        onFinishTutorial={handleFinishTutorial}
       />
     );
   }
