@@ -175,6 +175,10 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     setFen(settings.fen);
     setPgn(settings.pgn);
     setIncludeOpponentMoves(settings.includeOpponentMoves);
+    // Switch to custom input tab if PGN is saved (indicates user has entered custom data)
+    if (settings.pgn.trim()) {
+      setUsePreset(false);
+    }
     setHasLoaded(true);
   }, [urlFen, urlPgn]);
 
