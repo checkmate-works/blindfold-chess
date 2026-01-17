@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MoveSequenceSetup } from './MoveSequenceSetup';
+import { MoveSequenceSetupSkeleton } from './MoveSequenceSetupSkeleton';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
@@ -38,7 +39,7 @@ export function MoveSequencePageContent({ locale, urlFen, urlPgn, urlError }: Pr
   }, [tutorialSkipped, locale, router]);
 
   if (tutorialSkipped === null || tutorialSkipped === false) {
-    return null;
+    return <MoveSequenceSetupSkeleton />;
   }
 
   return <MoveSequenceSetup locale={locale} urlFen={urlFen} urlPgn={urlPgn} urlError={urlError} />;

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionMemorySetup } from './PositionMemorySetup';
+import { PositionMemorySetupSkeleton } from './PositionMemorySetupSkeleton';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
@@ -29,7 +30,7 @@ export function PositionMemoryPageContent({ locale }: Props) {
   }, [tutorialSkipped, locale, router]);
 
   if (tutorialSkipped === null || tutorialSkipped === false) {
-    return null;
+    return <PositionMemorySetupSkeleton />;
   }
 
   return (
