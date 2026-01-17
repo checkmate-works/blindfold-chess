@@ -39,31 +39,23 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   useEffect(() => {
     // URL params take priority
     if (urlFen !== null && urlPgn !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFen(urlFen);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPgn(urlPgn);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasLoaded(true);
       return;
     }
 
     // Otherwise, load from localStorage
     const settings = loadSettings();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFen(settings.fen);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPgn(settings.pgn);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIncludeOpponentMoves(settings.includeOpponentMoves);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasLoaded(true);
   }, [urlFen, urlPgn]);
 
   // Show URL error if present
   useEffect(() => {
     if (urlError) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(t(urlError as 'url_too_long' | 'invalid_data' | 'invalid_fen'));
     }
   }, [urlError, t]);

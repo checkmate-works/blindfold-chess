@@ -10,7 +10,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
-import type { PositionAccuracy, PositionData } from '../_lib/types';
+import type { PositionData } from '../_lib/types';
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
 import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
