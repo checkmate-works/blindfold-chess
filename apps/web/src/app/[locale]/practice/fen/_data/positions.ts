@@ -1,4 +1,13 @@
 /**
+ * Type for preset FEN positions
+ */
+export type PresetPosition = {
+  id: string;
+  fen: string;
+  title: string;
+};
+
+/**
  * FEN problems for FEN reconstruction training
  * Sourced from position-memory module - from simple to complex
  */

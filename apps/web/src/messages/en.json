@@ -539,7 +539,30 @@
       "settings": "Settings",
       "problemCount": "Number of Problems",
       "problems": "problems",
-      "shuffle": "Shuffle Problems"
+      "shuffle": "Shuffle Problems",
+      "problemSource": "Problem Source",
+      "presetProblems": "Preset Problems",
+      "enterFen": "Enter FEN",
+      "presetDescription": "Select a problem to preview",
+      "customFenDescription": "Enter FEN strings, one per line (max 10)",
+      "customFenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "tooManyFens": "Maximum {max} FEN positions allowed",
+      "invalidFenOnLine": "Invalid FEN on line {lines}",
+      "invalidFenOnLines": "Invalid FEN on lines {lines}",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Practice reading FEN notation and recreating board positions.",
+        "start": "Place Pieces",
+        "skip": "Skip"
+      },
+      "tutorialComplete": "That's the basics!\nPractice reading FEN notation with various positions.",
+      "finishTutorial": "Finish Tutorial",
+      "resetSettings": "Reset Settings",
+      "resetSettingsConfirm": {
+        "title": "Reset Settings?",
+        "message": "All settings will be reset and you will be redirected to the tutorial."
+      },
+      "cancel": "Cancel"
     },
     "moveSequence": {
       "title": "Yakusoku Kumite",

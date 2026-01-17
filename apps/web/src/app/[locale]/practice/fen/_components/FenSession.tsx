@@ -14,6 +14,7 @@ import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_li
 import { getFenPositions } from '../_data/positions';
 import { FenProblemResult } from './FenProblemResult';
 import { FenRecreate } from './FenRecreate';
+import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type GamePhase = 'recreate' | 'problem-result' | 'result';
 
@@ -21,6 +22,9 @@ type Props = {
   locale: Locale;
   problemCount: number;
   shuffle: boolean;
+  isTutorial?: boolean;
+  customFen?: string;
+  fens?: string[];
 };
 
 // Fisher-Yates shuffle
@@ -33,7 +37,14 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export function FenSession({ locale, problemCount, shuffle }: Props) {
+export function FenSession({
+  locale,
+  problemCount,
+  shuffle,
+  isTutorial = false,
+  customFen,
+  fens,
+}: Props) {
   const t = useTranslations('practice.fen');
   const tPractice = useTranslations('practice');
   const { preferences } = useGamePreferences();
@@ -56,6 +67,34 @@ export function FenSession({ locale, problemCount, shuffle }: Props) {
   useEffect(() => {
     if (!hasMounted) {
       setHasMounted(true);
+
+      // If customFen is provided (e.g., from tutorial), use it directly
+      if (customFen) {
+        const isBlackToMove = customFen.includes(' b ');
+        setPositions([{ fen: customFen, isBlackToMove }]);
+        return;
+      }
+
+      // If fens are provided from URL params, use them
+      if (fens && fens.length > 0) {
+        let fenPositions = fens.map((fen) => {
+          const isBlackToMove = fen.includes(' b ');
+          return { fen, isBlackToMove };
+        });
+
+        // Shuffle if needed
+        if (shuffle) {
+          fenPositions = shuffleArray(fenPositions);
+        }
+
+        // Limit to problemCount
+        fenPositions = fenPositions.slice(0, problemCount);
+
+        setPositions(fenPositions);
+        return;
+      }
+
+      // Fallback to default positions
       let fenPositions = getFenPositions();
 
       // Shuffle if needed
@@ -68,7 +107,7 @@ export function FenSession({ locale, problemCount, shuffle }: Props) {
 
       setPositions(fenPositions);
     }
-  }, [hasMounted, problemCount, shuffle]);
+  }, [hasMounted, problemCount, shuffle, customFen, fens]);
 
   // Game state
   const [phase, setPhase] = useState<GamePhase>('recreate');
@@ -151,8 +190,12 @@ export function FenSession({ locale, problemCount, shuffle }: Props) {
   }, [currentProblemIndex]);
 
   const handlePlayAgain = useCallback(() => {
-    window.location.reload();
-  }, []);
+    if (isTutorial) {
+      localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+    }
+    // Always navigate to setup page
+    window.location.href = `/${locale}/practice/fen`;
+  }, [isTutorial, locale]);
 
   const handleQuitClick = useCallback(() => {
     setShowQuitModal(true);
@@ -193,6 +236,7 @@ export function FenSession({ locale, problemCount, shuffle }: Props) {
           currentProblemIndex={currentProblemIndex}
           problemCount={positions.length}
           boardTheme={preferences.boardTheme}
+          isTutorial={isTutorial}
           onPositionChange={setRecreatedPosition}
           onSubmit={handleSubmit}
           onSkip={handleSkip}
@@ -218,8 +262,10 @@ export function FenSession({ locale, problemCount, shuffle }: Props) {
         currentProblemIndex={currentProblemIndex}
         totalProblems={positions.length}
         boardTheme={preferences.boardTheme}
+        isTutorial={isTutorial}
         onNextProblem={handleNextProblem}
         onViewResults={() => setPhase('result')}
+        onFinishTutorial={handlePlayAgain}
       />
     );
   }

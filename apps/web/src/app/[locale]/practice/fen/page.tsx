@@ -13,11 +13,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { FenSetup } from './_components/FenSetup';
+import { FenPageContent } from './_components/FenPageContent';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -46,9 +46,8 @@ export default async function FenPracticePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.fen.pageTitle')}</PageTitle>
-      <PageDescription>{t('practice.fen.description')}</PageDescription>
 
-      <FenSetup locale={locale} />
+      <FenPageContent locale={locale} />
 
       <Divider />
       <Breadcrumb items={breadcrumbItems} locale={locale} />

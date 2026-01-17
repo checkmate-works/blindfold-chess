@@ -19,6 +19,7 @@ type Props = {
   currentProblemIndex: number;
   problemCount: number;
   boardTheme?: BoardTheme;
+  isTutorial?: boolean;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onSkip: () => void;
@@ -31,6 +32,7 @@ export function FenRecreate({
   currentProblemIndex,
   problemCount,
   boardTheme = 'default',
+  isTutorial = false,
   onPositionChange,
   onSubmit,
   onSkip,
@@ -95,18 +97,22 @@ export function FenRecreate({
         <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-md">
           {t('submit')}
         </Button>
-        <button
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('skip')}
-        </button>
-        <button
-          onClick={onQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('quit')}
-        </button>
+        {!isTutorial && (
+          <>
+            <button
+              onClick={onSkip}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              {t('skip')}
+            </button>
+            <button
+              onClick={onQuit}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              {t('quit')}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -539,7 +539,30 @@
       "settings": "設定",
       "problemCount": "問題数",
       "problems": "問",
-      "shuffle": "シャッフル"
+      "shuffle": "シャッフル",
+      "problemSource": "出題方式",
+      "presetProblems": "プリセットの問題",
+      "enterFen": "FENを入力",
+      "presetDescription": "問題を選択してプレビューを確認できます",
+      "customFenDescription": "FEN文字列を1行に1つずつ入力してください（最大10個）",
+      "customFenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "tooManyFens": "FENは最大{max}個までです",
+      "invalidFenOnLine": "{lines}行目のFENが無効です",
+      "invalidFenOnLines": "{lines}行目のFENが無効です",
+      "tutorial": {
+        "title": "チュートリアル",
+        "description": "FEN記法を読んで盤面を再現するトレーニングです。",
+        "start": "駒を配置する",
+        "skip": "スキップ"
+      },
+      "tutorialComplete": "基本的な使い方は以上です。\n様々な局面でFEN記法の読み取りを練習しましょう。",
+      "finishTutorial": "チュートリアルを終了する",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "cancel": "キャンセル"
     },
     "moveSequence": {
       "title": "約束組手",

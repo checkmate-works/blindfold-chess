@@ -21,8 +21,10 @@ type Props = {
   currentProblemIndex: number;
   totalProblems: number;
   boardTheme?: BoardTheme;
+  isTutorial?: boolean;
   onNextProblem: () => void;
   onViewResults: () => void;
+  onFinishTutorial?: () => void;
 };
 
 export function FenProblemResult({
@@ -32,8 +34,10 @@ export function FenProblemResult({
   currentProblemIndex,
   totalProblems,
   boardTheme = 'default',
+  isTutorial = false,
   onNextProblem,
   onViewResults,
+  onFinishTutorial,
 }: Props) {
   const t = useTranslations('practice.fen');
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
@@ -133,7 +137,22 @@ export function FenProblemResult({
         </div>
 
         <div className="mt-6 space-y-3">
-          {isLastProblem ? (
+          {isTutorial ? (
+            <>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {t('tutorialComplete')}
+              </p>
+              <Button
+                onClick={onFinishTutorial}
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="rounded-xl"
+              >
+                {t('finishTutorial')}
+              </Button>
+            </>
+          ) : isLastProblem ? (
             <Button
               onClick={onViewResults}
               variant="primary"
