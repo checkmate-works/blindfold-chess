@@ -51,8 +51,3 @@ export type PositionMemoryInput = {
   mode: SessionMode;
   skipMemorize?: boolean;
 };
-
-/**
- * State values for the position memory machine
- */
-export type PositionMemoryStateValue = 'memorize' | 'recreate' | 'problemResult' | 'sessionResult';

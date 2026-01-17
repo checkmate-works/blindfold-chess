@@ -19,9 +19,6 @@ export const FEN_STRINGS = [
   'r1bqk1nr/ppp1bppp/2n5/1P2P3/2Pp4/P4N2/3BPPPP/RN1QKB1R b KQkq - 0 8',
 ] as const;
 
-// Type for FEN strings
-export type FenString = (typeof FEN_STRINGS)[number];
-
 /**
  * Preset position type for trial mode
  */

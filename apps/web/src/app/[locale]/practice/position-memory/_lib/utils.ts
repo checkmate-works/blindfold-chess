@@ -13,14 +13,6 @@ const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {
   return { fen, isBlackToMove };
 });
 
-export function getRandomPosition(): PositionData {
-  return PRACTICE_POSITIONS[Math.floor(Math.random() * PRACTICE_POSITIONS.length)];
-}
-
-export function getMaxProblems(): number {
-  return PRACTICE_POSITIONS.length;
-}
-
 export function getRandomPositions(count: number, shuffle: boolean = true): PositionData[] {
   const positions = [...PRACTICE_POSITIONS];
 
@@ -117,11 +109,4 @@ export function generateShareUrl(
  */
 export function isQueryTooLong(encoded: string): boolean {
   return encoded.length > MAX_QUERY_LENGTH;
-}
-
-/**
- * Get max query length for validation
- */
-export function getMaxQueryLength(): number {
-  return MAX_QUERY_LENGTH;
 }

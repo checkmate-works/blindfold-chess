@@ -6,6 +6,3 @@ export type {
   SquareDiff,
   SquareStatus,
 } from '../../_lib/types';
-
-// Position-memory specific types
-export type GamePhase = 'memorize' | 'recreate' | 'result';
