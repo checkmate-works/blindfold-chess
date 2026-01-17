@@ -347,7 +347,7 @@
       "problemCount": "Number of Problems",
       "problems": "problems",
       "shuffle": "Shuffle Problems",
-      "start": "Start Practice",
+      "start": "Start",
       "memorize": "Memorize",
       "recreate": "Recreate",
       "result": "Result",
@@ -434,7 +434,7 @@
         "settings": "Tutorial Settings",
         "settingsDescription": "{timeLimit} seconds to memorize, {problemCount} problem",
         "start": "I've memorized it!",
-        "skip": "Skip tutorial"
+        "skip": "Skip"
       },
       "tutorialComplete": "That's the basics!\nTry other problems or challenge yourself with positions from your own games.",
       "finishTutorial": "Finish Tutorial",
@@ -558,6 +558,11 @@
       "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5",
       "pgnHint": "Enter the moves in PGN format",
       "start": "Start",
+      "problemSource": "Problem Source",
+      "presetProblems": "Preset Problems",
+      "enterCustom": "Enter FEN/PGN",
+      "presetDescription": "Select an opening to practice",
+      "preview": "Preview",
       "memorizeInstructions": "Watch the sequence and memorize the moves",
       "play": "Play",
       "moves": "moves",
@@ -593,7 +598,22 @@
       "session": "Session",
       "replay": "Replay",
       "clickMoveToJump": "Click a move to jump to that position",
-      "wrongAttempts": "Wrong attempts"
+      "wrongAttempts": "Wrong attempts",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Watch a sequence of moves play out, then reproduce them from memory.\nLet's try with a simple opening.",
+        "start": "Start Practice",
+        "skip": "Skip",
+        "watchFirst": "Watch the moves first by pressing play"
+      },
+      "tutorialComplete": "That's the basics!\nTry other openings or challenge yourself with sequences from your own games.",
+      "finishTutorial": "Finish Tutorial",
+      "resetSettings": "Reset settings",
+      "resetSettingsConfirm": {
+        "title": "Reset settings?",
+        "message": "All settings will be reset and you will return to the tutorial screen."
+      },
+      "cancel": "Cancel"
     }
   },
   "home": {

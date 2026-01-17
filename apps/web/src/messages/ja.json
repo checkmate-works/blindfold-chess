@@ -347,7 +347,7 @@
       "problemCount": "問題数",
       "problems": "問",
       "shuffle": "シャッフル",
-      "start": "練習を開始",
+      "start": "開始",
       "memorize": "記憶",
       "recreate": "再現",
       "result": "結果",
@@ -434,7 +434,7 @@
         "settings": "チュートリアル設定",
         "settingsDescription": "記憶時間{timeLimit}秒、{problemCount}問",
         "start": "覚えた！",
-        "skip": "チュートリアルをスキップ"
+        "skip": "スキップ"
       },
       "tutorialComplete": "基本的な使い方は以上です。\n他の問題や、自分がプレイしたゲームのポジションの記憶にも挑戦してみましょう。",
       "finishTutorial": "チュートリアルを終了する",
@@ -558,6 +558,11 @@
       "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5",
       "pgnHint": "PGN形式で手順を入力してください",
       "start": "開始",
+      "problemSource": "問題の種類",
+      "presetProblems": "プリセット問題",
+      "enterCustom": "FEN/PGNを入力",
+      "presetDescription": "練習するオープニングを選択",
+      "preview": "プレビュー",
       "memorizeInstructions": "手順を見て記憶してください",
       "play": "再生",
       "moves": "手",
@@ -593,7 +598,22 @@
       "session": "練習中",
       "replay": "再生",
       "clickMoveToJump": "クリックで局面を表示",
-      "wrongAttempts": "間違い入力"
+      "wrongAttempts": "間違い入力",
+      "tutorial": {
+        "title": "チュートリアル",
+        "description": "手順を見て記憶し、再現するトレーニングです。\n簡単なオープニングで試してみましょう。",
+        "start": "練習を開始",
+        "skip": "スキップ",
+        "watchFirst": "まず再生ボタンを押して手順を見てください"
+      },
+      "tutorialComplete": "基本的な使い方は以上です。\n他のオープニングや、自分がプレイしたゲームの手順にも挑戦してみましょう。",
+      "finishTutorial": "チュートリアルを終了する",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "cancel": "キャンセル"
     }
   },
   "home": {
