@@ -20,6 +20,7 @@ type Props = {
   currentProblemIndex: number;
   problemCount: number;
   boardTheme?: BoardTheme;
+  isTutorial?: boolean;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
@@ -33,6 +34,7 @@ export function PositionMemoryRecreate({
   currentProblemIndex,
   problemCount,
   boardTheme = 'default',
+  isTutorial = false,
   onPositionChange,
   onSubmit,
   onViewAgain,
@@ -78,24 +80,28 @@ export function PositionMemoryRecreate({
         <Button onClick={onSubmit} variant="primary" size="lg" fullWidth className="rounded-md">
           {t('submit')}
         </Button>
-        <button
-          onClick={onViewAgain}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('viewAgain')}
-        </button>
-        <button
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('skip')}
-        </button>
-        <button
-          onClick={onQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('quit')}
-        </button>
+        {!isTutorial && (
+          <>
+            <button
+              onClick={onViewAgain}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              {t('viewAgain')}
+            </button>
+            <button
+              onClick={onSkip}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              {t('skip')}
+            </button>
+            <button
+              onClick={onQuit}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            >
+              {t('quit')}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

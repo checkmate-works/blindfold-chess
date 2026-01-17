@@ -21,3 +21,12 @@ export const FEN_STRINGS = [
 
 // Type for FEN strings
 export type FenString = (typeof FEN_STRINGS)[number];
+
+/**
+ * Preset position type for trial mode
+ */
+export type PresetPosition = {
+  id: string;
+  fen: string;
+  title: string;
+};

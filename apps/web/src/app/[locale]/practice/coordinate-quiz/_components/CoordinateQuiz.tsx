@@ -33,7 +33,9 @@ export default function CoordinateQuiz({ locale }: Props) {
       try {
         const settings = JSON.parse(saved);
         return settings.timeLimit || 60;
-      } catch {}
+      } catch {
+        // Ignore invalid JSON in localStorage
+      }
     }
     return 60;
   });
@@ -45,7 +47,9 @@ export default function CoordinateQuiz({ locale }: Props) {
       try {
         const settings = JSON.parse(saved);
         return settings.boardOrientation || 'white';
-      } catch {}
+      } catch {
+        // Ignore invalid JSON in localStorage
+      }
     }
     return 'white';
   });

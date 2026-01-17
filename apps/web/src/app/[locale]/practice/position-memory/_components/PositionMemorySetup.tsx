@@ -8,11 +8,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import type { PresetPosition } from '../_data/positions';
+import presetPositions from '../_data/presetPositions.json';
 import { encodeFensToBase64, generateShareUrl, validateFEN } from '../_lib/utils';
 import { PositionMemorySettings } from './PositionMemorySettings';
+import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -20,7 +23,6 @@ type Props = {
   urlFens?: string[] | null;
   urlTimeLimit?: number | null;
   urlShuffle?: boolean | null;
-  maxProblems: number;
 };
 
 export function PositionMemorySetup({
@@ -29,16 +31,15 @@ export function PositionMemorySetup({
   urlFens,
   urlTimeLimit,
   urlShuffle,
-  maxProblems,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
 
   // Default values (used for SSR and initial render)
   const defaultSettings = {
-    timeLimit: 10,
-    problemCount: 1,
-    shuffleProblems: true,
+    timeLimit: 30,
+    problemCount: 5,
+    shuffleProblems: false,
     useCustomFen: false,
     customFenInput: '',
   };
@@ -64,6 +65,7 @@ export function PositionMemorySetup({
   const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
   const [hasLoadedSettings, setHasLoadedSettings] = useState(!!urlFens);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Load settings from localStorage on mount (client-side only)
   useEffect(() => {
@@ -178,6 +180,13 @@ export function PositionMemorySetup({
       });
   };
 
+  const handleResetConfirm = () => {
+    localStorage.removeItem('positionMemorySettings');
+    localStorage.removeItem(TUTORIAL_SKIPPED_KEY);
+    setIsResetConfirmOpen(false);
+    router.push(`/${locale}/practice/position-memory/tutorial`);
+  };
+
   const handleStart = () => {
     // Build URL params
     const params = new URLSearchParams();
@@ -199,19 +208,28 @@ export function PositionMemorySetup({
       // Use problemCount for custom FEN, capped at the number of FENs
       const effectiveCount = Math.min(problemCount, fens.length);
       params.set('count', effectiveCount.toString());
+      params.set('source', 'custom');
     } else {
-      params.set('count', problemCount.toString());
+      // Use all presets
+      const presetFens = (presetPositions as PresetPosition[]).map((p) => p.fen);
+      const encoded = encodeFensToBase64(presetFens);
+      params.set('problems', encoded);
+      const effectiveCount = Math.min(problemCount, presetFens.length);
+      params.set('count', effectiveCount.toString());
+      params.set('source', 'preset');
     }
 
-    // Save current settings to localStorage on start (including URL-loaded settings)
-    const settings = {
-      timeLimit,
-      problemCount,
-      shuffleProblems,
-      useCustomFen,
-      customFenInput,
-    };
-    localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
+    // Save current settings to localStorage on start (skip if loaded from share link)
+    if (!urlFens) {
+      const settings = {
+        timeLimit,
+        problemCount,
+        shuffleProblems,
+        useCustomFen,
+        customFenInput,
+      };
+      localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
+    }
 
     // Navigate to session page
     router.push(`/${locale}/practice/position-memory/session?${params.toString()}`);
@@ -220,13 +238,10 @@ export function PositionMemorySetup({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-        <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
-
         <PositionMemorySettings
           timeLimit={timeLimit}
           problemCount={problemCount}
           shuffleProblems={shuffleProblems}
-          maxProblems={maxProblems}
           useCustomFen={useCustomFen}
           customFenInput={customFenInput}
           customFenError={customFenError}
@@ -250,6 +265,23 @@ export function PositionMemorySetup({
           {t('start')}
         </Button>
       </div>
+
+      <div className="mt-8 flex justify-end">
+        <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
+          {t('resetSettings')}
+        </Button>
+      </div>
+
+      <ConfirmationModal
+        isOpen={isResetConfirmOpen}
+        title={t('resetSettingsConfirm.title')}
+        message={t('resetSettingsConfirm.message')}
+        confirmText={t('resetSettings')}
+        cancelText={t('cancel')}
+        confirmVariant="danger"
+        onConfirm={handleResetConfirm}
+        onCancel={() => setIsResetConfirmOpen(false)}
+      />
     </div>
   );
 }

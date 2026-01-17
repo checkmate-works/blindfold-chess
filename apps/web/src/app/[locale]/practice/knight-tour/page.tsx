@@ -34,7 +34,7 @@ export default async function KnightTourPage({ params }: Props) {
 
       <PageDescription>{t('practice.knightTour.description')}</PageDescription>
 
-      <KnightTour locale={locale} />
+      <KnightTour />
 
       <Divider />
 

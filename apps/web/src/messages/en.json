@@ -336,7 +336,12 @@
       "title": "Position Memory",
       "description": "Train your ability to remember and recreate chess positions",
       "session": "In Progress",
-      "settings": "Game Settings",
+      "settings": "Problem Settings",
+      "problemSource": "Problem Source",
+      "presetProblems": "Preset Problems",
+      "enterFen": "Enter FEN",
+      "presetDescription": "Problems like these will be presented",
+      "customFenDescription": "You can practice with positions from your own games or famous matches",
       "timeLimit": "Memorization Time",
       "seconds": "seconds",
       "problemCount": "Number of Problems",
@@ -403,6 +408,7 @@
       "fiveSeconds": "5s",
       "oneMinute": "60s",
       "copyShareLink": "Copy Share Link",
+      "shareLinkHelp": "Enter the copied URL in your browser's address bar to recreate the problems. Useful for sharing with friends or as a backup.",
       "linkCopied": "Link copied to clipboard",
       "copyFailed": "Failed to copy link",
       "urlTooLong": "URL is too long (must be under 1000 characters)",
@@ -415,7 +421,28 @@
       "deleteFenMessage": "Are you sure you want to delete this problem from your custom FEN list?",
       "deleteFenConfirm": "Delete",
       "deleteFenCancel": "Cancel",
-      "skipped": "Skipped"
+      "skipped": "Skipped",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Memorize a position within the time limit, then recreate it on an empty board.\nLet's try with the following position.",
+        "selectPreset": "Select a Preset Position",
+        "orEnterFen": "Or Enter Your Own FEN",
+        "fenPlaceholder": "Enter FEN notation...",
+        "preview": "Position Preview",
+        "selectToPreview": "Select a position to preview",
+        "settings": "Tutorial Settings",
+        "settingsDescription": "{timeLimit} seconds to memorize, {problemCount} problem",
+        "start": "I've memorized it!",
+        "skip": "Skip tutorial"
+      },
+      "tutorialComplete": "That's the basics!\nTry other problems or challenge yourself with positions from your own games.",
+      "finishTutorial": "Finish Tutorial",
+      "resetSettings": "Reset settings",
+      "resetSettingsConfirm": {
+        "title": "Reset settings?",
+        "message": "All settings will be reset and you will return to the tutorial screen."
+      },
+      "cancel": "Cancel"
     },
     "knightTour": {
       "title": "Knight's Tour",

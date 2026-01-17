@@ -31,7 +31,7 @@ export function GameSettings() {
         />
 
         {/* Reset Button */}
-        <div className="mt-8">
+        <div className="mt-8 flex justify-end">
           <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
             {t('game.resetDefaults')}
           </Button>

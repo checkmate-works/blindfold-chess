@@ -41,7 +41,9 @@ export function LegalMoves({ locale }: Props) {
       try {
         const settings = JSON.parse(saved);
         return settings.timeLimit || 60;
-      } catch {}
+      } catch {
+        // Ignore invalid JSON in localStorage
+      }
     }
     return 60;
   });
@@ -69,7 +71,9 @@ export function LegalMoves({ locale }: Props) {
             knight: true,
           }
         );
-      } catch {}
+      } catch {
+        // Ignore invalid JSON in localStorage
+      }
     }
     return {
       king: true,
@@ -105,7 +109,7 @@ export function LegalMoves({ locale }: Props) {
   const startGame = useCallback(() => {
     // Get selected piece types
     const selectedPieceTypes = Object.entries(selectedPieces)
-      .filter(([_, selected]) => selected)
+      .filter(([, selected]) => selected)
       .map(([piece]) => piece) as PieceType[];
 
     if (selectedPieceTypes.length === 0) {
