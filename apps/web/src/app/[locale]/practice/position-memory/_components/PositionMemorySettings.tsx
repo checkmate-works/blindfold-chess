@@ -90,9 +90,7 @@ export function PositionMemorySettings({
               <button
                 key={preset.id}
                 type="button"
-                onClick={() =>
-                  setPreviewPreset(previewPreset?.id === preset.id ? null : preset)
-                }
+                onClick={() => setPreviewPreset(previewPreset?.id === preset.id ? null : preset)}
                 className={`w-full p-3 text-left rounded-lg border transition-colors ${
                   previewPreset?.id === preset.id
                     ? 'border-primary bg-primary/10'
@@ -122,10 +120,7 @@ export function PositionMemorySettings({
       {/* Problem Count (for preset mode) */}
       {!useCustomFen && (
         <div>
-          <label
-            htmlFor="problemCount"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="problemCount" className="block text-sm font-medium text-foreground mb-2">
             {t('problemCount')}: {Math.min(problemCount, PRESET_COUNT)}{' '}
             {Math.min(problemCount, PRESET_COUNT) > 1 ? t('problems') : ''}
           </label>
@@ -143,6 +138,32 @@ export function PositionMemorySettings({
             <span>1</span>
             <span>{PRESET_COUNT}</span>
           </div>
+        </div>
+      )}
+
+      {/* Shuffle Problems (for preset mode) */}
+      {!useCustomFen && problemCount > 1 && (
+        <div className="flex items-center justify-end gap-3">
+          <label htmlFor="shuffle" className="text-sm text-muted-foreground">
+            {t('shuffle')}
+          </label>
+          <button
+            id="shuffle"
+            type="button"
+            role="switch"
+            aria-checked={shuffleProblems}
+            onClick={() => onShuffleChange(!shuffleProblems)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              shuffleProblems ? 'bg-foreground' : 'bg-secondary'
+            }`}
+          >
+            <span className="sr-only">{t('shuffle')}</span>
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                shuffleProblems ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
         </div>
       )}
 
@@ -172,10 +193,7 @@ export function PositionMemorySettings({
       {/* Custom FEN Input */}
       {useCustomFen && (
         <div>
-          <label
-            htmlFor="customFenInput"
-            className="block text-sm text-foreground mb-2"
-          >
+          <label htmlFor="customFenInput" className="block text-sm text-foreground mb-2">
             {t('customFenDescription')}
           </label>
           <textarea
@@ -213,32 +231,6 @@ export function PositionMemorySettings({
           {copyStatus === 'too_long' && (
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">{t('urlTooLong')}</p>
           )}
-        </div>
-      )}
-
-      {/* Shuffle Problems (for preset mode) */}
-      {!useCustomFen && problemCount > 1 && (
-        <div className="flex items-center justify-between">
-          <label htmlFor="shuffle" className="text-sm font-medium text-foreground">
-            {t('shuffle')}
-          </label>
-          <button
-            id="shuffle"
-            type="button"
-            role="switch"
-            aria-checked={shuffleProblems}
-            onClick={() => onShuffleChange(!shuffleProblems)}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              shuffleProblems ? 'bg-foreground' : 'bg-secondary'
-            }`}
-          >
-            <span className="sr-only">{t('shuffle')}</span>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                shuffleProblems ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
         </div>
       )}
 
@@ -283,8 +275,8 @@ export function PositionMemorySettings({
           .trim()
           .split('\n')
           .filter((line) => line.trim()).length > 1 && (
-          <div className="flex items-center justify-between">
-            <label htmlFor="shuffleCustom" className="text-sm font-medium text-foreground">
+          <div className="flex items-center justify-end gap-3">
+            <label htmlFor="shuffleCustom" className="text-sm text-muted-foreground">
               {t('shuffle')}
             </label>
             <button
@@ -310,7 +302,10 @@ export function PositionMemorySettings({
       {/* Time Limit (for custom FEN mode) */}
       {useCustomFen && (
         <div>
-          <label htmlFor="timeLimitCustom" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="timeLimitCustom"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             {t('timeLimit')}: {timeLimit} {t('seconds')}
           </label>
           <input
