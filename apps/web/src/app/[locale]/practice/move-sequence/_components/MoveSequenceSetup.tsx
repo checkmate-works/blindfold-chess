@@ -49,6 +49,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isShareLinkHelpOpen, setIsShareLinkHelpOpen] = useState(false);
+  const validationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Preview state
   const [showPreview, setShowPreview] = useState(true);
@@ -145,6 +146,15 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     };
   }, [isPlayingPreview, previewMoveIndex, selectedPresetData, playNextPreviewMove]);
 
+  // Cleanup validation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimerRef.current) {
+        clearTimeout(validationTimerRef.current);
+      }
+    };
+  }, []);
+
   const handlePlayPreview = useCallback(() => {
     if (isPlayingPreview || !selectedPresetData) return;
 
@@ -220,15 +230,10 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         return;
       }
 
-      const result = parseMoveSequence(fen.trim(), pgn.trim());
-
-      if (!result.success) {
-        setError(result.error);
-        return;
-      }
-
-      if (result.data.moves.length > MAX_MOVES) {
-        setError(t('pgnTooLong', { max: MAX_MOVES }));
+      // Use validateInput for translated error messages
+      const validationError = validateInput(fen.trim(), pgn.trim());
+      if (validationError) {
+        setError(validationError);
         return;
       }
 
@@ -251,14 +256,74 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     router.push(`/${locale}/practice/move-sequence/session?${params.toString()}`);
   };
 
+  // Validate FEN and PGN and return translated error message
+  const validateInput = useCallback(
+    (fenValue: string, pgnValue: string): string | null => {
+      if (!fenValue.trim() || !pgnValue.trim()) {
+        return null; // Don't show error if fields are empty
+      }
+
+      // Validate FEN
+      try {
+        new Chess(fenValue.trim());
+      } catch {
+        return t('invalidFen');
+      }
+
+      // Validate PGN
+      const result = parseMoveSequence(fenValue.trim(), pgnValue.trim());
+      if (!result.success) {
+        // Translate error messages
+        if (result.error.includes('No moves found')) {
+          return t('noMovesFound');
+        }
+        if (result.error.includes('No valid moves found')) {
+          return t('noMovesFound');
+        }
+        if (result.error.includes('Invalid FEN')) {
+          return t('invalidFen');
+        }
+        // Parse "Move X "Y" is invalid" pattern
+        const moveErrorMatch = result.error.match(/Move (\d+) "([^"]+)" is invalid/);
+        if (moveErrorMatch) {
+          return t('invalidMoveAt', { index: moveErrorMatch[1], move: moveErrorMatch[2] });
+        }
+        return t('invalidPgn');
+      }
+
+      // Check move count limit
+      if (result.data.moves.length > MAX_MOVES) {
+        return t('pgnTooLong', { max: MAX_MOVES });
+      }
+
+      return null;
+    },
+    [t]
+  );
+
+  // Debounced validation
+  const runValidation = useCallback(
+    (fenValue: string, pgnValue: string) => {
+      if (validationTimerRef.current) {
+        clearTimeout(validationTimerRef.current);
+      }
+      validationTimerRef.current = setTimeout(() => {
+        const validationError = validateInput(fenValue, pgnValue);
+        setError(validationError);
+      }, 500);
+    },
+    [validateInput]
+  );
+
   const handleFenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFen(e.target.value);
-    if (error) setError(null);
+    const newFen = e.target.value;
+    setFen(newFen);
+    runValidation(newFen, pgn);
   };
 
   const handlePgnChange = (value: string) => {
     setPgn(value);
-    if (error) setError(null);
+    runValidation(fen, value);
   };
 
   const handleCopyShareLink = () => {
@@ -447,6 +512,9 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
                   showValidation={false}
                 />
 
+                {/* Validation Error */}
+                {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
                 {/* Share Link Button */}
                 {canShare && (
                   <div className="mt-3 flex items-center justify-end gap-2">
@@ -507,13 +575,6 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
               />
             </button>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-              <p className="text-destructive text-sm">{error}</p>
-            </div>
-          )}
 
           {/* Start Button */}
           <Button

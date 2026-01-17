@@ -184,7 +184,8 @@
     "completeSuggestion": "✨ Complete \"{suggestion}\"",
     "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
     "validWithMoves": "✓ Valid PGN with {count} moves",
-    "invalidPgn": "✗ Invalid PGN format"
+    "invalidPgn": "Invalid PGN format",
+    "invalidMove": "\"{move}\" is an invalid move"
   },
   "error": {
     "title": "Something went wrong!",
@@ -551,6 +552,8 @@
       "invalidPgn": "Invalid PGN format. Moves could not be parsed.",
       "invalidMoves": "Some moves are invalid in this position",
       "invalidMove": "Invalid move",
+      "noMovesFound": "No moves found in PGN",
+      "invalidMoveAt": "Move {index} \"{move}\" is invalid",
       "fenLabel": "Starting Position (FEN)",
       "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       "fenHint": "Enter the FEN string for the starting position",

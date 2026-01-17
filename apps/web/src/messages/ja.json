@@ -184,7 +184,8 @@
     "completeSuggestion": "✨ \"{suggestion}\" を補完",
     "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
     "validWithMoves": "✓ 有効なPGN（{count}手）",
-    "invalidPgn": "✗ 無効なPGN形式"
+    "invalidPgn": "無効なPGN形式",
+    "invalidMove": "「{move}」は無効な手です"
   },
   "error": {
     "title": "エラーが発生しました",
@@ -551,6 +552,8 @@
       "invalidPgn": "無効なPGN形式です。手順を解析できませんでした。",
       "invalidMoves": "この局面では無効な手が含まれています",
       "invalidMove": "無効な手です",
+      "noMovesFound": "手順が見つかりません",
+      "invalidMoveAt": "{index}手目の「{move}」が無効です",
       "fenLabel": "開始局面（FEN）",
       "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       "fenHint": "開始局面のFEN文字列を入力してください",

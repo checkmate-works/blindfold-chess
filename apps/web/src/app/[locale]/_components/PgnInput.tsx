@@ -78,6 +78,27 @@ export function PgnInput({
   const showSuccess = showValidation && validationResult?.isValid && debouncedValue.trim();
   const showError = showValidation && validationResult && !validationResult.isValid;
 
+  // Get translated error message
+  const getErrorMessage = (): string => {
+    if (!validationResult?.error) {
+      return t('invalidPgn');
+    }
+
+    // Parse "Invalid move in PGN: xyz" pattern (older chess.js)
+    const moveErrorMatch = validationResult.error.match(/Invalid move in PGN: (.+)/);
+    if (moveErrorMatch) {
+      return t('invalidMove', { move: moveErrorMatch[1] });
+    }
+
+    // Parse 'Expected ... but "X" found.' pattern (newer chess.js PGN parser)
+    const parserErrorMatch = validationResult.error.match(/but "(.+)" found/);
+    if (parserErrorMatch) {
+      return t('invalidMove', { move: parserErrorMatch[1] });
+    }
+
+    return t('invalidPgn');
+  };
+
   const handlePaste = () => {
     isPasteRef.current = true;
   };
@@ -175,7 +196,7 @@ export function PgnInput({
           {t('validWithMoves', { count: validationResult.moveCount })}
         </p>
       )}
-      {showError && <p className="text-sm text-red-600">{t('invalidPgn')}</p>}
+      {showError && <p className="text-sm text-red-600 dark:text-red-400">{getErrorMessage()}</p>}
     </div>
   );
 }

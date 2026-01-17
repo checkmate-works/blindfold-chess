@@ -80,8 +80,7 @@ export function formatPgnToText(
 /**
  * Get PGN auto-completion suggestion based on current input
  * Returns the next move number only when both moves in a pair are complete
- * Does not suggest single spaces as they are easy to type manually
- * Only suggests when the current PGN is valid
+ * Uses pattern matching instead of parsing, so it works with any starting position
  */
 export function getPgnSuggestion(pgn: string): string | null {
   if (!pgn) return '1. ';
@@ -90,27 +89,28 @@ export function getPgnSuggestion(pgn: string): string | null {
   const trimmed = pgn.trimEnd();
   if (!trimmed) return '1. ';
 
-  // Try to parse the PGN to get move count
-  try {
-    const chess = new Chess();
-    chess.loadPgn(trimmed);
-    const moveCount = chess.history().length;
-
-    // Only suggest next move number when both white and black have played
-    // moveCount % 2 === 0 means even number of moves (full move pair completed)
-    if (moveCount > 0 && moveCount % 2 === 0) {
-      // Even number of moves means black just played, suggest next move number
-      const nextMoveNumber = Math.floor(moveCount / 2) + 1;
-      return ` ${nextMoveNumber}. `;
-    }
-  } catch {
-    // If parsing fails, the PGN is invalid, don't suggest anything
-    // This prevents suggesting completion for invalid input like "1. d4 e"
-  }
-
-  // If no pattern detected and input doesn't start with move number, suggest it
+  // If input doesn't start with move number, suggest it
   if (!trimmed.match(/\d+\./)) {
     return '1. ';
+  }
+
+  // Pattern matching to find the last complete move pair
+  // Match: "N. white black" where N is move number, white and black are moves
+  const movePattern = /(\d+)\.\s*(\S+)(?:\s+(\S+))?/g;
+  let lastMoveNumber = 0;
+  let hasWhiteMove = false;
+  let hasBlackMove = false;
+
+  let match;
+  while ((match = movePattern.exec(trimmed)) !== null) {
+    lastMoveNumber = parseInt(match[1], 10);
+    hasWhiteMove = !!match[2];
+    hasBlackMove = !!match[3];
+  }
+
+  // Only suggest next move number when both white and black have played
+  if (lastMoveNumber > 0 && hasWhiteMove && hasBlackMove) {
+    return ` ${lastMoveNumber + 1}. `;
   }
 
   return null;
