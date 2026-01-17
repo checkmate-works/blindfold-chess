@@ -336,7 +336,12 @@
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
       "session": "練習中",
-      "settings": "ゲーム設定",
+      "settings": "出題の設定",
+      "problemSource": "出題方式",
+      "presetProblems": "プリセットの問題",
+      "enterFen": "FENを入力",
+      "presetDescription": "以下のような問題が出題されます",
+      "customFenDescription": "自分のゲームや有名な対局のポジションを練習に用いることができます",
       "timeLimit": "記憶時間",
       "seconds": "秒",
       "problemCount": "問題数",
@@ -415,7 +420,28 @@
       "deleteFenMessage": "この問題をカスタムFENリストから削除しますか？",
       "deleteFenConfirm": "削除",
       "deleteFenCancel": "キャンセル",
-      "skipped": "スキップ"
+      "skipped": "スキップ",
+      "tutorial": {
+        "title": "チュートリアル",
+        "description": "あるポジションを制限時間内に記憶して、空の盤面に再現してみましょう。\nまずは以下のポジションでやってみましょう。",
+        "selectPreset": "プリセット局面を選択",
+        "orEnterFen": "またはFENを入力",
+        "fenPlaceholder": "FEN記法を入力...",
+        "preview": "局面プレビュー",
+        "selectToPreview": "プレビューする局面を選択してください",
+        "settings": "チュートリアル設定",
+        "settingsDescription": "記憶時間{timeLimit}秒、{problemCount}問",
+        "start": "覚えた！",
+        "skip": "チュートリアルをスキップ"
+      },
+      "tutorialComplete": "基本的な使い方は以上です。\n他の問題や、自分がプレイしたゲームのポジションの記憶にも挑戦してみましょう。",
+      "finishTutorial": "チュートリアルを終了する",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "cancel": "キャンセル"
     },
     "knightTour": {
       "title": "ナイトツアー",

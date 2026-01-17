@@ -14,12 +14,13 @@
  */
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PositionMemoryPageContent } from './_components/PositionMemoryPageContent';
 import { PositionMemorySetup } from './_components/PositionMemorySetup';
-import { decodeFensFromBase64, getMaxProblems, isQueryTooLong, validateFEN } from './_lib/utils';
+import { decodeFensFromBase64, isQueryTooLong, validateFEN } from './_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -88,20 +89,26 @@ export default async function PositionMemoryPage({ params, searchParams }: Props
     }
   }
 
+  // Determine if we should show setup page (URL has FEN param) or delegate to client
+  const hasFenParam = problemsParam && typeof problemsParam === 'string';
+
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
 
-      <PageDescription>{t('practice.positionMemory.description')}</PageDescription>
+      <SectionTitle>{t('practice.positionMemory.settings')}</SectionTitle>
 
-      <PositionMemorySetup
-        locale={locale}
-        urlError={urlError}
-        urlFens={urlFens}
-        urlTimeLimit={urlTimeLimit}
-        urlShuffle={urlShuffle}
-        maxProblems={getMaxProblems()}
-      />
+      {hasFenParam ? (
+        <PositionMemorySetup
+          locale={locale}
+          urlError={urlError}
+          urlFens={urlFens}
+          urlTimeLimit={urlTimeLimit}
+          urlShuffle={urlShuffle}
+        />
+      ) : (
+        <PositionMemoryPageContent locale={locale} />
+      )}
 
       <Divider />
 

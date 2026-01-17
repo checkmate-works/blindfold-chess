@@ -24,8 +24,10 @@ type Props = {
   currentProblemIndex: number;
   totalProblems: number;
   boardTheme?: BoardTheme;
+  isTutorial?: boolean;
   onNextProblem: () => void;
   onViewResults: () => void;
+  onFinishTutorial?: () => void;
 };
 
 export function PositionMemoryProblemResult({
@@ -35,8 +37,10 @@ export function PositionMemoryProblemResult({
   currentProblemIndex,
   totalProblems,
   boardTheme = 'default',
+  isTutorial = false,
   onNextProblem,
   onViewResults,
+  onFinishTutorial,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const isLastProblem = currentProblemIndex >= totalProblems - 1;
@@ -136,42 +140,61 @@ export function PositionMemoryProblemResult({
         </div>
 
         <div className="mt-6 space-y-3">
-          {isLastProblem ? (
-            <Button
-              onClick={onViewResults}
-              variant="primary"
-              size="lg"
-              fullWidth
-              className="rounded-xl"
-            >
-              {t('viewResults')}
-            </Button>
+          {isTutorial ? (
+            <>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {t('tutorialComplete')}
+              </p>
+              <Button
+                onClick={onFinishTutorial}
+                variant="primary"
+                size="lg"
+                fullWidth
+                className="rounded-xl"
+              >
+                {t('finishTutorial')}
+              </Button>
+            </>
           ) : (
-            <Button
-              onClick={onNextProblem}
-              variant="primary"
-              size="lg"
-              fullWidth
-              className="rounded-xl"
-            >
-              {t('nextProblem')}
-            </Button>
-          )}
+            <>
+              {isLastProblem ? (
+                <Button
+                  onClick={onViewResults}
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  className="rounded-xl"
+                >
+                  {t('viewResults')}
+                </Button>
+              ) : (
+                <Button
+                  onClick={onNextProblem}
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  className="rounded-xl"
+                >
+                  {t('nextProblem')}
+                </Button>
+              )}
 
-          {/* Analyze on Lichess Button */}
-          <Button
-            onClick={() => {
-              const lichessUrl = fenToLichessUrl(originalPosition.fen);
-              window.open(lichessUrl, '_blank');
-            }}
-            variant="secondary"
-            size="lg"
-            fullWidth
-            icon={<FaExternalLinkAlt className="w-4 h-4" />}
-            className="rounded-xl"
-          >
-            {t('analyzeOnLichess')}
-          </Button>
+              {/* Analyze on Lichess Button */}
+              <Button
+                onClick={() => {
+                  const lichessUrl = fenToLichessUrl(originalPosition.fen);
+                  window.open(lichessUrl, '_blank');
+                }}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                icon={<FaExternalLinkAlt className="w-4 h-4" />}
+                className="rounded-xl"
+              >
+                {t('analyzeOnLichess')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -130,10 +130,6 @@ export function PracticeComplete({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
-        <SectionTitle className="text-2xl font-bold text-center mb-6">
-          {labels.practiceComplete}
-        </SectionTitle>
-
         {/* Score display - unified with individual problem results */}
         {detailedStats && labels.recreationProgress ? (
           // Position memory: show only accuracy with fraction

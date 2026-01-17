@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,6 +34,8 @@ export default async function PositionMemorySessionPage({ params, searchParams }
   const timeLimitParam = search.timeLimit;
   const shuffleParam = search.shuffle;
   const problemCountParam = search.count;
+  const modeParam = search.mode;
+  const sourceParam = search.source;
 
   // Parse FENs if provided
   let fens: string[] | undefined;
@@ -68,11 +70,19 @@ export default async function PositionMemorySessionPage({ params, searchParams }
     }
   }
 
+  // Parse mode (default: custom)
+  const mode = modeParam === 'tutorial' ? 'tutorial' : 'custom';
+
+  // Parse source (default: preset)
+  const isCustomFen = sourceParam === 'custom';
+
+  // Parse skipMemorize (default: false)
+  const skipMemorizeParam = search.skipMemorize;
+  const skipMemorize = skipMemorizeParam === '1';
+
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
-
-      <PageDescription>{t('practice.positionMemory.description')}</PageDescription>
 
       <PositionMemorySession
         locale={locale}
@@ -80,6 +90,9 @@ export default async function PositionMemorySessionPage({ params, searchParams }
         timeLimit={timeLimit}
         shuffle={shuffle}
         problemCount={problemCount}
+        mode={mode}
+        skipMemorize={skipMemorize}
+        isCustomFen={isCustomFen}
       />
 
       <Divider />

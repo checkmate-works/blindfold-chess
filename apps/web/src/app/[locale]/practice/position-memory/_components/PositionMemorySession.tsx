@@ -3,24 +3,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useMachine } from '@xstate/react';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
-import type { GamePhase, PositionAccuracy, PositionData } from '../_lib/types';
-import {
-  calculateAccuracy,
-  encodeFensToBase64,
-  getCustomPositions,
-  getRandomPositions,
-} from '../_lib/utils';
+import type { PositionAccuracy, PositionData } from '../_lib/types';
+import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
+import type { SessionMode } from '../_lib/machines/types';
+import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
-
-type ExtendedGamePhase = GamePhase | 'problem-result';
+import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -28,6 +25,9 @@ type Props = {
   timeLimit: number;
   shuffle: boolean;
   problemCount?: number;
+  mode?: SessionMode;
+  skipMemorize?: boolean;
+  isCustomFen?: boolean;
 };
 
 export function PositionMemorySession({
@@ -36,6 +36,9 @@ export function PositionMemorySession({
   timeLimit,
   shuffle,
   problemCount = 1,
+  mode = 'custom',
+  skipMemorize = false,
+  isCustomFen = false,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const tPractice = useTranslations('practice');
@@ -55,7 +58,16 @@ export function PositionMemorySession({
   // Initialize positions only on client side to avoid hydration mismatch with Math.random()
   const [positions, setPositions] = useState<PositionData[]>([]);
 
-  // Initialize positions after mount
+  // Create machine (will receive positions via SET_POSITIONS event)
+  const [state, send] = useMachine(positionMemoryMachine, {
+    input: {
+      positions: [],
+      timeLimit,
+      mode,
+    },
+  });
+
+  // Initialize positions after mount and send to machine
   useEffect(() => {
     if (!hasMounted) {
       setHasMounted(true);
@@ -64,40 +76,47 @@ export function PositionMemorySession({
           ? getCustomPositions(fens, problemCount, shuffle)
           : getRandomPositions(problemCount, shuffle);
       setPositions(initialPositions);
+      // Update machine context with loaded positions
+      send({ type: 'SET_POSITIONS', positions: initialPositions });
     }
-  }, [hasMounted, fens, shuffle, problemCount]);
+  }, [hasMounted, fens, shuffle, problemCount, send]);
 
-  // Game state
-  const [phase, setPhase] = useState<ExtendedGamePhase>('memorize');
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [recreatedPosition, setRecreatedPosition] = useState('8/8/8/8/8/8/8/8 w - - 0 1');
-  const [memorizeTimeLeft, setMemorizeTimeLeft] = useState(timeLimit);
-  const [currentAccuracy, setCurrentAccuracy] = useState<PositionAccuracy | null>(null);
-  const [problemResults, setProblemResults] = useState<Map<number, PositionAccuracy>>(new Map());
-  const [recreatedPositions, setRecreatedPositions] = useState<Map<number, string>>(new Map());
-  const [skippedProblems, setSkippedProblems] = useState<Set<number>>(new Set());
-  const [showQuitModal, setShowQuitModal] = useState(false);
+  // Skip memorize phase if requested (for tutorial)
+  useEffect(() => {
+    if (skipMemorize && state.value === 'memorize' && positions.length > 0) {
+      send({ type: 'MEMORIZED' });
+    }
+  }, [skipMemorize, state.value, positions.length, send]);
 
-  // Derive originalPosition from positions and currentProblemIndex
+  // Timer effect for memorize phase
+  useEffect(() => {
+    if (state.value === 'memorize' && state.context.memorizeTimeLeft > 0) {
+      const timer = setTimeout(() => {
+        send({ type: 'TICK' });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.value, state.context.memorizeTimeLeft, send]);
+
+  // Derive values from state context
+  const {
+    currentProblemIndex,
+    recreatedPosition,
+    memorizeTimeLeft,
+    currentAccuracy,
+    problemResults,
+    recreatedPositions,
+    skippedProblems,
+    showQuitModal,
+  } = state.context;
+
   const originalPosition = useMemo<PositionData | null>(() => {
     return positions[currentProblemIndex] || null;
   }, [positions, currentProblemIndex]);
 
   const handleMemorized = useCallback(() => {
-    setPhase('recreate');
-    setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-  }, []);
-
-  useEffect(() => {
-    if (phase === 'memorize' && memorizeTimeLeft > 0) {
-      const timer = setTimeout(() => {
-        setMemorizeTimeLeft((prev) => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (phase === 'memorize' && memorizeTimeLeft === 0) {
-      handleMemorized();
-    }
-  }, [phase, memorizeTimeLeft, handleMemorized]);
+    send({ type: 'MEMORIZED' });
+  }, [send]);
 
   const handleSubmit = useCallback(() => {
     if (!originalPosition) return;
@@ -134,99 +153,44 @@ export function PositionMemorySession({
       accuracyDescriptions
     );
 
-    setCurrentAccuracy(accuracy);
-    setProblemResults((prev) => new Map(prev).set(currentProblemIndex, accuracy));
-    setRecreatedPositions((prev) => new Map(prev).set(currentProblemIndex, recreatedPosition));
-
-    // Always show problem-result phase first
-    setPhase('problem-result');
-  }, [originalPosition, recreatedPosition, currentProblemIndex, t, getScoreDescription]);
+    send({ type: 'SUBMIT', accuracy });
+  }, [originalPosition, recreatedPosition, t, getScoreDescription, send]);
 
   const handleSkip = useCallback(() => {
-    // Mark current problem as skipped
-    setSkippedProblems((prev) => new Set(prev).add(currentProblemIndex));
-
-    const nextIndex = currentProblemIndex + 1;
-
-    // If there are more problems, move to the next one
-    if (nextIndex < positions.length) {
-      setCurrentProblemIndex(nextIndex);
-      setMemorizeTimeLeft(timeLimit);
-      setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-      setCurrentAccuracy(null);
-      setPhase('memorize');
-    } else {
-      // No more problems, go to results
-      setPhase('result');
-    }
-  }, [currentProblemIndex, positions, timeLimit]);
+    send({ type: 'SKIP' });
+  }, [send]);
 
   const handleNextProblem = useCallback(() => {
-    const nextIndex = currentProblemIndex + 1;
-    setCurrentProblemIndex(nextIndex);
-    setMemorizeTimeLeft(timeLimit);
-    setRecreatedPosition('8/8/8/8/8/8/8/8 w - - 0 1');
-    setCurrentAccuracy(null);
-    setPhase('memorize');
-  }, [currentProblemIndex, timeLimit]);
+    send({ type: 'NEXT_PROBLEM' });
+  }, [send]);
 
   const handlePlayAgain = useCallback(() => {
-    // For custom FEN, rebuild URL from localStorage to reflect any deletions
-    if (fens && fens.length > 0) {
-      try {
-        const savedSettings = localStorage.getItem('positionMemorySettings');
-        if (savedSettings) {
-          const settings = JSON.parse(savedSettings);
-          const customFenInput = settings.customFenInput ?? '';
-          const updatedFens = customFenInput
-            .trim()
-            .split('\n')
-            .filter((line: string) => line.trim());
-
-          if (updatedFens.length > 0) {
-            const params = new URLSearchParams();
-            params.set('timeLimit', timeLimit.toString());
-            params.set('shuffle', shuffle ? '1' : '0');
-            params.set('problems', encodeFensToBase64(updatedFens));
-            // Use problemCount, capped at the number of available FENs
-            const effectiveCount = Math.min(problemCount, updatedFens.length);
-            params.set('count', effectiveCount.toString());
-            window.location.href = `/${locale}/practice/position-memory/session?${params.toString()}`;
-            return;
-          } else {
-            // All FENs deleted, redirect to setup page
-            window.location.href = `/${locale}/practice/position-memory`;
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Failed to rebuild URL from localStorage:', error);
-      }
-    }
-
-    // Fallback: simple reload
-    window.location.reload();
-  }, [fens, timeLimit, shuffle, locale, problemCount]);
+    // Always navigate to setup page
+    window.location.href = `/${locale}/practice/position-memory`;
+  }, [locale]);
 
   const handleViewAgain = useCallback(() => {
-    // Go back to memorize phase to view the position again
-    setPhase('memorize');
-    setMemorizeTimeLeft(timeLimit);
-  }, [timeLimit]);
+    send({ type: 'VIEW_AGAIN' });
+  }, [send]);
 
   const handleQuitClick = useCallback(() => {
-    setShowQuitModal(true);
-  }, []);
+    send({ type: 'OPEN_QUIT_MODAL' });
+  }, [send]);
 
   const handleQuitConfirm = useCallback(() => {
-    setShowQuitModal(false);
-    // Move to result phase with current results
-    setPhase('result');
-  }, []);
+    send({ type: 'CONFIRM_QUIT' });
+  }, [send]);
 
   const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-  }, []);
+    send({ type: 'CANCEL_QUIT' });
+  }, [send]);
+
+  const handlePositionChange = useCallback(
+    (fen: string) => {
+      send({ type: 'UPDATE_POSITION', fen });
+    },
+    [send]
+  );
 
   // Labels for QuitConfirmModal
   const quitModalLabels = useMemo(
@@ -246,11 +210,13 @@ export function PositionMemorySession({
       if (savedSettings) {
         const settings = JSON.parse(savedSettings);
         if (settings.customFenInput) {
-          const fens = settings.customFenInput
+          const fensFromStorage = settings.customFenInput
             .trim()
             .split('\n')
             .filter((line: string) => line.trim());
-          const updatedFens = fens.filter((fen: string) => fen.trim() !== fenToDelete.trim());
+          const updatedFens = fensFromStorage.filter(
+            (fen: string) => fen.trim() !== fenToDelete.trim()
+          );
           settings.customFenInput = updatedFens.join('\n');
           localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
         }
@@ -260,8 +226,14 @@ export function PositionMemorySession({
     }
   }, []);
 
-  // Check if custom FEN is being used
-  const isCustomFen = !!(fens && fens.length > 0);
+  // Check if tutorial mode
+  const isTutorial = mode === 'tutorial';
+
+  // Handle finish tutorial
+  const handleFinishTutorial = useCallback(() => {
+    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+    window.location.href = `/${locale}/practice/position-memory`;
+  }, [locale]);
 
   // Wait for positions to be initialized (avoid SSR/hydration mismatch)
   if (!hasMounted || positions.length === 0) {
@@ -269,7 +241,7 @@ export function PositionMemorySession({
   }
 
   // Memorize phase
-  if (phase === 'memorize' && originalPosition) {
+  if (state.value === 'memorize' && originalPosition) {
     return (
       <>
         <PositionMemoryMemorize
@@ -293,7 +265,7 @@ export function PositionMemorySession({
   }
 
   // Recreate phase
-  if (phase === 'recreate' && originalPosition) {
+  if (state.value === 'recreate' && originalPosition) {
     return (
       <>
         <PositionMemoryRecreate
@@ -302,7 +274,8 @@ export function PositionMemorySession({
           currentProblemIndex={currentProblemIndex}
           problemCount={positions.length}
           boardTheme={preferences.boardTheme}
-          onPositionChange={setRecreatedPosition}
+          isTutorial={isTutorial}
+          onPositionChange={handlePositionChange}
           onSubmit={handleSubmit}
           onViewAgain={handleViewAgain}
           onSkip={handleSkip}
@@ -319,7 +292,7 @@ export function PositionMemorySession({
   }
 
   // Problem result phase
-  if (phase === 'problem-result' && currentAccuracy && originalPosition) {
+  if (state.value === 'problemResult' && currentAccuracy && originalPosition) {
     return (
       <PositionMemoryProblemResult
         accuracy={currentAccuracy}
@@ -328,14 +301,16 @@ export function PositionMemorySession({
         currentProblemIndex={currentProblemIndex}
         totalProblems={positions.length}
         boardTheme={preferences.boardTheme}
+        isTutorial={isTutorial}
         onNextProblem={handleNextProblem}
-        onViewResults={() => setPhase('result')}
+        onViewResults={() => send({ type: 'VIEW_RESULTS' })}
+        onFinishTutorial={handleFinishTutorial}
       />
     );
   }
 
   // Final result phase
-  if (phase === 'result') {
+  if (state.value === 'sessionResult') {
     // Convert Map to array for calculations
     const resultsArray = Array.from(problemResults.values());
 

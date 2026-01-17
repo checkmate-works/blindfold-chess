@@ -1,0 +1,27 @@
+[
+  {
+    "id": "lucena",
+    "fen": "1K1k4/1P6/8/8/8/8/r7/4R3 w - - 0 1",
+    "title": "Lucena Position"
+  },
+  {
+    "id": "philidor",
+    "fen": "8/8/8/4k3/R7/4K3/r7/8 w - - 0 1",
+    "title": "Philidor Position"
+  },
+  {
+    "id": "kqvsk",
+    "fen": "8/8/8/4k3/8/8/8/4KQ2 w - - 0 1",
+    "title": "King & Queen vs King"
+  },
+  {
+    "id": "krvsk",
+    "fen": "8/8/8/4k3/8/8/8/4KR2 w - - 0 1",
+    "title": "King & Rook vs King"
+  },
+  {
+    "id": "opposition",
+    "fen": "8/8/4k3/8/4K3/8/4P3/8 w - - 0 1",
+    "title": "King & Pawn Opposition"
+  }
+]
