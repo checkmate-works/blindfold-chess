@@ -408,6 +408,7 @@
       "fiveSeconds": "5秒",
       "oneMinute": "1分",
       "copyShareLink": "共有リンクをコピー",
+      "shareLinkHelp": "コピーしたURLをブラウザのアドレスバーに入力すると、問題を再現できます。友人との共有やバックアップに便利です。",
       "linkCopied": "リンクをクリップボードにコピーしました",
       "copyFailed": "コピーに失敗しました",
       "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",

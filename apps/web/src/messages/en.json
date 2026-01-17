@@ -408,6 +408,7 @@
       "fiveSeconds": "5s",
       "oneMinute": "60s",
       "copyShareLink": "Copy Share Link",
+      "shareLinkHelp": "Enter the copied URL in your browser's address bar to recreate the problems. Useful for sharing with friends or as a backup.",
       "linkCopied": "Link copied to clipboard",
       "copyFailed": "Failed to copy link",
       "urlTooLong": "URL is too long (must be under 1000 characters)",

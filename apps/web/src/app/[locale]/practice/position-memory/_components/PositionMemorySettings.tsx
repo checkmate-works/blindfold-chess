@@ -4,8 +4,9 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { FaLink } from 'react-icons/fa';
+import { FaInfoCircle, FaLink } from 'react-icons/fa';
 
+import { Modal } from '@/app/[locale]/_components/Modal';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import type { PresetPosition } from '../_data/positions';
@@ -46,6 +47,8 @@ export function PositionMemorySettings({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const [previewPreset, setPreviewPreset] = useState<PresetPosition | null>(null);
+  const [isShareLinkHelpOpen, setIsShareLinkHelpOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       {/* Problem Source */}
@@ -210,13 +213,21 @@ export function PositionMemorySettings({
 
           {/* Share Link Button */}
           {customFenInput.trim() && !customFenError && (
-            <div className="mt-3 flex justify-end">
+            <div className="mt-3 flex items-center justify-end gap-2">
               <button
                 onClick={onCopyShareLink}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-md hover:bg-secondary/80 transition-colors"
+                className="flex items-center justify-center gap-2 px-3 py-1.5 bg-secondary text-foreground text-sm rounded-md hover:bg-secondary/80 transition-colors"
               >
-                <FaLink />
+                <FaLink className="text-xs" />
                 <span>{t('copyShareLink')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsShareLinkHelpOpen(true)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Show share link information"
+              >
+                <FaInfoCircle className="w-4 h-4" />
               </button>
             </div>
           )}
@@ -324,6 +335,16 @@ export function PositionMemorySettings({
           </div>
         </div>
       )}
+
+      {/* Share Link Help Modal */}
+      <Modal
+        isOpen={isShareLinkHelpOpen}
+        title={t('copyShareLink')}
+        onClose={() => setIsShareLinkHelpOpen(false)}
+        maxWidth="max-w-md"
+      >
+        <p className="text-foreground">{t('shareLinkHelp')}</p>
+      </Modal>
     </div>
   );
 }
