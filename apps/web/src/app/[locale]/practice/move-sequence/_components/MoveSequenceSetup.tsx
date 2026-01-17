@@ -163,6 +163,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     if (urlFen !== null && urlPgn !== null) {
       setFen(urlFen);
       setPgn(urlPgn);
+      setUsePreset(false);
       setHasLoaded(true);
       return;
     }
