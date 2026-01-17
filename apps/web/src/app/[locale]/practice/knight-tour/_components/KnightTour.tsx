@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
 import {
@@ -21,14 +20,9 @@ import { KnightTourSetup } from './KnightTourSetup';
 
 type GameState = 'setup' | 'playing' | 'finished';
 
-type Props = {
-  locale: Locale;
-};
-
 const STORAGE_KEY = 'knightTour_settings';
 
-export default function KnightTour({ locale }: Props) {
-  const t = useTranslations('practice.knightTour');
+export default function KnightTour() {
   const tQuit = useTranslations('practice.quitConfirmModal');
 
   // Settings

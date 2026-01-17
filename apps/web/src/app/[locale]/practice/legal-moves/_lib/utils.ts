@@ -113,7 +113,7 @@ function generateMoveQuestionForPiece(
     if (preferLegal) {
       // Generate likely legal moves based on piece type
       switch (pieceType) {
-        case 'bishop':
+        case 'bishop': {
           // Diagonal moves
           const diagonalOffset = Math.floor(Math.random() * 7) + 1;
           const direction = Math.floor(Math.random() * 4);
@@ -135,6 +135,7 @@ function generateMoveQuestionForPiece(
             toRank = fromRank - diagonalOffset;
           }
           break;
+        }
 
         case 'rook':
           // Straight moves
@@ -149,7 +150,7 @@ function generateMoveQuestionForPiece(
           }
           break;
 
-        case 'knight':
+        case 'knight': {
           // L-shaped moves
           const knightMoves = [
             [2, 1],
@@ -165,25 +166,26 @@ function generateMoveQuestionForPiece(
           toFile = fromFile + knightMove[0];
           toRank = fromRank + knightMove[1];
           break;
+        }
 
-        case 'queen':
+        case 'queen': {
           // Any direction
           if (Math.random() < 0.5) {
             // Like bishop
-            const diagonalOffset = Math.floor(Math.random() * 7) + 1;
-            const direction = Math.floor(Math.random() * 4);
-            if (direction === 0) {
-              toFile = fromFile + diagonalOffset;
-              toRank = fromRank + diagonalOffset;
-            } else if (direction === 1) {
-              toFile = fromFile - diagonalOffset;
-              toRank = fromRank + diagonalOffset;
-            } else if (direction === 2) {
-              toFile = fromFile + diagonalOffset;
-              toRank = fromRank - diagonalOffset;
+            const queenDiagonalOffset = Math.floor(Math.random() * 7) + 1;
+            const queenDirection = Math.floor(Math.random() * 4);
+            if (queenDirection === 0) {
+              toFile = fromFile + queenDiagonalOffset;
+              toRank = fromRank + queenDiagonalOffset;
+            } else if (queenDirection === 1) {
+              toFile = fromFile - queenDiagonalOffset;
+              toRank = fromRank + queenDiagonalOffset;
+            } else if (queenDirection === 2) {
+              toFile = fromFile + queenDiagonalOffset;
+              toRank = fromRank - queenDiagonalOffset;
             } else {
-              toFile = fromFile - diagonalOffset;
-              toRank = fromRank - diagonalOffset;
+              toFile = fromFile - queenDiagonalOffset;
+              toRank = fromRank - queenDiagonalOffset;
             }
           } else {
             // Like rook
@@ -196,8 +198,9 @@ function generateMoveQuestionForPiece(
             }
           }
           break;
+        }
 
-        case 'king':
+        case 'king': {
           // One square in any direction
           const kingMoves = [
             [1, 0],
@@ -213,6 +216,7 @@ function generateMoveQuestionForPiece(
           toFile = fromFile + kingMove[0];
           toRank = fromRank + kingMove[1];
           break;
+        }
       }
     } else {
       // Generate random moves (likely illegal)

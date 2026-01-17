@@ -117,11 +117,6 @@ test.describe('Critical Game Flow', () => {
     const moveInput = page.getByPlaceholder(/e\.g\./);
     await expect(moveInput).toBeEnabled({ timeout: 15000 });
 
-    // Get game ID from URL
-    const gameUrl = page.url();
-    const urlParams = new URL(gameUrl).searchParams;
-    const gameId = urlParams.get('gameId');
-
     // Return to home
     await page.goto('/en');
 

@@ -7,7 +7,7 @@ The Knight moves in an **L-shaped pattern**.
 A Knight can move from a square $(file_1, rank_1)$ to another square $(file_2, rank_2)$ only if the following condition is met:
 
 $$
-(|file1 - file2|, |rank1 - rank2|) \in \{(1,2), (2,1)\}
+(|file1 - file2|, |rank1 - rank2|) \\in \\{(1,2), (2,1)\\}
 $$
 
 This means the Knight must move either **two squares vertically and one square horizontally**, or **two squares horizontally and one square vertically**.

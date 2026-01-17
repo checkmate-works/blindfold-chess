@@ -37,7 +37,9 @@ export default function SquareColors({ locale }: Props) {
       try {
         const settings = JSON.parse(saved);
         return settings.timeLimit || 60;
-      } catch {}
+      } catch {
+        // Ignore invalid JSON in localStorage
+      }
     }
     return 60;
   });
