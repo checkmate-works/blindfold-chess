@@ -23,6 +23,8 @@ import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type CopyStatus = 'idle' | 'success' | 'error' | 'too_long';
 
+const MAX_MOVES = 50;
+
 type Props = {
   locale: Locale;
   urlFen: string | null;
@@ -218,6 +220,11 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
 
       if (!result.success) {
         setError(result.error);
+        return;
+      }
+
+      if (result.data.moves.length > MAX_MOVES) {
+        setError(t('pgnTooLong', { max: MAX_MOVES }));
         return;
       }
 
