@@ -601,6 +601,7 @@
       "invalid_data": "無効な共有URLです",
       "invalid_fen": "無効なFEN形式が含まれています",
       "session": "練習中",
+      "endPractice": "練習を終了する",
       "replay": "再生",
       "clickMoveToJump": "クリックで局面を表示",
       "wrongAttempts": "間違い入力",

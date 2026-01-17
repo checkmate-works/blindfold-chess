@@ -83,6 +83,11 @@ export function MoveSequenceSession({
     router.push(`/${locale}/practice/move-sequence`);
   };
 
+  const handleQuit = (sessionResult: MoveSequenceSessionResult) => {
+    setResult(sessionResult);
+    setPhase('result');
+  };
+
   const handleFinishTutorial = () => {
     localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
     window.location.href = `/${locale}/practice/move-sequence`;
@@ -116,7 +121,9 @@ export function MoveSequenceSession({
       return <MoveSequenceMemorize data={data} onComplete={handleMemorizeComplete} />;
 
     case 'recall':
-      return <MoveSequenceRecall data={data} onComplete={handleRecallComplete} />;
+      return (
+        <MoveSequenceRecall data={data} onComplete={handleRecallComplete} onQuit={handleQuit} />
+      );
 
     case 'result':
       if (!result) return null;

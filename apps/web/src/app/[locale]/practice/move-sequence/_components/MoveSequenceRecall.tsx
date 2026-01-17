@@ -20,9 +20,10 @@ import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '
 type Props = {
   data: MoveSequenceData;
   onComplete: (result: MoveSequenceSessionResult) => void;
+  onQuit: (result: MoveSequenceSessionResult) => void;
 };
 
-export function MoveSequenceRecall({ data, onComplete }: Props) {
+export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
   const t = useTranslations('practice.moveSequence');
   const { preferences } = useGamePreferences();
 
@@ -325,6 +326,26 @@ export function MoveSequenceRecall({ data, onComplete }: Props) {
         ) : (
           <p className="text-center text-muted-foreground">{t('opponentTurn')}</p>
         )}
+      </div>
+
+      {/* End Practice Link */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={() => {
+            // Calculate results for completed moves so far
+            const correctMoves = results.filter((r) => r.isCorrect).length;
+            onQuit({
+              totalMoves: totalTargetMoves,
+              correctMoves,
+              accuracy:
+                totalTargetMoves > 0 ? Math.round((correctMoves / totalTargetMoves) * 100) : 0,
+              results,
+            });
+          }}
+          className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+        >
+          {t('endPractice')}
+        </button>
       </div>
     </div>
   );
