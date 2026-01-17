@@ -14,20 +14,33 @@ import type { MoveSequenceData, MoveSequencePhase, MoveSequenceSessionResult } f
 import { MoveSequenceMemorize } from './MoveSequenceMemorize';
 import { MoveSequenceRecall } from './MoveSequenceRecall';
 import { MoveSequenceResult } from './MoveSequenceResult';
+import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
   fen: string | null;
   pgn: string | null;
   includeOpponentMoves: boolean;
+  skipMemorize?: boolean;
+  isTutorial?: boolean;
   error: string | null;
 };
 
-export function MoveSequenceSession({ locale, fen, pgn, includeOpponentMoves, error }: Props) {
+export function MoveSequenceSession({
+  locale,
+  fen,
+  pgn,
+  includeOpponentMoves,
+  skipMemorize = false,
+  isTutorial = false,
+  error,
+}: Props) {
   const t = useTranslations('practice.moveSequence');
   const router = useRouter();
 
-  const [phase, setPhase] = useState<Exclude<MoveSequencePhase, 'setup'>>('memorize');
+  const [phase, setPhase] = useState<Exclude<MoveSequencePhase, 'setup'>>(
+    skipMemorize ? 'recall' : 'memorize'
+  );
   const [data, setData] = useState<MoveSequenceData | null>(null);
   const [result, setResult] = useState<MoveSequenceSessionResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(error);
@@ -67,12 +80,12 @@ export function MoveSequenceSession({ locale, fen, pgn, includeOpponentMoves, er
   };
 
   const handleTryAgain = () => {
-    setResult(null);
-    setPhase('memorize');
+    router.push(`/${locale}/practice/move-sequence`);
   };
 
-  const handleBackToSetup = () => {
-    router.push(`/${locale}/practice/move-sequence`);
+  const handleFinishTutorial = () => {
+    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+    window.location.href = `/${locale}/practice/move-sequence`;
   };
 
   // Show error state
@@ -81,7 +94,7 @@ export function MoveSequenceSession({ locale, fen, pgn, includeOpponentMoves, er
       <div className="max-w-4xl mx-auto">
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
           <p className="text-destructive mb-4">{parseError}</p>
-          <Button onClick={handleBackToSetup} variant="secondary">
+          <Button onClick={handleTryAgain} variant="secondary">
             {t('backToSetup')}
           </Button>
         </div>
@@ -110,8 +123,9 @@ export function MoveSequenceSession({ locale, fen, pgn, includeOpponentMoves, er
       return (
         <MoveSequenceResult
           result={result}
+          isTutorial={isTutorial}
           onTryAgain={handleTryAgain}
-          onBackToSetup={handleBackToSetup}
+          onFinishTutorial={handleFinishTutorial}
         />
       );
 

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaTrash } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaRedo, FaTrash } from 'react-icons/fa';
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
@@ -450,7 +450,14 @@ export function PracticeComplete({
           )}
 
         <div className="space-y-4 mt-6">
-          <Button onClick={onTryAgain} variant="primary" size="lg" fullWidth className="rounded-lg">
+          <Button
+            onClick={onTryAgain}
+            variant="primary"
+            size="lg"
+            fullWidth
+            icon={<FaRedo />}
+            className="rounded-lg"
+          >
             {labels.tryAgain}
           </Button>
 

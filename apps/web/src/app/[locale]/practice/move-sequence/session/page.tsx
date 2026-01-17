@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,11 +34,15 @@ export default async function MoveSequenceSessionPage({ params, searchParams }: 
   // Parse query parameters
   const dataParam = search.data;
   const includeOpponentMovesParam = search.includeOpponentMoves;
+  const skipMemorizeParam = search.skipMemorize;
+  const modeParam = search.mode;
 
   let fen: string | null = null;
   let pgn: string | null = null;
   let error: string | null = null;
   let includeOpponentMoves = false;
+  const skipMemorize = skipMemorizeParam === '1';
+  const isTutorial = modeParam === 'tutorial';
 
   if (dataParam && typeof dataParam === 'string') {
     const decoded = decodeMoveSequenceFromBase64(dataParam);
@@ -61,13 +65,13 @@ export default async function MoveSequenceSessionPage({ params, searchParams }: 
     <div className="space-y-8">
       <PageTitle>{t('practice.moveSequence.title')}</PageTitle>
 
-      <PageDescription>{t('practice.moveSequence.description')}</PageDescription>
-
       <MoveSequenceSession
         locale={locale}
         fen={fen}
         pgn={pgn}
         includeOpponentMoves={includeOpponentMoves}
+        skipMemorize={skipMemorize}
+        isTutorial={isTutorial}
         error={error}
       />
 

@@ -15,11 +15,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { MoveSequenceSetup } from './_components/MoveSequenceSetup';
+import { MoveSequencePageContent } from './_components/MoveSequencePageContent';
 import { decodeMoveSequenceFromBase64, isQueryTooLong, validateFEN } from './_lib/share';
 
 type Props = {
@@ -78,9 +78,12 @@ export default async function MoveSequencePage({ params, searchParams }: Props) 
     <div className="space-y-8">
       <PageTitle>{t('practice.moveSequence.title')}</PageTitle>
 
-      <PageDescription>{t('practice.moveSequence.description')}</PageDescription>
-
-      <MoveSequenceSetup locale={locale} urlFen={urlFen} urlPgn={urlPgn} urlError={urlError} />
+      <MoveSequencePageContent
+        locale={locale}
+        urlFen={urlFen}
+        urlPgn={urlPgn}
+        urlError={urlError}
+      />
 
       <Divider />
 
