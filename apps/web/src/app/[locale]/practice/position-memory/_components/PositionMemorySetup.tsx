@@ -9,6 +9,7 @@ import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PresetPosition } from '../_data/positions';
@@ -34,6 +35,7 @@ export function PositionMemorySetup({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
+  const { preferences } = useGamePreferences();
 
   // Default values (used for SSR and initial render)
   const defaultSettings = {
@@ -246,6 +248,7 @@ export function PositionMemorySetup({
           customFenInput={customFenInput}
           customFenError={customFenError}
           copyStatus={copyStatus}
+          boardTheme={preferences.boardTheme}
           onTimeLimitChange={setTimeLimit}
           onProblemCountChange={setProblemCount}
           onShuffleChange={setShuffleProblems}

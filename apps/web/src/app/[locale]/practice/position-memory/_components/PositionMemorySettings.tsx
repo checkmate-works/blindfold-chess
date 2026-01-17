@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { FaInfoCircle, FaLink } from 'react-icons/fa';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
@@ -20,6 +22,7 @@ type Props = {
   customFenInput: string;
   customFenError: string | null;
   copyStatus: 'idle' | 'success' | 'error' | 'too_long';
+  boardTheme: BoardTheme;
   onTimeLimitChange: (value: number) => void;
   onProblemCountChange: (value: number) => void;
   onShuffleChange: (value: boolean) => void;
@@ -38,6 +41,7 @@ export function PositionMemorySettings({
   customFenInput,
   customFenError,
   copyStatus,
+  boardTheme,
   onTimeLimitChange,
   onProblemCountChange,
   onShuffleChange,
@@ -113,6 +117,7 @@ export function PositionMemorySettings({
                   initialFen={previewPreset.fen}
                   showCoordinates={true}
                   flipped={previewPreset.fen.split(' ')[1] === 'b'}
+                  boardTheme={boardTheme}
                 />
               </div>
             </div>
