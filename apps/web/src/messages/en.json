@@ -589,6 +589,7 @@
       "whiteTurn": "White's Turn",
       "blackTurn": "Black's Turn",
       "copyShareLink": "Copy Share Link",
+      "shareLinkHelp": "Enter the copied URL in your browser's address bar to recreate the practice. Useful for sharing with friends or as a backup.",
       "linkCopied": "Link copied to clipboard",
       "copyFailed": "Failed to copy link",
       "urlTooLong": "URL is too long (must be under 1000 characters)",

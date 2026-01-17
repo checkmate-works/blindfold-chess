@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation';
 
 import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
-import { FaLink, FaPlay } from 'react-icons/fa';
+import { FaInfoCircle, FaLink, FaPlay } from 'react-icons/fa';
 
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -45,6 +46,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isShareLinkHelpOpen, setIsShareLinkHelpOpen] = useState(false);
 
   // Preview state
   const [showPreview, setShowPreview] = useState(true);
@@ -435,13 +437,21 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
 
                 {/* Share Link Button */}
                 {canShare && (
-                  <div className="mt-3 flex justify-end">
+                  <div className="mt-3 flex items-center justify-end gap-2">
                     <button
                       onClick={handleCopyShareLink}
-                      className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+                      className="flex items-center justify-center gap-2 px-3 py-1.5 bg-secondary text-foreground text-sm rounded-md hover:bg-secondary/80 transition-colors"
                     >
-                      <FaLink />
+                      <FaLink className="text-xs" />
                       <span>{t('copyShareLink')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsShareLinkHelpOpen(true)}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label="Show share link information"
+                    >
+                      <FaInfoCircle className="w-4 h-4" />
                     </button>
                   </div>
                 )}
@@ -522,6 +532,16 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         onConfirm={handleResetConfirm}
         onCancel={() => setIsResetConfirmOpen(false)}
       />
+
+      {/* Share Link Help Modal */}
+      <Modal
+        isOpen={isShareLinkHelpOpen}
+        title={t('copyShareLink')}
+        onClose={() => setIsShareLinkHelpOpen(false)}
+        maxWidth="max-w-md"
+      >
+        <p className="text-foreground">{t('shareLinkHelp')}</p>
+      </Modal>
     </div>
   );
 }

@@ -589,6 +589,7 @@
       "whiteTurn": "白の手番",
       "blackTurn": "黒の手番",
       "copyShareLink": "共有リンクをコピー",
+      "shareLinkHelp": "コピーしたURLをブラウザのアドレスバーに入力すると、練習内容を再現できます。友人との共有やバックアップに便利です。",
       "linkCopied": "リンクをクリップボードにコピーしました",
       "copyFailed": "コピーに失敗しました",
       "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
