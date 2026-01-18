@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+
 import { useMachine } from '@xstate/react';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -10,9 +11,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
-import type { PositionData } from '../_lib/types';
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
+import type { PositionData } from '../_lib/types';
 import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
@@ -90,7 +91,7 @@ export function PositionMemorySession({
 
   // Timer effect for memorize phase
   useEffect(() => {
-    if (state.value === 'memorize' && state.context.memorizeTimeLeft > 0) {
+    if (state.value === 'memorize' && state.context.memorizeTimeLeft >= 0) {
       const timer = setTimeout(() => {
         send({ type: 'TICK' });
       }, 1000);
