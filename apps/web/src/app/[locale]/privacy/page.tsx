@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle, SectionTitle } from '../_components';
+import { Breadcrumb, Divider, PageTitle, SectionTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 
@@ -27,8 +27,6 @@ export default async function PrivacyPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-
-      <PageDescription>{t('description')}</PageDescription>
 
       <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
         <p className="text-muted-foreground">{t('lastUpdated')}</p>

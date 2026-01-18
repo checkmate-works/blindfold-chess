@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle, SectionTitle } from '../_components';
+import { Breadcrumb, Divider, PageTitle, SectionTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
@@ -33,8 +33,6 @@ export default async function GlossaryIndexPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-
-      <PageDescription>{t('description')}</PageDescription>
 
       <div className="space-y-6">
         <SectionTitle>{t('index.alphabetical')}</SectionTitle>

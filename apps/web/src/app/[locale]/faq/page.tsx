@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '../_components';
+import { Breadcrumb, Divider, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { FAQClient } from './_components/FAQClient';
@@ -67,8 +67,6 @@ export default async function FAQPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-
-      <PageDescription>{t('description')}</PageDescription>
 
       <FAQClient items={faqItems} />
 
