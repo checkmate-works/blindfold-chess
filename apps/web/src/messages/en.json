@@ -1032,5 +1032,35 @@
       "title": "Submission Error",
       "message": "We apologize, but an error occurred during submission. Please try again later."
     }
+  },
+  "landing": {
+    "getStarted": "Get Started",
+    "goToTop": "Go to Top Page",
+    "aiBattle": {
+      "title": "Play against AI",
+      "description": "Play blindfold chess against the standard chess engine, Stockfish.",
+      "cta": "Play Now"
+    },
+    "training": {
+      "title": "Extensive Training Modes",
+      "viewAll": "View All Trainings",
+      "positionMemory": {
+        "title": "Position Memory",
+        "description": "Practice memorizing board positions and recreating them on an empty board. Develops crucial pattern recognition skills for blindfold chess.",
+        "cta": "Try Practice"
+      },
+      "knightTour": {
+        "title": "Knight's Tour",
+        "description": "Knight's Tour is a classic puzzle where you visit every square on the board exactly once. Use it to train your board visualization.",
+        "cta": "Try Puzzle"
+      }
+    },
+    "learn": {
+      "title": "Tips for Visualization Skills",
+      "description": "Gain insights into blindfold chess, including introduction to famous research results like the ",
+      "deGrootLink": "de Groot experiment",
+      "descriptionSuffix": ".",
+      "cta": "Read All Articles"
+    }
   }
 }

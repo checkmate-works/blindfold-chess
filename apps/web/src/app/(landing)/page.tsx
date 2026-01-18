@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -7,93 +8,11 @@ import { FaBrain, FaChessKnight, FaGraduationCap, FaRobot } from 'react-icons/fa
 
 import { getLocaleFromRequest } from '@/lib/locale';
 
-import { LanguageSelector } from './_components/LanguageSelector';
-import { ScrollIndicator } from './_components/ScrollIndicator';
-
-// Content definition for each locale
-const content = {
-  en: {
-    hero: {
-      title: SITE_NAME,
-    },
-    aiBattle: {
-      title: 'Play against AI',
-      subtitle: '',
-      description: 'Play blindfold chess against the standard chess engine, Stockfish.',
-      cta: 'Play Now',
-    },
-    training: {
-      title: 'Extensive Training Modes',
-      subtitle: '',
-      viewAll: 'View All Trainings',
-      positionMemory: {
-        title: 'Position Memory',
-        subtitle: '',
-        description:
-          'Practice memorizing board positions and recreating them on an empty board. Develops crucial pattern recognition skills for blindfold chess.',
-        cta: 'Try Practice',
-      },
-      knightTour: {
-        title: "Knight's Tour",
-        subtitle: '',
-        description:
-          "Knight's Tour is a classic puzzle where you visit every square on the board exactly once. Use it to train your board visualization.",
-        cta: 'Try Puzzle',
-      },
-    },
-    learn: {
-      title: 'Tips for Visualization Skills',
-      subtitle: '',
-      description:
-        'Gain insights into blindfold chess, including introduction to famous research results like the ',
-      deGrootLink: 'de Groot experiment',
-      descriptionSuffix: '.',
-      cta: 'Read All Articles',
-    },
-  },
-  ja: {
-    hero: {
-      title: SITE_NAME,
-    },
-    aiBattle: {
-      title: 'AIと目隠しチェスで対戦',
-      subtitle: '',
-      description: '定番のチェスエンジン Stockfish と目隠しチェスで対戦できます。',
-      cta: '今すぐプレイ',
-    },
-    training: {
-      title: '目隠しチェスのトレーニングが満載',
-      subtitle: '',
-      viewAll: '全てのメニューを見る',
-      positionMemory: {
-        title: 'ポジションの記憶',
-        subtitle: '',
-        description:
-          '盤面を記憶して、空のボード上に再現する練習メニューがあります。目隠しチェスをする上で重要となるパターン認識能力を養うことができます。',
-        cta: '練習する',
-      },
-      knightTour: {
-        title: 'ナイトツアー',
-        subtitle: '',
-        description:
-          'ナイトツアーはナイトを使って盤上の全てのマスを一度ずつ訪れる古典的なパズルです。目隠しチェスのトレーニングとして活用できます。',
-        cta: 'パズルに挑戦',
-      },
-    },
-    learn: {
-      title: 'ビジュアライゼーションスキルアップのヒントが満載',
-      subtitle: '',
-      description: '有名な',
-      deGrootLink: 'デ・グロートのチェスに関する実験結果の紹介',
-      descriptionSuffix: 'など、目隠しチェスのヒントとなる知識が収集できます。',
-      cta: '記事一覧を読む',
-    },
-  },
-} as const;
+import { LanguageSelector, ScrollIndicator, TrainingCard } from './_components';
 
 export default async function RootPage() {
   const locale = await getLocaleFromRequest();
-  const t = content[locale];
+  const t = await getTranslations({ locale, namespace: 'landing' });
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -112,7 +31,7 @@ export default async function RootPage() {
               />
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
-              {t.hero.title}
+              {SITE_NAME}
             </h1>
           </div>
 
@@ -125,9 +44,7 @@ export default async function RootPage() {
                 asChild
                 className="shadow-lg hover:shadow-xl hover:scale-105"
               >
-                <span className="flex items-center gap-2">
-                  🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
-                </span>
+                <span className="flex items-center gap-2">🚀 {t('getStarted')}</span>
               </Button>
             </Link>
 
@@ -138,7 +55,7 @@ export default async function RootPage() {
                 href={`/${locale}`}
                 className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
               >
-                {locale === 'ja' ? 'トップページへ' : 'Go to Top Page'}
+                {t('goToTop')}
               </Link>
             </div>
           </div>
@@ -155,17 +72,17 @@ export default async function RootPage() {
             <FaRobot />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold">{t.aiBattle.title}</h2>
+            <h2 className="text-3xl font-bold">{t('aiBattle.title')}</h2>
           </div>
           <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            {t.aiBattle.description}
+            {t('aiBattle.description')}
           </p>
           <div className="pt-4 flex justify-center">
             <Link
               href={`/${locale}/game/new`}
               className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {t.aiBattle.cta}
+              {t('aiBattle.cta')}
             </Link>
           </div>
         </div>
@@ -175,53 +92,34 @@ export default async function RootPage() {
       <section className="py-24 px-6 bg-background">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">{t.training.title}</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t('training.title')}</h2>
           </div>
           <div className="flex justify-center mb-8">
             <Link
               href={`/${locale}/practice`}
               className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {t.training.viewAll}
+              {t('training.viewAll')}
             </Link>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Position Memory */}
-            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm flex flex-col">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-2xl mb-6">
-                <FaBrain />
-              </div>
-              <h4 className="text-xl font-bold mb-1">{t.training.positionMemory.title}</h4>
-              <p className="text-muted-foreground flex-grow">
-                {t.training.positionMemory.description}
-              </p>
-              <div className="mt-8 flex justify-center">
-                <Link
-                  href={`/${locale}/practice/position-memory`}
-                  className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  {t.training.positionMemory.cta}
-                </Link>
-              </div>
-            </div>
-
-            {/* Knight's Tour */}
-            <div className="bg-card p-8 rounded-2xl border border-border shadow-sm flex flex-col">
-              <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-2xl mb-6">
-                <FaChessKnight />
-              </div>
-              <h4 className="text-xl font-bold mb-1">{t.training.knightTour.title}</h4>
-              <p className="text-muted-foreground flex-grow">{t.training.knightTour.description}</p>
-              <div className="mt-8 flex justify-center">
-                <Link
-                  href={`/${locale}/practice/knight-tour`}
-                  className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  {t.training.knightTour.cta}
-                </Link>
-              </div>
-            </div>
+            <TrainingCard
+              icon={<FaBrain />}
+              iconColor="blue"
+              title={t('training.positionMemory.title')}
+              description={t('training.positionMemory.description')}
+              href={`/${locale}/practice/position-memory`}
+              cta={t('training.positionMemory.cta')}
+            />
+            <TrainingCard
+              icon={<FaChessKnight />}
+              iconColor="orange"
+              title={t('training.knightTour.title')}
+              description={t('training.knightTour.description')}
+              href={`/${locale}/practice/knight-tour`}
+              cta={t('training.knightTour.cta')}
+            />
           </div>
         </div>
       </section>
@@ -233,24 +131,24 @@ export default async function RootPage() {
             <FaGraduationCap />
           </div>
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold">{t.learn.title}</h2>
+            <h2 className="text-3xl font-bold">{t('learn.title')}</h2>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t.learn.description}
+            {t('learn.description')}
             <Link
               href={`/${locale}/learn/de-groot-experiment`}
               className="text-muted-foreground underline hover:text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm transition-colors"
             >
-              {t.learn.deGrootLink}
+              {t('learn.deGrootLink')}
             </Link>
-            {t.learn.descriptionSuffix}
+            {t('learn.descriptionSuffix')}
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
             <Link
               href={`/${locale}/learn`}
               className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {t.learn.cta}
+              {t('learn.cta')}
             </Link>
           </div>
         </div>
@@ -267,9 +165,7 @@ export default async function RootPage() {
               asChild
               className="rounded-lg shadow-lg hover:shadow-xl hover:scale-105 font-semibold"
             >
-              <span className="flex items-center gap-2">
-                🚀 {locale === 'ja' ? 'はじめる' : 'Get Started'}
-              </span>
+              <span className="flex items-center gap-2">🚀 {t('getStarted')}</span>
             </Button>
           </Link>
         </div>
