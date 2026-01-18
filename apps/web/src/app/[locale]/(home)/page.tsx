@@ -19,8 +19,7 @@ import { AdContainer } from '@/components/Ad';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
-import { GameListClient } from './_components/GameListClient';
-import { NewGameButton } from './_components/NewGameButton';
+import { GameListClient, NewGameButton } from './_components';
 
 type Props = {
   params: Promise<{
