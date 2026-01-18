@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { PageTitle } from '../_components/PageTitle';
+import { PageTitle } from '../_components';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -25,7 +25,6 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
       <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 space-y-8">
         {/* Company Information */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-foreground">{t('companyInfo')}</h2>
           <dl className="space-y-4">
             <div className="border-b border-border pb-4">
               <dt className="text-sm font-semibold text-muted-foreground mb-1">
