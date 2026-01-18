@@ -1,13 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import {
-  Breadcrumb,
-  Divider,
-  MarkdownRenderer,
-  PageDescription,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -62,30 +56,10 @@ export default async function ManualArticlePage({ params }: Props) {
   }
 
   const title = article.metadata.title;
-  const tags = article.metadata.tags;
-  const excerpt = article.metadata.excerpt;
 
   return (
     <div className="space-y-12">
-      {/* Article header */}
-      <header className="space-y-4 max-w-3xl">
-        <PageTitle>{title}</PageTitle>
-
-        <PageDescription>{excerpt}</PageDescription>
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </header>
+      <PageTitle>{title}</PageTitle>
 
       {/* Article content with narrower width for readability */}
       <article className="prose prose-slate dark:prose-invert max-w-2xl">

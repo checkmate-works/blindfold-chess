@@ -1,5 +1,6 @@
 export { Breadcrumb } from './Breadcrumb';
 export { CardLink } from './CardLink';
+export { ChessBoardDemo } from './ChessBoardDemo';
 export { Divider } from './Divider';
 export { Footer } from './Footer';
 export { Header } from './Header';

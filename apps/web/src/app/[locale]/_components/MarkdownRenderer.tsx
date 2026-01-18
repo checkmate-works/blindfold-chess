@@ -5,6 +5,7 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { ChessBoardDemo } from './ChessBoardDemo';
 import { PageTitle } from './PageTitle';
 import { SectionTitle } from './SectionTitle';
 import { SubsectionTitle } from './SubsectionTitle';
@@ -28,11 +29,14 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         },
         h2: ({ children }) => <SectionTitle className="mb-4 mt-10">{children}</SectionTitle>,
         h3: ({ children }) => <SubsectionTitle className="mb-3 mt-8">{children}</SubsectionTitle>,
-        p: ({ children }) => {
-          if (
-            Array.isArray(children) &&
-            children.some((child) => child?.type?.name === 'img' || child?.props?.mdxType === 'img')
-          ) {
+        p: ({ children, node }) => {
+          // Check if paragraph contains only an image (including demo components)
+          // This prevents <div> inside <p> hydration errors
+          const hasOnlyImage =
+            node?.children?.length === 1 &&
+            node?.children[0]?.type === 'element' &&
+            node?.children[0]?.tagName === 'img';
+          if (hasOnlyImage) {
             return <>{children}</>;
           }
           return <p className="text-foreground/90 leading-relaxed mb-6">{children}</p>;
@@ -88,10 +92,26 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             {children}
           </blockquote>
         ),
-        img: ({ src, alt }) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={alt} className="rounded-md shadow-md max-w-full mx-auto block my-8" />
-        ),
+        img: ({ src, alt }) => {
+          // Handle demo: prefix for interactive ChessBoard demos
+          // In markdown ![demo:type](), the demo type is in the alt text
+          if (alt?.startsWith('demo:')) {
+            const demoType = alt.replace('demo:', '') as
+              | 'board-normal'
+              | 'single-colored'
+              | 'stones';
+            return <ChessBoardDemo type={demoType} />;
+          }
+          if (!src) return null;
+          return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={alt}
+              className="rounded-md shadow-md max-w-full mx-auto block my-8"
+            />
+          );
+        },
         table: ({ children }) => (
           <div className="overflow-x-auto my-6">
             <table className="min-w-full border-collapse border border-border">{children}</table>
