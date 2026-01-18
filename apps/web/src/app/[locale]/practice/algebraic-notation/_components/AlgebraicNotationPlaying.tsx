@@ -40,15 +40,17 @@ export function AlgebraicNotationPlaying({
 
         {/* Chess Board */}
         <div className="mb-6 flex justify-center">
-          <AnimatedChessBoard
-            key={`question-${currentQuestionIndex}`}
-            initialFen={question.fenBefore}
-            move={question.move}
-            showCoordinates={true}
-            animationDuration={800}
-            boardTheme={boardTheme}
-            className="w-full"
-          />
+          <div className="w-full max-w-md">
+            <AnimatedChessBoard
+              key={`question-${currentQuestionIndex}`}
+              initialFen={question.fenBefore}
+              move={question.move}
+              showCoordinates={true}
+              animationDuration={800}
+              boardTheme={boardTheme}
+              className="w-full"
+            />
+          </div>
         </div>
 
         {/* Options */}
