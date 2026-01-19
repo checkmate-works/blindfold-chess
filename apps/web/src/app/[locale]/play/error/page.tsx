@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
+import type { Side } from '@blindfold-chess/core';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { Side, SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/types';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 

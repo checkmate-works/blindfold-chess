@@ -1,6 +1,5 @@
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { describe, expect, it } from 'vitest';
-
-import type { AlgebraicNotation } from '@/lib/types';
 
 import { formatLastMove } from './utils';
 

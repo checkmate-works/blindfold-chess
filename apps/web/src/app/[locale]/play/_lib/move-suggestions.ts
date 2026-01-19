@@ -5,7 +5,7 @@ import {
   AlgebraicNotation,
   File,
   Rank,
-} from '@/lib/types';
+} from '@blindfold-chess/core';
 
 /**
  * Generate move suggestions based on partial input

@@ -3,11 +3,11 @@
 import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
+import type { Side } from '@blindfold-chess/core';
 import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { getBoardThemeColors } from '@/lib/boardThemes';
-import type { Side } from '@/lib/types';
 
 type BoardPiece = {
   square: SquareType;

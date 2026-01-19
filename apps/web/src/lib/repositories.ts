@@ -1,8 +1,8 @@
 import { MAX_GAMES } from '@/config';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 
 import { GameLimitError } from '@/lib/errors';
-import type { AlgebraicNotation } from '@/lib/types';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
 interface IGameRepository {

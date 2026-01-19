@@ -1,4 +1,4 @@
-import type { AlgebraicNotation, Side } from '@/lib/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 
 /**
  * Format the last move(s) for display in game list based on player color

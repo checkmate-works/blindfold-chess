@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessBoard } from '@/app/_components';
-
-import type { Side } from '@/lib/types';
+import type { Side } from '@blindfold-chess/core';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 

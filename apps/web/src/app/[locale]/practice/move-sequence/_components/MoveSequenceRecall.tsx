@@ -5,10 +5,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessBoard } from '@/app/_components';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
-
-import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';

@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
 
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
-
-import type { AlgebraicNotation } from '@/lib/types';
 
 export function useNotation(initialMoves: AlgebraicNotation[] = []) {
   const [moves, setMoves] = useState<AlgebraicNotation[]>(initialMoves);

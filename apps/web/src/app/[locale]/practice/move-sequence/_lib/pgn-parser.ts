@@ -1,6 +1,5 @@
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
-
-import type { AlgebraicNotation } from '@/lib/types';
 
 import type { ParsedMove, ParsedMoveSequence } from './types';
 

@@ -6,10 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 
 import { MAX_GAMES } from '@/config';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { Game, GameStatus } from '@/lib/types';
-import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
+import type { Game, GameStatus, SkillLevel } from '@/lib/types';
 
 import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';

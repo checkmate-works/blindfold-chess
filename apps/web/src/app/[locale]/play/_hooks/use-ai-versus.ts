@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import type { AlgebraicNotation, SkillLevel } from '@/lib/types';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
+
+import type { SkillLevel } from '@/lib/types';
 
 import { getChessEngine } from '../_lib/chess-engine';
 

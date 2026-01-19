@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import type { AlgebraicNotation } from '@/lib/types';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 
 import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
 

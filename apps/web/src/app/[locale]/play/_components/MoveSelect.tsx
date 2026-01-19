@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 import { FaChevronDown } from 'react-icons/fa';
-
-import type { AlgebraicNotation } from '@/lib/types';
 
 import { sortMoves } from '../_lib/move-sorter';
 

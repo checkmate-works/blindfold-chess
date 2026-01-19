@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 
 import { getEloRating } from '@/lib/chess/elo';
-import type { SkillLevel } from '@/lib/types/game';
+import type { SkillLevel } from '@/lib/types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 

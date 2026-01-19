@@ -6,9 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 
-import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/types';
 
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';

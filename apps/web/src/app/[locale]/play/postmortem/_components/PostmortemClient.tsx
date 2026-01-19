@@ -5,6 +5,7 @@ import { type ReactElement, useCallback, useEffect, useMemo, useState } from 're
 import { useTranslations } from 'next-intl';
 
 import { Button, ChessBoard, InfoModal, ProgressBar } from '@/app/_components';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 import {
   FaCheck,
@@ -21,7 +22,6 @@ import {
 } from 'react-icons/fa';
 
 import { fenToLichessUrl } from '@/lib/lichess';
-import type { AlgebraicNotation } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';

@@ -1,6 +1,7 @@
+import type { AlgebraicNotation, Fen, UciMove } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 
-import type { AlgebraicNotation, Fen, SkillLevel, UciMove } from '@/lib/types';
+import type { SkillLevel } from '@/lib/types';
 
 type EngineResponse = {
   type: 'readyok' | 'bestmove' | 'info' | 'uci';

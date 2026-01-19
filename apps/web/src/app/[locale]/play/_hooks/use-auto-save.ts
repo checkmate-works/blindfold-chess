@@ -3,11 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { STORAGE_KEYS } from '@/config';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { GameStatus } from '@/lib/types';
-import type { AlgebraicNotation, Side, SkillLevel } from '@/lib/types';
+import type { GameStatus, SkillLevel } from '@/lib/types';
 
 type UseAutoSaveOptions = {
   gameId?: string;

@@ -1,6 +1,5 @@
+import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
-
-import type { AlgebraicNotation, Side } from '@/lib/types';
 
 export type GameStatus = 'in_progress' | 'checkmate' | 'stalemate' | 'draw';
 
