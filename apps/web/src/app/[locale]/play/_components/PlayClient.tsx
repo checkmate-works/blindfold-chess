@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button, ChessBoard } from '@/app/_components';
+import { Button } from '@/app/_components';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 import {
@@ -15,7 +15,6 @@ import {
   FaCopy,
   FaExternalLinkAlt,
   FaEye,
-  FaEyeSlash,
   FaPlay,
   FaPlus,
   FaPlusCircle,
@@ -33,6 +32,7 @@ import { useAutoSave } from '../_hooks/use-auto-save';
 import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
 import { formatPgnToText } from '../_lib/pgn-parser';
+import { BoardViewModal } from './BoardViewModal';
 import { ControlSettingsModal } from './ControlSettingsModal';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
@@ -687,86 +687,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Chess Board */}
+        {/* Game Area */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg">
-            {/* Board Toggle Header */}
-            <button
-              onClick={() => setIsBoardVisible(!isBoardVisible)}
-              className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isBoardVisible ? 'rounded-b-lg' : ''}`}
-              aria-expanded={isBoardVisible}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isBoardVisible ? (
-                    <FaEye className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <FaEyeSlash className="w-4 h-4 text-muted-foreground" />
-                  )}
-                  <span className="font-medium text-foreground">
-                    {isBoardVisible ? t('hideBoard') : t('showBoard')}
-                  </span>
-                </div>
-                <FaChevronDown
-                  className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
-                    isBoardVisible ? 'rotate-180' : ''
-                  }`}
-                />
-              </div>
-            </button>
-
-            {/* Board Content */}
-            <div
-              className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-lg`}
-            >
-              <div className={`p-4 ${gameStatus !== 'in_progress' ? 'pb-8' : ''}`}>
-                <ChessBoard
-                  fen={displayFen || currentFen}
-                  flipped={playerSide === 'black'}
-                  playerSide={playerSide}
-                  lastMove={
-                    preferences.highlightLastMove && currentPosition === -1 ? lastMove : null
-                  }
-                  showCoordinates={preferences.showCoordinates}
-                  showOwnPieces={preferences.showOwnPieces}
-                  showOpponentPieces={preferences.showOpponentPieces}
-                  pieceShapeMode={preferences.pieceShapeMode}
-                  pieceColors={preferences.pieceColors}
-                  boardTheme={preferences.boardTheme}
-                  className="max-w-2xl mx-auto"
-                />
-
-                {/* Navigation Controls (below board) */}
-                {moves.length > 0 && (
-                  <div className="mt-4">
-                    <MoveNavigationControls
-                      onNavigateToStart={navigateToStart}
-                      onNavigatePrevious={navigatePrevious}
-                      onNavigateNext={navigateNext}
-                      onNavigateToEnd={navigateToEnd}
-                      isPreviousDisabled={
-                        currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
-                      }
-                      isNextDisabled={currentPosition === -1}
-                    />
-                  </div>
-                )}
-
-                {/* Settings Link */}
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={() => setShowSettingsModal(true)}
-                    className="text-sm text-muted-foreground hover:text-foreground underline"
-                  >
-                    {t('configureBoardAppearance')}
-                  </button>
-                </div>
-              </div>
-            </div>
-
+          <div className="bg-card rounded-lg shadow-lg p-4">
             {/* Game Status */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-6 text-center">
+              <div className="text-center">
                 {playerResult && (
                   <div>
                     <p className="text-lg font-bold">
@@ -785,84 +711,89 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
               </div>
             )}
 
-            {/* Move Input */}
+            {/* In Progress Content */}
             {gameStatus === 'in_progress' && (
-              <div className="mt-6 px-4">
-                {isPlayerTurn ? (
-                  <div>
-                    {preferences.moveInputMode === 'select' ? (
-                      <MoveSelect
-                        fen={currentFen}
-                        onSubmit={handleSubmitMove}
-                        onChange={() => {
-                          // Clear error when user changes selection
-                          if (error) setError(null);
-                        }}
-                        disabled={isLoading}
-                        placeholder={t('selectMove')}
-                      />
-                    ) : (
-                      <MoveInput
-                        value={moveInput}
-                        onChange={(value) => {
-                          setMoveInput(value);
-                          // Clear error when user starts typing
-                          if (error) setError(null);
-                        }}
-                        onSubmit={handleSubmitMove}
-                        disabled={isLoading}
-                        placeholder={t('inputMove')}
-                        showSuggestions={preferences.enableAutoComplete}
-                        showSubmitButton={true}
-                      />
-                    )}
-                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                    {/* Save Indicator */}
-                    <div className="mt-2 flex justify-end">
-                      <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+              <div className="flex flex-col gap-6">
+                {/* Move Input */}
+                <div>
+                  {isPlayerTurn ? (
+                    <div>
+                      {preferences.moveInputMode === 'select' ? (
+                        <MoveSelect
+                          fen={currentFen}
+                          onSubmit={handleSubmitMove}
+                          onChange={() => {
+                            // Clear error when user changes selection
+                            if (error) setError(null);
+                          }}
+                          disabled={isLoading}
+                          placeholder={t('selectMove')}
+                        />
+                      ) : (
+                        <MoveInput
+                          value={moveInput}
+                          onChange={(value) => {
+                            setMoveInput(value);
+                            // Clear error when user starts typing
+                            if (error) setError(null);
+                          }}
+                          onSubmit={handleSubmitMove}
+                          disabled={isLoading}
+                          placeholder={t('inputMove')}
+                          showSuggestions={preferences.enableAutoComplete}
+                          showSubmitButton={true}
+                        />
+                      )}
+                      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                      {/* Save Indicator */}
+                      <div className="mt-2 flex justify-end">
+                        <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground">
-                    {isLoading ? t('aiThinking') : t('yourMove')}
-                  </p>
-                )}
-              </div>
-            )}
+                  ) : (
+                    <p className="text-center text-muted-foreground">
+                      {isLoading ? t('aiThinking') : t('yourMove')}
+                    </p>
+                  )}
+                </div>
 
-            {/* Action Buttons and Settings */}
-            {gameStatus === 'in_progress' && (
-              <div className="mt-4 pb-6 px-4">
-                <div className="flex gap-2 justify-center">
+                {/* Action Buttons */}
+                <div className="flex gap-4 md:gap-2 justify-center">
+                  <button
+                    onClick={() => setIsBoardVisible(true)}
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                    title={t('showBoard')}
+                  >
+                    <FaEye className="w-4 h-4" />
+                    <span className="hidden md:inline">{t('showBoard')}</span>
+                  </button>
                   <button
                     onClick={handleUndo}
                     disabled={moves.length < 2}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center justify-center gap-2"
+                    title={t('undo')}
                   >
                     <UndoIcon className="w-4 h-4" />
-                    {t('undo')}
+                    <span className="hidden md:inline">{t('undo')}</span>
                   </button>
                   <button
                     onClick={handleResign}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                    title={t('resign')}
                   >
                     <FlagIcon className="w-4 h-4" />
-                    {t('resign')}
+                    <span className="hidden md:inline">{t('resign')}</span>
                   </button>
                 </div>
 
-                {/* Control Settings Link */}
-                <div className="mt-6 text-center">
+                {/* Settings Links */}
+                <div className="flex flex-col gap-4 text-center">
                   <button
                     onClick={() => setShowControlSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
                   >
                     {t('configureInputMethod')}
                   </button>
-                </div>
-
-                {/* Skill Level Settings Link */}
-                <div className="mt-6 text-center">
                   <button
                     onClick={() => setShowSkillLevelSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
@@ -873,9 +804,17 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
               </div>
             )}
 
-            {/* New Game Button */}
+            {/* Game Over Content */}
             {gameStatus !== 'in_progress' && (
-              <div className="mt-4 pb-4 px-4 space-y-3">
+              <div className="flex flex-col gap-3 mt-4">
+                <button
+                  onClick={() => setIsBoardVisible(true)}
+                  className="w-full px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                  title={t('showBoard')}
+                >
+                  <FaEye className="w-4 h-4" />
+                  <span className="hidden md:inline">{t('showBoard')}</span>
+                </button>
                 <Button
                   variant="primary"
                   size="lg"
@@ -1174,6 +1113,22 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
           </div>
         </div>
       )}
+
+      {/* Board View Modal */}
+      <BoardViewModal
+        isOpen={isBoardVisible}
+        onClose={() => setIsBoardVisible(false)}
+        fen={displayFen || currentFen}
+        playerSide={playerSide}
+        lastMove={lastMove}
+        preferences={preferences}
+        movesLength={moves.length}
+        currentPosition={currentPosition}
+        onNavigateToStart={navigateToStart}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToEnd={navigateToEnd}
+      />
 
       {/* Settings Modal */}
       <GameSettingsModal
