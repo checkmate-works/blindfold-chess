@@ -51,3 +51,6 @@ next-env.d.ts
 
 # turbo
 .turbo
+
+# npm (using pnpm)
+package-lock.json
