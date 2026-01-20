@@ -28,6 +28,7 @@ type Props = {
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
   boardTheme?: BoardTheme;
+  rounded?: boolean;
   className?: string;
 };
 
@@ -44,6 +45,7 @@ export function ChessBoard({
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
   boardTheme = 'default',
+  rounded = true,
   className = '',
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
@@ -156,7 +158,9 @@ export function ChessBoard({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="relative w-full aspect-square border border-border rounded-md shadow-lg overflow-hidden">
+      <div
+        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
+      >
         {displayBoard.map((row, rankIndex) => (
           <div key={rankIndex} className="flex h-[12.5%]">
             {row.map((piece, fileIndex) => {

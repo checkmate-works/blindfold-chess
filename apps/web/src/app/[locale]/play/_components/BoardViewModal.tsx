@@ -134,7 +134,7 @@ export function BoardViewModal({
             pieceShapeMode={preferences.pieceShapeMode}
             pieceColors={preferences.pieceColors}
             boardTheme={preferences.boardTheme}
-            className="!rounded-none !shadow-none"
+            rounded={false}
           />
 
           {/* Navigation Controls */}
