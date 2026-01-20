@@ -1,0 +1,54 @@
+import type { Side } from "./chess";
+
+export type BoardTheme = "default" | "lichess" | "chesscom";
+
+export type BoardThemeColors = {
+  light: string;
+  dark: string;
+  lightText: string;
+  darkText: string;
+};
+
+export type HighlightType = "none" | "last-move" | "selectable";
+
+export type PieceShapeMode =
+  | "normal"
+  | "circles-all"
+  | "circles-own"
+  | "circles-opponent";
+export type PieceColorMode = "normal" | "white-only" | "black-only";
+
+export type ChessBoardBaseProps = {
+  fen: string;
+  flipped?: boolean;
+  playerSide?: Side;
+  lastMove?: { from: string; to: string } | null;
+  highlightedSquares?: string[];
+  showCoordinates?: boolean;
+  showOwnPieces?: boolean;
+  showOpponentPieces?: boolean;
+  pieceShapeMode?: PieceShapeMode;
+  pieceColors?: PieceColorMode;
+  boardTheme?: BoardTheme;
+};
+
+export const boardThemeColors: Record<BoardTheme, BoardThemeColors> = {
+  default: {
+    light: "#e6e3de",
+    dark: "#78716c",
+    lightText: "#57534e",
+    darkText: "#d6d3d1",
+  },
+  lichess: {
+    light: "#f0d9b5",
+    dark: "#b58863",
+    lightText: "#b58863",
+    darkText: "#f0d9b5",
+  },
+  chesscom: {
+    light: "#eeeed2",
+    dark: "#769656",
+    lightText: "#769656",
+    darkText: "#eeeed2",
+  },
+};

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import type { BoardThemeColors } from '@/lib/boardThemes';
+import type { TailwindThemeClasses } from '@/lib/boardThemes';
 
 type Props = {
   // Position
@@ -26,7 +26,7 @@ type Props = {
   layoutMode?: 'flex' | 'grid';
 
   // Theme
-  themeColors?: BoardThemeColors;
+  themeColors?: TailwindThemeClasses;
 };
 
 export function Square({

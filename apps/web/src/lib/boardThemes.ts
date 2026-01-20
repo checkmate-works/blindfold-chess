@@ -1,15 +1,17 @@
-// Board theme definitions for chess board rendering
-export type BoardTheme = 'default' | 'lichess' | 'chesscom';
+import type { BoardTheme } from '@blindfold-chess/core';
 
-export type BoardThemeColors = {
-  light: string; // Tailwind classes for light squares
-  dark: string; // Tailwind classes for dark squares
-  lightCoordinates: string; // Tailwind classes for coordinates on light squares
-  darkCoordinates: string; // Tailwind classes for coordinates on dark squares
+export type { BoardTheme };
+
+// Tailwind classes mapping for Web (Web-specific implementation)
+export type TailwindThemeClasses = {
+  light: string;
+  dark: string;
+  lightCoordinates: string;
+  darkCoordinates: string;
 };
 
-// Board theme color definitions
-export const boardThemes: Record<BoardTheme, BoardThemeColors> = {
+// Board theme Tailwind class definitions
+export const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
   default: {
     light: 'bg-stone-200 dark:bg-stone-300',
     dark: 'bg-stone-600 dark:bg-stone-700',
@@ -32,7 +34,7 @@ export const boardThemes: Record<BoardTheme, BoardThemeColors> = {
   },
 };
 
-// Get theme colors by theme name
-export function getBoardThemeColors(theme: BoardTheme): BoardThemeColors {
+// Get theme Tailwind classes by theme name
+export function getBoardThemeColors(theme: BoardTheme): TailwindThemeClasses {
   return boardThemes[theme];
 }
