@@ -1,34 +1,101 @@
-import React from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
+import React, { useRef, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  Text,
+} from "react-native";
+import { useOnboardingChat } from "../features/onboarding/hooks/useOnboardingChat";
+import { ChatBubble } from "../features/onboarding/components/ChatBubble";
+import { ChoiceList } from "../features/onboarding/components/ChoiceList";
+import { TypingIndicator } from "../features/onboarding/components/TypingIndicator";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
 
 export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
+  const { messages, currentStep, isThinking, handleNext, handleChoice } =
+    useOnboardingChat(onComplete);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  }, [messages, isThinking]);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome!</Text>
-      <Text style={styles.text}>This is the onboarding screen.</Text>
-      <Button title="Get Started" onPress={onComplete} />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.chatArea}
+          contentContainerStyle={styles.chatContent}
+        >
+          {messages.map((msg) => (
+            <ChatBubble key={msg.id} text={msg.text} isSystem={msg.isSystem} />
+          ))}
+          {isThinking && <TypingIndicator />}
+        </ScrollView>
+
+        <View style={styles.inputArea}>
+          {!isThinking &&
+            currentStep?.type === "question" &&
+            currentStep.choices && (
+              <ChoiceList
+                choices={currentStep.choices.map((c) => ({
+                  label: c.label,
+                  onSelect: () => handleChoice(c.nextId, c.label),
+                }))}
+              />
+            )}
+
+          {!isThinking && currentStep?.type === "statement" && (
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+              <Text style={styles.nextButtonText}>Tap to continue</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f2f2f7",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
-    alignItems: "center",
+  },
+  chatArea: {
+    flex: 1,
+  },
+  chatContent: {
+    padding: 16,
+    paddingBottom: 20,
+  },
+  inputArea: {
+    padding: 16,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5ea",
+    minHeight: 100,
     justifyContent: "center",
+    alignItems: "center",
   },
-  title: {
-    fontSize: 32,
-    marginBottom: 20,
-    fontWeight: "bold",
+  nextButton: {
+    width: "100%",
+    padding: 16,
+    alignItems: "center",
   },
-  text: {
-    fontSize: 18,
-    marginBottom: 40,
+  nextButtonText: {
+    color: "#8e8e93",
+    fontSize: 14,
   },
 });
