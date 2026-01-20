@@ -1124,10 +1124,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         preferences={preferences}
         movesLength={moves.length}
         currentPosition={currentPosition}
+        formattedPgn={formattedPgn}
         onNavigateToStart={navigateToStart}
         onNavigatePrevious={navigatePrevious}
         onNavigateNext={navigateNext}
         onNavigateToEnd={navigateToEnd}
+        onNavigateToPosition={navigateToPosition}
       />
 
       {/* Settings Modal */}

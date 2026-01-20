@@ -9,6 +9,12 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 
 import { MoveNavigationControls } from './MoveNavigationControls';
 
+type FormattedMove = {
+  moveNumber: number;
+  whiteMove: string;
+  blackMove?: string;
+};
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -18,10 +24,12 @@ type Props = {
   preferences: GamePreferences;
   movesLength: number;
   currentPosition: number;
+  formattedPgn: FormattedMove[];
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToEnd: () => void;
+  onNavigateToPosition: (position: number) => void;
 };
 
 export function BoardViewModal({
@@ -33,10 +41,12 @@ export function BoardViewModal({
   preferences,
   movesLength,
   currentPosition,
+  formattedPgn,
   onNavigateToStart,
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToEnd,
+  onNavigateToPosition,
 }: Props) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -66,6 +76,53 @@ export function BoardViewModal({
       {/* Content */}
       <div className="relative z-10 w-full max-w-lg px-4">
         <div className="rounded-md overflow-hidden shadow-lg">
+          {/* Horizontal Move List */}
+          {formattedPgn.length > 0 && (
+            <div
+              className="bg-card px-2 py-1.5 overflow-x-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-1 text-sm whitespace-nowrap">
+                {formattedPgn.map((move) => {
+                  const whiteIndex = (move.moveNumber - 1) * 2;
+                  const blackIndex = whiteIndex + 1;
+                  const isWhiteHighlighted = currentPosition === whiteIndex;
+                  const isBlackHighlighted = currentPosition === blackIndex;
+
+                  return (
+                    <div key={move.moveNumber} className="flex items-center gap-0.5">
+                      <span className="text-muted-foreground text-xs">{move.moveNumber}.</span>
+                      <button
+                        type="button"
+                        className={`px-1.5 py-0.5 rounded transition-colors ${
+                          isWhiteHighlighted
+                            ? 'bg-foreground/15 font-semibold'
+                            : 'hover:bg-muted/40'
+                        }`}
+                        onClick={() => onNavigateToPosition(whiteIndex)}
+                      >
+                        {move.whiteMove}
+                      </button>
+                      {move.blackMove && (
+                        <button
+                          type="button"
+                          className={`px-1.5 py-0.5 rounded transition-colors ${
+                            isBlackHighlighted
+                              ? 'bg-foreground/15 font-semibold'
+                              : 'hover:bg-muted/40'
+                          }`}
+                          onClick={() => onNavigateToPosition(blackIndex)}
+                        >
+                          {move.blackMove}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <ChessBoard
             fen={fen}
             flipped={playerSide === 'black'}
