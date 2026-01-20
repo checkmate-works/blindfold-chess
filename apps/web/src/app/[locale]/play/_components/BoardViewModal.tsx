@@ -127,7 +127,7 @@ export function BoardViewModal({
             fen={fen}
             flipped={playerSide === 'black'}
             playerSide={playerSide}
-            lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+            lastMove={lastMove}
             showCoordinates={preferences.showCoordinates}
             showOwnPieces={preferences.showOwnPieces}
             showOpponentPieces={preferences.showOpponentPieces}

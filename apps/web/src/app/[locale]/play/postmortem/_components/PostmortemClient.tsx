@@ -4,16 +4,14 @@ import { type ReactElement, useCallback, useEffect, useMemo, useState } from 're
 
 import { useTranslations } from 'next-intl';
 
-import { Button, ChessBoard, InfoModal, ProgressBar } from '@/app/_components';
+import { Button, InfoModal, ProgressBar } from '@/app/_components';
 import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 import {
   FaCheck,
-  FaChevronDown,
   FaCopy,
   FaExternalLinkAlt,
   FaEye,
-  FaEyeSlash,
   FaFilter,
   FaInfoCircle,
   FaQuestionCircle,
@@ -24,6 +22,7 @@ import {
 import { fenToLichessUrl } from '@/lib/lichess';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
@@ -305,6 +304,7 @@ export function PostmortemClient({
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
   const [displayFen, setDisplayFen] = useState<string | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
 
   // Parse PGN on mount and clear evaluation cache
   useEffect(() => {
@@ -874,114 +874,36 @@ export function PostmortemClient({
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Chess Board */}
+        {/* Progress Bar, Input, Actions */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg">
-            {/* Board Toggle Header */}
-            <button
-              onClick={() => setIsBoardVisible(!isBoardVisible)}
-              className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isBoardVisible ? 'rounded-b-lg' : ''}`}
-              aria-expanded={isBoardVisible}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isBoardVisible ? (
-                    <FaEye className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <FaEyeSlash className="w-4 h-4 text-muted-foreground" />
-                  )}
-                  <span className="font-medium text-foreground">
-                    {isBoardVisible ? t('hideBoard') : t('showBoard')}
-                  </span>
-                </div>
-                <FaChevronDown
-                  className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
-                    isBoardVisible ? 'rotate-180' : ''
-                  }`}
-                />
-              </div>
-            </button>
-
-            {/* Board Content */}
-            <div
-              className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-lg`}
-            >
-              <div className="p-4">
-                <ChessBoard
-                  fen={displayFen || currentFen}
-                  flipped={playerColor === 'black'}
-                  playerSide={playerColor}
-                  lastMove={preferences.highlightLastMove ? currentLastMove : null}
-                  showCoordinates={preferences.showCoordinates}
-                  showOwnPieces={preferences.showOwnPieces}
-                  showOpponentPieces={preferences.showOpponentPieces}
-                  pieceShapeMode={preferences.pieceShapeMode}
-                  pieceColors={preferences.pieceColors}
-                  boardTheme={preferences.boardTheme}
-                  className="max-w-2xl mx-auto"
-                />
-
-                {/* Navigation Controls (below board) */}
-                {originalMoves.length > 0 && (
-                  <div className="mt-4">
-                    <MoveNavigationControls
-                      onNavigateToStart={navigateToStart}
-                      onNavigatePrevious={navigatePrevious}
-                      onNavigateNext={navigateNext}
-                      onNavigateToEnd={navigateToEnd}
-                      isPreviousDisabled={
-                        currentPosition === -2 ||
-                        (currentPosition === -1 && originalMoves.length === 0)
-                      }
-                      isNextDisabled={currentPosition === -1}
-                    />
-                  </div>
-                )}
-
-                {/* Settings Link */}
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={() => setShowSettingsModal(true)}
-                    className="text-sm text-muted-foreground hover:text-foreground underline"
-                  >
-                    {t('configureBoardAppearance')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar, Input, Actions - White background like play screen */}
-          <div className="mt-6 bg-card rounded-lg shadow-lg p-4">
-            {/* Progress Bar */}
-            <div className="mb-6">
+          <div className="bg-card rounded-lg shadow-lg p-4">
+            <div className="flex flex-col gap-4">
+              {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
-            </div>
 
-            {!isCompleted ? (
-              <>
-                {/* Loading indicator during "Analyze All" */}
-                {isAnalyzingAll ? (
-                  <div className="py-8 text-center">
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <FaSpinner className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">{t('analyzing')}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Loading indicator during single move evaluation */}
-                    {isEvaluating && (
-                      <div className="mb-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                          <FaSpinner className="w-4 h-4 animate-spin" />
-                          <span className="text-sm">{t('analyzing')}</span>
-                        </div>
+              {!isCompleted ? (
+                <>
+                  {/* Loading indicator during "Analyze All" */}
+                  {isAnalyzingAll ? (
+                    <div className="py-8 text-center">
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        <FaSpinner className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">{t('analyzing')}</span>
                       </div>
-                    )}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Loading indicator during single move evaluation */}
+                      {isEvaluating && (
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                            <FaSpinner className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">{t('analyzing')}</span>
+                          </div>
+                        </div>
+                      )}
 
-                    {/* Move Input */}
-                    <div className="mb-4">
+                      {/* Move Input */}
                       <div>
                         {preferences.moveInputMode === 'select' ? (
                           <MoveSelect
@@ -1004,12 +926,17 @@ export function PostmortemClient({
                           />
                         )}
                       </div>
-                    </div>
 
-                    {/* Action Buttons and Settings */}
-                    <div className="pb-2">
-                      {/* I don't know and Analyze All buttons */}
-                      <div className="flex gap-2 justify-center mb-4">
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => setIsBoardVisible(true)}
+                          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                          title={t('showBoard')}
+                        >
+                          <FaEye className="w-4 h-4" />
+                          <span className="hidden md:inline">{t('showBoard')}</span>
+                        </button>
                         <Button
                           variant="secondary"
                           onClick={handleDontKnow}
@@ -1017,11 +944,13 @@ export function PostmortemClient({
                           disabled={isEvaluating}
                           className="px-4 py-2"
                         >
-                          {t('dontKnow')}
+                          <span className={dontKnowCount >= 2 ? 'hidden md:inline' : ''}>
+                            {t('dontKnow')}
+                          </span>
                         </Button>
                         {dontKnowCount >= 2 && (
                           <button
-                            onClick={handleAnalyzeAll}
+                            onClick={() => setShowAnalyzeAllConfirm(true)}
                             disabled={isEvaluating}
                             className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center gap-2"
                           >
@@ -1032,7 +961,7 @@ export function PostmortemClient({
                       </div>
 
                       {/* Settings checkboxes */}
-                      <div className="flex flex-col gap-2 mb-4">
+                      <div className="flex flex-col gap-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
@@ -1068,7 +997,7 @@ export function PostmortemClient({
 
                       {/* Move Log */}
                       {moveLog.length > 0 && (
-                        <div className="mt-4 p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
+                        <div className="p-3 bg-muted/30 rounded-md max-h-48 overflow-y-auto">
                           <div className="font-mono text-sm">
                             {[...moveLog].reverse().map((entry, index) => {
                               const moveNotation = entry.isWhiteMove
@@ -1150,141 +1079,155 @@ export function PostmortemClient({
                           </div>
                         </div>
                       )}
-                    </div>
-                  </>
-                )}
-              </>
-            ) : (
-              /* Completion Message */
-              <div className="pb-2">
-                <div className="py-8 text-center">
-                  <FaCheck className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">{t('completed')}</h3>
-                  <p className="text-muted-foreground">
-                    {selectedMoveIndex !== null ? (
-                      <button
-                        onClick={() => setSelectedMoveIndex(null)}
-                        className="text-sm underline hover:text-foreground"
-                      >
-                        {t('backToCurrentPosition')}
-                      </button>
-                    ) : (
-                      t('completedMessage')
-                    )}
-                  </p>
-                </div>
-
-                {/* Move Log - also show when completed */}
-                {moveLog.length > 0 && (
-                  <div className="mt-4 bg-muted/30 rounded-md">
-                    {/* Filter header - only show when completed */}
-                    <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {t('moveLog')}
-                      </span>
-                      <button
-                        onClick={() => setShowFilterModal(true)}
-                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-muted"
-                        aria-label={t('filterMoves')}
-                      >
-                        <FaFilter className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <div className="p-3 max-h-48 overflow-y-auto">
-                      <div className="font-mono text-sm">
-                        {[...getFilteredMoveLog()].reverse().map((entry) => {
-                          const moveNotation = entry.isWhiteMove
-                            ? `${entry.moveNumber}. ${entry.move}`
-                            : `${entry.moveNumber}... ${entry.move}`;
-                          const keyId = `${entry.moveNumber}-${entry.isWhiteMove ? 'w' : 'b'}-${entry.status}`;
-
-                          if (entry.status === 'correct') {
-                            return (
-                              <div
-                                key={keyId}
-                                className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
-                                onClick={() => handleMoveClick(entry)}
-                              >
-                                <div className="text-green-600 dark:text-green-400">
-                                  {moveNotation} <FaCheck className="inline w-3 h-3" />
-                                </div>
-                                {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
-                                    <div className="flex items-center gap-1">
-                                      {getEvaluationIcon(
-                                        entry.evaluation.loss,
-                                        entry.evaluation.mate !== undefined
-                                      )}
-                                      <span>
-                                        {entry.evaluation.text} (
-                                        {entry.evaluation.mate
-                                          ? `#${entry.evaluation.mate}`
-                                          : (entry.evaluation.score / 100).toFixed(2)}
-                                        )
-                                      </span>
-                                    </div>
-                                    {entry.evaluation.bestMove && (
-                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
-                                        {t('bestMove')}: {entry.evaluation.bestMove}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          } else if (entry.status === 'incorrect') {
-                            return (
-                              <div
-                                key={keyId}
-                                className="text-red-600 dark:text-red-400 mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
-                                onClick={() => handleMoveClick(entry)}
-                              >
-                                {entry.incorrectMove
-                                  ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
-                                  : `${moveNotation} ${t('logIncorrect')}`}
-                              </div>
-                            );
-                          } else {
-                            // auto
-                            return (
-                              <div
-                                key={keyId}
-                                className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
-                                onClick={() => handleMoveClick(entry)}
-                              >
-                                <div className="text-muted-foreground">{moveNotation}</div>
-                                {entry.evaluation && (
-                                  <div className="text-muted-foreground text-xs ml-4 mt-1">
-                                    <div className="flex items-center gap-1">
-                                      {getEvaluationIcon(
-                                        entry.evaluation.loss,
-                                        entry.evaluation.mate !== undefined
-                                      )}
-                                      <span>
-                                        {entry.evaluation.text} (
-                                        {entry.evaluation.mate
-                                          ? `#${entry.evaluation.mate}`
-                                          : (entry.evaluation.score / 100).toFixed(2)}
-                                        )
-                                      </span>
-                                    </div>
-                                    {entry.evaluation.bestMove && (
-                                      <div className="ml-5 mt-0.5 text-muted-foreground/80">
-                                        {t('bestMove')}: {entry.evaluation.bestMove}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }
-                        })}
-                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                /* Completion Message */
+                <>
+                  <div className="py-8 text-center flex flex-col items-center gap-4">
+                    <FaCheck className="w-12 h-12 text-green-500" />
+                    <div className="flex flex-col gap-2">
+                      <h3 className="text-xl font-bold">{t('completed')}</h3>
+                      <p className="text-muted-foreground">
+                        {selectedMoveIndex !== null ? (
+                          <button
+                            onClick={() => setSelectedMoveIndex(null)}
+                            className="text-sm underline hover:text-foreground"
+                          >
+                            {t('backToCurrentPosition')}
+                          </button>
+                        ) : (
+                          t('completedMessage')
+                        )}
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Show Board Button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setIsBoardVisible(true)}
+                      className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                      title={t('showBoard')}
+                    >
+                      <FaEye className="w-4 h-4" />
+                      <span>{t('showBoard')}</span>
+                    </button>
+                  </div>
+
+                  {/* Move Log - also show when completed */}
+                  {moveLog.length > 0 && (
+                    <div className="bg-muted/30 rounded-md">
+                      {/* Filter header - only show when completed */}
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {t('moveLog')}
+                        </span>
+                        <button
+                          onClick={() => setShowFilterModal(true)}
+                          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-muted"
+                          aria-label={t('filterMoves')}
+                        >
+                          <FaFilter className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="p-3 max-h-48 overflow-y-auto">
+                        <div className="font-mono text-sm">
+                          {[...getFilteredMoveLog()].reverse().map((entry) => {
+                            const moveNotation = entry.isWhiteMove
+                              ? `${entry.moveNumber}. ${entry.move}`
+                              : `${entry.moveNumber}... ${entry.move}`;
+                            const keyId = `${entry.moveNumber}-${entry.isWhiteMove ? 'w' : 'b'}-${entry.status}`;
+
+                            if (entry.status === 'correct') {
+                              return (
+                                <div
+                                  key={keyId}
+                                  className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                  onClick={() => handleMoveClick(entry)}
+                                >
+                                  <div className="text-green-600 dark:text-green-400">
+                                    {moveNotation} <FaCheck className="inline w-3 h-3" />
+                                  </div>
+                                  {entry.evaluation && (
+                                    <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                      <div className="flex items-center gap-1">
+                                        {getEvaluationIcon(
+                                          entry.evaluation.loss,
+                                          entry.evaluation.mate !== undefined
+                                        )}
+                                        <span>
+                                          {entry.evaluation.text} (
+                                          {entry.evaluation.mate
+                                            ? `#${entry.evaluation.mate}`
+                                            : (entry.evaluation.score / 100).toFixed(2)}
+                                          )
+                                        </span>
+                                      </div>
+                                      {entry.evaluation.bestMove && (
+                                        <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                          {t('bestMove')}: {entry.evaluation.bestMove}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            } else if (entry.status === 'incorrect') {
+                              return (
+                                <div
+                                  key={keyId}
+                                  className="text-red-600 dark:text-red-400 mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                  onClick={() => handleMoveClick(entry)}
+                                >
+                                  {entry.incorrectMove
+                                    ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
+                                    : `${moveNotation} ${t('logIncorrect')}`}
+                                </div>
+                              );
+                            } else {
+                              // auto
+                              return (
+                                <div
+                                  key={keyId}
+                                  className="mb-2 cursor-pointer hover:bg-muted/50 rounded p-1 -m-1"
+                                  onClick={() => handleMoveClick(entry)}
+                                >
+                                  <div className="text-muted-foreground">{moveNotation}</div>
+                                  {entry.evaluation && (
+                                    <div className="text-muted-foreground text-xs ml-4 mt-1">
+                                      <div className="flex items-center gap-1">
+                                        {getEvaluationIcon(
+                                          entry.evaluation.loss,
+                                          entry.evaluation.mate !== undefined
+                                        )}
+                                        <span>
+                                          {entry.evaluation.text} (
+                                          {entry.evaluation.mate
+                                            ? `#${entry.evaluation.mate}`
+                                            : (entry.evaluation.score / 100).toFixed(2)}
+                                          )
+                                        </span>
+                                      </div>
+                                      {entry.evaluation.bestMove && (
+                                        <div className="ml-5 mt-0.5 text-muted-foreground/80">
+                                          {t('bestMove')}: {entry.evaluation.bestMove}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            }
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1418,7 +1361,7 @@ export function PostmortemClient({
                   </div>
                 </>
               ) : (
-                <p className="text-muted-foreground text-sm">No moves yet</p>
+                <p className="text-muted-foreground text-sm">{t('noMovesYet')}</p>
               )}
             </div>
           </div>
@@ -1659,6 +1602,52 @@ export function PostmortemClient({
           </div>
         </div>
       </InfoModal>
+
+      {/* Analyze All Confirmation Modal */}
+      {showAnalyzeAllConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">
+              {showEvaluation ? t('confirmAnalyzeAllTitle') : t('confirmAutoFillAllTitle')}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {showEvaluation ? t('confirmAnalyzeAllMessage') : t('confirmAutoFillAllMessage')}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="secondary" onClick={() => setShowAnalyzeAllConfirm(false)}>
+                {t('cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setShowAnalyzeAllConfirm(false);
+                  handleAnalyzeAll();
+                }}
+              >
+                {showEvaluation ? t('analyzeAll') : t('autoFillAll')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Board View Modal */}
+      <BoardViewModal
+        isOpen={isBoardVisible}
+        onClose={() => setIsBoardVisible(false)}
+        fen={displayFen || currentFen}
+        playerSide={playerColor}
+        lastMove={preferences.highlightLastMove ? currentLastMove : null}
+        preferences={preferences}
+        movesLength={originalMoves.length}
+        currentPosition={currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={navigateToStart}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToEnd={navigateToEnd}
+        onNavigateToPosition={navigateToPosition}
+      />
     </div>
   );
 }

@@ -22,13 +22,11 @@ import { type ReactElement, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, useSearchParams } from 'next/navigation';
 
-import { InfoModal } from '@/app/_components';
-import { FaInfoCircle } from 'react-icons/fa';
-
 import { Divider } from '@/app/[locale]/_components/Divider';
+import { PageDescription } from '@/app/[locale]/_components/PageDescription';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PageTitle } from '../../_components/PageTitle';
 import { ClientBreadcrumb } from '../_components/ClientBreadcrumb';
 import { PostmortemClient } from './_components/PostmortemClient';
 
@@ -38,7 +36,6 @@ export default function PostmortemPage() {
   const locale = params.locale as Locale;
   const t = useTranslations('postmortem');
   const tPlay = useTranslations('play');
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<ReactElement | null>(null);
 
   // Get PGN from URL parameters
@@ -79,20 +76,8 @@ export default function PostmortemPage() {
 
   return (
     <div className="space-y-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
-          {!selectedMoveDisplay && (
-            <button
-              onClick={() => setIsInfoModalOpen(true)}
-              className="text-muted-foreground hover:text-foreground transition-colors p-1"
-              aria-label="Information"
-            >
-              <FaInfoCircle className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </div>
+      <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
+      {!selectedMoveDisplay && <PageDescription>{t('description')}</PageDescription>}
       <PostmortemClient
         pgn={pgn}
         playerColor={playerColor}
@@ -105,13 +90,6 @@ export default function PostmortemPage() {
         items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
         locale={locale}
       />
-      <InfoModal
-        isOpen={isInfoModalOpen}
-        onClose={() => setIsInfoModalOpen(false)}
-        title={t('infoModalTitle')}
-      >
-        <p>{t('description')}</p>
-      </InfoModal>
     </div>
   );
 }

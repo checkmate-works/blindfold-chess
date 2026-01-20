@@ -8,7 +8,7 @@ export function ProgressBar({ current, total, className = '' }: Props) {
   const progress = (current / total) * 100;
 
   return (
-    <div className={`mb-8 ${className}`}>
+    <div className={className || undefined}>
       <div className="flex justify-between text-sm text-muted-foreground mb-2">
         <span>
           {current} / {total}

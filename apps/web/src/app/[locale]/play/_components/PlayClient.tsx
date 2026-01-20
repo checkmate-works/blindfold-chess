@@ -690,27 +690,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         {/* Game Area */}
         <div className="lg:col-span-2">
           <div className="bg-card rounded-lg shadow-lg p-4">
-            {/* Game Status */}
-            {gameStatus !== 'in_progress' && (
-              <div className="text-center">
-                {playerResult && (
-                  <div>
-                    <p className="text-lg font-bold">
-                      {playerResult === 'win' && (
-                        <span className="text-green-600 dark:text-green-400">✓ {t('youWin')}</span>
-                      )}
-                      {playerResult === 'loss' && (
-                        <span className="text-red-600 dark:text-red-400">✗ {t('youLose')}</span>
-                      )}
-                      {playerResult === 'draw' && (
-                        <span className="text-yellow-600 dark:text-yellow-400">= {t('draw')}</span>
-                      )}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && (
               <div className="flex flex-col gap-6">
@@ -806,60 +785,84 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
             {/* Game Over Content */}
             {gameStatus !== 'in_progress' && (
-              <div className="flex flex-col gap-3 mt-4">
-                <button
-                  onClick={() => setIsBoardVisible(true)}
-                  className="w-full px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                  title={t('showBoard')}
-                >
-                  <FaEye className="w-4 h-4" />
-                  <span className="hidden md:inline">{t('showBoard')}</span>
-                </button>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  icon={<FaPlus className="w-5 h-5" />}
-                  onClick={() => (window.location.href = `/${locale}/game/new`)}
-                  className="w-full rounded-xl font-medium"
-                >
-                  {t('newGame')}
-                </Button>
-                {moves.length > 0 && (
+              <div className="flex flex-col gap-4">
+                {/* Game Result */}
+                {playerResult && (
+                  <div className="text-center">
+                    <p className="text-lg font-bold">
+                      {playerResult === 'win' && (
+                        <span className="text-green-600 dark:text-green-400">✓ {t('youWin')}</span>
+                      )}
+                      {playerResult === 'loss' && (
+                        <span className="text-red-600 dark:text-red-400">✗ {t('youLose')}</span>
+                      )}
+                      {playerResult === 'draw' && (
+                        <span className="text-yellow-600 dark:text-yellow-400">= {t('draw')}</span>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Show Board Button */}
+                <div className="flex gap-4 md:gap-2 justify-center">
+                  <button
+                    onClick={() => setIsBoardVisible(true)}
+                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                    title={t('showBoard')}
+                  >
+                    <FaEye className="w-4 h-4" />
+                    <span className="hidden md:inline">{t('showBoard')}</span>
+                  </button>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2">
                   <Button
                     variant="primary"
                     size="lg"
-                    icon={<FaChartLine className="w-5 h-5" />}
-                    onClick={() => {
-                      // Create PGN from moves
-                      const pgnMoves = formattedPgn
-                        .map((move) => {
-                          const moveNumber = `${move.moveNumber}.`;
-                          const movePair = move.blackMove
-                            ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
-                            : `${moveNumber} ${move.whiteMove}`;
-                          return movePair;
-                        })
-                        .join(' ');
-
-                      const params = new URLSearchParams();
-                      params.set('pgn', pgnMoves);
-                      params.set('color', playerSide);
-                      params.set('autoOpponent', 'true');
-
-                      // Pass game parameters to allow returning to the exact game state
-                      if (initialGameId) {
-                        params.set('gameId', initialGameId);
-                      }
-                      params.set('skillLevel', skillLevel.toString());
-                      params.set('moves', JSON.stringify(moves));
-
-                      router.push(`/${locale}/play/postmortem?${params.toString()}`);
-                    }}
+                    icon={<FaPlus className="w-5 h-5" />}
+                    onClick={() => (window.location.href = `/${locale}/game/new`)}
                     className="w-full rounded-xl font-medium"
                   >
-                    {t('postmortem')}
+                    {t('newGame')}
                   </Button>
-                )}
+                  {moves.length > 0 && (
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      icon={<FaChartLine className="w-5 h-5" />}
+                      onClick={() => {
+                        // Create PGN from moves
+                        const pgnMoves = formattedPgn
+                          .map((move) => {
+                            const moveNumber = `${move.moveNumber}.`;
+                            const movePair = move.blackMove
+                              ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
+                              : `${moveNumber} ${move.whiteMove}`;
+                            return movePair;
+                          })
+                          .join(' ');
+
+                        const params = new URLSearchParams();
+                        params.set('pgn', pgnMoves);
+                        params.set('color', playerSide);
+                        params.set('autoOpponent', 'true');
+
+                        // Pass game parameters to allow returning to the exact game state
+                        if (initialGameId) {
+                          params.set('gameId', initialGameId);
+                        }
+                        params.set('skillLevel', skillLevel.toString());
+                        params.set('moves', JSON.stringify(moves));
+
+                        router.push(`/${locale}/play/postmortem?${params.toString()}`);
+                      }}
+                      className="w-full rounded-xl font-medium"
+                    >
+                      {t('postmortem')}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -1120,7 +1123,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onClose={() => setIsBoardVisible(false)}
         fen={displayFen || currentFen}
         playerSide={playerSide}
-        lastMove={lastMove}
+        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
         preferences={preferences}
         movesLength={moves.length}
         currentPosition={currentPosition}
