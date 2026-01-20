@@ -5,6 +5,8 @@ import { useEffect } from 'react';
 import { ChessBoard } from '@/app/_components';
 import type { Side } from '@blindfold-chess/core';
 
+import type { EvaluationMark } from '@/lib/evaluation';
+
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
@@ -25,6 +27,7 @@ type Props = {
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedMove[];
+  evaluationMark?: EvaluationMark | null;
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
@@ -42,6 +45,7 @@ export function BoardViewModal({
   movesLength,
   currentPosition,
   formattedPgn,
+  evaluationMark,
   onNavigateToStart,
   onNavigatePrevious,
   onNavigateNext,
@@ -135,6 +139,7 @@ export function BoardViewModal({
             pieceColors={preferences.pieceColors}
             boardTheme={preferences.boardTheme}
             rounded={false}
+            evaluationMark={evaluationMark}
           />
 
           {/* Navigation Controls */}

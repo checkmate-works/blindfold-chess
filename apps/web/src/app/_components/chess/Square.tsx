@@ -22,6 +22,9 @@ type Props = {
   // Highlight
   highlightType?: 'none' | 'last-move' | 'selectable';
 
+  // Badge (e.g., evaluation mark)
+  badge?: ReactNode;
+
   // Layout
   layoutMode?: 'flex' | 'grid';
 
@@ -39,6 +42,7 @@ export function Square({
   showRankCoordinate = false,
   onClick,
   highlightType = 'none',
+  badge,
   layoutMode = 'flex',
   themeColors,
 }: Props) {
@@ -92,6 +96,9 @@ export function Square({
           {file}
         </div>
       )}
+
+      {/* Badge (e.g., evaluation mark) */}
+      {badge && <div className="absolute -right-1 -top-1 z-10 pointer-events-none">{badge}</div>}
     </div>
   );
 }

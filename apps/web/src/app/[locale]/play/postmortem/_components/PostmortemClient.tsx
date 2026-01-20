@@ -19,6 +19,8 @@ import {
   FaStar,
 } from 'react-icons/fa';
 
+import type { EvaluationMark } from '@/lib/evaluation';
+import { getEvaluationIcon } from '@/lib/evaluation';
 import { fenToLichessUrl } from '@/lib/lichess';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -62,57 +64,6 @@ function getEvaluationText(t: (key: string) => string, loss: number): string {
   if (loss <= 100) return t('evalInaccuracy');
   if (loss <= 300) return t('evalMistake');
   return t('evalBlunder');
-}
-
-// Helper function to get evaluation icon based on evaluation loss (chess.com style)
-function getEvaluationIcon(loss: number, isMate: boolean = false): ReactElement | null {
-  if (isMate) {
-    // Checkmate - star (same as best move)
-    return (
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
-        <FaStar className="w-2 h-2 text-white" />
-      </span>
-    );
-  }
-
-  if (loss <= 20) {
-    // Best move - star with green background
-    return (
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
-        <FaStar className="w-2 h-2 text-white" />
-      </span>
-    );
-  }
-  if (loss <= 50) {
-    // Good move - checkmark with green background and white text
-    return (
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500">
-        <FaCheck className="w-2 h-2 text-white" />
-      </span>
-    );
-  }
-  if (loss <= 100) {
-    // Inaccuracy - ?! with yellow background
-    return (
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-500 text-white text-[10px] font-bold">
-        ?!
-      </span>
-    );
-  }
-  if (loss <= 300) {
-    // Mistake - ? with orange background
-    return (
-      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold">
-        ?
-      </span>
-    );
-  }
-  // Blunder - ?? with red background
-  return (
-    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-      ??
-    </span>
-  );
 }
 
 // Cache for position evaluations to avoid re-evaluating the same position
@@ -816,7 +767,7 @@ export function PostmortemClient({
       <span className="flex items-center gap-2">
         {moveNotation}
         {entry.evaluation &&
-          getEvaluationIcon(entry.evaluation.loss, entry.evaluation.mate !== undefined)}
+          getEvaluationIcon(entry.evaluation.loss, entry.evaluation.mate !== undefined, 'sm')}
       </span>
     );
 
@@ -870,6 +821,35 @@ export function PostmortemClient({
       return null;
     }
   }, [currentPosition, userMoves, originalMoves]);
+
+  // Calculate evaluation mark for the current position
+  const currentEvaluationMark = useMemo((): EvaluationMark | null => {
+    if (!currentLastMove) return null;
+
+    // Determine which move index we're showing
+    const moveIndex =
+      currentPosition === -1 ? userMoves.length - 1 : currentPosition === -2 ? -1 : currentPosition;
+
+    if (moveIndex < 0) return null;
+
+    // Find the evaluation from moveLog
+    // moveLog entries with status !== 'incorrect' correspond to actual moves
+    let actualMoveCount = 0;
+    for (const entry of moveLog) {
+      if (entry.status !== 'incorrect') {
+        if (actualMoveCount === moveIndex && entry.evaluation) {
+          return {
+            square: currentLastMove.to,
+            loss: entry.evaluation.loss,
+            isMate: entry.evaluation.mate !== undefined,
+          };
+        }
+        actualMoveCount++;
+      }
+    }
+
+    return null;
+  }, [currentPosition, userMoves.length, currentLastMove, moveLog]);
 
   return (
     <div>
@@ -1642,6 +1622,7 @@ export function PostmortemClient({
         movesLength={originalMoves.length}
         currentPosition={currentPosition}
         formattedPgn={formattedPgn}
+        evaluationMark={currentEvaluationMark}
         onNavigateToStart={navigateToStart}
         onNavigatePrevious={navigatePrevious}
         onNavigateNext={navigateNext}

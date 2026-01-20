@@ -8,6 +8,8 @@ import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { getBoardThemeColors } from '@/lib/boardThemes';
+import type { EvaluationMark } from '@/lib/evaluation';
+import { getEvaluationIcon } from '@/lib/evaluation';
 
 type BoardPiece = {
   square: SquareType;
@@ -29,6 +31,7 @@ type Props = {
   pieceColors?: 'normal' | 'white-only' | 'black-only';
   boardTheme?: BoardTheme;
   rounded?: boolean;
+  evaluationMark?: EvaluationMark | null;
   className?: string;
 };
 
@@ -46,6 +49,7 @@ export function ChessBoard({
   pieceColors = 'normal',
   boardTheme = 'default',
   rounded = true,
+  evaluationMark = null,
   className = '',
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
@@ -171,6 +175,12 @@ export function ChessBoard({
               const isLastMove = isLastMoveSquare(square);
               const isHighlight = isHighlighted(square);
 
+              // Check if this square should show evaluation mark
+              const showEvalMark = evaluationMark && evaluationMark.square === square;
+              const evalBadge = showEvalMark
+                ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
+                : undefined;
+
               return (
                 <Square
                   key={fileIndex}
@@ -183,6 +193,7 @@ export function ChessBoard({
                   onClick={onSquareClick ? () => onSquareClick(square) : undefined}
                   highlightType={isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none'}
                   themeColors={themeColors}
+                  badge={evalBadge}
                 >
                   {renderPiece(piece)}
                 </Square>
