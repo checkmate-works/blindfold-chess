@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { ChessBoard } from '@/app/_components';
 import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
-import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaKeyboard, FaList } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
@@ -24,7 +24,7 @@ type Props = {
 
 export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
   const t = useTranslations('practice.moveSequence');
-  const { preferences } = useGamePreferences();
+  const { preferences, updatePreferences } = useGamePreferences();
 
   const [currentFen, setCurrentFen] = useState(data.fen);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
@@ -108,6 +108,25 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
       });
     }
   }, [currentMoveIndex, data.moves.length, results, totalTargetMoves, onComplete]);
+
+  // Handle board modal visibility
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsBoardVisible(false);
+      }
+    };
+
+    if (isBoardVisible) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'auto';
+    };
+  }, [isBoardVisible]);
 
   // Handle move submission
   const handleSubmit = (move: AlgebraicNotation) => {
@@ -239,92 +258,79 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Progress */}
-      <div className="bg-card rounded-md shadow-sm border border-border p-3">
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <ProgressBar current={completedTargetMoves} total={totalTargetMoves} />
-          </div>
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {completedTargetMoves} / {totalTargetMoves}
-          </span>
-        </div>
-      </div>
-
-      {/* Move History */}
-      {completedMoves.length > 0 && (
-        <div className="bg-card rounded-md shadow-sm border border-border p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('moveHistory')}</h3>
-          <p className="font-mono text-sm text-foreground break-words">{formattedMoveHistory}</p>
-        </div>
-      )}
-
-      {/* Board Toggle */}
-      <div className="bg-card rounded-md shadow-sm border border-border">
-        <button
-          onClick={() => setIsBoardVisible(!isBoardVisible)}
-          className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-xl ${!isBoardVisible ? 'rounded-b-xl' : ''}`}
-          aria-expanded={isBoardVisible}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isBoardVisible ? (
-                <FaEye className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <FaEyeSlash className="w-4 h-4 text-muted-foreground" />
-              )}
-              <span className="font-medium text-foreground">
-                {isBoardVisible ? t('hideBoard') : t('showBoard')}
-              </span>
-            </div>
-            <FaChevronDown
-              className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
-                isBoardVisible ? 'rotate-180' : ''
-              }`}
-            />
-          </div>
-        </button>
-
-        {/* Board Content */}
-        <div
-          className={`transition-all duration-300 ${isBoardVisible ? 'block' : 'hidden'} rounded-b-xl`}
-        >
-          <div className="flex justify-center py-4">
-            <div className="w-full max-w-md">
-              <ChessBoard
-                fen={currentFen}
-                flipped={flipped}
-                showCoordinates={preferences.showCoordinates}
-                boardTheme={preferences.boardTheme}
-                lastMove={preferences.highlightLastMove ? lastMove : null}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Move Input */}
       <div className="bg-card rounded-md shadow-sm border border-border p-4">
-        {requiresUserInput ? (
-          <>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">{turnLabel}</h3>
-            {preferences.moveInputMode === 'select' ? (
-              <MoveSelect fen={currentFen} onSubmit={handleSubmit} disabled={false} />
-            ) : (
-              <MoveInput
-                value={moveInput}
-                onChange={handleInputChange}
-                onSubmit={handleSubmit}
-                disabled={false}
-                showSuggestions={preferences.enableAutoComplete}
-                showSubmitButton={true}
-              />
-            )}
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          </>
-        ) : (
-          <p className="text-center text-muted-foreground">{t('opponentTurn')}</p>
-        )}
+        <div className="flex flex-col gap-6">
+          {/* Progress */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <ProgressBar current={completedTargetMoves} total={totalTargetMoves} />
+            </div>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              {completedTargetMoves} / {totalTargetMoves}
+            </span>
+          </div>
+
+          {/* Move History */}
+          {completedMoves.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('moveHistory')}</h3>
+              <p className="font-mono text-sm text-foreground break-words">
+                {formattedMoveHistory}
+              </p>
+            </div>
+          )}
+
+          {/* Move Input */}
+          {requiresUserInput ? (
+            <>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">{turnLabel}</h3>
+                {preferences.moveInputMode === 'select' ? (
+                  <MoveSelect fen={currentFen} onSubmit={handleSubmit} disabled={false} />
+                ) : (
+                  <MoveInput
+                    value={moveInput}
+                    onChange={handleInputChange}
+                    onSubmit={handleSubmit}
+                    disabled={false}
+                    showSuggestions={preferences.enableAutoComplete}
+                    showSubmitButton={true}
+                  />
+                )}
+                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+              </div>
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setIsBoardVisible(true)}
+                  className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
+                  title={t('showBoard')}
+                >
+                  <FaEye className="w-4 h-4" />
+                  <span>{t('showBoard')}</span>
+                </button>
+                <button
+                  onClick={() =>
+                    updatePreferences({
+                      moveInputMode: preferences.moveInputMode === 'text' ? 'select' : 'text',
+                    })
+                  }
+                  className="p-2 border border-border rounded-md hover:bg-muted"
+                  title={
+                    preferences.moveInputMode === 'text' ? t('switchToSelect') : t('switchToText')
+                  }
+                >
+                  {preferences.moveInputMode === 'text' ? (
+                    <FaList className="w-4 h-4" />
+                  ) : (
+                    <FaKeyboard className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-muted-foreground">{t('opponentTurn')}</p>
+          )}
+        </div>
       </div>
 
       {/* End Practice Link */}
@@ -346,6 +352,30 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
           {t('endPractice')}
         </button>
       </div>
+
+      {/* Board View Modal */}
+      {isBoardVisible && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setIsBoardVisible(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/70" />
+
+          {/* Content */}
+          <div className="relative z-10 w-full max-w-lg px-4">
+            <div className="rounded-md overflow-hidden shadow-lg">
+              <ChessBoard
+                fen={currentFen}
+                flipped={flipped}
+                showCoordinates={preferences.showCoordinates}
+                boardTheme={preferences.boardTheme}
+                lastMove={preferences.highlightLastMove ? lastMove : null}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

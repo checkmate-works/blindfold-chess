@@ -14,6 +14,8 @@ import {
   FaEye,
   FaFilter,
   FaInfoCircle,
+  FaKeyboard,
+  FaList,
   FaQuestionCircle,
   FaSpinner,
   FaStar,
@@ -222,7 +224,7 @@ export function PostmortemClient({
   onSelectedMoveChange,
 }: Props) {
   const t = useTranslations('postmortem');
-  const { preferences } = useGamePreferences();
+  const { preferences, updatePreferences } = useGamePreferences();
 
   // Parse PGN to get original moves
   const [originalMoves, setOriginalMoves] = useState<AlgebraicNotation[]>([]);
@@ -857,7 +859,7 @@ export function PostmortemClient({
         {/* Progress Bar, Input, Actions */}
         <div className="lg:col-span-2">
           <div className="bg-card rounded-lg shadow-lg p-4">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
@@ -905,6 +907,30 @@ export function PostmortemClient({
                             showSubmitButton={true}
                           />
                         )}
+                      </div>
+
+                      {/* Toggle Input Mode */}
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() =>
+                            updatePreferences({
+                              moveInputMode:
+                                preferences.moveInputMode === 'text' ? 'select' : 'text',
+                            })
+                          }
+                          className="p-2 border border-border rounded-md hover:bg-muted"
+                          title={
+                            preferences.moveInputMode === 'text'
+                              ? t('switchToSelect')
+                              : t('switchToText')
+                          }
+                        >
+                          {preferences.moveInputMode === 'text' ? (
+                            <FaList className="w-4 h-4" />
+                          ) : (
+                            <FaKeyboard className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
 
                       {/* Action Buttons */}

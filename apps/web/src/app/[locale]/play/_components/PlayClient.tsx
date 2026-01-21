@@ -15,6 +15,8 @@ import {
   FaCopy,
   FaExternalLinkAlt,
   FaEye,
+  FaKeyboard,
+  FaList,
   FaPlay,
   FaPlus,
   FaPlusCircle,
@@ -33,7 +35,6 @@ import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
 import { formatPgnToText } from '../_lib/pgn-parser';
 import { BoardViewModal } from './BoardViewModal';
-import { ControlSettingsModal } from './ControlSettingsModal';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
@@ -122,9 +123,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showUndoConfirm, setShowUndoConfirm] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showControlSettingsModal, setShowControlSettingsModal] = useState(false);
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
-  const { preferences } = useGamePreferences();
+  const { preferences, updatePreferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
     'in_progress'
@@ -696,7 +696,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 {/* Move Input */}
                 <div>
                   {isPlayerTurn ? (
-                    <div>
+                    <>
                       {preferences.moveInputMode === 'select' ? (
                         <MoveSelect
                           fen={currentFen}
@@ -724,17 +724,41 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                         />
                       )}
                       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                      {/* Save Indicator */}
-                      <div className="mt-2 flex justify-end">
-                        <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
-                      </div>
-                    </div>
+                    </>
                   ) : (
                     <p className="text-center text-muted-foreground">
                       {isLoading ? t('aiThinking') : t('yourMove')}
                     </p>
                   )}
                 </div>
+
+                {/* Toggle & Save Indicator */}
+                {isPlayerTurn && (
+                  <div className="flex items-center">
+                    <div className="flex-1">
+                      <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+                    </div>
+                    <button
+                      onClick={() =>
+                        updatePreferences({
+                          moveInputMode: preferences.moveInputMode === 'text' ? 'select' : 'text',
+                        })
+                      }
+                      className="p-2 border border-border rounded-md hover:bg-muted"
+                      title={
+                        preferences.moveInputMode === 'text'
+                          ? t('switchToSelect')
+                          : t('switchToText')
+                      }
+                    >
+                      {preferences.moveInputMode === 'text' ? (
+                        <FaList className="w-4 h-4" />
+                      ) : (
+                        <FaKeyboard className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-4 md:gap-2 justify-center">
@@ -766,13 +790,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 </div>
 
                 {/* Settings Links */}
-                <div className="flex flex-col gap-4 text-center">
-                  <button
-                    onClick={() => setShowControlSettingsModal(true)}
-                    className="text-sm text-muted-foreground hover:text-foreground underline"
-                  >
-                    {t('configureInputMethod')}
-                  </button>
+                <div className="text-center">
                   <button
                     onClick={() => setShowSkillLevelSettingsModal(true)}
                     className="text-sm text-muted-foreground hover:text-foreground underline"
@@ -1140,12 +1158,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         playerSide={playerSide}
-      />
-
-      {/* Control Settings Modal */}
-      <ControlSettingsModal
-        isOpen={showControlSettingsModal}
-        onClose={() => setShowControlSettingsModal(false)}
       />
 
       {/* Skill Level Settings Modal */}
