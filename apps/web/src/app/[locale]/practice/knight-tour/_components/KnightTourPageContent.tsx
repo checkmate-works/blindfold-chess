@@ -12,11 +12,9 @@ import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
-  mode?: 'tutorial';
-  startingSquare?: string;
 };
 
-export function KnightTourPageContent({ locale, mode, startingSquare }: Props) {
+export function KnightTourPageContent({ locale }: Props) {
   const router = useRouter();
   const [tutorialSkipped, setTutorialSkipped] = useState<boolean | null>(null);
 
@@ -26,30 +24,14 @@ export function KnightTourPageContent({ locale, mode, startingSquare }: Props) {
   }, []);
 
   useEffect(() => {
-    // Skip tutorial redirect if in tutorial mode (coming from tutorial page)
-    if (mode === 'tutorial') {
-      return;
-    }
     if (tutorialSkipped === false) {
       router.replace(`/${locale}/practice/knight-tour/tutorial`);
     }
-  }, [tutorialSkipped, locale, router, mode]);
-
-  // Tutorial mode: auto-start game with specified settings
-  if (mode === 'tutorial') {
-    return (
-      <KnightTour
-        key="tutorial"
-        autoStart={true}
-        initialStartingSquare={startingSquare || 'a1'}
-        initialBlindfoldMode={false}
-      />
-    );
-  }
+  }, [tutorialSkipped, locale, router]);
 
   if (tutorialSkipped === null || tutorialSkipped === false) {
     return <KnightTourSetupSkeleton />;
   }
 
-  return <KnightTour key="normal" />;
+  return <KnightTour />;
 }

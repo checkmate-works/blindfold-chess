@@ -156,7 +156,7 @@ export function KnightTourTutorial({ locale }: Props) {
 
   const handleStart = () => {
     localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
-    router.push(`/${locale}/practice/knight-tour?mode=tutorial&startingSquare=a1`);
+    router.push(`/${locale}/practice/knight-tour/session?mode=tutorial&startingSquare=a1`);
   };
 
   return (

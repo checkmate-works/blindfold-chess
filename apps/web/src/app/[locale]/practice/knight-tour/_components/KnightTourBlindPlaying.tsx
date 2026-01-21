@@ -5,12 +5,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
-import { FaCog, FaUndo } from 'react-icons/fa';
+import { FaKeyboard, FaList, FaUndo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
-import { ControlSettingsModal } from './ControlSettingsModal';
 import { SquareInput } from './SquareInput';
 import { SquareSelect } from './SquareSelect';
 
@@ -38,10 +37,8 @@ export function KnightTourBlindPlaying({
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
   const tPlay = useTranslations('play');
-  const tPreferences = useTranslations('Preferences');
   const { preferences, updatePreferences } = useGamePreferences();
   const [inputValue, setInputValue] = useState('');
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Get move history as array of squares
@@ -93,114 +90,111 @@ export function KnightTourBlindPlaying({
 
   return (
     <div className="space-y-4">
-      {/* Progress */}
       <div className="bg-card rounded-md shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('progress')}</h3>
-        <ProgressBar current={moveCount} total={64} />
-      </div>
+        <div className="flex flex-col gap-6">
+          {/* Progress */}
+          <ProgressBar current={moveCount} total={64} />
 
-      {/* Current Position */}
-      <div className="bg-card rounded-md shadow-sm border border-border p-6 text-center">
-        <p className="text-sm text-muted-foreground mb-2">{t('currentPosition')}</p>
-        <p className="text-5xl font-bold text-foreground font-mono">{currentSquare}</p>
-      </div>
+          {/* Current Position */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-2">{t('currentPosition')}</p>
+            <p className="text-5xl font-bold text-foreground font-mono">{currentSquare}</p>
+          </div>
 
-      {/* Move Input */}
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('availableMoves')}</h3>
-
-        {availableMoves.length > 0 ? (
-          preferences.moveInputMode === 'select' ? (
-            <SquareSelect
-              onSubmit={handleSubmit}
-              availableMoves={availableMoves}
-              disabled={false}
-            />
-          ) : (
+          {/* Move Input */}
+          {availableMoves.length > 0 ? (
             <>
-              <SquareInput
-                value={inputValue}
-                onChange={handleInputChange}
-                onSubmit={handleSubmit}
-                availableMoves={availableMoves}
-                disabled={false}
-                showSuggestions={preferences.enableAutoComplete}
-              />
-              {/* Error message */}
-              {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              {/* Autocomplete checkbox */}
-              <label className="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  checked={preferences.enableAutoComplete}
-                  onChange={(e) => updatePreferences({ enableAutoComplete: e.target.checked })}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {tPreferences('controls.enableAutoComplete')}
-                </span>
-              </label>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                  {t('availableMoves')}
+                </h3>
+                {preferences.moveInputMode === 'select' ? (
+                  <SquareSelect
+                    onSubmit={handleSubmit}
+                    availableMoves={availableMoves}
+                    disabled={false}
+                  />
+                ) : (
+                  <>
+                    <SquareInput
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      onSubmit={handleSubmit}
+                      availableMoves={availableMoves}
+                      disabled={false}
+                      showSuggestions={preferences.enableAutoComplete}
+                    />
+                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                  </>
+                )}
+              </div>
+
+              {/* Toggle Input Mode */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() =>
+                    updatePreferences({
+                      moveInputMode: preferences.moveInputMode === 'text' ? 'select' : 'text',
+                    })
+                  }
+                  className="p-2 border border-border rounded-md hover:bg-muted"
+                  title={
+                    preferences.moveInputMode === 'text' ? t('switchToSelect') : t('switchToText')
+                  }
+                >
+                  {preferences.moveInputMode === 'text' ? (
+                    <FaList className="w-4 h-4" />
+                  ) : (
+                    <FaKeyboard className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </>
-          )
-        ) : (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4 text-center">
-            <p className="text-destructive font-medium">{t('stuck')}</p>
-            <p className="text-sm text-muted-foreground mt-1">{t('stuckHint')}</p>
-          </div>
-        )}
+          ) : (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4 text-center">
+              <p className="text-destructive font-medium">{t('stuck')}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('stuckHint')}</p>
+            </div>
+          )}
 
-        {/* Settings link */}
-        <div className="mt-3 text-center">
-          <button
-            onClick={() => setShowSettingsModal(true)}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <FaCog className="w-3 h-3" />
-            {t('inputSettings')}
-          </button>
+          {/* Move History */}
+          {moveHistory.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('moveHistory')}</h3>
+              <div className="max-h-32 overflow-y-auto">
+                <div className="flex flex-wrap gap-1">
+                  {moveHistory.map(({ square, num }) => (
+                    <span
+                      key={square}
+                      className="inline-flex items-center px-2 py-1 text-xs font-mono bg-muted rounded"
+                    >
+                      <span className="text-muted-foreground mr-1">{num}.</span>
+                      <span className="font-bold">N{square}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Controls */}
+          <div className="flex gap-2">
+            <Button
+              onClick={onUndo}
+              variant="secondary"
+              size="md"
+              icon={<FaUndo />}
+              disabled={!canUndo}
+              className="flex-1"
+            >
+              {t('undo')}
+            </Button>
+            <Button onClick={onQuit} variant="destructive" size="md" className="flex-1">
+              {tPractice('quit')}
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Move History */}
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('moveHistory')}</h3>
-        <div className="max-h-32 overflow-y-auto">
-          <div className="flex flex-wrap gap-1">
-            {moveHistory.map(({ square, num }) => (
-              <span
-                key={square}
-                className="inline-flex items-center px-2 py-1 text-xs font-mono bg-muted rounded"
-              >
-                <span className="text-muted-foreground mr-1">{num}.</span>
-                <span className="font-bold">{square}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex gap-2">
-        <Button
-          onClick={onUndo}
-          variant="secondary"
-          size="md"
-          icon={<FaUndo />}
-          disabled={!canUndo}
-          className="flex-1"
-        >
-          {t('undo')}
-        </Button>
-        <Button onClick={onQuit} variant="secondary" size="md" className="flex-1">
-          {tPractice('quit')}
-        </Button>
-      </div>
-
-      {/* Control Settings Modal */}
-      <ControlSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-      />
     </div>
   );
 }

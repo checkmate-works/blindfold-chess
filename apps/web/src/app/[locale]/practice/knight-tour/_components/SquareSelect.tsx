@@ -42,7 +42,7 @@ export function SquareSelect({ onSubmit, availableMoves, disabled = false, place
         </option>
         {sortedMoves.map((move) => (
           <option key={move} value={move}>
-            {move}
+            N{move}
           </option>
         ))}
       </select>

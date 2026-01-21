@@ -27,10 +27,17 @@ export function SquareInput({
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Strip N prefix from input for comparison
+  const stripPrefix = (input: string): string => {
+    const trimmed = input.trim().toLowerCase();
+    return trimmed.startsWith('n') ? trimmed.slice(1) : trimmed;
+  };
+
   // Filter suggestions based on input
   const suggestions = useMemo(() => {
     if (!value.trim() || !showSuggestions) return [];
-    const input = value.toLowerCase();
+    const input = stripPrefix(value);
+    if (!input) return availableMoves;
     return availableMoves.filter((move) => move.toLowerCase().startsWith(input));
   }, [value, availableMoves, showSuggestions]);
 
@@ -40,10 +47,10 @@ export function SquareInput({
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const trimmed = value.trim().toLowerCase();
-    if (trimmed) {
-      // Always call onSubmit - let parent handle validation
-      onSubmit(trimmed);
+    const square = stripPrefix(value);
+    if (square) {
+      // Submit without N prefix
+      onSubmit(square);
     }
   };
 
@@ -56,7 +63,7 @@ export function SquareInput({
       inputRef.current?.blur();
     } else if (e.key === 'Tab' && suggestions.length > 0) {
       e.preventDefault();
-      onChange(suggestions[0]);
+      onChange(`N${suggestions[0]}`);
     }
   };
 
@@ -97,7 +104,7 @@ export function SquareInput({
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseDown={(e) => e.preventDefault()}
                 >
-                  {suggestion}
+                  N{suggestion}
                 </button>
               ))}
             </div>

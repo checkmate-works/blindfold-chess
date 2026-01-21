@@ -37,7 +37,6 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -51,21 +50,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function KnightTourPage({ params, searchParams }: Props) {
+export default async function KnightTourPage({ params }: Props) {
   const { locale } = await params;
-  const search = await searchParams;
   const t = await getTranslations({ locale });
-
-  // Parse tutorial mode parameters
-  const mode = search.mode === 'tutorial' ? 'tutorial' : undefined;
-  const startingSquare =
-    typeof search.startingSquare === 'string' ? search.startingSquare : undefined;
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.knightTour.title')}</PageTitle>
 
-      <KnightTourPageContent locale={locale} mode={mode} startingSquare={startingSquare} />
+      <KnightTourPageContent locale={locale} />
 
       <Divider />
 

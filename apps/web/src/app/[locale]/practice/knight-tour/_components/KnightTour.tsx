@@ -8,7 +8,6 @@ import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfir
 
 import {
   getAvailableKnightMoves,
-  getRandomSquare,
   isClosedTourPossible,
   isTourComplete,
   isValidKnightMove,
@@ -24,6 +23,7 @@ type Props = {
   autoStart?: boolean;
   initialStartingSquare?: string;
   initialBlindfoldMode?: boolean;
+  isTutorial?: boolean;
 };
 
 const STORAGE_KEY = 'knightTour_settings';
@@ -32,6 +32,7 @@ export default function KnightTour({
   autoStart = false,
   initialStartingSquare,
   initialBlindfoldMode,
+  isTutorial = false,
 }: Props = {}) {
   const locale = useLocale();
   const tQuit = useTranslations('practice.quitConfirmModal');
@@ -100,16 +101,6 @@ export default function KnightTour({
     }
   }, [autoStart, initialStartingSquare, initialBlindfoldMode, gameState]);
 
-  const startGame = useCallback(() => {
-    const square = startingSquareOption === 'random' ? getRandomSquare() : startingSquareOption;
-    setStartingSquare(square);
-    setCurrentSquare(square);
-    setVisitedSquares(new Map([[square, 1]]));
-    setMoveHistory([square]);
-    setIsBlindfolded(blindfoldMode);
-    setGameState('playing');
-  }, [startingSquareOption, blindfoldMode]);
-
   const handleSquareClick = useCallback(
     (targetSquare: string) => {
       if (!isValidKnightMove(currentSquare, targetSquare)) return;
@@ -160,13 +151,9 @@ export default function KnightTour({
   }, []);
 
   const handlePlayAgain = useCallback(() => {
-    setGameState('setup');
-    setVisitedSquares(new Map());
-    setMoveHistory([]);
-    setCurrentSquare('');
-    setStartingSquare('');
-    setIsBlindfolded(false);
-  }, []);
+    // Navigate to setup page to start fresh
+    window.location.href = `/${locale}/practice/knight-tour`;
+  }, [locale]);
 
   // Compute available moves
   const availableMoves =
@@ -190,7 +177,7 @@ export default function KnightTour({
         lastSquare={currentSquare}
         startingSquare={startingSquare}
         isClosedTour={isClosedTour}
-        isTutorial={autoStart}
+        isTutorial={isTutorial}
         onPlayAgain={handlePlayAgain}
         onFinishTutorial={handleFinishTutorial}
       />
@@ -204,7 +191,6 @@ export default function KnightTour({
         onStartingSquareChange={setStartingSquareOption}
         blindfoldMode={blindfoldMode}
         onBlindfoldModeChange={setBlindfoldMode}
-        onStart={startGame}
       />
     );
   }

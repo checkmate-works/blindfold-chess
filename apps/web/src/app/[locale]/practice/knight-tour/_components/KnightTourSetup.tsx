@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
@@ -8,12 +9,13 @@ import { FaPlay } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import { getRandomSquare } from '../_lib/utils';
+
 type Props = {
   startingSquare: string;
   onStartingSquareChange: (square: string) => void;
   blindfoldMode: boolean;
   onBlindfoldModeChange: (value: boolean) => void;
-  onStart: () => void;
 };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -24,10 +26,24 @@ export function KnightTourSetup({
   onStartingSquareChange,
   blindfoldMode,
   onBlindfoldModeChange,
-  onStart,
 }: Props) {
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations('practice.knightTour');
+
+  const handleStart = () => {
+    // Resolve random to actual square
+    const actualSquare = startingSquare === 'random' ? getRandomSquare() : startingSquare;
+
+    // Build query params
+    const params = new URLSearchParams();
+    params.set('startingSquare', actualSquare);
+    if (blindfoldMode) {
+      params.set('blindfold', '1');
+    }
+
+    router.push(`/${locale}/practice/knight-tour/session?${params.toString()}`);
+  };
 
   return (
     <div>
@@ -75,7 +91,13 @@ export function KnightTourSetup({
 
         <p className="text-sm text-muted-foreground mb-6">{t('setupHint')}</p>
 
-        <Button onClick={onStart} variant="primary" size="lg" icon={<FaPlay />} className="w-full">
+        <Button
+          onClick={handleStart}
+          variant="primary"
+          size="lg"
+          icon={<FaPlay />}
+          className="w-full"
+        >
           {t('start')}
         </Button>
       </div>
