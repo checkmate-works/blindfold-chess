@@ -7,7 +7,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { getRandomSquare } from '../_lib/utils';
 
@@ -100,16 +100,36 @@ export function KnightTourSetup({
         >
           {t('start')}
         </Button>
+
+        <div className="mt-4 text-center">
+          <Link
+            href="/practice/knight-tour/tutorial"
+            locale={locale}
+            className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
+          >
+            {t('viewTutorial')}
+          </Link>
+        </div>
       </div>
 
-      <div className="mt-4 text-center">
-        <Link
-          href="/practice/knight-tour/tutorial"
-          locale={locale}
-          className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
-        >
-          {t('viewTutorial')}
-        </Link>
+      <div className="mt-8 space-y-4">
+        <SectionTitle>{t('relatedArticles')}</SectionTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardLink
+            href="/learn/knight-tour"
+            icon="♞"
+            title={t('articles.knightTour.title')}
+            description={t('articles.knightTour.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/knight-movement"
+            icon="♘"
+            title={t('articles.knightMovement.title')}
+            description={t('articles.knightMovement.description')}
+            locale={locale}
+          />
+        </div>
       </div>
     </div>
   );

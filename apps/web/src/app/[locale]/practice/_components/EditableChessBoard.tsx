@@ -191,7 +191,7 @@ export function EditableChessBoard({
   const renderPalette = (pieces: PieceType[], title: string) => (
     <div className="flex flex-col items-center gap-2">
       <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
-      <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 bg-secondary rounded-lg">
+      <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 border border-border rounded-lg">
         <button
           onClick={() => setSelectedPiece('')}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center text-base sm:text-lg flex-shrink-0 transition-colors ${

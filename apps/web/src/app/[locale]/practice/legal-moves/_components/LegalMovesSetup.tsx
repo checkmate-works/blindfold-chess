@@ -1,33 +1,52 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import type { BoardTheme } from '@/lib/boardThemes';
+
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType } from '../_lib/types';
 import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {
+  locale: Locale;
   timeLimit: number;
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (value: number) => void;
   onPieceToggle: (piece: PieceType) => void;
-  onStart: () => void;
-  hasSelectedPieces: boolean;
+  boardTheme?: BoardTheme;
 };
 
 export function LegalMovesSetup({
+  locale,
   timeLimit,
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
-  onStart,
-  hasSelectedPieces,
+  boardTheme = 'default',
 }: Props) {
   const t = useTranslations('practice.legalMoves');
+  const router = useRouter();
+
+  const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
+
+  const handleStart = () => {
+    const selectedPieceTypes = Object.entries(selectedPieces)
+      .filter(([, selected]) => selected)
+      .map(([piece]) => piece)
+      .join(',');
+
+    router.push(
+      `/${locale}/practice/legal-moves/session?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}`
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
@@ -38,10 +57,11 @@ export function LegalMovesSetup({
           selectedPieces={selectedPieces}
           onTimeLimitChange={onTimeLimitChange}
           onPieceToggle={onPieceToggle}
+          boardTheme={boardTheme}
         />
 
         <Button
-          onClick={onStart}
+          onClick={handleStart}
           disabled={!hasSelectedPieces}
           variant="primary"
           size="lg"
@@ -50,6 +70,40 @@ export function LegalMovesSetup({
         >
           {t('start')}
         </Button>
+      </div>
+
+      <div className="space-y-4">
+        <SectionTitle>{t('relatedArticles')}</SectionTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardLink
+            href="/learn/king-movement"
+            icon="♔"
+            title={t('articles.king.title')}
+            description={t('articles.king.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/knight-movement"
+            icon="♘"
+            title={t('articles.knight.title')}
+            description={t('articles.knight.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/rook-movement"
+            icon="♜"
+            title={t('articles.rook.title')}
+            description={t('articles.rook.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/bishop-movement"
+            icon="♗"
+            title={t('articles.bishop.title')}
+            description={t('articles.bishop.description')}
+            locale={locale}
+          />
+        </div>
       </div>
     </div>
   );

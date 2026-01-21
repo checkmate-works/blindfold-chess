@@ -1,0 +1,55 @@
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import SquareColorsSession from '../_components/SquareColorsSession';
+
+type Props = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+  searchParams: Promise<{
+    timeLimit?: string;
+  }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/session' }),
+    title: `${t('practice.squareColors.title')} - ${t('practice.squareColors.session')}`,
+    description: t('practice.squareColors.description'),
+  };
+}
+
+export default async function SquareColorsSessionPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  const { timeLimit } = await searchParams;
+  const t = await getTranslations({ locale });
+
+  const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
+
+  return (
+    <div className="space-y-8">
+      <PageTitle>{t('practice.squareColors.title')}</PageTitle>
+
+      <SquareColorsSession locale={locale} initialTimeLimit={timeLimitValue} />
+
+      <Divider />
+
+      <Breadcrumb
+        items={[
+          { label: t('navigation.practice'), href: '/practice' },
+          { label: t('practice.squareColors.title'), href: '/practice/square-colors' },
+          { label: t('practice.squareColors.session') },
+        ]}
+        locale={locale}
+      />
+    </div>
+  );
+}

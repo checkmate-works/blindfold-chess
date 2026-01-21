@@ -1,31 +1,41 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation } from '../_lib/types';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 
 type Props = {
+  locale: Locale;
   timeLimit: number;
   boardOrientation: BoardOrientation;
   onTimeLimitChange: (value: number) => void;
   onBoardOrientationChange: (value: BoardOrientation) => void;
-  onStart: () => void;
 };
 
 export function CoordinateQuizSetup({
+  locale,
   timeLimit,
   boardOrientation,
   onTimeLimitChange,
   onBoardOrientationChange,
-  onStart,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
+  const router = useRouter();
+
+  const handleStart = () => {
+    router.push(
+      `/${locale}/practice/coordinate-quiz/session?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}`
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
@@ -39,7 +49,7 @@ export function CoordinateQuizSetup({
         />
 
         <Button
-          onClick={onStart}
+          onClick={handleStart}
           variant="primary"
           size="lg"
           className="w-full mt-6"
@@ -47,6 +57,33 @@ export function CoordinateQuizSetup({
         >
           {t('start')}
         </Button>
+      </div>
+
+      <div className="space-y-4">
+        <SectionTitle>{t('relatedArticles')}</SectionTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardLink
+            href="/learn/coordinate-confusion"
+            icon="🔄"
+            title={t('articles.coordinateConfusion.title')}
+            description={t('articles.coordinateConfusion.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/anchor-squares"
+            icon="⚓"
+            title={t('articles.anchorSquares.title')}
+            description={t('articles.anchorSquares.description')}
+            locale={locale}
+          />
+          <CardLink
+            href="/learn/algebraic-notation"
+            icon="🔤"
+            title={t('articles.algebraicNotation.title')}
+            description={t('articles.algebraicNotation.description')}
+            locale={locale}
+          />
+        </div>
       </div>
     </div>
   );

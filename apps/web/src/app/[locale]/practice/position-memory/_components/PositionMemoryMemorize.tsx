@@ -6,7 +6,6 @@ import { Button } from '@/app/_components';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 
-import { SectionTitle } from '@/app/[locale]/_components';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
@@ -35,33 +34,46 @@ export function PositionMemoryMemorize({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   return (
-    <div className="max-w-4xl mx-auto">
-      {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
+    <div className="space-y-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+        <div className="flex flex-col gap-6">
+          {/* Progress */}
+          {problemCount > 1 && (
+            <ProgressBar current={currentProblemIndex + 1} total={problemCount} />
+          )}
 
-      <div className="text-center mb-6">
-        <SectionTitle className="text-2xl font-bold mb-2">{t('memorizing')}</SectionTitle>
-        <p className="text-lg text-muted-foreground">
-          {t('timeRemaining')}:{' '}
-          <span className={memorizeTimeLeft <= 5 ? 'font-bold' : ''}>{memorizeTimeLeft}</span>{' '}
-          {t('seconds')}
-        </p>
-      </div>
+          {/* Timer */}
+          <div className="text-center">
+            <p className="text-lg text-muted-foreground mb-2">{t('memorizing')}</p>
+            <p className="text-2xl font-bold">
+              <span className={memorizeTimeLeft <= 5 ? 'text-red-500' : ''}>
+                {memorizeTimeLeft}
+              </span>{' '}
+              {t('seconds')}
+            </p>
+          </div>
 
-      <div className="flex justify-center mb-6">
-        <div className="w-full max-w-md">
-          <AnimatedChessBoard
-            initialFen={position.fen}
-            showCoordinates={true}
-            flipped={position.isBlackToMove}
-            boardTheme={boardTheme}
-          />
+          {/* Chess Board */}
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              <AnimatedChessBoard
+                initialFen={position.fen}
+                showCoordinates={true}
+                flipped={position.isBlackToMove}
+                boardTheme={boardTheme}
+              />
+            </div>
+          </div>
+
+          {/* Memorized Button */}
+          <Button onClick={onMemorized} variant="primary" size="lg" fullWidth>
+            {t('memorized')}
+          </Button>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-4">
-        <Button onClick={onMemorized} variant="primary" size="lg" fullWidth className="rounded-md">
-          {t('memorized')}
-        </Button>
+      {/* Action Links */}
+      <div className="flex flex-col items-center gap-2">
         <button
           onClick={onSkip}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"

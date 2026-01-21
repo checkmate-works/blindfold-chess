@@ -269,6 +269,7 @@
     "squareColors": {
       "title": "マスの色",
       "description": "マスが明るいか暗いかを素早く識別する能力を鍛えます",
+      "session": "練習中",
       "question": "{square}マスは何色ですか？",
       "white": "白",
       "black": "黒",
@@ -283,11 +284,15 @@
       "correctAnswers": "正解数",
       "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間"
+      "averageTime": "平均時間",
+      "requiredKnowledge": "この練習に必要な知識",
+      "viewArticle": "マスの色について学ぶ",
+      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ"
     },
     "legalMoves": {
       "title": "合法手",
       "description": "ある局面でのすべての合法手を見つける練習",
+      "session": "練習中",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "seconds": "秒",
@@ -312,7 +317,26 @@
       "correctAnswers": "正解数",
       "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間"
+      "averageTime": "平均時間",
+      "relatedArticles": "関連記事",
+      "articles": {
+        "king": {
+          "title": "キングの動き",
+          "description": "チェス盤上でのキングの動きを学ぶ"
+        },
+        "knight": {
+          "title": "ナイトの動き",
+          "description": "ナイト特有のL字型の動きをマスター"
+        },
+        "rook": {
+          "title": "ルークの動き",
+          "description": "縦横の直線移動を理解する"
+        },
+        "bishop": {
+          "title": "ビショップの動き",
+          "description": "斜め移動のパターンを学ぶ"
+        }
+      }
     },
     "coordinateQuiz": {
       "title": "座標クイズ",
@@ -335,7 +359,23 @@
       "correctAnswers": "正解数",
       "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間"
+      "averageTime": "平均時間",
+      "session": "練習中",
+      "relatedArticles": "関連記事",
+      "articles": {
+        "coordinateConfusion": {
+          "title": "座標の混乱",
+          "description": "よくある座標認識の課題を克服する"
+        },
+        "anchorSquares": {
+          "title": "アンカースクエア",
+          "description": "盤面イメージのための基準点を学ぶ"
+        },
+        "algebraicNotation": {
+          "title": "代数表記法",
+          "description": "チェスの座標言語をマスターする"
+        }
+      }
     },
     "positionMemory": {
       "title": "ポジションの記憶",
@@ -448,7 +488,10 @@
         "title": "設定をリセットしますか？",
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "requiredKnowledge": "この練習に必要な知識",
+      "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
+      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ"
     },
     "knightTour": {
       "title": "ナイトツアー",
@@ -498,7 +541,18 @@
       },
       "tutorialComplete": "基本的な使い方は以上です。\n慣れてきたら開始マスをランダムにしたり、ブラインドモードへ挑戦したりしてみましょう。",
       "finishTutorial": "チュートリアルを終了",
-      "viewTutorial": "チュートリアルを見る"
+      "viewTutorial": "チュートリアルを見る",
+      "relatedArticles": "関連記事",
+      "articles": {
+        "knightTour": {
+          "title": "ナイトツアーパズル",
+          "description": "この古典的なチェスパズルの戦略と歴史を学ぶ"
+        },
+        "knightMovement": {
+          "title": "ナイトの動き",
+          "description": "ナイト特有のL字型の動きをマスター"
+        }
+      }
     },
     "fen": {
       "title": "FEN再構築",
@@ -506,6 +560,9 @@
       "pageTitle": "FEN再構築トレーニング",
       "session": "練習中",
       "start": "練習を開始",
+      "requiredKnowledge": "この練習に必要な知識",
+      "viewArticle": "FEN記法について学ぶ",
+      "articleDescription": "チェスの盤面を記述するための標準的な記法を学ぶ",
       "fenString": "FEN文字列",
       "recreateFromFen": "FENから盤面を再現してください",
       "submit": "提出",
@@ -655,6 +712,12 @@
         "skip": "スキップ",
         "watchFirst": "まず再生ボタンを押して手順を見てください"
       },
+      "aboutFeature": {
+        "title": "この機能について",
+        "description1": "約束組手とは空手やテコンドーなどの武道で行われる、あらかじめ攻防の手順を決めて行う模擬的な組手です。",
+        "description2": "ここでは約束組手のように相手の手を仮定し、正しい手順で応手を打てるように訓練を行います。",
+        "description3": "この練習メニューにより、オープニングを記憶する能力を向上させることができます。"
+      },
       "tutorialComplete": "基本的な使い方は以上です。\n他のオープニングや、自分がプレイしたゲームの手順にも挑戦してみましょう。",
       "finishTutorial": "チュートリアルを終了する",
       "resetSettings": "設定をリセット",
@@ -662,7 +725,14 @@
         "title": "設定をリセットしますか？",
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "relatedArticles": "関連記事",
+      "articles": {
+        "algebraicNotation": {
+          "title": "代数表記法",
+          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
+        }
+      }
     }
   },
   "home": {

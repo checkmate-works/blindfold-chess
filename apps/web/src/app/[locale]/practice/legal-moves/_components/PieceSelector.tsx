@@ -2,17 +2,22 @@
 
 import { useTranslations } from 'next-intl';
 
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
 import { pieceDisplayMap } from '../_data/constants';
 import type { PieceType } from '../_lib/types';
 
 type Props = {
   selectedPieces: Record<PieceType, boolean>;
   onPieceToggle: (piece: PieceType) => void;
+  boardTheme?: BoardTheme;
 };
 
-export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
+export function PieceSelector({ selectedPieces, onPieceToggle, boardTheme = 'default' }: Props) {
   const t = useTranslations('practice.legalMoves');
   const pieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
+  const themeColors = getBoardThemeColors(boardTheme);
 
   return (
     <div className="flex justify-center gap-2 sm:gap-3">
@@ -22,8 +27,8 @@ export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
           onClick={() => onPieceToggle(piece)}
           className={`flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-md transition-all ${
             selectedPieces[piece]
-              ? 'bg-foreground text-background shadow-lg scale-105'
-              : 'bg-secondary hover:bg-muted border-2 border-border'
+              ? `${themeColors.dark} ${themeColors.darkCoordinates} shadow-lg scale-105`
+              : `${themeColors.light} ${themeColors.lightCoordinates} hover:opacity-80 border border-border`
           }`}
           aria-label={t(`pieces.${piece}`)}
           title={t(`pieces.${piece}`)}

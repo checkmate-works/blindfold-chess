@@ -1,10 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MoveSequenceTutorial } from '../_components/MoveSequenceTutorial';
+import { TutorialSectionTitle } from '../_components/TutorialSectionTitle';
 import { TutorialSkipLink } from '../_components/TutorialSkipLink';
 
 type Props = {
@@ -31,7 +32,7 @@ export default async function MoveSequenceTutorialPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.moveSequence.title')}</PageTitle>
 
-      <SectionTitle>{t('practice.moveSequence.tutorial.title')}</SectionTitle>
+      <TutorialSectionTitle />
 
       <div className="text-right">
         <TutorialSkipLink locale={locale} />

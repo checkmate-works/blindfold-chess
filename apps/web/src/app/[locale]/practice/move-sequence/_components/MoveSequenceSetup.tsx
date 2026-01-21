@@ -9,7 +9,7 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import { FaInfoCircle, FaLink, FaPlay } from 'react-icons/fa';
 
-import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -593,6 +593,17 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
           {t('resetSettings')}
         </Button>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <SectionTitle>{t('relatedArticles')}</SectionTitle>
+        <CardLink
+          href="/learn/algebraic-notation"
+          icon="🔤"
+          title={t('articles.algebraicNotation.title')}
+          description={t('articles.algebraicNotation.description')}
+          locale={locale}
+        />
       </div>
 
       <ConfirmationModal

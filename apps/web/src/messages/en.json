@@ -269,6 +269,7 @@
     "squareColors": {
       "title": "Square Colors",
       "description": "Train your ability to quickly identify whether a square is light or dark",
+      "session": "In Progress",
       "question": "What color is square {square}?",
       "white": "Light",
       "black": "Dark",
@@ -283,11 +284,15 @@
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time"
+      "averageTime": "Average Time",
+      "requiredKnowledge": "Required Knowledge",
+      "viewArticle": "Learn about square colors",
+      "articleDescription": "Learn how to quickly identify whether a square is light or dark"
     },
     "legalMoves": {
       "title": "Legal Moves",
       "description": "Practice finding all legal moves in a position",
+      "session": "In Progress",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
       "seconds": "seconds",
@@ -312,7 +317,26 @@
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time"
+      "averageTime": "Average Time",
+      "relatedArticles": "Related Articles",
+      "articles": {
+        "king": {
+          "title": "The King's Movement",
+          "description": "Learn how the king moves on the chessboard"
+        },
+        "knight": {
+          "title": "The Knight's Movement",
+          "description": "Master the unique L-shaped movement of the knight"
+        },
+        "rook": {
+          "title": "The Rook's Movement",
+          "description": "Understand horizontal and vertical movement"
+        },
+        "bishop": {
+          "title": "The Bishop's Movement",
+          "description": "Learn diagonal movement patterns"
+        }
+      }
     },
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
@@ -335,7 +359,23 @@
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time"
+      "averageTime": "Average Time",
+      "session": "In Progress",
+      "relatedArticles": "Related Articles",
+      "articles": {
+        "coordinateConfusion": {
+          "title": "Coordinate Confusion",
+          "description": "Overcome common coordinate recognition challenges"
+        },
+        "anchorSquares": {
+          "title": "Anchor Squares",
+          "description": "Learn key reference points for board visualization"
+        },
+        "algebraicNotation": {
+          "title": "Algebraic Notation",
+          "description": "Master the language of chess coordinates"
+        }
+      }
     },
     "positionMemory": {
       "title": "Position Memory",
@@ -448,7 +488,10 @@
         "title": "Reset settings?",
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "requiredKnowledge": "Required Knowledge",
+      "viewArticle": "Learn about position memory training",
+      "articleDescription": "Learn techniques for memorizing and recreating chess positions"
     },
     "knightTour": {
       "title": "Knight's Tour",
@@ -498,7 +541,18 @@
       },
       "tutorialComplete": "That's the basics!\nOnce you're comfortable, try randomizing the starting square or challenging yourself with blindfold mode.",
       "finishTutorial": "Finish Tutorial",
-      "viewTutorial": "View Tutorial"
+      "viewTutorial": "View Tutorial",
+      "relatedArticles": "Related Articles",
+      "articles": {
+        "knightTour": {
+          "title": "The Knight's Tour Puzzle",
+          "description": "Learn strategies and history of this classic chess challenge"
+        },
+        "knightMovement": {
+          "title": "The Knight's Movement",
+          "description": "Master the unique L-shaped movement of the knight"
+        }
+      }
     },
     "fen": {
       "title": "FEN Reconstruction",
@@ -506,6 +560,9 @@
       "pageTitle": "FEN Reconstruction Practice",
       "session": "In Progress",
       "start": "Start Practice",
+      "requiredKnowledge": "Required Knowledge",
+      "viewArticle": "Learn about FEN notation",
+      "articleDescription": "Learn the standard notation for describing chess positions",
       "fenString": "FEN String",
       "recreateFromFen": "Recreate the Position from FEN",
       "submit": "Submit",
@@ -655,6 +712,12 @@
         "skip": "Skip",
         "watchFirst": "Watch the moves first by pressing play"
       },
+      "aboutFeature": {
+        "title": "About This Feature",
+        "description1": "Yakusoku Kumite is a form of pre-arranged sparring practiced in martial arts like Karate and Taekwondo, where the sequence of attacks and defenses is predetermined.",
+        "description2": "In this practice, we assume the opponent's moves like in Yakusoku Kumite, and train to respond with the correct sequence of moves.",
+        "description3": "This training will help improve your ability to memorize chess openings."
+      },
       "tutorialComplete": "That's the basics!\nTry other openings or challenge yourself with sequences from your own games.",
       "finishTutorial": "Finish Tutorial",
       "resetSettings": "Reset settings",
@@ -662,7 +725,14 @@
         "title": "Reset settings?",
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "relatedArticles": "Related Articles",
+      "articles": {
+        "algebraicNotation": {
+          "title": "Algebraic Notation",
+          "description": "Learn to read and write chess moves in standard notation"
+        }
+      }
     }
   },
   "home": {

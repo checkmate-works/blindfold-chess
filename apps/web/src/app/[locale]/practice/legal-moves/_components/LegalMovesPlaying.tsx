@@ -35,7 +35,7 @@ export function LegalMovesPlaying({
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div>
       {/* Timer display */}
       <TimeDisplay
         timeRemaining={timeRemaining}

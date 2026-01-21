@@ -2,7 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import type { BoardTheme } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
@@ -14,6 +15,7 @@ type Props = {
   showResult: boolean;
   lastAnswer: { correct: boolean; square: string } | null;
   onAnswer: (color: 'light' | 'dark') => void;
+  boardTheme?: BoardTheme;
 };
 
 export function SquareColorsPlaying({
@@ -23,9 +25,11 @@ export function SquareColorsPlaying({
   showResult,
   lastAnswer,
   onAnswer,
+  boardTheme = 'default',
 }: Props) {
   const t = useTranslations('practice.squareColors');
   const timeElapsed = timeLimit - timeRemaining;
+  const themeColors = getBoardThemeColors(boardTheme);
 
   return (
     <div>
@@ -58,23 +62,24 @@ export function SquareColorsPlaying({
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Button
+        <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
+          {/* Light square button */}
+          <button
             onClick={() => onAnswer('light')}
             disabled={showResult}
-            size="lg"
-            className="bg-gray-100 dark:bg-gray-200 hover:bg-gray-200 dark:hover:bg-gray-300 text-gray-900 dark:text-gray-900 py-4 text-lg"
+            className={`aspect-square rounded-md border border-border ${themeColors.light} ${themeColors.lightCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md flex items-center justify-center`}
           >
-            {t('white')}
-          </Button>
-          <Button
+            <span className="text-lg font-bold">{t('white')}</span>
+          </button>
+
+          {/* Dark square button */}
+          <button
             onClick={() => onAnswer('dark')}
             disabled={showResult}
-            size="lg"
-            className="bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 dark:hover:bg-gray-800 text-white py-4 text-lg"
+            className={`aspect-square rounded-md border border-border ${themeColors.dark} ${themeColors.darkCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md flex items-center justify-center`}
           >
-            {t('black')}
-          </Button>
+            <span className="text-lg font-bold">{t('black')}</span>
+          </button>
         </div>
       </div>
     </div>

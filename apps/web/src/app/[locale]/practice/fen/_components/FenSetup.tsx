@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -388,6 +389,17 @@ export function FenSetup({ locale }: Props) {
         <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
           {t('resetSettings')}
         </Button>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
+        <CardLink
+          href="/learn/fen-notation"
+          icon="📝"
+          title={t('viewArticle')}
+          description={t('articleDescription')}
+          locale={locale}
+        />
       </div>
 
       <ConfirmationModal
