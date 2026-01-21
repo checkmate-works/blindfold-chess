@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
+
 import { getPgnSuggestion, validatePgnWithDetails } from '@/app/[locale]/play/_lib/pgn-parser';
 
 type Props = {
@@ -78,25 +80,47 @@ export function PgnInput({
   const showSuccess = showValidation && validationResult?.isValid && debouncedValue.trim();
   const showError = showValidation && validationResult && !validationResult.isValid;
 
-  // Get translated error message
-  const getErrorMessage = (): string => {
+  // Extract invalid move from error message
+  const getInvalidMove = (): string | null => {
     if (!validationResult?.error) {
-      return t('invalidPgn');
+      return null;
     }
 
     // Parse "Invalid move in PGN: xyz" pattern (older chess.js)
     const moveErrorMatch = validationResult.error.match(/Invalid move in PGN: (.+)/);
     if (moveErrorMatch) {
-      return t('invalidMove', { move: moveErrorMatch[1] });
+      return moveErrorMatch[1];
     }
 
     // Parse 'Expected ... but "X" found.' pattern (newer chess.js PGN parser)
     const parserErrorMatch = validationResult.error.match(/but "(.+)" found/);
     if (parserErrorMatch) {
-      return t('invalidMove', { move: parserErrorMatch[1] });
+      return parserErrorMatch[1];
     }
 
+    return null;
+  };
+
+  // Get translated error message
+  const getErrorMessage = (): string => {
+    const invalidMove = getInvalidMove();
+    if (invalidMove) {
+      return t('invalidMove', { move: invalidMove });
+    }
     return t('invalidPgn');
+  };
+
+  // Select invalid move in textarea
+  const selectInvalidMove = () => {
+    const invalidMove = getInvalidMove();
+    if (!invalidMove || !textareaRef.current) return;
+
+    const text = value;
+    const index = text.indexOf(invalidMove);
+    if (index !== -1) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(index, index + invalidMove.length);
+    }
   };
 
   const handlePaste = () => {
@@ -148,9 +172,9 @@ export function PgnInput({
             autoCapitalize="none"
             autoCorrect="off"
             className={`
-              relative w-full ${heightClass} px-4 py-3 border-2 rounded-md bg-transparent font-mono text-base resize-none
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-opacity-20 transition-colors
-              ${showError ? 'border-red-500' : 'border-border focus:border-foreground'}
+              relative w-full ${heightClass} px-4 py-3 border rounded-md bg-transparent font-mono text-base resize-none
+              focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-colors
+              ${showError ? 'border-red-500 focus:ring-red-500/20' : 'border-border focus:border-foreground focus:ring-ring'}
             `}
           />
           {showSuccess && (
@@ -176,27 +200,29 @@ export function PgnInput({
       </div>
 
       {/* Mobile suggestion button */}
-      {suggestion && isMobile && (
-        <button
-          type="button"
-          onClick={applySuggestion}
-          className="w-full px-4 py-2 text-sm font-medium text-foreground bg-muted/50 border border-border rounded-md hover:bg-muted transition-colors"
-        >
+      {suggestion && isMobile && !showError && (
+        <Button variant="outline" size="sm" fullWidth shadow={false} onClick={applySuggestion}>
           {t('completeSuggestion', { suggestion })}
-        </button>
+        </Button>
       )}
 
       {/* Desktop hint */}
-      {suggestion && !isMobile && (
+      {suggestion && !isMobile && !showError && (
         <p className="text-xs text-muted-foreground">{t('tabToComplete', { suggestion })}</p>
       )}
 
-      {showSuccess && validationResult?.moveCount !== undefined && (
-        <p className="text-sm text-muted-foreground">
-          {t('validWithMoves', { count: validationResult.moveCount })}
-        </p>
-      )}
-      {showError && <p className="text-sm text-red-600 dark:text-red-400">{getErrorMessage()}</p>}
+      {showError &&
+        (getInvalidMove() ? (
+          <button
+            type="button"
+            onClick={selectInvalidMove}
+            className="text-sm text-red-600 dark:text-red-400 hover:underline cursor-pointer text-left"
+          >
+            {getErrorMessage()}
+          </button>
+        ) : (
+          <p className="text-sm text-red-600 dark:text-red-400">{getErrorMessage()}</p>
+        ))}
     </div>
   );
 }

@@ -879,6 +879,7 @@
     "selectLevel": "Select AI Skill Level",
     "levelWithNumber": "Level {level}",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
+    "previewBoard": "Preview Board",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",

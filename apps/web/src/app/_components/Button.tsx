@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'destructive';
+type Variant = 'primary' | 'secondary' | 'outline' | 'destructive';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,13 +10,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   fullWidth?: boolean;
   asChild?: boolean;
+  shadow?: boolean;
   children: ReactNode;
 }
 
 const variantStyles: Record<Variant, string> = {
-  primary: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+  primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
   secondary:
-    'bg-secondary text-secondary-foreground border border-foreground/20 shadow-sm hover:bg-secondary/90 hover:border-foreground/30',
+    'bg-secondary text-secondary-foreground border border-foreground/20 hover:bg-secondary/90 hover:border-foreground/30',
+  outline: 'bg-background text-foreground border border-border hover:bg-muted',
   destructive: 'bg-red-600 text-white hover:bg-red-700',
 };
 
@@ -33,6 +35,7 @@ export function Button({
   loading = false,
   fullWidth = false,
   asChild = false,
+  shadow = true,
   children,
   className = '',
   disabled,
@@ -43,7 +46,8 @@ export function Button({
   const disabledStyles =
     disabled || loading ? 'opacity-50 cursor-not-allowed shadow-none text-muted-foreground' : '';
   const widthStyles = fullWidth ? 'w-full' : '';
-  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${className}`;
+  const shadowStyles = shadow ? 'shadow-sm' : '';
+  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${shadowStyles} ${className}`;
 
   // If asChild is true, render as a span to be used inside Link
   if (asChild) {

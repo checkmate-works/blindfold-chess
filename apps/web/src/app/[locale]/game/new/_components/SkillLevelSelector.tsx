@@ -32,22 +32,24 @@ export function SkillLevelSelector({ value, onChange }: Props) {
 
   return (
     <>
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <SectionTitle>{t('selectLevel')}</SectionTitle>
-          <button
-            type="button"
-            onClick={() => setIsInfoModalOpen(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Show skill level information"
-          >
-            <FaInfoCircle className="w-4 h-4" />
-          </button>
-        </div>
+      <div className="space-y-4">
+        <SectionTitle>
+          <span className="inline-flex items-center gap-2">
+            {t('selectLevel')}
+            <button
+              type="button"
+              onClick={() => setIsInfoModalOpen(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Show skill level information"
+            >
+              <FaInfoCircle className="w-4 h-4" />
+            </button>
+          </span>
+        </SectionTitle>
         <select
           value={value}
           onChange={handleChange}
-          className="w-full p-3 rounded-md border-2 border-border bg-background text-foreground hover:border-muted-foreground focus:border-foreground focus:outline-none transition-all"
+          className="w-full p-3 rounded-md border border-border bg-background text-foreground hover:border-muted-foreground focus:border-foreground focus:outline-none transition-all"
         >
           {SKILL_LEVELS.map((level) => (
             <option key={level} value={level}>

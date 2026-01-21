@@ -13,7 +13,7 @@ export function StartMethodSelector({ value, onChange }: Props) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <button
         onClick={() => onChange('new')}
-        className={`relative p-4 rounded-md border-2 text-left transition-all ${
+        className={`relative p-4 rounded-md border text-left transition-all ${
           value === 'new'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -21,9 +21,9 @@ export function StartMethodSelector({ value, onChange }: Props) {
       >
         {value === 'new' && (
           <div className="absolute top-3 right-3">
-            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
               <svg
-                className="w-4 h-4 text-background"
+                className="w-4 h-4 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -46,7 +46,7 @@ export function StartMethodSelector({ value, onChange }: Props) {
 
       <button
         onClick={() => onChange('pgn')}
-        className={`relative p-4 rounded-md border-2 text-left transition-all ${
+        className={`relative p-4 rounded-md border text-left transition-all ${
           value === 'pgn'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -54,9 +54,9 @@ export function StartMethodSelector({ value, onChange }: Props) {
       >
         {value === 'pgn' && (
           <div className="absolute top-3 right-3">
-            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
               <svg
-                className="w-4 h-4 text-background"
+                className="w-4 h-4 text-white"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

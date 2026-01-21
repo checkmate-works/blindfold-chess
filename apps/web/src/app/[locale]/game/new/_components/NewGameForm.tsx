@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,11 +8,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
+import { FaEye } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { parsePgn, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { ColorSelector } from './ColorSelector';
@@ -29,12 +32,126 @@ export function NewGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { preferences } = useGamePreferences();
   const [startMethod, setStartMethod] = useState<StartMethod>('new');
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
+  const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
+
+  // Parse PGN to get moves array
+  const pgnMoves = useMemo((): AlgebraicNotation[] => {
+    if (!pgn.trim() || !validatePgn(pgn)) return [];
+    try {
+      return parsePgn(pgn) as AlgebraicNotation[];
+    } catch {
+      return [];
+    }
+  }, [pgn]);
+
+  // Calculate FEN for a given position
+  const getFenAtPosition = useCallback(
+    (position: number): string => {
+      const chess = new Chess();
+      const movesToApply = position === -1 ? pgnMoves : pgnMoves.slice(0, position + 1);
+      for (const move of movesToApply) {
+        chess.move(move);
+      }
+      return chess.fen();
+    },
+    [pgnMoves]
+  );
+
+  // Current display FEN
+  const displayFen = useMemo(() => {
+    if (pgnMoves.length === 0) return new Chess().fen();
+    return getFenAtPosition(currentPosition);
+  }, [pgnMoves, currentPosition, getFenAtPosition]);
+
+  // Format moves for display
+  const formattedPgn = useMemo(() => {
+    const formatted: { moveNumber: number; whiteMove: string; blackMove?: string }[] = [];
+    for (let i = 0; i < pgnMoves.length; i += 2) {
+      formatted.push({
+        moveNumber: Math.floor(i / 2) + 1,
+        whiteMove: pgnMoves[i],
+        blackMove: pgnMoves[i + 1],
+      });
+    }
+    return formatted;
+  }, [pgnMoves]);
+
+  // Calculate last move for highlighting
+  const lastMove = useMemo(() => {
+    if (pgnMoves.length === 0) return null;
+    const position = currentPosition === -1 ? pgnMoves.length - 1 : currentPosition;
+    if (position < 0) return null;
+
+    try {
+      const chess = new Chess();
+      let lastMoveDetails: { from: string; to: string } | null = null;
+      for (let i = 0; i <= position; i++) {
+        const move = chess.move(pgnMoves[i]);
+        if (i === position && move) {
+          lastMoveDetails = { from: move.from, to: move.to };
+        }
+      }
+      return lastMoveDetails;
+    } catch {
+      return null;
+    }
+  }, [pgnMoves, currentPosition]);
+
+  // Navigation functions
+  const navigateToPosition = useCallback(
+    (position: number) => {
+      if (position === -1 || position >= pgnMoves.length) {
+        setCurrentPosition(-1);
+      } else {
+        setCurrentPosition(position);
+      }
+    },
+    [pgnMoves.length]
+  );
+
+  const navigateToStart = useCallback(() => {
+    setCurrentPosition(-2); // Special value to indicate start position
+  }, []);
+
+  const navigateToEnd = useCallback(() => {
+    setCurrentPosition(-1);
+  }, []);
+
+  const navigatePrevious = useCallback(() => {
+    if (currentPosition === -2) return;
+    if (currentPosition === -1) {
+      if (pgnMoves.length > 0) {
+        navigateToPosition(pgnMoves.length - 2);
+      }
+    } else if (currentPosition === 0) {
+      navigateToStart();
+    } else {
+      navigateToPosition(currentPosition - 1);
+    }
+  }, [currentPosition, pgnMoves.length, navigateToPosition, navigateToStart]);
+
+  const navigateNext = useCallback(() => {
+    if (currentPosition === -2) {
+      if (pgnMoves.length > 0) {
+        navigateToPosition(0);
+      }
+    } else if (currentPosition === -1) {
+      return;
+    } else {
+      const newPosition = currentPosition + 1;
+      if (newPosition < pgnMoves.length) {
+        navigateToPosition(newPosition);
+      }
+    }
+  }, [currentPosition, pgnMoves.length, navigateToPosition]);
 
   // Initialize from URL parameters
   useEffect(() => {
@@ -153,6 +270,19 @@ export function NewGameForm({ locale }: Props) {
         <>
           <SectionTitle>{t('pgnTitle')}</SectionTitle>
           <PgnInput value={pgn} onChange={handlePgnChange} />
+          {/* Preview Button - show when PGN is valid */}
+          {pgnMoves.length > 0 && (
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                shadow={false}
+                icon={<FaEye className="w-4 h-4" />}
+                onClick={() => setIsBoardVisible(true)}
+              >
+                {t('previewBoard')}
+              </Button>
+            </div>
+          )}
         </>
       )}
 
@@ -183,6 +313,24 @@ export function NewGameForm({ locale }: Props) {
       >
         {t('startGame')}
       </Button>
+
+      {/* Board Preview Modal */}
+      <BoardViewModal
+        isOpen={isBoardVisible}
+        onClose={() => setIsBoardVisible(false)}
+        fen={displayFen}
+        playerSide={color}
+        lastMove={preferences.highlightLastMove && currentPosition !== -2 ? lastMove : null}
+        preferences={preferences}
+        movesLength={pgnMoves.length}
+        currentPosition={currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={navigateToStart}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToEnd={navigateToEnd}
+        onNavigateToPosition={navigateToPosition}
+      />
     </div>
   );
 }

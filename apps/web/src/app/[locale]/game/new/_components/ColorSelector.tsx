@@ -17,7 +17,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
       <button
         onClick={() => onChange('white')}
         disabled={disabled}
-        className={`p-6 rounded-md border-2 transition-all ${
+        className={`p-6 rounded-md border transition-all ${
           value === 'white'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
@@ -58,7 +58,7 @@ export function ColorSelector({ value, onChange, disabled = false }: Props) {
       <button
         onClick={() => onChange('black')}
         disabled={disabled}
-        className={`p-6 rounded-md border-2 transition-all ${
+        className={`p-6 rounded-md border transition-all ${
           value === 'black'
             ? 'border-foreground bg-foreground/10'
             : 'border-border hover:border-muted-foreground'
