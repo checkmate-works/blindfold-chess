@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -48,21 +48,16 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
     }
   };
 
-  const handleRestart = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedAnswer('');
-    setShowResult(false);
-    setScore(0);
-    setCompleted(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handlePlayAgain = useCallback(() => {
+    window.location.href = `/${locale}/practice/algebraic-notation`;
+  }, [locale]);
 
   if (completed) {
     return (
       <PracticeComplete
         score={score}
         total={questions.length}
-        onTryAgain={handleRestart}
+        onTryAgain={handlePlayAgain}
         locale={locale}
         labels={{
           practiceComplete: tPractice('practiceComplete'),
@@ -75,33 +70,35 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Progress bar */}
-      <ProgressBar current={currentQuestionIndex + 1} total={questions.length} />
+    <div className="space-y-4">
+      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+        <div className="flex flex-col gap-6">
+          {/* Progress bar */}
+          <ProgressBar current={currentQuestionIndex + 1} total={questions.length} />
 
-      {/* Question */}
-      <div className="space-y-6">
-        <AlgebraicNotationPlaying
-          question={question}
-          currentQuestionIndex={currentQuestionIndex}
-          selectedAnswer={selectedAnswer}
-          showResult={showResult}
-          boardTheme={preferences.boardTheme}
-          onOptionSelect={handleOptionSelect}
-          locale={locale}
-        />
-
-        {/* Result */}
-        {showResult && (
-          <AlgebraicNotationResult
-            selectedAnswer={selectedAnswer}
+          {/* Question */}
+          <AlgebraicNotationPlaying
             question={question}
             currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-            onNext={handleNext}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+            boardTheme={preferences.boardTheme}
+            onOptionSelect={handleOptionSelect}
             locale={locale}
           />
-        )}
+
+          {/* Result */}
+          {showResult && (
+            <AlgebraicNotationResult
+              selectedAnswer={selectedAnswer}
+              question={question}
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+              onNext={handleNext}
+              locale={locale}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

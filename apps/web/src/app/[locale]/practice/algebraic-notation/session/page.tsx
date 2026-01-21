@@ -5,7 +5,8 @@ import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { AlgebraicNotationSetup } from './_components/AlgebraicNotationSetup';
+import AlgebraicNotation from '../_components/AlgebraicNotation';
+import { questions } from '../_data/questions';
 
 type Props = {
   params: Promise<{
@@ -18,13 +19,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/algebraic-notation' }),
-    title: t('practice.algebraicNotation.pageTitle'),
+    ...generateCanonicalMetadata({ locale, path: 'practice/algebraic-notation/session' }),
+    title: `${t('practice.algebraicNotation.pageTitle')} - ${t('practice.algebraicNotation.session')}`,
     description: t('practice.algebraicNotation.description'),
   };
 }
 
-export default async function AlgebraicNotationPage({ params }: Props) {
+export default async function AlgebraicNotationSessionPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
@@ -32,14 +33,15 @@ export default async function AlgebraicNotationPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
 
-      <AlgebraicNotationSetup />
+      <AlgebraicNotation questions={questions} locale={locale} />
 
       <Divider />
 
       <Breadcrumb
         items={[
           { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.algebraicNotation.title') },
+          { label: t('practice.algebraicNotation.title'), href: '/practice/algebraic-notation' },
+          { label: t('practice.algebraicNotation.session') },
         ]}
         locale={locale}
       />
