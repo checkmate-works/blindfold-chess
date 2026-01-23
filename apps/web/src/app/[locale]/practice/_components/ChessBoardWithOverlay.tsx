@@ -13,6 +13,7 @@ type Props = {
   flipped?: boolean;
   squareDifferences?: SquareDiff[];
   boardTheme?: BoardTheme;
+  showCoordinates?: boolean;
 };
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
@@ -45,6 +46,7 @@ export function ChessBoardWithOverlay({
   flipped = false,
   squareDifferences = [],
   boardTheme = 'default',
+  showCoordinates = true,
 }: Props) {
   const board = fenToBoard(fen);
   const themeColors = getBoardThemeColors(boardTheme);
@@ -104,11 +106,27 @@ export function ChessBoardWithOverlay({
             // Handle board flipping for black side
             const displayIndex = flipped ? 63 - squareIndex : squareIndex;
             const displayPiece = board[displayIndex];
-
-            // Square labels always come from squareIndex (like EditableChessBoard)
-            // This keeps labels fixed while pieces rotate
-            const { file, rank } = getFileRank(squareIndex);
             const isLight = isLightSquare(squareIndex);
+
+            // Grid position for coordinate display
+            const gridFile = squareIndex % 8;
+            const gridRank = Math.floor(squareIndex / 8);
+
+            // Files and ranks arrays (same as ChessBoard)
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
+            // Display files/ranks (reversed when flipped, like ChessBoard)
+            const displayFiles = flipped ? [...files].reverse() : files;
+            const displayRanks = flipped ? [...ranks].reverse() : ranks;
+
+            // Get file/rank for this grid position
+            const file = displayFiles[gridFile];
+            const rank = displayRanks[gridRank];
+
+            // Show rank on left edge, file on bottom edge (always, like ChessBoard)
+            const showRankCoordinate = gridFile === 0;
+            const showFileCoordinate = gridRank === 7;
 
             // IMPORTANT: Overlay must match the PIECE being displayed, not the square label
             // The piece comes from displayIndex, so we get its actual square coordinates
@@ -121,6 +139,9 @@ export function ChessBoardWithOverlay({
                   file={file}
                   rank={rank}
                   isLight={isLight}
+                  showCoordinates={showCoordinates}
+                  showRankCoordinate={showRankCoordinate}
+                  showFileCoordinate={showFileCoordinate}
                   layoutMode="grid"
                   themeColors={themeColors}
                 >

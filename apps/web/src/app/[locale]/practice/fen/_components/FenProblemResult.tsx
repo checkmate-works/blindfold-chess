@@ -20,6 +20,7 @@ type Props = {
   currentProblemIndex: number;
   totalProblems: number;
   boardTheme?: BoardTheme;
+  showCoordinates?: boolean;
   isTutorial?: boolean;
   onNextProblem: () => void;
   onViewResults: () => void;
@@ -33,6 +34,7 @@ export function FenProblemResult({
   currentProblemIndex,
   totalProblems,
   boardTheme = 'default',
+  showCoordinates = true,
   isTutorial = false,
   onNextProblem,
   onViewResults,
@@ -121,7 +123,7 @@ export function FenProblemResult({
               <div className="w-full max-w-xs mx-auto">
                 <AnimatedChessBoard
                   initialFen={originalPosition.fen}
-                  showCoordinates={false}
+                  showCoordinates={showCoordinates}
                   flipped={originalPosition.isBlackToMove}
                   boardTheme={boardTheme}
                 />
@@ -137,6 +139,7 @@ export function FenProblemResult({
                   flipped={originalPosition.isBlackToMove}
                   squareDifferences={squareDifferences}
                   boardTheme={boardTheme}
+                  showCoordinates={showCoordinates}
                 />
               </div>
             </div>

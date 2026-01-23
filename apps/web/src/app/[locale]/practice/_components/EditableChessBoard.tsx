@@ -24,6 +24,7 @@ type Props = {
   preserveTurnInfo?: boolean; // Whether to preserve turn info from original position
   originalPosition?: string; // Original position to preserve turn info from
   boardTheme?: BoardTheme;
+  showCoordinates?: boolean;
 };
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
@@ -113,6 +114,7 @@ export function EditableChessBoard({
   preserveTurnInfo = false,
   originalPosition,
   boardTheme = 'default',
+  showCoordinates = true,
 }: Props) {
   const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));
   const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
@@ -155,14 +157,6 @@ export function EditableChessBoard({
     const rank = Math.floor(squareIndex / 8);
     const file = squareIndex % 8;
     return (rank + file) % 2 === 0;
-  };
-
-  const getFileRank = (squareIndex: number) => {
-    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-    const file = files[squareIndex % 8];
-    const rank = ranks[Math.floor(squareIndex / 8)];
-    return { file, rank };
   };
 
   const renderPiece = (piece: PieceType) => {
@@ -242,8 +236,27 @@ export function EditableChessBoard({
               // Handle board flipping for black side
               const displayIndex = flipped ? 63 - squareIndex : squareIndex;
               const displayPiece = board[displayIndex];
-              const { file, rank } = getFileRank(squareIndex);
               const isLight = isLightSquare(squareIndex);
+
+              // Grid position for coordinate display
+              const gridFile = squareIndex % 8;
+              const gridRank = Math.floor(squareIndex / 8);
+
+              // Files and ranks arrays (same as ChessBoard)
+              const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+              const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
+              // Display files/ranks (reversed when flipped, like ChessBoard)
+              const displayFiles = flipped ? [...files].reverse() : files;
+              const displayRanks = flipped ? [...ranks].reverse() : ranks;
+
+              // Get file/rank for this grid position
+              const file = displayFiles[gridFile];
+              const rank = displayRanks[gridRank];
+
+              // Show rank on left edge, file on bottom edge (always, like ChessBoard)
+              const showRankCoordinate = gridFile === 0;
+              const showFileCoordinate = gridRank === 7;
 
               return (
                 <Square
@@ -251,6 +264,9 @@ export function EditableChessBoard({
                   file={file}
                   rank={rank}
                   isLight={isLight}
+                  showCoordinates={showCoordinates}
+                  showRankCoordinate={showRankCoordinate}
+                  showFileCoordinate={showFileCoordinate}
                   onClick={() => handleSquareClick(displayIndex)}
                   layoutMode="grid"
                   themeColors={themeColors}

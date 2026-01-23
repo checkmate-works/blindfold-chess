@@ -236,6 +236,7 @@ export function FenSession({
           currentProblemIndex={currentProblemIndex}
           problemCount={positions.length}
           boardTheme={preferences.boardTheme}
+          showCoordinates={preferences.showCoordinates}
           isTutorial={isTutorial}
           onPositionChange={setRecreatedPosition}
           onSubmit={handleSubmit}
@@ -262,6 +263,7 @@ export function FenSession({
         currentProblemIndex={currentProblemIndex}
         totalProblems={positions.length}
         boardTheme={preferences.boardTheme}
+        showCoordinates={preferences.showCoordinates}
         isTutorial={isTutorial}
         onNextProblem={handleNextProblem}
         onViewResults={() => setPhase('result')}

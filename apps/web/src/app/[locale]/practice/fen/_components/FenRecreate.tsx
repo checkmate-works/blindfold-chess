@@ -19,6 +19,7 @@ type Props = {
   currentProblemIndex: number;
   problemCount: number;
   boardTheme?: BoardTheme;
+  showCoordinates?: boolean;
   isTutorial?: boolean;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
@@ -32,6 +33,7 @@ export function FenRecreate({
   currentProblemIndex,
   problemCount,
   boardTheme = 'default',
+  showCoordinates = true,
   isTutorial = false,
   onPositionChange,
   onSubmit,
@@ -99,6 +101,7 @@ export function FenRecreate({
                 preserveTurnInfo={true}
                 originalPosition={originalPosition.fen}
                 boardTheme={boardTheme}
+                showCoordinates={showCoordinates}
               />
             </div>
           </div>
