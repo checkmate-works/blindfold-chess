@@ -565,6 +565,7 @@
       "articleDescription": "Learn the standard notation for describing chess positions",
       "fenString": "FEN String",
       "recreateFromFen": "Recreate the Position from FEN",
+      "flipBoard": "Flip Board",
       "submit": "Submit",
       "skip": "Skip This Problem",
       "quit": "Quit Practice",

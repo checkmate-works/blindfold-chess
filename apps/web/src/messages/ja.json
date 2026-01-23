@@ -565,6 +565,7 @@
       "articleDescription": "チェスの盤面を記述するための標準的な記法を学ぶ",
       "fenString": "FEN文字列",
       "recreateFromFen": "FENから盤面を再現してください",
+      "flipBoard": "盤面を反転",
       "submit": "提出",
       "skip": "この問題をスキップ",
       "quit": "練習を終了",

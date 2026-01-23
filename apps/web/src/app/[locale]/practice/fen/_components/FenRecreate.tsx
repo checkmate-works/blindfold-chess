@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
+import { FaSyncAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 
@@ -38,6 +39,7 @@ export function FenRecreate({
   onQuit,
 }: Props) {
   const t = useTranslations('practice.fen');
+  const [isFlipped, setIsFlipped] = useState(originalPosition.isBlackToMove);
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -79,11 +81,20 @@ export function FenRecreate({
           {/* Chess Board */}
           <div className="flex justify-center">
             <div className="w-full max-w-md">
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => setIsFlipped(!isFlipped)}
+                  className="p-2 border border-border rounded-md hover:bg-muted"
+                  title={t('flipBoard')}
+                >
+                  <FaSyncAlt className="w-4 h-4" />
+                </button>
+              </div>
               <EditableChessBoard
                 fen={recreatedPosition}
                 onFenChange={onPositionChange}
                 labels={editableBoardLabels}
-                flipped={originalPosition.isBlackToMove}
+                flipped={isFlipped}
                 editable={true}
                 preserveTurnInfo={true}
                 originalPosition={originalPosition.fen}
