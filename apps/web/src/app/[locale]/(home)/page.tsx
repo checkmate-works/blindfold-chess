@@ -12,6 +12,8 @@
  *     last move, and skill level
  *   - Trash icon button allows deletion of individual games
  */
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -19,7 +21,7 @@ import { AdContainer } from '@/components/Ad';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
-import { GameListClient, NewGameButton } from './_components';
+import { GameListClient, LatestPostsList, LatestPostsSkeleton, NewGameButton } from './_components';
 
 type Props = {
   params: Promise<{
@@ -41,6 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Common' });
+  const tPosts = await getTranslations({ locale, namespace: 'posts' });
 
   return (
     <div className="space-y-6">
@@ -58,6 +61,10 @@ export default async function HomePage({ params }: Props) {
       </div>
 
       <GameListClient locale={locale} />
+
+      <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
+        <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
+      </Suspense>
     </div>
   );
 }
