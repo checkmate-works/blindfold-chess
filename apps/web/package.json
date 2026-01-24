@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "prebuild": "tsx scripts/copy-stockfish.ts && pnpm db:seed",
+    "prebuild": "tsx scripts/copy-stockfish.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

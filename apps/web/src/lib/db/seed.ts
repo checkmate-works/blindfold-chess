@@ -1,3 +1,10 @@
+// TODO: Vercel build cannot connect to Supabase database during build time.
+// POSTGRES_URL is set in Vercel environment but not available during static build.
+// Currently, seeding must be run manually after deployment.
+// Consider implementing one of these solutions:
+// - Use Vercel's build-time environment variable exposure
+// - Run seeding as a post-deployment hook
+// - Use Supabase migrations instead of runtime seeding
 import { categories, db } from './index';
 
 const categoryData = [
