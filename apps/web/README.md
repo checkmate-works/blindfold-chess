@@ -6,7 +6,7 @@ Free online platform to practice blindfold chess.
 
 ### Prerequisites
 
-- Node.js 22.x
+- Node.js 24.x
 - pnpm 10.x
 
 ### Installation
@@ -26,6 +26,34 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Local Development
+
+### Posts Feature Setup
+
+The Posts feature requires a PostgreSQL database. For local development, use Docker Compose:
+
+```bash
+# Start PostgreSQL container
+docker compose up -d
+
+# Apply database schema
+pnpm db:push
+
+# Seed initial data (categories)
+pnpm db:seed
+```
+
+The default database connection is `postgresql://postgres:postgres@localhost:5432/blindfold_chess`. No `.env.local` configuration is required for local development.
+
+To stop the database:
+
+```bash
+docker compose down
+
+# To also remove the data volume:
+docker compose down -v
+```
+
 ## Deployment
 
 ### Vercel
@@ -39,6 +67,41 @@ When deploying to Vercel, you must configure the **Root Directory** in the proje
 - **Output Directory**: `.next` (default)
 
 The project is structured as a monorepo using Turborepo. Vercel automatically detects Turborepo, but specifying the Root Directory ensures the correct context for the Next.js application.
+
+### Database (Supabase)
+
+For production, we recommend using [Supabase](https://supabase.com/) as the PostgreSQL database provider.
+
+#### Setup via Vercel Marketplace (Recommended)
+
+1. Go to Vercel Dashboard → Your Project → Settings → Integrations → Browse Marketplace
+2. Search for "Supabase" and click Add Integration
+3. Connect your Supabase account and select or create a project
+4. Environment variables (`POSTGRES_URL`, etc.) will be automatically synced
+
+The application automatically uses `POSTGRES_URL` when available.
+
+#### Manual Setup
+
+1. Create a project at [supabase.com](https://supabase.com/)
+2. Go to Project Settings → Database → Connection string
+3. Copy the connection string and add it to Vercel Environment Variables as `DATABASE_URL`
+
+#### Region Selection for Optimal Latency
+
+To minimize latency between Vercel Functions and Supabase database:
+
+| Service          | Recommended Region                 |
+| ---------------- | ---------------------------------- |
+| Vercel Functions | `iad1` (US East - Washington D.C.) |
+| Supabase         | East US (North Virginia)           |
+
+Both services should be in the same region (US East) for optimal performance.
+
+**Vercel Region Configuration:**
+
+- Go to Vercel Dashboard → Project → Settings → Functions
+- Set the region to `iad1` (Washington, D.C., USA)
 
 ## Environment Variables
 
@@ -55,6 +118,18 @@ cp .env.example .env.local
 ```bash
 # Base URL for your site (required for sitemap generation)
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
+
+#### Database (Required for Posts Feature)
+
+```bash
+# PostgreSQL connection string
+# Vercel Marketplace: POSTGRES_URL is automatically set by Supabase integration
+# Manual setup: Use DATABASE_URL with your connection string
+# Local development: Leave unset (defaults to local docker-compose PostgreSQL)
+#
+# The application checks in order: POSTGRES_URL → DATABASE_URL → default
+DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
 ```
 
 #### Google Analytics (Optional)
@@ -105,6 +180,7 @@ The application uses CookieYes, a Google-certified Consent Management Platform (
    - Copy the ID from the script URL (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
 
 6. **Add to Environment Variables**
+
    ```bash
    # CookieYes ID from dashboard
    NEXT_PUBLIC_COOKIEYES_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
@@ -115,6 +191,7 @@ The application uses CookieYes, a Google-certified Consent Management Platform (
    - Without publishing, the banner won't appear even with correct ID
 
 **Important Notes:**
+
 - Multi-language support works on the free plan (language detection from HTML `lang` attribute)
 - Google Consent Mode v2 integration is automatic
 - Required for Google AdSense approval and GDPR/CCPA compliance
@@ -202,20 +279,31 @@ For production use with custom recipient email addresses:
 ## Available Scripts
 
 ### Development
+
 - `pnpm dev` - Start development server with Turbopack
-- `pnpm build` - Build for production (automatically copies Stockfish files)
+- `pnpm build` - Build for production (automatically copies Stockfish files and seeds database)
 - `pnpm start` - Start production server
 - `pnpm lint` - Run ESLint
 - `pnpm run copy-stockfish` - Manually copy Stockfish AI engine files
 
+### Database
+
+- `pnpm db:push` - Push schema changes to database
+- `pnpm db:seed` - Seed initial data (categories)
+- `pnpm db:generate` - Generate migrations from schema changes
+- `pnpm db:migrate` - Run pending migrations
+- `pnpm db:studio` - Open Drizzle Studio (database GUI)
+
 ### Testing
 
 #### Unit Tests (Vitest)
+
 - `pnpm test` - Run tests in watch mode
 - `pnpm test:run` - Run tests once (CI mode)
 - `pnpm test:ui` - Run tests with UI
 
 #### E2E Tests (Playwright)
+
 - `pnpm test:e2e` - Run E2E tests in headless mode (CI/CD)
 - `pnpm test:e2e:ui` - Run E2E tests with Playwright UI (debugging)
 - `pnpm test:e2e:headed` - Run E2E tests with browser visible
@@ -229,6 +317,8 @@ For production use with custom recipient email addresses:
 - TypeScript
 - Tailwind CSS v4
 - React 19
+- Drizzle ORM
+- PostgreSQL (Supabase)
 - Playwright (E2E Testing)
 - Vitest (Unit Testing)
 
