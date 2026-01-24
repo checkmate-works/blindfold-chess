@@ -22,10 +22,13 @@ This repository is a Monorepo managed by [Turborepo](https://turbo.build/).
 > If you have Volta installed, it will automatically switch to the correct Node.js version defined in `package.json`.
 >
 > To pin versions (updates package.json):
+>
 > ```bash
 > volta pin node@24
 > ```
+>
 > For pnpm, use `volta install` to ensure the correct version is active, as `volta pin` may not support pnpm in all environments:
+>
 > ```bash
 > volta install pnpm@10
 > ```
@@ -68,3 +71,19 @@ pnpm --filter web run copy-stockfish
 ```
 
 For more details on the web application, see [apps/web/README.md](apps/web/README.md).
+
+## Versioning Strategy
+
+This project follows [Semantic Versioning](https://semver.org/).
+
+### Root Package
+
+The root `package.json` has version `0.0.0` and is **not versioned**. It serves only as a workspace definition for the monorepo and is not published or released.
+
+### Application Packages
+
+Each application (`apps/web`, `apps/mobile`, etc.) maintains its own independent version following Semantic Versioning.
+
+Changelogs:
+
+- [apps/web/CHANGELOG.md](apps/web/CHANGELOG.md)
