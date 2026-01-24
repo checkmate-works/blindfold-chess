@@ -1152,5 +1152,16 @@
       "descriptionSuffix": ".",
       "cta": "Read All Articles"
     }
+  },
+  "posts": {
+    "pageTitle": "Posts",
+    "pageDescription": "News, updates, and articles about Blindfold Chess",
+    "categoryDescription": "Posts in the {category} category",
+    "noPosts": "No posts yet.",
+    "postsListTitle": "All Posts",
+    "categories": {
+      "updates": "Updates",
+      "blog": "Blog"
+    }
   }
 }

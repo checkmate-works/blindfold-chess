@@ -1152,5 +1152,16 @@
       "descriptionSuffix": "など、目隠しチェスのヒントとなる知識が収集できます。",
       "cta": "記事一覧を読む"
     }
+  },
+  "posts": {
+    "pageTitle": "投稿",
+    "pageDescription": "Blindfold Chessのニュース、更新情報、記事",
+    "categoryDescription": "{category}カテゴリの投稿",
+    "noPosts": "投稿はまだありません。",
+    "postsListTitle": "すべての投稿",
+    "categories": {
+      "updates": "更新情報",
+      "blog": "ブログ"
+    }
   }
 }

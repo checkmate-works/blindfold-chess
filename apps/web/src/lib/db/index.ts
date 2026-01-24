@@ -3,9 +3,13 @@ import postgres from 'postgres';
 
 import * as schema from './schema';
 
-// Default to local docker-compose PostgreSQL for development
+// POSTGRES_URL: Set by Vercel Marketplace Supabase integration
+// DATABASE_URL: For manual configuration
+// Default: Local docker-compose PostgreSQL for development
 const connectionString =
-  process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/blindfold_chess';
+  process.env.POSTGRES_URL ||
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/blindfold_chess';
 
 // For use in application code
 const client = postgres(connectionString, { prepare: false });
