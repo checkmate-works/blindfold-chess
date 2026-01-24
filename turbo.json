@@ -1,33 +1,27 @@
 {
-    "$schema": "https://turbo.build/schema.json",
-    "tasks": {
-        "build": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                ".next/**",
-                "!.next/cache/**"
-            ]
-        },
-        "dev": {
-            "cache": false,
-            "persistent": true
-        },
-        "lint": {},
-        "typecheck": {},
-        "test": {},
-        "test:ui": {
-            "cache": false,
-            "persistent": true
-        },
-        "test:e2e": {
-            "cache": false
-        },
-        "copy-stockfish": {
-            "outputs": [
-                "public/stockfish/**"
-            ]
-        }
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["POSTGRES_URL"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {},
+    "typecheck": {},
+    "test": {},
+    "test:ui": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:e2e": {
+      "cache": false
+    },
+    "copy-stockfish": {
+      "outputs": ["public/stockfish/**"]
     }
+  }
 }
