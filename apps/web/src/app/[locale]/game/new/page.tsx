@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { getTranslations } from 'next-intl/server';
 
 import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
@@ -20,7 +22,9 @@ export default async function NewGamePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('newGame.title')}</PageTitle>
       <GameLimitCheck locale={locale}>
-        <NewGameForm locale={locale} />
+        <Suspense fallback={null}>
+          <NewGameForm locale={locale} />
+        </Suspense>
         <Divider />
         <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />
       </GameLimitCheck>

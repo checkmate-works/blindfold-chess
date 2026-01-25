@@ -6,10 +6,13 @@ export type GameStatus = 'in_progress' | 'checkmate' | 'stalemate' | 'draw';
 export class GameStateService {
   private chess: Chess;
   private playerSide: Side;
+  private startingFen?: string;
 
-  constructor(moves: AlgebraicNotation[] = [], playerSide: Side = 'white') {
-    this.chess = new Chess();
+  constructor(moves: AlgebraicNotation[] = [], playerSide: Side = 'white', startingFen?: string) {
+    // Initialize with custom FEN or standard starting position
+    this.chess = startingFen ? new Chess(startingFen) : new Chess();
     this.playerSide = playerSide;
+    this.startingFen = startingFen;
 
     // Replay all moves to get current position
     for (const move of moves) {
@@ -24,6 +27,10 @@ export class GameStateService {
         break;
       }
     }
+  }
+
+  getStartingFen(): string | undefined {
+    return this.startingFen;
   }
 
   validateMove(move: AlgebraicNotation): boolean {

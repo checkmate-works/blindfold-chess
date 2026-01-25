@@ -47,40 +47,45 @@ export function useAiVersus(skillLevel: SkillLevel) {
     };
   }, [skillLevel]);
 
-  const getAiMove = useCallback(async (moves: AlgebraicNotation[]): Promise<AlgebraicNotation> => {
-    const engine = engineRef.current;
-    if (!engine) {
-      throw new Error('Chess engine not available');
-    }
+  const getAiMove = useCallback(
+    async (moves: AlgebraicNotation[], startingFen?: string): Promise<AlgebraicNotation> => {
+      const engine = engineRef.current;
+      if (!engine) {
+        throw new Error('Chess engine not available');
+      }
 
-    // Wait for engine to be ready
-    let retries = 0;
-    const maxRetries = 100; // 10 seconds max
+      // Wait for engine to be ready
+      let retries = 0;
+      const maxRetries = 100; // 10 seconds max
 
-    while (!engine.isReady && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      retries++;
-    }
+      while (!engine.isReady && retries < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        retries++;
+      }
 
-    if (!engine.isReady) {
-      throw new Error('Engine initialization timeout');
-    }
+      if (!engine.isReady) {
+        throw new Error('Engine initialization timeout');
+      }
 
-    // Create a fresh chess instance to calculate current position
-    const { Chess } = await import('chess.js');
-    const chess = new Chess();
+      // Create a fresh chess instance to calculate current position
+      const { Chess } = await import('chess.js');
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
 
-    // Replay all moves to get current position
-    for (const move of moves) {
-      chess.move(move);
-    }
+      // Replay all moves to get current position
+      for (const move of moves) {
+        chess.move(move);
+      }
 
-    const fen = chess.fen();
-    const uciMove = await engine.getBestMove(fen, moves);
-    const aiMove = engine.convertUciToAlgebraic(uciMove, fen);
+      const fen = chess.fen();
+      // For custom starting positions, we need to pass the moves relative to that position
+      const uciMove = await engine.getBestMove(fen, moves, 1000, startingFen);
+      const aiMove = engine.convertUciToAlgebraic(uciMove, fen);
 
-    return aiMove;
-  }, []);
+      return aiMove;
+    },
+    []
+  );
 
   return { getAiMove };
 }

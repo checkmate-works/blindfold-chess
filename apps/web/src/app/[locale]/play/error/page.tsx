@@ -29,6 +29,7 @@ export default function PlayErrorPage() {
   const gameId = searchParams.get('gameId') || null;
   const color = searchParams.get('color') || 'white';
   const skillLevel = searchParams.get('skillLevel') || '5';
+  const startingFen = searchParams.get('fen') || undefined;
 
   const validMoves = JSON.parse(validMovesJson);
   const allMoves = JSON.parse(allMovesJson);
@@ -40,6 +41,11 @@ export default function PlayErrorPage() {
     const params = new URLSearchParams();
     params.set('color', color);
     params.set('skillLevel', skillLevel);
+
+    // Include custom starting FEN if present
+    if (startingFen) {
+      params.set('fen', startingFen);
+    }
 
     if (gameId) {
       params.set('gameId', gameId);
@@ -53,6 +59,7 @@ export default function PlayErrorPage() {
           playerColor: savedGame.playerColor,
           skillLevel: savedGame.skillLevel,
           status: savedGame.status,
+          startingFen: savedGame.startingFen,
         });
       }
     } else {
@@ -64,6 +71,7 @@ export default function PlayErrorPage() {
           playerColor: color as Side,
           skillLevel: parseInt(skillLevel) as SkillLevel,
           status: 'in_progress',
+          startingFen,
         });
         params.set('gameId', newGameId);
       }

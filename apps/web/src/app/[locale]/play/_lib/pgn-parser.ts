@@ -1,5 +1,8 @@
 import { Chess } from 'chess.js';
 
+// Standard starting position FEN
+export const STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
 export function validatePgn(pgn: string): boolean {
   if (!pgn.trim()) return false;
 
@@ -19,6 +22,44 @@ export function parsePgn(pgn: string): string[] {
     return chess.history();
   } catch {
     throw new Error('Invalid PGN format');
+  }
+}
+
+/**
+ * Parse PGN and extract both moves and starting FEN (if present)
+ * Returns the starting FEN from the PGN header, or undefined if using standard position
+ */
+export function parsePgnWithFen(pgn: string): { moves: string[]; startingFen?: string } {
+  try {
+    const chess = new Chess();
+    chess.loadPgn(pgn);
+
+    const headers = chess.header();
+    const startingFen = headers.FEN;
+
+    // Only return startingFen if it's different from standard position
+    const isCustomPosition = startingFen && startingFen !== STANDARD_START_FEN;
+
+    return {
+      moves: chess.history(),
+      startingFen: isCustomPosition ? startingFen : undefined,
+    };
+  } catch {
+    throw new Error('Invalid PGN format');
+  }
+}
+
+/**
+ * Validate FEN string
+ */
+export function validateFen(fen: string): boolean {
+  if (!fen.trim()) return false;
+
+  try {
+    new Chess(fen);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -62,11 +103,13 @@ export function validatePgnWithDetails(pgn: string): {
 /**
  * Format PGN moves array to text string
  * Converts formatted move pairs to standard PGN notation
+ * Optionally includes FEN header for custom starting positions
  */
 export function formatPgnToText(
-  formattedPgn: { moveNumber: number; whiteMove: string; blackMove?: string }[]
+  formattedPgn: { moveNumber: number; whiteMove: string; blackMove?: string }[],
+  startingFen?: string
 ): string {
-  return formattedPgn
+  const movesText = formattedPgn
     .map((move) => {
       const moveNumber = `${move.moveNumber}.`;
       const movePair = move.blackMove
@@ -75,6 +118,13 @@ export function formatPgnToText(
       return movePair;
     })
     .join(' ');
+
+  // Include FEN header if custom starting position is provided
+  if (startingFen) {
+    return `[SetUp "1"]\n[FEN "${startingFen}"]\n\n${movesText}`;
+  }
+
+  return movesText;
 }
 
 /**

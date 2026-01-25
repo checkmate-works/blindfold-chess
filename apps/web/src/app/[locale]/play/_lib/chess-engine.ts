@@ -156,7 +156,8 @@ export class ChessEngine {
   async getBestMove(
     fen: Fen,
     moves: AlgebraicNotation[] = [],
-    timeLimit: number = 1000
+    timeLimit: number = 1000,
+    startingFen?: string
   ): Promise<UciMove> {
     // Check if we're in a browser environment
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
@@ -176,7 +177,7 @@ export class ChessEngine {
 
       // Set position
       if (moves.length > 0) {
-        const moveString = this.convertMovesToUci(moves).join(' ');
+        const moveString = this.convertMovesToUci(moves, startingFen).join(' ');
         await this.sendCommand(`position fen ${fen} moves ${moveString}`);
       } else {
         await this.sendCommand(`position fen ${fen}`);
@@ -283,9 +284,10 @@ export class ChessEngine {
     }
   }
 
-  private convertMovesToUci(moves: AlgebraicNotation[]): string[] {
+  private convertMovesToUci(moves: AlgebraicNotation[], startingFen?: string): string[] {
     // Convert algebraic notation to UCI format using chess.js
-    const chess = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     const uciMoves: string[] = [];
 
     for (const move of moves) {

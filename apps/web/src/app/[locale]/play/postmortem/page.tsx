@@ -46,6 +46,7 @@ export default function PostmortemPage() {
   const gameId = searchParams.get('gameId');
   const skillLevel = searchParams.get('skillLevel');
   const moves = searchParams.get('moves');
+  const startingFen = searchParams.get('fen') || undefined;
 
   // Build the play page URL with original game parameters
   const getPlayPageUrl = () => {
@@ -60,6 +61,9 @@ export default function PostmortemPage() {
     }
     if (moves) {
       params.set('moves', moves);
+    }
+    if (startingFen) {
+      params.set('fen', startingFen);
     }
 
     return `/play?${params.toString()}`;
@@ -83,6 +87,7 @@ export default function PostmortemPage() {
         playerColor={playerColor}
         autoOpponent={autoOpponent}
         initialOffset={offset}
+        startingFen={startingFen}
         onSelectedMoveChange={setSelectedMoveDisplay}
       />
       <Divider />

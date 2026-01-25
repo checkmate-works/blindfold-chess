@@ -27,6 +27,8 @@ export type Game = {
   playerColor: Side;
   skillLevel: SkillLevel;
   status: GameStatus;
+  /** Custom starting position FEN. If undefined, standard starting position is used. */
+  startingFen?: string;
 };
 
 export type GameSortOption = 'lastPlayed' | 'created';

@@ -39,6 +39,7 @@ type Props = {
   playerColor: 'white' | 'black';
   autoOpponent: boolean;
   initialOffset?: number;
+  startingFen?: string;
   onSelectedMoveChange?: (moveDisplay: ReactElement | null) => void;
 };
 
@@ -76,7 +77,8 @@ async function getPositionEvaluation(
   moves: AlgebraicNotation[],
   moveIndex: number,
   t: (key: string) => string,
-  previousEval?: { score: number; mate?: number; bestMove?: string } // Pass previous evaluation to avoid re-calculation
+  previousEval?: { score: number; mate?: number; bestMove?: string }, // Pass previous evaluation to avoid re-calculation
+  startingFen?: string // Custom starting position FEN
 ): Promise<
   | {
       score: number;
@@ -111,7 +113,8 @@ async function getPositionEvaluation(
       evalBefore = previousEval;
     } else {
       // First move - evaluate the starting position
-      const chessBefore = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chessBefore = startingFen ? new Chess(startingFen) : new Chess();
       for (let i = 0; i < moveIndex; i++) {
         chessBefore.move(moves[i]);
       }
@@ -127,7 +130,8 @@ async function getPositionEvaluation(
     }
 
     // Get evaluation AFTER the move
-    const chessAfter = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chessAfter = startingFen ? new Chess(startingFen) : new Chess();
     for (let i = 0; i <= moveIndex; i++) {
       chessAfter.move(moves[i]);
     }
@@ -171,7 +175,8 @@ async function getPositionEvaluation(
     if (evalBefore.bestMove && loss > 20) {
       // Only show best move if loss > 20 centipawns (not a best move)
       try {
-        const chessBefore = new Chess();
+        // Initialize with custom FEN or standard starting position
+        const chessBefore = startingFen ? new Chess(startingFen) : new Chess();
         for (let i = 0; i < moveIndex; i++) {
           chessBefore.move(moves[i]);
         }
@@ -221,6 +226,7 @@ export function PostmortemClient({
   playerColor,
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
+  startingFen,
   onSelectedMoveChange,
 }: Props) {
   const t = useTranslations('postmortem');
@@ -265,7 +271,8 @@ export function PostmortemClient({
     evaluationCache.clear();
 
     try {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
       // Remove move numbers and periods from PGN
       const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
       const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);
@@ -296,11 +303,12 @@ export function PostmortemClient({
     } catch (error) {
       console.error('Error parsing PGN:', error);
     }
-  }, [pgn, initialOffset]);
+  }, [pgn, initialOffset, startingFen]);
 
   // Get current FEN for board display
   const getCurrentFen = useCallback(() => {
-    const chess = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     // If a move is selected for review, show that position
     const movesToShow = selectedMoveIndex !== null ? selectedMoveIndex + 1 : userMoves.length;
     const moves = selectedMoveIndex !== null ? originalMoves : userMoves;
@@ -309,12 +317,13 @@ export function PostmortemClient({
       chess.move(moves[i]);
     }
     return chess.fen();
-  }, [userMoves, originalMoves, selectedMoveIndex]);
+  }, [userMoves, originalMoves, selectedMoveIndex, startingFen]);
 
   // Navigation functions for move history
   const navigateToPosition = useCallback(
     (position: number) => {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
 
       // Reset board
       if (position === -1 || position >= originalMoves.length) {
@@ -341,16 +350,17 @@ export function PostmortemClient({
         setSelectedMoveIndex(null);
       }
     },
-    [originalMoves]
+    [originalMoves, startingFen]
   );
 
   const navigateToStart = useCallback(() => {
     // Show initial position (before any moves)
-    const chess = new Chess();
+    // Use custom FEN if available, otherwise standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     setDisplayFen(chess.fen());
     setCurrentPosition(-2); // Special value to indicate start position
     setSelectedMoveIndex(null);
-  }, []);
+  }, [startingFen]);
 
   const navigateToEnd = useCallback(() => {
     setCurrentPosition(-1);
@@ -446,7 +456,13 @@ export function PostmortemClient({
             : undefined;
 
         const evaluation = showEvaluation
-          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, previousEval)
+          ? await getPositionEvaluation(
+              originalMoves,
+              currentMoveIndex,
+              t,
+              previousEval,
+              startingFen
+            )
           : undefined;
 
         // Add to log as auto-filled (opponent's move)
@@ -481,6 +497,7 @@ export function PostmortemClient({
     showEvaluation,
     t,
     moveLog,
+    startingFen,
   ]);
 
   // Handle move submission
@@ -513,7 +530,13 @@ export function PostmortemClient({
             : undefined;
 
         const evaluation = showEvaluation
-          ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, previousEval)
+          ? await getPositionEvaluation(
+              originalMoves,
+              currentMoveIndex,
+              t,
+              previousEval,
+              startingFen
+            )
           : undefined;
 
         // Add to log
@@ -548,7 +571,7 @@ export function PostmortemClient({
         ]);
       }
     },
-    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, moveLog]
+    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, moveLog, startingFen]
   );
 
   // Handle "I don't know" button
@@ -569,7 +592,7 @@ export function PostmortemClient({
 
     // Get evaluation if enabled
     const evaluation = showEvaluation
-      ? await getPositionEvaluation(originalMoves, currentMoveIndex, t)
+      ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, undefined, startingFen)
       : undefined;
 
     // Add to log as auto-filled
@@ -590,7 +613,7 @@ export function PostmortemClient({
     }
 
     setIsEvaluating(false);
-  }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t]);
+  }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, startingFen]);
 
   // Handle "Analyze All" button
   const handleAnalyzeAll = useCallback(async () => {
@@ -621,7 +644,7 @@ export function PostmortemClient({
       const isWhiteMove = i % 2 === 0;
 
       const evaluation = showEvaluation
-        ? await getPositionEvaluation(originalMoves, i, t, previousEval)
+        ? await getPositionEvaluation(originalMoves, i, t, previousEval, startingFen)
         : undefined;
 
       if (evaluation) {
@@ -646,7 +669,16 @@ export function PostmortemClient({
     setIsCompleted(true);
     setIsEvaluating(false);
     setIsAnalyzingAll(false);
-  }, [currentMoveIndex, originalMoves, userMoves, moveLog, showEvaluation, isEvaluating, t]);
+  }, [
+    currentMoveIndex,
+    originalMoves,
+    userMoves,
+    moveLog,
+    showEvaluation,
+    isEvaluating,
+    t,
+    startingFen,
+  ]);
 
   // Check if any move has evaluation
   const hasAnyEvaluation = useCallback(() => {
@@ -807,7 +839,8 @@ export function PostmortemClient({
     if (movesToCheck.length === 0) return null;
 
     try {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
       let lastMoveDetails: { from: string; to: string } | null = null;
 
       for (let i = 0; i < movesToCheck.length; i++) {
@@ -822,7 +855,7 @@ export function PostmortemClient({
       console.error('Error getting last move details:', error);
       return null;
     }
-  }, [currentPosition, userMoves, originalMoves]);
+  }, [currentPosition, userMoves, originalMoves, startingFen]);
 
   // Calculate evaluation mark for the current position
   const currentEvaluationMark = useMemo((): EvaluationMark | null => {
@@ -1331,7 +1364,7 @@ export function PostmortemClient({
                         )
                       }
                       onClick={() => {
-                        const pgnText = formatPgnToText(formattedPgn);
+                        const pgnText = formatPgnToText(formattedPgn, startingFen);
 
                         navigator.clipboard.writeText(pgnText).then(() => {
                           setIsCopied(true);

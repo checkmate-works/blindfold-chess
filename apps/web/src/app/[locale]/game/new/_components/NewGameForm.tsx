@@ -16,7 +16,7 @@ import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
-import { parsePgn, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
+import { parsePgnWithFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { ColorSelector } from './ColorSelector';
 import { SkillLevelSelector } from './SkillLevelSelector';
@@ -42,34 +42,45 @@ export function NewGameForm({ locale }: Props) {
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
 
-  // Parse PGN to get moves array
-  const pgnMoves = useMemo((): AlgebraicNotation[] => {
-    if (!pgn.trim() || !validatePgn(pgn)) return [];
+  // Parse PGN to get moves array and starting FEN
+  const { pgnMoves, startingFen } = useMemo((): {
+    pgnMoves: AlgebraicNotation[];
+    startingFen?: string;
+  } => {
+    if (!pgn.trim() || !validatePgn(pgn)) return { pgnMoves: [] };
     try {
-      return parsePgn(pgn) as AlgebraicNotation[];
+      const result = parsePgnWithFen(pgn);
+      return {
+        pgnMoves: result.moves as AlgebraicNotation[],
+        startingFen: result.startingFen,
+      };
     } catch {
-      return [];
+      return { pgnMoves: [] };
     }
   }, [pgn]);
 
   // Calculate FEN for a given position
   const getFenAtPosition = useCallback(
     (position: number): string => {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
       const movesToApply = position === -1 ? pgnMoves : pgnMoves.slice(0, position + 1);
       for (const move of movesToApply) {
         chess.move(move);
       }
       return chess.fen();
     },
-    [pgnMoves]
+    [pgnMoves, startingFen]
   );
 
   // Current display FEN
   const displayFen = useMemo(() => {
-    if (pgnMoves.length === 0) return new Chess().fen();
+    if (pgnMoves.length === 0) {
+      // Use custom starting FEN if available, otherwise standard position
+      return startingFen || new Chess().fen();
+    }
     return getFenAtPosition(currentPosition);
-  }, [pgnMoves, currentPosition, getFenAtPosition]);
+  }, [pgnMoves, currentPosition, getFenAtPosition, startingFen]);
 
   // Format moves for display
   const formattedPgn = useMemo(() => {
@@ -91,7 +102,8 @@ export function NewGameForm({ locale }: Props) {
     if (position < 0) return null;
 
     try {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
       let lastMoveDetails: { from: string; to: string } | null = null;
       for (let i = 0; i <= position; i++) {
         const move = chess.move(pgnMoves[i]);
@@ -103,7 +115,7 @@ export function NewGameForm({ locale }: Props) {
     } catch {
       return null;
     }
-  }, [pgnMoves, currentPosition]);
+  }, [pgnMoves, currentPosition, startingFen]);
 
   // Navigation functions
   const navigateToPosition = useCallback(
@@ -158,13 +170,22 @@ export function NewGameForm({ locale }: Props) {
     const urlMoves = searchParams.get('moves');
     const urlColor = searchParams.get('color') as Side | null;
     const urlSkillLevel = searchParams.get('skillLevel');
+    const urlFen = searchParams.get('fen');
 
     if (urlMoves) {
       try {
         const movesArray = JSON.parse(urlMoves) as AlgebraicNotation[];
         if (movesArray.length > 0) {
-          // Convert moves array to PGN format (moves only, without headers)
+          // Convert moves array to PGN format
           const pgnParts: string[] = [];
+
+          // Add FEN header if custom starting position is provided
+          if (urlFen) {
+            pgnParts.push(`[SetUp "1"]`);
+            pgnParts.push(`[FEN "${urlFen}"]`);
+            pgnParts.push(''); // Empty line between headers and moves
+          }
+
           for (let i = 0; i < movesArray.length; i += 2) {
             const moveNumber = Math.floor(i / 2) + 1;
             const whiteMove = movesArray[i];
@@ -175,7 +196,7 @@ export function NewGameForm({ locale }: Props) {
               pgnParts.push(`${moveNumber}. ${whiteMove}`);
             }
           }
-          const pgnText = pgnParts.join(' ');
+          const pgnText = pgnParts.join(urlFen ? '\n' : ' ');
           setPgn(pgnText);
           setStartMethod('pgn');
         }
@@ -215,6 +236,20 @@ export function NewGameForm({ locale }: Props) {
           // If last move was by black, user should play as white (next to move)
           const derivedColor: Side = lastMove.color === 'w' ? 'black' : 'white';
           setColor(derivedColor);
+        } else {
+          // No moves in PGN, check if there's a custom starting FEN
+          // FEN format: "position turn castling en_passant halfmove fullmove"
+          // The turn is the second field: 'w' for white, 'b' for black
+          const headers = chess.header();
+          if (headers.FEN) {
+            const fenParts = headers.FEN.split(' ');
+            if (fenParts.length >= 2) {
+              const turnFromFen = fenParts[1];
+              // User should play as the side to move
+              const derivedColor: Side = turnFromFen === 'w' ? 'white' : 'black';
+              setColor(derivedColor);
+            }
+          }
         }
       } catch {
         // If PGN parsing fails, keep current color selection
@@ -231,13 +266,18 @@ export function NewGameForm({ locale }: Props) {
 
     try {
       let moves: string[] | undefined;
+      let fenToPass: string | undefined;
+
       if (startMethod === 'pgn') {
         if (!pgn.trim() || !validatePgn(pgn)) {
           setIsLoading(false);
           return;
         }
 
-        moves = parsePgn(pgn);
+        // Use parsePgnWithFen to get both moves and starting FEN
+        const parsed = parsePgnWithFen(pgn);
+        moves = parsed.moves;
+        fenToPass = parsed.startingFen;
       }
 
       const finalColor: Side = color;
@@ -251,6 +291,11 @@ export function NewGameForm({ locale }: Props) {
       // Add moves if from PGN
       if (moves && moves.length > 0) {
         searchParams.set('moves', JSON.stringify(moves));
+      }
+
+      // Add custom starting FEN if present
+      if (fenToPass) {
+        searchParams.set('fen', fenToPass);
       }
 
       router.push(`/${locale}/play?${searchParams.toString()}`);

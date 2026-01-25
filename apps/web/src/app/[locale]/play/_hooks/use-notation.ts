@@ -3,7 +3,19 @@ import { useCallback, useState } from 'react';
 import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 
-export function useNotation(initialMoves: AlgebraicNotation[] = []) {
+type UseNotationOptions = {
+  initialMoves?: AlgebraicNotation[];
+  startingFen?: string;
+};
+
+export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNotationOptions = []) {
+  // Handle both old signature (array) and new signature (options object)
+  const options: UseNotationOptions = Array.isArray(initialMovesOrOptions)
+    ? { initialMoves: initialMovesOrOptions }
+    : initialMovesOrOptions;
+
+  const { initialMoves = [], startingFen } = options;
+
   const [moves, setMoves] = useState<AlgebraicNotation[]>(initialMoves);
 
   const pushMove = useCallback((move: AlgebraicNotation) => {
@@ -30,7 +42,8 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
   }, []);
 
   const getFen = useCallback(() => {
-    const chess = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     try {
       for (const move of moves) {
         try {
@@ -48,10 +61,11 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
 
     const fen = chess.fen();
     return fen;
-  }, [moves]);
+  }, [moves, startingFen]);
 
   const getPgn = useCallback(() => {
-    const chess = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     try {
       for (const move of moves) {
         try {
@@ -67,7 +81,11 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
 
     const pgn = chess.pgn();
     return pgn;
-  }, [moves]);
+  }, [moves, startingFen]);
+
+  const getStartingFen = useCallback(() => {
+    return startingFen;
+  }, [startingFen]);
 
   const getSimplePgn = useCallback(() => {
     if (moves.length === 0) {
@@ -124,5 +142,6 @@ export function useNotation(initialMoves: AlgebraicNotation[] = []) {
     getPgn,
     getSimplePgn,
     getFormattedPgn,
+    getStartingFen,
   };
 }

@@ -24,8 +24,8 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string> {
     try {
-      // Validate moves before creating
-      this.validateMoves(game.moves);
+      // Validate moves before creating (with custom starting FEN if provided)
+      this.validateMoves(game.moves, game.startingFen);
 
       const games = await this.loadAll();
 
@@ -56,8 +56,8 @@ export class LocalStorageGameRepository implements IGameRepository {
 
   async update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void> {
     try {
-      // Validate moves before updating
-      this.validateMoves(game.moves);
+      // Validate moves before updating (with custom starting FEN if provided)
+      this.validateMoves(game.moves, game.startingFen);
 
       const games = await this.loadAll();
       const index = games.findIndex((g) => g.id === id);
@@ -196,14 +196,15 @@ export class LocalStorageGameRepository implements IGameRepository {
 
       const updatedMoves = [...game.moves, move];
 
-      // Validate the move sequence before saving
-      this.validateMoves(updatedMoves);
+      // Validate the move sequence before saving (with custom starting FEN if present)
+      this.validateMoves(updatedMoves, game.startingFen);
 
       await this.update(gameId, {
         moves: updatedMoves,
         playerColor: game.playerColor,
         skillLevel: game.skillLevel,
         status: game.status,
+        startingFen: game.startingFen,
       });
     } catch (error) {
       console.error('Failed to save move:', error);
@@ -220,8 +221,9 @@ export class LocalStorageGameRepository implements IGameRepository {
     }
   }
 
-  private validateMoves(moves: string[]): void {
-    const chess = new Chess();
+  private validateMoves(moves: string[], startingFen?: string): void {
+    // Initialize with custom FEN or standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     for (let i = 0; i < moves.length; i++) {
       const move = moves[i];
       try {

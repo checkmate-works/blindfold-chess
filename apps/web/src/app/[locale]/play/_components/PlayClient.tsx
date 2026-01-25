@@ -57,6 +57,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const playerSide = (searchParams.get('color') as Side) || 'white';
   const initialSkillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
   const initialGameId = searchParams.get('gameId') || undefined;
+  const initialStartingFen = searchParams.get('fen') || undefined;
 
   // Skill level state (can be changed during game)
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
@@ -66,13 +67,15 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const parsedMoves = urlMoves ? JSON.parse(urlMoves) : [];
 
   // Validate moves if we don't have a gameId (gameId takes precedence)
+  // When gameId is present, moves will be loaded from localStorage with the correct startingFen
   let initialMovesFromUrl = parsedMoves;
   let shouldRedirectToError = false;
   let errorDetails = null;
 
-  if (parsedMoves.length > 0) {
+  if (parsedMoves.length > 0 && !initialGameId) {
     const validMoves: AlgebraicNotation[] = [];
-    const chess = new Chess();
+    // Initialize with custom FEN or standard starting position
+    const chess = initialStartingFen ? new Chess(initialStartingFen) : new Chess();
 
     for (let i = 0; i < parsedMoves.length; i++) {
       const move = parsedMoves[i];
@@ -107,11 +110,19 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     }
 
     initialMovesFromUrl = validMoves;
+  } else if (initialGameId) {
+    // When gameId exists, don't use URL moves - they will be loaded from localStorage
+    initialMovesFromUrl = [];
   }
 
+  // Track starting FEN - can be from URL or loaded from saved game
+  const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
+
   // Hooks
-  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } =
-    useNotation(initialMovesFromUrl);
+  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } = useNotation({
+    initialMoves: initialMovesFromUrl,
+    startingFen,
+  });
   const { getAiMove } = useAiVersus(skillLevel);
 
   // State
@@ -175,12 +186,31 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [initialGameId]);
 
   const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
+    // When loading from gameId, don't make AI move until game is loaded from localStorage
+    // This prevents the AI from making a move based on empty state before the saved game is loaded
+    if (initialGameId) {
+      return false;
+    }
     // Check if it's AI's turn when resuming a game
     if (initialMovesFromUrl.length > 0) {
-      const gameStateService = new GameStateService(initialMovesFromUrl, playerSide);
+      const gameStateService = new GameStateService(
+        initialMovesFromUrl,
+        playerSide,
+        initialStartingFen
+      );
       return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
     }
-    // New game: AI plays first if player is black
+    // For custom starting positions, check who moves first from FEN
+    if (initialStartingFen) {
+      const fenParts = initialStartingFen.split(' ');
+      const turnFromFen = fenParts[1]; // 'w' or 'b'
+      // AI plays first if it's AI's turn
+      const isWhiteToMove = turnFromFen === 'w';
+      return (
+        (playerSide === 'white' && !isWhiteToMove) || (playerSide === 'black' && isWhiteToMove)
+      );
+    }
+    // New game with standard position: AI plays first if player is black
     return playerSide === 'black';
   });
 
@@ -215,6 +245,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     playerColor: playerSide,
     skillLevel,
     status: mapGameStatus(gameStatus, playerResult),
+    startingFen,
     enabled: !isLoadingFromStorage && !shouldRedirectToError, // Disable auto-save while loading from storage or if error detected
     saveOnInit: !initialGameId && !shouldRedirectToError, // Save on init for new games, but not if error detected
   });
@@ -229,6 +260,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       params.set('allMoves', JSON.stringify(errorDetails.allMoves));
       params.set('color', playerSide);
       params.set('skillLevel', skillLevel.toString());
+
+      // Include custom starting FEN if present
+      if (initialStartingFen) {
+        params.set('fen', initialStartingFen);
+      }
 
       // Use the current gameId (either from URL or auto-generated) to prevent duplication
       const effectiveGameId = initialGameId || gameId;
@@ -247,6 +283,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     skillLevel,
     initialGameId,
     gameId,
+    initialStartingFen,
   ]);
 
   // Update URL when gameId is generated
@@ -262,26 +299,31 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [gameId, initialGameId, searchParams, router]);
 
   // Helper function to get last move details from chess.js
-  const getLastMoveDetails = useCallback((movesArray: AlgebraicNotation[]) => {
-    if (movesArray.length === 0) return null;
+  const getLastMoveDetails = useCallback(
+    (movesArray: AlgebraicNotation[], customFen?: string) => {
+      if (movesArray.length === 0) return null;
 
-    try {
-      const chess = new Chess();
-      let lastMoveDetails = null;
+      try {
+        // Use customFen if provided, otherwise fall back to startingFen state or standard position
+        const fenToUse = customFen ?? startingFen;
+        const chess = fenToUse ? new Chess(fenToUse) : new Chess();
+        let lastMoveDetails = null;
 
-      for (let i = 0; i < movesArray.length; i++) {
-        const move = chess.move(movesArray[i]);
-        if (i === movesArray.length - 1 && move) {
-          lastMoveDetails = { from: move.from, to: move.to };
+        for (let i = 0; i < movesArray.length; i++) {
+          const move = chess.move(movesArray[i]);
+          if (i === movesArray.length - 1 && move) {
+            lastMoveDetails = { from: move.from, to: move.to };
+          }
         }
-      }
 
-      return lastMoveDetails;
-    } catch (error) {
-      console.error('Error getting last move details:', error);
-      return null;
-    }
-  }, []);
+        return lastMoveDetails;
+      } catch (error) {
+        console.error('Error getting last move details:', error);
+        return null;
+      }
+    },
+    [startingFen]
+  );
 
   // Load moves from localStorage on client-side
   useEffect(() => {
@@ -297,11 +339,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);
 
-        if (savedGame && savedGame.moves && savedGame.moves.length > 0) {
-          setMovesTo(savedGame.moves);
+        if (savedGame) {
+          // Load starting FEN if present (for custom starting positions)
+          if (savedGame.startingFen) {
+            setStartingFen(savedGame.startingFen);
+          }
 
-          // Update last move details
-          setLastMove(getLastMoveDetails(savedGame.moves));
+          if (savedGame.moves && savedGame.moves.length > 0) {
+            setMovesTo(savedGame.moves);
+
+            // Update last move details - pass startingFen directly since state update is async
+            setLastMove(getLastMoveDetails(savedGame.moves, savedGame.startingFen));
+          }
 
           // Also update game status if finished
           if (savedGame.status && savedGame.status !== 'in_progress') {
@@ -326,38 +375,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     loadGame();
   }, [initialGameId, setMovesTo, getLastMoveDetails]);
 
-  // Helper function to make AI move
-  const makeAiMove = useCallback(
-    async (currentMoves: AlgebraicNotation[]) => {
-      // Double-check we're not already processing using ref
-      if (isProcessingRef.current) {
-        console.warn('AI move already in progress, skipping');
-        return;
-      }
-
-      isProcessingRef.current = true; // Mark as processing
-      setIsLoading(true);
-
-      try {
-        const aiMove = await getAiMove(currentMoves);
-        pushMove(aiMove);
-
-        // Update last move
-        const newMoves = [...currentMoves, aiMove];
-        setLastMove(getLastMoveDetails(newMoves));
-      } catch (error) {
-        console.error('Failed to get AI move:', error);
-        setError('AI move failed');
-        // On error, reset the flag to allow retry
-        setShouldMakeAiMove(false);
-      } finally {
-        setIsLoading(false);
-        isProcessingRef.current = false; // Clear processing flag
-      }
-    },
-    [getAiMove, pushMove, getLastMoveDetails]
-  );
-
   // Initialize on mount with initial moves
   useEffect(() => {
     if (!isInitialized && initialMovesFromUrl.length > 0) {
@@ -368,12 +385,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   // Update game state whenever moves change
   useEffect(() => {
+    // Don't update game state while loading from storage
+    // This prevents triggering AI move with empty moves before game data is loaded
+    if (isLoadingFromStorage) {
+      return;
+    }
+
     // Don't update game state from moves if we've already loaded a finished game
     if (savedGameStatus && savedGameStatus !== 'in_progress') {
       return;
     }
 
-    const gameStateService = new GameStateService(moves, playerSide);
+    const gameStateService = new GameStateService(moves, playerSide, startingFen);
 
     const newIsPlayerTurn = gameStateService.isPlayerTurn();
     const newGameStatus = gameStateService.getGameStatus();
@@ -394,15 +417,79 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       // This prevents stale state from blocking future AI moves
       setShouldMakeAiMove(false);
     }
-  }, [moves, playerSide, savedGameStatus]);
+  }, [moves, playerSide, savedGameStatus, startingFen, isLoadingFromStorage]);
 
   // Make AI move when it's AI's turn
   useEffect(() => {
-    if (shouldMakeAiMove && !isProcessingRef.current && gameStatus === 'in_progress') {
-      makeAiMove(moves);
+    let isCancelled = false;
+
+    const executeAiMove = async () => {
+      if (isProcessingRef.current) {
+        return;
+      }
+
+      isProcessingRef.current = true;
+      setIsLoading(true);
+
+      // Retry logic for when engine is busy (can happen in StrictMode)
+      const maxRetries = 10;
+      const retryDelay = 200; // ms
+
+      let aiMove: string | null = null;
+      let lastError: Error | null = null;
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        if (isCancelled) {
+          return;
+        }
+
+        try {
+          aiMove = await getAiMove(moves, startingFen);
+          break; // Success, exit retry loop
+        } catch (error) {
+          lastError = error as Error;
+          // If engine is busy, wait and retry
+          if (error instanceof Error && error.message.includes('already processing')) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            continue;
+          }
+          // For other errors, don't retry
+          break;
+        }
+      }
+
+      // Check if this effect was cleaned up while we were waiting
+      if (isCancelled) {
+        return;
+      }
+
+      if (aiMove) {
+        pushMove(aiMove as AlgebraicNotation);
+        // Update last move
+        const newMoves = [...moves, aiMove as AlgebraicNotation];
+        setLastMove(getLastMoveDetails(newMoves));
+      } else if (lastError) {
+        console.error('Failed to get AI move:', lastError);
+        setError('AI move failed');
+        setShouldMakeAiMove(false);
+      }
+
+      if (!isCancelled) {
+        setIsLoading(false);
+        isProcessingRef.current = false;
+      }
+    };
+
+    if (shouldMakeAiMove && gameStatus === 'in_progress') {
+      executeAiMove();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldMakeAiMove, gameStatus]); // Intentionally omit some deps to prevent re-runs
+
+    return () => {
+      isCancelled = true;
+      // Reset processing state on cleanup to allow fresh start on re-mount
+      isProcessingRef.current = false;
+    };
+  }, [shouldMakeAiMove, gameStatus, moves, getAiMove, pushMove, getLastMoveDetails, startingFen]);
 
   // Handle player move submission
   const handleSubmitMove = useCallback(
@@ -426,7 +513,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         }
       }
 
-      const gameStateService = new GameStateService(moves, playerSide);
+      const gameStateService = new GameStateService(moves, playerSide, startingFen);
 
       if (gameStateService.validateMove(move)) {
         // Record this submission to prevent duplicates
@@ -453,6 +540,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       markPlayerInteraction,
       isLoading,
       isPlayerTurn,
+      startingFen,
     ]
   );
 
@@ -514,9 +602,14 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       params.set('color', playerSide);
       params.set('skillLevel', skillLevel.toString());
 
+      // Include custom starting FEN if present
+      if (startingFen) {
+        params.set('fen', startingFen);
+      }
+
       router.push(`/${locale}/game/new?${params.toString()}`);
     },
-    [moves, playerSide, skillLevel, locale, router]
+    [moves, playerSide, skillLevel, locale, router, startingFen]
   );
 
   // Handle resign
@@ -553,6 +646,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             playerColor: savedGame.playerColor,
             skillLevel: newSkillLevel,
             status: savedGame.status,
+            startingFen: savedGame.startingFen,
           });
         }
       }
@@ -563,7 +657,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // Navigation functions for move history
   const navigateToPosition = useCallback(
     (position: number) => {
-      const chess = new Chess();
+      // Initialize with custom FEN or standard starting position
+      const chess = startingFen ? new Chess(startingFen) : new Chess();
 
       // Reset board
       if (position === -1 || position >= moves.length) {
@@ -587,15 +682,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         setDisplayFen(null);
       }
     },
-    [moves]
+    [moves, startingFen]
   );
 
   const navigateToStart = useCallback(() => {
     // Show initial position (before any moves)
-    const chess = new Chess();
+    // Use custom FEN if available, otherwise standard starting position
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
     setDisplayFen(chess.fen());
     setCurrentPosition(-2); // Special value to indicate start position
-  }, []);
+  }, [startingFen]);
 
   const navigateToEnd = useCallback(() => {
     setCurrentPosition(-1);
@@ -866,6 +962,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                         params.set('color', playerSide);
                         params.set('autoOpponent', 'true');
 
+                        // Pass custom starting FEN if present
+                        if (startingFen) {
+                          params.set('fen', startingFen);
+                        }
+
                         // Pass game parameters to allow returning to the exact game state
                         if (initialGameId) {
                           params.set('gameId', initialGameId);
@@ -1027,7 +1128,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                         )
                       }
                       onClick={() => {
-                        const pgnText = formatPgnToText(formattedPgn);
+                        const pgnText = formatPgnToText(formattedPgn, startingFen);
 
                         navigator.clipboard.writeText(pgnText).then(() => {
                           setIsCopied(true);

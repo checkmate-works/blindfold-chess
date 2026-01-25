@@ -15,6 +15,7 @@ type UseAutoSaveOptions = {
   playerColor: Side;
   skillLevel: SkillLevel;
   status: GameStatus;
+  startingFen?: string;
   enabled?: boolean;
   saveOnInit?: boolean;
 };
@@ -28,6 +29,7 @@ export function useAutoSave({
   playerColor,
   skillLevel,
   status,
+  startingFen,
   enabled = true,
   saveOnInit = false,
 }: UseAutoSaveOptions) {
@@ -73,6 +75,7 @@ export function useAutoSave({
               playerColor,
               skillLevel,
               status: currentStatusRef.current,
+              startingFen,
             },
             currentGameId
           );
@@ -149,6 +152,7 @@ export function useAutoSave({
           playerColor,
           skillLevel,
           status,
+          startingFen,
         };
 
         let savedGameId: string;
@@ -211,7 +215,17 @@ export function useAutoSave({
         }
       }
     },
-    [currentGameId, enabled, gameRepository, moves, playerColor, skillLevel, status, saveOnInit]
+    [
+      currentGameId,
+      enabled,
+      gameRepository,
+      moves,
+      playerColor,
+      skillLevel,
+      status,
+      startingFen,
+      saveOnInit,
+    ]
   );
 
   // Auto-save on moves change or status change
