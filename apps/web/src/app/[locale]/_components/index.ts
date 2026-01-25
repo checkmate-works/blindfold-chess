@@ -5,6 +5,7 @@ export { Divider } from './Divider';
 export { Footer } from './Footer';
 export { Header } from './Header';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { ListLink, ListLinkContainer } from './ListLink';
 export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';
 export { PageDescription } from './PageDescription';

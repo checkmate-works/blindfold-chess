@@ -12,7 +12,7 @@ import {
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCategoryIcon } from './_lib/constants';
-import { getPublishedPosts } from './_lib/queries';
+import { getCategories } from './_lib/queries';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -32,7 +32,7 @@ export default async function PostsPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'posts' });
 
-  const posts = await getPublishedPosts();
+  const categories = await getCategories();
 
   return (
     <div className="space-y-8">
@@ -40,19 +40,23 @@ export default async function PostsPage({ params }: Props) {
 
       <PageDescription>{t('pageDescription')}</PageDescription>
 
-      <SectionTitle>{t('postsListTitle')}</SectionTitle>
+      <SectionTitle>{t('categoriesListTitle')}</SectionTitle>
 
-      {posts.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
+      {categories.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('noCategories')}</p>
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
+          {categories.map((category) => (
             <CardLink
-              key={post.id}
-              href={`/posts/${post.category.slug}/${post.slug}`}
-              icon={getCategoryIcon(post.category.slug)}
-              title={post.title}
-              description={post.content.replace(/^#.*\n/, '').slice(0, 100)}
+              key={category.id}
+              href={`/posts/${category.slug}`}
+              icon={getCategoryIcon(category.slug)}
+              title={t(`categories.${category.slug}` as 'categories.updates' | 'categories.blog')}
+              description={t('categoryDescription', {
+                category: t(
+                  `categories.${category.slug}` as 'categories.updates' | 'categories.blog'
+                ),
+              })}
               locale={locale}
             />
           ))}

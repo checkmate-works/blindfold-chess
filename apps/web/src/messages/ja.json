@@ -1159,6 +1159,8 @@
     "categoryDescription": "{category}カテゴリの投稿",
     "noPosts": "投稿はまだありません。",
     "postsListTitle": "すべての投稿",
+    "categoriesListTitle": "カテゴリ一覧",
+    "noCategories": "カテゴリはまだありません。",
     "categories": {
       "updates": "更新情報",
       "blog": "ブログ"

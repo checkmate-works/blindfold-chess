@@ -4,8 +4,9 @@ import { notFound } from 'next/navigation';
 
 import {
   Breadcrumb,
-  CardLink,
   Divider,
+  ListLink,
+  ListLinkContainer,
   PageDescription,
   PageTitle,
   SectionTitle,
@@ -59,18 +60,28 @@ export default async function CategoryPostsPage({ params }: Props) {
       {posts.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
       ) : (
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <CardLink
-              key={post.id}
-              href={`/posts/${category}/${post.slug}`}
-              icon={getCategoryIcon(category)}
-              title={post.title}
-              description={post.content.replace(/^#.*\n/, '').slice(0, 100)}
-              locale={locale}
-            />
-          ))}
-        </div>
+        <ListLinkContainer>
+          {posts.map((post) => {
+            const publishedDate = post.publishedAt
+              ? new Date(post.publishedAt).toLocaleDateString(locale, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })
+              : undefined;
+
+            return (
+              <ListLink
+                key={post.id}
+                href={`/posts/${category}/${post.slug}`}
+                icon={getCategoryIcon(category)}
+                title={post.title}
+                meta={publishedDate}
+                locale={locale}
+              />
+            );
+          })}
+        </ListLinkContainer>
       )}
 
       <Divider />

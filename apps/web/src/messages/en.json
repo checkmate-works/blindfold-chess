@@ -1159,6 +1159,8 @@
     "categoryDescription": "Posts in the {category} category",
     "noPosts": "No posts yet.",
     "postsListTitle": "All Posts",
+    "categoriesListTitle": "Categories",
+    "noCategories": "No categories yet.",
     "categories": {
       "updates": "Updates",
       "blog": "Blog"
