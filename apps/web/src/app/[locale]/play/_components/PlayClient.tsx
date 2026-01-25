@@ -40,7 +40,6 @@ import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveNavigationControls } from './MoveNavigationControls';
 import { MoveSelect } from './MoveSelect';
-import { SaveIndicator } from './SaveIndicator';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
@@ -239,7 +238,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [initialGameId]); // Run only once on mount
 
   // Auto-save hook
-  const { markPlayerInteraction, gameId, isSaving, lastSavedAt } = useAutoSave({
+  const { markPlayerInteraction, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -828,12 +827,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   )}
                 </div>
 
-                {/* Toggle & Save Indicator */}
+                {/* Toggle Button */}
                 {isPlayerTurn && (
-                  <div className="flex items-center">
-                    <div className="flex-1">
-                      <SaveIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
-                    </div>
+                  <div className="flex items-center justify-end">
                     <button
                       onClick={() =>
                         updatePreferences({
