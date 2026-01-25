@@ -485,8 +485,11 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
     return () => {
       isCancelled = true;
-      // Reset processing state on cleanup to allow fresh start on re-mount
+      // Reset processing and loading state on cleanup
+      // This is important when the effect re-runs after AI move is added (moves changes)
+      // Without this, isLoading stays true and MoveInput becomes disabled
       isProcessingRef.current = false;
+      setIsLoading(false);
     };
   }, [shouldMakeAiMove, gameStatus, moves, getAiMove, pushMove, getLastMoveDetails, startingFen]);
 
