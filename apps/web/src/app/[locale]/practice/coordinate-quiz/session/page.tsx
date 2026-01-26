@@ -14,6 +14,7 @@ type Props = {
   searchParams: Promise<{
     timeLimit?: string;
     boardOrientation?: string;
+    feedbackSpeed?: string;
   }>;
 };
 
@@ -30,11 +31,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CoordinateQuizSessionPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { timeLimit, boardOrientation } = await searchParams;
+  const { timeLimit, boardOrientation, feedbackSpeed } = await searchParams;
   const t = await getTranslations({ locale });
 
   const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
   const orientationValue = boardOrientation || 'white';
+  const feedbackSpeedValue = feedbackSpeed || 'normal';
 
   return (
     <div className="space-y-8">
@@ -44,6 +46,7 @@ export default async function CoordinateQuizSessionPage({ params, searchParams }
         locale={locale}
         initialTimeLimit={timeLimitValue}
         initialBoardOrientation={orientationValue}
+        initialFeedbackSpeed={feedbackSpeedValue}
       />
 
       <Divider />

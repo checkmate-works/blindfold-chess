@@ -347,7 +347,13 @@
       "white": "白番",
       "black": "黒番",
       "random": "ランダム",
-      "start": "練習を開始",
+      "feedbackSpeed": "フィードバック速度",
+      "feedbackSpeeds": {
+        "fast": "早い",
+        "normal": "普通",
+        "slow": "遅い"
+      },
+      "start": "開始",
       "clickSquare": "このマスをクリック",
       "whiteToMove": "白番",
       "blackToMove": "黒番",

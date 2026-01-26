@@ -45,23 +45,25 @@ export function TimeSlider({
   };
 
   return (
-    <div>
-      <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground mb-2">
+    <div className="flex flex-col gap-2">
+      <label htmlFor="timeLimit" className="block text-sm font-medium text-foreground">
         {labels.timeLimit}: {getTimeDisplay()}
       </label>
-      <input
-        id="timeLimit"
-        type="range"
-        min="30"
-        max="180"
-        step="30"
-        value={timeLimit}
-        onChange={(e) => onTimeLimitChange(parseInt(e.target.value))}
-        className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
-      />
-      <div className="flex justify-between text-xs text-muted-foreground mt-1">
-        <span>{formatLabel(30)}</span>
-        <span>{formatLabel(180)}</span>
+      <div>
+        <input
+          id="timeLimit"
+          type="range"
+          min="30"
+          max="180"
+          step="30"
+          value={timeLimit}
+          onChange={(e) => onTimeLimitChange(parseInt(e.target.value))}
+          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-foreground"
+        />
+        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+          <span>{formatLabel(30)}</span>
+          <span>{formatLabel(180)}</span>
+        </div>
       </div>
     </div>
   );

@@ -347,7 +347,13 @@
       "white": "White",
       "black": "Black",
       "random": "Random",
-      "start": "Start Quiz",
+      "feedbackSpeed": "Feedback Speed",
+      "feedbackSpeeds": {
+        "fast": "Fast",
+        "normal": "Normal",
+        "slow": "Slow"
+      },
+      "start": "Start",
       "clickSquare": "Click on this square",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move",

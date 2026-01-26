@@ -38,7 +38,7 @@ export function CoordinateQuizPlaying({
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   return (
-    <div>
+    <div id="quiz-session">
       {/* Timer display with score */}
       <TimeDisplay
         timeRemaining={timeRemaining}

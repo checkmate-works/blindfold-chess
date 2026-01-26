@@ -9,7 +9,8 @@ import { Square } from 'chess.js';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
-import type { BoardOrientation, CoordinateQuestion } from '../_lib/types';
+import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../_lib/types';
+import { FEEDBACK_SPEED_MS } from '../_lib/types';
 import { calculateScore, checkAnswer, generateSingleQuestion } from '../_lib/utils';
 import { CoordinateQuizPlaying } from './CoordinateQuizPlaying';
 
@@ -17,18 +18,22 @@ type Props = {
   locale: Locale;
   initialTimeLimit: number;
   initialBoardOrientation: string;
+  initialFeedbackSpeed: string;
 };
 
 export default function CoordinateQuizSession({
   locale,
   initialTimeLimit,
   initialBoardOrientation,
+  initialFeedbackSpeed,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
 
   const timeLimit = initialTimeLimit;
   const boardOrientation = initialBoardOrientation as BoardOrientation;
+  const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
+  const feedbackDuration = FEEDBACK_SPEED_MS[feedbackSpeed];
 
   // Game state
   const [currentQuestion, setCurrentQuestion] = useState<CoordinateQuestion | null>(null);
@@ -44,6 +49,7 @@ export default function CoordinateQuizSession({
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasStarted = useRef(false);
+  const hasScrolled = useRef(false);
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -54,6 +60,17 @@ export default function CoordinateQuizSession({
     setCurrentQuestion(firstQuestion);
     setRecentSquares([firstQuestion.targetSquare]);
   }, [boardOrientation]);
+
+  // Scroll to quiz-session element after first question is rendered
+  useEffect(() => {
+    if (!currentQuestion || hasScrolled.current) return;
+    hasScrolled.current = true;
+
+    const element = document.getElementById('quiz-session');
+    if (element) {
+      element.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  }, [currentQuestion]);
 
   // Start timer
   useEffect(() => {
@@ -104,9 +121,9 @@ export default function CoordinateQuizSession({
         setCurrentQuestion(nextQuestion);
         setShowFeedback(false);
         setLastClickedSquare(null);
-      }, 800);
+      }, feedbackDuration);
     },
-    [isFinished, currentQuestion, showFeedback, boardOrientation, recentSquares]
+    [isFinished, currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration]
   );
 
   const handlePlayAgain = () => {

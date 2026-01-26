@@ -9,30 +9,34 @@ import { FaPlay } from 'react-icons/fa';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { BoardOrientation } from '../_lib/types';
+import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 
 type Props = {
   locale: Locale;
   timeLimit: number;
   boardOrientation: BoardOrientation;
+  feedbackSpeed: FeedbackSpeed;
   onTimeLimitChange: (value: number) => void;
   onBoardOrientationChange: (value: BoardOrientation) => void;
+  onFeedbackSpeedChange: (value: FeedbackSpeed) => void;
 };
 
 export function CoordinateQuizSetup({
   locale,
   timeLimit,
   boardOrientation,
+  feedbackSpeed,
   onTimeLimitChange,
   onBoardOrientationChange,
+  onFeedbackSpeedChange,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const router = useRouter();
 
   const handleStart = () => {
     router.push(
-      `/${locale}/practice/coordinate-quiz/session?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}`
+      `/${locale}/practice/coordinate-quiz/session?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#quiz-session`
     );
   };
 
@@ -44,8 +48,10 @@ export function CoordinateQuizSetup({
         <CoordinateQuizSettings
           timeLimit={timeLimit}
           boardOrientation={boardOrientation}
+          feedbackSpeed={feedbackSpeed}
           onTimeLimitChange={onTimeLimitChange}
           onBoardOrientationChange={onBoardOrientationChange}
+          onFeedbackSpeedChange={onFeedbackSpeedChange}
         />
 
         <Button

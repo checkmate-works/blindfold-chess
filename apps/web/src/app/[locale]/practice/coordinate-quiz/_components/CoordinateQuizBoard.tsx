@@ -2,6 +2,10 @@
 
 import { Square } from 'chess.js';
 
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type Props = {
   orientation: 'white' | 'black';
   onSquareClick: (square: Square) => void;
@@ -13,6 +17,8 @@ export function CoordinateQuizBoard({
   onSquareClick,
   highlightedSquares = {},
 }: Props) {
+  const { preferences } = useGamePreferences();
+  const themeColors = getBoardThemeColors(preferences.boardTheme);
   const files =
     orientation === 'white'
       ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -59,12 +65,7 @@ export function CoordinateQuizBoard({
                     w-[12.5%] h-full relative
                     transition-all duration-200
                     hover:brightness-110 active:brightness-90
-                    ${
-                      highlightColor ||
-                      (isLight
-                        ? 'bg-stone-200 dark:bg-stone-300'
-                        : 'bg-stone-600 dark:bg-stone-700')
-                    }
+                    ${highlightColor || (isLight ? themeColors.light : themeColors.dark)}
                   `}
                   aria-label={square}
                 ></button>
