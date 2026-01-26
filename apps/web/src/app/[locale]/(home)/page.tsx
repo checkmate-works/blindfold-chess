@@ -18,6 +18,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { AdContainer } from '@/components/Ad';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
@@ -62,9 +63,11 @@ export default async function HomePage({ params }: Props) {
 
       <GameListClient locale={locale} />
 
-      <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
-        <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
+          <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
