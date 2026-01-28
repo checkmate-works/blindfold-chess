@@ -1,7 +1,7 @@
 {
   "name": "mobile",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "./index.js",
   "scripts": {
     "start": "expo start",
     "dev": "expo start",
@@ -12,17 +12,24 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.4",
-    "@blindfold-chess/core": "workspace:^",
-    "@react-native-async-storage/async-storage": "^2.2.0",
-    "expo": "~54.0.31",
-    "expo-modules-core": "^3.0.29",
+    "@expo/metro-runtime": "~6.1.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~54.0.30",
+    "expo-constants": "~18.0.12",
+    "expo-haptics": "~14.1.2",
+    "expo-linking": "~8.0.11",
+    "expo-localization": "~16.1.2",
+    "expo-router": "~6.0.21",
     "expo-status-bar": "~3.0.9",
-    "invariant": "^2.2.4",
+    "i18next": "^25.2.1",
+    "lucide-react-native": "^0.563.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react-i18next": "^16.1.0",
     "react-native": "0.81.5",
-    "react-native-web": "^0.21.2"
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-svg": "^15.11.2"
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",

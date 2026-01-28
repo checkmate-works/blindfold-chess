@@ -1,0 +1,63 @@
+{
+  "common": {
+    "start": "Start",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "settings": "Settings",
+    "home": "Home",
+    "practice": "Practice"
+  },
+  "tabs": {
+    "home": "Home",
+    "practice": "Practice",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Blindfold Chess",
+    "welcome": "Welcome back!",
+    "startPractice": "Start Practice"
+  },
+  "practice": {
+    "title": "Practice",
+    "coordinateQuiz": {
+      "title": "Coordinate Quiz",
+      "description": "Test your board visualization by finding squares"
+    }
+  },
+  "coordinateQuiz": {
+    "setup": {
+      "title": "Quiz Settings",
+      "duration": "Duration",
+      "durationSeconds": "{{seconds}} seconds",
+      "orientation": "Board Orientation",
+      "orientationWhite": "White",
+      "orientationBlack": "Black",
+      "orientationRandom": "Random",
+      "feedbackSpeed": "Feedback Speed",
+      "feedbackFast": "Fast",
+      "feedbackNormal": "Normal",
+      "feedbackSlow": "Slow",
+      "startQuiz": "Start Quiz"
+    },
+    "session": {
+      "findSquare": "Find",
+      "timeRemaining": "Time Remaining",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "score": "Score",
+      "whiteToMove": "White to move",
+      "blackToMove": "Black to move"
+    },
+    "result": {
+      "title": "Quiz Complete!",
+      "totalQuestions": "Total Questions",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "averageTime": "Avg. Time",
+      "points": "Points",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    }
+  }
+}
