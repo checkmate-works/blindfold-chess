@@ -26,12 +26,14 @@ When this skill is invoked with a version number:
 
 ### Step 2: Generate Release Content
 
-Create release content in **Markdown format** for both English and Japanese.
+Create release content in **Markdown format** (English only for now).
+
+**Title format**: `Version <version> released 🎉` (e.g., "Version v0.3.0 released 🎉")
 
 The content should follow this structure:
 
 ```markdown
-# <Catchy title summarizing the main changes>
+# Version v0.3.0 released 🎉
 
 ## What's new
 
@@ -42,7 +44,7 @@ The content should follow this structure:
 
 Guidelines for content:
 
-- Title should be concise and highlight the most significant change
+- Title must follow the format: "Version vX.X.X released 🎉"
 - Group related changes together
 - Use clear, user-friendly language (not developer jargon)
 - Include links to relevant features where appropriate (e.g., `/en/features/fen-practice`)
@@ -52,7 +54,7 @@ Guidelines for content:
 
 Present the generated content to the user:
 
-- Show both English and Japanese versions
+- Show the English version
 - Ask if the content is acceptable or needs modifications
 - If modifications are requested, update and present again
 
@@ -112,7 +114,7 @@ After updating CHANGELOG.md:
 
 ### Step 6: Output SQL
 
-Generate INSERT statements and write to a temporary file.
+Generate INSERT statement (English only) and write to a temporary file.
 
 **File location**: `/tmp/release-web-<version>.sql` (e.g., `/tmp/release-web-v0.3.0.sql`)
 
@@ -122,26 +124,13 @@ Generate INSERT statements and write to a temporary file.
 -- Release notes for web/<version>
 -- Generated: <current datetime>
 
--- English version
 INSERT INTO posts (slug, title, content, category_id, locale, status, published_at)
 VALUES (
   '<version>',
-  '<English title>',
+  'Version <version> released 🎉',
   '<English content>',
   (SELECT id FROM categories WHERE slug = 'updates'),
   'en',
-  'published',
-  NOW()
-);
-
--- Japanese version
-INSERT INTO posts (slug, title, content, category_id, locale, status, published_at)
-VALUES (
-  '<version>',
-  '<Japanese title>',
-  '<Japanese content>',
-  (SELECT id FROM categories WHERE slug = 'updates'),
-  'ja',
   'published',
   NOW()
 );
@@ -170,7 +159,7 @@ After writing the file:
 This will:
 
 1. Analyze changes from the previous web tag to HEAD
-2. Generate English and Japanese release notes
+2. Generate English release notes
 3. After user approval, update `apps/web/CHANGELOG.md`
 4. Create git tag `web/v0.3.0`
-5. Write SQL to `/tmp/release-web-v0.3.0.sql`
+5. Write SQL (English only) to `/tmp/release-web-v0.3.0.sql`
