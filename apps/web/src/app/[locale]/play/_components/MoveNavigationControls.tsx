@@ -19,8 +19,9 @@ export function MoveNavigationControls({
     <div className="flex justify-center gap-1">
       <button
         onClick={onNavigateToStart}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
         aria-label="Go to start"
+        disabled={isPreviousDisabled}
         style={{ fontSize: '24px' }}
       >
         «
@@ -45,8 +46,9 @@ export function MoveNavigationControls({
       </button>
       <button
         onClick={onNavigateToEnd}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
         aria-label="Go to end"
+        disabled={isNextDisabled}
         style={{ fontSize: '24px' }}
       >
         »

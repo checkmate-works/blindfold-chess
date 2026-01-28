@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,6 +16,7 @@ import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
+import { useMoveNavigation } from '@/app/[locale]/play/_hooks/use-move-navigation';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { ColorSelector } from './ColorSelector';
@@ -40,7 +41,6 @@ export function NewGameForm({ locale }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
@@ -59,28 +59,27 @@ export function NewGameForm({ locale }: Props) {
     }
   }, [pgn]);
 
-  // Calculate FEN for a given position
-  const getFenAtPosition = useCallback(
-    (position: number): string => {
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-      const movesToApply = position === -1 ? pgnMoves : pgnMoves.slice(0, position + 1);
-      for (const move of movesToApply) {
-        chess.move(move);
-      }
-      return chess.fen();
-    },
-    [pgnMoves, startingFen]
-  );
+  // Use navigation hook
+  const {
+    currentPosition,
+    displayFen: hookDisplayFen,
+    navigateToPosition,
+    navigateToStart,
+    navigatePrevious,
+    navigateNext,
+    navigateToEnd,
+    latestFen,
+  } = useMoveNavigation({
+    moves: pgnMoves,
+    startingFen,
+  });
 
   // Current display FEN
   const displayFen = useMemo(() => {
-    if (pgnMoves.length === 0) {
-      // Use custom starting FEN if available, otherwise standard position
-      return startingFen || new Chess().fen();
-    }
-    return getFenAtPosition(currentPosition);
-  }, [pgnMoves, currentPosition, getFenAtPosition, startingFen]);
+    if (hookDisplayFen) return hookDisplayFen;
+    // Default to latest position (calculated by hook)
+    return latestFen;
+  }, [hookDisplayFen, latestFen]);
 
   // Format moves for display
   const formattedPgn = useMemo(() => {
@@ -116,54 +115,6 @@ export function NewGameForm({ locale }: Props) {
       return null;
     }
   }, [pgnMoves, currentPosition, startingFen]);
-
-  // Navigation functions
-  const navigateToPosition = useCallback(
-    (position: number) => {
-      if (position === -1 || position >= pgnMoves.length) {
-        setCurrentPosition(-1);
-      } else {
-        setCurrentPosition(position);
-      }
-    },
-    [pgnMoves.length]
-  );
-
-  const navigateToStart = useCallback(() => {
-    setCurrentPosition(-2); // Special value to indicate start position
-  }, []);
-
-  const navigateToEnd = useCallback(() => {
-    setCurrentPosition(-1);
-  }, []);
-
-  const navigatePrevious = useCallback(() => {
-    if (currentPosition === -2) return;
-    if (currentPosition === -1) {
-      if (pgnMoves.length > 0) {
-        navigateToPosition(pgnMoves.length - 2);
-      }
-    } else if (currentPosition === 0) {
-      navigateToStart();
-    } else {
-      navigateToPosition(currentPosition - 1);
-    }
-  }, [currentPosition, pgnMoves.length, navigateToPosition, navigateToStart]);
-
-  const navigateNext = useCallback(() => {
-    if (currentPosition === -2) {
-      if (pgnMoves.length > 0) {
-        navigateToPosition(0);
-      }
-    } else if (currentPosition === -1) {
-      return;
-    } else {
-      const newPosition = currentPosition + 1;
-      if (newPosition < pgnMoves.length) {
-        navigateToPosition(newPosition);
-      }
-    }
-  }, [currentPosition, pgnMoves.length, navigateToPosition]);
 
   // Initialize from URL parameters
   useEffect(() => {
@@ -316,7 +267,7 @@ export function NewGameForm({ locale }: Props) {
           <SectionTitle>{t('pgnTitle')}</SectionTitle>
           <PgnInput value={pgn} onChange={handlePgnChange} />
           {/* Preview Button - show when PGN is valid */}
-          {pgnMoves.length > 0 && (
+          {(pgnMoves.length > 0 || startingFen) && (
             <div className="flex justify-center">
               <Button
                 variant="outline"

@@ -31,6 +31,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useAiVersus } from '../_hooks/use-ai-versus';
 import { useAutoSave } from '../_hooks/use-auto-save';
+import { useMoveNavigation } from '../_hooks/use-move-navigation';
 import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
 import { formatPgnToText } from '../_lib/pgn-parser';
@@ -145,8 +146,22 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [savedGameStatus, setSavedGameStatus] = useState<
     'in_progress' | 'win' | 'loss' | 'draw' | null
   >(null);
-  const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
-  const [displayFen, setDisplayFen] = useState<string | null>(null);
+
+  // Navigation hook
+  const {
+    currentPosition,
+    displayFen: hookDisplayFen,
+    navigateToPosition,
+    navigateToStart,
+    navigatePrevious,
+    navigateNext,
+    navigateToEnd,
+    resetNavigation,
+  } = useMoveNavigation({
+    moves,
+    startingFen,
+  });
+
   const previousMovesLength = useRef(moves.length);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isMovesVisible, setIsMovesVisible] = useState(false);
@@ -585,12 +600,18 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     setLastMove(getLastMoveDetails(newMoves));
 
     // Reset to latest position after restart
-    setCurrentPosition(-1);
-    setDisplayFen(null);
+    resetNavigation();
 
     setShowRestartConfirm(false);
     setRestartPosition(null);
-  }, [restartPosition, moves, removeMoves, getLastMoveDetails, markPlayerInteraction]);
+  }, [
+    restartPosition,
+    moves,
+    removeMoves,
+    getLastMoveDetails,
+    markPlayerInteraction,
+    resetNavigation,
+  ]);
 
   // Handle new game from position
   const handleNewGameFromPosition = useCallback(
@@ -656,99 +677,19 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     [markPlayerInteraction, searchParams, router, gameId]
   );
 
-  // Navigation functions for move history
-  const navigateToPosition = useCallback(
-    (position: number) => {
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-
-      // Reset board
-      if (position === -1 || position >= moves.length) {
-        // Show latest position
-        setCurrentPosition(-1);
-        setDisplayFen(null);
-        return;
-      }
-
-      // Apply moves up to the specified position
-      const movesToApply = moves.slice(0, position + 1);
-      try {
-        for (const move of movesToApply) {
-          chess.move(move);
-        }
-        setCurrentPosition(position);
-        setDisplayFen(chess.fen());
-      } catch (error) {
-        console.error('Error navigating to position:', error);
-        setCurrentPosition(-1);
-        setDisplayFen(null);
-      }
-    },
-    [moves, startingFen]
-  );
-
-  const navigateToStart = useCallback(() => {
-    // Show initial position (before any moves)
-    // Use custom FEN if available, otherwise standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
-    setDisplayFen(chess.fen());
-    setCurrentPosition(-2); // Special value to indicate start position
-  }, [startingFen]);
-
-  const navigateToEnd = useCallback(() => {
-    setCurrentPosition(-1);
-    setDisplayFen(null);
-  }, []);
-
-  const navigatePrevious = useCallback(() => {
-    if (currentPosition === -2) {
-      // Already at start, can't go back further
-      return;
-    }
-
-    if (currentPosition === -1) {
-      // From latest position, go to the move before the last
-      if (moves.length > 0) {
-        navigateToPosition(moves.length - 2);
-      }
-    } else if (currentPosition === 0) {
-      // From first move, go to start position
-      navigateToStart();
-    } else {
-      // Normal navigation
-      navigateToPosition(currentPosition - 1);
-    }
-  }, [currentPosition, moves.length, navigateToPosition, navigateToStart]);
-
-  const navigateNext = useCallback(() => {
-    if (currentPosition === -2) {
-      // From start position, go to first move
-      if (moves.length > 0) {
-        navigateToPosition(0);
-      }
-    } else if (currentPosition === -1) {
-      // Already at latest position, can't go forward
-      return;
-    } else {
-      const newPosition = currentPosition + 1;
-      if (newPosition < moves.length) {
-        navigateToPosition(newPosition);
-      }
-    }
-  }, [currentPosition, moves.length, navigateToPosition]);
-
   // Reset to latest position when new moves are added
   useEffect(() => {
     // Only reset to latest position if moves were added (not removed)
     if (moves.length > previousMovesLength.current) {
-      setCurrentPosition(-1);
-      setDisplayFen(null);
+      resetNavigation();
     }
     previousMovesLength.current = moves.length;
-  }, [moves.length]); // Only trigger when moves length changes
+  }, [moves.length, resetNavigation]); // Only trigger when moves length changes
 
   // Get current FEN for board display
   const currentFen = getFen();
+  // Use hook displayFen if available, otherwise default to current FEN
+  const displayFen = hookDisplayFen;
   const formattedPgn = getFormattedPgn();
 
   // Update parent component with AI's last move
