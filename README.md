@@ -84,6 +84,19 @@ The root `package.json` has version `0.0.0` and is **not versioned**. It serves 
 
 Each application (`apps/web`, `apps/mobile`, etc.) maintains its own independent version following Semantic Versioning.
 
+### Git Tag Format
+
+Git tags use a prefix to identify the application:
+
+- **Web app**: `web/v0.1.0`, `web/v0.2.0`, ...
+- **Mobile app**: `mobile/v0.1.0`, `mobile/v0.2.0`, ... (planned)
+
+Example:
+
+```bash
+git tag -a web/v0.3.0 -m "Release web v0.3.0"
+```
+
 Changelogs:
 
 - [apps/web/CHANGELOG.md](apps/web/CHANGELOG.md)
