@@ -109,6 +109,19 @@ export function FenSession({
     }
   }, [hasMounted, problemCount, shuffle, customFen, fens]);
 
+  // Scroll to session element after mount
+  useEffect(() => {
+    if (!hasMounted) return;
+
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('fen-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }, [hasMounted]);
+
   // Game state
   const [phase, setPhase] = useState<GamePhase>('recreate');
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -230,19 +243,21 @@ export function FenSession({
   if (phase === 'recreate' && originalPosition) {
     return (
       <>
-        <FenRecreate
-          originalPosition={originalPosition}
-          recreatedPosition={recreatedPosition}
-          currentProblemIndex={currentProblemIndex}
-          problemCount={positions.length}
-          boardTheme={preferences.boardTheme}
-          showCoordinates={preferences.showCoordinates}
-          isTutorial={isTutorial}
-          onPositionChange={setRecreatedPosition}
-          onSubmit={handleSubmit}
-          onSkip={handleSkip}
-          onQuit={handleQuitClick}
-        />
+        <div id="fen-session">
+          <FenRecreate
+            originalPosition={originalPosition}
+            recreatedPosition={recreatedPosition}
+            currentProblemIndex={currentProblemIndex}
+            problemCount={positions.length}
+            boardTheme={preferences.boardTheme}
+            showCoordinates={preferences.showCoordinates}
+            isTutorial={isTutorial}
+            onPositionChange={setRecreatedPosition}
+            onSubmit={handleSubmit}
+            onSkip={handleSkip}
+            onQuit={handleQuitClick}
+          />
+        </div>
         <QuitConfirmModal
           isOpen={showQuitModal}
           onConfirm={handleQuitConfirm}

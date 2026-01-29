@@ -89,15 +89,51 @@ export function PositionMemorySession({
     }
   }, [skipMemorize, state.value, positions.length, send]);
 
+  // Countdown state
+  const [countdown, setCountdown] = useState<number | null>(3);
+
+  // Scroll to session element after mount
+  useEffect(() => {
+    if (!hasMounted) return;
+
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('position-memory-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }, [hasMounted]);
+
+  // Countdown effect
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      const timer = setTimeout(() => {
+        setCountdown(null);
+      }, 500); // Show "START!" for 0.5s
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
   // Timer effect for memorize phase
   useEffect(() => {
+    if (countdown !== null) return; // Don't start timer during countdown
+
     if (state.value === 'memorize' && state.context.memorizeTimeLeft >= 0) {
       const timer = setTimeout(() => {
         send({ type: 'TICK' });
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [state.value, state.context.memorizeTimeLeft, send]);
+  }, [state.value, state.context.memorizeTimeLeft, send, countdown]);
 
   // Derive values from state context
   const {
@@ -244,7 +280,7 @@ export function PositionMemorySession({
   // Memorize phase
   if (state.value === 'memorize' && originalPosition) {
     return (
-      <>
+      <div id="position-memory-session">
         <PositionMemoryMemorize
           position={originalPosition}
           memorizeTimeLeft={memorizeTimeLeft}
@@ -254,6 +290,8 @@ export function PositionMemorySession({
           onMemorized={handleMemorized}
           onSkip={handleSkip}
           onQuit={handleQuitClick}
+          countdown={countdown}
+          timeLimit={timeLimit}
         />
         <QuitConfirmModal
           isOpen={showQuitModal}
@@ -261,7 +299,7 @@ export function PositionMemorySession({
           onCancel={handleQuitCancel}
           labels={quitModalLabels}
         />
-      </>
+      </div>
     );
   }
 

@@ -25,6 +25,7 @@ type Props = {
   autoPlay?: boolean;
   flipped?: boolean;
   boardTheme?: BoardTheme;
+  children?: React.ReactNode;
 };
 
 export function AnimatedChessBoard({
@@ -36,6 +37,7 @@ export function AnimatedChessBoard({
   autoPlay = false,
   flipped = false,
   boardTheme = 'default',
+  children,
 }: Props) {
   const [currentFen, setCurrentFen] = useState(initialFen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -370,6 +372,8 @@ export function AnimatedChessBoard({
 
           {/* Animating piece */}
           {animatingPiece && <div style={animatingPieceStyle}>{renderAnimatingPiece()}</div>}
+
+          {children}
         </div>
       </div>
 

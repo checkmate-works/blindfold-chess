@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -52,6 +52,17 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
     window.location.href = `/${locale}/practice/algebraic-notation`;
   }, [locale]);
 
+  // Scroll to session element after mount
+  useEffect(() => {
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('algebraic-notation-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }, []);
+
   if (completed) {
     return (
       <PracticeComplete
@@ -70,7 +81,7 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div id="algebraic-notation-session" className="space-y-4">
       <div className="bg-card rounded-md shadow-sm border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress bar */}

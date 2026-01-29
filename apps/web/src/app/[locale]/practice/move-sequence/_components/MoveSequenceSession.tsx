@@ -45,6 +45,19 @@ export function MoveSequenceSession({
   const [result, setResult] = useState<MoveSequenceSessionResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(error);
 
+  // Scroll to session element after mount
+  useEffect(() => {
+    if (!data) return;
+
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('move-sequence-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }, [data]);
+
   // Parse FEN and PGN on mount
   useEffect(() => {
     if (error) {
@@ -116,27 +129,37 @@ export function MoveSequenceSession({
     );
   }
 
-  switch (phase) {
-    case 'memorize':
-      return <MoveSequenceMemorize data={data} onComplete={handleMemorizeComplete} />;
+  return (
+    <div id="move-sequence-session">
+      {(() => {
+        switch (phase) {
+          case 'memorize':
+            return <MoveSequenceMemorize data={data} onComplete={handleMemorizeComplete} />;
 
-    case 'recall':
-      return (
-        <MoveSequenceRecall data={data} onComplete={handleRecallComplete} onQuit={handleQuit} />
-      );
+          case 'recall':
+            return (
+              <MoveSequenceRecall
+                data={data}
+                onComplete={handleRecallComplete}
+                onQuit={handleQuit}
+              />
+            );
 
-    case 'result':
-      if (!result) return null;
-      return (
-        <MoveSequenceResult
-          result={result}
-          isTutorial={isTutorial}
-          onTryAgain={handleTryAgain}
-          onFinishTutorial={handleFinishTutorial}
-        />
-      );
+          case 'result':
+            if (!result) return null;
+            return (
+              <MoveSequenceResult
+                result={result}
+                isTutorial={isTutorial}
+                onTryAgain={handleTryAgain}
+                onFinishTutorial={handleFinishTutorial}
+              />
+            );
 
-    default:
-      return null;
-  }
+          default:
+            return null;
+        }
+      })()}
+    </div>
+  );
 }

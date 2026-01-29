@@ -42,7 +42,7 @@ export function KnightTourSetup({
       params.set('blindfold', '1');
     }
 
-    router.push(`/${locale}/practice/knight-tour/session?${params.toString()}`);
+    router.push(`/${locale}/practice/knight-tour/session?${params.toString()}#knight-tour-session`);
   };
 
   return (

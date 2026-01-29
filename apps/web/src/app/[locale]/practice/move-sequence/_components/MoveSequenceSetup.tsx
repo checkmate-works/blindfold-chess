@@ -253,7 +253,9 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     }
 
     // Navigate to session page
-    router.push(`/${locale}/practice/move-sequence/session?${params.toString()}`);
+    router.push(
+      `/${locale}/practice/move-sequence/session?${params.toString()}#move-sequence-session`
+    );
   };
 
   // Validate FEN and PGN and return translated error message

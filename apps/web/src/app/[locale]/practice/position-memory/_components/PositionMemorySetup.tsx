@@ -244,7 +244,9 @@ export function PositionMemorySetup({
     }
 
     // Navigate to session page
-    router.push(`/${locale}/practice/position-memory/session?${params.toString()}`);
+    router.push(
+      `/${locale}/practice/position-memory/session?${params.toString()}#position-memory-session`
+    );
   };
 
   return (

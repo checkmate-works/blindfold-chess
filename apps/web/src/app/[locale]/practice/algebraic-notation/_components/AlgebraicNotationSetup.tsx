@@ -14,7 +14,7 @@ export function AlgebraicNotationSetup() {
   const t = useTranslations('practice.algebraicNotation');
 
   const handleStart = () => {
-    router.push(`/${locale}/practice/algebraic-notation/session`);
+    router.push(`/${locale}/practice/algebraic-notation/session#algebraic-notation-session`);
   };
 
   return (

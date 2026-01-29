@@ -148,7 +148,7 @@ export function FenSetup({ locale }: Props) {
       params.set('source', 'preset');
     }
 
-    router.push(`/${locale}/practice/fen/session?${params.toString()}`);
+    router.push(`/${locale}/practice/fen/session?${params.toString()}#fen-session`);
   };
 
   const handleResetConfirm = () => {

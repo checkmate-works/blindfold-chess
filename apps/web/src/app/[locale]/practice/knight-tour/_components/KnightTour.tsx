@@ -76,6 +76,21 @@ export default function KnightTour({
   const [visitedSquares, setVisitedSquares] = useState<Map<string, number>>(new Map());
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  // Scroll to session element after playing starts
+  useEffect(() => {
+    if (gameState !== 'playing' || hasScrolled) return;
+
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('knight-tour-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+        setHasScrolled(true);
+      }
+    }, 100);
+  }, [gameState, hasScrolled]);
 
   // Save settings when they change (only if not autoStart mode)
   useEffect(() => {
@@ -199,16 +214,18 @@ export default function KnightTour({
 
   return (
     <>
-      <PlayingComponent
-        currentSquare={currentSquare}
-        visitedSquares={visitedSquares}
-        availableMoves={availableMoves}
-        moveCount={visitedSquares.size}
-        onSquareClick={handleSquareClick}
-        onUndo={handleUndo}
-        onQuit={handleQuit}
-        canUndo={moveHistory.length > 1}
-      />
+      <div id="knight-tour-session">
+        <PlayingComponent
+          currentSquare={currentSquare}
+          visitedSquares={visitedSquares}
+          availableMoves={availableMoves}
+          moveCount={visitedSquares.size}
+          onSquareClick={handleSquareClick}
+          onUndo={handleUndo}
+          onQuit={handleQuit}
+          canUndo={moveHistory.length > 1}
+        />
+      </div>
       <QuitConfirmModal
         isOpen={showQuitModal}
         onConfirm={confirmQuit}
