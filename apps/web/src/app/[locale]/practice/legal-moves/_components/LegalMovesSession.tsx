@@ -31,7 +31,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
   const timeLimit = initialTimeLimit;
-  const [timeRemaining, setTimeRemaining] = useState(timeLimit);
+  const [timeElapsed, setTimeElapsed] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<MoveQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -47,27 +47,63 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasStarted = useRef(false);
 
+  // Countdown state
+  const [countdown, setCountdown] = useState<number | null>(3);
+  const [hasMounted, setHasMounted] = useState(false);
+
   // Auto-start the game on mount
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
+    setHasMounted(true);
 
     const newQuestions = generateBalancedMoveQuestions(100, selectedPieces);
     setQuestions(newQuestions);
     setQuestionStartTime(Date.now());
   }, [selectedPieces]);
 
+  // Scroll to session element after mount
+  useEffect(() => {
+    if (!hasMounted) return;
+
+    // Tiny delay to ensure DOM is ready
+    setTimeout(() => {
+      const element = document.getElementById('legal-moves-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+  }, [hasMounted]);
+
+  // Countdown effect
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      const timer = setTimeout(() => {
+        setCountdown(null);
+      }, 500); // Show "START!" for 0.5s
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
   // Timer effect
   useEffect(() => {
-    if (questions.length === 0 || isFinished) return;
+    if (questions.length === 0 || isFinished || countdown !== null || showResult) return;
 
     timerRef.current = setInterval(() => {
-      setTimeRemaining((prev: number) => {
-        if (prev <= 1) {
+      setTimeElapsed((prev) => {
+        const newTime = prev + 1;
+        if (newTime >= timeLimit) {
           setIsFinished(true);
-          return 0;
         }
-        return prev - 1;
+        return newTime;
       });
     }, 1000);
 
@@ -76,11 +112,11 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         clearInterval(timerRef.current);
       }
     };
-  }, [questions.length, isFinished]);
+  }, [questions.length, isFinished, countdown, timeLimit, showResult]);
 
   const handleAnswer = useCallback(
     (userAnswer: boolean) => {
-      if (isFinished) return;
+      if (isFinished || countdown !== null || showResult) return;
 
       const currentQuestion = questions[currentIndex];
       const isLegal = isLegalMove(currentQuestion.from, currentQuestion.to, currentQuestion.piece);
@@ -103,7 +139,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         setQuestionStartTime(Date.now());
       }, 500);
     },
-    [currentIndex, questions, isFinished, questionStartTime]
+    [currentIndex, questions, isFinished, questionStartTime, countdown, showResult]
   );
 
   const getStats = (): GameStats => {
@@ -124,7 +160,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     setCurrentIndex(0);
     setAnswers([]);
     setQuestionTimes([]);
-    setTimeRemaining(timeLimit);
+    setTimeElapsed(0);
     setShowResult(false);
     setLastAnswer(null);
     setIsFinished(false);
@@ -135,7 +171,6 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     const stats = getStats();
     const total = answers.length;
     const accuracy = total > 0 ? (stats.correct / total) * 100 : 0;
-    const timeElapsed = timeLimit - timeRemaining;
 
     return (
       <PracticeResult
@@ -143,7 +178,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
           correct: stats.correct,
           total,
           accuracy,
-          timeElapsed,
+          timeElapsed: timeLimit,
           averageTime: stats.averageTime,
         }}
         onTryAgain={handlePlayAgain}
@@ -172,18 +207,20 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   }
 
   const currentQuestion = questions[currentIndex];
-  const timeElapsed = timeLimit - timeRemaining;
 
   return (
-    <LegalMovesPlaying
-      currentQuestion={currentQuestion}
-      timeRemaining={timeRemaining}
-      timeLimit={timeLimit}
-      timeElapsed={timeElapsed}
-      showResult={showResult}
-      lastAnswer={lastAnswer}
-      onAnswer={handleAnswer}
-      getQuestion={getQuestion}
-    />
+    <div id="legal-moves-session">
+      <LegalMovesPlaying
+        currentQuestion={currentQuestion}
+        timeRemaining={Math.max(0, timeLimit - timeElapsed)}
+        timeLimit={timeLimit}
+        timeElapsed={timeElapsed}
+        showResult={showResult}
+        lastAnswer={lastAnswer}
+        onAnswer={handleAnswer}
+        getQuestion={getQuestion}
+        countdown={countdown}
+      />
+    </div>
   );
 }

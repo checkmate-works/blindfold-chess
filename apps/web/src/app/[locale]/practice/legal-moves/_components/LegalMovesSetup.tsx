@@ -43,7 +43,7 @@ export function LegalMovesSetup({
       .join(',');
 
     router.push(
-      `/${locale}/practice/legal-moves/session?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}`
+      `/${locale}/practice/legal-moves/session?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}#legal-moves-session`
     );
   };
 

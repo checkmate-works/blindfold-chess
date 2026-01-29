@@ -2,8 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 
+import { BoardOverlay } from '@/app/_components';
+import { QuizTimer } from '@/components/QuizTimer';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { TimeDisplay } from '@/app/[locale]/practice/_components/TimeDisplay';
 
 import { pieceDisplayMap } from '../_data/constants';
 import type { MoveQuestion } from '../_lib/types';
@@ -21,6 +23,7 @@ type Props = {
   } | null;
   onAnswer: (answer: boolean) => void;
   getQuestion: (from: string, to: string) => string;
+  countdown: number | null;
 };
 
 export function LegalMovesPlaying({
@@ -32,21 +35,24 @@ export function LegalMovesPlaying({
   lastAnswer,
   onAnswer,
   getQuestion,
+  countdown,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   return (
     <div>
-      {/* Timer display */}
-      <TimeDisplay
-        timeRemaining={timeRemaining}
-        timeLimit={timeLimit}
-        timeElapsed={timeElapsed}
-        labels={{
-          timeRemaining: t('timeRemaining'),
-        }}
-      />
+      {/* Header with Timer */}
+      <div className="flex justify-end mb-4 min-h-[50px]">
+        <QuizTimer timeRemaining={timeRemaining} progress={timeElapsed / timeLimit} size={50} />
+      </div>
 
-      <div className="bg-card rounded-2xl border border-border p-8 text-center">
+      <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
+        {/* Blur entire question area during countdown */}
+        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
+          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
+            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
+          </span>
+        </BoardOverlay>
+
         <SectionTitle className="text-2xl mb-8">
           {getQuestion(currentQuestion.from, currentQuestion.to)
             .replace('{from}', currentQuestion.from)
@@ -77,7 +83,7 @@ export function LegalMovesPlaying({
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => onAnswer(true)}
-            disabled={showResult}
+            disabled={showResult || countdown !== null}
             className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">○</span>
@@ -85,7 +91,7 @@ export function LegalMovesPlaying({
           </button>
           <button
             onClick={() => onAnswer(false)}
-            disabled={showResult}
+            disabled={showResult || countdown !== null}
             className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
           >
             <span className="text-2xl">×</span>
