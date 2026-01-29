@@ -28,13 +28,11 @@ When this skill is invoked with a version number:
 
 Create release content in **Markdown format** (English only for now).
 
-**Title format**: `Version <version> released 🎉` (e.g., "Version v0.3.0 released 🎉")
+**Title** (for posts.title): `Version <version> released 🎉` (e.g., "Version v0.3.0 released 🎉")
 
-The content should follow this structure:
+**Content** (for posts.content) should start with `## What's new` (no h1 heading):
 
 ```markdown
-# Version v0.3.0 released 🎉
-
 ## What's new
 
 - 🎹 **Feature/Change 1** - Brief description
@@ -44,7 +42,7 @@ The content should follow this structure:
 
 Guidelines for content:
 
-- Title must follow the format: "Version vX.X.X released 🎉"
+- Do NOT include h1 heading in content (title is stored separately in posts.title)
 - Group related changes together
 - Use clear, user-friendly language (not developer jargon)
 - Include links to relevant features where appropriate (e.g., `/en/features/fen-practice`)
@@ -140,6 +138,7 @@ VALUES (
 
 **Important for SQL generation**:
 
+- Content should start with `## What's new` (no h1 heading, title is in the title field)
 - Escape single quotes in content by doubling them (`'` → `''`)
 - Use E'...' syntax if content contains special characters
 - Do NOT add extra whitespace or indentation inside the VALUES
