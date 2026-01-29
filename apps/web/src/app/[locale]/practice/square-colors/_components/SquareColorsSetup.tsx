@@ -21,7 +21,9 @@ export function SquareColorsSetup({ locale, timeLimit, onTimeLimitChange }: Prop
   const router = useRouter();
 
   const handleStart = () => {
-    router.push(`/${locale}/practice/square-colors/session?timeLimit=${timeLimit}`);
+    router.push(
+      `/${locale}/practice/square-colors/session?timeLimit=${timeLimit}#square-colors-session`
+    );
   };
 
   return (
