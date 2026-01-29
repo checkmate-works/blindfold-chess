@@ -1,5 +1,7 @@
 'use client';
 
+import { ReactNode } from 'react';
+
 import { Square } from 'chess.js';
 
 import { getBoardThemeColors } from '@/lib/boardThemes';
@@ -10,12 +12,14 @@ type Props = {
   orientation: 'white' | 'black';
   onSquareClick: (square: Square) => void;
   highlightedSquares?: Record<string, 'correct' | 'incorrect' | 'target'>;
+  children?: ReactNode;
 };
 
 export function CoordinateQuizBoard({
   orientation,
   onSquareClick,
   highlightedSquares = {},
+  children,
 }: Props) {
   const { preferences } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
@@ -73,6 +77,7 @@ export function CoordinateQuizBoard({
             })}
           </div>
         ))}
+        {children}
       </div>
     </div>
   );

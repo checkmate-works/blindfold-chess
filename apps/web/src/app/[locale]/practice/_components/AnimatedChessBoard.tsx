@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ChessPiece, Square } from '@/app/_components';
+import { BoardOverlay, ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
@@ -356,19 +356,17 @@ export function AnimatedChessBoard({
           </div>
 
           {/* Play button overlay */}
-          {showPlayButton && !isAnimating && move && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md pointer-events-none">
-              <button
-                onClick={handlePlay}
-                className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110 pointer-events-auto"
-                aria-label="Play animation"
-              >
-                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
-            </div>
-          )}
+          <BoardOverlay isVisible={showPlayButton && !isAnimating && !!move}>
+            <button
+              onClick={handlePlay}
+              className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110 pointer-events-auto"
+              aria-label="Play animation"
+            >
+              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+          </BoardOverlay>
 
           {/* Animating piece */}
           {animatingPiece && <div style={animatingPieceStyle}>{renderAnimatingPiece()}</div>}

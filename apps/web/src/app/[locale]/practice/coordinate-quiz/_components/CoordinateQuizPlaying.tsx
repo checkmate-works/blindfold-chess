@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
 import { Square } from 'chess.js';
 import { FaCheck, FaTimes } from 'react-icons/fa';
@@ -33,7 +34,8 @@ export function CoordinateQuizPlaying({
   showFeedback,
   isCorrect,
   onSquareClick,
-}: Props) {
+  countdown,
+}: Props & { countdown: number | null }) {
   const t = useTranslations('practice.coordinateQuiz');
   return (
     <div id="quiz-session">
@@ -63,17 +65,28 @@ export function CoordinateQuizPlaying({
             orientation={currentQuestion?.orientation || 'white'}
             onSquareClick={onSquareClick}
             highlightedSquares={
-              showFeedback && lastClickedSquare && currentQuestion
+              countdown === null && showFeedback && currentQuestion
                 ? {
-                    [lastClickedSquare]: isCorrect ? 'correct' : 'incorrect',
-                    [currentQuestion.targetSquare]: 'target',
+                    ...(lastClickedSquare
+                      ? { [lastClickedSquare]: isCorrect ? 'correct' : 'incorrect' }
+                      : {}),
+                    ...(currentQuestion
+                      ? { [currentQuestion.targetSquare]: 'target' as const }
+                      : {}),
                   }
                 : {}
             }
-          />
+          >
+            {/* Countdown Overlay */}
+            <BoardOverlay isVisible={countdown !== null}>
+              <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
+                {countdown !== null && (countdown > 0 ? countdown : 'START!')}
+              </span>
+            </BoardOverlay>
+          </CoordinateQuizBoard>
 
           {/* Target Square Overlay */}
-          {currentQuestion && !showFeedback && (
+          {currentQuestion && !showFeedback && countdown === null && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <span className="text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in duration-300">
                 {currentQuestion.targetSquare}

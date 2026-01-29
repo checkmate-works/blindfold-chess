@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export * from './BoardOverlay';
 export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';
 export { InfoModal } from './InfoModal';

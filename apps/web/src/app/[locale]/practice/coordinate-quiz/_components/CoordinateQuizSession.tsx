@@ -46,6 +46,7 @@ export default function CoordinateQuizSession({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(3);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasStarted = useRef(false);
@@ -74,7 +75,7 @@ export default function CoordinateQuizSession({
 
   // Start timer
   useEffect(() => {
-    if (!currentQuestion || isFinished) return;
+    if (!currentQuestion || isFinished || countdown !== null || showFeedback) return;
 
     timerRef.current = setInterval(() => {
       setTimeElapsed((prev) => {
@@ -89,14 +90,13 @@ export default function CoordinateQuizSession({
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
-        timerRef.current = null;
       }
     };
-  }, [currentQuestion, isFinished, timeLimit]);
+  }, [currentQuestion, isFinished, timeLimit, countdown, showFeedback]);
 
   const handleSquareClick = useCallback(
     (square: Square) => {
-      if (isFinished || !currentQuestion || showFeedback) return;
+      if (isFinished || !currentQuestion || showFeedback || countdown !== null) return;
 
       setLastClickedSquare(square);
       const correct = checkAnswer(square, currentQuestion.targetSquare);
@@ -123,7 +123,15 @@ export default function CoordinateQuizSession({
         setLastClickedSquare(null);
       }, feedbackDuration);
     },
-    [isFinished, currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration]
+    [
+      isFinished,
+      currentQuestion,
+      showFeedback,
+      boardOrientation,
+      recentSquares,
+      feedbackDuration,
+      countdown,
+    ]
   );
 
   const handlePlayAgain = () => {
@@ -138,7 +146,26 @@ export default function CoordinateQuizSession({
     setLastClickedSquare(null);
     setShowFeedback(false);
     setIsFinished(false);
+    setCountdown(3);
   };
+
+  // Countdown effect
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      const timer = setTimeout(() => {
+        setCountdown(null);
+      }, 500); // Show "START!" for 0.5s
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   const score = isFinished
     ? calculateScore(correctAnswers, totalQuestions, timeElapsed, timeLimit)
@@ -187,6 +214,7 @@ export default function CoordinateQuizSession({
       showFeedback={showFeedback}
       isCorrect={isCorrect}
       onSquareClick={handleSquareClick}
+      countdown={countdown}
     />
   );
 }
