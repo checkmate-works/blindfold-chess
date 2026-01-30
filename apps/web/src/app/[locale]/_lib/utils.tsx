@@ -4,6 +4,7 @@ import {
   FaEnvelope,
   FaGraduationCap,
   FaList,
+  FaNewspaper,
   FaQuestionCircle,
   FaRocket,
 } from 'react-icons/fa';
@@ -14,6 +15,8 @@ export const getIcon = (iconName: NavigationIconName) => {
   switch (iconName) {
     case 'home':
       return null;
+    case 'posts':
+      return <FaNewspaper className="h-5 w-5" />;
     case 'getting-started':
       return <FaRocket className="h-5 w-5" />;
     case 'learn':

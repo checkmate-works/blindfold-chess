@@ -40,6 +40,7 @@
     "gettingStarted": "Getting Started",
     "learn": "Learn",
     "practice": "Practice",
+    "posts": "Posts",
     "manual": "Manual",
     "faq": "FAQ",
     "glossary": "Glossary",
@@ -115,6 +116,11 @@
       "textInputDescription": "Type moves using algebraic notation",
       "selectInput": "Select from List",
       "selectInputDescription": "Choose from available legal moves",
+      "buttonInput": "Button Input",
+      "buttonInputDescription": "Enter moves by tapping buttons",
+      "buttonLabelStyle": "Button Label Style",
+      "text": "Text",
+      "icon": "Icon",
       "enableAutoComplete": "Enable auto-complete"
     },
     "ads": {
@@ -186,6 +192,10 @@
     "validWithMoves": "✓ Valid PGN with {count} moves",
     "invalidPgn": "Invalid PGN format",
     "invalidMove": "\"{move}\" is an invalid move"
+  },
+  "ButtonInput": {
+    "disambiguationButton": "Disambiguation...",
+    "sourceLabel": "From (Source)"
   },
   "error": {
     "title": "Something went wrong!",
@@ -824,6 +834,7 @@
     "selectMove": "Select a move",
     "switchToSelect": "Switch to list selection",
     "switchToText": "Switch to text input",
+    "switchInputMode": "Switch input mode",
     "submitMove": "Submit",
     "invalidMove": "Invalid move",
     "newGame": "New Game",
