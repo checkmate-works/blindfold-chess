@@ -2,64 +2,61 @@ const content = `# Getting Started with Blindfold Chess
 
 ## What is Blindfold Chess?
 
-Blindfold Chess is chess played without seeing the board, relying solely on memory and visualization.
+Blindfold Chess is chess played without seeing the board, relying solely on memory and imagination.
 
-## Why Practice Blindfold Chess?
+## Why Blindfold Chess?
 
-Blindfold Chess is **the most effective method to develop visualization skills in chess**.
+Blindfold Chess is **the best way to develop visualization skills in chess**.
 
-Strong players can "see" multiple moves ahead in their mind. This ability isn't innate—it's a skill that can be trained through deliberate practice. Blindfold Chess directly trains your ability to:
+Strong players can "see" several moves ahead in their minds.  
+This ability is not innate, but a skill acquired through deliberate practice.
 
-- Visualize piece positions without looking at the board
-- Calculate variations mentally
-- Recognize patterns and structures
-- Improve your overall chess strength
+Blindfold Chess directly trains the following abilities:
+
+- Ability to imagine piece positions without looking at the board
+- Ability to calculate variations in your head
+- Ability to recognize patterns and structures
+
+As a result, your overall chess strength will improve.
 
 ## What You Can Do Here
 
 ### Play Against Stockfish
 
-Challenge yourself against **Stockfish**.
-
-- Adjustable difficulty levels to match your skill
-- Pure blindfold mode—no board visualization during your turn
-- Track your progress over time
+You can play blindfold chess against Stockfish, the most popular chess engine in the world.
 
 [Start Playing](/en/game/new)
 
 ### Rich Training Menu
 
-Build your visualization skills with structured training exercises.
+You can build visualization skills through systematic training.
 
-[View All Trainings](/en/practice)
+[View All Training Menus](/en/practice)
 
-**Featured Training:**
+Main Training Menus:
 
-- **Position Memory**: Practice memorizing chess positions and recreating them on an empty board. Develops crucial pattern recognition skills. [Try it](/en/practice/position-memory)
+- **[Position Memory](/en/practice/position-memory)**: Practice memorizing chess positions and reproducing them on an empty board.
+  - Develops pattern recognition skills essential for blindfold chess.
 
-- **Knight's Tour**: The classic chess puzzle where you visit every square on the board exactly once with a knight. Perfect for training board coordinate awareness. [Try it](/en/practice/knight-tour)
+- **[Knight's Tour](/en/practice/knight-tour)**: A classic puzzle where you visit every square on the board exactly once using a knight.
+  - Perfect for training board coordinate sense.
 
 ### Learn from Articles
 
-Access a collection of articles covering visualization techniques and chess knowledge:
+A collection of articles explaining visualization techniques and chess knowledge:
 
-- Piece movement visualization methods
-- Square color recognition
-- Coordinate system mastery
-- Scientific research on chess expertise (de Groot's experiment)
-
-[Browse All Articles](/en/learn)
+[View All Articles](/en/learn)
 
 ## How to Get Started
 
-Building visualization skills takes practice.
+Building visualization skills requires practice.
 
-### Recommended Path:
+### Recommended Steps:
 
-1. **Start with Articles**: Read about [piece movement visualization](/en/learn/king-movement) and [square colors](/en/learn/square-colors) to understand the fundamentals
-2. **Begin with Simple Training**: Try basic exercises like [square color recognition](/en/practice/square-colors) to get comfortable with mental board visualization
-3. **Progress to AI Games**: Once you feel confident, challenge Stockfish at lower difficulty levels
+1. **Start with Articles**: Read articles on [Visualizing Piece Movement](/en/learn/category/piece-movement) and [Understanding Coordinates](/en/learn/category/coordinates) to understand the basics
+2. **From Simple Training**: Get used to imagining the board in your head with basic exercises like [Square Color Recognition](/en/practice/square-colors)
+3. **To AI Games**: Once you feel confident, challenge Stockfish at a low difficulty level
 
-This is just a suggestion. AI games also feature a Help function, so you can improve through practice-based learning as well.`;
+This is just an example. The AI game also has a help function, so you can aim to improve through practical play.`;
 
 export default content;
