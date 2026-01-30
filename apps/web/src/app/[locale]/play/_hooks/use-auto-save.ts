@@ -228,8 +228,31 @@ export function useAutoSave({
     ]
   );
 
+  const prevEnabled = useRef(enabled);
+
   // Auto-save on moves change or status change
   useEffect(() => {
+    // If auto-save is disabled (e.g. while loading), keep the last saved state in sync
+    // so that we don't trigger a save immediately when it becomes enabled
+    if (!enabled) {
+      lastSavedMovesLength.current = moves.length;
+      lastSavedStatus.current = status;
+      prevEnabled.current = enabled;
+      return;
+    }
+
+    // If auto-save just became enabled (transition from false -> true),
+    // sync the state but don't save yet. This handles the case where data was loaded
+    // and enabled became true in the same render cycle.
+    if (!prevEnabled.current && enabled) {
+      lastSavedMovesLength.current = moves.length;
+      lastSavedStatus.current = status;
+      prevEnabled.current = enabled;
+      return;
+    }
+
+    prevEnabled.current = enabled;
+
     // Skip if initial save is pending for a new game
     if (saveOnInit && !currentGameId && !hasInitialSaveExecuted.current) {
       return;
@@ -260,7 +283,7 @@ export function useAutoSave({
       // Save immediately to ensure both player and AI moves are saved
       saveGame(false); // Don't show notification on auto-save
     }
-  }, [moves.length, status, saveGame, saveOnInit, currentGameId]);
+  }, [moves.length, status, saveGame, saveOnInit, currentGameId, enabled]);
 
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {
