@@ -23,7 +23,7 @@ export function ChessBoardDemo({ type }: Props) {
           showOpponentPieces={true}
           pieceShapeMode={config.pieceShapeMode}
           pieceColors={config.pieceColors}
-          boardTheme="default"
+          boardTheme="lichess"
         />
       </div>
     </div>
