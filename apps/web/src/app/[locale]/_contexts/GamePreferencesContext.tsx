@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 // Game preferences
 export type GamePreferences = {
@@ -28,7 +29,7 @@ export type GamePreferences = {
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
-  boardTheme: 'lichess',
+  boardTheme: DEFAULT_BOARD_THEME,
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
@@ -65,7 +66,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         // If the theme is "default" (old terminology), fallback to "lichess" (safe default)
         // This ensures users don't see a broken board or get runtime errors.
         if (parsed.boardTheme === 'default') {
-          parsed.boardTheme = 'lichess';
+          parsed.boardTheme = DEFAULT_BOARD_THEME;
         }
 
         setPreferences({

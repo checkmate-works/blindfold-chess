@@ -7,6 +7,7 @@ import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -29,7 +30,7 @@ export function LegalMovesSetup({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const router = useRouter();

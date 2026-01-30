@@ -6,7 +6,7 @@ import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -28,7 +28,7 @@ export function SquareColorsPlaying({
   showResult,
   lastAnswer,
   onAnswer,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   countdown,
 }: Props) {
   const t = useTranslations('practice.squareColors');

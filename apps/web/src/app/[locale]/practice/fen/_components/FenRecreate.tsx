@@ -8,6 +8,7 @@ import { Button } from '@/app/_components';
 import { FaSyncAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
@@ -32,7 +33,7 @@ export function FenRecreate({
   recreatedPosition,
   currentProblemIndex,
   problemCount,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
   isTutorial = false,
   onPositionChange,

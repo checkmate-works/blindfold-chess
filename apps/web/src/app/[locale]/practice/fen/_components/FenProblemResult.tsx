@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ChessBoardWithOverlay } from '@/app/[locale]/practice/_components/ChessBoardWithOverlay';
@@ -33,7 +34,7 @@ export function FenProblemResult({
   recreatedPosition,
   currentProblemIndex,
   totalProblems,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
   isTutorial = false,
   onNextProblem,

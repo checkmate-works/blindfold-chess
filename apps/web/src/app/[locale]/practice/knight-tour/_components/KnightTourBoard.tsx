@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { ChessPiece, Square } from '@/app/_components';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 type Props = {
   currentSquare: string;
@@ -28,7 +28,7 @@ export function KnightTourBoard({
   onSquareClick,
   showCoordinates = true,
   showMoveNumbers = false,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   flipped = false,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);

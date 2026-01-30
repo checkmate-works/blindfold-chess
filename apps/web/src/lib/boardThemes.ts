@@ -2,6 +2,8 @@ import type { BoardTheme } from '@blindfold-chess/core';
 
 export type { BoardTheme };
 
+export const DEFAULT_BOARD_THEME: BoardTheme = 'lichess';
+
 // Tailwind classes mapping for Web (Web-specific implementation)
 export type TailwindThemeClasses = {
   light: string;

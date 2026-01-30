@@ -8,6 +8,7 @@ import { Button } from '@/app/_components';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 import { fenToLichessUrl } from '@/lib/lichess';
 
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
@@ -35,7 +36,7 @@ export function PositionMemoryProblemResult({
   recreatedPosition,
   currentProblemIndex,
   totalProblems,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   isTutorial = false,
   onNextProblem,
   onViewResults,

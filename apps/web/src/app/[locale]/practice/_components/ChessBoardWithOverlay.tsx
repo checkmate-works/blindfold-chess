@@ -4,7 +4,7 @@ import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import type { SquareDiff } from '../_lib/types';
 
@@ -45,7 +45,7 @@ export function ChessBoardWithOverlay({
   fen,
   flipped = false,
   squareDifferences = [],
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
   const board = fenToBoard(fen);

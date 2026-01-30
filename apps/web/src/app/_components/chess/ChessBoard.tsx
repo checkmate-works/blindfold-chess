@@ -7,7 +7,7 @@ import type { Side } from '@blindfold-chess/core';
 import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
 
@@ -47,7 +47,7 @@ export function ChessBoard({
   showOpponentPieces = true,
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   rounded = true,
   evaluationMark = null,
   className = '',

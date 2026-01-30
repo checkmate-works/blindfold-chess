@@ -1,6 +1,7 @@
 'use client';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
@@ -22,7 +23,7 @@ export function AlgebraicNotationPlaying({
   currentQuestionIndex,
   selectedAnswer,
   showResult,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   onOptionSelect,
   locale,
 }: Props) {

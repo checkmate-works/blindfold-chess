@@ -6,7 +6,7 @@ import { BoardOverlay, ChessPiece, Square } from '@/app/_components';
 import { Chess, Color, PieceSymbol } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 type AnimatingPiece = {
   type: PieceSymbol;
@@ -36,7 +36,7 @@ export function AnimatedChessBoard({
   className = '',
   autoPlay = false,
   flipped = false,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   children,
 }: Props) {
   const [currentFen, setCurrentFen] = useState(initialFen);

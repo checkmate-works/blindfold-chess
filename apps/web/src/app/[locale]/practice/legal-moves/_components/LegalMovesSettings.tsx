@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import type { BoardTheme } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
@@ -22,7 +23,7 @@ export function LegalMovesSettings({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);

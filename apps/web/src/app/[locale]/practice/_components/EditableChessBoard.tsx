@@ -6,7 +6,7 @@ import { ChessPiece, Square } from '@/app/_components';
 import { Color, PieceSymbol } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 export type EditableChessBoardLabels = {
   whitePieces: string;
@@ -113,7 +113,7 @@ export function EditableChessBoard({
   editable = false,
   preserveTurnInfo = false,
   originalPosition,
-  boardTheme = 'default',
+  boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
   const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));

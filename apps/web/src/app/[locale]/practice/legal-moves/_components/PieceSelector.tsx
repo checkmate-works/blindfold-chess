@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { pieceDisplayMap } from '../_data/constants';
 import type { PieceType } from '../_lib/types';
@@ -14,7 +14,11 @@ type Props = {
   boardTheme?: BoardTheme;
 };
 
-export function PieceSelector({ selectedPieces, onPieceToggle, boardTheme = 'default' }: Props) {
+export function PieceSelector({
+  selectedPieces,
+  onPieceToggle,
+  boardTheme = DEFAULT_BOARD_THEME,
+}: Props) {
   const t = useTranslations('practice.legalMoves');
   const pieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
   const themeColors = getBoardThemeColors(boardTheme);
