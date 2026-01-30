@@ -157,7 +157,9 @@ export function BoardViewModal({
                 isPreviousDisabled={
                   currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
                 }
-                isNextDisabled={currentPosition === -1}
+                isNextDisabled={
+                  currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
+                }
               />
             </div>
           )}
