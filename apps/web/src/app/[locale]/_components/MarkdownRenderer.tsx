@@ -108,7 +108,9 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             <img
               src={src}
               alt={alt}
-              className="rounded-md shadow-md max-w-full mx-auto block my-8"
+              className={`rounded-md shadow-md mx-auto block my-8 ${
+                src.endsWith('.svg') ? 'w-full max-w-sm' : 'max-w-full'
+              }`}
             />
           );
         },

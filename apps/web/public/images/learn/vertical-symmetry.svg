@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626" />
+    </marker>
+  </defs>
+
+  <!-- Board background -->
+  <rect x="0" y="0" width="400" height="400" fill="#f0d9b5" />
+
+  <!-- Dark squares -->
+  <g fill="#b58863">
+    <!-- Rows 1-8 -->
+    <rect x="50" y="0" width="50" height="50" />
+    <rect x="150" y="0" width="50" height="50" />
+    <rect x="250" y="0" width="50" height="50" />
+    <rect x="350" y="0" width="50" height="50" />
+    <rect x="0" y="50" width="50" height="50" />
+    <rect x="100" y="50" width="50" height="50" />
+    <rect x="200" y="50" width="50" height="50" />
+    <rect x="300" y="50" width="50" height="50" />
+    <rect x="50" y="100" width="50" height="50" />
+    <rect x="150" y="100" width="50" height="50" />
+    <rect x="250" y="100" width="50" height="50" />
+    <rect x="350" y="100" width="50" height="50" />
+    <rect x="0" y="150" width="50" height="50" />
+    <rect x="100" y="150" width="50" height="50" />
+    <rect x="200" y="150" width="50" height="50" />
+    <rect x="300" y="150" width="50" height="50" />
+    <rect x="50" y="200" width="50" height="50" />
+    <rect x="150" y="200" width="50" height="50" />
+    <rect x="250" y="200" width="50" height="50" />
+    <rect x="350" y="200" width="50" height="50" />
+    <rect x="0" y="250" width="50" height="50" />
+    <rect x="100" y="250" width="50" height="50" />
+    <rect x="200" y="250" width="50" height="50" />
+    <rect x="300" y="250" width="50" height="50" />
+    <rect x="50" y="300" width="50" height="50" />
+    <rect x="150" y="300" width="50" height="50" />
+    <rect x="250" y="300" width="50" height="50" />
+    <rect x="350" y="300" width="50" height="50" />
+    <rect x="0" y="350" width="50" height="50" />
+    <rect x="100" y="350" width="50" height="50" />
+    <rect x="200" y="350" width="50" height="50" />
+    <rect x="300" y="350" width="50" height="50" />
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .label { font-family: sans-serif; font-size: 12px; opacity: 0.5; }
+    .label-file { text-anchor: middle; }
+    .label-rank { text-anchor: end; alignment-baseline: middle; }
+  </style>
+  <text x="390" y="390" class="label label-file">h</text>
+  <text x="340" y="390" class="label label-file">g</text>
+  <text x="290" y="390" class="label label-file">f</text>
+  <text x="240" y="390" class="label label-file">e</text>
+  <text x="190" y="390" class="label label-file">d</text>
+  <text x="140" y="390" class="label label-file">c</text>
+  <text x="90" y="390" class="label label-file">b</text>
+  <text x="40" y="390" class="label label-file">a</text>
+  
+  <text x="10" y="375" class="label label-rank">1</text>
+  <text x="10" y="325" class="label label-rank">2</text>
+  <text x="10" y="275" class="label label-rank">3</text>
+  <text x="10" y="225" class="label label-rank">4</text>
+  <text x="10" y="175" class="label label-rank">5</text>
+  <text x="10" y="125" class="label label-rank">6</text>
+  <text x="10" y="75" class="label label-rank">7</text>
+  <text x="10" y="25" class="label label-rank">8</text>
+  
+  <!-- Axis of Symmetry (between 4th and 5th rank) -->
+  <line x1="0" y1="200" x2="400" y2="200" stroke="#2563eb" stroke-width="3" stroke-dasharray="8,4" />
+
+  <!-- Symmetry lines -->
+  <!-- g1 <-> g8 -->
+  <line x1="325" y1="375" x2="325" y2="25" stroke="#dc2626" stroke-width="2" marker-start="url(#arrowhead)" marker-end="url(#arrowhead)" />
+  
+  <!-- e2 <-> e7 (pawn start) -->
+  <line x1="225" y1="325" x2="225" y2="75" stroke="#dc2626" stroke-width="2" marker-start="url(#arrowhead)" marker-end="url(#arrowhead)" />
+
+  <!-- Highlight circles -->
+  <circle cx="325" cy="375" r="4" fill="#dc2626" />  <!-- g1 -->
+  <circle cx="325" cy="25" r="4" fill="#dc2626" />   <!-- g8 -->
+  <circle cx="225" cy="325" r="4" fill="#dc2626" />  <!-- e2 -->
+  <circle cx="225" cy="75" r="4" fill="#dc2626" />   <!-- e7 -->
+
+</svg>

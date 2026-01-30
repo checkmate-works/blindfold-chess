@@ -9,6 +9,8 @@ By focusing on the symmetry of the chessboard, you can reduce the amount of info
 
 The board is symmetrical along the center axis between the d-file and e-file.
 
+![Horizontal Symmetry on Chess Board](/images/learn/horizontal-symmetry.svg)
+
 | Left | Right |
 |------|-------|
 | a | h |
@@ -27,6 +29,8 @@ This symmetry helps understand the relationship between the kingside and queensi
 
 The board is symmetrical along the center axis between the 4th and 5th ranks.
 
+![Vertical Symmetry on Chess Board](/images/learn/vertical-symmetry.svg)
+
 | White's Side | Black's Side |
 |--------------|--------------|
 | 1 | 8 |
@@ -42,6 +46,8 @@ The board is symmetrical along the center axis between the 4th and 5th ranks.
 ### 3. Point Symmetry (Central Point Symmetry)
 
 There is point symmetry around the center of the board (the intersection of d4, d5, e4, e5).
+
+![Point Symmetry on Chess Board](/images/learn/point-symmetry.svg)
 
 | Square | Point-Symmetric Square |
 |--------|----------------------|
