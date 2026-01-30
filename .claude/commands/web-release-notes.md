@@ -37,8 +37,8 @@ The content should follow this structure:
 
 ## What's new
 
-- **Feature/Change 1** - Brief description
-- **Feature/Change 2** - Brief description
+- 🎹 **Feature/Change 1** - Brief description
+- 🧭 **Feature/Change 2** - Brief description
 - ...
 ```
 
@@ -49,6 +49,8 @@ Guidelines for content:
 - Use clear, user-friendly language (not developer jargon)
 - Include links to relevant features where appropriate (e.g., `/en/features/fen-practice`)
 - Keep it brief - users want to quickly understand what changed
+- **Do NOT include patch-level bug fixes** - Minor fixes can overshadow new features and important updates. Focus on additions and improvements that users will notice.
+- **Add emojis to items** - Each item should start with a relevant emoji (e.g., 🎹 for input features, 🧭 for navigation, ✨ for new features)
 
 ### Step 3: Review with User
 
