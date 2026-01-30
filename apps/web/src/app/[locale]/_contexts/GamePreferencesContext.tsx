@@ -17,7 +17,7 @@ export type GamePreferences = {
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent'; // Piece shape mode
   pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
   // Move input
-  moveInputMode: 'text' | 'select'; // Move input mode
+  moveInputMode: 'text' | 'select' | 'button'; // Move input mode
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Advertisements
   adsEnabled: boolean; // Show advertisements

@@ -115,7 +115,8 @@
       "textInputDescription": "代数記法で手を入力します",
       "selectInput": "リストから選択",
       "selectInputDescription": "利用可能な合法手から選択します",
-      "enableAutoComplete": "補完を有効にする"
+      "enableAutoComplete": "補完を有効にする",
+      "switchInputMode": "入力モードを切り替え"
     },
     "ads": {
       "title": "広告設定",
@@ -186,6 +187,10 @@
     "validWithMoves": "✓ 有効なPGN（{count}手）",
     "invalidPgn": "無効なPGN形式",
     "invalidMove": "「{move}」は無効な手です"
+  },
+  "ButtonInput": {
+    "disambiguationButton": "曖昧性解消...",
+    "sourceLabel": "移動元"
   },
   "error": {
     "title": "エラーが発生しました",
@@ -824,6 +829,7 @@
     "selectMove": "手を選択",
     "switchToSelect": "リスト選択に切り替え",
     "switchToText": "テキスト入力に切り替え",
+    "switchInputMode": "入力モードを切り替え",
     "submitMove": "決定",
     "invalidMove": "無効な手です",
     "newGame": "新規ゲーム",

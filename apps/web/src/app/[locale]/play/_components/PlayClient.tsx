@@ -15,6 +15,7 @@ import {
   FaCopy,
   FaExternalLinkAlt,
   FaEye,
+  FaGamepad,
   FaKeyboard,
   FaList,
   FaPlay,
@@ -36,6 +37,7 @@ import { useNotation } from '../_hooks/use-notation';
 import { GameStateService } from '../_lib/game-state-service';
 import { formatPgnToText } from '../_lib/pgn-parser';
 import { BoardViewModal } from './BoardViewModal';
+import { ButtonInput } from './ButtonInput';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
@@ -747,6 +749,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                           disabled={isLoading}
                           placeholder={t('selectMove')}
                         />
+                      ) : preferences.moveInputMode === 'button' ? (
+                        <ButtonInput
+                          fen={currentFen}
+                          onSubmit={handleSubmitMove}
+                          disabled={isLoading}
+                        />
                       ) : (
                         <MoveInput
                           value={moveInput}
@@ -775,20 +783,24 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 {isPlayerTurn && (
                   <div className="flex items-center justify-end">
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        const nextMode =
+                          preferences.moveInputMode === 'text'
+                            ? 'select'
+                            : preferences.moveInputMode === 'select'
+                              ? 'button'
+                              : 'text';
                         updatePreferences({
-                          moveInputMode: preferences.moveInputMode === 'text' ? 'select' : 'text',
-                        })
-                      }
+                          moveInputMode: nextMode,
+                        });
+                      }}
                       className="p-2 border border-border rounded-md hover:bg-muted"
-                      title={
-                        preferences.moveInputMode === 'text'
-                          ? t('switchToSelect')
-                          : t('switchToText')
-                      }
+                      title={t('switchInputMode')}
                     >
                       {preferences.moveInputMode === 'text' ? (
                         <FaList className="w-4 h-4" />
+                      ) : preferences.moveInputMode === 'select' ? (
+                        <FaGamepad className="w-4 h-4" />
                       ) : (
                         <FaKeyboard className="w-4 h-4" />
                       )}
