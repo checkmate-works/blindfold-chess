@@ -43,7 +43,7 @@ export function MobileMenu({ title, items }: Props) {
       {/* Hamburger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden p-2 rounded-md text-muted-foreground hover:bg-accent"
+        className="p-2 rounded-md text-muted-foreground hover:bg-accent"
         aria-label="Menu"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,14 +71,14 @@ export function MobileMenu({ title, items }: Props) {
           <>
             {isOpen && (
               <div
-                className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-40 lg:hidden"
+                className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-40"
                 onClick={() => setIsOpen(false)}
               />
             )}
 
             {/* Mobile menu panel */}
             <div
-              className={`fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-lg transform transition-transform duration-300 ease-in-out lg:hidden ${
+              className={`fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-lg transform transition-transform duration-300 ease-in-out ${
                 isOpen ? 'translate-x-0' : '-translate-x-full'
               }`}
             >

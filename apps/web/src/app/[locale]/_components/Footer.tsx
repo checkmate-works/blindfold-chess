@@ -24,11 +24,11 @@ export async function Footer({ locale }: Props) {
         <div className="space-y-4">
           {/* Legal pages - vertical menu */}
           <nav>
-            <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
+            <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
               <li>
                 <Link
                   href={`/${locale}/privacy`}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
                 >
                   <FaChevronRight className="h-2 w-2" />
                   {tPrivacy('title')}
@@ -37,7 +37,7 @@ export async function Footer({ locale }: Props) {
               <li>
                 <Link
                   href={`/${locale}/terms`}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
                 >
                   <FaChevronRight className="h-2 w-2" />
                   {tTerms('title')}
@@ -46,7 +46,7 @@ export async function Footer({ locale }: Props) {
               <li>
                 <Link
                   href={`/${locale}/company`}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
                 >
                   <FaChevronRight className="h-2 w-2" />
                   {tCompany('title')}
@@ -56,7 +56,7 @@ export async function Footer({ locale }: Props) {
                 <li>
                   <Link
                     href={`/${locale}/contact`}
-                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
                   >
                     <FaChevronRight className="h-2 w-2" />
                     {tContact('title')}

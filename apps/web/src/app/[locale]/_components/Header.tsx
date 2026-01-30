@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { FaCog } from 'react-icons/fa';
 
 import type { NavigationItem } from '../_lib/types';
-import { getIcon } from '../_lib/utils';
 import { MobileMenu } from './MobileMenu';
 
 type Props = {
@@ -31,18 +30,24 @@ export async function Header({ locale }: Props) {
       iconName: 'practice',
     },
     {
-      id: 'manual',
-      href: `/${locale}/manual`,
-      label: t('manual'),
-      iconName: 'manual',
+      id: 'posts',
+      href: `/${locale}/posts`,
+      label: t('posts'),
+      iconName: 'posts',
     },
-    { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
     {
       id: 'glossary',
       href: `/${locale}/glossary`,
       label: t('glossary'),
       iconName: 'glossary',
     },
+    {
+      id: 'manual',
+      href: `/${locale}/manual`,
+      label: t('manual'),
+      iconName: 'manual',
+    },
+    { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
   ];
 
   return (
@@ -70,19 +75,7 @@ export async function Header({ locale }: Props) {
               </span>
             </Link>
 
-            {/* Desktop navigation */}
-            <nav className="hidden lg:flex items-center space-x-6">
-              {menuItems.slice(1).map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent px-3 py-2 rounded-md transition-colors"
-                >
-                  {getIcon(item.iconName)}
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            {/* Desktop navigation - REMOVED per user request to unify with mobile menu */}
           </div>
 
           {/* Right side: Settings icon */}
