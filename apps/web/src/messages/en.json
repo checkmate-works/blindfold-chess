@@ -116,6 +116,11 @@
       "textInputDescription": "Type moves using algebraic notation",
       "selectInput": "Select from List",
       "selectInputDescription": "Choose from available legal moves",
+      "buttonInput": "Button Input",
+      "buttonInputDescription": "Enter moves by tapping buttons",
+      "buttonLabelStyle": "Button Label Style",
+      "text": "Text",
+      "icon": "Icon",
       "enableAutoComplete": "Enable auto-complete"
     },
     "ads": {

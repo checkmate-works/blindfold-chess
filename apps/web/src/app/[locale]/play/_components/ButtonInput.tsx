@@ -2,8 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
+import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { PieceSymbol } from 'chess.js';
 import { FaTrash } from 'react-icons/fa';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useButtonInputLogic } from './useButtonInputLogic';
 
@@ -17,6 +21,9 @@ type PromotionPiece = 'q' | 'r' | 'b' | 'n';
 
 export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
   const t = useTranslations('ButtonInput');
+  const { preferences } = useGamePreferences();
+  const { buttonInputPieceLabel } = preferences;
+
   const {
     selectedPiece,
     selectedFiles,
@@ -56,13 +63,18 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
             <button
               key={piece}
               onClick={() => handlePieceClick(piece)}
-              className={`w-9 h-9 rounded-md font-bold text-lg transition-colors border ${
+              aria-label={piece}
+              className={`w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
                 selectedPiece === piece
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-border'
               }`}
             >
-              {piece}
+              {buttonInputPieceLabel === 'icon' ? (
+                <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={24} />
+              ) : (
+                piece
+              )}
             </button>
           ))}
         </div>

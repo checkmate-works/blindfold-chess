@@ -116,6 +116,11 @@
       "textInputDescription": "代数記法で手を入力します",
       "selectInput": "リストから選択",
       "selectInputDescription": "利用可能な合法手から選択します",
+      "buttonInput": "ボタン入力",
+      "buttonInputDescription": "ボタンをタップして手を入力します",
+      "buttonLabelStyle": "ボタンの表示",
+      "text": "テキスト",
+      "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
       "switchInputMode": "入力モードを切り替え"
     },
