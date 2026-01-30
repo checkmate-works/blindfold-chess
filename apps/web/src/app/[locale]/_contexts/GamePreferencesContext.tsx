@@ -60,6 +60,14 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+
+        // Migration for renamed "default" theme to prevent crashes
+        // If the theme is "default" (old terminology), fallback to "lichess" (safe default)
+        // This ensures users don't see a broken board or get runtime errors.
+        if (parsed.boardTheme === 'default') {
+          parsed.boardTheme = 'lichess';
+        }
+
         setPreferences({
           ...defaultPreferences,
           ...parsed,

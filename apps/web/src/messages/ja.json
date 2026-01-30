@@ -62,7 +62,7 @@
       "boardAppearance": "盤面の表示",
       "boardTheme": "ボードテーマ",
       "boardThemes": {
-        "default": "デフォルト",
+        "monotone": "モノトーン",
         "lichess": "Lichess風",
         "chesscom": "Chess.com風"
       },

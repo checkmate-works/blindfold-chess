@@ -62,7 +62,7 @@
       "boardAppearance": "Board Appearance",
       "boardTheme": "Board Theme",
       "boardThemes": {
-        "default": "Default",
+        "monotone": "Monotone",
         "lichess": "Lichess-style",
         "chesscom": "Chess.com-style"
       },

@@ -12,12 +12,6 @@ export type TailwindThemeClasses = {
 
 // Board theme Tailwind class definitions
 export const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
-  default: {
-    light: 'bg-stone-200 dark:bg-stone-300',
-    dark: 'bg-stone-600 dark:bg-stone-700',
-    lightCoordinates: 'text-stone-700 dark:text-stone-800',
-    darkCoordinates: 'text-stone-300 dark:text-stone-200',
-  },
   lichess: {
     // Lichess brown theme
     light: 'bg-[#f0d9b5] dark:bg-[#f0d9b5]',
@@ -31,6 +25,12 @@ export const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
     dark: 'bg-[#769656] dark:bg-[#769656]',
     lightCoordinates: 'text-[#769656] dark:text-[#769656]',
     darkCoordinates: 'text-[#eeeed2] dark:text-[#eeeed2]',
+  },
+  monotone: {
+    light: 'bg-stone-200 dark:bg-stone-300',
+    dark: 'bg-stone-600 dark:bg-stone-700',
+    lightCoordinates: 'text-stone-700 dark:text-stone-800',
+    darkCoordinates: 'text-stone-300 dark:text-stone-200',
   },
 };
 

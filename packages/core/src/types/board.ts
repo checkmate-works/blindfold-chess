@@ -1,6 +1,6 @@
 import type { Side } from "./chess";
 
-export type BoardTheme = "default" | "lichess" | "chesscom";
+export type BoardTheme = "monotone" | "lichess" | "chesscom";
 
 export type BoardThemeColors = {
   light: string;
@@ -33,7 +33,7 @@ export type ChessBoardBaseProps = {
 };
 
 export const boardThemeColors: Record<BoardTheme, BoardThemeColors> = {
-  default: {
+  monotone: {
     light: "#e6e3de",
     dark: "#78716c",
     lightText: "#57534e",

@@ -54,7 +54,7 @@ export function GameSettingsContent({
               {t('game.boardTheme')}
             </h5>
             <div className="space-y-2">
-              {(['default', 'lichess', 'chesscom'] as const).map((theme) => (
+              {(['lichess', 'chesscom', 'monotone'] as const).map((theme) => (
                 <PreferenceOption
                   key={theme}
                   type="radio"
