@@ -18,16 +18,15 @@ import {
 } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { CategoryIndex } from '../_components';
-import { ARTICLE_ICONS, type ArticleSlug } from '../_lib/types';
+import { ARTICLE_ICONS, type ArticleSlug, CATEGORY_STYLES } from '../../_lib/types';
 import {
+  getAllArticles,
   getArticle,
   getArticlesByCategory,
-  getAvailableArticles,
   getAvailableCategories,
   getCategoryCounts,
   getPracticeModulesForArticle,
-} from '../_lib/utils';
+} from '../../_lib/utils';
 
 export const dynamic = 'force-static';
 
@@ -35,53 +34,68 @@ type Props = {
   params: Promise<{
     locale: Locale;
     slug: string;
+    category: string;
   }>;
 };
 
 export async function generateStaticParams() {
-  const slugs = getAvailableArticles();
   const locales = ['en', 'ja'] as const;
 
-  return slugs.flatMap((slug) =>
-    locales.map((locale) => ({
-      locale,
-      slug,
-    }))
-  );
+  // We can't easily filter by category here without loading all articles,
+  // but generateStaticParams is for pre-rendering.
+  // Ideally we should know which article belongs to which category.
+  // For now, let's fetch all articles to map correct category.
+
+  const allParams = [];
+
+  for (const locale of locales) {
+    const articles = await getAllArticles(locale);
+    for (const article of articles) {
+      if (article.category) {
+        allParams.push({
+          locale,
+          category: article.category,
+          slug: article.slug,
+        });
+      }
+    }
+  }
+
+  return allParams;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { locale, slug, category } = await params;
   const article = await getArticle(slug, locale);
 
-  if (!article) {
+  if (!article || (article.metadata.category && article.metadata.category !== category)) {
     return {
       title: 'Article Not Found',
     };
   }
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `learn/${slug}` }),
+    ...generateCanonicalMetadata({ locale, path: `learn/${category}/${slug}` }),
     title: article.metadata.title,
     description: article.metadata.excerpt,
   };
 }
 
 export default async function LearnArticlePage({ params }: Props) {
-  const { locale, slug } = await params;
+  const { locale, slug, category } = await params;
   const article = await getArticle(slug, locale);
   const t = await getTranslations({ locale });
 
-  if (!article) {
+  if (!article || (article.metadata.category && article.metadata.category !== category)) {
     notFound();
   }
 
   const relatedPracticeModules = getPracticeModulesForArticle(slug as ArticleSlug);
 
   // Get related articles from the same category
-  const category = article.metadata.category;
-  const relatedArticles = category
-    ? (await getArticlesByCategory(category, locale)).filter((a) => a.slug !== slug)
+  const articleCategory = article.metadata.category;
+  const relatedArticles = articleCategory
+    ? (await getArticlesByCategory(articleCategory, locale)).filter((a) => a.slug !== slug)
     : [];
 
   // Get category data for CategoryIndex
@@ -139,7 +153,7 @@ export default async function LearnArticlePage({ params }: Props) {
             {relatedArticles.map((relatedArticle) => (
               <CardLink
                 key={relatedArticle.slug}
-                href={`/learn/${relatedArticle.slug}`}
+                href={`/learn/${category}/${relatedArticle.slug}`}
                 icon={ARTICLE_ICONS[relatedArticle.slug as ArticleSlug] || '📚'}
                 title={relatedArticle.title}
                 description={relatedArticle.excerpt}
@@ -153,13 +167,26 @@ export default async function LearnArticlePage({ params }: Props) {
       <div className="space-y-4">
         <Divider />
         <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
-        <CategoryIndex
-          categories={categoryInfos}
-          selectedCategory={category}
-          locale={locale}
-          allLabel={t('learn.allCategories')}
-          variant="cards"
-        />
+        <div className="space-y-4">
+          {categoryInfos.map((info) => {
+            const style = CATEGORY_STYLES[info.category];
+            // Accessing style.icon directly for icon.
+
+            return (
+              <CardLink
+                key={info.category}
+                href={`/learn/${info.category}`}
+                icon={style.icon}
+                title={info.label}
+                description={t('learn.articleCount', { count: info.count })}
+                locale={locale}
+                className={
+                  info.category === articleCategory ? 'border-primary ring-1 ring-primary' : ''
+                }
+              />
+            );
+          })}
+        </div>
       </div>
 
       <Divider />
@@ -167,6 +194,7 @@ export default async function LearnArticlePage({ params }: Props) {
       <Breadcrumb
         items={[
           { label: t('navigation.learn'), href: '/learn' },
+          { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
           { label: article.metadata.title },
         ]}
         locale={locale}

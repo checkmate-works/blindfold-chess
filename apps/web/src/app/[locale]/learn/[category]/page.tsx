@@ -4,23 +4,23 @@ import { notFound } from 'next/navigation';
 
 import {
   Breadcrumb,
-  CardLink,
   Divider,
+  ListLink,
+  ListLinkContainer,
   PageDescription,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { generateCanonicalMetadata } from '../../../_lib/metadata';
-import type { Locale } from '../../../_lib/types';
-import { CategoryIndex } from '../../_components';
 import {
   ARTICLE_CATEGORIES,
   ARTICLE_ICONS,
   type ArticleCategory,
   type ArticleSlug,
-} from '../../_lib/types';
-import { getArticlesByCategory, getAvailableCategories, getCategoryCounts } from '../../_lib/utils';
+} from '../_lib/types';
+import { getArticlesByCategory } from '../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const categoryLabel = t(`learn.categories.${category}`);
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `learn/category/${category}` }),
+    ...generateCanonicalMetadata({ locale, path: `learn/${category}` }),
     title: t('learn.categoryTitle', { category: categoryLabel }),
     description: t('learn.description'),
   };
@@ -69,48 +69,39 @@ export default async function LearnCategoryPage({ params }: Props) {
 
   const t = await getTranslations({ locale });
   const articles = await getArticlesByCategory(category as ArticleCategory, locale);
-  const categoryCounts = await getCategoryCounts(locale);
-  const availableCategories = getAvailableCategories();
 
   const categoryLabel = t(`learn.categories.${category}`);
 
-  const categoryInfos = availableCategories.map((cat) => ({
-    category: cat,
-    label: t(`learn.categories.${cat}`),
-    count: categoryCounts[cat],
-    countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
-  }));
-
   return (
     <div className="space-y-8">
-      <PageTitle>{t('learn.title')}</PageTitle>
+      <PageTitle>{categoryLabel}</PageTitle>
 
       <PageDescription>{t('learn.description')}</PageDescription>
 
-      <CategoryIndex
-        categories={categoryInfos}
-        selectedCategory={category as ArticleCategory}
-        locale={locale}
-        allLabel={t('learn.allCategories')}
-      />
+      <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 
-      <SectionTitle>{t('learn.categoryTitle', { category: categoryLabel })}</SectionTitle>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article) => (
-          <CardLink
-            key={article.slug}
-            href={`/learn/${article.slug}`}
-            icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
-            title={article.title}
-            description={article.excerpt}
-            locale={locale}
-          />
-        ))}
-      </div>
-
-      {articles.length === 0 && (
-        <p className="text-muted-foreground text-center py-8">No articles in this category yet.</p>
+      {articles.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('learn.noArticles')}</p>
+      ) : (
+        <ListLinkContainer>
+          {articles.map((article) => (
+            <ListLink
+              key={article.slug}
+              href={`/learn/${category}/${article.slug}`}
+              icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
+              title={article.title}
+              // Description/excerpt is not typically shown in ListLink in posts, but we can verify ListLink props.
+              // Looking at posts/[category]/page.tsx, it passes 'meta' which is date.
+              // Learn articles have publishedAt in metadata.
+              meta={new Date(article.publishedAt).toLocaleDateString(locale, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })}
+              locale={locale}
+            />
+          ))}
+        </ListLinkContainer>
       )}
 
       <Divider />

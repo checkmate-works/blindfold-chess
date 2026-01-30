@@ -57,9 +57,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     try {
       const articles = await getAllArticles(locale);
       for (const article of articles) {
-        sitemap.push({
-          url: `${BASE_URL}/${locale}/learn/${article.slug}`,
-        });
+        if (article.category) {
+          sitemap.push({
+            url: `${BASE_URL}/${locale}/learn/${article.category}/${article.slug}`,
+          });
+        }
       }
     } catch (error) {
       console.error(`Error fetching learn articles for locale ${locale}:`, error);
@@ -71,7 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of SUPPORTED_LOCALES) {
     for (const category of learnCategories) {
       sitemap.push({
-        url: `${BASE_URL}/${locale}/learn/category/${category}`,
+        url: `${BASE_URL}/${locale}/learn/${category}`,
       });
     }
   }

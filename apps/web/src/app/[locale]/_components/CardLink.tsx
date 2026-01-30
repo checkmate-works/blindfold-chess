@@ -6,14 +6,15 @@ type Props = {
   title: string;
   description: string;
   locale?: string;
+  className?: string;
 };
 
-export function CardLink({ href, icon, title, description, locale }: Props) {
+export function CardLink({ href, icon, title, description, locale, className }: Props) {
   return (
     <Link
       href={href}
       locale={locale}
-      className="group block p-6 bg-card rounded-md shadow-sm border border-border transition-all hover:shadow-md hover:border-foreground/20"
+      className={`group block p-6 bg-card rounded-md shadow-sm border border-border transition-all hover:shadow-md hover:border-foreground/20 ${className || ''}`}
     >
       <div className="flex items-start gap-4">
         <span className="text-3xl flex-shrink-0">{icon}</span>

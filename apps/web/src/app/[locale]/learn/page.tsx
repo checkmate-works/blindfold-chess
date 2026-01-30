@@ -12,9 +12,8 @@ import {
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
-import { CategoryIndex } from './_components';
-import { ARTICLE_ICONS, type ArticleSlug } from './_lib/types';
-import { getAllArticles, getAvailableCategories, getCategoryCounts } from './_lib/utils';
+import { CATEGORY_STYLES } from './_lib/types';
+import { getAvailableCategories, getCategoryCounts } from './_lib/utils';
 
 export const dynamic = 'force-static';
 
@@ -42,7 +41,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LearnPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
-  const articles = await getAllArticles(locale);
   const categoryCounts = await getCategoryCounts(locale);
   const availableCategories = getAvailableCategories();
 
@@ -59,25 +57,26 @@ export default async function LearnPage({ params }: Props) {
 
       <PageDescription>{t('learn.description')}</PageDescription>
 
-      <CategoryIndex
-        categories={categoryInfos}
-        locale={locale}
-        allLabel={t('learn.allCategories')}
-      />
+      <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
 
-      <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
+      <div className="space-y-4">
+        {categoryInfos.map((info) => {
+          const style = CATEGORY_STYLES[info.category];
+          // Determine description - for now using a generic one or looking up if exists
+          // Since existing code didn't have detailed description per category in utils, we construct it.
+          // Accessing style.icon directly for icon.
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article) => (
-          <CardLink
-            key={article.slug}
-            href={`/learn/${article.slug}`}
-            icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
-            title={article.title}
-            description={article.excerpt}
-            locale={locale}
-          />
-        ))}
+          return (
+            <CardLink
+              key={info.category}
+              href={`/learn/${info.category}`}
+              icon={style.icon}
+              title={info.label}
+              description={t('learn.articleCount', { count: info.count })}
+              locale={locale}
+            />
+          );
+        })}
       </div>
 
       <Divider />

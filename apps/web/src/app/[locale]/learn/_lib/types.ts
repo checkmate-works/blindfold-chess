@@ -7,9 +7,9 @@ import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
  * Article categories for filtering
  */
 export const ARTICLE_CATEGORIES = {
-  PIECE_MOVEMENT: 'piece-movement',
-  COORDINATES: 'coordinates',
   NOTATION: 'notation',
+  COORDINATES: 'coordinates',
+  PIECE_MOVEMENT: 'piece-movement',
   MEMORY: 'memory',
   PRACTICE: 'practice',
 } as const;
