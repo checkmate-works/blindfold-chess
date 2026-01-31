@@ -394,7 +394,7 @@ export function FenSetup({ locale }: Props) {
       <div className="mt-8 space-y-4">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
-          href="/learn/fen-notation"
+          href="/learn/notation/fen-notation"
           icon="📝"
           title={t('viewArticle')}
           description={t('articleDescription')}

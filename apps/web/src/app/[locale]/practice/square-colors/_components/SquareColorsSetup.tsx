@@ -56,7 +56,7 @@ export function SquareColorsSetup({ locale, timeLimit, onTimeLimitChange }: Prop
       <div className="mt-8 space-y-4">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
-          href="/learn/square-colors"
+          href="/learn/coordinates/square-colors"
           icon="🎨"
           title={t('viewArticle')}
           description={t('articleDescription')}

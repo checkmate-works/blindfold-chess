@@ -69,21 +69,21 @@ export function CoordinateQuizSetup({
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink
-            href="/learn/coordinate-confusion"
+            href="/learn/coordinates/coordinate-confusion"
             icon="🔄"
             title={t('articles.coordinateConfusion.title')}
             description={t('articles.coordinateConfusion.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/anchor-squares"
+            href="/learn/coordinates/anchor-squares"
             icon="⚓"
             title={t('articles.anchorSquares.title')}
             description={t('articles.anchorSquares.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/algebraic-notation"
+            href="/learn/notation/algebraic-notation"
             icon="🔤"
             title={t('articles.algebraicNotation.title')}
             description={t('articles.algebraicNotation.description')}

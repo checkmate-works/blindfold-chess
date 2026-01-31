@@ -136,7 +136,7 @@ export default async function RootPage() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('learn.description')}
             <Link
-              href={`/${locale}/learn/de-groot-experiment`}
+              href={`/${locale}/learn/memory/de-groot-experiment`}
               className="text-muted-foreground underline hover:text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm transition-colors"
             >
               {t('learn.deGrootLink')}

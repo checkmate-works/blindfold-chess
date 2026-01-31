@@ -53,7 +53,7 @@ const content = `# 目隠しチェスを始めよう
 
 ### 推奨ステップ：
 
-1. **記事から始める**: [駒の動きの視覚化](/ja/learn/category/piece-movement)や[座標の把握](/ja/learn/category/coordinates)に関する記事を読んで基礎を理解しましょう
+1. **記事から始める**: [駒の動きの視覚化](/ja/learn/moves)や[座標の把握](/ja/learn/coordinates)に関する記事を読んで基礎を理解しましょう
 2. **簡単な訓練から**: [マスの色認識](/ja/practice/square-colors)のような基本的な練習で、頭の中での盤面想像に慣れましょう
 3. **AIとの対戦へ**: 自信がついたら、低難易度のStockfishに挑戦しましょう
 

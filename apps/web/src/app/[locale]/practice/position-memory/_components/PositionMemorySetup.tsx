@@ -290,7 +290,7 @@ export function PositionMemorySetup({
       <div className="mt-8 space-y-4">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
-          href="/learn/position-memory"
+          href="/learn/memory/position-memory"
           icon="🧠"
           title={t('viewArticle')}
           description={t('articleDescription')}

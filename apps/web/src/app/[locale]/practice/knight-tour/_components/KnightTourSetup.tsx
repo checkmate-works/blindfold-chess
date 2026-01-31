@@ -116,14 +116,14 @@ export function KnightTourSetup({
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink
-            href="/learn/knight-tour"
+            href="/learn/practice/knight-tour"
             icon="♞"
             title={t('articles.knightTour.title')}
             description={t('articles.knightTour.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/knight-movement"
+            href="/learn/moves/knight-movement"
             icon="♘"
             title={t('articles.knightMovement.title')}
             description={t('articles.knightMovement.description')}

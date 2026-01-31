@@ -53,7 +53,7 @@ Building visualization skills requires practice.
 
 ### Recommended Steps:
 
-1. **Start with Articles**: Read articles on [Visualizing Piece Movement](/en/learn/category/piece-movement) and [Understanding Coordinates](/en/learn/category/coordinates) to understand the basics
+1. **Start with Articles**: Read articles on [Visualizing Piece Movement](/en/learn/moves) and [Understanding Coordinates](/en/learn/coordinates) to understand the basics
 2. **From Simple Training**: Get used to imagining the board in your head with basic exercises like [Square Color Recognition](/en/practice/square-colors)
 3. **To AI Games**: Once you feel confident, challenge Stockfish at a low difficulty level
 

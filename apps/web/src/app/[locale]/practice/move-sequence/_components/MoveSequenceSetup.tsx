@@ -600,7 +600,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
       <div className="mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <CardLink
-          href="/learn/algebraic-notation"
+          href="/learn/notation/algebraic-notation"
           icon="🔤"
           title={t('articles.algebraicNotation.title')}
           description={t('articles.algebraicNotation.description')}

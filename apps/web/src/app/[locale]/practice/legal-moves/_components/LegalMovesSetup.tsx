@@ -77,28 +77,28 @@ export function LegalMovesSetup({
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink
-            href="/learn/king-movement"
+            href="/learn/moves/king-movement"
             icon="♔"
             title={t('articles.king.title')}
             description={t('articles.king.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/knight-movement"
+            href="/learn/moves/knight-movement"
             icon="♘"
             title={t('articles.knight.title')}
             description={t('articles.knight.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/rook-movement"
+            href="/learn/moves/rook-movement"
             icon="♜"
             title={t('articles.rook.title')}
             description={t('articles.rook.description')}
             locale={locale}
           />
           <CardLink
-            href="/learn/bishop-movement"
+            href="/learn/moves/bishop-movement"
             icon="♗"
             title={t('articles.bishop.title')}
             description={t('articles.bishop.description')}

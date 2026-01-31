@@ -36,7 +36,7 @@ export function AlgebraicNotationSetup() {
       <div className="space-y-4">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
-          href="/learn/algebraic-notation"
+          href="/learn/notation/algebraic-notation"
           icon="🔤"
           title={t('viewArticle')}
           description={t('articleDescription')}
