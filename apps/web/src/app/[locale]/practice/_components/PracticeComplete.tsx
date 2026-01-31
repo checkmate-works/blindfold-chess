@@ -128,7 +128,7 @@ export function PracticeComplete({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
         {/* Score display - unified with individual problem results */}
         {detailedStats && labels.recreationProgress ? (

@@ -329,7 +329,7 @@
       "start": "練習を開始",
       "viewArticle": "代数式表記法について学ぶ",
       "articleDescription": "世界共通のチェスの手を記録するための標準システムを学ぶ",
-      "requiredKnowledge": "この練習に必要な知識",
+      "requiredKnowledge": "関連記事",
       "correct": "正解！",
       "incorrect": "不正解",
       "correctAnswerIs": "正解は",
@@ -356,7 +356,7 @@
       "accuracy": "正解率",
       "timeTaken": "所要時間",
       "averageTime": "平均時間",
-      "requiredKnowledge": "この練習に必要な知識",
+      "requiredKnowledge": "関連記事",
       "viewArticle": "マスの色について学ぶ",
       "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ"
     },
@@ -566,7 +566,7 @@
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
       "cancel": "キャンセル",
-      "requiredKnowledge": "この練習に必要な知識",
+      "requiredKnowledge": "関連記事",
       "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
       "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ"
     },
@@ -637,7 +637,7 @@
       "pageTitle": "FEN再構築トレーニング",
       "session": "練習中",
       "start": "練習を開始",
-      "requiredKnowledge": "この練習に必要な知識",
+      "requiredKnowledge": "関連記事",
       "viewArticle": "FEN記法について学ぶ",
       "articleDescription": "チェスの盤面を記述するための標準的な記法を学ぶ",
       "fenString": "FEN文字列",

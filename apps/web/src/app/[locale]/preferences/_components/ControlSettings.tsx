@@ -8,7 +8,7 @@ export function ControlSettings() {
   const { preferences, updatePreferences } = useGamePreferences();
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-none">
       <ControlSettingsContent settings={preferences} onSettingsChange={updatePreferences} />
     </div>
   );

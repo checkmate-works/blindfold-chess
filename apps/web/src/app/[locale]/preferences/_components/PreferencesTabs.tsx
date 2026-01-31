@@ -64,7 +64,7 @@ export function PreferencesTabs({ locale }: Props) {
         {activeTab === 'game' && <GameSettings />}
         {activeTab === 'controls' && <ControlSettings />}
         {activeTab === 'appearance' && (
-          <div className="max-w-2xl">
+          <div>
             <div className="bg-card rounded-md p-6 shadow-sm border border-border">
               <div className="space-y-6">
                 <div>

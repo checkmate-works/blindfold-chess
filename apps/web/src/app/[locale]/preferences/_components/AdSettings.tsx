@@ -11,7 +11,7 @@ export function AdSettings() {
   const { preferences, updatePreferences } = useGamePreferences();
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-none">
       <div className="bg-card rounded-md p-6 shadow-sm border border-border">
         <div className="space-y-6">
           <div>

@@ -49,12 +49,12 @@ export default async function PostPage({ params }: Props) {
   return (
     <div className="space-y-12">
       {/* Header */}
-      <header className="space-y-4 max-w-3xl">
+      <header className="space-y-4">
         <PageTitle>{post.title}</PageTitle>
       </header>
 
       {/* Content */}
-      <article className="prose prose-slate dark:prose-invert max-w-2xl">
+      <article className="prose prose-slate dark:prose-invert max-w-none">
         <MarkdownRenderer content={post.content} skipFirstH1={true} />
       </article>
 

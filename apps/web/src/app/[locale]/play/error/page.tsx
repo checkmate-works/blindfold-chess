@@ -95,7 +95,7 @@ export default function PlayErrorPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-none mx-auto">
       <PageTitle>{t('title')}</PageTitle>
 
       <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 mt-6">
