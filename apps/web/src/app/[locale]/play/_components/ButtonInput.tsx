@@ -7,6 +7,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/core';
 import type { PieceSymbol } from 'chess.js';
 import { FaTrash } from 'react-icons/fa';
 
+import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { useButtonInputLogic } from './useButtonInputLogic';
@@ -182,21 +183,11 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
         <>
           {/* Source Files Row */}
           <div className="flex flex-col gap-2">
-            <div className="flex gap-1 justify-center w-full">
-              {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((file) => (
-                <button
-                  key={file}
-                  onClick={() => handleFileClick(file)}
-                  className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
-                    selectedFiles.has(file)
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background hover:bg-muted border-border'
-                  }`}
-                >
-                  {file}
-                </button>
-              ))}
-            </div>
+            <CoordinateInput
+              selectedFiles={selectedFiles}
+              onFileToggle={handleFileClick}
+              showRanks={false}
+            />
 
             {/* Takes Checkbox (Pawn Mode) - Shown if no piece selected and file selected */}
             {!selectedPiece && selectedFiles.size > 0 && (
@@ -221,43 +212,25 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
 
             {/* Target File Row (Pawn Capture Mode Only) */}
             {isPawnCaptureMode && (
-              <div className="flex gap-1 justify-center w-full animate-in fade-in slide-in-from-top-2 duration-200">
-                {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((file) => (
-                  <button
-                    key={`target-${file}`}
-                    onClick={() => setTargetFile(targetFile === file ? null : file)}
-                    disabled={selectedFiles.has(file)} // Can't capture same file
-                    className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
-                      targetFile === file
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-border disabled:opacity-20 disabled:cursor-not-allowed'
-                    }`}
-                  >
-                    {file}
-                  </button>
-                ))}
+              <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                <CoordinateInput
+                  selectedFiles={targetFile ? new Set([targetFile]) : new Set()}
+                  onFileToggle={(file) => setTargetFile(targetFile === file ? null : file)}
+                  showRanks={false}
+                  disabledFile={(file) => selectedFiles.has(file)}
+                />
               </div>
             )}
           </div>
 
           {/* Ranks Row (1 to 8) - Show only if File is selected (and Target File if capture) */}
           {selectedFiles.size > 0 && (!isPawnCaptureMode || targetFile) && (
-            <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex gap-1 justify-center w-full">
-                {['1', '2', '3', '4', '5', '6', '7', '8'].map((rank) => (
-                  <button
-                    key={rank}
-                    onClick={() => toggleSelectionRanks(rank)}
-                    className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
-                      selectedRanks.has(rank)
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-border'
-                    }`}
-                  >
-                    {rank}
-                  </button>
-                ))}
-              </div>
+            <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+              <CoordinateInput
+                selectedRanks={selectedRanks}
+                onRankToggle={toggleSelectionRanks}
+                showFiles={false}
+              />
             </div>
           )}
 

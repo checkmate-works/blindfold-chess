@@ -24,7 +24,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const timeLimit = initialTimeLimit;
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-  const [streak, setStreak] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
 
@@ -145,10 +144,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
       setIsProcessing(true);
 
       if (correct) {
-        setStreak((s) => s + 1);
         setCorrectCount((c) => c + 1);
       } else {
-        setStreak(0);
         setIncorrectCount((c) => c + 1);
       }
 
@@ -162,7 +159,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         correct ? 1000 : 2000
       );
     },
-    [problem, isProcessing, isFinished, streak, generateProblem, countdown]
+    [problem, isProcessing, isFinished, generateProblem, countdown]
   );
 
   const handleFileToggle = (file: string) => {
@@ -183,7 +180,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown]);
 
   const handlePlayAgain = () => {
-    setStreak(0);
     setCorrectCount(0);
     setIncorrectCount(0);
     setTimeElapsed(0);
@@ -229,7 +225,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         selectedFile={selectedFile}
         selectedRank={selectedRank}
         isCorrect={isCorrect}
-        streak={streak}
+        correctCount={correctCount}
+        incorrectCount={incorrectCount}
         onFileToggle={handleFileToggle}
         onRankToggle={handleRankToggle}
         isProcessing={isProcessing}

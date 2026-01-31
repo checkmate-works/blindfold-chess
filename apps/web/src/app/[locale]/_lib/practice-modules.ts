@@ -14,6 +14,7 @@ export const PRACTICE_MODULES = {
   LEGAL_MOVES: 'legal-moves',
   POSITION_MEMORY: 'position-memory',
   SQUARE_COLORS: 'square-colors',
+  BOARD_SYMMETRY: 'board-symmetry',
 } as const;
 
 export type PracticeModuleId = (typeof PRACTICE_MODULES)[keyof typeof PRACTICE_MODULES];
@@ -27,6 +28,7 @@ export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> 
   [PRACTICE_MODULES.LEGAL_MOVES]: 'legalMoves',
   [PRACTICE_MODULES.POSITION_MEMORY]: 'positionMemory',
   [PRACTICE_MODULES.SQUARE_COLORS]: 'squareColors',
+  [PRACTICE_MODULES.BOARD_SYMMETRY]: 'boardSymmetry',
 } as const;
 
 // Icon mapping for visual representation
@@ -38,6 +40,7 @@ export const PRACTICE_MODULE_ICONS: Record<PracticeModuleId, string> = {
   [PRACTICE_MODULES.LEGAL_MOVES]: '♗',
   [PRACTICE_MODULES.POSITION_MEMORY]: '🧠',
   [PRACTICE_MODULES.SQUARE_COLORS]: '🏁',
+  [PRACTICE_MODULES.BOARD_SYMMETRY]: '🦋',
 } as const;
 
 /**

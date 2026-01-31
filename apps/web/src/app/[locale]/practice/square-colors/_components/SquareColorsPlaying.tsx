@@ -9,6 +9,7 @@ import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 type Props = {
   currentSquare: string;
@@ -19,6 +20,8 @@ type Props = {
   onAnswer: (color: 'light' | 'dark') => void;
   boardTheme?: BoardTheme;
   countdown: number | null;
+  correctCount: number;
+  incorrectCount: number;
 };
 
 export function SquareColorsPlaying({
@@ -30,6 +33,8 @@ export function SquareColorsPlaying({
   onAnswer,
   boardTheme = DEFAULT_BOARD_THEME,
   countdown,
+  correctCount,
+  incorrectCount,
 }: Props) {
   const t = useTranslations('practice.squareColors');
   const timeElapsed = timeLimit - timeRemaining;
@@ -94,6 +99,8 @@ export function SquareColorsPlaying({
           </button>
         </div>
       </div>
+
+      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
     </div>
   );
 }

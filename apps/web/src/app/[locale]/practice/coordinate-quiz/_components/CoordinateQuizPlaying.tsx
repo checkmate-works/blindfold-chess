@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
 import { Square } from 'chess.js';
-import { FaCheck, FaTimes } from 'react-icons/fa';
 
+import { ScoreCounter } from '../../_components/ScoreCounter';
 import type { CoordinateQuestion } from '../_lib/types';
 import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 
@@ -96,20 +96,7 @@ export function CoordinateQuizPlaying({
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-12 mt-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-500">
-            <FaCheck className="w-4 h-4" />
-          </div>
-          <span className="text-xl font-mono font-bold">{correctAnswers}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-500">
-            <FaTimes className="w-4 h-4" />
-          </div>
-          <span className="text-xl font-mono font-bold">{wrongAnswers}</span>
-        </div>
-      </div>
+      <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
     </div>
   );
 }

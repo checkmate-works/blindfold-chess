@@ -208,6 +208,8 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
         onAnswer={handleAnswer}
         boardTheme={preferences.boardTheme}
         countdown={countdown}
+        correctCount={answers.filter((a) => a).length}
+        incorrectCount={answers.filter((a) => !a).length}
       />
     </div>
   );

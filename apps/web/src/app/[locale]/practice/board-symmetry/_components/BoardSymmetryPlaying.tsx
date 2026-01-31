@@ -7,6 +7,7 @@ import { QuizTimer } from '@/components/QuizTimer';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
+import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 type SymmetryType = 'horizontal' | 'vertical' | 'point';
 
@@ -20,7 +21,8 @@ type Props = {
   selectedFile: string | null;
   selectedRank: string | null;
   isCorrect: boolean | null;
-  streak: number;
+  correctCount: number;
+  incorrectCount: number;
   onFileToggle: (file: string) => void;
   onRankToggle: (rank: string) => void;
   isProcessing: boolean;
@@ -34,7 +36,8 @@ export function BoardSymmetryPlaying({
   selectedFile,
   selectedRank,
   isCorrect,
-  streak,
+  correctCount,
+  incorrectCount,
   onFileToggle,
   onRankToggle,
   isProcessing,
@@ -108,7 +111,7 @@ export function BoardSymmetryPlaying({
         </div>
       </div>
 
-      <div className="text-center text-muted-foreground">{t('streak', { count: streak })}</div>
+      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
     </div>
   );
 }
