@@ -281,7 +281,37 @@
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time"
+      "averageTime": "Average Time",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Learn the three types of symmetry on the chess board: File, Rank, and Point symmetry.",
+        "skip": "Skip",
+        "previous": "Previous",
+        "next": "Next",
+        "start": "Start",
+        "steps": {
+          "intro": {
+            "title": "What is Board Symmetry?",
+            "description": "Training board symmetry helps you instantly find corresponding squares. There are three main types of symmetry on the chessboard."
+          },
+          "horizontal": {
+            "title": "Vertical Symmetry (File)",
+            "description": "Squares symmetric with respect to the central vertical line (between d and e files). Example: a1 ↔ h1, c3 ↔ f3."
+          },
+          "vertical": {
+            "title": "Horizontal Symmetry (Rank)",
+            "description": "Squares symmetric with respect to the central horizontal line (between 4th and 5th ranks). Example: a1 ↔ a8, h2 ↔ h7."
+          },
+          "point": {
+            "title": "Point Symmetry (Center)",
+            "description": "Squares symmetric with respect to the center of the board (rotated 180 degrees). Example: a1 ↔ h8, c3 ↔ f6."
+          },
+          "start": {
+            "title": "Ready to Start?",
+            "description": "Let's try solving some problems."
+          }
+        }
+      }
     },
     "difficulty": {
       "beginner": "Beginner",

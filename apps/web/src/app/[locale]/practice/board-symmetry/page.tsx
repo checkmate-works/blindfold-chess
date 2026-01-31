@@ -5,7 +5,7 @@ import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import BoardSymmetrySettings from './_components/BoardSymmetrySettings';
+import { BoardSymmetryPageContent } from './_components/BoardSymmetryPageContent';
 
 type Props = {
   params: Promise<{
@@ -34,7 +34,7 @@ export default async function BoardSymmetryPage({ params }: Props) {
 
       <PageDescription>{t('practice.boardSymmetry.description')}</PageDescription>
 
-      <BoardSymmetrySettings locale={locale} />
+      <BoardSymmetryPageContent locale={locale} />
 
       <Divider />
 

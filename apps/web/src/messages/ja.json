@@ -282,7 +282,37 @@
       "correctAnswers": "正解数",
       "accuracy": "正答率",
       "timeTaken": "かかった時間",
-      "averageTime": "平均時間"
+      "averageTime": "平均時間",
+      "tutorial": {
+        "title": "チュートリアル",
+        "description": "チェス盤の3種類の対称性（ファイル、ランク、点対称）について学びます。",
+        "skip": "スキップ",
+        "previous": "戻る",
+        "next": "次へ",
+        "start": "始める",
+        "steps": {
+          "intro": {
+            "title": "ボードの対称性とは",
+            "description": "対称性をトレーニングすることで、瞬時に対応するマスを見つけられるようになります。チェス盤には主に3つの対称性があります。"
+          },
+          "horizontal": {
+            "title": "左右対称 (ファイル)",
+            "description": "中央の垂直線（d列とe列の間）に対する対称性です。\n例: a1 ↔ h1, c3 ↔ f3"
+          },
+          "vertical": {
+            "title": "上下対称 (ランク)",
+            "description": "中央の水平線（第4ランクと第5ランクの間）に対する対称性です。\n例: a1 ↔ a8, h2 ↔ h7"
+          },
+          "point": {
+            "title": "点対称 (中心)",
+            "description": "ボードの中心に対する対称性（180度回転）です。\n例: a1 ↔ h8, c3 ↔ f6"
+          },
+          "start": {
+            "title": "準備はいいですか？",
+            "description": "実際に問題を解いてみましょう。"
+          }
+        }
+      }
     },
     "difficulty": {
       "beginner": "初級",
