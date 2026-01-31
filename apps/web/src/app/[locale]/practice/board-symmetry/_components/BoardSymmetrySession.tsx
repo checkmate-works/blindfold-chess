@@ -32,6 +32,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [correctSolution, setCorrectSolution] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(3);
 
@@ -52,6 +53,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setSelectedFile(null);
     setSelectedRank(null);
     setIsCorrect(null);
+    setCorrectSolution(null);
     setIsProcessing(false);
   }, []);
 
@@ -139,6 +141,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
       const correctFile = FILES[targetFileIndex];
       const correctRank = RANKS[targetRankIndex];
       const correct = file === correctFile && rank === correctRank;
+
+      setCorrectSolution(`${correctFile}${correctRank}`);
 
       setIsCorrect(correct);
       setIsProcessing(true);
@@ -233,6 +237,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         timeRemaining={timeLimit - timeElapsed}
         timeLimit={timeLimit}
         countdown={countdown}
+        correctSolution={correctSolution}
       />
     </div>
   );

@@ -29,6 +29,7 @@ type Props = {
   timeRemaining: number;
   timeLimit: number;
   countdown: number | null;
+  correctSolution: string | null;
 };
 
 export function BoardSymmetryPlaying({
@@ -44,6 +45,7 @@ export function BoardSymmetryPlaying({
   timeRemaining,
   timeLimit,
   countdown,
+  correctSolution,
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const timeElapsed = timeLimit - timeRemaining;
@@ -96,7 +98,11 @@ export function BoardSymmetryPlaying({
               isCorrect !== null ? 'opacity-100' : 'opacity-0'
             } ${getFeedbackColor()}`}
           >
-            {isCorrect === true ? t('correct') : isCorrect === false ? t('incorrect') : ''}
+            {isCorrect === true
+              ? t('correct')
+              : isCorrect === false
+                ? t('incorrectWithSolution', { solution: correctSolution || '?' })
+                : ''}
           </div>
         </div>
 

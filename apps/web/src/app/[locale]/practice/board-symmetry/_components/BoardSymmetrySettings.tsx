@@ -112,7 +112,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
             locale={locale}
             className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
           >
-            {t('tutorial.title')}
+            {t('viewTutorial')}
           </Link>
         </div>
       </div>

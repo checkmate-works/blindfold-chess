@@ -262,7 +262,7 @@
     "settings": {
       "title": "練習設定",
       "timeLimit": "制限時間",
-      "start": "練習を開始"
+      "start": "開始"
     },
     "boardSymmetry": {
       "title": "ボードの対称性",
@@ -275,8 +275,10 @@
       },
       "correct": "正解",
       "incorrect": "不正解",
+      "incorrectWithSolution": "正解は{solution}",
       "next": "次の問題",
       "streak": "連続正解: {count}",
+      "viewTutorial": "チュートリアルを見る",
       "viewArticle": "ボードの対称性について学ぶ",
       "articleDescription": "盤上の対称的なマスの見つけ方を解説",
       "correctAnswers": "正解数",
