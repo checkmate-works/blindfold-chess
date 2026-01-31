@@ -233,7 +233,9 @@
       "coordinates": "座標",
       "notation": "記法",
       "memory": "記憶",
-      "practice": "練習"
+      "practice": "練習",
+      "moves": "駒の動き",
+      "visualization": "ビジュアライゼーション"
     },
     "categoryTitle": "{category}の記事"
   },
@@ -246,6 +248,7 @@
     "practiceComplete": "練習完了！",
     "score": "スコア",
     "relatedLearning": "関連する学習",
+    "session": "セッション",
     "result": "結果",
     "secondsFormat": "{seconds}秒",
     "minutesFormat": "{minutes}分",
@@ -255,6 +258,31 @@
       "message": "進捗は失われます。本当に終了しますか？",
       "confirmButton": "終了する",
       "cancelButton": "続ける"
+    },
+    "settings": {
+      "title": "練習設定",
+      "timeLimit": "制限時間",
+      "start": "練習を開始"
+    },
+    "boardSymmetry": {
+      "title": "ボードの対称性",
+      "description": "盤上の対称的なマスを識別する練習",
+      "question": "{square}の{type}は？",
+      "types": {
+        "horizontal": "左右対称",
+        "vertical": "上下対称",
+        "point": "点対称"
+      },
+      "correct": "正解",
+      "incorrect": "不正解",
+      "next": "次の問題",
+      "streak": "連続正解: {count}",
+      "viewArticle": "ボードの対称性について学ぶ",
+      "articleDescription": "盤上の対称的なマスの見つけ方を解説",
+      "correctAnswers": "正解数",
+      "accuracy": "正答率",
+      "timeTaken": "かかった時間",
+      "averageTime": "平均時間"
     },
     "difficulty": {
       "beginner": "初級",

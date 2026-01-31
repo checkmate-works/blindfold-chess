@@ -232,7 +232,9 @@
       "coordinates": "Coordinates",
       "notation": "Notation",
       "memory": "Memory",
-      "practice": "Practice"
+      "practice": "Practice",
+      "moves": "Piece Movement",
+      "visualization": "Visualization"
     },
     "categoryTitle": "{category} Articles"
   },
@@ -245,6 +247,7 @@
     "practiceComplete": "Practice Complete!",
     "score": "Score",
     "relatedLearning": "Related Learning",
+    "session": "Session",
     "result": "Result",
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
@@ -254,6 +257,31 @@
       "message": "Your progress will be lost. Are you sure you want to quit?",
       "confirmButton": "Quit",
       "cancelButton": "Continue"
+    },
+    "settings": {
+      "title": "Practice Settings",
+      "timeLimit": "Time Limit",
+      "start": "Start Practice"
+    },
+    "boardSymmetry": {
+      "title": "Board Symmetry",
+      "description": "Practice identifying symmetrical squares on the board",
+      "question": "{square} {type}?",
+      "types": {
+        "horizontal": "horizontal",
+        "vertical": "vertical",
+        "point": "point"
+      },
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "next": "Next Problem",
+      "streak": "Current Streak: {count}",
+      "viewArticle": "Learn about Board Symmetry",
+      "articleDescription": "Understand how to identify symmetrical squares on the chessboard",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Average Time"
     },
     "difficulty": {
       "beginner": "Beginner",
