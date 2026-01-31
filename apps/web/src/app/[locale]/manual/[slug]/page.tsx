@@ -1,7 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  Divider,
+  MarkdownRenderer,
+  PageDescription,
+  PageTitle,
+} from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -59,10 +65,14 @@ export default async function ManualArticlePage({ params }: Props) {
 
   return (
     <div className="space-y-12">
-      <PageTitle>{title}</PageTitle>
+      {/* Header */}
+      <header className="space-y-4">
+        <PageTitle>{article.metadata.title}</PageTitle>
+        {article.metadata.excerpt && <PageDescription>{article.metadata.excerpt}</PageDescription>}
+      </header>
 
-      {/* Article content with narrower width for readability */}
-      <article className="prose prose-slate dark:prose-invert max-w-2xl">
+      {/* Content */}
+      <article className="prose prose-slate dark:prose-invert max-w-none">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
 
