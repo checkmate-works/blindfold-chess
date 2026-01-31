@@ -127,7 +127,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
         <SectionTitle>{tSquareColors('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/board-symmetry"
-          icon="🧩"
+          icon="🦋"
           title={t('viewArticle')}
           description={t('articleDescription')}
           locale={locale}
