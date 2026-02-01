@@ -90,14 +90,6 @@ export default async function LearnCategoryPage({ params }: Props) {
               href={`/learn/${category}/${article.slug}`}
               icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
               title={article.title}
-              // Description/excerpt is not typically shown in ListLink in posts, but we can verify ListLink props.
-              // Looking at posts/[category]/page.tsx, it passes 'meta' which is date.
-              // Learn articles have publishedAt in metadata.
-              meta={new Date(article.publishedAt).toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
               locale={locale}
             />
           ))}
