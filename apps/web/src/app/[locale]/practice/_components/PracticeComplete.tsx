@@ -77,6 +77,7 @@ type Props = {
   // Callback when a FEN is deleted
   // Callback when a FEN is deleted
   onDeleteFen?: (fen: string) => void;
+  onExit?: () => void;
   children?: React.ReactNode;
 };
 
@@ -91,6 +92,7 @@ export function PracticeComplete({
   problemResults,
   isCustomFen,
   onDeleteFen,
+  onExit,
   children,
 }: Props) {
   const router = useRouter();
@@ -468,7 +470,7 @@ export function PracticeComplete({
           </Button>
 
           <Button
-            onClick={() => router.push(`/${locale}/practice`)}
+            onClick={onExit ? onExit : () => router.push(`/${locale}/practice`)}
             variant="secondary"
             size="lg"
             fullWidth

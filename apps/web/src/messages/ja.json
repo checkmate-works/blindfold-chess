@@ -267,7 +267,8 @@
       "timeLimit": "制限時間",
       "problemCount": "問題数",
       "problems": "問",
-      "start": "開始"
+      "start": "開始",
+      "cancel": "キャンセル"
     },
     "boardSymmetry": {
       "title": "ボードの対称性",
@@ -757,7 +758,39 @@
       "tryAgain": "もう一度",
       "skip": "この問題をスキップ",
       "quit": "練習を終了",
-      "skipped": "スキップ"
+      "skipped": "スキップ",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "tutorial": {
+        "title": "チュートリアル",
+        "steps": {
+          "intro": {
+            "title": "ゴールの確認",
+            "description": "スタート（e4）からゴール（h5）まで、ナイトを移動させる最短ルートを考えます。"
+          },
+          "visualization": {
+            "title": "ルートのイメージ",
+            "description": "盤面上の駒は動きません。頭の中でルートをイメージして、通過するマスの座標を入力してください。\n例: e4 → f6 → h5"
+          },
+          "start": {
+            "title": "実践",
+            "description": "実際にやってみましょう。スタートボタンを押すと問題が始まります。"
+          }
+        },
+        "description": "盤面を見ずにルートをイメージして入力するトレーニングです。",
+        "viewTutorial": "チュートリアルを見る",
+        "intro": "まずは以下の問題で試してみましょう。",
+        "start": "試してみる",
+        "next": "次へ",
+        "previous": "戻る",
+        "skip": "スキップ",
+        "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
+        "restart": "もう一度",
+        "finish": "練習を開始する"
+      }
     },
     "moveSequence": {
       "title": "約束組手",

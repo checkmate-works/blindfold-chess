@@ -11,19 +11,25 @@ import type { PieceSymbol } from 'chess.js';
 import { FaPlay } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { ProblemCountSlider } from '@/app/[locale]/practice/_components/ProblemCountSlider';
 
 import { PIECES } from '../_lib/utils';
+import {
+  ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY,
+  RoutePlannerTutorialSkipLink,
+} from './RoutePlannerTutorialSkipLink';
 
 type Props = {
   locale: Locale;
+  onShowTutorial?: () => void;
 };
 
 const STORAGE_KEY = 'routePlannerSettings';
 const DEFAULT_PROBLEM_COUNT = 5;
 
-export function RoutePlannerSettings({ locale }: Props) {
+export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tSettings = useTranslations('practice.settings');
   const tLegalMoves = useTranslations('practice.legalMoves'); // For piece names
@@ -37,6 +43,20 @@ export function RoutePlannerSettings({ locale }: Props) {
     Q: true,
   });
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  const handleResetConfirm = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY);
+    setIsResetConfirmOpen(false);
+
+    // Refresh page to trigger tutorial check in RoutePlannerPageContent
+    if (onShowTutorial) {
+      onShowTutorial();
+    }
+    // Force reload just in case onShowTutorial isn't enough or state needs clearing
+    // but onShowTutorial updates parent state to show tutorial, so that should be enough.
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -149,7 +169,26 @@ export function RoutePlannerSettings({ locale }: Props) {
         >
           {tSettings('start')}
         </Button>
+
+        {onShowTutorial && <RoutePlannerTutorialSkipLink onStartTutorial={onShowTutorial} />}
       </div>
+
+      <div className="mt-8 flex justify-end">
+        <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
+          {t('resetSettings')}
+        </Button>
+      </div>
+
+      <ConfirmationModal
+        isOpen={isResetConfirmOpen}
+        title={t('resetSettingsConfirm.title')}
+        message={t('resetSettingsConfirm.message')}
+        confirmText={t('resetSettings')}
+        cancelText={tSettings('cancel')}
+        confirmVariant="danger"
+        onConfirm={handleResetConfirm}
+        onCancel={() => setIsResetConfirmOpen(false)}
+      />
     </div>
   );
 }

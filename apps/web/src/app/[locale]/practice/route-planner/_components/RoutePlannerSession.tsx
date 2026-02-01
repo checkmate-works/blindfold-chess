@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
@@ -50,17 +51,26 @@ type Props = {
   locale: string;
   problemCount?: number; // default 5
   allowedPieces?: PieceType[]; // default all
+  mode?: 'standard' | 'tutorial';
+  initialProblem?: {
+    piece: PieceType;
+    start: string;
+    end: string;
+  };
 };
 
 export function RoutePlannerSession({
   locale,
   problemCount = 5,
   allowedPieces = [...PIECES],
+  mode = 'standard',
+  initialProblem,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
 
   const { preferences } = useGamePreferences(); // Keep if needed for other prefs
+  const router = useRouter();
 
   /* State */
   const [gameState, setGameState] = useState<GameState>('playing');
@@ -98,13 +108,19 @@ export function RoutePlannerSession({
   }, []);
 
   const startNewProblem = useCallback(() => {
-    const newProblem = generateProblem(allowedPieces);
+    let newProblem;
+    if (mode === 'tutorial' && initialProblem && currentProblemIndex === 0) {
+      newProblem = initialProblem;
+    } else {
+      newProblem = generateProblem(allowedPieces);
+    }
+
     setProblem(newProblem);
     setMoves([]);
     setGameState('playing');
     setResult(null);
     resetInput();
-  }, [allowedPieces, resetInput]);
+  }, [allowedPieces, resetInput, mode, initialProblem, currentProblemIndex]);
 
   const attemptMoveSubmit = useCallback(
     (file: string | null, rank: string | null) => {
@@ -260,10 +276,16 @@ export function RoutePlannerSession({
   }, [currentProblemIndex, problemCount, result, startNewProblem, problem, t, moves]);
 
   const handleRestartSession = useCallback(() => {
+    if (mode === 'tutorial') {
+      setCurrentProblemIndex(0);
+      setResults([]);
+      startNewProblem();
+      return;
+    }
     setCurrentProblemIndex(0);
     setResults([]);
     startNewProblem();
-  }, [startNewProblem]);
+  }, [startNewProblem, mode]);
 
   const handleQuit = useCallback(() => {
     setShowQuitModal(true);
@@ -303,19 +325,27 @@ export function RoutePlannerSession({
           score={score}
           total={results.length}
           onTryAgain={handleRestartSession}
+          onExit={
+            mode === 'tutorial' ? () => router.push(`/${locale}/practice/route-planner`) : undefined
+          }
           locale={locale as Locale}
           labels={{
-            practiceComplete: tPractice('practiceComplete'),
+            practiceComplete:
+              mode === 'tutorial' ? t('tutorial.complete') : tPractice('practiceComplete'),
             score: tPractice('score'),
-            tryAgain: tPractice('tryAgain'), // Actually "Back to Settings" or "Play Again"
-            morePractice: tPractice('morePractice'),
+            tryAgain: mode === 'tutorial' ? t('tutorial.restart') : tPractice('tryAgain'),
+            morePractice: mode === 'tutorial' ? t('tutorial.finish') : tPractice('morePractice'),
           }}
-          relatedModule={{
-            href: '/practice/board-symmetry', // Suggest Board Symmetry?
-            icon: '🦋',
-            title: tPractice('boardSymmetry.title'),
-            description: tPractice('boardSymmetry.description'),
-          }}
+          relatedModule={
+            mode === 'tutorial'
+              ? undefined
+              : {
+                  href: '/practice/board-symmetry', // Suggest Board Symmetry?
+                  icon: '🦋',
+                  title: tPractice('boardSymmetry.title'),
+                  description: tPractice('boardSymmetry.description'),
+                }
+          }
         >
           {results.length > 0 && (
             <div className="space-y-4">

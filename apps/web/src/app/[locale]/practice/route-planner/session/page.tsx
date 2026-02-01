@@ -59,6 +59,19 @@ export default async function RoutePlannerSessionPage({ params, searchParams }: 
   if (allowedPieces.length === 0) {
     allowedPieces = [...PIECES];
   }
+  // Parse tutorial mode params
+  const mode = search.mode === 'tutorial' ? 'tutorial' : 'standard';
+
+  let initialProblem;
+  if (mode === 'tutorial') {
+    const piece = search.piece as PieceType;
+    const start = search.start as string;
+    const end = search.end as string;
+
+    if (piece && start && end) {
+      initialProblem = { piece, start, end };
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -68,6 +81,8 @@ export default async function RoutePlannerSessionPage({ params, searchParams }: 
         locale={locale}
         problemCount={problemCount}
         allowedPieces={allowedPieces}
+        mode={mode}
+        initialProblem={initialProblem}
       />
 
       <Breadcrumb

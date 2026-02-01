@@ -266,7 +266,8 @@
       "timeLimit": "Time Limit",
       "problemCount": "Number of Problems",
       "problems": "problems",
-      "start": "Start"
+      "start": "Start",
+      "cancel": "Cancel"
     },
     "boardSymmetry": {
       "title": "Board Symmetry",
@@ -756,7 +757,39 @@
       "tryAgain": "Try Again",
       "skip": "Skip This Problem",
       "quit": "Quit Practice",
-      "skipped": "Skipped"
+      "skipped": "Skipped",
+      "resetSettings": "Reset settings",
+      "resetSettingsConfirm": {
+        "title": "Reset settings?",
+        "message": "All settings will be reset and you will return to the tutorial screen."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "steps": {
+          "intro": {
+            "title": "The Objective",
+            "description": "Find the shortest path for the Knight to move from Start (e4) to Target (h5)."
+          },
+          "visualization": {
+            "title": "Visualize the Route",
+            "description": "The pieces on the board won't move. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
+          },
+          "start": {
+            "title": "Let's Practice",
+            "description": "Now try it yourself. Press Start to begin."
+          }
+        },
+        "description": "Practice visualizing routes without seeing the board.",
+        "viewTutorial": "View Tutorial",
+        "intro": "Let's try with this problem.",
+        "start": "Try It",
+        "next": "Next",
+        "previous": "Back",
+        "skip": "Skip",
+        "complete": "That's the basics!\nTry training with different pieces and distances.",
+        "restart": "Restart",
+        "finish": "Start Practice"
+      }
     },
     "moveSequence": {
       "title": "Yakusoku Kumite",
