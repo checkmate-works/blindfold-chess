@@ -6,73 +6,34 @@ import type { AlgebraicNotation } from '@blindfold-chess/core';
 
 import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
 
-type Props = {
-  /**
-   * Current input value
-   */
+// --- SuggestionInput Component ---
+
+type SuggestionInputProps = {
   value: string;
-  /**
-   * Callback when input value changes
-   */
   onChange: (value: string) => void;
-  /**
-   * Callback when a move is submitted
-   */
-  onSubmit: (move: AlgebraicNotation) => void;
-  /**
-   * Whether the input is disabled
-   */
+  onSubmit: (value: string) => void;
+  suggestions: string[];
   disabled?: boolean;
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-  /**
-   * Whether to show suggestions
-   */
   showSuggestions?: boolean;
-  /**
-   * Whether to show submit button
-   */
   showSubmitButton?: boolean;
-  /**
-   * Additional CSS classes
-   */
   className?: string;
 };
 
-export function MoveInput({
+export function SuggestionInput({
   value,
   onChange,
   onSubmit,
+  suggestions = [],
   disabled = false,
-  placeholder = 'e.g., e4, Nf3, O-O',
+  placeholder,
   showSuggestions = true,
   showSubmitButton = false,
   className = '',
-}: Props) {
+}: SuggestionInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const {
-    suggestions,
-    showSuggestions: shouldShowSuggestions,
-    updateSuggestions,
-    hideSuggestions,
-    selectSuggestion,
-  } = useMoveSuggestions({
-    enabled: showSuggestions && !disabled,
-    onSelect: (move) => {
-      onChange('');
-      onSubmit(move);
-    },
-  });
-
-  // Update suggestions when value changes
-  useEffect(() => {
-    updateSuggestions(value);
-  }, [value, updateSuggestions]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -81,7 +42,7 @@ export function MoveInput({
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (value.trim()) {
-      onSubmit(value.trim() as AlgebraicNotation);
+      onSubmit(value.trim());
       onChange('');
     }
   };
@@ -91,7 +52,7 @@ export function MoveInput({
       e.preventDefault();
       handleSubmit();
     } else if (e.key === 'Escape') {
-      hideSuggestions();
+      setIsFocused(false);
       inputRef.current?.blur();
     }
   };
@@ -101,16 +62,17 @@ export function MoveInput({
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
     // Small delay to allow clicking suggestions
-    setTimeout(hideSuggestions, 150);
+    setTimeout(() => setIsFocused(false), 150);
   };
 
-  const handleSuggestionClick = (suggestion: AlgebraicNotation) => {
-    selectSuggestion(suggestion);
+  const handleSuggestionClick = (suggestion: string) => {
+    onSubmit(suggestion);
+    onChange('');
+    setIsFocused(false);
   };
 
-  const displaySuggestions = shouldShowSuggestions && isFocused && suggestions.length > 0;
+  const displaySuggestions = showSuggestions && isFocused && suggestions.length > 0;
 
   return (
     <div ref={containerRef} className="relative">
@@ -154,12 +116,75 @@ export function MoveInput({
             type="submit"
             disabled={disabled || !value.trim()}
             className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
-            title="Submit Move"
+            title="Submit"
           >
             ♟️
           </button>
         )}
       </form>
     </div>
+  );
+}
+
+// --- Original MoveInput Wrapper ---
+
+type Props = {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: (move: AlgebraicNotation) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  showSuggestions?: boolean;
+  showSubmitButton?: boolean;
+  className?: string;
+};
+
+export function MoveInput({
+  value,
+  onChange,
+  onSubmit,
+  disabled = false,
+  placeholder = 'e.g., e4, Nf3, O-O',
+  showSuggestions = true,
+  showSubmitButton = false,
+  className = '',
+}: Props) {
+  const {
+    suggestions,
+    showSuggestions: shouldShowSuggestions,
+    updateSuggestions,
+    hideSuggestions,
+  } = useMoveSuggestions({
+    enabled: showSuggestions && !disabled,
+    onSelect: () => {
+      // Logic handled via SuggestionInput's Click or Submit
+    },
+  });
+
+  // Update suggestions when value changes
+  useEffect(() => {
+    updateSuggestions(value);
+  }, [value, updateSuggestions]);
+
+  return (
+    <SuggestionInput
+      value={value}
+      onChange={onChange}
+      onSubmit={(val) => {
+        // If val is in suggestions, treat as selection? Or just direct submit.
+        // Since SuggestionInput handles click vs enter:
+        // Click -> calls onSubmit with suggestion
+        // Enter -> calls onSubmit with current value
+        // We can just pass through.
+        onSubmit(val as AlgebraicNotation);
+        hideSuggestions();
+      }}
+      suggestions={shouldShowSuggestions ? suggestions : []}
+      disabled={disabled}
+      placeholder={placeholder}
+      showSuggestions={showSuggestions}
+      showSubmitButton={showSubmitButton}
+      className={className}
+    />
   );
 }

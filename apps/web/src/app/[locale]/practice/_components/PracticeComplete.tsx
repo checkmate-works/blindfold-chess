@@ -75,7 +75,9 @@ type Props = {
   // Whether custom FEN is being used (enables delete functionality)
   isCustomFen?: boolean;
   // Callback when a FEN is deleted
+  // Callback when a FEN is deleted
   onDeleteFen?: (fen: string) => void;
+  children?: React.ReactNode;
 };
 
 export function PracticeComplete({
@@ -89,6 +91,7 @@ export function PracticeComplete({
   problemResults,
   isCustomFen,
   onDeleteFen,
+  children,
 }: Props) {
   const router = useRouter();
   const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
@@ -448,6 +451,9 @@ export function PracticeComplete({
               }}
             />
           )}
+
+        {/* Custom children (e.g. Route Planner results) */}
+        {children}
 
         <div className="space-y-4 mt-6">
           <Button

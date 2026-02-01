@@ -89,6 +89,12 @@ export default async function PracticePage({ params }: Props) {
       description: t('practice.boardSymmetry.description'),
       icon: '🦋',
     },
+    {
+      id: 'route-planner',
+      title: t('practice.routePlanner.title'),
+      description: t('practice.routePlanner.description'),
+      icon: '📍',
+    },
   ];
 
   return (

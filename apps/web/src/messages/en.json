@@ -247,11 +247,14 @@
     "practiceComplete": "Practice Complete!",
     "score": "Score",
     "relatedLearning": "Related Learning",
+    "problemDetails": "Problem Details",
     "session": "Session",
+    "problem": "Problem",
     "result": "Result",
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
     "quit": "Quit",
+    "undo": "Undo",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
@@ -261,6 +264,8 @@
     "settings": {
       "title": "Practice Settings",
       "timeLimit": "Time Limit",
+      "problemCount": "Number of Problems",
+      "problems": "problems",
       "start": "Start"
     },
     "boardSymmetry": {
@@ -368,6 +373,7 @@
       "seconds": "seconds",
       "pieceSelection": "Select Pieces",
       "selectAtLeastOne": "Please select at least one piece",
+      "selectedCount": "{count} selected",
       "pieces": {
         "bishop": "Bishop",
         "knight": "Knight",
@@ -715,6 +721,42 @@
         "message": "All settings will be reset and you will be redirected to the tutorial."
       },
       "cancel": "Cancel"
+    },
+    "routePlanner": {
+      "title": "Route Planner",
+      "description": "Calculate the shortest path for a piece to reach a target square",
+      "settings": "Settings",
+      "start": "Start",
+      "piece": "Piece to Move",
+      "startSquare": "Starting Square",
+      "targetSquare": "Target Square",
+      "findPath": "Find path for {piece} from {start} to {target}",
+      "yourPath": "Your Path",
+      "shortestPath": "Shortest Path",
+      "correct": "Correct!",
+      "badEnd": "Path does not end at goal",
+      "badMove": "Invalid move in path",
+      "distance": "Distance: {count}",
+      "inputPlaceholder": "Enter next square...",
+      "pieces": {
+        "N": "Knight",
+        "B": "Bishop",
+        "R": "Rook",
+        "Q": "Queen"
+      },
+      "moves": "Moves",
+      "currentPosition": "Current Position",
+      "addMove": "Add Move",
+      "submit": "Submit Answer",
+      "playAgain": "Play Again",
+      "showAnswer": "Show Answer",
+      "giveUp": "Give Up",
+      "nextProblem": "Next Problem",
+      "finish": "Finish",
+      "tryAgain": "Try Again",
+      "skip": "Skip This Problem",
+      "quit": "Quit Practice",
+      "skipped": "Skipped"
     },
     "moveSequence": {
       "title": "Yakusoku Kumite",
