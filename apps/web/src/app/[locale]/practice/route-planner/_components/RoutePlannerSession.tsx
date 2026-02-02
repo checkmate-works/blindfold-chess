@@ -94,7 +94,10 @@ export function RoutePlannerSession({
   // Button Input State
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
-  const [highlightedPathIndex, setHighlightedPathIndex] = useState<number | null>(null);
+  const [hoveredPathIndex, setHoveredPathIndex] = useState<number | null>(null);
+  const [lockedPathIndex, setLockedPathIndex] = useState<number | null>(null);
+
+  const highlightedPathIndex = hoveredPathIndex ?? lockedPathIndex;
 
   // Initialize first problem on mount
   useEffect(() => {
@@ -106,6 +109,8 @@ export function RoutePlannerSession({
   const resetInput = useCallback(() => {
     setSelectedFile(null);
     setSelectedRank(null);
+    setHoveredPathIndex(null);
+    setLockedPathIndex(null);
   }, []);
 
   const startNewProblem = useCallback(() => {
@@ -517,12 +522,15 @@ export function RoutePlannerSession({
                           <button
                             className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
                               highlightedPathIndex === i
-                                ? 'bg-primary text-primary-foreground border-primary'
+                                ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                                 : 'bg-background hover:bg-muted border-border'
                             }`}
-                            onMouseEnter={() => setHighlightedPathIndex(i)}
-                            onMouseLeave={() => setHighlightedPathIndex(null)}
-                            onClick={() => setHighlightedPathIndex(i)} // For touch devices
+                            onMouseEnter={() => setHoveredPathIndex(i)}
+                            onMouseLeave={() => setHoveredPathIndex(null)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLockedPathIndex(i);
+                            }}
                           >
                             {sq}
                           </button>
