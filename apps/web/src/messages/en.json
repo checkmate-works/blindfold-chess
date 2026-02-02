@@ -735,8 +735,10 @@
       "yourPath": "Your Path",
       "shortestPath": "Shortest Path",
       "correct": "Correct!",
-      "badEnd": "Path does not end at goal",
-      "badMove": "Invalid move in path",
+      "incorrect": "Incorrect",
+      "badEnd": "Path does not reach the goal",
+      "badMove": "Incorrect",
+      "finalTarget": "(Auto-completed)",
       "distance": "Distance: {count}",
       "inputPlaceholder": "Enter next square...",
       "pieces": {

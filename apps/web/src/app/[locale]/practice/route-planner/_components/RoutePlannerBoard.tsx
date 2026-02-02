@@ -16,6 +16,7 @@ type Props = {
   showCoordinates?: boolean;
   boardTheme?: BoardTheme;
   flipped?: boolean;
+  highlightedSquare?: string | null;
 };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -29,6 +30,7 @@ export function RoutePlannerBoard({
   showCoordinates = true,
   boardTheme = DEFAULT_BOARD_THEME,
   flipped = false,
+  highlightedSquare,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
 
@@ -56,12 +58,20 @@ export function RoutePlannerBoard({
 
   const renderSquareContent = (square: string) => {
     // Show Start Position
-    if (square === startSquare) {
+    // Show Target Position (if not visited yet or implicitly handling it)
+    // Actually, if the path reaches the target, it will be in `pathMap`.
+    // But we might want to highlight the target specially if not reached?
+    // For result display, we assume path is what user played.
+
+    // If start square is NOT in pathMap (e.g. path doesn't include start), render it as 1 or Start?
+    // But we are normalizing usage to include start in path.
+    // Fallback if path is empty/excludes start:
+    if (square === startSquare && !pathMap.has(square)) {
       return (
         <div className="w-full h-full flex items-center justify-center relative">
           <div className="absolute inset-0 bg-blue-500/30"></div>
           <span className="relative font-bold text-xs sm:text-sm text-white bg-black/60 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md backdrop-blur-[1px] z-10">
-            0
+            1
           </span>
         </div>
       );
@@ -103,6 +113,11 @@ export function RoutePlannerBoard({
           <span className="font-bold text-xs sm:text-sm text-red-600">Goal</span>
         </div>
       );
+    }
+
+    // Show highlighted square (from interaction)
+    if (square === highlightedSquare) {
+      return <div className="absolute inset-0 bg-yellow-400/50 z-20 pointer-events-none"></div>;
     }
 
     return null;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -94,6 +94,7 @@ export function RoutePlannerSession({
   // Button Input State
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
+  const [highlightedPathIndex, setHighlightedPathIndex] = useState<number | null>(null);
 
   // Initialize first problem on mount
   useEffect(() => {
@@ -215,7 +216,7 @@ export function RoutePlannerSession({
       setResult({
         success: false,
         shortestPath,
-        message: validation.error === 'Path does not end at goal' ? t('badEnd') : t('badMove'),
+        message: validation.error === 'Path does not end at goal' ? t('badEnd') : t('incorrect'),
       });
       // If failed, still show the path we attempted (including the appended target if any)
       // But if it was a bad move *before* the end, `validateUserPath` fails early?
@@ -358,7 +359,7 @@ export function RoutePlannerSession({
                 labels={{
                   correct: t('correct'),
                   badEnd: t('badEnd'),
-                  badMove: t('badMove'),
+                  badMove: t('incorrect'),
                   shortestPath: t('shortestPath'),
                   yourPath: t('yourPath'),
                   skipped: t('skip'),
@@ -504,14 +505,29 @@ export function RoutePlannerSession({
               {!result.success && (
                 <div className="mt-4 text-left p-4 bg-muted/30 rounded-lg">
                   <h4 className="font-medium text-muted-foreground mb-2">{t('shortestPath')}</h4>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     {result.shortestPath.map((sq, i) => (
-                      <span
-                        key={i}
-                        className="font-mono text-sm bg-background px-2 py-1 rounded border border-border"
-                      >
-                        {sq}
-                      </span>
+                      <Fragment key={i}>
+                        {i > 0 && (
+                          <FaArrowRight size={10} className="text-muted-foreground/50 mx-0.5" />
+                        )}
+                        {i === 0 || i === result.shortestPath.length - 1 ? (
+                          <span className="font-mono text-sm font-bold px-1">{sq}</span>
+                        ) : (
+                          <button
+                            className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
+                              highlightedPathIndex === i
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-background hover:bg-muted border-border'
+                            }`}
+                            onMouseEnter={() => setHighlightedPathIndex(i)}
+                            onMouseLeave={() => setHighlightedPathIndex(null)}
+                            onClick={() => setHighlightedPathIndex(i)} // For touch devices
+                          >
+                            {sq}
+                          </button>
+                        )}
+                      </Fragment>
                     ))}
                   </div>
                 </div>
@@ -527,8 +543,15 @@ export function RoutePlannerSession({
                   startSquare={problem.start}
                   targetSquare={problem.end}
                   piece={problem.piece}
-                  path={moves}
+                  path={
+                    highlightedPathIndex !== null
+                      ? result.shortestPath.slice(0, highlightedPathIndex + 1)
+                      : [problem.start, ...moves]
+                  }
                   boardTheme={preferences.boardTheme}
+                  highlightedSquare={
+                    highlightedPathIndex !== null ? result.shortestPath[highlightedPathIndex] : null
+                  }
                 />
               </div>
             </div>
@@ -593,10 +616,16 @@ function ResultList({
   };
 }) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [hoveredStepIndex, setHoveredStepIndex] = useState<number | null>(null);
+  const [lockedStepIndex, setLockedStepIndex] = useState<number | null>(null);
 
   const toggleExpand = (index: number) => {
     setExpandedIndex((prev) => (prev === index ? null : index));
+    setHoveredStepIndex(null);
+    setLockedStepIndex(null);
   };
+
+  const activeStepIndex = hoveredStepIndex ?? lockedStepIndex;
 
   return (
     <div className="space-y-3">
@@ -635,36 +664,69 @@ function ResultList({
                       startSquare={result.start}
                       targetSquare={result.end}
                       piece={result.piece}
-                      path={result.userPath}
+                      path={
+                        activeStepIndex !== null
+                          ? result.shortestPath.slice(0, activeStepIndex + 1)
+                          : [result.start, ...result.userPath]
+                      }
                       boardTheme={boardTheme}
+                      highlightedSquare={
+                        activeStepIndex !== null ? result.shortestPath[activeStepIndex] : null
+                      }
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   {!result.skipped && (
-                    <div className="flex justify-between items-center p-2 rounded bg-background border border-border">
-                      <span className="text-muted-foreground">{labels.yourPath}</span>
-                      <div className="flex flex-wrap gap-1 justify-end">
+                    <div className="flex flex-col gap-1 p-3 rounded bg-background border border-border">
+                      <span className="text-muted-foreground text-xs">{labels.yourPath}</span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="font-mono text-sm font-bold">{result.start}</span>
                         {result.userPath.map((sq, i) => (
-                          <span
-                            key={i}
-                            className={`font-mono px-1.5 py-0.5 rounded ${result.shortestPath.includes(sq) ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}
-                          >
-                            {sq}
-                          </span>
+                          <Fragment key={i}>
+                            <FaArrowRight size={10} className="text-muted-foreground/50 mx-1" />
+                            <span className="font-mono text-sm font-bold">{sq}</span>
+                          </Fragment>
                         ))}
                       </div>
                     </div>
                   )}
                   {!result.success && (
-                    <div className="flex justify-between items-center p-2 rounded bg-background border border-border">
-                      <span className="text-muted-foreground">{labels.shortestPath}</span>
-                      <div className="flex flex-wrap gap-1 justify-end">
-                        {result.shortestPath.map((sq, i) => (
-                          <span key={i} className="font-mono px-1.5 py-0.5 rounded bg-muted">
-                            {sq}
-                          </span>
-                        ))}
+                    <div className="flex flex-col gap-1 p-3 rounded bg-background border border-border">
+                      <span className="text-muted-foreground text-xs">{labels.shortestPath}</span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {result.shortestPath.map((sq, i) => {
+                          const isActive = activeStepIndex === i;
+                          return (
+                            <Fragment key={i}>
+                              {i > 0 && (
+                                <FaArrowRight
+                                  size={10}
+                                  className="text-muted-foreground/50 mx-0.5"
+                                />
+                              )}
+                              {i === 0 || i === result.shortestPath.length - 1 ? (
+                                <span className="font-mono text-sm font-bold px-1">{sq}</span>
+                              ) : (
+                                <button
+                                  className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
+                                    isActive
+                                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                      : 'bg-background hover:bg-muted border-border'
+                                  }`}
+                                  onMouseEnter={() => setHoveredStepIndex(i)}
+                                  onMouseLeave={() => setHoveredStepIndex(null)}
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent toggling the accordion
+                                    setLockedStepIndex(i);
+                                  }}
+                                >
+                                  {sq}
+                                </button>
+                              )}
+                            </Fragment>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

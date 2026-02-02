@@ -736,8 +736,10 @@
       "yourPath": "あなたの回答",
       "shortestPath": "最短経路",
       "correct": "正解！",
-      "badEnd": "目標マスに到達していません",
-      "badMove": "無効な移動が含まれています",
+      "incorrect": "不正解",
+      "badEnd": "ゴールに到達していません",
+      "badMove": "不正解",
+      "finalTarget": "（自動補完）",
       "distance": "手数: {count}",
       "inputPlaceholder": "次のマスを入力...",
       "pieces": {
