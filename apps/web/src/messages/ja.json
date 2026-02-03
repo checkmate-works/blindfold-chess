@@ -248,11 +248,14 @@
     "practiceComplete": "練習完了！",
     "score": "スコア",
     "relatedLearning": "関連する学習",
+    "problemDetails": "問題ごとの詳細",
     "session": "セッション",
+    "problem": "問題",
     "result": "結果",
     "secondsFormat": "{seconds}秒",
     "minutesFormat": "{minutes}分",
     "quit": "終了",
+    "undo": "戻る",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
@@ -262,7 +265,10 @@
     "settings": {
       "title": "練習設定",
       "timeLimit": "制限時間",
-      "start": "開始"
+      "problemCount": "問題数",
+      "problems": "問",
+      "start": "開始",
+      "cancel": "キャンセル"
     },
     "boardSymmetry": {
       "title": "ボードの対称性",
@@ -369,6 +375,7 @@
       "seconds": "秒",
       "pieceSelection": "駒の選択",
       "selectAtLeastOne": "少なくとも1つの駒を選択してください",
+      "selectedCount": "{count}個選択中",
       "pieces": {
         "bishop": "ビショップ",
         "knight": "ナイト",
@@ -716,6 +723,76 @@
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
       "cancel": "キャンセル"
+    },
+    "routePlanner": {
+      "title": "ルートプランナー",
+      "description": "駒が目標マスに到達するための最短経路を計算する練習",
+      "settings": "設定",
+      "start": "開始",
+      "piece": "動かす駒",
+      "startSquare": "開始マス",
+      "targetSquare": "目標マス",
+      "findPath": "{piece}を{start}から{target}へ移動させる経路を見つけてください",
+      "yourPath": "あなたの回答",
+      "shortestPath": "最短経路",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "badEnd": "ゴールに到達していません",
+      "badMove": "不正解",
+      "finalTarget": "（自動補完）",
+      "distance": "手数: {count}",
+      "inputPlaceholder": "次のマスを入力...",
+      "pieces": {
+        "N": "ナイト",
+        "B": "ビショップ",
+        "R": "ルーク",
+        "Q": "クイーン"
+      },
+      "moves": "移動",
+      "currentPosition": "現在位置",
+      "addMove": "手を追加",
+      "submit": "回答を送信",
+      "playAgain": "もう一度",
+      "showAnswer": "答えを見る",
+      "giveUp": "降参",
+      "nextProblem": "次の問題へ",
+      "finish": "結果を見る",
+      "tryAgain": "もう一度",
+      "skip": "この問題をスキップ",
+      "quit": "練習を終了",
+      "skipped": "スキップ",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "tutorial": {
+        "title": "チュートリアル",
+        "steps": {
+          "intro": {
+            "title": "ゴールの確認",
+            "description": "スタート（e4）からゴール（h5）まで、ナイトを移動させる最短ルートを考えます。"
+          },
+          "visualization": {
+            "title": "ルートのイメージ",
+            "description": "盤面上の駒は動きません。頭の中でルートをイメージして、通過するマスの座標を入力してください。\n例: e4 → f6 → h5"
+          },
+          "start": {
+            "title": "実践",
+            "description": "実際にやってみましょう。スタートボタンを押すと問題が始まります。"
+          }
+        },
+        "description": "盤面を見ずにルートをイメージして入力するトレーニングです。",
+        "viewTutorial": "チュートリアルを見る",
+        "intro": "まずは以下の問題で試してみましょう。",
+        "start": "試してみる",
+        "next": "次へ",
+        "previous": "戻る",
+        "skip": "スキップ",
+        "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
+        "restart": "もう一度",
+        "finish": "練習を開始する"
+      }
     },
     "moveSequence": {
       "title": "約束組手",
