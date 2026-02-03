@@ -106,10 +106,15 @@ export function RoutePlannerSession({
     }
 
     // Ensure scroll to top/element on mount to assist with hash navigation reliability
-    const element = document.getElementById('route-planner-session');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Using setTimeout and block: 'start' to match other practice modules (BoardSymmetry)
+    const timer = setTimeout(() => {
+      const element = document.getElementById('route-planner-session');
+      if (element) {
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetInput = useCallback(() => {
