@@ -6,9 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
-
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -21,7 +18,6 @@ type Props = {
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (value: number) => void;
   onPieceToggle: (piece: PieceType) => void;
-  boardTheme?: BoardTheme;
 };
 
 export function LegalMovesSetup({
@@ -30,7 +26,6 @@ export function LegalMovesSetup({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
-  boardTheme = DEFAULT_BOARD_THEME,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const router = useRouter();
@@ -58,7 +53,6 @@ export function LegalMovesSetup({
           selectedPieces={selectedPieces}
           onTimeLimitChange={onTimeLimitChange}
           onPieceToggle={onPieceToggle}
-          boardTheme={boardTheme}
         />
 
         <Button
