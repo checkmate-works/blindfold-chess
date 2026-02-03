@@ -7,7 +7,7 @@ visualizing piece placement and movement patterns.
 
 ## Color Rule
 
-The color of a chessboard square can be easily determined by whether the sum of its file (column) and rank (row) is even or odd.
+The color of a square can be easily determined by whether the sum of its file (column) and rank (row) is even or odd.
 
 The steps are as follows:
 
