@@ -59,62 +59,20 @@ There is point symmetry around the center of the board (the intersection of d4, 
 
 Point-symmetric squares are on exactly opposite sides of the board's center.
 
-## Efficient Learning Using Symmetry
+Note that point symmetry is a combination of horizontal and vertical symmetry.
+For example, applying horizontal symmetry to a1 gives h1, and then applying vertical symmetry gives h8.
+In other words, if you understand horizontal and vertical symmetry, point symmetry follows naturally.
 
-### The "Only 32 Squares" Strategy
+## Symmetry Tips
 
-Using symmetry, you only need to memorize half the board.
+There's an interesting relationship between symmetry and square colors.
 
-**Method 1: Split by Rank**
-1. Memorize the 32 squares on White's half (ranks 1-4)
-2. Derive Black's half (ranks 5-8) by vertical reflection
+| Symmetry | Square Color | Example |
+|----------|--------------|---------|
+| Horizontal | Different | a1 is dark, h1 is light |
+| Vertical | Same | Both a1 and a8 are dark |
+| Point | Same | Both a1 and h8 are dark |
 
-**Method 2: Split by File**
-1. Memorize the 32 squares on the queenside (files a-d)
-2. Derive the kingside (files e-h) by horizontal reflection
-
-Either method cuts your memorization in half.
-
-### The Relationship Between Square Colors and Symmetry
-
-There's an interesting relationship between symmetry and square colors:
-
-- **Horizontally symmetric squares**: Different colors (e.g., a1 is dark, h1 is light)
-- **Vertically symmetric squares**: Same color (e.g., both a1 and a8 are dark)
-- **Point-symmetric squares**: Same color (e.g., both a1 and h8 are dark)
-
-Knowing this rule lets you deduce a square's color from its symmetric counterpart.
-
-## Practical Applications
-
-### Practice with Coordinate Quizzes
-
-1. First, try coordinate quizzes with only ranks 1-4
-2. Once comfortable, add ranks 5-8 while consciously using symmetry
-3. Practice instantly deriving symmetric relationships like "e3's vertical symmetric is e6"
-
-### Learn in Pairs
-
-Being aware of point-symmetric pairs lets you remember two squares as one piece of knowledge:
-
-- a1-h8 (both ends of the diagonal)
-- b2-g7 (common knight destinations)
-- c3-f6 (important bishop and knight squares)
-
-### Application in Games
-
-Understanding symmetry is useful in actual games:
-
-- Opening knowledge learned as White can be applied when playing Black
-- Kingside attack patterns can be applied to the queenside
-- It becomes easier to see the board from your opponent's perspective
-
-## Conclusion
-
-By leveraging the chessboard's symmetry, you don't need to memorize all 64 squares individually.  
-Understanding the three types of symmetry—horizontal, vertical, and point—cuts the information you need to remember in half.
-
-Combined with the anchor point method, you can navigate the board even more efficiently.  
-Start by being conscious of vertical symmetry (the correspondence between White and Black).`;
+Knowing this rule lets you deduce a square's color from its symmetric counterpart.`;
 
 export default content;
