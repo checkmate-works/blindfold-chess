@@ -106,16 +106,16 @@ export function RoutePlannerSession({
     }
 
     // Ensure scroll to top/element on mount to assist with hash navigation reliability
-    // Using setTimeout and block: 'start' to match other practice modules (BoardSymmetry)
+    // Only in standard mode (User pressed Start), not in tutorial or implicit flows
     const timer = setTimeout(() => {
       const element = document.getElementById('route-planner-session');
-      if (element) {
+      if (element && mode === 'standard') {
         element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetInput = useCallback(() => {
     setSelectedFile(null);
