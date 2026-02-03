@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType } from '../_lib/types';
@@ -23,8 +22,6 @@ const defaultPieces: Record<PieceType, boolean> = {
 };
 
 export function LegalMoves({ locale }: Props) {
-  const { preferences } = useGamePreferences();
-
   const [timeLimit, setTimeLimit] = useState(60);
   const [selectedPieces, setSelectedPieces] = useState<Record<PieceType, boolean>>(defaultPieces);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -62,7 +59,6 @@ export function LegalMoves({ locale }: Props) {
       selectedPieces={selectedPieces}
       onTimeLimitChange={setTimeLimit}
       onPieceToggle={togglePiece}
-      boardTheme={preferences.boardTheme}
     />
   );
 }

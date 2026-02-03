@@ -791,7 +791,8 @@
         "complete": "That's the basics!\nTry training with different pieces and distances.",
         "restart": "Restart",
         "finish": "Start Practice"
-      }
+      },
+      "betaNotice": "This feature is in beta and may contain unexpected bugs."
     },
     "moveSequence": {
       "title": "Yakusoku Kumite",

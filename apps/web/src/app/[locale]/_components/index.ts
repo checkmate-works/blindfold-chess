@@ -1,3 +1,4 @@
+export { BetaNotice } from './BetaNotice';
 export { Breadcrumb } from './Breadcrumb';
 export { CardLink } from './CardLink';
 export { ChessBoardDemo } from './ChessBoardDemo';

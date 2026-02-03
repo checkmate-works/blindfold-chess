@@ -10,7 +10,7 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PieceSymbol } from 'chess.js';
 import { FaPlay } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { ProblemCountSlider } from '@/app/[locale]/practice/_components/ProblemCountSlider';
@@ -103,6 +103,10 @@ export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
     <div>
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
+
+        <BetaNotice className="mb-6">
+          <p>{t('betaNotice')}</p>
+        </BetaNotice>
 
         <div className="mb-6 text-muted-foreground">
           <p>{t('description')}</p>
