@@ -104,6 +104,12 @@ export function RoutePlannerSession({
     if (!problem && gameState === 'playing') {
       startNewProblem();
     }
+
+    // Ensure scroll to top/element on mount to assist with hash navigation reliability
+    const element = document.getElementById('route-planner-session');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetInput = useCallback(() => {

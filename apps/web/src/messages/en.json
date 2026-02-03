@@ -774,7 +774,7 @@
           },
           "visualization": {
             "title": "Visualize the Route",
-            "description": "The pieces on the board won't move. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
+            "description": "There is no board preview during practice. Visualize the path in your head and input the coordinates.\nExample: e4 -> f6 -> h5"
           },
           "start": {
             "title": "Let's Practice",
