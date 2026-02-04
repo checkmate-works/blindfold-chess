@@ -1,0 +1,85 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Board Background -->
+  <rect x="0" y="0" width="400" height="400" fill="#f0d9b5" />
+  
+  <!-- Squares (Matched structure exactly to vertical-symmetry.svg) -->
+  <g fill="#b58863">
+    <!-- Row 1 (y=0) -->
+    <rect x="50" y="0" width="50" height="50" />
+    <rect x="150" y="0" width="50" height="50" />
+    <rect x="250" y="0" width="50" height="50" />
+    <rect x="350" y="0" width="50" height="50" />
+    <!-- Row 2 (y=50) -->
+    <rect x="0" y="50" width="50" height="50" />
+    <rect x="100" y="50" width="50" height="50" />
+    <rect x="200" y="50" width="50" height="50" />
+    <rect x="300" y="50" width="50" height="50" />
+    <!-- Row 3 (y=100) -->
+    <rect x="50" y="100" width="50" height="50" />
+    <rect x="150" y="100" width="50" height="50" />
+    <rect x="250" y="100" width="50" height="50" />
+    <rect x="350" y="100" width="50" height="50" />
+    <!-- Row 4 (y=150) -->
+    <rect x="0" y="150" width="50" height="50" />
+    <rect x="100" y="150" width="50" height="50" />
+    <rect x="200" y="150" width="50" height="50" />
+    <rect x="300" y="150" width="50" height="50" />
+    <!-- Row 5 (y=200) -->
+    <rect x="50" y="200" width="50" height="50" />
+    <rect x="150" y="200" width="50" height="50" />
+    <rect x="250" y="200" width="50" height="50" />
+    <rect x="350" y="200" width="50" height="50" />
+    <!-- Row 6 (y=250) -->
+    <rect x="0" y="250" width="50" height="50" />
+    <rect x="100" y="250" width="50" height="50" />
+    <rect x="200" y="250" width="50" height="50" />
+    <rect x="300" y="250" width="50" height="50" />
+    <!-- Row 7 (y=300) -->
+    <rect x="50" y="300" width="50" height="50" />
+    <rect x="150" y="300" width="50" height="50" />
+    <rect x="250" y="300" width="50" height="50" />
+    <rect x="350" y="300" width="50" height="50" />
+    <!-- Row 8 (y=350) -->
+    <rect x="0" y="350" width="50" height="50" />
+    <rect x="100" y="350" width="50" height="50" />
+    <rect x="200" y="350" width="50" height="50" />
+    <rect x="300" y="350" width="50" height="50" />
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .label { font-family: sans-serif; font-size: 12px; opacity: 0.5; }
+    .label-file { text-anchor: middle; }
+    .label-rank { text-anchor: end; alignment-baseline: middle; }
+    .quadrant-label { font-family: sans-serif; font-size: 100px; fill: rgba(0, 0, 0, 0.6); font-weight: bold; text-anchor: middle; dominant-baseline: central; }
+  </style>
+  <text x="390" y="390" class="label label-file">h</text>
+  <text x="340" y="390" class="label label-file">g</text>
+  <text x="290" y="390" class="label label-file">f</text>
+  <text x="240" y="390" class="label label-file">e</text>
+  <text x="190" y="390" class="label label-file">d</text>
+  <text x="140" y="390" class="label label-file">c</text>
+  <text x="90" y="390" class="label label-file">b</text>
+  <text x="40" y="390" class="label label-file">a</text>
+  
+  <text x="10" y="375" class="label label-rank">1</text>
+  <text x="10" y="325" class="label label-rank">2</text>
+  <text x="10" y="275" class="label label-rank">3</text>
+  <text x="10" y="225" class="label label-rank">4</text>
+  <text x="10" y="175" class="label label-rank">5</text>
+  <text x="10" y="125" class="label label-rank">6</text>
+  <text x="10" y="75" class="label label-rank">7</text>
+  <text x="10" y="25" class="label label-rank">8</text>
+
+  <!-- Quadrant Dividers -->
+  <!-- Matched stroke color #222 and width 4 to quadrant-anchors.svg to ensure identical "black" tone -->
+  <line x1="200" y1="0" x2="200" y2="400" stroke="#222" stroke-width="4" />
+  <line x1="0" y1="200" x2="400" y2="200" stroke="#222" stroke-width="4" />
+
+  <!-- Quadrant Labels -->
+  <text x="300" y="100" class="quadrant-label">①</text>
+  <text x="100" y="100" class="quadrant-label">②</text>
+  <text x="100" y="300" class="quadrant-label">③</text>
+  <text x="300" y="300" class="quadrant-label">④</text>
+
+</svg>

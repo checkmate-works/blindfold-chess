@@ -1,0 +1,67 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626" />
+    </marker>
+  </defs>
+
+  <!-- Board Background -->
+  <rect x="0" y="0" width="200" height="200" fill="#f0d9b5" />
+  
+  <!-- Squares (Quadrant III: a1-d4) -->
+  <g fill="#b58863">
+    <!-- Rank 4 (y=0): b4, d4 -->
+    <rect x="50" y="0" width="50" height="50" />
+    <rect x="150" y="0" width="50" height="50" />
+    <!-- Rank 3 (y=50): a3, c3 -->
+    <rect x="0" y="50" width="50" height="50" />
+    <rect x="100" y="50" width="50" height="50" />
+    <!-- Rank 2 (y=100): b2, d2 -->
+    <rect x="50" y="100" width="50" height="50" />
+    <rect x="150" y="100" width="50" height="50" />
+    <!-- Rank 1 (y=150): a1, c1 -->
+    <rect x="0" y="150" width="50" height="50" />
+    <rect x="100" y="150" width="50" height="50" />
+  </g>
+
+  <!-- Anchors Highlight (a4, d4, a1, d1) -->
+  <g fill="rgba(255, 140, 0, 0.7)" stroke="#fff" stroke-width="2">
+    <circle cx="25" cy="25" r="15" />   <!-- a4 -->
+    <circle cx="175" cy="25" r="15" />  <!-- d4 -->
+    <circle cx="25" cy="175" r="15" />  <!-- a1 -->
+    <circle cx="175" cy="175" r="15" /> <!-- d1 -->
+  </g>
+
+  <!-- Derivation Arrows -->
+  <g stroke="#dc2626" stroke-width="3" fill="none">
+    <!-- a1 -> d4 (Point Symmetry) -->
+    <!-- Start slightly offset from center to avoid covering the circle content -->
+    <line x1="40" y1="160" x2="160" y2="40" marker-end="url(#arrowhead)" stroke-dasharray="5,3" />
+
+    <!-- d4 -> a4 (Horizontal Symmetry) -->
+    <line x1="155" y1="25" x2="45" y2="25" marker-end="url(#arrowhead)" />
+
+    <!-- d4 -> d1 (Vertical Symmetry) -->
+    <line x1="175" y1="45" x2="175" y2="155" marker-end="url(#arrowhead)" />
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .label { font-family: sans-serif; font-size: 10px; opacity: 0.5; }
+    .label-file { text-anchor: middle; }
+    .label-rank { text-anchor: end; alignment-baseline: middle; }
+  </style>
+
+  <!-- File Labels -->
+  <text x="25" y="195" class="label label-file">a</text>
+  <text x="75" y="195" class="label label-file">b</text>
+  <text x="125" y="195" class="label label-file">c</text>
+  <text x="175" y="195" class="label label-file">d</text>
+  
+  <!-- Rank Labels -->
+  <text x="5" y="175" class="label label-rank">1</text>
+  <text x="5" y="125" class="label label-rank">2</text>
+  <text x="5" y="75" class="label label-rank">3</text>
+  <text x="5" y="25" class="label label-rank">4</text>
+
+</svg>

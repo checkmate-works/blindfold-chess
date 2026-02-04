@@ -1,0 +1,64 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Board Background -->
+  <rect x="0" y="0" width="200" height="200" fill="#f0d9b5" />
+  
+  <!-- Squares (Quadrant III: a1-d4) -->
+  <!-- 
+    Rows: 4, 3, 2, 1 (Top to Bottom)
+    Cols: a, b, c, d (Left to Right)
+    
+    Rank 4 (y=0): a4(W), b4(B), c4(W), d4(B)  -> Dark at x=50, 150
+    Rank 3 (y=50): a3(B), b3(W), c3(B), d3(W) -> Dark at x=0, 100
+    Rank 2 (y=100): a2(W), b2(B), c2(W), d2(B) -> Dark at x=50, 150
+    Rank 1 (y=150): a1(B), b1(W), c1(B), d1(W) -> Dark at x=0, 100
+  -->
+  <g fill="#b58863">
+    <!-- Rank 4 (y=0): b4, d4 -->
+    <rect x="50" y="0" width="50" height="50" />
+    <rect x="150" y="0" width="50" height="50" />
+    
+    <!-- Rank 3 (y=50): a3, c3 -->
+    <rect x="0" y="50" width="50" height="50" />
+    <rect x="100" y="50" width="50" height="50" />
+    
+    <!-- Rank 2 (y=100): b2, d2 -->
+    <rect x="50" y="100" width="50" height="50" />
+    <rect x="150" y="100" width="50" height="50" />
+    
+    <!-- Rank 1 (y=150): a1, c1 -->
+    <rect x="0" y="150" width="50" height="50" />
+    <rect x="100" y="150" width="50" height="50" />
+  </g>
+
+  <!-- Anchors Highlight (a4, d4, a1, d1) -->
+  <g fill="rgba(255, 140, 0, 0.7)" stroke="#fff" stroke-width="2">
+    <!-- a4 (Top Left) -->
+    <circle cx="25" cy="25" r="15" />
+    <!-- d4 (Top Right) -->
+    <circle cx="175" cy="25" r="15" />
+    <!-- a1 (Bottom Left) -->
+    <circle cx="25" cy="175" r="15" />
+    <!-- d1 (Bottom Right) -->
+    <circle cx="175" cy="175" r="15" />
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .label { font-family: sans-serif; font-size: 10px; opacity: 0.5; }
+    .label-file { text-anchor: middle; }
+    .label-rank { text-anchor: end; alignment-baseline: middle; }
+  </style>
+
+  <!-- File Labels -->
+  <text x="25" y="195" class="label label-file">a</text>
+  <text x="75" y="195" class="label label-file">b</text>
+  <text x="125" y="195" class="label label-file">c</text>
+  <text x="175" y="195" class="label label-file">d</text>
+  
+  <!-- Rank Labels -->
+  <text x="5" y="175" class="label label-rank">1</text>
+  <text x="5" y="125" class="label label-rank">2</text>
+  <text x="5" y="75" class="label label-rank">3</text>
+  <text x="5" y="25" class="label label-rank">4</text>
+
+</svg>

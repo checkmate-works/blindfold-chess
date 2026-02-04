@@ -1,0 +1,73 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Board Background -->
+  <rect x="0" y="0" width="400" height="400" fill="#f0d9b5" />
+  
+  <!-- Squares -->
+  <g id="squares">
+    <path fill="#b58863" d="
+      M50,0 h50 v50 h-50 z M150,0 h50 v50 h-50 z M250,0 h50 v50 h-50 z M350,0 h50 v50 h-50 z
+      M0,50 h50 v50 h-50 z M100,50 h50 v50 h-50 z M200,50 h50 v50 h-50 z M300,50 h50 v50 h-50 z
+      M50,100 h50 v50 h-50 z M150,100 h50 v50 h-50 z M250,100 h50 v50 h-50 z M350,100 h50 v50 h-50 z
+      M0,150 h50 v50 h-50 z M100,150 h50 v50 h-50 z M200,150 h50 v50 h-50 z M300,150 h50 v50 h-50 z
+      M50,200 h50 v50 h-50 z M150,200 h50 v50 h-50 z M250,200 h50 v50 h-50 z M350,200 h50 v50 h-50 z
+      M0,250 h50 v50 h-50 z M100,250 h50 v50 h-50 z M200,250 h50 v50 h-50 z M300,250 h50 v50 h-50 z
+      M50,300 h50 v50 h-50 z M150,300 h50 v50 h-50 z M250,300 h50 v50 h-50 z M350,300 h50 v50 h-50 z
+      M0,350 h50 v50 h-50 z M100,350 h50 v50 h-50 z M200,350 h50 v50 h-50 z M300,350 h50 v50 h-50 z
+    "/>
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .label { font-family: sans-serif; font-size: 12px; opacity: 0.5; }
+    .label-file { text-anchor: middle; }
+    .label-rank { text-anchor: end; alignment-baseline: middle; }
+  </style>
+  <text x="390" y="390" class="label label-file">h</text>
+  <text x="340" y="390" class="label label-file">g</text>
+  <text x="290" y="390" class="label label-file">f</text>
+  <text x="240" y="390" class="label label-file">e</text>
+  <text x="190" y="390" class="label label-file">d</text>
+  <text x="140" y="390" class="label label-file">c</text>
+  <text x="90" y="390" class="label label-file">b</text>
+  <text x="40" y="390" class="label label-file">a</text>
+  
+  <text x="10" y="375" class="label label-rank">1</text>
+  <text x="10" y="325" class="label label-rank">2</text>
+  <text x="10" y="275" class="label label-rank">3</text>
+  <text x="10" y="225" class="label label-rank">4</text>
+  <text x="10" y="175" class="label label-rank">5</text>
+  <text x="10" y="125" class="label label-rank">6</text>
+  <text x="10" y="75" class="label label-rank">7</text>
+  <text x="10" y="25" class="label label-rank">8</text>
+
+  <!-- Quadrant Dividers -->
+  <line x1="200" y1="0" x2="200" y2="400" stroke="#222" stroke-width="4" />
+  <line x1="0" y1="200" x2="400" y2="200" stroke="#222" stroke-width="4" />
+
+  <!-- Anchor Points Highlight -->
+  <g fill="rgba(255, 140, 0, 0.7)" stroke="#fff" stroke-width="2">
+    <!-- Top Left (a8-d5) -->
+    <circle cx="25" cy="25" r="15" />
+    <circle cx="175" cy="25" r="15" />
+    <circle cx="25" cy="175" r="15" />
+    <circle cx="175" cy="175" r="15" />
+
+    <!-- Top Right (e8-h5) -->
+    <circle cx="225" cy="25" r="15" />
+    <circle cx="375" cy="25" r="15" />
+    <circle cx="225" cy="175" r="15" />
+    <circle cx="375" cy="175" r="15" />
+
+    <!-- Bottom Left (a4-d1) -->
+    <circle cx="25" cy="225" r="15" />
+    <circle cx="175" cy="225" r="15" />
+    <circle cx="25" cy="375" r="15" />
+    <circle cx="175" cy="375" r="15" />
+    
+    <!-- Bottom Right (e4-h1) -->
+    <circle cx="225" cy="225" r="15" />
+    <circle cx="375" cy="225" r="15" />
+    <circle cx="225" cy="375" r="15" />
+    <circle cx="375" cy="375" r="15" />
+  </g>
+</svg>
