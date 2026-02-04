@@ -123,7 +123,6 @@ export default async function LearnArticlePage({ params }: Props) {
 
       {relatedPracticeModules && (
         <div className="space-y-4">
-          <Divider />
           <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {relatedPracticeModules.map((moduleId) => {
@@ -147,7 +146,6 @@ export default async function LearnArticlePage({ params }: Props) {
 
       {relatedArticles.length > 0 && (
         <div className="space-y-4">
-          <Divider />
           <SectionTitle>{t('learn.relatedArticles')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {relatedArticles.map((relatedArticle) => (
@@ -165,7 +163,6 @@ export default async function LearnArticlePage({ params }: Props) {
       )}
 
       <div className="space-y-4">
-        <Divider />
         <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
         <div className="space-y-4">
           {categoryInfos.map((info) => {
