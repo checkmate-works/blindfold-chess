@@ -49,6 +49,7 @@ export type ArticleSlug =
   | 'knight-movement'
   | 'knight-tour'
   | 'position-memory'
+  | 'quadrant-anchors'
   | 'rook-movement'
   | 'square-colors';
 
@@ -84,6 +85,7 @@ export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
   'knight-movement': '♞',
   'knight-tour': '🔄',
   'position-memory': '🧠',
+  'quadrant-anchors': '☗',
   'rook-movement': '♜',
   'square-colors': '🏁',
 };

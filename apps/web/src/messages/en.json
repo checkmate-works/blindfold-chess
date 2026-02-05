@@ -246,6 +246,7 @@
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",
     "score": "Score",
+    "correctAnswers": "Correct Answers",
     "relatedLearning": "Related Learning",
     "problemDetails": "Problem Details",
     "session": "Session",
@@ -894,6 +895,7 @@
     "quadrantAnchors": {
       "title": "Quadrant Anchors",
       "description": "Practice identifying which quadrant a square belongs to",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
       "session": "In Progress",
       "question": "Which quadrant is {square} in?",
       "correct": "Correct!",

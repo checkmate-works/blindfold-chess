@@ -90,6 +90,12 @@ export default async function PracticePage({ params }: Props) {
       icon: '🦋',
     },
     {
+      id: 'quadrants',
+      title: t('practice.quadrantAnchors.title'),
+      description: t('practice.quadrantAnchors.description'),
+      icon: '⚃',
+    },
+    {
       id: 'route-planner',
       title: t('practice.routePlanner.title'),
       description: t('practice.routePlanner.description'),

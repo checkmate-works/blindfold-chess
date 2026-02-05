@@ -247,6 +247,7 @@
     "morePractice": "他の練習",
     "practiceComplete": "練習完了！",
     "score": "スコア",
+    "correctAnswers": "正解数",
     "relatedLearning": "関連する学習",
     "problemDetails": "問題ごとの詳細",
     "session": "セッション",
@@ -276,8 +277,6 @@
       "title": "ボードの対称性",
       "description": "盤上の対称的なマスを識別する練習",
       "question": "{square}の{type}は？",
-      "correct": "正解！",
-      "incorrect": "不正解",
       "types": {
         "horizontal": "左右対称",
         "vertical": "上下対称",
@@ -895,9 +894,10 @@
       }
     },
     "quadrantAnchors": {
-      "title": "象限識別トレーニング",
-      "description": "指定されたマスがどの象限（エリア）にあるかを素早く判断する練習",
-      "session": "練習中",
+      "title": "4分割アンカー",
+      "description": "マスがどの領域（4分割）のどこにあるかを瞬時に答えるトレーニング",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
+      "session": "セッション進行中",
       "question": "{square} はどのエリア？",
       "correct": "正解！",
       "incorrect": "不正解",
