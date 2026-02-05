@@ -254,6 +254,8 @@
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
     "quit": "Quit",
+    "correct": "Correct!",
+    "incorrect": "Incorrect",
     "undo": "Undo",
     "quitConfirmModal": {
       "title": "Quit Practice?",
@@ -886,6 +888,32 @@
         "algebraicNotation": {
           "title": "Algebraic Notation",
           "description": "Learn to read and write chess moves in standard notation"
+        }
+      }
+    },
+    "quadrantAnchors": {
+      "title": "Quadrant Anchors",
+      "description": "Practice identifying which quadrant a square belongs to",
+      "session": "In Progress",
+      "question": "Which quadrant is {square} in?",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "next": "Next Problem",
+      "start": "Start",
+      "settings": "Settings",
+      "quadrants": {
+        "q1": "Q1 (King-side / Opponent)",
+        "q2": "Q2 (Queen-side / Opponent)",
+        "q3": "Q3 (Queen-side / You)",
+        "q4": "Q4 (King-side / You)"
+      },
+      "streak": "Streak: {count}",
+      "score": "Score: {score}",
+      "relatedArticles": "Related Articles",
+      "articles": {
+        "anchorSquares": {
+          "title": "Anchor Squares",
+          "description": "Learn key reference points for board visualization"
         }
       }
     }

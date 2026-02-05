@@ -220,6 +220,8 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         onAnswer={handleAnswer}
         getQuestion={getQuestion}
         countdown={countdown}
+        correctCount={answers.filter((a) => a).length}
+        incorrectCount={answers.filter((a) => !a).length}
       />
     </div>
   );

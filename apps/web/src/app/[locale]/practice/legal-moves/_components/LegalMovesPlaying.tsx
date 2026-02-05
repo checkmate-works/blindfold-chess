@@ -6,6 +6,8 @@ import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
+import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import { pieceDisplayMap } from '../_data/constants';
 import type { MoveQuestion } from '../_lib/types';
@@ -24,6 +26,8 @@ type Props = {
   onAnswer: (answer: boolean) => void;
   getQuestion: (from: string, to: string) => string;
   countdown: number | null;
+  correctCount: number;
+  incorrectCount: number;
 };
 
 export function LegalMovesPlaying({
@@ -36,6 +40,8 @@ export function LegalMovesPlaying({
   onAnswer,
   getQuestion,
   countdown,
+  correctCount,
+  incorrectCount,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   return (
@@ -61,23 +67,21 @@ export function LegalMovesPlaying({
 
         <div className="mb-8">
           <div className="text-6xl mb-4">{pieceDisplayMap[currentQuestion.piece]}</div>
+          {/* ... */}
           <div className="text-lg text-muted-foreground">
             {t(`pieces.${currentQuestion.piece}`)}
           </div>
 
-          {showResult && lastAnswer && (
-            <div
-              className={`mt-4 text-lg font-medium ${
-                lastAnswer.correct
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
-            >
-              {lastAnswer.correct
-                ? t('correct')
-                : `${t('incorrect')} (${lastAnswer.isLegal ? t('legal') : t('illegal')})`}
-            </div>
-          )}
+          <AnswerFeedback
+            isCorrect={lastAnswer?.correct ?? null}
+            isVisible={showResult && !!lastAnswer}
+            incorrectMessage={
+              lastAnswer && !lastAnswer.correct
+                ? `${t('incorrect')} (${lastAnswer.isLegal ? t('legal') : t('illegal')})`
+                : undefined
+            }
+            className="mt-4"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -99,6 +103,8 @@ export function LegalMovesPlaying({
           </button>
         </div>
       </div>
+
+      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
     </div>
   );
 }

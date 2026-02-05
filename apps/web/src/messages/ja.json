@@ -255,6 +255,8 @@
     "secondsFormat": "{seconds}秒",
     "minutesFormat": "{minutes}分",
     "quit": "終了",
+    "correct": "正解！",
+    "incorrect": "不正解",
     "undo": "戻る",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
@@ -274,6 +276,8 @@
       "title": "ボードの対称性",
       "description": "盤上の対称的なマスを識別する練習",
       "question": "{square}の{type}は？",
+      "correct": "正解！",
+      "incorrect": "不正解",
       "types": {
         "horizontal": "左右対称",
         "vertical": "上下対称",
@@ -887,6 +891,32 @@
         "algebraicNotation": {
           "title": "代数表記法",
           "description": "チェスの標準的な棋譜の読み書きを学ぶ"
+        }
+      }
+    },
+    "quadrantAnchors": {
+      "title": "象限識別トレーニング",
+      "description": "指定されたマスがどの象限（エリア）にあるかを素早く判断する練習",
+      "session": "練習中",
+      "question": "{square} はどのエリア？",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "next": "次の問題",
+      "start": "開始",
+      "settings": "設定",
+      "quadrants": {
+        "q1": "① キング側 / 敵陣",
+        "q2": "② クイーン側 / 敵陣",
+        "q3": "③ クイーン側 / 自陣",
+        "q4": "④ キング側 / 自陣"
+      },
+      "streak": "連続正解: {count}",
+      "score": "スコア: {score}",
+      "relatedArticles": "関連記事",
+      "articles": {
+        "anchorSquares": {
+          "title": "アンカースクエア",
+          "description": "盤面イメージのための基準点を学ぶ"
         }
       }
     }

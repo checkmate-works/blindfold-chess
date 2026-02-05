@@ -9,6 +9,7 @@ import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 type Props = {
@@ -66,17 +67,11 @@ export function SquareColorsPlaying({
         <div className="mb-8">
           <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>
 
-          {showResult && lastAnswer && (
-            <div
-              className={`text-lg font-medium ${
-                lastAnswer.correct
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
-            >
-              {lastAnswer.correct ? t('correct') : t('incorrect')}
-            </div>
-          )}
+          <AnswerFeedback
+            isCorrect={lastAnswer?.correct ?? null}
+            isVisible={showResult && !!lastAnswer}
+            className="mb-4"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">

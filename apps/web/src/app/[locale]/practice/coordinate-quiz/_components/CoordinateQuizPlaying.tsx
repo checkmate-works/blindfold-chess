@@ -6,6 +6,7 @@ import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
 import { Square } from 'chess.js';
 
+import { AnswerFeedback } from '../../_components/AnswerFeedback';
 import { ScoreCounter } from '../../_components/ScoreCounter';
 import type { CoordinateQuestion } from '../_lib/types';
 import { CoordinateQuizBoard } from './CoordinateQuizBoard';
@@ -95,6 +96,8 @@ export function CoordinateQuizPlaying({
           )}
         </div>
       </div>
+
+      <AnswerFeedback isCorrect={isCorrect} isVisible={showFeedback} className="mt-4" />
 
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
     </div>
