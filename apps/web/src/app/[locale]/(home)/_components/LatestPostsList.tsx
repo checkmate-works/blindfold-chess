@@ -3,13 +3,15 @@ import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_compo
 import { getCategoryIcon } from '../../posts/_lib/constants';
 import { getLatestPublishedPosts } from '../../posts/_lib/queries';
 
+const LATEST_POSTS_DISPLAY_COUNT = 5;
+
 type Props = {
   locale: string;
   title: string;
 };
 
 export async function LatestPostsList({ locale, title }: Props) {
-  const posts = await getLatestPublishedPosts(3);
+  const posts = await getLatestPublishedPosts(LATEST_POSTS_DISPLAY_COUNT);
 
   if (posts.length === 0) {
     return null;
