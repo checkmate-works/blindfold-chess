@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
+import { RiPushpinFill } from 'react-icons/ri';
 
 type ListLinkContainerProps = {
   children: ReactNode;
@@ -16,9 +17,10 @@ type ListLinkProps = {
   title: string;
   meta?: string;
   locale?: string;
+  isPinned?: boolean;
 };
 
-export function ListLink({ href, icon, title, meta, locale }: ListLinkProps) {
+export function ListLink({ href, icon, title, meta, locale, isPinned }: ListLinkProps) {
   return (
     <li className="border-b border-border last:border-b-0 hover:bg-muted transition-colors">
       <Link href={href} locale={locale} className="block px-4 py-3">
@@ -27,6 +29,7 @@ export function ListLink({ href, icon, title, meta, locale }: ListLinkProps) {
           <div className="flex-1 min-w-0">
             <span className="text-foreground font-medium truncate block">{title}</span>
           </div>
+          {isPinned && <RiPushpinFill className="text-muted-foreground flex-shrink-0" />}
           {meta && <span className="text-xs text-muted-foreground flex-shrink-0">{meta}</span>}
         </div>
       </Link>

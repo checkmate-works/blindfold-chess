@@ -36,6 +36,7 @@ export async function LatestPostsList({ locale, title }: Props) {
               title={post.title}
               meta={publishedDate}
               locale={locale}
+              isPinned={post.pinnedAt !== null}
             />
           );
         })}

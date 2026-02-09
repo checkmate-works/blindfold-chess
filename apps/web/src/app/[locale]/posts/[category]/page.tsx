@@ -78,6 +78,7 @@ export default async function CategoryPostsPage({ params }: Props) {
                 title={post.title}
                 meta={publishedDate}
                 locale={locale}
+                isPinned={post.pinnedAt !== null}
               />
             );
           })}

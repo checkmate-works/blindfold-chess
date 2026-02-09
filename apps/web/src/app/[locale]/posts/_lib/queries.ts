@@ -1,10 +1,12 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { type Category, type Post, categories, db, posts } from '@/lib/db';
 
 export type PostWithCategory = Post & {
   category: Category;
 };
+
+const pinnedFirstOrdering = [sql`${posts.pinnedAt} DESC NULLS LAST`, desc(posts.publishedAt)];
 
 /**
  * Get all published posts
@@ -18,7 +20,7 @@ export async function getPublishedPosts(): Promise<PostWithCategory[]> {
     .from(posts)
     .innerJoin(categories, eq(posts.categoryId, categories.id))
     .where(eq(posts.status, 'published'))
-    .orderBy(desc(posts.publishedAt));
+    .orderBy(...pinnedFirstOrdering);
 
   return results.map((r) => ({
     ...r.post,
@@ -38,7 +40,7 @@ export async function getLatestPublishedPosts(limit: number): Promise<PostWithCa
     .from(posts)
     .innerJoin(categories, eq(posts.categoryId, categories.id))
     .where(eq(posts.status, 'published'))
-    .orderBy(desc(posts.publishedAt))
+    .orderBy(...pinnedFirstOrdering)
     .limit(limit);
 
   return results.map((r) => ({
@@ -61,7 +63,7 @@ export async function getPublishedPostsByCategory(
     .from(posts)
     .innerJoin(categories, eq(posts.categoryId, categories.id))
     .where(and(eq(categories.slug, categorySlug), eq(posts.status, 'published')))
-    .orderBy(desc(posts.publishedAt));
+    .orderBy(...pinnedFirstOrdering);
 
   return results.map((r) => ({
     ...r.post,

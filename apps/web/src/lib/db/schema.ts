@@ -17,6 +17,7 @@ export const posts = pgTable('posts', {
     .references(() => categories.id),
   locale: varchar('locale', { length: 10 }).default('en'),
   status: varchar('status', { length: 20 }).default('draft'),
+  pinnedAt: timestamp('pinned_at', { withTimezone: true }),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
