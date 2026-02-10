@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
+import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
+
 import { Breadcrumb, Divider, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
@@ -27,6 +29,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'faq' });
+
+  // Plain text answers for JSON-LD (strip XML-like tags for plain text)
+  const stripTags = (text: string) => text.replace(/<[^>]+>([^<]*)<\/[^>]+>/g, '$1');
+
+  const faqSchemaItems = [
+    {
+      question: t('items.invalidMove.question'),
+      answer: stripTags(t.raw('items.invalidMove.answer')),
+    },
+    {
+      question: t('items.ads.question'),
+      answer: stripTags(t.raw('items.ads.answer')),
+    },
+    {
+      question: t('items.chessEngine.question'),
+      answer: t('items.chessEngine.answer'),
+    },
+  ];
 
   const faqItems: FAQItem[] = [
     {
@@ -66,6 +86,7 @@ export default async function FAQPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
+      <JsonLd data={generateFAQPageSchema(faqSchemaItems)} />
       <PageTitle>{t('title')}</PageTitle>
 
       <FAQClient items={faqItems} />

@@ -5,6 +5,8 @@ import { Inter } from 'next/font/google';
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
+
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
@@ -98,6 +100,10 @@ export default async function Layout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <JsonLd data={generateWebSiteSchema(locale)} />
+        <JsonLd data={generateOrganizationSchema()} />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}

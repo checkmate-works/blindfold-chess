@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
+
 import {
   Breadcrumb,
   CardLink,
@@ -108,8 +110,18 @@ export default async function LearnArticlePage({ params }: Props) {
     countLabel: t('learn.articleCount', { count: categoryCounts[cat] }),
   }));
 
+  const articleSchemaData = {
+    title: article.metadata.title,
+    description: article.metadata.excerpt,
+    slug: article.metadata.slug,
+    category: article.metadata.category,
+    publishedAt: article.metadata.publishedAt,
+    locale,
+  };
+
   return (
     <div className="space-y-12">
+      <JsonLd data={generateArticleSchema(articleSchemaData)} />
       {/* Article header */}
       <header className="space-y-4">
         <PageTitle>{article.metadata.title}</PageTitle>

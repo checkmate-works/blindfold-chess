@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
+
 import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedPost } from '../../_lib/queries';
@@ -22,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'posts' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: `posts/${category}/${slug}` }),
     title: `${post.title} - ${t('pageTitle')}`,
     description: post.content.slice(0, 160).replace(/[#*`]/g, ''),
   };
@@ -46,8 +50,18 @@ export default async function PostPage({ params }: Props) {
       })
     : null;
 
+  const blogPostSchemaData = {
+    title: post.title,
+    description: post.content.slice(0, 160).replace(/[#*`]/g, ''),
+    slug: post.slug,
+    category,
+    publishedAt: post.publishedAt,
+    locale,
+  };
+
   return (
     <div className="space-y-12">
+      <JsonLd data={generateBlogPostingSchema(blogPostSchemaData)} />
       {/* Header */}
       <header className="space-y-4">
         <PageTitle>{post.title}</PageTitle>

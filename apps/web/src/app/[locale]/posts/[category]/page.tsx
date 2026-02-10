@@ -11,6 +11,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCategoryIcon } from '../_lib/constants';
@@ -32,6 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const categoryLabel = t(`categories.${category}`);
 
   return {
+    ...generateCanonicalMetadata({ locale, path: `posts/${category}` }),
     title: `${categoryLabel} - ${t('pageTitle')}`,
     description: t('categoryDescription', { category: categoryLabel }),
   };

@@ -1,0 +1,220 @@
+import { AUTHOR_NAME, SITE_NAME, SITE_URL } from '@/config';
+
+/**
+ * Renders JSON-LD structured data as a script tag
+ */
+export function JsonLd({ data }: { data: object }) {
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+  );
+}
+
+/**
+ * WebSite schema for the root layout
+ * @see https://schema.org/WebSite
+ */
+export function generateWebSiteSchema(locale: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: SITE_URL,
+    inLanguage: locale === 'ja' ? 'ja-JP' : 'en-US',
+    publisher: {
+      '@type': 'Organization',
+      name: AUTHOR_NAME,
+      url: SITE_URL,
+    },
+  };
+}
+
+/**
+ * Organization schema
+ * @see https://schema.org/Organization
+ */
+export function generateOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: AUTHOR_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+  };
+}
+
+export type BreadcrumbItem = {
+  label: string;
+  href?: string;
+};
+
+type ListItemWithUrl = {
+  '@type': string;
+  position: number;
+  name: string;
+  item: string;
+};
+
+type ListItemWithoutUrl = {
+  '@type': string;
+  position: number;
+  name: string;
+};
+
+type ListItem = ListItemWithUrl | ListItemWithoutUrl;
+
+/**
+ * BreadcrumbList schema
+ * @see https://schema.org/BreadcrumbList
+ */
+export function generateBreadcrumbListSchema(items: BreadcrumbItem[], locale: string) {
+  const baseUrl = SITE_URL;
+  const localePrefix = `/${locale}`;
+
+  // Start with home
+  const listItems: ListItem[] = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: SITE_NAME,
+      item: `${baseUrl}${localePrefix}`,
+    },
+  ];
+
+  // Add remaining items
+  items.forEach((item, index) => {
+    const position = index + 2;
+
+    if (item.href) {
+      listItems.push({
+        '@type': 'ListItem',
+        position,
+        name: item.label,
+        item: `${baseUrl}${localePrefix}${item.href}`,
+      });
+    } else {
+      listItems.push({
+        '@type': 'ListItem',
+        position,
+        name: item.label,
+      });
+    }
+  });
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: listItems,
+  };
+}
+
+export type FAQItemData = {
+  question: string;
+  answer: string;
+};
+
+/**
+ * FAQPage schema
+ * @see https://schema.org/FAQPage
+ */
+export function generateFAQPageSchema(items: FAQItemData[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+export type ArticleData = {
+  title: string;
+  description: string;
+  slug: string;
+  category: string;
+  publishedAt: string;
+  locale: string;
+};
+
+/**
+ * Article schema for learn articles
+ * @see https://schema.org/Article
+ */
+export function generateArticleSchema(article: ArticleData) {
+  const articleUrl = `${SITE_URL}/${article.locale}/learn/${article.category}/${article.slug}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    datePublished: article.publishedAt,
+    author: {
+      '@type': 'Organization',
+      name: AUTHOR_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: AUTHOR_NAME,
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': articleUrl,
+    },
+    inLanguage: article.locale === 'ja' ? 'ja-JP' : 'en-US',
+  };
+}
+
+export type BlogPostData = {
+  title: string;
+  description: string;
+  slug: string;
+  category: string;
+  publishedAt: Date | null;
+  locale: string;
+};
+
+/**
+ * BlogPosting schema for blog posts
+ * @see https://schema.org/BlogPosting
+ */
+export function generateBlogPostingSchema(post: BlogPostData) {
+  const postUrl = `${SITE_URL}/${post.locale}/posts/${post.category}/${post.slug}`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    datePublished: post.publishedAt ? post.publishedAt.toISOString() : undefined,
+    author: {
+      '@type': 'Organization',
+      name: AUTHOR_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: AUTHOR_NAME,
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': postUrl,
+    },
+    inLanguage: post.locale === 'ja' ? 'ja-JP' : 'en-US',
+  };
+}

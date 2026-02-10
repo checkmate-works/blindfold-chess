@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import ReactMarkdown from 'react-markdown';
@@ -103,15 +104,35 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             return <ChessBoardDemo type={demoType} />;
           }
           if (!src) return null;
+
+          const isSvg = src.endsWith('.svg');
+
+          // SVG images: use explicit dimensions with fixed container
+          if (isSvg) {
+            return (
+              <span className="block relative w-full max-w-sm mx-auto my-8 aspect-square">
+                <Image
+                  src={src}
+                  alt={alt || ''}
+                  fill
+                  className="rounded-md object-contain"
+                  sizes="(max-width: 640px) 100vw, 384px"
+                />
+              </span>
+            );
+          }
+
+          // PNG/JPG images: use responsive container with fill
           return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={src}
-              alt={alt}
-              className={`rounded-md shadow-md mx-auto block my-8 ${
-                src.endsWith('.svg') ? 'w-full max-w-sm' : 'max-w-full'
-              }`}
-            />
+            <span className="block relative w-full max-w-2xl mx-auto my-8 aspect-video">
+              <Image
+                src={src}
+                alt={alt || ''}
+                fill
+                className="rounded-md object-contain"
+                sizes="(max-width: 768px) 100vw, 672px"
+              />
+            </span>
           );
         },
         table: ({ children }) => (

@@ -9,6 +9,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCategoryIcon } from './_lib/constants';
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'posts' });
 
   return {
+    ...generateCanonicalMetadata({ locale, path: 'posts' }),
     title: t('pageTitle'),
     description: t('pageDescription'),
   };
