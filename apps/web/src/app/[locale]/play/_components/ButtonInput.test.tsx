@@ -2,6 +2,8 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 import { ButtonInput } from './ButtonInput';
 
 expect.extend(matchers);
@@ -15,6 +17,11 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+// Helper to render with required providers
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<GamePreferencesProvider>{ui}</GamePreferencesProvider>);
+}
+
 describe('ButtonInput UI Visibility', () => {
   const mockOnSubmit = vi.fn();
   const defaultProps = {
@@ -24,14 +31,14 @@ describe('ButtonInput UI Visibility', () => {
 
   describe('Pawn Mode (Default)', () => {
     it('should show file buttons (a-h) initially', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
       ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].forEach((file) => {
         expect(screen.getByRole('button', { name: file })).toBeInTheDocument();
       });
     });
 
     it('should NOT show rank buttons initially', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
       ['1', '2', '3', '4', '5', '6', '7', '8'].forEach((rank) => {
         expect(screen.queryByRole('button', { name: rank })).not.toBeInTheDocument();
       });
@@ -39,7 +46,7 @@ describe('ButtonInput UI Visibility', () => {
 
     describe('Promotion', () => {
       it('should toggle promotion UI only when reaching rank 1 or 8', () => {
-        render(<ButtonInput {...defaultProps} />);
+        renderWithProviders(<ButtonInput {...defaultProps} />);
 
         // Select File 'e'
         fireEvent.click(screen.getByRole('button', { name: 'e' }));
@@ -64,7 +71,7 @@ describe('ButtonInput UI Visibility', () => {
       });
 
       it('should HIDE Check (+) button during promotion selection, and SHOW it after piece selection', () => {
-        render(<ButtonInput {...defaultProps} />);
+        renderWithProviders(<ButtonInput {...defaultProps} />);
 
         // e8 (Promotion pending)
         fireEvent.click(screen.getByRole('button', { name: 'e' }));
@@ -83,7 +90,7 @@ describe('ButtonInput UI Visibility', () => {
 
     describe('Capture (x)', () => {
       it('should show Capture (x) only AFTER a file is selected in Pawn Mode', () => {
-        render(<ButtonInput {...defaultProps} />);
+        renderWithProviders(<ButtonInput {...defaultProps} />);
 
         // Initially (No file) -> Hidden
         expect(screen.queryByText('x')).not.toBeInTheDocument();
@@ -99,7 +106,7 @@ describe('ButtonInput UI Visibility', () => {
 
   describe('Castling', () => {
     it('should hide Files, Ranks, and Pieces when "O-O" is selected', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
 
       const castleButton = screen.getByRole('button', { name: 'O-O' });
       fireEvent.click(castleButton);
@@ -118,7 +125,7 @@ describe('ButtonInput UI Visibility', () => {
 
   describe('Piece Mode', () => {
     it('should still show Target File buttons when a piece is selected', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
 
       fireEvent.click(screen.getByRole('button', { name: 'N' }));
 
@@ -127,7 +134,7 @@ describe('ButtonInput UI Visibility', () => {
     });
 
     it('should ALWAYS show Capture (x) when a Piece is selected', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
 
       // Select Piece 'B'
       fireEvent.click(screen.getByRole('button', { name: 'B' }));
@@ -138,7 +145,7 @@ describe('ButtonInput UI Visibility', () => {
 
     describe('Disambiguation', () => {
       it('should show "Disambiguation..." button only when a Piece is selected', () => {
-        render(<ButtonInput {...defaultProps} />);
+        renderWithProviders(<ButtonInput {...defaultProps} />);
 
         // Initial (Pawn mode) -> Hidden
         expect(screen.queryByText('disambiguationButton')).not.toBeInTheDocument();
@@ -158,7 +165,7 @@ describe('ButtonInput UI Visibility', () => {
 
   describe('Interactions', () => {
     it('should Show/Hide Trash button based on input presence', () => {
-      render(<ButtonInput {...defaultProps} />);
+      renderWithProviders(<ButtonInput {...defaultProps} />);
 
       // Initial -> No trash button (empty input)
       // Note: Trash button has title="Clear"
