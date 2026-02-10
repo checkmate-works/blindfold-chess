@@ -70,7 +70,7 @@ There's an interesting relationship between symmetry and square colors.
 | Symmetry | Square Color | Example |
 |----------|--------------|---------|
 | Horizontal | Different | a1 is dark, h1 is light |
-| Vertical | Same | Both a1 and a8 are dark |
+| Vertical | Different | a1 is dark, a8 is light |
 | Point | Same | Both a1 and h8 are dark |
 
 Knowing this rule lets you deduce a square's color from its symmetric counterpart.`;
