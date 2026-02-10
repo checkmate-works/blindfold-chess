@@ -3,16 +3,16 @@
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import { getLetterCounts, getUniqueLetters } from '../_lib/utils';
+import { getLetterCounts, getUniqueLetters } from '../_lib/queries';
 
 type Props = {
   currentLetter?: string;
   locale: string;
 };
 
-export function AlphabeticalIndex({ currentLetter, locale }: Props) {
-  const alphabet = getUniqueLetters();
-  const letterCounts = getLetterCounts();
+export async function AlphabeticalIndex({ currentLetter, locale }: Props) {
+  const alphabet = await getUniqueLetters();
+  const letterCounts = await getLetterCounts();
 
   return (
     <div className="grid grid-cols-6 sm:grid-cols-9 md:grid-cols-13 gap-2">

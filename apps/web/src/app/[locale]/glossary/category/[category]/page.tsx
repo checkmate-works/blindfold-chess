@@ -14,8 +14,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CategoryIndex } from '../../_components/CategoryIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
+import { getTermsByCategory } from '../../_lib/queries';
 import { CATEGORY_STYLES, type GlossaryCategory } from '../../_lib/types';
-import { getTermsByCategory } from '../../_lib/utils';
 
 type Props = {
   params: Promise<{
@@ -53,7 +53,7 @@ export default async function GlossaryCategoryPage({ params }: Props) {
     notFound();
   }
 
-  const filteredTerms = getTermsByCategory(category);
+  const filteredTerms = await getTermsByCategory(category, locale);
   const categoryStyle = CATEGORY_STYLES[category as GlossaryCategory];
 
   return (

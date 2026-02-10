@@ -56,7 +56,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'general',
   },
   {
-    term: 'Candidate moves',
+    term: 'Candidate Moves',
     termJa: '候補手',
     definition:
       'ソ連のGM Alexander Kotovが著書「Think Like a Grandmaster」で提唱した術語で、指し手として考えられる複数の選択肢のこと。局面を分析して考えられる候補手をいくつか選び、その候補手を一つずつ深く読み、数手先まで展開を計算し、最善と思われる指し手を選ぶプロセスを指す',
@@ -155,7 +155,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'strategy',
   },
   {
-    term: 'Critical moment',
+    term: 'Critical Moment',
     termJa: 'クリティカルモーメント',
     definition:
       '正確な計算が必要な局面。この局面では唯一の勝ち筋があったり、チェックメイトを回避する手が1つだけ存在したりする。クリティカルモーメントを逃すと、形勢が逆転したり、勝てるはずの局面が引き分けになることがある',
@@ -236,7 +236,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'tactics',
   },
   {
-    term: 'Forcing move',
+    term: 'Forcing Move',
     termJa: 'フォーシングムーブ',
     definition:
       '相手に特定の応手を強制する手。主にチェック（Check）、キャプチャ（Capture）、スレット（Threat）の3つが代表的。CCTとして覚えられることが多い',
@@ -245,7 +245,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'tactics',
   },
   {
-    term: 'Full point',
+    term: 'Full Point',
     termJa: 'フルポイント',
     definition: '試合に勝って1ポイント獲得すること',
     definitionEn: 'Winning a game and earning 1 point',
@@ -261,7 +261,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'tactics',
   },
   {
-    term: 'Half point',
+    term: 'Half Point',
     termJa: 'ハーフポイント',
     definition: '引き分けのこと。0.5ポイントを獲得する',
     definitionEn: 'A draw. Earning 0.5 points',
@@ -289,10 +289,9 @@ export const chessTerms: ChessTerm[] = [
     term: 'Interposition',
     termJa: '合駒',
     definition:
-      '攻撃を防ぐために駒を間に置く手筋。Intermezzo（インターメッツォ）とも呼ばれる。Zwischenzugと同じ意味で、英語圏では「Zwischenzug」の方が一般的',
+      '攻撃を防ぐために駒を間に置く手筋。特にチェックに対して、キングと攻撃駒の間に自分の駒を置いてチェックを解除する守備的なテクニック',
     definitionEn:
-      'A technique of placing a piece in between to block an attack. Also called Intermezzo. Has the same meaning as Zwischenzug, which is more commonly used in English-speaking circles',
-    aliases: ['Intermezzo', 'Zwischenzug'],
+      'A defensive technique of placing a piece between an attacker and the attacked piece (especially the king) to block the attack. Commonly used to block checks by interposing a piece between the checking piece and the king',
     category: 'tactics',
   },
   {
@@ -474,7 +473,7 @@ export const chessTerms: ChessTerm[] = [
       'ポーンを連続的に前進させて、相手のキングや駒に圧力をかける攻撃的な手法。キングサイドやクイーンサイドのどちらかでポーンをまとめて進め、相手の防御を崩す狙いがある',
     definitionEn:
       "An aggressive technique of advancing pawns continuously to pressure the opponent's king or pieces. The aim is to advance pawns together on either the kingside or queenside to break down the opponent's defense",
-    category: 'tactics',
+    category: 'strategy',
   },
   {
     term: 'Piece up',
@@ -591,7 +590,7 @@ export const chessTerms: ChessTerm[] = [
     category: 'strategy',
   },
   {
-    term: 'Reversal of moves',
+    term: 'Reversal of Moves',
     termJa: '手順逆',
     definition:
       '異なる手順で同じ局面に到達すること。例：1.d4 Nf6 2.c4 e6 3.Nf3 d5 = 1.d4 d5 2.Nf3 Nf6 3.c4 e6',
@@ -664,9 +663,9 @@ export const chessTerms: ChessTerm[] = [
     term: 'Tarrasch Rule',
     termJa: 'タラッシュルール',
     definition:
-      'チェスのエンドゲームに関する原則の一つ。パスポーンが昇格を目指して前進している場合、相手のルークはそのポーンの後ろ（昇格地点側）に配置するのが望ましいという法則',
+      'チェスのエンドゲームに関する原則の一つ。パスポーンに対して、攻守両方のルークをポーンの後ろに配置すべきという法則。攻撃側はポーンの前進を後方から支援でき、防御側はポーンとの距離を最大限確保して攻撃の自由度を高められる',
     definitionEn:
-      "One of the endgame principles in chess. The rule states that when a passed pawn is advancing toward promotion, the opponent's rook should be placed behind the pawn (on the promotion side)",
+      "One of the endgame principles in chess. The rule states that both sides should place their rooks behind a passed pawn. The attacking side supports the pawn's advance from behind, while the defending side maximizes the distance from the pawn to maintain attacking freedom",
     category: 'endgame',
   },
   {
@@ -754,12 +753,12 @@ export const chessTerms: ChessTerm[] = [
   {
     term: 'Zwischenzug',
     termJa: 'ツヴィッシェンツーク',
-    reading: 'つヴぃっしぇんつーく',
+    reading: 'つヴィッシェンツーク',
     definition:
       'ドイツ語で「間に差し込む手」を意味する戦術用語。通常の指し手の流れを一時的に中断し、相手の計画を崩す意外な一手を指す。あえて別の一手を差し込むことで有利な展開を作る手筋',
     definitionEn:
       'A German tactical term meaning "in-between move." An unexpected move that temporarily interrupts the normal flow of moves to disrupt the opponent\'s plans. A technique that creates favorable developments by deliberately inserting a different move',
-    aliases: ['Interposition', 'Intermezzo'],
+    aliases: ['Intermezzo'],
     category: 'tactics',
   },
 ];

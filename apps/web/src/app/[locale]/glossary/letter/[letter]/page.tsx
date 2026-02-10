@@ -14,7 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
-import { getTermsByLetter, getUniqueLetters } from '../../_lib/utils';
+import { getTermsByLetter, getUniqueLetters } from '../../_lib/queries';
 
 type Props = {
   params: Promise<{
@@ -24,7 +24,7 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const letters = getUniqueLetters();
+  const letters = await getUniqueLetters();
   return letters.map((letter) => ({ letter: letter.toLowerCase() }));
 }
 
@@ -45,7 +45,7 @@ export default async function GlossaryLetterPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
   const upperLetter = letter.toUpperCase();
 
-  const filteredTerms = getTermsByLetter(letter);
+  const filteredTerms = await getTermsByLetter(letter, locale);
 
   if (filteredTerms.length === 0) {
     notFound();

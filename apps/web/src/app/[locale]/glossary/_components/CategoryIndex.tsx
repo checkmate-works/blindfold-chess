@@ -4,8 +4,8 @@ import { getTranslations } from 'next-intl/server';
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
+import { getCategoryCounts } from '../_lib/queries';
 import { CATEGORY_STYLES } from '../_lib/types';
-import { getCategoryCounts } from '../_lib/utils';
 
 type Props = {
   currentCategory?: string;
@@ -14,7 +14,7 @@ type Props = {
 
 export async function CategoryIndex({ currentCategory, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
-  const categoryCounts = getCategoryCounts();
+  const categoryCounts = await getCategoryCounts();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

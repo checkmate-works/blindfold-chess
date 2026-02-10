@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
-import { chessTerms } from './[locale]/glossary/_data/chess-terms';
+import { getCategoryCounts, getUniqueLetters } from './[locale]/glossary/_lib/queries';
 import { ARTICLE_CATEGORIES } from './[locale]/learn/_lib/types';
 import { getAllArticles } from './[locale]/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/manual/_lib/utils';
@@ -93,30 +93,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Dynamic pages - Glossary letters and categories
-  const uniqueLetters = new Set<string>();
-  const uniqueCategories = new Set<string>();
-
-  chessTerms.forEach((term) => {
-    uniqueLetters.add(term.term[0].toUpperCase());
-    if (term.category) {
-      uniqueCategories.add(term.category);
-    }
-  });
+  const glossaryLetters = await getUniqueLetters();
+  const categoryCounts = await getCategoryCounts();
+  const glossaryCategories = Object.keys(categoryCounts);
 
   for (const locale of SUPPORTED_LOCALES) {
     // Glossary letter pages
-    uniqueLetters.forEach((letter) => {
+    for (const letter of glossaryLetters) {
       sitemap.push({
         url: `${BASE_URL}/${locale}/glossary/letter/${letter}`,
       });
-    });
+    }
 
     // Glossary category pages
-    uniqueCategories.forEach((category) => {
+    for (const category of glossaryCategories) {
       sitemap.push({
         url: `${BASE_URL}/${locale}/glossary/category/${category}`,
       });
-    });
+    }
   }
 
   return sitemap;
