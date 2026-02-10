@@ -79,7 +79,7 @@ describe('useAutoSave', () => {
     const { rerender } = renderHook((props) => useAutoSave(props), {
       initialProps: {
         ...defaultProps,
-        moves: [],
+        moves: [] as AlgebraicNotation[],
         enabled: true,
       },
     });
