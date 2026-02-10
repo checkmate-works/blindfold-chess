@@ -4,7 +4,9 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { LOCALE_COOKIE_NAME, type Locale } from '@/lib/locale-types';
+import { LOCALE_COOKIE_NAME } from '@/config';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   currentLocale: Locale;

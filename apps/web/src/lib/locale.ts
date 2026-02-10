@@ -1,8 +1,9 @@
 import { cookies, headers } from 'next/headers';
 
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
 import 'server-only';
 
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, type Locale, SUPPORTED_LOCALES } from './locale-types';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
  * Detects the user's preferred locale from the request.

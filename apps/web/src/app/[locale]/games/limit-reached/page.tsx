@@ -9,7 +9,7 @@ import { MAX_GAMES } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { Game, GameStatus, SkillLevel } from '@/lib/types';
+import type { Game, GameOutcome, SkillLevel } from '@/lib/types';
 
 import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -23,7 +23,7 @@ type PendingGame = {
   moves: AlgebraicNotation[];
   playerColor: Side;
   skillLevel: SkillLevel;
-  status: GameStatus;
+  status: GameOutcome;
 };
 
 export default function ManageLimitPage() {

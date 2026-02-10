@@ -7,6 +7,7 @@ export const COOKIEYES_ID = process.env.NEXT_PUBLIC_COOKIEYES_ID;
 
 export const SUPPORTED_LOCALES = ['en', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
+export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
 export const MAX_GAMES = 20;
 

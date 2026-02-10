@@ -1,7 +1,8 @@
 import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
 
-export type GameStatus = 'in_progress' | 'checkmate' | 'stalemate' | 'draw';
+// Board status representing the state of the chess game
+export type BoardStatus = 'in_progress' | 'checkmate' | 'stalemate' | 'draw';
 
 export class GameStateService {
   private chess: Chess;
@@ -61,7 +62,7 @@ export class GameStateService {
     );
   }
 
-  getGameStatus(): GameStatus {
+  getGameStatus(): BoardStatus {
     if (this.chess.isCheckmate()) {
       return 'checkmate';
     } else if (this.chess.isStalemate()) {

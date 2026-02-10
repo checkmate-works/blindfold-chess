@@ -16,8 +16,8 @@ export type GameSettings = {
   skillLevel: SkillLevel;
 };
 
-// Game status and data
-export type GameStatus = 'in_progress' | 'win' | 'loss' | 'draw';
+// Game outcome from player's perspective
+export type GameOutcome = 'in_progress' | 'win' | 'loss' | 'draw';
 
 export type Game = {
   id: string;
@@ -26,7 +26,7 @@ export type Game = {
   moves: AlgebraicNotation[];
   playerColor: Side;
   skillLevel: SkillLevel;
-  status: GameStatus;
+  status: GameOutcome;
   /** Custom starting position FEN. If undefined, standard starting position is used. */
   startingFen?: string;
 };

@@ -1,5 +1,19 @@
 import { Chess } from 'chess.js';
 
+/**
+ * Type representing a formatted PGN move pair
+ */
+export type FormattedPgnMove = {
+  moveNumber: number;
+  whiteMove: string;
+  blackMove?: string;
+};
+
+/**
+ * Type representing formatted PGN as an array of move pairs
+ */
+export type FormattedPgn = FormattedPgnMove[];
+
 // Standard starting position FEN
 export const STANDARD_START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
@@ -105,10 +119,7 @@ export function validatePgnWithDetails(pgn: string): {
  * Converts formatted move pairs to standard PGN notation
  * Optionally includes FEN header for custom starting positions
  */
-export function formatPgnToText(
-  formattedPgn: { moveNumber: number; whiteMove: string; blackMove?: string }[],
-  startingFen?: string
-): string {
+export function formatPgnToText(formattedPgn: FormattedPgn, startingFen?: string): string {
   const movesText = formattedPgn
     .map((move) => {
       const moveNumber = `${move.moveNumber}.`;

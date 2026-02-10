@@ -7,14 +7,14 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
 
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { GameStatus, SkillLevel } from '@/lib/types';
+import type { GameOutcome, SkillLevel } from '@/lib/types';
 
 type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
   playerColor: Side;
   skillLevel: SkillLevel;
-  status: GameStatus;
+  status: GameOutcome;
   startingFen?: string;
   enabled?: boolean;
   saveOnInit?: boolean;

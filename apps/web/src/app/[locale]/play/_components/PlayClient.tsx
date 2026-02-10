@@ -5,44 +5,34 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@/app/_components';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/core';
 import { Chess } from 'chess.js';
-import {
-  FaChartLine,
-  FaCheck,
-  FaChevronDown,
-  FaCopy,
-  FaExternalLinkAlt,
-  FaEye,
-  FaGamepad,
-  FaKeyboard,
-  FaList,
-  FaPlay,
-  FaPlus,
-  FaPlusCircle,
-} from 'react-icons/fa';
+import { FaEye, FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
-import { fenToLichessUrl } from '@/lib/lichess';
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { SkillLevel } from '@/lib/types';
+import type { GameOutcome, SkillLevel } from '@/lib/types';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useAiMoveOrchestration } from '../_hooks/use-ai-move-orchestration';
 import { useAiVersus } from '../_hooks/use-ai-versus';
 import { useAutoSave } from '../_hooks/use-auto-save';
+import { useConfirmationDialogs } from '../_hooks/use-confirmation-dialogs';
+import { parseUrlSearchParams, useGameInitialization } from '../_hooks/use-game-initialization';
 import { useMoveNavigation } from '../_hooks/use-move-navigation';
 import { useNotation } from '../_hooks/use-notation';
+import type { BoardStatus } from '../_lib/game-state-service';
 import { GameStateService } from '../_lib/game-state-service';
-import { formatPgnToText } from '../_lib/pgn-parser';
 import { BoardViewModal } from './BoardViewModal';
 import { ButtonInput } from './ButtonInput';
+import { ConfirmationModal } from './ConfirmationModal';
+import { GameOverContent } from './GameOverContent';
 import { GameSettingsModal } from './GameSettingsModal';
 import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
-import { MoveNavigationControls } from './MoveNavigationControls';
 import { MoveSelect } from './MoveSelect';
+import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
@@ -55,67 +45,20 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Parse URL parameters
-  const playerSide = (searchParams.get('color') as Side) || 'white';
-  const initialSkillLevel = (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5;
-  const initialGameId = searchParams.get('gameId') || undefined;
-  const initialStartingFen = searchParams.get('fen') || undefined;
+  // Parse URL parameters using the hook
+  const urlParams = parseUrlSearchParams(searchParams);
+  const {
+    playerSide,
+    initialSkillLevel,
+    initialGameId,
+    initialStartingFen,
+    initialMovesFromUrl,
+    shouldRedirectToError,
+    errorDetails,
+  } = useGameInitialization(urlParams);
 
   // Skill level state (can be changed during game)
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
-
-  // Get initial moves from URL and validate them
-  const urlMoves = searchParams.get('moves');
-  const parsedMoves = urlMoves ? JSON.parse(urlMoves) : [];
-
-  // Validate moves if we don't have a gameId (gameId takes precedence)
-  // When gameId is present, moves will be loaded from localStorage with the correct startingFen
-  let initialMovesFromUrl = parsedMoves;
-  let shouldRedirectToError = false;
-  let errorDetails = null;
-
-  if (parsedMoves.length > 0 && !initialGameId) {
-    const validMoves: AlgebraicNotation[] = [];
-    // Initialize with custom FEN or standard starting position
-    const chess = initialStartingFen ? new Chess(initialStartingFen) : new Chess();
-
-    for (let i = 0; i < parsedMoves.length; i++) {
-      const move = parsedMoves[i];
-      try {
-        const result = chess.move(move);
-        if (result) {
-          validMoves.push(move as AlgebraicNotation);
-        } else {
-          // Invalid move found - log warning instead of throwing error
-          console.warn(`Invalid move detected in URL: ${move} at index ${i}`);
-          shouldRedirectToError = true;
-          errorDetails = {
-            invalidMove: move,
-            invalidIndex: i,
-            validMoves,
-            allMoves: parsedMoves,
-          };
-          break;
-        }
-      } catch (error) {
-        // Error processing move - log warning instead of throwing error
-        console.warn(`Error processing move from URL: ${move} at index ${i}`, error);
-        shouldRedirectToError = true;
-        errorDetails = {
-          invalidMove: move,
-          invalidIndex: i,
-          validMoves,
-          allMoves: parsedMoves,
-        };
-        break;
-      }
-    }
-
-    initialMovesFromUrl = validMoves;
-  } else if (initialGameId) {
-    // When gameId exists, don't use URL moves - they will be loaded from localStorage
-    initialMovesFromUrl = [];
-  }
 
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
@@ -130,18 +73,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // State
   const [moveInput, setMoveInput] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const isProcessingRef = useRef(false); // Use ref to track processing state
-  const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null); // Track last submitted move
-  const [showResignConfirm, setShowResignConfirm] = useState(false);
-  const [showUndoConfirm, setShowUndoConfirm] = useState(false);
+  const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const { preferences, updatePreferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
-  const [gameStatus, setGameStatus] = useState<'in_progress' | 'checkmate' | 'stalemate' | 'draw'>(
-    'in_progress'
-  );
+  const [gameStatus, setGameStatus] = useState<BoardStatus>('in_progress');
   const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -166,11 +103,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   const previousMovesLength = useRef(moves.length);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-  const [isMovesVisible, setIsMovesVisible] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isFenCopied, setIsFenCopied] = useState(false);
-  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
-  const [restartPosition, setRestartPosition] = useState<number | null>(null);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -180,7 +112,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         const savedGame = await gameRepository.load(initialGameId);
         if (savedGame) {
           setSavedGameStatus(savedGame.status);
-          // If game is finished, set the appropriate states
           if (savedGame.status !== 'in_progress') {
             if (savedGame.status === 'loss') {
               setGameStatus('checkmate');
@@ -192,7 +123,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
               setGameStatus('draw');
               setPlayerResult('draw');
             }
-            // Prevent AI from making moves on finished games
             setShouldMakeAiMove(false);
           }
         }
@@ -202,12 +132,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [initialGameId]);
 
   const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
-    // When loading from gameId, don't make AI move until game is loaded from localStorage
-    // This prevents the AI from making a move based on empty state before the saved game is loaded
     if (initialGameId) {
       return false;
     }
-    // Check if it's AI's turn when resuming a game
     if (initialMovesFromUrl.length > 0) {
       const gameStateService = new GameStateService(
         initialMovesFromUrl,
@@ -216,30 +143,24 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       );
       return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
     }
-    // For custom starting positions, check who moves first from FEN
     if (initialStartingFen) {
       const fenParts = initialStartingFen.split(' ');
-      const turnFromFen = fenParts[1]; // 'w' or 'b'
-      // AI plays first if it's AI's turn
+      const turnFromFen = fenParts[1];
       const isWhiteToMove = turnFromFen === 'w';
       return (
         (playerSide === 'white' && !isWhiteToMove) || (playerSide === 'black' && isWhiteToMove)
       );
     }
-    // New game with standard position: AI plays first if player is black
     return playerSide === 'black';
   });
 
-  // Map game status to repository status
-  const mapGameStatus = useCallback(
-    (
-      gs: 'in_progress' | 'checkmate' | 'stalemate' | 'draw',
-      pr: 'win' | 'loss' | 'draw' | null
-    ) => {
-      if (gs === 'in_progress') return 'in_progress' as const;
-      if (pr === 'win') return 'win' as const;
-      if (pr === 'loss') return 'loss' as const;
-      return 'draw' as const;
+  // Map board status to game outcome for repository
+  const mapBoardStatusToOutcome = useCallback(
+    (bs: BoardStatus, pr: 'win' | 'loss' | 'draw' | null): GameOutcome => {
+      if (bs === 'in_progress') return 'in_progress';
+      if (pr === 'win') return 'win';
+      if (pr === 'loss') return 'loss';
+      return 'draw';
     },
     []
   );
@@ -247,12 +168,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // Track if we're loading from localStorage
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(!!initialGameId);
 
-  // Clear save toast flag on mount when we have a gameId (reload scenario)
+  // Clear save toast flag on mount when we have a gameId
   useEffect(() => {
     if (initialGameId && typeof window !== 'undefined') {
       sessionStorage.removeItem('blindfold_chess_show_save_toast');
     }
-  }, [initialGameId]); // Run only once on mount
+  }, [initialGameId]);
 
   // Auto-save hook
   const { markPlayerInteraction, gameId } = useAutoSave({
@@ -260,10 +181,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     moves,
     playerColor: playerSide,
     skillLevel,
-    status: mapGameStatus(gameStatus, playerResult),
+    status: mapBoardStatusToOutcome(gameStatus, playerResult),
     startingFen,
-    enabled: !isLoadingFromStorage && !shouldRedirectToError, // Disable auto-save while loading from storage or if error detected
-    saveOnInit: !initialGameId && !shouldRedirectToError, // Save on init for new games, but not if error detected
+    enabled: !isLoadingFromStorage && !shouldRedirectToError,
+    saveOnInit: !initialGameId && !shouldRedirectToError,
   });
 
   // Redirect to error page if invalid moves detected
@@ -277,12 +198,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       params.set('color', playerSide);
       params.set('skillLevel', skillLevel.toString());
 
-      // Include custom starting FEN if present
       if (initialStartingFen) {
         params.set('fen', initialStartingFen);
       }
 
-      // Use the current gameId (either from URL or auto-generated) to prevent duplication
       const effectiveGameId = initialGameId || gameId;
       if (effectiveGameId) {
         params.set('gameId', effectiveGameId);
@@ -305,22 +224,19 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // Update URL when gameId is generated
   useEffect(() => {
     if (gameId && !initialGameId) {
-      // Only update URL if we didn't have a gameId initially
       const params = new URLSearchParams(searchParams.toString());
       params.set('gameId', gameId);
-      // Remove moves parameter as we're now using gameId
       params.delete('moves');
       router.replace(`?${params.toString()}`, { scroll: false });
     }
   }, [gameId, initialGameId, searchParams, router]);
 
-  // Helper function to get last move details from chess.js
+  // Helper function to get last move details
   const getLastMoveDetails = useCallback(
     (movesArray: AlgebraicNotation[], customFen?: string) => {
       if (movesArray.length === 0) return null;
 
       try {
-        // Use customFen if provided, otherwise fall back to startingFen state or standard position
         const fenToUse = customFen ?? startingFen;
         const chess = fenToUse ? new Chess(fenToUse) : new Chess();
         let lastMoveDetails = null;
@@ -346,29 +262,21 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     const loadGame = async () => {
       if (initialGameId && typeof window !== 'undefined') {
         setIsLoadingFromStorage(true);
-
-        // Clear any existing save toast flag immediately when loading a game
-        // This prevents showing toast on reload
         sessionStorage.removeItem('blindfold_chess_show_save_toast');
 
-        // Use LocalStorageGameRepository
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);
 
         if (savedGame) {
-          // Load starting FEN if present (for custom starting positions)
           if (savedGame.startingFen) {
             setStartingFen(savedGame.startingFen);
           }
 
           if (savedGame.moves && savedGame.moves.length > 0) {
             setMovesTo(savedGame.moves);
-
-            // Update last move details - pass startingFen directly since state update is async
             setLastMove(getLastMoveDetails(savedGame.moves, savedGame.startingFen));
           }
 
-          // Also update game status if finished
           if (savedGame.status && savedGame.status !== 'in_progress') {
             setSavedGameStatus(savedGame.status);
             if (savedGame.status === 'loss') {
@@ -401,13 +309,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   // Update game state whenever moves change
   useEffect(() => {
-    // Don't update game state while loading from storage
-    // This prevents triggering AI move with empty moves before game data is loaded
     if (isLoadingFromStorage) {
       return;
     }
 
-    // Don't update game state from moves if we've already loaded a finished game
     if (savedGameStatus && savedGameStatus !== 'in_progress') {
       return;
     }
@@ -421,109 +326,49 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     setGameStatus(newGameStatus);
     setPlayerResult(gameStateService.getPlayerResult());
 
-    // Update shouldMakeAiMove based on current state
-    // This ensures the flag is always synchronized with the actual game state
     if (!newIsPlayerTurn && newGameStatus === 'in_progress') {
-      // Only set to true if not already processing to avoid duplicate requests
-      if (!isProcessingRef.current) {
-        setShouldMakeAiMove(true);
-      }
+      setShouldMakeAiMove(true);
     } else {
-      // Explicitly reset the flag when it's player's turn or game is over
-      // This prevents stale state from blocking future AI moves
       setShouldMakeAiMove(false);
     }
   }, [moves, playerSide, savedGameStatus, startingFen, isLoadingFromStorage]);
 
-  // Make AI move when it's AI's turn
-  useEffect(() => {
-    let isCancelled = false;
+  // AI move orchestration
+  const handleAiMoveSuccess = useCallback(
+    (move: AlgebraicNotation) => {
+      pushMove(move);
+      const newMoves = [...moves, move];
+      setLastMove(getLastMoveDetails(newMoves));
+    },
+    [pushMove, moves, getLastMoveDetails]
+  );
 
-    const executeAiMove = async () => {
-      if (isProcessingRef.current) {
-        return;
-      }
+  const handleAiMoveError = useCallback(() => {
+    setError('AI move failed');
+    setShouldMakeAiMove(false);
+  }, []);
 
-      isProcessingRef.current = true;
-      setIsLoading(true);
-
-      // Retry logic for when engine is busy (can happen in StrictMode)
-      const maxRetries = 10;
-      const retryDelay = 200; // ms
-
-      let aiMove: string | null = null;
-      let lastError: Error | null = null;
-
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        if (isCancelled) {
-          return;
-        }
-
-        try {
-          aiMove = await getAiMove(moves, startingFen);
-          break; // Success, exit retry loop
-        } catch (error) {
-          lastError = error as Error;
-          // If engine is busy, wait and retry
-          if (error instanceof Error && error.message.includes('already processing')) {
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-            continue;
-          }
-          // For other errors, don't retry
-          break;
-        }
-      }
-
-      // Check if this effect was cleaned up while we were waiting
-      if (isCancelled) {
-        return;
-      }
-
-      if (aiMove) {
-        pushMove(aiMove as AlgebraicNotation);
-        // Update last move
-        const newMoves = [...moves, aiMove as AlgebraicNotation];
-        setLastMove(getLastMoveDetails(newMoves));
-      } else if (lastError) {
-        console.error('Failed to get AI move:', lastError);
-        setError('AI move failed');
-        setShouldMakeAiMove(false);
-      }
-
-      if (!isCancelled) {
-        setIsLoading(false);
-        isProcessingRef.current = false;
-      }
-    };
-
-    if (shouldMakeAiMove && gameStatus === 'in_progress') {
-      executeAiMove();
-    }
-
-    return () => {
-      isCancelled = true;
-      // Reset processing and loading state on cleanup
-      // This is important when the effect re-runs after AI move is added (moves changes)
-      // Without this, isLoading stays true and MoveInput becomes disabled
-      isProcessingRef.current = false;
-      setIsLoading(false);
-    };
-  }, [shouldMakeAiMove, gameStatus, moves, getAiMove, pushMove, getLastMoveDetails, startingFen]);
+  const { isLoading } = useAiMoveOrchestration({
+    shouldMakeAiMove,
+    gameStatus,
+    moves,
+    startingFen,
+    getAiMove,
+    onAiMoveSuccess: handleAiMoveSuccess,
+    onAiMoveError: handleAiMoveError,
+  });
 
   // Handle player move submission
   const handleSubmitMove = useCallback(
     (move: AlgebraicNotation) => {
-      // Prevent submission if AI is processing or loading
-      if (isLoading || isProcessingRef.current) {
+      if (isLoading) {
         return;
       }
 
-      // Prevent submission if it's not player's turn
       if (!isPlayerTurn) {
         return;
       }
 
-      // Prevent duplicate submission within 500ms
       const now = Date.now();
       if (lastSubmittedMoveRef.current) {
         const { move: lastMove, timestamp } = lastSubmittedMoveRef.current;
@@ -535,15 +380,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       const gameStateService = new GameStateService(moves, playerSide, startingFen);
 
       if (gameStateService.validateMove(move)) {
-        // Record this submission to prevent duplicates
         lastSubmittedMoveRef.current = { move, timestamp: now };
-
-        markPlayerInteraction(); // Mark that player has made a move
+        markPlayerInteraction();
         pushMove(move);
         setMoveInput('');
         setError(null);
 
-        // Update last move
         const newMoves = [...moves, move];
         setLastMove(getLastMoveDetails(newMoves));
       } else {
@@ -563,71 +405,44 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     ]
   );
 
-  // Handle undo
-  const handleUndo = useCallback(() => {
-    setShowUndoConfirm(true);
-  }, []);
-
-  const confirmUndo = useCallback(() => {
-    markPlayerInteraction(); // Mark interaction for undo
-    // Remove last 2 moves (player and AI)
-    removeMoves(2);
-    setError(null);
-
-    // Update last move
-    const newMoves = moves.slice(0, -2);
-    setLastMove(getLastMoveDetails(newMoves));
-
-    setShowUndoConfirm(false);
-  }, [removeMoves, moves, getLastMoveDetails, markPlayerInteraction]);
-
-  // Handle restart from position
-  const handleRestartFromPosition = useCallback((position: number) => {
-    setRestartPosition(position);
-    setShowRestartConfirm(true);
-  }, []);
-
-  const confirmRestart = useCallback(() => {
-    if (restartPosition === null) return;
-
-    markPlayerInteraction(); // Mark interaction for restart
-    // Remove all moves after the selected position
-    const movesToRemove = moves.length - restartPosition - 1;
-    if (movesToRemove > 0) {
-      removeMoves(movesToRemove);
-    }
-
-    // Update last move
-    const newMoves = moves.slice(0, restartPosition + 1);
-    setLastMove(getLastMoveDetails(newMoves));
-
-    // Reset to latest position after restart
-    resetNavigation();
-
-    setShowRestartConfirm(false);
-    setRestartPosition(null);
-  }, [
-    restartPosition,
-    moves,
-    removeMoves,
-    getLastMoveDetails,
-    markPlayerInteraction,
-    resetNavigation,
-  ]);
+  // Confirmation dialogs
+  const confirmationDialogs = useConfirmationDialogs({
+    onResignConfirm: useCallback(() => {
+      markPlayerInteraction();
+      setGameStatus('checkmate');
+      setPlayerResult('loss');
+    }, [markPlayerInteraction]),
+    onUndoConfirm: useCallback(() => {
+      markPlayerInteraction();
+      removeMoves(2);
+      setError(null);
+      const newMoves = moves.slice(0, -2);
+      setLastMove(getLastMoveDetails(newMoves));
+    }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails]),
+    onRestartConfirm: useCallback(
+      (position: number) => {
+        markPlayerInteraction();
+        const movesToRemove = moves.length - position - 1;
+        if (movesToRemove > 0) {
+          removeMoves(movesToRemove);
+        }
+        const newMoves = moves.slice(0, position + 1);
+        setLastMove(getLastMoveDetails(newMoves));
+        resetNavigation();
+      },
+      [markPlayerInteraction, moves, removeMoves, getLastMoveDetails, resetNavigation]
+    ),
+  });
 
   // Handle new game from position
   const handleNewGameFromPosition = useCallback(
     (position: number) => {
-      // Get moves up to the selected position
       const movesToKeep = moves.slice(0, position + 1);
-
-      // Navigate to new game page with moves and current settings
       const params = new URLSearchParams();
       params.set('moves', JSON.stringify(movesToKeep));
       params.set('color', playerSide);
       params.set('skillLevel', skillLevel.toString());
 
-      // Include custom starting FEN if present
       if (startingFen) {
         params.set('fen', startingFen);
       }
@@ -637,31 +452,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     [moves, playerSide, skillLevel, locale, router, startingFen]
   );
 
-  // Handle resign
-  const handleResign = useCallback(() => {
-    setShowResignConfirm(true);
-  }, []);
-
-  const confirmResign = useCallback(() => {
-    markPlayerInteraction(); // Mark interaction for resign
-    // Set game as loss for player
-    setGameStatus('checkmate');
-    setPlayerResult('loss');
-    setShowResignConfirm(false);
-  }, [markPlayerInteraction]);
-
   // Handle skill level change
   const handleSkillLevelChange = useCallback(
     async (newSkillLevel: SkillLevel) => {
-      markPlayerInteraction(); // Mark interaction for skill level change
+      markPlayerInteraction();
       setSkillLevel(newSkillLevel);
 
-      // Update URL parameter
       const params = new URLSearchParams(searchParams.toString());
       params.set('skillLevel', newSkillLevel.toString());
       router.replace(`?${params.toString()}`, { scroll: false });
 
-      // Update localStorage if game exists
       if (gameId) {
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(gameId);
@@ -681,16 +481,14 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   // Reset to latest position when new moves are added
   useEffect(() => {
-    // Only reset to latest position if moves were added (not removed)
     if (moves.length > previousMovesLength.current) {
       resetNavigation();
     }
     previousMovesLength.current = moves.length;
-  }, [moves.length, resetNavigation]); // Only trigger when moves length changes
+  }, [moves.length, resetNavigation]);
 
   // Get current FEN for board display
   const currentFen = getFen();
-  // Use hook displayFen if available, otherwise default to current FEN
   const displayFen = hookDisplayFen;
   const formattedPgn = getFormattedPgn();
 
@@ -703,14 +501,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       return;
     }
 
-    // Get the latest AI move
-    // If player is white, AI plays black (odd indices: 1, 3, 5...)
-    // If player is black, AI plays white (even indices: 0, 2, 4...)
     const isAiMove = (index: number) => {
       return playerSide === 'white' ? index % 2 === 1 : index % 2 === 0;
     };
 
-    // Find the last AI move
     for (let i = moves.length - 1; i >= 0; i--) {
       if (isAiMove(i)) {
         const moveNumber = Math.floor(i / 2) + 1;
@@ -743,7 +537,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                           fen={currentFen}
                           onSubmit={handleSubmitMove}
                           onChange={() => {
-                            // Clear error when user changes selection
                             if (error) setError(null);
                           }}
                           disabled={isLoading}
@@ -760,7 +553,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                           value={moveInput}
                           onChange={(value) => {
                             setMoveInput(value);
-                            // Clear error when user starts typing
                             if (error) setError(null);
                           }}
                           onSubmit={handleSubmitMove}
@@ -819,7 +611,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                     <span className="hidden md:inline">{t('showBoard')}</span>
                   </button>
                   <button
-                    onClick={handleUndo}
+                    onClick={confirmationDialogs.undo.open}
                     disabled={moves.length < 2}
                     className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center justify-center gap-2"
                     title={t('undo')}
@@ -828,7 +620,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                     <span className="hidden md:inline">{t('undo')}</span>
                   </button>
                   <button
-                    onClick={handleResign}
+                    onClick={confirmationDialogs.resign.open}
                     className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
                     title={t('resign')}
                   >
@@ -850,343 +642,78 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             )}
 
             {/* Game Over Content */}
-            {gameStatus !== 'in_progress' && (
-              <div className="flex flex-col gap-4">
-                {/* Game Result */}
-                {playerResult && (
-                  <div className="text-center">
-                    <p className="text-lg font-bold">
-                      {playerResult === 'win' && (
-                        <span className="text-green-600 dark:text-green-400">✓ {t('youWin')}</span>
-                      )}
-                      {playerResult === 'loss' && (
-                        <span className="text-red-600 dark:text-red-400">✗ {t('youLose')}</span>
-                      )}
-                      {playerResult === 'draw' && (
-                        <span className="text-yellow-600 dark:text-yellow-400">= {t('draw')}</span>
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                {/* Show Board Button */}
-                <div className="flex gap-4 md:gap-2 justify-center">
-                  <button
-                    onClick={() => setIsBoardVisible(true)}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                    title={t('showBoard')}
-                  >
-                    <FaEye className="w-4 h-4" />
-                    <span className="hidden md:inline">{t('showBoard')}</span>
-                  </button>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    icon={<FaPlus className="w-5 h-5" />}
-                    onClick={() => (window.location.href = `/${locale}/game/new`)}
-                    className="w-full rounded-xl font-medium"
-                  >
-                    {t('newGame')}
-                  </Button>
-                  {moves.length > 0 && (
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      icon={<FaChartLine className="w-5 h-5" />}
-                      onClick={() => {
-                        // Create PGN from moves
-                        const pgnMoves = formattedPgn
-                          .map((move) => {
-                            const moveNumber = `${move.moveNumber}.`;
-                            const movePair = move.blackMove
-                              ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
-                              : `${moveNumber} ${move.whiteMove}`;
-                            return movePair;
-                          })
-                          .join(' ');
-
-                        const params = new URLSearchParams();
-                        params.set('pgn', pgnMoves);
-                        params.set('color', playerSide);
-                        params.set('autoOpponent', 'true');
-
-                        // Pass custom starting FEN if present
-                        if (startingFen) {
-                          params.set('fen', startingFen);
-                        }
-
-                        // Pass game parameters to allow returning to the exact game state
-                        if (initialGameId) {
-                          params.set('gameId', initialGameId);
-                        }
-                        params.set('skillLevel', skillLevel.toString());
-                        params.set('moves', JSON.stringify(moves));
-
-                        router.push(`/${locale}/play/postmortem?${params.toString()}`);
-                      }}
-                      className="w-full rounded-xl font-medium"
-                    >
-                      {t('postmortem')}
-                    </Button>
-                  )}
-                </div>
-              </div>
+            {gameStatus !== 'in_progress' && playerResult && (
+              <GameOverContent
+                locale={locale}
+                playerResult={playerResult}
+                playerSide={playerSide}
+                skillLevel={skillLevel}
+                moves={moves}
+                formattedPgn={formattedPgn}
+                startingFen={startingFen}
+                initialGameId={initialGameId}
+                onShowBoard={() => setIsBoardVisible(true)}
+              />
             )}
           </div>
         </div>
 
         {/* Move List */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-lg shadow-lg">
-            {/* Moves Toggle Header */}
-            <button
-              onClick={() => setIsMovesVisible(!isMovesVisible)}
-              className={`w-full px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border/50 focus:ring-inset rounded-t-lg ${!isMovesVisible ? 'rounded-b-lg' : ''}`}
-              aria-expanded={isMovesVisible}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-foreground">{t('moves')}</span>
-                <FaChevronDown
-                  className={`w-5 h-5 text-muted-foreground transform transition-transform duration-200 ${
-                    isMovesVisible ? 'rotate-180' : ''
-                  }`}
-                />
-              </div>
-            </button>
-
-            {/* Moves Content */}
-            <div
-              className={`transition-all duration-300 ${isMovesVisible ? 'block' : 'hidden'} rounded-b-lg`}
-            >
-              <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
-                {formattedPgn.length > 0 ? (
-                  <div className="space-y-0.5">
-                    {formattedPgn.map((move, index) => {
-                      const whiteIndex = index * 2;
-                      const blackIndex = index * 2 + 1;
-                      const isWhiteHighlighted = currentPosition === whiteIndex;
-                      const isBlackHighlighted = currentPosition === blackIndex;
-
-                      return (
-                        <div key={move.moveNumber} className="flex items-center text-sm">
-                          <span className="w-10 text-right pr-2 text-muted-foreground">
-                            {move.moveNumber}.
-                          </span>
-                          <span
-                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                              isWhiteHighlighted
-                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                                : 'hover:bg-muted/40'
-                            }`}
-                            onClick={() => navigateToPosition(whiteIndex)}
-                          >
-                            {move.whiteMove}
-                          </span>
-                          <span
-                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                              isBlackHighlighted
-                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                                : move.blackMove
-                                  ? 'hover:bg-muted/40'
-                                  : ''
-                            } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                            onClick={() => move.blackMove && navigateToPosition(blackIndex)}
-                          >
-                            {move.blackMove || ''}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground text-sm">No moves yet</p>
-                )}
-
-                {/* Navigation Controls */}
-                {moves.length > 0 && (
-                  <div className="mt-4">
-                    <MoveNavigationControls
-                      onNavigateToStart={navigateToStart}
-                      onNavigatePrevious={navigatePrevious}
-                      onNavigateNext={navigateNext}
-                      onNavigateToEnd={navigateToEnd}
-                      isPreviousDisabled={
-                        currentPosition === -2 || (currentPosition === -1 && moves.length === 0)
-                      }
-                      isNextDisabled={currentPosition === -1}
-                    />
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {moves.length > 0 && (
-                  <div className="mt-4 flex flex-col gap-4">
-                    {currentPosition !== -1 && currentPosition !== -2 && (
-                      <>
-                        {/* Restart from here button - only show if game is still in progress */}
-                        {gameStatus === 'in_progress' && (
-                          <Button
-                            variant="primary"
-                            icon={<FaPlay className="w-3 h-3" />}
-                            onClick={() => handleRestartFromPosition(currentPosition)}
-                          >
-                            {t('restartFromHere')}
-                          </Button>
-                        )}
-                        {/* New game from here button - always show when navigating moves */}
-                        <Button
-                          variant="secondary"
-                          icon={<FaPlusCircle className="w-3 h-3" />}
-                          onClick={() => handleNewGameFromPosition(currentPosition)}
-                        >
-                          {t('newGameFromHere')}
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Analyze on Lichess Button */}
-                    <Button
-                      variant="secondary"
-                      icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                      onClick={() => {
-                        // Get FEN for current position
-                        let fenToAnalyze: string;
-                        if (currentPosition === -1 || displayFen === null) {
-                          // Latest position
-                          fenToAnalyze = currentFen;
-                        } else {
-                          // Historical position
-                          fenToAnalyze = displayFen;
-                        }
-                        const lichessUrl = fenToLichessUrl(fenToAnalyze);
-                        window.open(lichessUrl, '_blank');
-                      }}
-                    >
-                      {t('analyzeOnLichess')}
-                    </Button>
-
-                    {/* Copy PGN Button */}
-                    <Button
-                      variant="secondary"
-                      icon={
-                        isCopied ? (
-                          <FaCheck className="w-3 h-3 text-green-500" />
-                        ) : (
-                          <FaCopy className="w-3 h-3" />
-                        )
-                      }
-                      onClick={() => {
-                        const pgnText = formatPgnToText(formattedPgn, startingFen);
-
-                        navigator.clipboard.writeText(pgnText).then(() => {
-                          setIsCopied(true);
-                          setTimeout(() => setIsCopied(false), 2000);
-                        });
-                      }}
-                    >
-                      {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
-                    </Button>
-
-                    {/* Copy FEN Button */}
-                    <Button
-                      variant="secondary"
-                      icon={
-                        isFenCopied ? (
-                          <FaCheck className="w-3 h-3 text-green-500" />
-                        ) : (
-                          <FaCopy className="w-3 h-3" />
-                        )
-                      }
-                      onClick={() => {
-                        // Use the same FEN that is sent to Lichess
-                        let fenToCopy: string;
-                        if (currentPosition === -1) {
-                          // Current position
-                          fenToCopy = currentFen;
-                        } else {
-                          // Historical position
-                          fenToCopy = displayFen || currentFen;
-                        }
-
-                        navigator.clipboard.writeText(fenToCopy).then(() => {
-                          setIsFenCopied(true);
-                          setTimeout(() => setIsFenCopied(false), 2000);
-                        });
-                      }}
-                    >
-                      {isFenCopied ? t('copied') || 'Copied!' : t('copyFen')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <MovesPanel
+            formattedPgn={formattedPgn}
+            currentPosition={currentPosition}
+            movesLength={moves.length}
+            currentFen={currentFen}
+            displayFen={displayFen}
+            startingFen={startingFen}
+            gameInProgress={gameStatus === 'in_progress'}
+            onNavigateToPosition={navigateToPosition}
+            onNavigateToStart={navigateToStart}
+            onNavigatePrevious={navigatePrevious}
+            onNavigateNext={navigateNext}
+            onNavigateToEnd={navigateToEnd}
+            onRestartFromPosition={confirmationDialogs.restart.openWithPosition}
+            onNewGameFromPosition={handleNewGameFromPosition}
+          />
         </div>
       </div>
 
       {/* Resign Confirmation Modal */}
-      {showResignConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{t('confirmResignTitle')}</h3>
-            <p className="text-muted-foreground mb-6">{t('confirmResignMessage')}</p>
-            <div className="flex gap-2 justify-end">
-              <Button variant="secondary" onClick={() => setShowResignConfirm(false)}>
-                {t('cancel')}
-              </Button>
-              <Button variant="destructive" onClick={confirmResign}>
-                {t('confirmResign')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={confirmationDialogs.resign.isOpen}
+        onClose={confirmationDialogs.resign.close}
+        onConfirm={confirmationDialogs.resign.confirm}
+        title={t('confirmResignTitle')}
+        message={t('confirmResignMessage')}
+        confirmText={t('confirmResign')}
+        cancelText={t('cancel')}
+        variant="destructive"
+      />
 
       {/* Undo Confirmation Modal */}
-      {showUndoConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{t('confirmUndoTitle')}</h3>
-            <p className="text-muted-foreground mb-6">{t('confirmUndoMessage')}</p>
-            <div className="flex gap-2 justify-end">
-              <Button variant="secondary" onClick={() => setShowUndoConfirm(false)}>
-                {t('cancel')}
-              </Button>
-              <Button variant="primary" onClick={confirmUndo}>
-                {t('confirmUndo')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={confirmationDialogs.undo.isOpen}
+        onClose={confirmationDialogs.undo.close}
+        onConfirm={confirmationDialogs.undo.confirm}
+        title={t('confirmUndoTitle')}
+        message={t('confirmUndoMessage')}
+        confirmText={t('confirmUndo')}
+        cancelText={t('cancel')}
+        variant="primary"
+      />
 
       {/* Restart Confirmation Modal */}
-      {showRestartConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">{t('confirmRestartTitle')}</h3>
-            <p className="text-muted-foreground mb-6">{t('confirmRestartMessage')}</p>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowRestartConfirm(false);
-                  setRestartPosition(null);
-                }}
-              >
-                {t('cancel')}
-              </Button>
-              <Button variant="primary" onClick={confirmRestart}>
-                {t('confirmRestart')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={confirmationDialogs.restart.isOpen}
+        onClose={confirmationDialogs.restart.close}
+        onConfirm={confirmationDialogs.restart.confirm}
+        title={t('confirmRestartTitle')}
+        message={t('confirmRestartMessage')}
+        confirmText={t('confirmRestart')}
+        cancelText={t('cancel')}
+        variant="primary"
+      />
 
       {/* Board View Modal */}
       <BoardViewModal

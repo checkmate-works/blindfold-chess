@@ -1,8 +1,8 @@
 import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import { PRACTICE_MODULES } from '@/app/[locale]/_lib/practice-modules';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const LOCALES = ['en', 'ja'] as const;
-export type Locale = (typeof LOCALES)[number];
+export type { Locale };
 
 export const ARTICLE_CATEGORIES = {
   NOTATION: 'notation',
