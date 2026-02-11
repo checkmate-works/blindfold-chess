@@ -30,5 +30,6 @@ export interface ChessTerm {
   definitionEn?: string;
   aliases?: string[];
   relatedTerms?: string[];
+  positions?: { fen: string; sortOrder: number; caption?: string }[];
   category?: GlossaryCategory;
 }

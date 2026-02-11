@@ -5,6 +5,7 @@ import {
   categories,
   db,
   glossaryTermAliases,
+  glossaryTermPositions,
   glossaryTermTranslations,
   glossaryTerms,
 } from './index';
@@ -96,6 +97,20 @@ async function seedGlossaryTerms() {
         chessTerm.aliases.map((alias) => ({
           termId: term.id,
           alias,
+        }))
+      );
+    }
+
+    // Positions: delete existing + re-insert (same pattern as aliases)
+    await db.delete(glossaryTermPositions).where(eq(glossaryTermPositions.termId, term.id));
+
+    if (chessTerm.positions && chessTerm.positions.length > 0) {
+      await db.insert(glossaryTermPositions).values(
+        chessTerm.positions.map((pos) => ({
+          termId: term.id,
+          fen: pos.fen,
+          sortOrder: pos.sortOrder,
+          caption: pos.caption || null,
         }))
       );
     }

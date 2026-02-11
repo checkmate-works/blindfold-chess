@@ -59,6 +59,17 @@ export const glossaryTermAliases = pgTable('glossary_term_aliases', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
+export const glossaryTermPositions = pgTable('glossary_term_positions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  termId: uuid('term_id')
+    .notNull()
+    .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
+  fen: varchar('fen', { length: 100 }).notNull(),
+  sortOrder: integer('sort_order').default(0),
+  caption: varchar('caption', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
+
 export const glossaryTermRelations = pgTable(
   'glossary_term_relations',
   {
@@ -85,5 +96,7 @@ export type GlossaryTermTranslation = typeof glossaryTermTranslations.$inferSele
 export type NewGlossaryTermTranslation = typeof glossaryTermTranslations.$inferInsert;
 export type GlossaryTermAlias = typeof glossaryTermAliases.$inferSelect;
 export type NewGlossaryTermAlias = typeof glossaryTermAliases.$inferInsert;
+export type GlossaryTermPosition = typeof glossaryTermPositions.$inferSelect;
+export type NewGlossaryTermPosition = typeof glossaryTermPositions.$inferInsert;
 export type GlossaryTermRelation = typeof glossaryTermRelations.$inferSelect;
 export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;

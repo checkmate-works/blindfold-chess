@@ -44,6 +44,12 @@ export const chessTerms: ChessTerm[] = [
       '駒によって前進を妨害されたポーン。ブロックに用いる駒はナイトが最適とされ、クイーンやルークは一般的にはブロックに適さないとされる。単なるブロック（blocked）ではなく、動かせない状態にされ、戦略的に損をしていることを意味する',
     definitionEn:
       'A pawn whose advance is obstructed by a piece. Knights are considered the ideal blockers, while queens and rooks are generally unsuitable for blocking. This refers not just to being blocked, but to being immobilized in a strategically disadvantageous way',
+    positions: [
+      {
+        fen: '3K4/8/1p6/2p2P2/5n2/8/8/1k6 w - - 0 1',
+        sortOrder: 0,
+      },
+    ],
     category: 'structure',
   },
   {
@@ -302,6 +308,12 @@ export const chessTerms: ChessTerm[] = [
       '隣接するファイルに味方のポーンがなく、孤立したポーン。他のポーンで支えることができないため弱点になりやすい。dポーンの場合はアイソレイテッドクイーンズポーン（IQP）と呼ぶ',
     definitionEn:
       "A pawn with no friendly pawns on adjacent files, making it isolated. It tends to become a weakness as it cannot be supported by other pawns. When it's a d-pawn, it's called an Isolated Queen's Pawn (IQP)",
+    positions: [
+      {
+        fen: 'r1b3k1/pp2bppp/1q2p3/3rR3/3P4/3B4/PP1B1PPP/R2Q2K1 w - - 0 1',
+        sortOrder: 0,
+      },
+    ],
     category: 'structure',
   },
   {
@@ -309,6 +321,12 @@ export const chessTerms: ChessTerm[] = [
     termJa: 'ヤルコフビショップ',
     definition: '（白番で）a2にビショップが閉じこもって動けない現象',
     definitionEn: 'A phenomenon where (for White) a bishop becomes trapped on a2 and cannot move',
+    positions: [
+      {
+        fen: '2r1k3/8/8/p7/Ppp5/8/BPP5/R3K3 w Q - 0 1',
+        sortOrder: 0,
+      },
+    ],
     category: 'structure',
   },
   {
@@ -365,6 +383,12 @@ export const chessTerms: ChessTerm[] = [
       '将棋で言うところの「詰めろ」。次の一手でチェックメイトをかけられる状況。無視すると次の手でチェックメイトになる',
     definitionEn:
       'Similar to "tsumero" in shogi. A situation where checkmate can be delivered on the next move. If ignored, checkmate follows on the next turn',
+    positions: [
+      {
+        fen: '4r2r/pb1p2p1/4ppk1/2pq3p/7P/BPQ1R1P1/P4P2/4R1K1 b - - 1 34',
+        sortOrder: 0,
+      },
+    ],
     category: 'tactics',
   },
   {
@@ -399,6 +423,13 @@ export const chessTerms: ChessTerm[] = [
       '二つのキングが1マス挟んで向き合うこと。特にエンドゲームで重要な概念で、相手のキングを直接対面して押さえ込み、主導権を握る戦術。動かざるを得ないキングが不利になる',
     definitionEn:
       "Two kings facing each other with one square between them. A particularly important concept in endgames, a tactic to control the opponent's king by direct confrontation and seize the initiative. The king forced to move is at a disadvantage",
+    positions: [
+      {
+        fen: '8/4k3/8/4K3/8/4P3/8/8 w - - 0 1',
+        sortOrder: 0,
+        caption: 'White has the opposition with a passed pawn on e2',
+      },
+    ],
     category: 'endgame',
   },
   {
@@ -614,6 +645,12 @@ export const chessTerms: ChessTerm[] = [
       'ポーン構造が粉々に崩れている状態を表す言い回し。特に、ダブルポーン、アイソレーテッドポーン、トリプルポーンなどが混在していて、まとまりがなく、守りにくい形を指す',
     definitionEn:
       'An expression describing a pawn structure that has been broken into pieces. Particularly refers to formations with mixed doubled pawns, isolated pawns, and tripled pawns that lack cohesion and are difficult to defend',
+    positions: [
+      {
+        fen: '3r2k1/R5bp/5p1p/8/8/5B1P/5PP1/6K1 w - - 0 1',
+        sortOrder: 0,
+      },
+    ],
     category: 'structure',
   },
   {

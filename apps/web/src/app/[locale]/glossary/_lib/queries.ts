@@ -1,6 +1,12 @@
 import { eq, sql } from 'drizzle-orm';
 
-import { db, glossaryTermAliases, glossaryTermTranslations, glossaryTerms } from '@/lib/db';
+import {
+  db,
+  glossaryTermAliases,
+  glossaryTermPositions,
+  glossaryTermTranslations,
+  glossaryTerms,
+} from '@/lib/db';
 
 import type { ChessTerm } from '../../_lib/types';
 import type { GlossaryCategory } from './types';
@@ -13,7 +19,8 @@ function toChessTerm(
     definition: string | null;
     reading: string | null;
   },
-  aliases: string[]
+  aliases: string[],
+  positions: { fen: string; sortOrder: number; caption?: string }[]
 ): ChessTerm {
   const definition = row.definition ?? row.termEn;
   return {
@@ -23,8 +30,66 @@ function toChessTerm(
     definition,
     definitionEn: definition,
     aliases: aliases.length > 0 ? aliases : undefined,
+    positions: positions.length > 0 ? positions : undefined,
     category: row.category as GlossaryCategory,
   };
+}
+
+async function fetchAliasesMap(termIds: string[]): Promise<Map<string, string[]>> {
+  const aliasRows =
+    termIds.length > 0
+      ? await db
+          .select({
+            termId: glossaryTermAliases.termId,
+            alias: glossaryTermAliases.alias,
+          })
+          .from(glossaryTermAliases)
+          .where(sql`${glossaryTermAliases.termId} IN ${termIds}`)
+      : [];
+
+  const aliasMap = new Map<string, string[]>();
+  for (const row of aliasRows) {
+    const existing = aliasMap.get(row.termId) || [];
+    existing.push(row.alias);
+    aliasMap.set(row.termId, existing);
+  }
+
+  return aliasMap;
+}
+
+async function fetchPositionsMap(
+  termIds: string[]
+): Promise<Map<string, { fen: string; sortOrder: number; caption?: string }[]>> {
+  const positionRows =
+    termIds.length > 0
+      ? await db
+          .select({
+            termId: glossaryTermPositions.termId,
+            fen: glossaryTermPositions.fen,
+            sortOrder: glossaryTermPositions.sortOrder,
+            caption: glossaryTermPositions.caption,
+          })
+          .from(glossaryTermPositions)
+          .where(sql`${glossaryTermPositions.termId} IN ${termIds}`)
+      : [];
+
+  const positionMap = new Map<string, { fen: string; sortOrder: number; caption?: string }[]>();
+  for (const row of positionRows) {
+    const existing = positionMap.get(row.termId) || [];
+    existing.push({
+      fen: row.fen,
+      sortOrder: row.sortOrder ?? 0,
+      caption: row.caption ?? undefined,
+    });
+    positionMap.set(row.termId, existing);
+  }
+
+  // Sort positions by sortOrder
+  for (const positions of positionMap.values()) {
+    positions.sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  return positionMap;
 }
 
 export async function getGlossaryTerms(locale: string): Promise<ChessTerm[]> {
@@ -45,25 +110,12 @@ export async function getGlossaryTerms(locale: string): Promise<ChessTerm[]> {
     .orderBy(glossaryTerms.termEn);
 
   const termIds = rows.map((r) => r.termId);
-  const aliasRows =
-    termIds.length > 0
-      ? await db
-          .select({
-            termId: glossaryTermAliases.termId,
-            alias: glossaryTermAliases.alias,
-          })
-          .from(glossaryTermAliases)
-          .where(sql`${glossaryTermAliases.termId} IN ${termIds}`)
-      : [];
+  const aliasMap = await fetchAliasesMap(termIds);
+  const positionMap = await fetchPositionsMap(termIds);
 
-  const aliasMap = new Map<string, string[]>();
-  for (const row of aliasRows) {
-    const existing = aliasMap.get(row.termId) || [];
-    existing.push(row.alias);
-    aliasMap.set(row.termId, existing);
-  }
-
-  return rows.map((row) => toChessTerm(row, aliasMap.get(row.termId) || []));
+  return rows.map((row) =>
+    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+  );
 }
 
 export async function getTermsByLetter(letter: string, locale: string): Promise<ChessTerm[]> {
@@ -87,25 +139,12 @@ export async function getTermsByLetter(letter: string, locale: string): Promise<
     .orderBy(glossaryTerms.termEn);
 
   const termIds = rows.map((r) => r.termId);
-  const aliasRows =
-    termIds.length > 0
-      ? await db
-          .select({
-            termId: glossaryTermAliases.termId,
-            alias: glossaryTermAliases.alias,
-          })
-          .from(glossaryTermAliases)
-          .where(sql`${glossaryTermAliases.termId} IN ${termIds}`)
-      : [];
+  const aliasMap = await fetchAliasesMap(termIds);
+  const positionMap = await fetchPositionsMap(termIds);
 
-  const aliasMap = new Map<string, string[]>();
-  for (const row of aliasRows) {
-    const existing = aliasMap.get(row.termId) || [];
-    existing.push(row.alias);
-    aliasMap.set(row.termId, existing);
-  }
-
-  return rows.map((row) => toChessTerm(row, aliasMap.get(row.termId) || []));
+  return rows.map((row) =>
+    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+  );
 }
 
 export async function getTermsByCategory(category: string, locale: string): Promise<ChessTerm[]> {
@@ -127,25 +166,12 @@ export async function getTermsByCategory(category: string, locale: string): Prom
     .orderBy(glossaryTerms.termEn);
 
   const termIds = rows.map((r) => r.termId);
-  const aliasRows =
-    termIds.length > 0
-      ? await db
-          .select({
-            termId: glossaryTermAliases.termId,
-            alias: glossaryTermAliases.alias,
-          })
-          .from(glossaryTermAliases)
-          .where(sql`${glossaryTermAliases.termId} IN ${termIds}`)
-      : [];
+  const aliasMap = await fetchAliasesMap(termIds);
+  const positionMap = await fetchPositionsMap(termIds);
 
-  const aliasMap = new Map<string, string[]>();
-  for (const row of aliasRows) {
-    const existing = aliasMap.get(row.termId) || [];
-    existing.push(row.alias);
-    aliasMap.set(row.termId, existing);
-  }
-
-  return rows.map((row) => toChessTerm(row, aliasMap.get(row.termId) || []));
+  return rows.map((row) =>
+    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+  );
 }
 
 export async function getUniqueLetters(): Promise<string[]> {

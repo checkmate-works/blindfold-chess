@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 // Note: Using standard next/link instead of @/i18n/routing Link
 // to avoid DYNAMIC_SERVER_USAGE errors in production.
 // Server Components should use standard Link with explicit locale in href.
@@ -7,6 +8,10 @@ import Link from 'next/link';
 import type { ChessTerm } from '@/app/[locale]/_lib/types';
 
 import { CATEGORY_COLORS } from '../_lib/types';
+
+const GlossaryPositionBoard = dynamic(() =>
+  import('./GlossaryPositionBoard').then((mod) => mod.GlossaryPositionBoard)
+);
 
 type Props = {
   terms: ChessTerm[];
@@ -55,6 +60,9 @@ export async function GlossaryTermList({ terms, locale }: Props) {
           <p className="text-muted-foreground leading-relaxed">
             {locale === 'en' && term.definitionEn ? term.definitionEn : term.definition}
           </p>
+          {term.positions && term.positions.length > 0 && (
+            <GlossaryPositionBoard positions={term.positions} />
+          )}
           {term.relatedTerms && term.relatedTerms.length > 0 && (
             <div className="mt-3 text-sm text-muted-foreground">
               {t('relatedTerms')}:{' '}
