@@ -26,12 +26,18 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@blindfold-chess/features':
+        specifier: workspace:^
+        version: link:../../packages/features
       '@expo/metro-runtime':
         specifier: ~6.1.2
         version: 6.1.2(expo@54.0.31)(react-dom@19.2.1(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
         version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))
+      chess.js:
+        specifier: ^1.4.0
+        version: 1.4.0
       expo:
         specifier: ~54.0.30
         version: 54.0.31(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -96,6 +102,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@blindfold-chess/features':
+        specifier: workspace:^
+        version: link:../../packages/features
       '@blindfold-chess/types':
         specifier: workspace:^
         version: link:../../packages/types
@@ -265,6 +274,22 @@ importers:
       typescript-eslint:
         specifier: ^8.18.2
         version: 8.47.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+
+  packages/features:
+    dependencies:
+      chess.js:
+        specifier: ^1.4.0
+        version: 1.4.0
+    devDependencies:
+      '@blindfold-chess/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.2(jiti@2.6.1)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/types:
     devDependencies:

@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@blindfold-chess/features": "workspace:^",
     "@expo/metro-runtime": "~6.1.2",
+    "chess.js": "^1.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.30",
     "expo-constants": "~18.0.12",
