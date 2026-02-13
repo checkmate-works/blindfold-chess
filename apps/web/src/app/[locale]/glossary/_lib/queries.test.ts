@@ -105,7 +105,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -154,7 +154,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -166,7 +166,7 @@ describe('queries', () => {
 
     it('should handle empty result set', async () => {
       const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getGlossaryTerms('ja');
 
@@ -196,7 +196,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('fr');
 
@@ -227,7 +227,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -258,7 +258,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getTermsByLetter('c', 'ja');
 
@@ -268,7 +268,7 @@ describe('queries', () => {
 
     it('should handle uppercase letter input', async () => {
       const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getTermsByLetter('Z', 'en');
 
@@ -277,7 +277,7 @@ describe('queries', () => {
 
     it('should return empty array when no terms match the letter', async () => {
       const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getTermsByLetter('x', 'ja');
 
@@ -316,7 +316,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getTermsByCategory('tactics', 'ja');
 
@@ -328,7 +328,7 @@ describe('queries', () => {
 
     it('should return empty array for non-existent category', async () => {
       const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getTermsByCategory('nonexistent', 'ja');
 
@@ -341,7 +341,9 @@ describe('queries', () => {
       const rows = [{ letter: 'A' }, { letter: 'B' }, { letter: 'C' }];
 
       const chain = mockChain(rows);
-      mockDb.selectDistinct.mockReturnValue(chain as ReturnType<typeof mockDb.selectDistinct>);
+      mockDb.selectDistinct.mockReturnValue(
+        chain as unknown as ReturnType<typeof mockDb.selectDistinct>
+      );
 
       const result = await getUniqueLetters();
 
@@ -350,7 +352,9 @@ describe('queries', () => {
 
     it('should return empty array when no terms exist', async () => {
       const chain = mockChain([]);
-      mockDb.selectDistinct.mockReturnValue(chain as ReturnType<typeof mockDb.selectDistinct>);
+      mockDb.selectDistinct.mockReturnValue(
+        chain as unknown as ReturnType<typeof mockDb.selectDistinct>
+      );
 
       const result = await getUniqueLetters();
 
@@ -367,7 +371,7 @@ describe('queries', () => {
       ];
 
       const chain = mockChain(rows);
-      mockDb.select.mockReturnValue(chain as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getLetterCounts();
 
@@ -376,7 +380,7 @@ describe('queries', () => {
 
     it('should return empty record when no terms exist', async () => {
       const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getLetterCounts();
 
@@ -393,7 +397,7 @@ describe('queries', () => {
       ];
 
       const chain = mockChain(rows);
-      mockDb.select.mockReturnValue(chain as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getCategoryCounts();
 
@@ -402,7 +406,7 @@ describe('queries', () => {
 
     it('should return empty record when no terms exist', async () => {
       const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as ReturnType<typeof mockDb.select>);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 
       const result = await getCategoryCounts();
 
@@ -433,7 +437,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -463,7 +467,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -514,7 +518,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -557,7 +561,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -593,7 +597,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -630,7 +634,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -673,7 +677,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -717,7 +721,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -754,7 +758,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getGlossaryTerms('ja');
 
@@ -791,7 +795,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getTermsByLetter('f', 'ja');
 
@@ -826,7 +830,7 @@ describe('queries', () => {
         if (callCount === 1) return chain1;
         if (callCount === 2) return chain2;
         return chain3;
-      }) as typeof mockDb.select);
+      }) as unknown as typeof mockDb.select);
 
       const result = await getTermsByCategory('tactics', 'ja');
 
