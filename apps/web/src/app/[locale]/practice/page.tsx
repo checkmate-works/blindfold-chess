@@ -101,6 +101,12 @@ export default async function PracticePage({ params }: Props) {
       description: t('practice.routePlanner.description'),
       icon: '📍',
     },
+    {
+      id: 'diagonal-quiz',
+      title: t('practice.diagonalQuiz.title'),
+      description: t('practice.diagonalQuiz.description'),
+      icon: '↗',
+    },
   ];
 
   return (

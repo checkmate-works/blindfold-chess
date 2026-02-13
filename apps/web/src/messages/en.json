@@ -866,7 +866,7 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Watch a sequence of moves play out, then reproduce them from memory.\nLet's try with a simple opening.",
-        "start": "Start",
+        "start": "Start Practice",
         "skip": "Skip",
         "watchFirst": "Watch the moves first by pressing play"
       },
@@ -918,6 +918,39 @@
           "description": "Learn key reference points for board visualization"
         }
       }
+    },
+    "diagonalQuiz": {
+      "title": "Diagonal Quiz",
+      "description": "Identify the two diagonals that pass through a given square",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
+      "session": "In Progress",
+      "question": "What are the diagonals of {square}?",
+      "diagonalLabel": "Diagonal (a1-h8 direction)",
+      "antiDiagonalLabel": "Anti-diagonal (h1-a8 direction)",
+      "inputPlaceholder": "e.g., b1-h7",
+      "singleSquarePlaceholder": "e.g., a1",
+      "singleSquare": "single square",
+      "selectFile": "Select a file (a-h)",
+      "selectRank": "Select a rank (1-8)",
+      "backspace": "Backspace",
+      "clear": "Clear",
+      "submit": "Submit",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "correctAnswer": "{diagonal}, {antiDiagonal}",
+      "settings": "Game Settings",
+      "timeLimit": "Time Limit",
+      "seconds": "seconds",
+      "start": "Start",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Average Time",
+      "lastQuestion": "Last question: {square}",
+      "problemDetails": "Problem Details",
+      "problem": "Problem",
+      "yourAnswer": "Your answer",
+      "correctAnswerLabel": "Correct answer"
     }
   },
   "home": {

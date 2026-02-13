@@ -867,7 +867,7 @@
       "tutorial": {
         "title": "チュートリアル",
         "description": "手順を見て記憶し、再現するトレーニングです。\n簡単なオープニングで試してみましょう。",
-        "start": "開始",
+        "start": "練習を開始",
         "skip": "スキップ",
         "watchFirst": "まず再生ボタンを押して手順を見てください"
       },
@@ -919,6 +919,39 @@
           "description": "盤面イメージのための基準点を学ぶ"
         }
       }
+    },
+    "diagonalQuiz": {
+      "title": "ダイアゴナルクイズ",
+      "description": "指定されたマスを通る2本の対角線を答えるトレーニング",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
+      "session": "練習中",
+      "question": "{square}の対角線は？",
+      "diagonalLabel": "対角線 (a1-h8方向)",
+      "antiDiagonalLabel": "逆対角線 (h1-a8方向)",
+      "inputPlaceholder": "例: b1-h7",
+      "singleSquarePlaceholder": "例: a1",
+      "singleSquare": "単一マス",
+      "selectFile": "ファイルを選択 (a-h)",
+      "selectRank": "ランクを選択 (1-8)",
+      "backspace": "一文字削除",
+      "clear": "クリア",
+      "submit": "回答",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "correctAnswer": "{diagonal}, {antiDiagonal}",
+      "settings": "ゲーム設定",
+      "timeLimit": "制限時間",
+      "seconds": "秒",
+      "start": "開始",
+      "correctAnswers": "正解数",
+      "accuracy": "正解率",
+      "timeTaken": "所要時間",
+      "averageTime": "平均時間",
+      "lastQuestion": "最後の問題: {square}",
+      "problemDetails": "問題詳細",
+      "problem": "問題",
+      "yourAnswer": "あなたの回答",
+      "correctAnswerLabel": "正解"
     }
   },
   "home": {
