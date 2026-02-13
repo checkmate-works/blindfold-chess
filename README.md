@@ -6,9 +6,17 @@ This repository is a Monorepo managed by [Turborepo](https://turbo.build/).
 
 ## Directory Structure
 
-- `apps/web`: The Next.js web application (moved from root)
-- `apps/mobile`: (Planned) React Native mobile application
-- `packages/`: Shared packages
+- `apps/web`: Next.js web application
+- `apps/mobile`: React Native (Expo) mobile application
+
+### Shared Packages
+
+| Package                  | Description                                                            |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `packages/types`         | Shared TypeScript type definitions                                     |
+| `packages/features`      | Cross-platform business logic (coordinate-quiz, etc.)                  |
+| `packages/ui`            | Shared color/theme constants (single source of truth for web & mobile) |
+| `packages/eslint-config` | Shared ESLint configuration                                            |
 
 ## Quick Start
 
@@ -42,7 +50,7 @@ pnpm install
 
 ### Development
 
-To start the development server for all apps (currently only `web`):
+To start the development server for all apps:
 
 ```bash
 pnpm dev
