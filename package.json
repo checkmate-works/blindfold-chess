@@ -15,6 +15,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "prepare": "husky"
   },
+  "pnpm": {
+    "overrides": {
+      "browserslist": ">=4.28.1"
+    }
+  },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

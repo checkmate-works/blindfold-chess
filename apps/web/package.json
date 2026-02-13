@@ -34,7 +34,6 @@
     "@xstate/react": "^6.0.0",
     "chess.js": "^1.4.0",
     "drizzle-orm": "^0.45.1",
-    "import-in-the-middle": "^2.0.0",
     "katex": "^0.16.25",
     "next": "16.0.7",
     "next-intl": "^4.5.5",
@@ -47,7 +46,6 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "require-in-the-middle": "^8.0.1",
     "resend": "^6.5.2",
     "xstate": "5.25.1",
     "zod": "^4.1.12"
@@ -64,7 +62,6 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
-    "baseline-browser-mapping": "^2.8.32",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.1",
