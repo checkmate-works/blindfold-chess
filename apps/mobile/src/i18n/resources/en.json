@@ -16,7 +16,8 @@
   "home": {
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
-    "startPractice": "Start Practice"
+    "startPractice": "Start Practice",
+    "replayOnboarding": "Replay Tutorial"
   },
   "practice": {
     "title": "Practice",
@@ -24,6 +25,11 @@
       "title": "Coordinate Quiz",
       "description": "Test your board visualization by finding squares"
     }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "tapToContinue": "Tap to continue",
+    "start": "Start"
   },
   "coordinateQuiz": {
     "setup": {

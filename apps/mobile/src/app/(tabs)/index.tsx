@@ -17,6 +17,15 @@ export default function HomeTab() {
     router.push("/(tabs)/practice");
   };
 
+  const handleReplayOnboarding = () => {
+    router.push("/onboarding");
+  };
+
+  const handleResetOnboarding = async () => {
+    await clearStatus();
+    router.replace("/");
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -55,12 +64,20 @@ export default function HomeTab() {
           />
         </Card>
 
+        {/* Replay Onboarding */}
+        <Button
+          title={t("home.replayOnboarding")}
+          onPress={handleReplayOnboarding}
+          variant="ghost"
+          size="sm"
+        />
+
         {/* Debug Section (hidden in production) */}
         {__DEV__ && (
           <View style={styles.debugSection}>
             <Button
               title="Reset Onboarding (Debug)"
-              onPress={clearStatus}
+              onPress={handleResetOnboarding}
               variant="outline"
               size="sm"
             />

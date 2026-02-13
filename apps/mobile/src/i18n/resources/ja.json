@@ -16,7 +16,8 @@
   "home": {
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
-    "startPractice": "練習を始める"
+    "startPractice": "練習を始める",
+    "replayOnboarding": "チュートリアルをもう一度"
   },
   "practice": {
     "title": "練習",
@@ -24,6 +25,11 @@
       "title": "座標クイズ",
       "description": "マス目を見つけて盤面のイメージ力をテスト"
     }
+  },
+  "onboarding": {
+    "skip": "スキップ",
+    "tapToContinue": "タップして続ける",
+    "start": "始める"
   },
   "coordinateQuiz": {
     "setup": {

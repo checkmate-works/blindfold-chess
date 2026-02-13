@@ -4,9 +4,10 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Text,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useOnboardingChat } from "../features/onboarding/hooks/useOnboardingChat";
 import { ChatBubble } from "../features/onboarding/components/ChatBubble";
 import { ChoiceList } from "../features/onboarding/components/ChoiceList";
@@ -21,7 +22,9 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const { messages, currentStep, isThinking, handleNext, handleChoice } =
     useOnboardingChat(onComplete);
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -30,10 +33,29 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
     }, 100);
   }, [messages, isThinking]);
 
+  const isEndStep = currentStep?.id === "end";
+
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    <View
+      style={[
+        styles.safeArea,
+        {
+          backgroundColor: colors.background,
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
     >
+      <View style={styles.headerRow}>
+        <TouchableOpacity onPress={onComplete} style={styles.skipButton}>
+          <Text style={[styles.skipText, { color: colors.mutedForeground }]}>
+            {t("onboarding.skip")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.container}>
         <ScrollView
           ref={scrollViewRef}
@@ -46,47 +68,92 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {isThinking && <TypingIndicator />}
         </ScrollView>
 
-        <View
-          style={[
-            styles.inputArea,
-            {
-              backgroundColor: colors.card,
-              borderTopColor: colors.border,
-            },
-          ]}
-        >
-          {!isThinking &&
-            currentStep?.type === "question" &&
-            currentStep.choices && (
+        {!isThinking &&
+          currentStep?.type === "question" &&
+          currentStep.choices && (
+            <View
+              style={[
+                styles.inputArea,
+                {
+                  backgroundColor: colors.card,
+                  borderTopColor: colors.border,
+                },
+              ]}
+            >
               <ChoiceList
                 choices={currentStep.choices.map((c) => ({
                   label: c.label,
                   onSelect: () => handleChoice(c.nextId, c.label),
                 }))}
               />
-            )}
+            </View>
+          )}
 
-          {!isThinking && currentStep?.type === "statement" && (
-            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        {!isThinking && currentStep?.type === "statement" && isEndStep && (
+          <View
+            style={[
+              styles.inputArea,
+              {
+                backgroundColor: colors.card,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={[styles.ctaButton, { backgroundColor: colors.primary }]}
+              onPress={handleNext}
+            >
               <Text
                 style={[
-                  styles.nextButtonText,
-                  { color: colors.mutedForeground },
+                  styles.ctaButtonText,
+                  { color: colors.primaryForeground },
                 ]}
               >
-                Tap to continue
+                {t("onboarding.start")}
               </Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
+
+        {!isThinking && currentStep?.type === "statement" && !isEndStep && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleNext}
+            style={[
+              styles.inputArea,
+              {
+                backgroundColor: colors.card,
+                borderTopColor: colors.border,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.nextButtonText, { color: colors.mutedForeground }]}
+            >
+              {t("onboarding.tapToContinue")}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  skipButton: {
+    padding: 4,
+  },
+  skipText: {
+    fontSize: 15,
   },
   container: {
     flex: 1,
@@ -105,12 +172,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  nextButton: {
-    width: "100%",
-    padding: 16,
-    alignItems: "center",
-  },
   nextButtonText: {
     fontSize: 14,
+  },
+  ctaButton: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 24,
+    alignItems: "center",
+  },
+  ctaButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
