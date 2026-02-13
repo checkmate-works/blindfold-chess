@@ -10,6 +10,8 @@ import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
+import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
+
 type Props = {
   locale: Locale;
   timeLimit: number;
@@ -24,6 +26,11 @@ export function DiagonalQuizSetup({ locale, timeLimit, onTimeLimitChange }: Prop
     router.push(
       `/${locale}/practice/diagonal-quiz/session?timeLimit=${timeLimit}#diagonal-quiz-session`
     );
+  };
+
+  const handleViewTutorial = () => {
+    localStorage.removeItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY);
+    router.push(`/${locale}/practice/diagonal-quiz/tutorial`);
   };
 
   return (
@@ -55,6 +62,15 @@ export function DiagonalQuizSetup({ locale, timeLimit, onTimeLimitChange }: Prop
         >
           {t('start')}
         </Button>
+
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={handleViewTutorial}
+            className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {t('tutorial.viewTutorial')}
+          </button>
+        </div>
       </div>
     </div>
   );

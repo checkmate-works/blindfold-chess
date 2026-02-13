@@ -950,7 +950,32 @@
       "problemDetails": "Problem Details",
       "problem": "Problem",
       "yourAnswer": "Your answer",
-      "correctAnswerLabel": "Correct answer"
+      "correctAnswerLabel": "Correct answer",
+      "tutorial": {
+        "title": "Tutorial",
+        "skip": "Skip",
+        "steps": {
+          "diagonal": {
+            "title": "What is a Diagonal?",
+            "description": "A diagonal runs in the a1-h8 direction.\nAll squares where (file - rank) is constant belong to the same diagonal.\nThe green squares show the diagonal passing through d4."
+          },
+          "antiDiagonal": {
+            "title": "What is an Anti-diagonal?",
+            "description": "An anti-diagonal runs in the h1-a8 direction.\nAll squares where (file + rank) is constant belong to the same anti-diagonal.\nThe blue squares show the anti-diagonal passing through d4."
+          },
+          "trial": {
+            "title": "Try It Yourself",
+            "description": "Now try answering a diagonal quiz question.\nIdentify both diagonals passing through the given square."
+          }
+        },
+        "viewTutorial": "View Tutorial",
+        "next": "Next",
+        "previous": "Back",
+        "startPractice": "Start Practice",
+        "diagonalLegend": "Diagonal (a1-h8)",
+        "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
+        "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
+      }
     }
   },
   "home": {

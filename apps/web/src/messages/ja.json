@@ -951,7 +951,32 @@
       "problemDetails": "問題詳細",
       "problem": "問題",
       "yourAnswer": "あなたの回答",
-      "correctAnswerLabel": "正解"
+      "correctAnswerLabel": "正解",
+      "tutorial": {
+        "title": "チュートリアル",
+        "skip": "スキップ",
+        "steps": {
+          "diagonal": {
+            "title": "対角線とは？",
+            "description": "対角線はa1-h8方向に走る線です。\n(ファイル - ランク)が一定のマスが同じ対角線上にあります。\n緑色のマスがd4を通る対角線です。"
+          },
+          "antiDiagonal": {
+            "title": "逆対角線とは？",
+            "description": "逆対角線はh1-a8方向に走る線です。\n(ファイル + ランク)が一定のマスが同じ逆対角線上にあります。\n青色のマスがd4を通る逆対角線です。"
+          },
+          "trial": {
+            "title": "実際にやってみよう",
+            "description": "ダイアゴナルクイズの問題に挑戦してみましょう。\n指定されたマスを通る2本の対角線を答えてください。"
+          }
+        },
+        "viewTutorial": "チュートリアルを見る",
+        "next": "次へ",
+        "previous": "戻る",
+        "startPractice": "練習を開始する",
+        "diagonalLegend": "対角線 (a1-h8)",
+        "antiDiagonalLegend": "逆対角線 (h1-a8)",
+        "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"
+      }
     }
   },
   "home": {

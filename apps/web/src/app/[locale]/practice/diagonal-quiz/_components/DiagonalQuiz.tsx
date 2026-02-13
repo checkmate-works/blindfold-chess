@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { DiagonalQuizSetup } from './DiagonalQuizSetup';
+import { DiagonalQuizPageContent } from './DiagonalQuizPageContent';
 
 type Props = {
   locale: Locale;
@@ -34,6 +34,10 @@ export default function DiagonalQuiz({ locale }: Props) {
   }, [timeLimit]);
 
   return (
-    <DiagonalQuizSetup locale={locale} timeLimit={timeLimit} onTimeLimitChange={setTimeLimit} />
+    <DiagonalQuizPageContent
+      locale={locale}
+      timeLimit={timeLimit}
+      onTimeLimitChange={setTimeLimit}
+    />
   );
 }
