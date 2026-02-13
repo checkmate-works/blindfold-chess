@@ -20,4 +20,13 @@ config.resolver.nodeModulesPaths = [
 // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
 config.resolver.disableHierarchicalLookup = true;
 
+// 4. Inject polyfill before all modules (runs before any module initialization)
+const defaultGetPolyfills = config.serializer.getPolyfills;
+config.serializer.getPolyfills = (options) => {
+  return [
+    path.resolve(projectRoot, "polyfill.js"),
+    ...defaultGetPolyfills(options),
+  ];
+};
+
 module.exports = config;
