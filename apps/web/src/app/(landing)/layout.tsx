@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
@@ -46,6 +47,9 @@ export const metadata: Metadata = {
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+      </head>
       <body>
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale="en" />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
