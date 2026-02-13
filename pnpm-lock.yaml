@@ -29,6 +29,9 @@ importers:
       '@blindfold-chess/features':
         specifier: workspace:^
         version: link:../../packages/features
+      '@blindfold-chess/ui':
+        specifier: workspace:^
+        version: link:../../packages/ui
       '@expo/metro-runtime':
         specifier: ~6.1.2
         version: 6.1.2(expo@54.0.31)(react-dom@19.2.1(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -108,6 +111,9 @@ importers:
       '@blindfold-chess/types':
         specifier: workspace:^
         version: link:../../packages/types
+      '@blindfold-chess/ui':
+        specifier: workspace:^
+        version: link:../../packages/ui
       '@next/third-parties':
         specifier: ^16.0.7
         version: 16.0.7(next@16.0.7(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)
@@ -292,6 +298,18 @@ importers:
         version: 5.9.3
 
   packages/types:
+    devDependencies:
+      '@blindfold-chess/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.2(jiti@2.6.1)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/ui:
     devDependencies:
       '@blindfold-chess/eslint-config':
         specifier: workspace:*

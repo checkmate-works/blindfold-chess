@@ -11,6 +11,7 @@ import { useOnboardingChat } from "../features/onboarding/hooks/useOnboardingCha
 import { ChatBubble } from "../features/onboarding/components/ChatBubble";
 import { ChoiceList } from "../features/onboarding/components/ChoiceList";
 import { TypingIndicator } from "../features/onboarding/components/TypingIndicator";
+import { useTheme } from "../theme";
 
 interface OnboardingScreenProps {
   onComplete: () => void;
@@ -20,6 +21,7 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   const { messages, currentStep, isThinking, handleNext, handleChoice } =
     useOnboardingChat(onComplete);
   const scrollViewRef = useRef<ScrollView>(null);
+  const { colors } = useTheme();
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -29,7 +31,9 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
   }, [messages, isThinking]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <View style={styles.container}>
         <ScrollView
           ref={scrollViewRef}
@@ -42,7 +46,15 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
           {isThinking && <TypingIndicator />}
         </ScrollView>
 
-        <View style={styles.inputArea}>
+        <View
+          style={[
+            styles.inputArea,
+            {
+              backgroundColor: colors.card,
+              borderTopColor: colors.border,
+            },
+          ]}
+        >
           {!isThinking &&
             currentStep?.type === "question" &&
             currentStep.choices && (
@@ -56,7 +68,14 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
 
           {!isThinking && currentStep?.type === "statement" && (
             <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-              <Text style={styles.nextButtonText}>Tap to continue</Text>
+              <Text
+                style={[
+                  styles.nextButtonText,
+                  { color: colors.mutedForeground },
+                ]}
+              >
+                Tap to continue
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -68,7 +87,6 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f2f2f7",
   },
   container: {
     flex: 1,
@@ -82,9 +100,7 @@ const styles = StyleSheet.create({
   },
   inputArea: {
     padding: 16,
-    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: "#e5e5ea",
     minHeight: 100,
     justifyContent: "center",
     alignItems: "center",
@@ -95,7 +111,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   nextButtonText: {
-    color: "#8e8e93",
     fontSize: 14,
   },
 });

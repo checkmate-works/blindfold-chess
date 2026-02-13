@@ -6,12 +6,13 @@ import { useRouter } from "expo-router";
 import { Button } from "../../../../components";
 import { SettingsForm } from "../../../../features/coordinate-quiz/components";
 import { useQuizSettings } from "../../../../features/coordinate-quiz/hooks";
-import { colors, spacing } from "../../../../theme";
+import { useTheme, spacing } from "../../../../theme";
 
 export default function CoordinateQuizSetup() {
   const { t } = useTranslation();
   const router = useRouter();
   const { settings, isLoading, updateSetting } = useQuizSettings();
+  const { colors } = useTheme();
 
   const handleStartQuiz = () => {
     // Pass settings via global state or URL params
@@ -27,14 +28,22 @@ export default function CoordinateQuizSetup() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["bottom"]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -43,7 +52,15 @@ export default function CoordinateQuizSetup() {
         <SettingsForm settings={settings} onUpdateSetting={updateSetting} />
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: colors.border,
+            backgroundColor: colors.card,
+          },
+        ]}
+      >
         <Button
           title={t("coordinateQuiz.setup.startQuiz")}
           onPress={handleStartQuiz}
@@ -58,13 +75,11 @@ export default function CoordinateQuizSetup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -76,7 +91,5 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.gray200,
-    backgroundColor: colors.white,
   },
 });

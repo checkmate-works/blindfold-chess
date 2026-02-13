@@ -1,5 +1,5 @@
 import { View, StyleSheet, ViewStyle } from "react-native";
-import { colors, spacing, borderRadius, shadows } from "../theme";
+import { useTheme, spacing, borderRadius, shadows } from "../theme";
 
 type CardProps = {
   children: React.ReactNode;
@@ -14,10 +14,13 @@ export function Card({
   padding = "md",
   shadow = "sm",
 }: CardProps) {
+  const { colors } = useTheme();
+
   return (
     <View
       style={[
         styles.base,
+        { backgroundColor: colors.card, borderColor: colors.border },
         padding !== "none" && styles[`padding_${padding}`],
         shadow !== "none" && shadows[shadow],
         style,
@@ -30,10 +33,8 @@ export function Card({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    borderColor: colors.gray200,
   },
   padding_sm: {
     padding: spacing.sm,

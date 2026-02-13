@@ -1,5 +1,6 @@
 import React from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { useTheme } from "../../../theme";
 
 interface Choice {
   label: string;
@@ -11,15 +12,25 @@ interface ChoiceListProps {
 }
 
 export const ChoiceList = ({ choices }: ChoiceListProps) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       {choices.map((choice, index) => (
         <TouchableOpacity
           key={index}
-          style={styles.button}
+          style={[
+            styles.button,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.primary,
+            },
+          ]}
           onPress={choice.onSelect}
         >
-          <Text style={styles.text}>{choice.label}</Text>
+          <Text style={[styles.text, { color: colors.primary }]}>
+            {choice.label}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -33,17 +44,14 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   button: {
-    backgroundColor: "#fff",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#007aff",
     alignItems: "center",
   },
   text: {
     fontSize: 16,
-    color: "#007aff",
     fontWeight: "600",
   },
 });

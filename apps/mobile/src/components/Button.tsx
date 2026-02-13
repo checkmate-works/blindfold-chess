@@ -7,7 +7,7 @@ import {
   TextStyle,
 } from "react-native";
 import {
-  colors,
+  useTheme,
   spacing,
   borderRadius,
   fontSize,
@@ -41,7 +41,26 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
+  const { colors } = useTheme();
   const isDisabled = disabled || loading;
+
+  const variantStyles: Record<ButtonVariant, ViewStyle> = {
+    primary: { backgroundColor: colors.primary },
+    secondary: { backgroundColor: colors.secondary },
+    outline: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.primary,
+    },
+    ghost: { backgroundColor: "transparent" },
+  };
+
+  const textVariantStyles: Record<ButtonVariant, TextStyle> = {
+    primary: { color: colors.primaryForeground },
+    secondary: { color: colors.foreground },
+    outline: { color: colors.primary },
+    ghost: { color: colors.primary },
+  };
 
   return (
     <TouchableOpacity
@@ -50,7 +69,7 @@ export function Button({
       activeOpacity={0.7}
       style={[
         styles.base,
-        styles[variant],
+        variantStyles[variant],
         styles[`size_${size}`],
         fullWidth && styles.fullWidth,
         isDisabled && styles.disabled,
@@ -59,14 +78,16 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === "primary" ? colors.white : colors.primary}
+          color={
+            variant === "primary" ? colors.primaryForeground : colors.primary
+          }
           size="small"
         />
       ) : (
         <Text
           style={[
             styles.text,
-            styles[`text_${variant}`],
+            textVariantStyles[variant],
             styles[`text_size_${size}`],
             isDisabled && styles.textDisabled,
             textStyle,
@@ -93,22 +114,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 
-  // Variants
-  primary: {
-    backgroundColor: colors.primary,
-  },
-  secondary: {
-    backgroundColor: colors.gray100,
-  },
-  outline: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  ghost: {
-    backgroundColor: "transparent",
-  },
-
   // Sizes
   size_sm: {
     paddingHorizontal: spacing.md,
@@ -129,18 +134,6 @@ const styles = StyleSheet.create({
   // Text
   text: {
     fontWeight: fontWeight.semibold,
-  },
-  text_primary: {
-    color: colors.white,
-  },
-  text_secondary: {
-    color: colors.text,
-  },
-  text_outline: {
-    color: colors.primary,
-  },
-  text_ghost: {
-    color: colors.primary,
   },
   textDisabled: {
     opacity: 0.7,

@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import { MENTOR } from "../constants/mentor";
+import { useTheme } from "../../../theme";
 
 interface ChatBubbleProps {
   text: string;
@@ -8,16 +9,27 @@ interface ChatBubbleProps {
 }
 
 export const ChatBubble = ({ text, isSystem }: ChatBubbleProps) => {
+  const { colors } = useTheme();
+
   if (isSystem) {
     return (
       <View style={styles.systemRow}>
         <View style={styles.avatarContainer}>
-          <Image source={MENTOR.avatar} style={styles.avatar} />
+          <Image
+            source={MENTOR.avatar}
+            style={[styles.avatar, { backgroundColor: colors.muted }]}
+          />
         </View>
         <View style={styles.systemBubbleContainer}>
-          <Text style={styles.mentorName}>{MENTOR.name}</Text>
-          <View style={styles.systemBubble}>
-            <Text style={styles.systemText}>{text}</Text>
+          <Text style={[styles.mentorName, { color: colors.mutedForeground }]}>
+            {MENTOR.name}
+          </Text>
+          <View
+            style={[styles.systemBubble, { backgroundColor: colors.secondary }]}
+          >
+            <Text style={[styles.systemText, { color: colors.foreground }]}>
+              {text}
+            </Text>
           </View>
         </View>
       </View>
@@ -26,8 +38,10 @@ export const ChatBubble = ({ text, isSystem }: ChatBubbleProps) => {
 
   return (
     <View style={styles.userRow}>
-      <View style={styles.userBubble}>
-        <Text style={styles.userText}>{text}</Text>
+      <View style={[styles.userBubble, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.userText, { color: colors.primaryForeground }]}>
+          {text}
+        </Text>
       </View>
     </View>
   );
@@ -46,7 +60,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#f0f0f0",
   },
   systemBubbleContainer: {
     flex: 1,
@@ -54,12 +67,10 @@ const styles = StyleSheet.create({
   },
   mentorName: {
     fontSize: 12,
-    color: "#8e8e93",
     marginBottom: 4,
     marginLeft: 4,
   },
   systemBubble: {
-    backgroundColor: "#e5e5ea",
     padding: 12,
     borderRadius: 16,
     borderTopLeftRadius: 4,
@@ -67,7 +78,6 @@ const styles = StyleSheet.create({
   systemText: {
     fontSize: 16,
     lineHeight: 22,
-    color: "#000",
   },
   userRow: {
     flexDirection: "row",
@@ -76,7 +86,6 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     maxWidth: "80%",
-    backgroundColor: "#007aff",
     padding: 12,
     borderRadius: 16,
     borderBottomRightRadius: 4,
@@ -84,6 +93,5 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 16,
     lineHeight: 22,
-    color: "#fff",
   },
 });

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { colors, fontSize, fontWeight } from "../../../theme";
+import { useTheme, fontSize, fontWeight } from "../../../theme";
 import { formatTime } from "../lib/utils";
 
 type QuizTimerProps = {
@@ -14,6 +14,7 @@ export function QuizTimer({
   progress,
   size = 80,
 }: QuizTimerProps) {
+  const { colors, feedbackColors } = useTheme();
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -21,8 +22,8 @@ export function QuizTimer({
 
   // Color based on remaining time
   const getTimerColor = () => {
-    if (progress > 0.8) return colors.error;
-    if (progress > 0.6) return colors.warning;
+    if (progress > 0.8) return feedbackColors.error;
+    if (progress > 0.6) return feedbackColors.warning;
     return colors.primary;
   };
 
@@ -34,7 +35,7 @@ export function QuizTimer({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.gray200}
+          stroke={colors.border}
           strokeWidth={strokeWidth}
           fill="none"
         />

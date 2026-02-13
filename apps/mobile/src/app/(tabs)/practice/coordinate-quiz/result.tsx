@@ -5,12 +5,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 
 import { Button } from "../../../../components";
 import { ResultCard } from "../../../../features/coordinate-quiz/components";
-import { colors, fontSize, fontWeight, spacing } from "../../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { QuizResult } from "../../../../features/coordinate-quiz/lib/types";
 
 export default function CoordinateQuizResult() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{
     totalQuestions: string;
     correctAnswers: string;
@@ -39,9 +40,14 @@ export default function CoordinateQuizResult() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["bottom"]}
+    >
       <View style={styles.content}>
-        <Text style={styles.title}>{t("coordinateQuiz.result.title")}</Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>
+          {t("coordinateQuiz.result.title")}
+        </Text>
 
         <ResultCard result={result} />
       </View>
@@ -68,7 +74,6 @@ export default function CoordinateQuizResult() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -78,7 +83,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.text,
     textAlign: "center",
     marginBottom: spacing.xl,
   },

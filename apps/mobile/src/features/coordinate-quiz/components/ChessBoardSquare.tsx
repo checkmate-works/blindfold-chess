@@ -1,5 +1,5 @@
 import { TouchableOpacity, StyleSheet } from "react-native";
-import { colors, touchTarget } from "../../../theme";
+import { useTheme, touchTarget } from "../../../theme";
 import type { Square, AnswerFeedback } from "../lib/types";
 import { getSquareColor } from "../lib/utils";
 
@@ -20,18 +20,21 @@ export function ChessBoardSquare({
   disabled,
   size,
 }: ChessBoardSquareProps) {
+  const { chessColors } = useTheme();
   const squareColorType = getSquareColor(square);
 
   const getBackgroundColor = () => {
     // Show feedback colors when there's feedback and this is the target
     if (feedback && isTarget) {
       return feedback === "correct"
-        ? colors.boardHighlightCorrect
-        : colors.boardHighlightIncorrect;
+        ? chessColors.boardHighlightCorrect
+        : chessColors.boardHighlightIncorrect;
     }
 
     // Default board colors
-    return squareColorType === "light" ? colors.boardLight : colors.boardDark;
+    return squareColorType === "light"
+      ? chessColors.boardLight
+      : chessColors.boardDark;
   };
 
   return (

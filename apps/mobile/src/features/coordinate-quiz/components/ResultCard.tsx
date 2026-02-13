@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Card } from "../../../components";
-import { colors, fontSize, fontWeight, spacing } from "../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 import type { QuizResult } from "../lib/types";
 
 type ResultCardProps = {
@@ -10,6 +10,7 @@ type ResultCardProps = {
 
 export function ResultCard({ result }: ResultCardProps) {
   const { t } = useTranslation();
+  const { colors, feedbackColors } = useTheme();
 
   const statItems = [
     {
@@ -34,22 +35,27 @@ export function ResultCard({ result }: ResultCardProps) {
   return (
     <Card padding="lg">
       <View style={styles.pointsContainer}>
-        <Text style={styles.pointsLabel}>
+        <Text style={[styles.pointsLabel, { color: colors.mutedForeground }]}>
           {t("coordinateQuiz.result.points")}
         </Text>
-        <Text style={styles.pointsValue}>{result.points}</Text>
+        <Text style={[styles.pointsValue, { color: colors.primary }]}>
+          {result.points}
+        </Text>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.statsGrid}>
         {statItems.map((item, index) => (
           <View key={index} style={styles.statItem}>
-            <Text style={styles.statLabel}>{item.label}</Text>
+            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
+              {item.label}
+            </Text>
             <Text
               style={[
                 styles.statValue,
-                item.highlight && styles.statValueHighlight,
+                { color: colors.foreground },
+                item.highlight && { color: feedbackColors.success },
               ]}
             >
               {item.value}
@@ -68,17 +74,14 @@ const styles = StyleSheet.create({
   },
   pointsLabel: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   pointsValue: {
     fontSize: 48,
     fontWeight: fontWeight.bold,
-    color: colors.primary,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.gray200,
     marginVertical: spacing.md,
   },
   statsGrid: {
@@ -93,15 +96,10 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   statValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.semibold,
-    color: colors.text,
-  },
-  statValueHighlight: {
-    color: colors.success,
   },
 });

@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 
 import { Card } from "../../../components";
 import {
-  colors,
+  useTheme,
   fontSize,
   fontWeight,
   spacing,
@@ -30,6 +30,7 @@ type PracticeItem = {
 export default function PracticeIndex() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const practiceItems: PracticeItem[] = [
     {
@@ -42,9 +43,19 @@ export default function PracticeIndex() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t("practice.title")}</Text>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.card, borderBottomColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.title, { color: colors.foreground }]}>
+          {t("practice.title")}
+        </Text>
       </View>
 
       <ScrollView
@@ -60,16 +71,34 @@ export default function PracticeIndex() {
           >
             <Card style={styles.card}>
               <View style={styles.cardContent}>
-                <View style={styles.iconContainer}>
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: colors.secondary },
+                  ]}
+                >
                   <Text style={styles.icon}>{item.icon}</Text>
                 </View>
                 <View style={styles.textContainer}>
-                  <Text style={styles.cardTitle}>{t(item.titleKey)}</Text>
-                  <Text style={styles.cardDescription}>
+                  <Text
+                    style={[styles.cardTitle, { color: colors.foreground }]}
+                  >
+                    {t(item.titleKey)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.cardDescription,
+                      { color: colors.mutedForeground },
+                    ]}
+                  >
                     {t(item.descriptionKey)}
                   </Text>
                 </View>
-                <Text style={styles.chevron}>›</Text>
+                <Text
+                  style={[styles.chevron, { color: colors.mutedForeground }]}
+                >
+                  ›
+                </Text>
               </View>
             </Card>
           </TouchableOpacity>
@@ -82,19 +111,15 @@ export default function PracticeIndex() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
   },
   header: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
   },
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
-    color: colors.text,
   },
   scrollView: {
     flex: 1,
@@ -114,7 +139,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: borderRadius.md,
-    backgroundColor: colors.gray100,
     justifyContent: "center",
     alignItems: "center",
     marginRight: spacing.md,
@@ -128,16 +152,13 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   cardDescription: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
   },
   chevron: {
     fontSize: 24,
-    color: colors.gray400,
     marginLeft: spacing.sm,
   },
 });

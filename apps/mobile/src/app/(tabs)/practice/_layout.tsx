@@ -1,16 +1,18 @@
 import { Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "../../../theme";
 
 export default function PracticeLayout() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#2563eb",
+          backgroundColor: colors.card,
         },
-        headerTintColor: "#fff",
+        headerTintColor: colors.primary,
         headerTitleStyle: {
           fontWeight: "bold",
         },

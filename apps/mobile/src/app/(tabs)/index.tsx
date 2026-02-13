@@ -4,20 +4,24 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { Button, Card } from "../../components";
-import { colors, fontSize, fontWeight, spacing, shadows } from "../../theme";
+import { useTheme, fontSize, fontWeight, spacing, shadows } from "../../theme";
 import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
 
 export default function HomeTab() {
   const { t } = useTranslation();
   const { clearStatus } = useOnboardingStatus();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleStartPractice = () => {
     router.push("/(tabs)/practice");
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["top"]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -25,14 +29,22 @@ export default function HomeTab() {
       >
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.title}>{t("home.title")}</Text>
-          <Text style={styles.subtitle}>{t("home.welcome")}</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            {t("home.title")}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
+            {t("home.welcome")}
+          </Text>
         </View>
 
         {/* Quick Start Card */}
         <Card style={styles.quickStartCard} padding="lg">
-          <Text style={styles.cardTitle}>座標クイズ</Text>
-          <Text style={styles.cardDescription}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+            座標クイズ
+          </Text>
+          <Text
+            style={[styles.cardDescription, { color: colors.mutedForeground }]}
+          >
             チェス盤の座標を素早く認識する力を鍛えましょう
           </Text>
           <Button
@@ -62,7 +74,6 @@ export default function HomeTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
   },
   scrollView: {
     flex: 1,
@@ -76,12 +87,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.xxxl,
     fontWeight: fontWeight.bold,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: fontSize.lg,
-    color: colors.textSecondary,
   },
   quickStartCard: {
     marginBottom: spacing.lg,
@@ -90,12 +99,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.semibold,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   cardDescription: {
     fontSize: fontSize.md,
-    color: colors.textSecondary,
     marginBottom: spacing.lg,
   },
   debugSection: {

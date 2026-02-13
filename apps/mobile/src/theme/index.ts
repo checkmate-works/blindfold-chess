@@ -1,44 +1,12 @@
-export const colors = {
-  // Primary
-  primary: "#2563eb",
-  primaryDark: "#1d4ed8",
-  primaryLight: "#3b82f6",
+export {
+  lightColors,
+  darkColors,
+  chessColors,
+  feedbackColors,
+} from "@blindfold-chess/ui";
+export type { ThemeColors } from "@blindfold-chess/ui";
 
-  // Chess board
-  boardLight: "#f0d9b5",
-  boardDark: "#b58863",
-  boardHighlight: "#ffff00",
-  boardHighlightCorrect: "#22c55e",
-  boardHighlightIncorrect: "#ef4444",
-
-  // Feedback
-  success: "#22c55e",
-  error: "#ef4444",
-  warning: "#f59e0b",
-
-  // Neutral
-  white: "#ffffff",
-  black: "#000000",
-  gray50: "#f9fafb",
-  gray100: "#f3f4f6",
-  gray200: "#e5e7eb",
-  gray300: "#d1d5db",
-  gray400: "#9ca3af",
-  gray500: "#6b7280",
-  gray600: "#4b5563",
-  gray700: "#374151",
-  gray800: "#1f2937",
-  gray900: "#111827",
-
-  // Background
-  background: "#ffffff",
-  backgroundSecondary: "#f9fafb",
-
-  // Text
-  text: "#111827",
-  textSecondary: "#6b7280",
-  textInverse: "#ffffff",
-} as const;
+export { ThemeProvider, useTheme } from "./ThemeProvider";
 
 export const spacing = {
   xs: 4,

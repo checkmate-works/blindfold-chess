@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { StyleSheet, View, Image, Animated, Easing } from "react-native";
 import { MENTOR } from "../constants/mentor";
+import { useTheme } from "../../../theme";
 
 export const TypingIndicator = () => {
+  const { colors } = useTheme();
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
@@ -52,24 +54,30 @@ export const TypingIndicator = () => {
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Image source={MENTOR.avatar} style={styles.avatar} />
+        <Image
+          source={MENTOR.avatar}
+          style={[styles.avatar, { backgroundColor: colors.muted }]}
+        />
       </View>
-      <View style={styles.bubble}>
+      <View style={[styles.bubble, { backgroundColor: colors.secondary }]}>
         <Animated.View
           style={[
             styles.dot,
+            { backgroundColor: colors.mutedForeground },
             { transform: [{ translateY: translateY(dot1) }] },
           ]}
         />
         <Animated.View
           style={[
             styles.dot,
+            { backgroundColor: colors.mutedForeground },
             { transform: [{ translateY: translateY(dot2) }] },
           ]}
         />
         <Animated.View
           style={[
             styles.dot,
+            { backgroundColor: colors.mutedForeground },
             { transform: [{ translateY: translateY(dot3) }] },
           ]}
         />
@@ -91,12 +99,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#f0f0f0",
   },
   bubble: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e5e5ea",
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 16,
@@ -107,6 +113,5 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#8e8e93",
   },
 });

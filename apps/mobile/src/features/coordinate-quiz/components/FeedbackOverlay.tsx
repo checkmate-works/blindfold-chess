@@ -1,7 +1,7 @@
 import { Text, StyleSheet, Animated } from "react-native";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { colors, fontSize, fontWeight } from "../../../theme";
+import { useTheme, fontSize, fontWeight } from "../../../theme";
 import type { AnswerFeedback } from "../lib/types";
 
 type FeedbackOverlayProps = {
@@ -10,6 +10,7 @@ type FeedbackOverlayProps = {
 
 export function FeedbackOverlay({ feedback }: FeedbackOverlayProps) {
   const { t } = useTranslation();
+  const { feedbackColors } = useTheme();
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
 
@@ -47,7 +48,9 @@ export function FeedbackOverlay({ feedback }: FeedbackOverlayProps) {
         {
           opacity,
           transform: [{ scale }],
-          backgroundColor: isCorrect ? colors.success : colors.error,
+          backgroundColor: isCorrect
+            ? feedbackColors.success
+            : feedbackColors.error,
         },
       ]}
     >
@@ -75,11 +78,11 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 24,
-    color: colors.white,
+    color: "#ffffff",
   },
   text: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: colors.white,
+    color: "#ffffff",
   },
 });

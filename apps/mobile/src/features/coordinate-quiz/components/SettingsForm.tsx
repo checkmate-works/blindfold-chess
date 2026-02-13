@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
-  colors,
+  useTheme,
   fontSize,
   fontWeight,
   spacing,
@@ -22,6 +22,7 @@ const DURATION_OPTIONS = [30, 60, 90, 120];
 
 export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   const renderOptionButton = <T extends string>(
     value: T,
@@ -32,10 +33,22 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
     <TouchableOpacity
       key={value}
       onPress={onPress}
-      style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
+      style={[
+        styles.optionButton,
+        {
+          borderColor: isSelected ? colors.primary : colors.border,
+          backgroundColor: isSelected ? colors.primary : colors.card,
+        },
+      ]}
     >
       <Text
-        style={[styles.optionText, isSelected && styles.optionTextSelected]}
+        style={[
+          styles.optionText,
+          {
+            color: isSelected ? colors.primaryForeground : colors.foreground,
+            fontWeight: isSelected ? fontWeight.medium : fontWeight.normal,
+          },
+        ]}
       >
         {label}
       </Text>
@@ -46,7 +59,9 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
     <View style={styles.container}>
       {/* Duration */}
       <View style={styles.section}>
-        <Text style={styles.label}>{t("coordinateQuiz.setup.duration")}</Text>
+        <Text style={[styles.label, { color: colors.foreground }]}>
+          {t("coordinateQuiz.setup.duration")}
+        </Text>
         <View style={styles.optionsRow}>
           {DURATION_OPTIONS.map((duration) =>
             renderOptionButton(
@@ -61,7 +76,7 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
 
       {/* Orientation */}
       <View style={styles.section}>
-        <Text style={styles.label}>
+        <Text style={[styles.label, { color: colors.foreground }]}>
           {t("coordinateQuiz.setup.orientation")}
         </Text>
         <View style={styles.optionsRow}>
@@ -78,7 +93,7 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
 
       {/* Feedback Speed */}
       <View style={styles.section}>
-        <Text style={styles.label}>
+        <Text style={[styles.label, { color: colors.foreground }]}>
           {t("coordinateQuiz.setup.feedbackSpeed")}
         </Text>
         <View style={styles.optionsRow}>
@@ -110,7 +125,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.md,
     fontWeight: fontWeight.medium,
-    color: colors.text,
   },
   optionsRow: {
     flexDirection: "row",
@@ -122,19 +136,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.gray300,
-    backgroundColor: colors.white,
-  },
-  optionButtonSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
   },
   optionText: {
     fontSize: fontSize.sm,
-    color: colors.text,
-  },
-  optionTextSelected: {
-    color: colors.white,
-    fontWeight: fontWeight.medium,
   },
 });

@@ -14,7 +14,7 @@ import {
   useQuizSession,
   useQuizTimer,
 } from "../../../../features/coordinate-quiz/hooks";
-import { colors, fontSize, fontWeight, spacing } from "../../../../theme";
+import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type {
   QuizSettings,
   QuizResult,
@@ -25,6 +25,7 @@ import type {
 export default function CoordinateQuizSession() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors, feedbackColors } = useTheme();
   const params = useLocalSearchParams<{
     duration: string;
     orientation: string;
@@ -83,7 +84,9 @@ export default function CoordinateQuizSession() {
   const wrongCount = totalCount - correctCount;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       {/* Board Container with Overlay */}
       <View style={styles.boardContainer}>
         {/* Turn Indicator Row with Timer */}
@@ -95,16 +98,13 @@ export default function CoordinateQuizSession() {
                 {
                   backgroundColor:
                     currentQuestion?.orientation === "white"
-                      ? colors.white
-                      : colors.gray800,
-                  borderColor:
-                    currentQuestion?.orientation === "white"
-                      ? colors.gray800
-                      : colors.gray800,
+                      ? colors.card
+                      : colors.foreground,
+                  borderColor: colors.foreground,
                 },
               ]}
             />
-            <Text style={styles.turnText}>
+            <Text style={[styles.turnText, { color: colors.mutedForeground }]}>
               {currentQuestion?.orientation === "white"
                 ? t("coordinateQuiz.session.whiteToMove")
                 : t("coordinateQuiz.session.blackToMove")}
@@ -133,7 +133,12 @@ export default function CoordinateQuizSession() {
           {/* Target Overlay */}
           {currentQuestion && !feedback && (
             <View style={styles.overlayContainer} pointerEvents="none">
-              <Text style={styles.overlayText}>
+              <Text
+                style={[
+                  styles.overlayText,
+                  { color: colors.primaryForeground },
+                ]}
+              >
                 {currentQuestion.targetSquare}
               </Text>
             </View>
@@ -148,16 +153,20 @@ export default function CoordinateQuizSession() {
       <View style={styles.footer}>
         <View style={styles.scoreItem}>
           <View style={[styles.iconContainer, styles.correctIconBg]}>
-            <Check size={16} color={colors.success} />
+            <Check size={16} color={feedbackColors.success} />
           </View>
-          <Text style={styles.scoreValue}>{correctCount}</Text>
+          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+            {correctCount}
+          </Text>
         </View>
 
         <View style={styles.scoreItem}>
           <View style={[styles.iconContainer, styles.wrongIconBg]}>
-            <X size={16} color={colors.error} />
+            <X size={16} color={feedbackColors.error} />
           </View>
-          <Text style={styles.scoreValue}>{wrongCount}</Text>
+          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+            {wrongCount}
+          </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -167,7 +176,6 @@ export default function CoordinateQuizSession() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   boardContainer: {
     flex: 1,
@@ -195,7 +203,6 @@ const styles = StyleSheet.create({
   },
   turnText: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
     fontWeight: fontWeight.medium,
   },
   timerContainer: {
@@ -218,12 +225,10 @@ const styles = StyleSheet.create({
   },
   overlayText: {
     fontSize: 64,
-    fontWeight: "900", // Extra bold
-    color: colors.white,
+    fontWeight: "900",
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
-    // Add elevation for Android
     elevation: 5,
   },
   footer: {
@@ -243,15 +248,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   correctIconBg: {
-    backgroundColor: "rgba(34, 197, 94, 0.1)", // Green-100/10
+    backgroundColor: "rgba(34, 197, 94, 0.1)",
   },
   wrongIconBg: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)", // Red-100/10
+    backgroundColor: "rgba(239, 68, 68, 0.1)",
   },
   scoreValue: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-    color: colors.text,
     fontVariant: ["tabular-nums"],
   },
 });

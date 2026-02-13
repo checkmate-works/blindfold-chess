@@ -2,7 +2,7 @@ import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { ChessBoardSquare } from "./ChessBoardSquare";
 import { coordinatesToSquare } from "../lib/utils";
 import type { Square, AnswerFeedback } from "../lib/types";
-import { colors, spacing } from "../../../theme";
+import { useTheme, spacing } from "../../../theme";
 
 type ChessBoardProps = {
   orientation: "white" | "black";
@@ -20,6 +20,7 @@ export function ChessBoard({
   disabled,
 }: ChessBoardProps) {
   const { width: screenWidth } = useWindowDimensions();
+  const { colors } = useTheme();
 
   // Calculate board size (max width minus padding)
   const maxBoardSize = screenWidth - spacing.lg * 2;
@@ -61,7 +62,12 @@ export function ChessBoard({
   };
 
   return (
-    <View style={[styles.container, { width: boardSize, height: boardSize }]}>
+    <View
+      style={[
+        styles.container,
+        { width: boardSize, height: boardSize, borderColor: colors.foreground },
+      ]}
+    >
       <View style={styles.board}>{renderBoard()}</View>
     </View>
   );
@@ -73,7 +79,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     overflow: "hidden",
     borderWidth: 2,
-    borderColor: colors.gray700,
   },
   board: {
     flex: 1,
