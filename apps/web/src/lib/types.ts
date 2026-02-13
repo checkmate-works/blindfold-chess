@@ -1,4 +1,4 @@
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 // Skill level types and options
 // Stockfish supports Skill Level 0-20

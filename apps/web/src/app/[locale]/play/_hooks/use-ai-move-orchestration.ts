@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { BoardStatus } from '../_lib/game-state-service';
 

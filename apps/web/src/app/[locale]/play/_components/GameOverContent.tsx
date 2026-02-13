@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaChartLine, FaEye, FaPlus } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';

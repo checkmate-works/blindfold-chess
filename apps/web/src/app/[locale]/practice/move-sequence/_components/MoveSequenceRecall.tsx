@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessBoard } from '@/app/_components';
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 import { FaEye, FaKeyboard, FaList } from 'react-icons/fa';
 

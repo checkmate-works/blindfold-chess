@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { PieceSymbol } from 'chess.js';
 import { FaTrash } from 'react-icons/fa';
 

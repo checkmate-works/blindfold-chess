@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 type PromotionPiece = 'q' | 'r' | 'b' | 'n';
 

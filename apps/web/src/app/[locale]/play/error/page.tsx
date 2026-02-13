@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
-import type { Side } from '@blindfold-chess/core';
+import type { Side } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';

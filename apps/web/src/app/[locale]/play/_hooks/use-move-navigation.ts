@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 type UseMoveNavigationProps = {

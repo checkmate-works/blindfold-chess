@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 import { FaEye } from 'react-icons/fa';
 

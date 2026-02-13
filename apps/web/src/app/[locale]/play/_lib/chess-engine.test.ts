@@ -1,4 +1,4 @@
-import type { Fen, UciMove } from '@blindfold-chess/core';
+import type { Fen, UciMove } from '@blindfold-chess/types';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ChessEngine } from './chess-engine';

@@ -5,7 +5,7 @@ import { type ReactElement, useCallback, useEffect, useMemo, useState } from 're
 import { useTranslations } from 'next-intl';
 
 import { Button, InfoModal, ProgressBar } from '@/app/_components';
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 import {
   FaCheck,

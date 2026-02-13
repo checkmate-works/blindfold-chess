@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { ChessBoard } from '@/app/_components';
-import type { Side } from '@blindfold-chess/core';
+import type { Side } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 

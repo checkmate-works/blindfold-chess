@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 import type { SkillLevel } from '@/lib/types';

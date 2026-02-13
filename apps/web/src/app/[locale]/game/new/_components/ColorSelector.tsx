@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import type { Side } from '@blindfold-chess/core';
+import type { Side } from '@blindfold-chess/types';
 
 type Props = {
   value: Side;

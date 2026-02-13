@@ -25,7 +25,7 @@
     "db:seed": "tsx src/lib/db/seed.ts"
   },
   "dependencies": {
-    "@blindfold-chess/core": "workspace:^",
+    "@blindfold-chess/types": "workspace:^",
     "@next/third-parties": "^16.0.7",
     "@sentry/nextjs": "^10.26.0",
     "@types/chess.js": "^0.13.7",

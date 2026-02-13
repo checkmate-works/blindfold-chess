@@ -1,4 +1,4 @@
-import type { BoardTheme } from '@blindfold-chess/core';
+import type { BoardTheme } from '@blindfold-chess/types';
 
 export type { BoardTheme };
 

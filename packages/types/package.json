@@ -1,5 +1,5 @@
 {
-  "name": "@blindfold-chess/core",
+  "name": "@blindfold-chess/types",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",

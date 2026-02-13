@@ -1,4 +1,4 @@
-import type { AlgebraicNotation, Fen, UciMove } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Fen, UciMove } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 import type { SkillLevel } from '@/lib/types';

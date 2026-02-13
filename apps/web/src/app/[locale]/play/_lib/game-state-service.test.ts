@@ -1,4 +1,4 @@
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { describe, expect, it } from 'vitest';
 
 import { GameStateService } from './game-state-service';

@@ -1,5 +1,5 @@
 import { MAX_GAMES } from '@/config';
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 import { GameLimitError } from '@/lib/errors';

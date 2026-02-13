@@ -1,4 +1,4 @@
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 // Board status representing the state of the chess game

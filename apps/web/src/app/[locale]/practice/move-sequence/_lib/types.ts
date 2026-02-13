@@ -1,4 +1,4 @@
-import type { AlgebraicNotation } from '@blindfold-chess/core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 export type MoveSequencePhase = 'setup' | 'memorize' | 'recall' | 'result';
 

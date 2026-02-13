@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { STORAGE_KEYS } from '@/config';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';

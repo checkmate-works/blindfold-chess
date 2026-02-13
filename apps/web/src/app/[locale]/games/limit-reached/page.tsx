@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 
 import { MAX_GAMES } from '@/config';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/core';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, GameOutcome, SkillLevel } from '@/lib/types';
