@@ -47,6 +47,13 @@ export default function PracticeIndex() {
       icon: "♞",
       route: "/(tabs)/practice/legal-moves/setup",
     },
+    {
+      id: "board-symmetry",
+      titleKey: "practice.boardSymmetry.title",
+      descriptionKey: "practice.boardSymmetry.description",
+      icon: "🦋",
+      route: "/(tabs)/practice/board-symmetry/setup",
+    },
   ];
 
   return (

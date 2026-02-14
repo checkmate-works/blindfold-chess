@@ -28,6 +28,10 @@
     "legalMoves": {
       "title": "Legal Moves",
       "description": "Practice identifying legal and illegal moves"
+    },
+    "boardSymmetry": {
+      "title": "Board Symmetry",
+      "description": "Practice finding symmetric squares on the chessboard"
     }
   },
   "onboarding": {
@@ -80,6 +84,35 @@
       "rook": "Rook",
       "queen": "Queen",
       "king": "King"
+    }
+  },
+  "boardSymmetry": {
+    "setup": {
+      "title": "Board Symmetry Setup",
+      "startQuiz": "Start Practice"
+    },
+    "session": {
+      "question": "Find the {{type}} symmetric square of {{square}}",
+      "types": {
+        "horizontal": "Horizontal",
+        "vertical": "Vertical",
+        "point": "Point"
+      },
+      "correct": "Correct!",
+      "incorrectWithSolution": "Incorrect. Answer: {{solution}}"
+    },
+    "result": {
+      "title": "Results",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Practice",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time",
+      "averageTime": "Avg. Time"
+    },
+    "settings": {
+      "timeLimit": "Time Limit",
+      "seconds": "{{seconds}}s"
     }
   },
   "coordinateQuiz": {

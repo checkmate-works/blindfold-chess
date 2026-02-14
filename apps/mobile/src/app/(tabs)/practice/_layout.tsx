@@ -67,6 +67,27 @@ export default function PracticeLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="board-symmetry/setup"
+        options={{
+          title: t("boardSymmetry.setup.title"),
+        }}
+      />
+      <Stack.Screen
+        name="board-symmetry/session"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="board-symmetry/result"
+        options={{
+          title: t("boardSymmetry.result.title"),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

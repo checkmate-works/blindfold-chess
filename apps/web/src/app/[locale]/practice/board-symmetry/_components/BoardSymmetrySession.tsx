@@ -4,18 +4,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features';
+import type { BoardSymmetryProblem } from '@blindfold-chess/features';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
-import { BoardSymmetryPlaying, BoardSymmetryProblem } from './BoardSymmetryPlaying';
+import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
 type Props = {
   locale: Locale;
   initialTimeLimit: number;
 };
-
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props) {
   const t = useTranslations('practice.boardSymmetry');
@@ -40,16 +40,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const hasStarted = useRef(false);
   const [hasMounted, setHasMounted] = useState(false);
 
-  const generateProblem = useCallback(() => {
-    const randomFile = FILES[Math.floor(Math.random() * 8)];
-    const randomRank = RANKS[Math.floor(Math.random() * 8)];
-    const types: ('horizontal' | 'vertical' | 'point')[] = ['horizontal', 'vertical', 'point'];
-    const randomType = types[Math.floor(Math.random() * types.length)];
-
-    setProblem({
-      square: `${randomFile}${randomRank}`,
-      type: randomType,
-    });
+  const nextProblem = useCallback(() => {
+    setProblem(generateProblem());
     setSelectedFile(null);
     setSelectedRank(null);
     setIsCorrect(null);
@@ -62,8 +54,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     if (hasStarted.current) return;
     hasStarted.current = true;
     setHasMounted(true);
-    generateProblem();
-  }, [generateProblem]);
+    nextProblem();
+  }, [nextProblem]);
 
   // Scroll to session element after mount
   useEffect(() => {
@@ -119,31 +111,9 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     (file: string, rank: string) => {
       if (!problem || isProcessing || isFinished || countdown !== null) return;
 
-      const fileIndex = FILES.indexOf(problem.square[0]);
-      const rankIndex = RANKS.indexOf(problem.square[1]);
+      const { isCorrect: correct, correctSquare } = checkSymmetryAnswer(file, rank, problem);
 
-      let targetFileIndex = fileIndex;
-      let targetRankIndex = rankIndex;
-
-      switch (problem.type) {
-        case 'horizontal': // File symmetry (a <-> h)
-          targetFileIndex = 7 - fileIndex;
-          break;
-        case 'vertical': // Rank symmetry (1 <-> 8)
-          targetRankIndex = 7 - rankIndex;
-          break;
-        case 'point': // Center symmetry (rotate 180)
-          targetFileIndex = 7 - fileIndex;
-          targetRankIndex = 7 - rankIndex;
-          break;
-      }
-
-      const correctFile = FILES[targetFileIndex];
-      const correctRank = RANKS[targetRankIndex];
-      const correct = file === correctFile && rank === correctRank;
-
-      setCorrectSolution(`${correctFile}${correctRank}`);
-
+      setCorrectSolution(correctSquare);
       setIsCorrect(correct);
       setIsProcessing(true);
 
@@ -157,13 +127,13 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
       setTimeout(
         () => {
           if (!isFinished) {
-            generateProblem();
+            nextProblem();
           }
         },
         correct ? 1000 : 2000
       );
     },
-    [problem, isProcessing, isFinished, generateProblem, countdown]
+    [problem, isProcessing, isFinished, nextProblem, countdown]
   );
 
   const handleFileToggle = (file: string) => {
@@ -189,7 +159,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setTimeElapsed(0);
     setIsFinished(false);
     setCountdown(3);
-    generateProblem();
+    nextProblem();
   };
 
   if (isFinished) {

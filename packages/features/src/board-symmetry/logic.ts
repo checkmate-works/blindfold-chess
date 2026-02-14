@@ -1,0 +1,65 @@
+import { FILES, RANKS } from "./constants";
+import type { BoardSymmetryProblem, SymmetryType } from "./types";
+import { SYMMETRY_TYPES } from "./types";
+
+/**
+ * Generate a random board symmetry problem
+ */
+export function generateProblem(): BoardSymmetryProblem {
+  const randomFile = FILES[Math.floor(Math.random() * FILES.length)];
+  const randomRank = RANKS[Math.floor(Math.random() * RANKS.length)];
+  const randomType =
+    SYMMETRY_TYPES[Math.floor(Math.random() * SYMMETRY_TYPES.length)];
+
+  return {
+    square: `${randomFile}${randomRank}`,
+    type: randomType,
+  };
+}
+
+/**
+ * Calculate the symmetric square for a given square and symmetry type
+ *
+ * - horizontal: file is mirrored (a<->h, b<->g, c<->f, d<->e)
+ * - vertical: rank is mirrored (1<->8, 2<->7, 3<->6, 4<->5)
+ * - point: both file and rank are mirrored (180-degree rotation)
+ */
+export function calculateSymmetricSquare(
+  square: string,
+  type: SymmetryType,
+): string {
+  const fileIndex = FILES.indexOf(square[0] as (typeof FILES)[number]);
+  const rankIndex = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
+
+  let targetFileIndex = fileIndex;
+  let targetRankIndex = rankIndex;
+
+  switch (type) {
+    case "horizontal":
+      targetFileIndex = 7 - fileIndex;
+      break;
+    case "vertical":
+      targetRankIndex = 7 - rankIndex;
+      break;
+    case "point":
+      targetFileIndex = 7 - fileIndex;
+      targetRankIndex = 7 - rankIndex;
+      break;
+  }
+
+  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}`;
+}
+
+/**
+ * Check if the given answer is correct for a board symmetry problem
+ */
+export function checkSymmetryAnswer(
+  file: string,
+  rank: string,
+  problem: BoardSymmetryProblem,
+): { isCorrect: boolean; correctSquare: string } {
+  const correctSquare = calculateSymmetricSquare(problem.square, problem.type);
+  const isCorrect = `${file}${rank}` === correctSquare;
+
+  return { isCorrect, correctSquare };
+}

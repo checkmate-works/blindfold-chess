@@ -28,6 +28,10 @@
     "legalMoves": {
       "title": "合法手判定",
       "description": "駒の動きが合法か違法かを判定する練習"
+    },
+    "boardSymmetry": {
+      "title": "盤面対称",
+      "description": "チェス盤上の対称マスを見つける練習"
     }
   },
   "onboarding": {
@@ -80,6 +84,35 @@
       "rook": "ルーク",
       "queen": "クイーン",
       "king": "キング"
+    }
+  },
+  "boardSymmetry": {
+    "setup": {
+      "title": "盤面対称 設定",
+      "startQuiz": "練習を開始"
+    },
+    "session": {
+      "question": "{{square}}の{{type}}対称マスを見つけて",
+      "types": {
+        "horizontal": "水平",
+        "vertical": "垂直",
+        "point": "点"
+      },
+      "correct": "正解！",
+      "incorrectWithSolution": "不正解。答え: {{solution}}"
+    },
+    "result": {
+      "title": "結果",
+      "playAgain": "もう一度",
+      "backToMenu": "練習に戻る",
+      "correctAnswers": "正解数",
+      "accuracy": "正答率",
+      "timeTaken": "経過時間",
+      "averageTime": "平均時間"
+    },
+    "settings": {
+      "timeLimit": "制限時間",
+      "seconds": "{{seconds}}秒"
     }
   },
   "coordinateQuiz": {

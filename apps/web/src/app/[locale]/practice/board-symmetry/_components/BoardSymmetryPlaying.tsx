@@ -4,17 +4,13 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
+import type { BoardSymmetryProblem } from '@blindfold-chess/features';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
-type SymmetryType = 'horizontal' | 'vertical' | 'point';
-
-export type BoardSymmetryProblem = {
-  square: string;
-  type: SymmetryType;
-};
+export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features';
 
 type Props = {
   problem: BoardSymmetryProblem;
