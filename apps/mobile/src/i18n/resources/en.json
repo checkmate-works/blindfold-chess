@@ -40,6 +40,10 @@
     "diagonalQuiz": {
       "title": "Diagonal Quiz",
       "description": "Identify the two diagonals passing through a given square"
+    },
+    "routePlanner": {
+      "title": "Route Planner",
+      "description": "Plan the shortest route for a piece between two squares"
     }
   },
   "onboarding": {
@@ -182,6 +186,43 @@
       "points": "Points",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu"
+    }
+  },
+  "routePlanner": {
+    "setup": {
+      "title": "Route Planner Settings",
+      "problemCount": "Number of Problems",
+      "problemUnit": "{{count}} problems",
+      "pieceSelection": "Select Pieces",
+      "start": "Start"
+    },
+    "session": {
+      "progress": "{{current}} / {{total}}",
+      "selectFile": "Select a file (a-h)",
+      "selectRank": "Select a rank (1-8)",
+      "submit": "Submit",
+      "undo": "Undo",
+      "skip": "Skip",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "skipped": "Skipped",
+      "shortestPath": "Shortest Path",
+      "nextProblem": "Next Problem",
+      "finish": "Finish"
+    },
+    "result": {
+      "title": "Practice Complete!",
+      "score": "Score",
+      "correct": "Correct",
+      "accuracy": "Accuracy",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "pieces": {
+      "N": "Knight",
+      "B": "Bishop",
+      "R": "Rook",
+      "Q": "Queen"
     }
   },
   "diagonalQuiz": {

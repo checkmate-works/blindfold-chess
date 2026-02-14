@@ -65,8 +65,15 @@ export default function PracticeIndex() {
       id: "diagonal-quiz",
       titleKey: "practice.diagonalQuiz.title",
       descriptionKey: "practice.diagonalQuiz.description",
-      icon: "↗",
+      icon: "\u2197",
       route: "/(tabs)/practice/diagonal-quiz/setup",
+    },
+    {
+      id: "route-planner",
+      titleKey: "practice.routePlanner.title",
+      descriptionKey: "practice.routePlanner.description",
+      icon: "\u265E",
+      route: "/(tabs)/practice/route-planner/setup",
     },
   ];
 

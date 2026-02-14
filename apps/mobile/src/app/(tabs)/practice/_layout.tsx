@@ -130,6 +130,27 @@ export default function PracticeLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="route-planner/setup"
+        options={{
+          title: t("routePlanner.setup.title"),
+        }}
+      />
+      <Stack.Screen
+        name="route-planner/session"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="route-planner/result"
+        options={{
+          title: t("routePlanner.result.title"),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

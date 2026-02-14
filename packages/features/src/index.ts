@@ -23,3 +23,21 @@ export {
   type SquareColorsResult,
   isValidSquare,
 } from "./square-colors";
+// Note: route-planner functions like generateProblem collide with board-symmetry.
+// Use subpath import (@blindfold-chess/features/route-planner) for full access,
+// or use the prefixed named exports below.
+export {
+  type RoutePlannerPieceType,
+  ROUTE_PLANNER_PIECES,
+  type RoutePlannerProblem,
+  type RoutePlannerSettings,
+  DEFAULT_ROUTE_PLANNER_SETTINGS,
+  type RoutePlannerProblemResult,
+  type RoutePlannerResult,
+  isValidRoutePlannerSquare,
+  generateProblem as generateRoutePlannerProblem,
+  getPossibleMoves as getRoutePlannerPossibleMoves,
+  findShortestPath as findRoutePlannerShortestPath,
+  validateUserPath as validateRoutePlannerUserPath,
+  isSameColor as isRoutePlannerSameColor,
+} from "./route-planner";

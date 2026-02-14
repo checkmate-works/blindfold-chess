@@ -40,6 +40,10 @@
     "diagonalQuiz": {
       "title": "ダイアゴナルクイズ",
       "description": "指定されたマスを通る2本の対角線を答えるトレーニング"
+    },
+    "routePlanner": {
+      "title": "ルートプランナー",
+      "description": "駒の最短経路を考えるトレーニング"
     }
   },
   "onboarding": {
@@ -182,6 +186,43 @@
       "points": "ポイント",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る"
+    }
+  },
+  "routePlanner": {
+    "setup": {
+      "title": "ルートプランナー 設定",
+      "problemCount": "問題数",
+      "problemUnit": "{{count}}問",
+      "pieceSelection": "駒の選択",
+      "start": "開始"
+    },
+    "session": {
+      "progress": "{{current}} / {{total}}",
+      "selectFile": "ファイルを選択 (a-h)",
+      "selectRank": "ランクを選択 (1-8)",
+      "submit": "回答",
+      "undo": "戻す",
+      "skip": "スキップ",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "skipped": "スキップ",
+      "shortestPath": "最短経路",
+      "nextProblem": "次の問題",
+      "finish": "終了"
+    },
+    "result": {
+      "title": "練習終了！",
+      "score": "スコア",
+      "correct": "正解数",
+      "accuracy": "正答率",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "pieces": {
+      "N": "ナイト",
+      "B": "ビショップ",
+      "R": "ルーク",
+      "Q": "クイーン"
     }
   },
   "diagonalQuiz": {
