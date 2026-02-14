@@ -1,0 +1,95 @@
+import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { useTranslation } from "react-i18next";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
+import { Button } from "../../../../components";
+import { SettingsForm } from "../../../../features/diagonal-quiz/components";
+import { useDiagonalQuizSettings } from "../../../../features/diagonal-quiz/hooks";
+import { useTheme, spacing } from "../../../../theme";
+
+export default function DiagonalQuizSetup() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { settings, isLoading, updateTimeLimit } = useDiagonalQuizSettings();
+  const { colors } = useTheme();
+
+  const handleStart = () => {
+    router.push({
+      pathname: "/(tabs)/practice/diagonal-quiz/session",
+      params: {
+        timeLimit: settings.timeLimit.toString(),
+      },
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          styles.loadingContainer,
+          { backgroundColor: colors.background },
+        ]}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={["bottom"]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <SettingsForm
+          timeLimit={settings.timeLimit}
+          onUpdateTimeLimit={updateTimeLimit}
+        />
+      </ScrollView>
+
+      <View
+        style={[
+          styles.footer,
+          {
+            borderTopColor: colors.border,
+            backgroundColor: colors.card,
+          },
+        ]}
+      >
+        <Button
+          title={t("diagonalQuiz.setup.startQuiz")}
+          onPress={handleStart}
+          size="lg"
+          fullWidth
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: spacing.lg,
+  },
+  footer: {
+    padding: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+  },
+});

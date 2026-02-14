@@ -61,6 +61,13 @@ export default function PracticeIndex() {
       icon: "🎨",
       route: "/(tabs)/practice/square-colors/setup",
     },
+    {
+      id: "diagonal-quiz",
+      titleKey: "practice.diagonalQuiz.title",
+      descriptionKey: "practice.diagonalQuiz.description",
+      icon: "↗",
+      route: "/(tabs)/practice/diagonal-quiz/setup",
+    },
   ];
 
   return (

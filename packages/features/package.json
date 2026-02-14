@@ -6,6 +6,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./diagonal-quiz": "./src/diagonal-quiz/index.ts",
     "./square-colors": "./src/square-colors/index.ts"
   },
   "scripts": {

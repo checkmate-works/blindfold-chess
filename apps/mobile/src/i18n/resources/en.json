@@ -36,6 +36,10 @@
     "squareColors": {
       "title": "Square Colors",
       "description": "Practice identifying light and dark squares"
+    },
+    "diagonalQuiz": {
+      "title": "Diagonal Quiz",
+      "description": "Identify the two diagonals passing through a given square"
     }
   },
   "onboarding": {
@@ -178,6 +182,39 @@
       "points": "Points",
       "playAgain": "Play Again",
       "backToMenu": "Back to Menu"
+    }
+  },
+  "diagonalQuiz": {
+    "setup": {
+      "title": "Diagonal Quiz Settings",
+      "startQuiz": "Start Practice"
+    },
+    "session": {
+      "question": "What are the diagonals of {{square}}?",
+      "diagonalLabel": "Diagonal (a1-h8 direction)",
+      "antiDiagonalLabel": "Anti-diagonal (h1-a8 direction)",
+      "squarePlaceholder": "??",
+      "singleSquarePlaceholder": "e.g., a1",
+      "singleSquare": "single square",
+      "selectFile": "Select a file (a-h)",
+      "selectRank": "Select a rank (1-8)",
+      "clear": "Clear",
+      "correct": "Correct!",
+      "incorrect": "Incorrect",
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+    },
+    "result": {
+      "title": "Practice Complete!",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Avg. Time",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "settings": {
+      "timeLimit": "Time Limit",
+      "seconds": "{{seconds}}s"
     }
   }
 }

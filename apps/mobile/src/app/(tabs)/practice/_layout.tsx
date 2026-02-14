@@ -109,6 +109,27 @@ export default function PracticeLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="diagonal-quiz/setup"
+        options={{
+          title: t("diagonalQuiz.setup.title"),
+        }}
+      />
+      <Stack.Screen
+        name="diagonal-quiz/session"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="diagonal-quiz/result"
+        options={{
+          title: t("diagonalQuiz.result.title"),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

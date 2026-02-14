@@ -36,6 +36,10 @@
     "squareColors": {
       "title": "マスの色",
       "description": "マスの色（明暗）を判定する練習"
+    },
+    "diagonalQuiz": {
+      "title": "ダイアゴナルクイズ",
+      "description": "指定されたマスを通る2本の対角線を答えるトレーニング"
     }
   },
   "onboarding": {
@@ -178,6 +182,39 @@
       "points": "ポイント",
       "playAgain": "もう一度",
       "backToMenu": "メニューに戻る"
+    }
+  },
+  "diagonalQuiz": {
+    "setup": {
+      "title": "ダイアゴナルクイズ 設定",
+      "startQuiz": "練習を開始"
+    },
+    "session": {
+      "question": "{{square}}の対角線は？",
+      "diagonalLabel": "対角線 (a1-h8方向)",
+      "antiDiagonalLabel": "逆対角線 (h1-a8方向)",
+      "squarePlaceholder": "??",
+      "singleSquarePlaceholder": "例: a1",
+      "singleSquare": "単一マス",
+      "selectFile": "ファイルを選択 (a-h)",
+      "selectRank": "ランクを選択 (1-8)",
+      "clear": "クリア",
+      "correct": "正解！",
+      "incorrect": "不正解",
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+    },
+    "result": {
+      "title": "練習終了！",
+      "correctAnswers": "正解数",
+      "accuracy": "正答率",
+      "timeTaken": "経過時間",
+      "averageTime": "平均時間",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "settings": {
+      "timeLimit": "制限時間",
+      "seconds": "{{seconds}}秒"
     }
   }
 }
