@@ -1,0 +1,45 @@
+{
+  "name": "@blindfold-chess/icons",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/components/web/index.tsx",
+  "types": "./src/components/web/index.tsx",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./src/components/native/index.tsx",
+        "default": "./src/components/native/index.tsx"
+      },
+      "default": {
+        "types": "./src/components/web/index.tsx",
+        "default": "./src/components/web/index.tsx"
+      }
+    },
+    "./data": {
+      "types": "./src/data/index.ts",
+      "default": "./src/data/index.ts"
+    }
+  },
+  "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native-svg": "*"
+  },
+  "peerDependenciesMeta": {
+    "react-native-svg": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@blindfold-chess/eslint-config": "workspace:*",
+    "@types/react": "^19.2.14",
+    "@types/react-native": "^0.73.0",
+    "eslint": "^9.39.1",
+    "react": "^19.2.4",
+    "react-native-svg": "^15.12.1",
+    "typescript": "^5.9.3"
+  }
+}

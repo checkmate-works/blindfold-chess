@@ -1,5 +1,7 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { useEffect, useRef } from "react";
+import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import { useTranslation } from "react-i18next";
+import { SpinnerIcon } from "@blindfold-chess/icons";
 import {
   useTheme,
   fontSize,
@@ -16,6 +18,34 @@ type GameInfoProps = {
   skillLevel: SkillLevel;
   moveCount: number;
 };
+
+function Spinner({ color, size = 16 }: { color: string; size?: number }) {
+  const rotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [rotation]);
+
+  const spin = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  return (
+    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+      <SpinnerIcon size={size} color={color} />
+    </Animated.View>
+  );
+}
 
 export function GameInfo({
   isPlayerTurn,
@@ -47,9 +77,7 @@ export function GameInfo({
         <Text style={[styles.statusText, { color: colors.foreground }]}>
           {getStatusText()}
         </Text>
-        {isAiThinking && (
-          <ActivityIndicator size="small" color={colors.primary} />
-        )}
+        {isAiThinking && <Spinner color={colors.primary} />}
       </View>
       <View style={styles.infoRow}>
         <Text style={[styles.infoText, { color: colors.mutedForeground }]}>

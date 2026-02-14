@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "declaration": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "skipLibCheck": true
+  }
+}

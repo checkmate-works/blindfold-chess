@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@blindfold-chess/features": "workspace:^",
+    "@blindfold-chess/icons": "workspace:^",
     "@blindfold-chess/types": "workspace:^",
     "@blindfold-chess/ui": "workspace:^",
     "@next/third-parties": "^16.0.7",

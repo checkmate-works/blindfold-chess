@@ -6,6 +6,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useTranslation } from "react-i18next";
+import type { PieceType } from "@blindfold-chess/icons";
 import {
   useTheme,
   fontSize,
@@ -16,11 +17,22 @@ import {
 } from "../../../theme";
 import { useMoveInput } from "../hooks/useMoveInput";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
+import { ChessPiece } from "./ChessPiece";
 
 const PIECES = ["K", "Q", "R", "B", "N"] as const;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 const PROMOTION_PIECES = ["q", "r", "b", "n"] as const;
+
+const PIECE_TYPE_MAP: Record<(typeof PIECES)[number], PieceType> = {
+  K: "k",
+  Q: "q",
+  R: "r",
+  B: "b",
+  N: "n",
+};
+
+const PIECE_ICON_SIZE = 24;
 
 type ButtonInputProps = {
   fen: string;
@@ -60,14 +72,29 @@ export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
       {/* Piece Row */}
       <View style={styles.row}>
         {PIECES.map((piece) => (
-          <ToggleButton
+          <TouchableOpacity
             key={piece}
-            label={piece}
-            isSelected={input.selectedPiece === piece}
             onPress={() => input.handlePieceSelect(piece)}
             disabled={disabled}
-            colors={colors}
-          />
+            style={[
+              styles.toggleButton,
+              {
+                backgroundColor:
+                  input.selectedPiece === piece ? colors.primary : colors.card,
+                borderColor:
+                  input.selectedPiece === piece
+                    ? colors.primary
+                    : colors.border,
+                opacity: disabled ? 0.5 : 1,
+              },
+            ]}
+          >
+            <ChessPiece
+              type={PIECE_TYPE_MAP[piece]}
+              color="w"
+              size={PIECE_ICON_SIZE}
+            />
+          </TouchableOpacity>
         ))}
       </View>
 
