@@ -24,6 +24,10 @@
     "coordinateQuiz": {
       "title": "座標クイズ",
       "description": "マス目を見つけて盤面のイメージ力をテスト"
+    },
+    "legalMoves": {
+      "title": "合法手判定",
+      "description": "駒の動きが合法か違法かを判定する練習"
     }
   },
   "onboarding": {
@@ -45,6 +49,38 @@
     "language": "言語",
     "languageJapanese": "日本語",
     "languageEnglish": "English"
+  },
+  "legalMoves": {
+    "setup": {
+      "title": "合法手判定 設定",
+      "timeLimit": "制限時間",
+      "durationSeconds": "{{seconds}}秒",
+      "pieceSelection": "駒の選択",
+      "selectAtLeastOne": "少なくとも1つの駒を選択してください",
+      "start": "開始"
+    },
+    "session": {
+      "legal": "合法",
+      "illegal": "違法",
+      "correct": "正解！",
+      "incorrect": "不正解"
+    },
+    "result": {
+      "title": "練習終了！",
+      "correctAnswers": "正解数",
+      "accuracy": "正答率",
+      "timeTaken": "経過時間",
+      "averageTime": "平均時間",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
+    },
+    "pieces": {
+      "bishop": "ビショップ",
+      "knight": "ナイト",
+      "rook": "ルーク",
+      "queen": "クイーン",
+      "king": "キング"
+    }
   },
   "coordinateQuiz": {
     "setup": {

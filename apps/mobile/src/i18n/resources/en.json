@@ -24,6 +24,10 @@
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
       "description": "Test your board visualization by finding squares"
+    },
+    "legalMoves": {
+      "title": "Legal Moves",
+      "description": "Practice identifying legal and illegal moves"
     }
   },
   "onboarding": {
@@ -45,6 +49,38 @@
     "language": "Language",
     "languageJapanese": "Japanese",
     "languageEnglish": "English"
+  },
+  "legalMoves": {
+    "setup": {
+      "title": "Legal Moves Settings",
+      "timeLimit": "Time Limit",
+      "durationSeconds": "{{seconds}}s",
+      "pieceSelection": "Select Pieces",
+      "selectAtLeastOne": "Please select at least one piece",
+      "start": "Start"
+    },
+    "session": {
+      "legal": "Legal",
+      "illegal": "Illegal",
+      "correct": "Correct!",
+      "incorrect": "Incorrect"
+    },
+    "result": {
+      "title": "Practice Complete!",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
+      "averageTime": "Avg. Time",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
+    },
+    "pieces": {
+      "bishop": "Bishop",
+      "knight": "Knight",
+      "rook": "Rook",
+      "queen": "Queen",
+      "king": "King"
+    }
   },
   "coordinateQuiz": {
     "setup": {

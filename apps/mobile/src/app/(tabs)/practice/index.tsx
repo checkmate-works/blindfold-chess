@@ -40,6 +40,13 @@ export default function PracticeIndex() {
       icon: "♟",
       route: "/(tabs)/practice/coordinate-quiz/setup",
     },
+    {
+      id: "legal-moves",
+      titleKey: "practice.legalMoves.title",
+      descriptionKey: "practice.legalMoves.description",
+      icon: "♞",
+      route: "/(tabs)/practice/legal-moves/setup",
+    },
   ];
 
   return (

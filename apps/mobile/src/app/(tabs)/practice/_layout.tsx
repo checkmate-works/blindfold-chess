@@ -46,6 +46,27 @@ export default function PracticeLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="legal-moves/setup"
+        options={{
+          title: t("legalMoves.setup.title"),
+        }}
+      />
+      <Stack.Screen
+        name="legal-moves/session"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="legal-moves/result"
+        options={{
+          title: t("legalMoves.result.title"),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }
