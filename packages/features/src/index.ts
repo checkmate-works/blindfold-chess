@@ -27,6 +27,18 @@ export {
 // Use subpath import (@blindfold-chess/features/route-planner) for full access,
 // or use the prefixed named exports below.
 export {
+  type SkillLevel as AiGameSkillLevel,
+  type GameStatus as AiGameGameStatus,
+  type PlayerResult as AiGamePlayerResult,
+  type AiGameSettings,
+  type AiGameResult,
+  DEFAULT_AI_GAME_SETTINGS,
+  GameStateService,
+  DEFAULT_TIME_LIMIT as AI_GAME_DEFAULT_TIME_LIMIT,
+  getEloForSkillLevel,
+  isLimitedStrength,
+} from "./ai-game";
+export {
   type RoutePlannerPieceType,
   ROUTE_PLANNER_PIECES,
   type RoutePlannerProblem,

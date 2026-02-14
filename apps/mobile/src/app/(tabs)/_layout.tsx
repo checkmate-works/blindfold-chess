@@ -6,6 +6,7 @@ import { useTheme } from "../../theme";
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     home: focused ? "🏠" : "🏡",
+    play: focused ? "⚔️" : "⚔",
     practice: focused ? "♟️" : "♙",
     settings: focused ? "⚙️" : "⚙",
   };
@@ -34,6 +35,15 @@ export default function TabsLayout() {
           title: t("tabs.home"),
           tabBarIcon: ({ focused }) => (
             <TabIcon name="home" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="play"
+        options={{
+          title: t("tabs.play"),
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="play" focused={focused} />
           ),
         }}
       />

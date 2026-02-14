@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# stockfish files (copied from node_modules via scripts/copy-stockfish.ts)
+/assets/stockfish/stockfish.js.bin
+/assets/stockfish/stockfish.wasm

@@ -10,6 +10,7 @@
   },
   "tabs": {
     "home": "ホーム",
+    "play": "対戦",
     "practice": "練習",
     "settings": "設定"
   },
@@ -17,6 +18,7 @@
     "title": "ブラインドチェス",
     "welcome": "おかえりなさい！",
     "startPractice": "練習を始める",
+    "playAi": "AIと対戦する",
     "replayOnboarding": "チュートリアルをもう一度"
   },
   "practice": {
@@ -223,6 +225,46 @@
       "B": "ビショップ",
       "R": "ルーク",
       "Q": "クイーン"
+    }
+  },
+  "aiGame": {
+    "title": "AI対戦",
+    "description": "AIエンジンとブラインドチェスで対戦",
+    "setup": {
+      "title": "ゲーム設定",
+      "playerColor": "プレイする色",
+      "white": "白",
+      "black": "黒",
+      "skillLevel": "スキルレベル",
+      "skillLevelDescription": "1（初心者）- 20（最強）",
+      "startGame": "ゲーム開始"
+    },
+    "session": {
+      "yourTurn": "あなたの番",
+      "aiThinking": "AIが考え中...",
+      "checkmate": "チェックメイト！",
+      "stalemate": "ステイルメイト",
+      "draw": "引き分け",
+      "check": "チェック！",
+      "skillLevel": "レベル",
+      "moves": "手数",
+      "noMoves": "まだ手がありません",
+      "movePreview": "手を入力してください",
+      "submit": "送信",
+      "clear": "クリア",
+      "invalidMove": "無効な手です",
+      "disambiguation": "曖昧さ解消（任意）"
+    },
+    "result": {
+      "title": "ゲーム終了",
+      "win": "勝利！",
+      "loss": "敗北",
+      "draw": "引き分け",
+      "playerColor": "カラー",
+      "skillLevel": "スキルレベル",
+      "moveCount": "総手数",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る"
     }
   },
   "diagonalQuiz": {

@@ -10,6 +10,7 @@
   },
   "tabs": {
     "home": "Home",
+    "play": "Play",
     "practice": "Practice",
     "settings": "Settings"
   },
@@ -17,6 +18,7 @@
     "title": "Blindfold Chess",
     "welcome": "Welcome back!",
     "startPractice": "Start Practice",
+    "playAi": "Play vs AI",
     "replayOnboarding": "Replay Tutorial"
   },
   "practice": {
@@ -223,6 +225,46 @@
       "B": "Bishop",
       "R": "Rook",
       "Q": "Queen"
+    }
+  },
+  "aiGame": {
+    "title": "Play vs AI",
+    "description": "Play a blindfold game against the AI engine",
+    "setup": {
+      "title": "Game Setup",
+      "playerColor": "Play as",
+      "white": "White",
+      "black": "Black",
+      "skillLevel": "Skill Level",
+      "skillLevelDescription": "1 (beginner) - 20 (strongest)",
+      "startGame": "Start Game"
+    },
+    "session": {
+      "yourTurn": "Your Turn",
+      "aiThinking": "AI is thinking...",
+      "checkmate": "Checkmate!",
+      "stalemate": "Stalemate",
+      "draw": "Draw",
+      "check": "Check!",
+      "skillLevel": "Level",
+      "moves": "Moves",
+      "noMoves": "No moves yet",
+      "movePreview": "Enter your move",
+      "submit": "Submit",
+      "clear": "Clear",
+      "invalidMove": "Invalid move",
+      "disambiguation": "Disambiguation (optional)"
+    },
+    "result": {
+      "title": "Game Over",
+      "win": "You Win!",
+      "loss": "You Lose",
+      "draw": "Draw",
+      "playerColor": "Color",
+      "skillLevel": "Skill Level",
+      "moveCount": "Total Moves",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu"
     }
   },
   "diagonalQuiz": {

@@ -20,7 +20,13 @@ config.resolver.nodeModulesPaths = [
 // 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
 config.resolver.disableHierarchicalLookup = true;
 
-// 4. Inject polyfill before all modules (runs before any module initialization)
+// 4. Add asset extensions for Stockfish WebView
+// - "wasm" for the Stockfish WebAssembly binary
+// - "bin" for the Stockfish JS engine (renamed from .js to .js.bin to prevent
+//   Metro from parsing it as a JS module — it contains require("fs") etc.)
+config.resolver.assetExts = [...config.resolver.assetExts, "wasm", "bin"];
+
+// 5. Inject polyfill before all modules (runs before any module initialization)
 const defaultGetPolyfills = config.serializer.getPolyfills;
 config.serializer.getPolyfills = (options) => {
   return [

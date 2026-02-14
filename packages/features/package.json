@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./diagonal-quiz": "./src/diagonal-quiz/index.ts",
     "./square-colors": "./src/square-colors/index.ts",
-    "./route-planner": "./src/route-planner/index.ts"
+    "./route-planner": "./src/route-planner/index.ts",
+    "./ai-game": "./src/ai-game/index.ts"
   },
   "scripts": {
     "lint": "eslint",

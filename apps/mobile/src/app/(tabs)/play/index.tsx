@@ -3,27 +3,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
-import { Button, Card } from "../../components";
-import { useTheme, fontSize, fontWeight, spacing, shadows } from "../../theme";
-import { useOnboardingStatus } from "../../hooks/useOnboardingStatus";
+import { Button, Card } from "../../../components";
+import {
+  useTheme,
+  fontSize,
+  fontWeight,
+  spacing,
+  shadows,
+} from "../../../theme";
 
-export default function HomeTab() {
+export default function PlayTab() {
   const { t } = useTranslation();
-  const { clearStatus } = useOnboardingStatus();
   const router = useRouter();
   const { colors } = useTheme();
 
   const handlePlayAi = () => {
     router.push("/(tabs)/play/ai-game/setup");
-  };
-
-  const handleReplayOnboarding = () => {
-    router.push("/onboarding");
-  };
-
-  const handleResetOnboarding = async () => {
-    await clearStatus();
-    router.replace("/");
   };
 
   return (
@@ -36,18 +31,13 @@ export default function HomeTab() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Welcome Section */}
-        <View style={styles.welcomeSection}>
+        <View style={styles.header}>
           <Text style={[styles.title, { color: colors.foreground }]}>
-            {t("home.title")}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            {t("home.welcome")}
+            {t("tabs.play")}
           </Text>
         </View>
 
-        {/* Play vs AI Card */}
-        <Card style={styles.quickStartCard} padding="lg">
+        <Card style={styles.gameCard} padding="lg">
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>
             {t("aiGame.title")}
           </Text>
@@ -57,32 +47,12 @@ export default function HomeTab() {
             {t("aiGame.description")}
           </Text>
           <Button
-            title={t("home.playAi")}
+            title={t("aiGame.setup.startGame")}
             onPress={handlePlayAi}
             size="md"
             fullWidth
           />
         </Card>
-
-        {/* Replay Onboarding */}
-        <Button
-          title={t("home.replayOnboarding")}
-          onPress={handleReplayOnboarding}
-          variant="ghost"
-          size="sm"
-        />
-
-        {/* Debug Section (hidden in production) */}
-        {__DEV__ && (
-          <View style={styles.debugSection}>
-            <Button
-              title="Reset Onboarding (Debug)"
-              onPress={handleResetOnboarding}
-              variant="outline"
-              size="sm"
-            />
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -98,18 +68,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.lg,
   },
-  welcomeSection: {
+  header: {
     marginBottom: spacing.xl,
   },
   title: {
     fontSize: fontSize.xxxl,
     fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
   },
-  subtitle: {
-    fontSize: fontSize.lg,
-  },
-  quickStartCard: {
+  gameCard: {
     marginBottom: spacing.lg,
     ...shadows.md,
   },
@@ -121,9 +87,5 @@ const styles = StyleSheet.create({
   cardDescription: {
     fontSize: fontSize.md,
     marginBottom: spacing.lg,
-  },
-  debugSection: {
-    marginTop: spacing.xxl,
-    alignItems: "center",
   },
 });
