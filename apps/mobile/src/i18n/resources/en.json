@@ -41,6 +41,11 @@
       "ready": "When you're ready, press the button."
     }
   },
+  "settings": {
+    "language": "Language",
+    "languageJapanese": "Japanese",
+    "languageEnglish": "English"
+  },
   "coordinateQuiz": {
     "setup": {
       "title": "Quiz Settings",

@@ -41,6 +41,11 @@
       "ready": "準備ができたら、ボタンを押してください。"
     }
   },
+  "settings": {
+    "language": "言語",
+    "languageJapanese": "日本語",
+    "languageEnglish": "English"
+  },
   "coordinateQuiz": {
     "setup": {
       "title": "クイズ設定",
