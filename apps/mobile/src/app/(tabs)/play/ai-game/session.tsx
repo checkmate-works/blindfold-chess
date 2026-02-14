@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -7,6 +7,7 @@ import type { Side } from "@blindfold-chess/types";
 
 import { StockfishWebView } from "../../../../features/ai-game/engine";
 import {
+  BoardViewModal,
   ButtonInput,
   MoveHistory,
   GameInfo,
@@ -17,7 +18,13 @@ import {
   useGameSession,
 } from "../../../../features/ai-game/hooks";
 import type { SkillLevel } from "../../../../features/ai-game/lib/types";
-import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import {
+  useTheme,
+  fontSize,
+  fontWeight,
+  spacing,
+  borderRadius,
+} from "../../../../theme";
 
 export default function AiGameSession() {
   const { t } = useTranslation();
@@ -27,6 +34,8 @@ export default function AiGameSession() {
     playerColor: string;
     skillLevel: string;
   }>();
+
+  const [isBoardVisible, setIsBoardVisible] = useState(false);
 
   const playerColor = (params.playerColor || "white") as Side;
   const skillLevel = (
@@ -95,6 +104,21 @@ export default function AiGameSession() {
           moveCount={game.moves.length}
         />
 
+        {/* Show Board Button */}
+        <Pressable
+          style={[
+            styles.showBoardButton,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+          onPress={() => setIsBoardVisible(true)}
+        >
+          <Text
+            style={[styles.showBoardButtonText, { color: colors.foreground }]}
+          >
+            {t("aiGame.session.showBoard")}
+          </Text>
+        </Pressable>
+
         {/* Error message */}
         {game.error && (
           <Text style={[styles.errorText, { color: colors.destructive }]}>
@@ -140,6 +164,13 @@ export default function AiGameSession() {
           </View>
         )}
       </ScrollView>
+
+      <BoardViewModal
+        visible={isBoardVisible}
+        onClose={() => setIsBoardVisible(false)}
+        fen={game.currentFen}
+        playerColor={playerColor}
+      />
     </SafeAreaView>
   );
 }
@@ -176,5 +207,18 @@ const styles = StyleSheet.create({
   },
   aiThinkingText: {
     fontSize: fontSize.md,
+  },
+  showBoardButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  showBoardButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
   },
 });

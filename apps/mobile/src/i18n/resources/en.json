@@ -254,7 +254,8 @@
       "clear": "Clear",
       "invalidMove": "Invalid move",
       "disambiguation": "Disambiguation (optional)",
-      "sourceLabel": "Source"
+      "sourceLabel": "Source",
+      "showBoard": "Show Board"
     },
     "result": {
       "title": "Game Over",

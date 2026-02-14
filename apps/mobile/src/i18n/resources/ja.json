@@ -254,7 +254,8 @@
       "clear": "クリア",
       "invalidMove": "無効な手です",
       "disambiguation": "曖昧さ解消（任意）",
-      "sourceLabel": "出発マス"
+      "sourceLabel": "出発マス",
+      "showBoard": "盤面を表示"
     },
     "result": {
       "title": "ゲーム終了",
