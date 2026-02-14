@@ -34,6 +34,16 @@ function buildDisplayText(chars: string[]): string {
   return chars.slice(0, 2).join('') + '-' + chars.slice(2).join('');
 }
 
+function buildStartText(chars: string[]): string {
+  if (chars.length === 0) return '';
+  return chars.slice(0, 2).join('');
+}
+
+function buildEndText(chars: string[]): string {
+  if (chars.length <= 2) return '';
+  return chars.slice(2).join('');
+}
+
 function isComplete(chars: string[]): boolean {
   return chars.length >= 4;
 }
@@ -64,6 +74,11 @@ export function useDiagonalInput({
   const diagonalText = buildDisplayText(diagonal.chars);
   const antiDiagonalText = buildDisplayText(antiDiagonal.chars);
 
+  const diagonalStartText = buildStartText(diagonal.chars);
+  const diagonalEndText = buildEndText(diagonal.chars);
+  const antiDiagonalStartText = buildStartText(antiDiagonal.chars);
+  const antiDiagonalEndText = buildEndText(antiDiagonal.chars);
+
   const isDiagonalComplete =
     isComplete(diagonal.chars) ||
     (allowSingleSquareDiagonal && isSingleSquareComplete(diagonal.chars));
@@ -77,6 +92,10 @@ export function useDiagonalInput({
 
   const expectingFile = currentStep === 'file1' || currentStep === 'file2';
   const expectingRank = currentStep === 'rank1' || currentStep === 'rank2';
+
+  // Whether the user is currently inputting the start square or end square
+  const isInputtingStart = currentStep === 'file1' || currentStep === 'rank1';
+  const isInputtingEnd = currentStep === 'file2' || currentStep === 'rank2';
 
   const handleFilePress = useCallback(
     (file: string) => {
@@ -201,6 +220,10 @@ export function useDiagonalInput({
   return {
     diagonalText,
     antiDiagonalText,
+    diagonalStartText,
+    diagonalEndText,
+    antiDiagonalStartText,
+    antiDiagonalEndText,
     activeField,
     setActiveField,
     isDiagonalComplete,
@@ -208,6 +231,8 @@ export function useDiagonalInput({
     areBothComplete,
     expectingFile,
     expectingRank,
+    isInputtingStart,
+    isInputtingEnd,
     currentStep,
     handleFilePress,
     handleRankPress,

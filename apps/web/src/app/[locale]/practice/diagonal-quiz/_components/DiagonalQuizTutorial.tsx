@@ -52,6 +52,7 @@ const ANTI_DIAGONAL_SQUARES = [
 
 export function DiagonalQuizTutorial({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz.tutorial');
+  const t_quiz = useTranslations('practice.diagonalQuiz');
   const router = useRouter();
   const { preferences } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('diagonal');
@@ -60,6 +61,10 @@ export function DiagonalQuizTutorial({ locale }: Props) {
     correct: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
+    userDiagonal: string;
+    userAntiDiagonal: string;
+    isDiagonalCorrect: boolean;
+    isAntiDiagonalCorrect: boolean;
   } | null>(null);
 
   const steps: TutorialStep[] = ['diagonal', 'antiDiagonal', 'trial'];
@@ -79,12 +84,18 @@ export function DiagonalQuizTutorial({ locale }: Props) {
 
   const handleTrialAnswer = useCallback((diagonal: string, antiDiagonal: string) => {
     const correct = getDiagonals(TUTORIAL_SQUARE);
-    const isCorrect = diagonal === correct.diagonal && antiDiagonal === correct.antiDiagonal;
+    const isDiagonalCorrect = diagonal === correct.diagonal;
+    const isAntiDiagonalCorrect = antiDiagonal === correct.antiDiagonal;
+    const isCorrect = isDiagonalCorrect && isAntiDiagonalCorrect;
 
     setTrialResult({
       correct: isCorrect,
       correctDiagonal: correct.diagonal,
       correctAntiDiagonal: correct.antiDiagonal,
+      userDiagonal: diagonal,
+      userAntiDiagonal: antiDiagonal,
+      isDiagonalCorrect,
+      isAntiDiagonalCorrect,
     });
     setTrialAnswered(true);
   }, []);
@@ -211,29 +222,45 @@ export function DiagonalQuizTutorial({ locale }: Props) {
                 countdown={null}
                 correctCount={0}
                 incorrectCount={0}
+                showStats={false}
               />
             ) : (
               <div className="text-center space-y-4">
-                <AnswerFeedback
-                  isCorrect={trialResult?.correct ?? null}
-                  isVisible={true}
-                  incorrectMessage={
-                    trialResult && !trialResult.correct
-                      ? t('trialCorrectAnswer', {
-                          diagonal: trialResult.correctDiagonal,
-                          antiDiagonal: trialResult.correctAntiDiagonal,
-                        })
-                      : undefined
-                  }
-                />
-                {trialResult?.correct && (
-                  <p className="text-sm text-muted-foreground">
-                    {t('trialCorrectAnswer', {
-                      diagonal: trialResult.correctDiagonal,
-                      antiDiagonal: trialResult.correctAntiDiagonal,
-                    })}
-                  </p>
-                )}
+                <AnswerFeedback isCorrect={trialResult?.correct ?? null} isVisible={true} />
+                <div className="mt-3 space-y-3 text-sm text-left">
+                  <div>
+                    <p className="font-bold text-muted-foreground mb-1">
+                      {t_quiz('diagonalLabel')}
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">{t_quiz('correctAnswerLabel')}:</span>{' '}
+                      {trialResult?.correctDiagonal}
+                    </p>
+                    <p
+                      className={trialResult?.isDiagonalCorrect ? 'text-green-600' : 'text-red-600'}
+                    >
+                      <span className="font-medium">{t_quiz('yourAnswer')}:</span>{' '}
+                      {trialResult?.userDiagonal}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-muted-foreground mb-1">
+                      {t_quiz('antiDiagonalLabel')}
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="font-medium">{t_quiz('correctAnswerLabel')}:</span>{' '}
+                      {trialResult?.correctAntiDiagonal}
+                    </p>
+                    <p
+                      className={
+                        trialResult?.isAntiDiagonalCorrect ? 'text-green-600' : 'text-red-600'
+                      }
+                    >
+                      <span className="font-medium">{t_quiz('yourAnswer')}:</span>{' '}
+                      {trialResult?.userAntiDiagonal}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

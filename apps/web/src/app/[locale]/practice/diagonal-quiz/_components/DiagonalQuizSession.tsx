@@ -140,6 +140,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         {
           square: currentSquare,
           isCorrect,
+          isDiagonalCorrect: diagonalCorrect,
+          isAntiDiagonalCorrect: antiDiagonalCorrect,
           correctDiagonal: diagonal,
           correctAntiDiagonal: antiDiagonal,
           userDiagonal: diagonalAnswer,

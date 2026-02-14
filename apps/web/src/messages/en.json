@@ -928,6 +928,7 @@
       "diagonalLabel": "Diagonal (a1-h8 direction)",
       "antiDiagonalLabel": "Anti-diagonal (h1-a8 direction)",
       "inputPlaceholder": "e.g., b1-h7",
+      "squarePlaceholder": "??",
       "singleSquarePlaceholder": "e.g., a1",
       "singleSquare": "single square",
       "selectFile": "Select a file (a-h)",

@@ -29,6 +29,7 @@ type Props = {
   countdown: number | null;
   correctCount: number;
   incorrectCount: number;
+  showStats?: boolean;
 };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -76,6 +77,7 @@ export function DiagonalQuizPlaying({
   countdown,
   correctCount,
   incorrectCount,
+  showStats = true,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const timeElapsed = timeLimit - timeRemaining;
@@ -92,14 +94,18 @@ export function DiagonalQuizPlaying({
   );
 
   const {
-    diagonalText,
-    antiDiagonalText,
+    diagonalStartText,
+    diagonalEndText,
+    antiDiagonalStartText,
+    antiDiagonalEndText,
     activeField,
     setActiveField,
     isDiagonalComplete,
     isAntiDiagonalComplete,
     expectingFile,
     expectingRank,
+    isInputtingStart,
+    isInputtingEnd,
     handleFilePress,
     handleRankPress,
     handleBackspace,
@@ -139,15 +145,17 @@ export function DiagonalQuizPlaying({
   return (
     <div className="max-w-md mx-auto">
       {/* Header with Timer */}
-      <div className="relative flex items-center justify-center min-h-[50px] mb-8">
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
-          <QuizTimer
-            timeRemaining={timeRemaining}
-            progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-            size={50}
-          />
+      {showStats && (
+        <div className="relative flex items-center justify-center min-h-[50px] mb-8">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <QuizTimer
+              timeRemaining={timeRemaining}
+              progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
+              size={50}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
         {/* Countdown Overlay */}
@@ -187,24 +195,60 @@ export function DiagonalQuizPlaying({
                 <span className="ml-1 text-xs text-muted-foreground/70">({t('singleSquare')})</span>
               )}
             </label>
-            <button
-              type="button"
-              onClick={() => handleFieldClick('diagonal')}
-              disabled={isDisabled}
-              className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                activeField === 'diagonal' && !isDisabled
-                  ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                  : isDiagonalComplete
-                    ? 'border-border bg-muted/50 text-foreground'
-                    : 'border-border bg-background text-muted-foreground'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {diagonalText || (
-                <span className="text-muted-foreground/50">
-                  {singleDiagonal ? t('singleSquarePlaceholder') : t('inputPlaceholder')}
-                </span>
-              )}
-            </button>
+            {singleDiagonal ? (
+              <button
+                type="button"
+                onClick={() => handleFieldClick('diagonal')}
+                disabled={isDisabled}
+                className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                  activeField === 'diagonal' && !isDisabled
+                    ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                    : isDiagonalComplete
+                      ? 'border-border bg-muted/50 text-foreground'
+                      : 'border-border bg-background text-muted-foreground'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {diagonalStartText || (
+                  <span className="text-muted-foreground/50">{t('singleSquarePlaceholder')}</span>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleFieldClick('diagonal')}
+                  disabled={isDisabled}
+                  className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                    activeField === 'diagonal' && !isDisabled && isInputtingStart
+                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                      : diagonalStartText
+                        ? 'border-border bg-muted/50 text-foreground'
+                        : 'border-border bg-background text-muted-foreground'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {diagonalStartText || (
+                    <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
+                  )}
+                </button>
+                <span className="text-lg font-mono text-muted-foreground">-</span>
+                <button
+                  type="button"
+                  onClick={() => handleFieldClick('diagonal')}
+                  disabled={isDisabled}
+                  className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                    activeField === 'diagonal' && !isDisabled && isInputtingEnd
+                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                      : diagonalEndText
+                        ? 'border-border bg-muted/50 text-foreground'
+                        : 'border-border bg-background text-muted-foreground'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {diagonalEndText || (
+                    <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Anti-diagonal field */}
@@ -215,24 +259,60 @@ export function DiagonalQuizPlaying({
                 <span className="ml-1 text-xs text-muted-foreground/70">({t('singleSquare')})</span>
               )}
             </label>
-            <button
-              type="button"
-              onClick={() => handleFieldClick('antiDiagonal')}
-              disabled={isDisabled}
-              className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                activeField === 'antiDiagonal' && !isDisabled
-                  ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                  : isAntiDiagonalComplete
-                    ? 'border-border bg-muted/50 text-foreground'
-                    : 'border-border bg-background text-muted-foreground'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {antiDiagonalText || (
-                <span className="text-muted-foreground/50">
-                  {singleAntiDiagonal ? t('singleSquarePlaceholder') : t('inputPlaceholder')}
-                </span>
-              )}
-            </button>
+            {singleAntiDiagonal ? (
+              <button
+                type="button"
+                onClick={() => handleFieldClick('antiDiagonal')}
+                disabled={isDisabled}
+                className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                  activeField === 'antiDiagonal' && !isDisabled
+                    ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                    : isAntiDiagonalComplete
+                      ? 'border-border bg-muted/50 text-foreground'
+                      : 'border-border bg-background text-muted-foreground'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {antiDiagonalStartText || (
+                  <span className="text-muted-foreground/50">{t('singleSquarePlaceholder')}</span>
+                )}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleFieldClick('antiDiagonal')}
+                  disabled={isDisabled}
+                  className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                    activeField === 'antiDiagonal' && !isDisabled && isInputtingStart
+                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                      : antiDiagonalStartText
+                        ? 'border-border bg-muted/50 text-foreground'
+                        : 'border-border bg-background text-muted-foreground'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {antiDiagonalStartText || (
+                    <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
+                  )}
+                </button>
+                <span className="text-lg font-mono text-muted-foreground">-</span>
+                <button
+                  type="button"
+                  onClick={() => handleFieldClick('antiDiagonal')}
+                  disabled={isDisabled}
+                  className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+                    activeField === 'antiDiagonal' && !isDisabled && isInputtingEnd
+                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
+                      : antiDiagonalEndText
+                        ? 'border-border bg-muted/50 text-foreground'
+                        : 'border-border bg-background text-muted-foreground'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {antiDiagonalEndText || (
+                    <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -302,7 +382,9 @@ export function DiagonalQuizPlaying({
         </div>
       </div>
 
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      {showStats && (
+        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      )}
     </div>
   );
 }

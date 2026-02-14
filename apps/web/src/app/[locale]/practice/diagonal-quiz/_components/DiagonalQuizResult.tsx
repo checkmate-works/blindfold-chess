@@ -18,6 +18,8 @@ import { getDiagonalSquares } from '../_lib/utils';
 export type QuestionResult = {
   square: string;
   isCorrect: boolean;
+  isDiagonalCorrect: boolean;
+  isAntiDiagonalCorrect: boolean;
   correctDiagonal: string;
   correctAntiDiagonal: string;
   userDiagonal?: string;
@@ -227,17 +229,45 @@ export function DiagonalQuizResult({ questionResults, score, onTryAgain, locale 
                       <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
                         <DiagonalBoard targetSquare={result.square} />
 
-                        <div className="mt-3 space-y-1 text-sm">
-                          <p className="text-muted-foreground">
-                            <span className="font-medium">{t('correctAnswerLabel')}:</span>{' '}
-                            {result.correctDiagonal}, {result.correctAntiDiagonal}
-                          </p>
-                          {!result.isCorrect && result.userDiagonal && result.userAntiDiagonal && (
-                            <p className="text-muted-foreground">
-                              <span className="font-medium">{t('yourAnswer')}:</span>{' '}
-                              {result.userDiagonal}, {result.userAntiDiagonal}
+                        <div className="mt-3 space-y-3 text-sm">
+                          <div>
+                            <p className="font-bold text-muted-foreground mb-1">
+                              {t('diagonalLabel')}
                             </p>
-                          )}
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">{t('correctAnswerLabel')}:</span>{' '}
+                              {result.correctDiagonal}
+                            </p>
+                            {result.userDiagonal && (
+                              <p
+                                className={
+                                  result.isDiagonalCorrect ? 'text-green-600' : 'text-red-600'
+                                }
+                              >
+                                <span className="font-medium">{t('yourAnswer')}:</span>{' '}
+                                {result.userDiagonal}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-muted-foreground mb-1">
+                              {t('antiDiagonalLabel')}
+                            </p>
+                            <p className="text-muted-foreground">
+                              <span className="font-medium">{t('correctAnswerLabel')}:</span>{' '}
+                              {result.correctAntiDiagonal}
+                            </p>
+                            {result.userAntiDiagonal && (
+                              <p
+                                className={
+                                  result.isAntiDiagonalCorrect ? 'text-green-600' : 'text-red-600'
+                                }
+                              >
+                                <span className="font-medium">{t('yourAnswer')}:</span>{' '}
+                                {result.userAntiDiagonal}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
