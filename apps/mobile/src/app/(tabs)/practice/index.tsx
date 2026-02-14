@@ -54,6 +54,13 @@ export default function PracticeIndex() {
       icon: "🦋",
       route: "/(tabs)/practice/board-symmetry/setup",
     },
+    {
+      id: "square-colors",
+      titleKey: "practice.squareColors.title",
+      descriptionKey: "practice.squareColors.description",
+      icon: "🎨",
+      route: "/(tabs)/practice/square-colors/setup",
+    },
   ];
 
   return (

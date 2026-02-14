@@ -88,6 +88,27 @@ export default function PracticeLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="square-colors/setup"
+        options={{
+          title: t("squareColors.setup.title"),
+        }}
+      />
+      <Stack.Screen
+        name="square-colors/session"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="square-colors/result"
+        options={{
+          title: t("squareColors.result.title"),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

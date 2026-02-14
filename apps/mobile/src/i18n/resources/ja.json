@@ -32,6 +32,10 @@
     "boardSymmetry": {
       "title": "盤面対称",
       "description": "チェス盤上の対称マスを見つける練習"
+    },
+    "squareColors": {
+      "title": "マスの色",
+      "description": "マスの色（明暗）を判定する練習"
     }
   },
   "onboarding": {
@@ -105,6 +109,32 @@
       "title": "結果",
       "playAgain": "もう一度",
       "backToMenu": "練習に戻る",
+      "correctAnswers": "正解数",
+      "accuracy": "正答率",
+      "timeTaken": "経過時間",
+      "averageTime": "平均時間"
+    },
+    "settings": {
+      "timeLimit": "制限時間",
+      "seconds": "{{seconds}}秒"
+    }
+  },
+  "squareColors": {
+    "setup": {
+      "title": "マスの色 設定",
+      "startQuiz": "練習を開始"
+    },
+    "session": {
+      "question": "{{square}} の色は？",
+      "light": "明",
+      "dark": "暗",
+      "correct": "正解！",
+      "incorrect": "不正解"
+    },
+    "result": {
+      "title": "練習終了！",
+      "playAgain": "もう一度",
+      "backToMenu": "メニューに戻る",
       "correctAnswers": "正解数",
       "accuracy": "正答率",
       "timeTaken": "経過時間",

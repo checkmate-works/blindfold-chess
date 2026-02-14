@@ -1,1 +1,1 @@
-export type Square = string;
+export type { SquareColor } from '@blindfold-chess/features/square-colors';

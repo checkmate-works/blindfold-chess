@@ -32,6 +32,10 @@
     "boardSymmetry": {
       "title": "Board Symmetry",
       "description": "Practice finding symmetric squares on the chessboard"
+    },
+    "squareColors": {
+      "title": "Square Colors",
+      "description": "Practice identifying light and dark squares"
     }
   },
   "onboarding": {
@@ -108,6 +112,32 @@
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
       "timeTaken": "Time",
+      "averageTime": "Avg. Time"
+    },
+    "settings": {
+      "timeLimit": "Time Limit",
+      "seconds": "{{seconds}}s"
+    }
+  },
+  "squareColors": {
+    "setup": {
+      "title": "Square Colors Setup",
+      "startQuiz": "Start Practice"
+    },
+    "session": {
+      "question": "What color is {{square}}?",
+      "light": "Light",
+      "dark": "Dark",
+      "correct": "Correct!",
+      "incorrect": "Incorrect"
+    },
+    "result": {
+      "title": "Practice Complete!",
+      "playAgain": "Play Again",
+      "backToMenu": "Back to Menu",
+      "correctAnswers": "Correct Answers",
+      "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
       "averageTime": "Avg. Time"
     },
     "settings": {

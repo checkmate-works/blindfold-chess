@@ -30,7 +30,9 @@ export function useQuizTimer({
           const newTime = prev - 1;
           if (newTime <= 0) {
             setIsRunning(false);
-            onTimeUpRef.current();
+            // Defer onTimeUp to avoid calling setState (e.g., router.replace)
+            // during React's rendering phase
+            setTimeout(() => onTimeUpRef.current(), 0);
             return 0;
           }
           return newTime;
