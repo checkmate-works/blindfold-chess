@@ -82,8 +82,8 @@ export const OnboardingScreen = ({ onComplete }: OnboardingScreenProps) => {
             >
               <ChoiceList
                 choices={currentStep.choices.map((c) => ({
-                  label: c.label,
-                  onSelect: () => handleChoice(c.nextId, c.label),
+                  label: t(c.labelKey),
+                  onSelect: () => handleChoice(c.nextId, t(c.labelKey)),
                 }))}
               />
             </View>

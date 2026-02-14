@@ -29,7 +29,17 @@
   "onboarding": {
     "skip": "Skip",
     "tapToContinue": "Tap to continue",
-    "start": "Start"
+    "start": "Start",
+    "script": {
+      "greeting": "Hello",
+      "introduction": "I am a master of blindfold chess",
+      "experienceCheck": "Have you ever played blindfold chess?",
+      "choiceYes": "Yes",
+      "choiceNo": "No",
+      "experienced": "Oh... that's reassuring.\nLet's put your skills to the test, shall we?",
+      "beginner": "I see, so this is your first time.\nDon't worry. I'll teach you step by step.",
+      "ready": "When you're ready, press the button."
+    }
   },
   "coordinateQuiz": {
     "setup": {

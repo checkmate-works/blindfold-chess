@@ -29,7 +29,17 @@
   "onboarding": {
     "skip": "スキップ",
     "tapToContinue": "タップして続ける",
-    "start": "始める"
+    "start": "始める",
+    "script": {
+      "greeting": "こんにちは",
+      "introduction": "私は目隠しチェスを極めし者です",
+      "experienceCheck": "あなたは目隠しチェスをやったことがありますか？",
+      "choiceYes": "はい",
+      "choiceNo": "いいえ",
+      "experienced": "ほう...それは頼もしい。\nでは、力試しといきましょうか。",
+      "beginner": "なるほど、初めてなのですね。\n心配入りません。私が手取り足取り教えましょう。",
+      "ready": "準備ができたら、ボタンを押してください。"
+    }
   },
   "coordinateQuiz": {
     "setup": {

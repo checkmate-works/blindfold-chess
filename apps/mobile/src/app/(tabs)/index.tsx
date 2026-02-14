@@ -49,12 +49,12 @@ export default function HomeTab() {
         {/* Quick Start Card */}
         <Card style={styles.quickStartCard} padding="lg">
           <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-            座標クイズ
+            {t("practice.coordinateQuiz.title")}
           </Text>
           <Text
             style={[styles.cardDescription, { color: colors.mutedForeground }]}
           >
-            チェス盤の座標を素早く認識する力を鍛えましょう
+            {t("practice.coordinateQuiz.description")}
           </Text>
           <Button
             title={t("home.startPractice")}

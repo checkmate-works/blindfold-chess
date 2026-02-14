@@ -1,8 +1,8 @@
 export type ScriptStep = {
   id: string;
   type: "statement" | "question";
-  text: string;
-  choices?: { label: string; nextId: string }[];
+  textKey: string;
+  choices?: { labelKey: string; nextId: string }[];
   nextId?: string;
 };
 
@@ -10,40 +10,40 @@ export const ONBOARDING_SCRIPT: Record<string, ScriptStep> = {
   start: {
     id: "start",
     type: "statement",
-    text: "こんにちは",
+    textKey: "onboarding.script.greeting",
     nextId: "intro",
   },
   intro: {
     id: "intro",
     type: "statement",
-    text: "私は目隠しチェスを極めし者です",
+    textKey: "onboarding.script.introduction",
     nextId: "experience_check",
   },
   experience_check: {
     id: "experience_check",
     type: "question",
-    text: "あなたは目隠しチェスをやったことがありますか？",
+    textKey: "onboarding.script.experienceCheck",
     choices: [
-      { label: "はい", nextId: "experienced" },
-      { label: "いいえ", nextId: "beginner" },
+      { labelKey: "onboarding.script.choiceYes", nextId: "experienced" },
+      { labelKey: "onboarding.script.choiceNo", nextId: "beginner" },
     ],
   },
   experienced: {
     id: "experienced",
     type: "statement",
-    text: "ほう...それは頼もしい。\nでは、力試しといきましょうか。",
+    textKey: "onboarding.script.experienced",
     nextId: "end",
   },
   beginner: {
     id: "beginner",
     type: "statement",
-    text: "なるほど、初めてなのですね。\n心配入りません。私が手取り足取り教えましょう。",
+    textKey: "onboarding.script.beginner",
     nextId: "end",
   },
   end: {
     id: "end",
     type: "statement",
-    text: "準備ができたら、ボタンを押してください。",
+    textKey: "onboarding.script.ready",
     // In the actual app, this might lead to a final "Let's Go" action
   },
 };

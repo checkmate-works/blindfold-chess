@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ONBOARDING_SCRIPT } from "../data/script";
 
 export type ChatMessage = {
@@ -8,6 +9,7 @@ export type ChatMessage = {
 };
 
 export const useOnboardingChat = (onComplete: () => void) => {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string>("start");
   const [isThinking, setIsThinking] = useState(false);
@@ -22,13 +24,17 @@ export const useOnboardingChat = (onComplete: () => void) => {
     const timer = setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now().toString(), text: currentStep.text, isSystem: true },
+        {
+          id: Date.now().toString(),
+          text: t(currentStep.textKey),
+          isSystem: true,
+        },
       ]);
       setIsThinking(false);
     }, 600); // Simulated delay
 
     return () => clearTimeout(timer);
-  }, [currentStepId, currentStep]);
+  }, [currentStepId, currentStep, t]);
 
   const handleNext = useCallback(() => {
     if (!currentStep) return;
