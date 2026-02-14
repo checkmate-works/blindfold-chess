@@ -10,6 +10,7 @@ import {
   ButtonInput,
   MoveHistory,
   GameInfo,
+  Spinner,
 } from "../../../../features/ai-game/components";
 import {
   useAiVersus,
@@ -104,14 +105,27 @@ export default function AiGameSession() {
         {/* Move History */}
         <MoveHistory moves={game.moves} />
 
-        {/* Input area - only shown during player's turn */}
-        {game.gameStatus === "in_progress" && game.isPlayerTurn && (
-          <ButtonInput
-            fen={game.currentFen}
-            onSubmit={game.submitMove}
-            disabled={ai.isLoading || game.isAiThinking}
-          />
-        )}
+        {/* Input area */}
+        {game.gameStatus === "in_progress" &&
+          (game.isPlayerTurn ? (
+            <ButtonInput
+              fen={game.currentFen}
+              onSubmit={game.submitMove}
+              disabled={ai.isLoading || game.isAiThinking}
+            />
+          ) : (
+            <View style={styles.aiThinkingContainer}>
+              <Text
+                style={[
+                  styles.aiThinkingText,
+                  { color: colors.mutedForeground },
+                ]}
+              >
+                {t("aiGame.session.aiThinking")}
+              </Text>
+              <Spinner color={colors.primary} />
+            </View>
+          ))}
 
         {/* Game over message */}
         {game.gameStatus !== "in_progress" && game.playerResult && (
@@ -152,5 +166,15 @@ const styles = StyleSheet.create({
   gameOverText: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
+  },
+  aiThinkingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.lg,
+  },
+  aiThinkingText: {
+    fontSize: fontSize.md,
   },
 });

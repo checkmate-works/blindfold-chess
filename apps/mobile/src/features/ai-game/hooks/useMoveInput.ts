@@ -21,6 +21,7 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
   );
   const [sourceFile, setSourceFile] = useState<string | null>(null);
   const [sourceRank, setSourceRank] = useState<string | null>(null);
+  const [isAmbiguous, setIsAmbiguous] = useState(false);
 
   const isPawnCaptureMode =
     !selectedPiece && selectedFile !== null && isCapture;
@@ -65,6 +66,7 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     setPromotionPiece(null);
     setSourceFile(null);
     setSourceRank(null);
+    setIsAmbiguous(false);
   }, []);
 
   const handlePieceSelect = useCallback(
@@ -215,6 +217,7 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     isPawnCaptureMode,
     sourceFile,
     sourceRank,
+    isAmbiguous,
 
     // Derived
     previewText,
@@ -230,6 +233,7 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     handlePromotionSelect,
     handleSourceFileSelect,
     handleSourceRankSelect,
+    setIsAmbiguous,
     resetAll,
     handleSubmit,
   };

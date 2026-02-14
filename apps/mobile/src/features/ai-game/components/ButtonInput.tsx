@@ -46,205 +46,323 @@ export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
 
   const input = useMoveInput({ fen, onSubmit });
 
+  const hasSelections =
+    input.selectedPiece !== null ||
+    input.selectedFile !== null ||
+    input.selectedRank !== null ||
+    input.isCapture ||
+    input.isCheck ||
+    input.castling !== null ||
+    input.sourceFile !== null ||
+    input.sourceRank !== null;
+
   return (
     <View style={styles.container}>
-      {/* Preview */}
-      <View
-        style={[
-          styles.preview,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <Text
-          style={[
-            styles.previewText,
-            {
-              color: input.previewText
-                ? colors.foreground
-                : colors.mutedForeground,
-            },
-          ]}
-        >
-          {input.previewText || t("aiGame.session.movePreview")}
-        </Text>
-      </View>
+      {/* Piece Row - show when: not castling AND (no file selected OR piece already selected) */}
+      {!input.castling &&
+        (input.selectedFile === null || input.selectedPiece !== null) && (
+          <View style={styles.row}>
+            {PIECES.map((piece) => (
+              <TouchableOpacity
+                key={piece}
+                onPress={() => input.handlePieceSelect(piece)}
+                disabled={disabled}
+                style={[
+                  styles.toggleButton,
+                  {
+                    backgroundColor:
+                      input.selectedPiece === piece
+                        ? colors.primary
+                        : colors.card,
+                    borderColor:
+                      input.selectedPiece === piece
+                        ? colors.primary
+                        : colors.border,
+                    opacity: disabled ? 0.5 : 1,
+                  },
+                ]}
+              >
+                <ChessPiece
+                  type={PIECE_TYPE_MAP[piece]}
+                  color="w"
+                  size={PIECE_ICON_SIZE}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-      {/* Piece Row */}
-      <View style={styles.row}>
-        {PIECES.map((piece) => (
-          <TouchableOpacity
-            key={piece}
-            onPress={() => input.handlePieceSelect(piece)}
+      {/* Castling Row - show when: no piece selected AND no file selected */}
+      {!input.selectedPiece && input.selectedFile === null && (
+        <View style={styles.row}>
+          <ToggleButton
+            label="O-O"
+            isSelected={input.castling === "O-O"}
+            onPress={() => input.handleCastlingSelect("O-O")}
             disabled={disabled}
-            style={[
-              styles.toggleButton,
-              {
-                backgroundColor:
-                  input.selectedPiece === piece ? colors.primary : colors.card,
-                borderColor:
-                  input.selectedPiece === piece
-                    ? colors.primary
-                    : colors.border,
-                opacity: disabled ? 0.5 : 1,
-              },
-            ]}
-          >
-            <ChessPiece
-              type={PIECE_TYPE_MAP[piece]}
-              color="w"
-              size={PIECE_ICON_SIZE}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
+            colors={colors}
+            wide
+          />
+          <ToggleButton
+            label="O-O-O"
+            isSelected={input.castling === "O-O-O"}
+            onPress={() => input.handleCastlingSelect("O-O-O")}
+            disabled={disabled}
+            colors={colors}
+            wide
+          />
+        </View>
+      )}
 
-      {/* Castling Row */}
-      <View style={styles.row}>
-        <ToggleButton
-          label="O-O"
-          isSelected={input.castling === "O-O"}
-          onPress={() => input.handleCastlingSelect("O-O")}
-          disabled={disabled}
-          colors={colors}
-          wide
-        />
-        <ToggleButton
-          label="O-O-O"
-          isSelected={input.castling === "O-O-O"}
-          onPress={() => input.handleCastlingSelect("O-O-O")}
-          disabled={disabled}
-          colors={colors}
-          wide
-        />
-      </View>
-
-      {/* Disambiguation (source file/rank) */}
+      {/* Piece mode: Capture toggle + Disambiguation (shown when piece is selected) */}
       {input.selectedPiece && (
-        <View style={styles.disambiguationContainer}>
-          <Text
-            style={[styles.sectionLabel, { color: colors.mutedForeground }]}
-          >
-            {t("aiGame.session.disambiguation")}
-          </Text>
+        <>
+          {/* Disambiguation Toggle */}
+          <View style={styles.row}>
+            <TouchableOpacity
+              onPress={() => input.setIsAmbiguous(!input.isAmbiguous)}
+              disabled={disabled}
+              style={[
+                styles.disambiguationToggle,
+                {
+                  backgroundColor: input.isAmbiguous
+                    ? colors.primary + "1A"
+                    : "transparent",
+                  borderColor: input.isAmbiguous
+                    ? colors.primary
+                    : "transparent",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.disambiguationToggleText,
+                  {
+                    color: input.isAmbiguous
+                      ? colors.primary
+                      : colors.mutedForeground,
+                  },
+                ]}
+              >
+                {t("aiGame.session.disambiguation")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Disambiguation Panel */}
+          {input.isAmbiguous && (
+            <View
+              style={[
+                styles.disambiguationPanel,
+                {
+                  backgroundColor: colors.muted + "4D",
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.disambiguationLabel,
+                  { color: colors.mutedForeground },
+                ]}
+              >
+                {t("aiGame.session.sourceLabel")}
+              </Text>
+              {/* Source File */}
+              <View style={styles.row}>
+                {FILES.map((file) => (
+                  <ToggleButton
+                    key={`src-file-${file}`}
+                    label={file}
+                    isSelected={input.sourceFile === file}
+                    onPress={() => input.handleSourceFileSelect(file)}
+                    disabled={disabled}
+                    colors={colors}
+                    small
+                  />
+                ))}
+              </View>
+              {/* Source Rank */}
+              <View style={styles.row}>
+                {RANKS.map((rank) => (
+                  <ToggleButton
+                    key={`src-rank-${rank}`}
+                    label={rank}
+                    isSelected={input.sourceRank === rank}
+                    onPress={() => input.handleSourceRankSelect(rank)}
+                    disabled={disabled}
+                    colors={colors}
+                    small
+                  />
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Capture Toggle (Piece Mode) */}
+          <CheckboxPill
+            label="x"
+            isChecked={input.isCapture}
+            onPress={input.handleCaptureToggle}
+            disabled={disabled}
+            colors={colors}
+          />
+        </>
+      )}
+
+      {/* Non-castling rows: file, pawn capture, rank, promotion, check */}
+      {!input.castling && (
+        <>
+          {/* File Row */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.row}>
               {FILES.map((file) => (
                 <ToggleButton
-                  key={`src-${file}`}
+                  key={file}
                   label={file}
-                  isSelected={input.sourceFile === file}
-                  onPress={() => input.handleSourceFileSelect(file)}
-                  disabled={disabled}
+                  isSelected={
+                    input.isPawnCaptureMode
+                      ? input.targetFile === file
+                      : input.selectedFile === file
+                  }
+                  onPress={() => input.handleFileSelect(file)}
+                  disabled={
+                    disabled ||
+                    (input.isPawnCaptureMode && input.selectedFile === file)
+                  }
                   colors={colors}
-                  small
-                />
-              ))}
-              {RANKS.map((rank) => (
-                <ToggleButton
-                  key={`src-${rank}`}
-                  label={rank}
-                  isSelected={input.sourceRank === rank}
-                  onPress={() => input.handleSourceRankSelect(rank)}
-                  disabled={disabled}
-                  colors={colors}
-                  small
                 />
               ))}
             </View>
           </ScrollView>
-        </View>
+
+          {/* Capture Toggle (Pawn Mode) - shown when no piece selected and file selected */}
+          {!input.selectedPiece && input.selectedFile !== null && (
+            <CheckboxPill
+              label="x"
+              isChecked={input.isCapture}
+              onPress={input.handleCaptureToggle}
+              disabled={disabled}
+              colors={colors}
+            />
+          )}
+
+          {/* Target File Row (Pawn Capture Mode) */}
+          {input.isPawnCaptureMode && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.row}>
+                {FILES.map((file) => (
+                  <ToggleButton
+                    key={`target-${file}`}
+                    label={file}
+                    isSelected={input.targetFile === file}
+                    onPress={() => input.handleFileSelect(file)}
+                    disabled={disabled || input.selectedFile === file}
+                    colors={colors}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+          )}
+
+          {/* Rank Row - show when: file selected AND (not pawn capture OR target file selected) */}
+          {input.selectedFile !== null &&
+            (!input.isPawnCaptureMode || input.targetFile !== null) && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.row}>
+                  {RANKS.map((rank) => (
+                    <ToggleButton
+                      key={rank}
+                      label={rank}
+                      isSelected={input.selectedRank === rank}
+                      onPress={() => input.handleRankSelect(rank)}
+                      disabled={disabled}
+                      colors={colors}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+
+          {/* Promotion Row - show when promotion is available */}
+          {input.showPromotion && (
+            <View style={styles.row}>
+              <View style={styles.equalsSign}>
+                <Text
+                  style={[
+                    styles.equalsSignText,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  =
+                </Text>
+              </View>
+              {PROMOTION_PIECES.map((piece) => (
+                <ToggleButton
+                  key={`promo-${piece}`}
+                  label={piece.toUpperCase()}
+                  isSelected={input.promotionPiece === piece}
+                  onPress={() => input.handlePromotionSelect(piece)}
+                  disabled={disabled}
+                  colors={colors}
+                />
+              ))}
+            </View>
+          )}
+
+          {/* Check Toggle - show when: rank selected AND (not promotion OR promotion piece selected) */}
+          {input.selectedRank !== null &&
+            (!input.showPromotion || input.promotionPiece !== null) && (
+              <CheckboxPill
+                label="+"
+                isChecked={input.isCheck}
+                onPress={input.handleCheckToggle}
+                disabled={disabled}
+                colors={colors}
+              />
+            )}
+        </>
       )}
 
-      {/* Capture Toggle */}
-      <View style={styles.row}>
-        <ToggleButton
-          label="x"
-          isSelected={input.isCapture}
-          onPress={input.handleCaptureToggle}
-          disabled={disabled}
-          colors={colors}
-        />
-        <ToggleButton
-          label="+"
-          isSelected={input.isCheck}
-          onPress={input.handleCheckToggle}
-          disabled={disabled}
-          colors={colors}
-        />
-      </View>
-
-      {/* File Row */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          {FILES.map((file) => (
-            <ToggleButton
-              key={file}
-              label={file}
-              isSelected={
-                input.isPawnCaptureMode
-                  ? input.targetFile === file
-                  : input.selectedFile === file
-              }
-              onPress={() => input.handleFileSelect(file)}
-              disabled={disabled}
-              colors={colors}
-            />
-          ))}
-        </View>
-      </ScrollView>
-
-      {/* Rank Row */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.row}>
-          {RANKS.map((rank) => (
-            <ToggleButton
-              key={rank}
-              label={rank}
-              isSelected={input.selectedRank === rank}
-              onPress={() => input.handleRankSelect(rank)}
-              disabled={disabled}
-              colors={colors}
-            />
-          ))}
-        </View>
-      </ScrollView>
-
-      {/* Promotion Row */}
-      {input.showPromotion && (
-        <View style={styles.row}>
-          {PROMOTION_PIECES.map((piece) => (
-            <ToggleButton
-              key={`promo-${piece}`}
-              label={`=${piece.toUpperCase()}`}
-              isSelected={input.promotionPiece === piece}
-              onPress={() => input.handlePromotionSelect(piece)}
-              disabled={disabled}
-              colors={colors}
-            />
-          ))}
-        </View>
-      )}
-
-      {/* Submit / Clear Row */}
+      {/* Preview + Actions (bottom bar like web) */}
       <View style={styles.actionRow}>
-        <TouchableOpacity
+        <View
           style={[
-            styles.actionButton,
-            {
-              backgroundColor: colors.muted,
-              borderColor: colors.border,
-            },
+            styles.previewBar,
+            { backgroundColor: colors.background, borderColor: colors.border },
           ]}
-          onPress={input.resetAll}
-          disabled={disabled}
         >
-          <Text style={[styles.actionText, { color: colors.foreground }]}>
-            {t("aiGame.session.clear")}
+          <Text
+            style={[
+              styles.previewText,
+              {
+                color: input.previewText
+                  ? colors.foreground
+                  : colors.mutedForeground,
+              },
+            ]}
+          >
+            {input.previewText || t("aiGame.session.movePreview")}
           </Text>
-        </TouchableOpacity>
+          {hasSelections && (
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={input.resetAll}
+              disabled={disabled}
+            >
+              <Text
+                style={[
+                  styles.clearButtonText,
+                  { color: colors.mutedForeground },
+                ]}
+              >
+                {t("aiGame.session.clear")}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <TouchableOpacity
           style={[
-            styles.actionButton,
             styles.submitButton,
             {
               backgroundColor:
@@ -262,7 +380,7 @@ export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
         >
           <Text
             style={[
-              styles.actionText,
+              styles.submitButtonText,
               {
                 color:
                   input.isSubmittable && !disabled
@@ -329,33 +447,76 @@ function ToggleButton({
   );
 }
 
+type CheckboxPillProps = {
+  label: string;
+  isChecked: boolean;
+  onPress: () => void;
+  disabled?: boolean;
+  colors: ReturnType<typeof useTheme>["colors"];
+};
+
+function CheckboxPill({
+  label,
+  isChecked,
+  onPress,
+  disabled,
+  colors,
+}: CheckboxPillProps) {
+  return (
+    <View style={styles.checkboxPillRow}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled}
+        style={[
+          styles.checkboxPill,
+          {
+            backgroundColor: isChecked ? colors.primary + "1A" : "transparent",
+            borderColor: isChecked ? colors.primary : "transparent",
+            opacity: disabled ? 0.5 : 1,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.checkbox,
+            {
+              borderColor: isChecked ? colors.primary : colors.border,
+              backgroundColor: isChecked ? colors.primary : "transparent",
+            },
+          ]}
+        >
+          {isChecked && (
+            <Text
+              style={[styles.checkmark, { color: colors.primaryForeground }]}
+            >
+              {"\u2713"}
+            </Text>
+          )}
+        </View>
+        <Text
+          style={[
+            styles.checkboxPillLabel,
+            {
+              color: isChecked ? colors.primary : colors.foreground,
+            },
+          ]}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
-  },
-  preview: {
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  previewText: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    fontFamily: "monospace",
   },
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.xs,
     justifyContent: "center",
-  },
-  disambiguationContainer: {
-    gap: spacing.xs,
-  },
-  sectionLabel: {
-    fontSize: fontSize.xs,
-    textAlign: "center",
   },
   toggleButton: {
     minWidth: touchTarget.minSize,
@@ -382,24 +543,105 @@ const styles = StyleSheet.create({
   toggleTextSmall: {
     fontSize: fontSize.sm,
   },
+  disambiguationToggle: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  disambiguationToggleText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.bold,
+  },
+  disambiguationPanel: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    gap: spacing.sm,
+  },
+  disambiguationLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
+  equalsSign: {
+    width: touchTarget.minSize,
+    height: touchTarget.minSize,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  equalsSignText: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+  },
+  checkboxPillRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  checkboxPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkmark: {
+    fontSize: 14,
+    fontWeight: fontWeight.bold,
+    lineHeight: 18,
+  },
+  checkboxPillLabel: {
+    fontFamily: "monospace",
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.lg,
+  },
   actionRow: {
     flexDirection: "row",
     gap: spacing.sm,
     marginTop: spacing.xs,
   },
-  actionButton: {
+  previewBar: {
     flex: 1,
-    minHeight: touchTarget.minSize,
-    borderRadius: borderRadius.md,
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: touchTarget.minSize + spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+  },
+  previewText: {
+    flex: 1,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    fontFamily: "monospace",
+  },
+  clearButton: {
+    padding: spacing.sm,
+  },
+  clearButtonText: {
+    fontSize: fontSize.sm,
+  },
+  submitButton: {
+    minWidth: touchTarget.minSize + spacing.sm,
+    minHeight: touchTarget.minSize + spacing.sm,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
-  submitButton: {
-    flex: 2,
-  },
-  actionText: {
+  submitButtonText: {
     fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
   },

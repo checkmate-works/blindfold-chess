@@ -253,7 +253,8 @@
       "submit": "Submit",
       "clear": "Clear",
       "invalidMove": "Invalid move",
-      "disambiguation": "Disambiguation (optional)"
+      "disambiguation": "Disambiguation (optional)",
+      "sourceLabel": "Source"
     },
     "result": {
       "title": "Game Over",
