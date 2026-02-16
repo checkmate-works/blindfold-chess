@@ -5,11 +5,13 @@ This document outlines the technical decisions and implementation guidelines for
 ## Core Architecture
 
 ### Framework & Routing
+
 - **Next.js App Router** - Use App Router exclusively (no Pages Router)
 - **Server Components by Default** - Prefer Server Components for SEO benefits
 - **Route Groups** - Use route groups like `(landing)` for organization without affecting URLs
 
 ### SEO Optimization
+
 - **Server-Side Rendering** - Maximize SSR for better search engine crawling
 - **Link Components** - Always use Next.js Link with required `href` attributes for crawler accessibility
   - Reference: https://nextjs.org/learn/seo/on-page-seo#nextlink
@@ -18,19 +20,22 @@ This document outlines the technical decisions and implementation guidelines for
 ## Technology Stack
 
 ### Styling
+
 - **Tailwind CSS v4** - Latest alpha version, maintain latest updates
-- **CSS Variables** - Define theme colors in `globals.css`
+- **CSS Variables** - Theme color values are defined in `@blindfold-chess/ui` (`packages/ui/src/theme/`) and injected as CSS custom properties via `generateThemeCSS()` in layout.tsx. `globals.css` bridges these variables into Tailwind's `@theme` system.
 - **No Hardcoded Colors** - Use CSS variable-based utilities instead of direct color classes (e.g., `text-foreground` instead of `text-gray-800`)
 - **Dark Mode Support** - Implement with `next-themes` and CSS variables
 - **Minimal External CSS** - Avoid external CSS files, use Tailwind utilities inline
-- **Icons** - Use `react-icons` package for all icons (includes Font Awesome, Material Icons, etc.)
+- **Icons** - Use `@blindfold-chess/icons` for custom/chess-related icons (cross-platform, see `packages/icons/CLAUDE.md`). Use `react-icons` for general-purpose icons (Font Awesome, Material Icons, etc.)
 
 ### CSS Implementation Details
-- **@theme Directive** - Use Tailwind v4's `@theme` for custom utilities
+
+- **@theme Directive** - Use Tailwind v4's `@theme` in `globals.css` to bridge CSS custom properties into Tailwind utility classes
 - **@custom-variant** - Define dark mode variant with `@custom-variant dark`
-- **Theme Colors in globals.css** - Centralize all theme variables in one file
+- **globals.css** - Tailwind CSS integration layer only (Tailwind init, KaTeX import, dark variant, `@theme` bridge). Does NOT define color values — those live in `@blindfold-chess/ui`.
 
 ## Internationalization
+
 - **next-intl** - For i18n support
 - **URL Path-based Locales** - Use `/[locale]/` pattern
 - **Supported Languages** - English (`en`) and Japanese (`ja`)
@@ -38,14 +43,17 @@ This document outlines the technical decisions and implementation guidelines for
 ## Testing
 
 ### Framework
+
 - **Vitest** - Unit and integration testing framework
 
 ### Test File Organization
+
 - **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension
 - **Integration Tests** - Separate directory at `tests/integration/`
 - **E2E Tests** - Separate directory at `tests/e2e/`
 
 ### File Structure Examples
+
 ```
 src/components/Button/Button.test.tsx    # Component unit test
 src/lib/utils.test.ts                    # Utility unit test
@@ -56,23 +64,27 @@ tests/e2e/practice-flow.e2e.ts          # E2E test
 ## Code Quality
 
 ### Development Tools
+
 - **ESLint** - Automated linting
 - **Prettier** - Code formatting
 - **Husky** - Git hooks for pre-commit checks
 - **lint-staged** - Run linters on staged files
 
 ### Best Practices
+
 - **Component Colocation** - Keep related files close to their components
 - **Image Optimization** - Always use Next.js Image component
 - **Font Optimization** - Use `next/font` for web fonts (Inter)
 
 ### Import Path Convention
+
 - **Same Directory** - Use relative imports: `import { Foo } from './Foo'`
 - **Parent Directory** - Use relative imports: `import { Bar } from '../Bar'`
 - **Two or More Levels Up** - Use absolute imports with `@` alias: `import { Baz } from '@/app/[locale]/_components/Baz'`
 - **lib Directory** - Always use `@/lib/...` for shared utilities and types
 
 ### Import Order Convention
+
 Imports are automatically sorted by Prettier using `@trivago/prettier-plugin-sort-imports` in the following order:
 
 1. React imports
@@ -85,6 +97,7 @@ Imports are automatically sorted by Prettier using `@trivago/prettier-plugin-sor
 Groups are separated by blank lines, and specifiers within imports are sorted alphabetically.
 
 **Examples:**
+
 ```typescript
 // ✓ Good - proper import path usage
 import { Button } from './Button';
@@ -111,6 +124,7 @@ import { Button } from './Button';
 ```
 
 ## File Structure
+
 - **Unopinionated Approach** - Follow Next.js flexibility
 - **No Forced Structure** - Organize based on project needs
 - **Global Styles** - Keep in `src/app/globals.css`
@@ -121,6 +135,7 @@ Feature-specific documentation is written as TSDoc comments in each feature's `p
 This keeps documentation close to the code and avoids bloating this global file.
 
 ### Convention
+
 - **Feature Name** - First line format: `Feature Name (日本語名)`. The Japanese subtitle enables Japanese prompt engineering while keeping the primary name in English for OSS compatibility.
 - **@description** - What the feature does (purpose and goals)
 - **@flow** - How the feature works (user journey / phase transitions)
@@ -128,6 +143,7 @@ This keeps documentation close to the code and avoids bloating this global file.
 Avoid documenting information that is self-evident from the code (routes, components, query params with meaningful names).
 
 ## Important Notes
+
 - Always maintain latest package versions unless there's a breaking change
 - Prioritize performance and SEO in all decisions
 - Keep the codebase simple and maintainable

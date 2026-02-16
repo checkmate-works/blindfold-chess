@@ -1,0 +1,34 @@
+# Blindfold Chess Monorepo
+
+## Monorepo Structure
+
+This project is a pnpm + Turborepo monorepo.
+
+### Apps
+
+| App        | Path          | Description                                                                            |
+| ---------- | ------------- | -------------------------------------------------------------------------------------- |
+| **web**    | `apps/web`    | Next.js web application (App Router, SSR, i18n). See `apps/web/CLAUDE.md` for details. |
+| **mobile** | `apps/mobile` | React Native (Expo) mobile application                                                 |
+
+### Packages
+
+| Package                            | Path                     | Description                                                                                                                |
+| ---------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| **@blindfold-chess/types**         | `packages/types`         | Shared TypeScript type definitions (chess pieces, board, etc.)                                                             |
+| **@blindfold-chess/features**      | `packages/features`      | Platform-independent game logic and algorithms (coordinate quiz, diagonal quiz, legal moves, route planner, AI game, etc.) |
+| **@blindfold-chess/ui**            | `packages/ui`            | Shared UI theme — color definitions for light/dark mode, CSS generation via `generateThemeCSS()`                           |
+| **@blindfold-chess/icons**         | `packages/icons`         | Cross-platform SVG icon components. See `packages/icons/CLAUDE.md` for architecture and how to add icons.                  |
+| **@blindfold-chess/eslint-config** | `packages/eslint-config` | Shared ESLint configuration                                                                                                |
+
+### Key Design Principles
+
+- **Platform independence in packages**: Packages under `packages/` should not depend on platform-specific APIs. Platform adaptation is handled at the app level or via conditional exports (e.g., `@blindfold-chess/icons` uses the `exports` field in package.json to switch between web and native renderers).
+- **Theme unification**: Theme colors are defined once in `@blindfold-chess/ui` and shared across web and mobile. Web injects them as CSS custom properties via `generateThemeCSS()`; mobile uses them directly as JavaScript values.
+
+## Development
+
+- **Package manager**: pnpm (v10)
+- **Build orchestration**: Turborepo
+- **Node.js**: >=24.0.0 <25
+- **Scripts**: `pnpm build`, `pnpm dev`, `pnpm lint`, `pnpm typecheck`, `pnpm test`
