@@ -1,3 +1,16 @@
+/*
+ * Tailwind CSS integration layer for the web app.
+ *
+ * NOTE: The actual theme color values are defined in @blindfold-chess/ui (packages/ui/src/theme/).
+ * Those values are injected as CSS custom properties (--color-*) via generateThemeCSS() in layout.tsx.
+ *
+ * This file is responsible for:
+ * 1. Initializing Tailwind CSS v4
+ * 2. Importing third-party stylesheets (e.g., KaTeX)
+ * 3. Defining the dark mode custom variant for Tailwind v4
+ * 4. Bridging CSS custom properties into Tailwind's @theme system
+ *    so that utility classes like bg-background, text-primary, etc. are generated
+ */
 @import 'tailwindcss';
 @import 'katex/dist/katex.min.css';
 
