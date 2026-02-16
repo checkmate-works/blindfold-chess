@@ -11,7 +11,7 @@ import type { SkillLevel } from '@/lib/types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { FormattedPgn, FormattedPgnMove } from '../_lib/pgn-parser';
+import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 
 type Props = {
   locale: Locale;

@@ -16,8 +16,8 @@ import {
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
-import type { FormattedPgn, FormattedPgnMove } from '../_lib/pgn-parser';
-import { formatPgnToText } from '../_lib/pgn-parser';
+import { formatPgnToText } from '../_lib';
+import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 import { MoveNavigationControls } from './MoveNavigationControls';
 
 type Props = {

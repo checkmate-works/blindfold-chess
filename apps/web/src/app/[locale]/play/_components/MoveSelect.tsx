@@ -6,7 +6,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 import { FaChevronDown } from 'react-icons/fa';
 
-import { sortMoves } from '../_lib/move-sorter';
+import { sortMoves } from '../_lib';
 
 type Props = {
   fen: string;

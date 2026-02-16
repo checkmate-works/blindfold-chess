@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { useMoveSuggestions } from '../_hooks/use-move-suggestions';
+import { useMoveSuggestions } from '../_hooks';
 
 // --- SuggestionInput Component ---
 

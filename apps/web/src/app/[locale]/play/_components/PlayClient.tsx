@@ -16,15 +16,18 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useAiMoveOrchestration } from '../_hooks/use-ai-move-orchestration';
-import { useAiVersus } from '../_hooks/use-ai-versus';
-import { useAutoSave } from '../_hooks/use-auto-save';
-import { useConfirmationDialogs } from '../_hooks/use-confirmation-dialogs';
-import { parseUrlSearchParams, useGameInitialization } from '../_hooks/use-game-initialization';
-import { useMoveNavigation } from '../_hooks/use-move-navigation';
-import { useNotation } from '../_hooks/use-notation';
-import type { BoardStatus } from '../_lib/game-state-service';
-import { GameStateService } from '../_lib/game-state-service';
+import {
+  parseUrlSearchParams,
+  useAiMoveOrchestration,
+  useAiVersus,
+  useAutoSave,
+  useConfirmationDialogs,
+  useGameInitialization,
+  useMoveNavigation,
+  useNotation,
+} from '../_hooks';
+import { GameStateService } from '../_lib';
+import type { BoardStatus } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
 import { ButtonInput } from './ButtonInput';
 import { ConfirmationModal } from './ConfirmationModal';
