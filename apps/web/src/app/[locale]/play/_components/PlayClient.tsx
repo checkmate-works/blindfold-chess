@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { SpinnerIcon } from '@blindfold-chess/icons';
+import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 import { FaEye, FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
@@ -30,7 +30,6 @@ import { ButtonInput } from './ButtonInput';
 import { ConfirmationModal } from './ConfirmationModal';
 import { GameOverContent } from './GameOverContent';
 import { GameSettingsModal } from './GameSettingsModal';
-import { FlagIcon, UndoIcon } from './Icons';
 import { MoveInput } from './MoveInput';
 import { MoveSelect } from './MoveSelect';
 import { MovesPanel } from './MovesPanel';

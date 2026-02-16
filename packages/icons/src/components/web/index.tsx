@@ -1,9 +1,15 @@
 import type { SVGProps } from "react";
 
 import { getPieceData } from "../../data/chess-pieces";
+import { flagData } from "../../data/flag";
 import { spinnerData } from "../../data/spinner";
-import type { SvgElement } from "../../data/types";
-import type { ChessPieceIconProps, SpinnerIconProps } from "../types";
+import type { SvgElement, StrokeIconSvgData } from "../../data/types";
+import { undoData } from "../../data/undo";
+import type {
+  ChessPieceIconProps,
+  SpinnerIconProps,
+  StrokeIconProps,
+} from "../types";
 
 function renderElement(element: SvgElement, index: number): React.ReactNode {
   if (element.type === "circle") {
@@ -89,6 +95,48 @@ export function ChessPieceIcon({
   );
 }
 
-export type { ChessPieceIconProps, SpinnerIconProps } from "../types";
+type WebStrokeIconProps = StrokeIconProps & {
+  className?: string;
+} & Omit<SVGProps<SVGSVGElement>, "viewBox" | "children">;
+
+function createStrokeIcon(data: StrokeIconSvgData, displayName: string) {
+  function Icon({
+    size = 24,
+    color = "currentColor",
+    className,
+    ...rest
+  }: WebStrokeIconProps) {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox={data.viewBox}
+        width={size}
+        height={size}
+        fill="none"
+        stroke={color}
+        strokeWidth={data.strokeWidth}
+        strokeLinecap={data.strokeLinecap}
+        strokeLinejoin={data.strokeLinejoin}
+        className={className}
+        {...rest}
+      >
+        {data.paths.map((d, i) => (
+          <path key={i} d={d} />
+        ))}
+      </svg>
+    );
+  }
+  Icon.displayName = displayName;
+  return Icon;
+}
+
+export const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
+export const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
+
+export type {
+  ChessPieceIconProps,
+  SpinnerIconProps,
+  StrokeIconProps,
+} from "../types";
 export type { PieceType } from "../../data/chess-pieces";
 export type { PieceColor } from "../../data/types";

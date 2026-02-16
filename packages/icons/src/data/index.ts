@@ -1,5 +1,6 @@
 export { getPieceData } from "./chess-pieces";
 export type { PieceType } from "./chess-pieces";
+export { flagData } from "./flag";
 export { spinnerData } from "./spinner";
 export type {
   SvgPathData,
@@ -9,4 +10,6 @@ export type {
   PieceColor,
   PieceSvgData,
   SpinnerSvgData,
+  StrokeIconSvgData,
 } from "./types";
+export { undoData } from "./undo";

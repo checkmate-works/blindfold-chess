@@ -11,3 +11,8 @@ export type ChessPieceIconProps = {
   color: PieceColor;
   size?: number;
 };
+
+export type StrokeIconProps = {
+  size?: number;
+  color?: string;
+};

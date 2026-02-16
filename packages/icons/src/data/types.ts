@@ -43,3 +43,11 @@ export type SpinnerSvgData = {
   circle: SvgCircleData & { opacity: number };
   path: SvgPathData & { opacity: number };
 };
+
+export type StrokeIconSvgData = {
+  viewBox: string;
+  strokeWidth: string;
+  strokeLinecap: "butt" | "round" | "square";
+  strokeLinejoin: "miter" | "round" | "bevel";
+  paths: string[];
+};

@@ -2,9 +2,15 @@ import type { StyleProp, ViewStyle } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 
 import { getPieceData } from "../../data/chess-pieces";
+import { flagData } from "../../data/flag";
 import { spinnerData } from "../../data/spinner";
-import type { SvgElement } from "../../data/types";
-import type { ChessPieceIconProps, SpinnerIconProps } from "../types";
+import type { SvgElement, StrokeIconSvgData } from "../../data/types";
+import { undoData } from "../../data/undo";
+import type {
+  ChessPieceIconProps,
+  SpinnerIconProps,
+  StrokeIconProps,
+} from "../types";
 
 function renderElement(element: SvgElement, index: number): React.ReactNode {
   if (element.type === "circle") {
@@ -79,6 +85,45 @@ export function ChessPieceIcon({
   );
 }
 
-export type { ChessPieceIconProps, SpinnerIconProps } from "../types";
+type NativeStrokeIconProps = StrokeIconProps & {
+  style?: StyleProp<ViewStyle>;
+};
+
+function createStrokeIcon(data: StrokeIconSvgData, displayName: string) {
+  function Icon({
+    size = 24,
+    color = "currentColor",
+    style,
+  }: NativeStrokeIconProps) {
+    return (
+      <Svg
+        viewBox={data.viewBox}
+        width={size}
+        height={size}
+        fill="none"
+        stroke={color}
+        strokeWidth={data.strokeWidth}
+        strokeLinecap={data.strokeLinecap}
+        strokeLinejoin={data.strokeLinejoin}
+        style={style}
+      >
+        {data.paths.map((d, i) => (
+          <Path key={i} d={d} />
+        ))}
+      </Svg>
+    );
+  }
+  Icon.displayName = displayName;
+  return Icon;
+}
+
+export const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
+export const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
+
+export type {
+  ChessPieceIconProps,
+  SpinnerIconProps,
+  StrokeIconProps,
+} from "../types";
 export type { PieceType } from "../../data/chess-pieces";
 export type { PieceColor } from "../../data/types";
