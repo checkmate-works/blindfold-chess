@@ -389,7 +389,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         params.set('fen', startingFen);
       }
 
-      router.push(`/${locale}/game/new?${params.toString()}`);
+      router.push(`/${locale}/games/new?${params.toString()}`);
     },
     [moves, playerSide, skillLevel, locale, router, startingFen]
   );

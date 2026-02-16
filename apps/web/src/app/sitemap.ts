@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/practice/fen',
     '/practice/knight-tour',
     '/practice/move-sequence',
-    '/game/new',
+    '/games/new',
     '/play',
   ];
 

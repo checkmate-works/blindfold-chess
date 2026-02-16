@@ -24,7 +24,7 @@ test.describe('Critical Game Flow', () => {
       await expect(limitHeading).toBeVisible();
     } else {
       // When game can be started
-      await expect(page).toHaveURL(/.*game\/new/);
+      await expect(page).toHaveURL(/.*games\/new/);
 
       // Verify "Start Game" button is visible
       const startButton = page.getByRole('button', { name: /start game/i });
@@ -34,7 +34,7 @@ test.describe('Critical Game Flow', () => {
 
   // 2. White player → Black AI response
   test('should respond with AI move when player (white) moves', async ({ page }) => {
-    await page.goto('/en/game/new');
+    await page.goto('/en/games/new');
 
     // Select white (should be selected by default)
     await page.getByRole('button', { name: /play as white/i }).click();
@@ -71,7 +71,7 @@ test.describe('Critical Game Flow', () => {
 
   // 3. Black player → White AI response
   test('should respond with AI move when player (black) moves', async ({ page }) => {
-    await page.goto('/en/game/new');
+    await page.goto('/en/games/new');
 
     // Select black
     await page.getByRole('button', { name: /play as black/i }).click();
@@ -106,7 +106,7 @@ test.describe('Critical Game Flow', () => {
   // 4. Resume game on AI turn
   test('should auto-play AI move when resuming game on AI turn', async ({ page }) => {
     // Step 1: Start game as black
-    await page.goto('/en/game/new');
+    await page.goto('/en/games/new');
     await page.getByRole('button', { name: /play as black/i }).click();
     await page.getByRole('button', { name: /start game/i }).click();
 
@@ -182,7 +182,7 @@ test.describe('Critical Game Flow', () => {
     await page.getByRole('button', { name: /new game/i }).click();
 
     // Wait for navigation to new game page
-    await page.waitForURL(/.*game\/new/, { timeout: 10000 });
+    await page.waitForURL(/.*games\/new/, { timeout: 10000 });
 
     // Wait for GameLimitCheck component's useEffect to execute
     // Wait for either scenario to be displayed

@@ -7,7 +7,7 @@
  * moves in algebraic notation while mentally tracking the position.
  *
  * @flow
- * 1. Game Setup: Configure player color, AI skill level (1-20) on /game/new
+ * 1. Game Setup: Configure player color, AI skill level (1-20) on /games/new
  * 2. Active Play: Input moves via text or dropdown, AI responds automatically
  *    - Board visibility toggle for checking position
  *    - Move history with navigation to review positions

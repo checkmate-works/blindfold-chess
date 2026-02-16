@@ -87,7 +87,7 @@ export function ToastContainer() {
     const handleGameLimitStartError = () => {
       if (processingToastRef.current) return;
       processingToastRef.current = true;
-      router.push(`/${locale}/game/new`);
+      router.push(`/${locale}/games/new`);
       setTimeout(() => {
         processingToastRef.current = false;
       }, 1000);

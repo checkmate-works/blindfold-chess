@@ -25,7 +25,7 @@ As a result, your overall chess strength will improve.
 
 You can play blindfold chess against Stockfish, the most popular chess engine in the world.
 
-[Start Playing](/en/game/new)
+[Start Playing](/en/games/new)
 
 ### Rich Training Menu
 

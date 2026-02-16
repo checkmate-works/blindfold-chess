@@ -49,7 +49,7 @@ export function GameOverContent({
   const router = useRouter();
 
   const handleNewGame = () => {
-    window.location.href = `/${locale}/game/new`;
+    window.location.href = `/${locale}/games/new`;
   };
 
   const handlePostmortem = () => {

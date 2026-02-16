@@ -23,6 +23,19 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
+  // Permanent redirects for renamed routes
+  // TODO: Remove this redirect after ~3-6 months (added 2026-02-16).
+  //       Once Google Search Console shows no traffic to /game/new, it is safe to remove.
+  async redirects() {
+    return [
+      {
+        source: '/:locale/game/new',
+        destination: '/:locale/games/new',
+        permanent: true,
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [

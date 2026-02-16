@@ -23,7 +23,7 @@ export function EmptyGameList({ locale }: Props) {
             {t.rich('startGuidance', {
               link: (chunks) => (
                 <Link
-                  href={`/${locale}/game/new`}
+                  href={`/${locale}/games/new`}
                   className="text-primary font-medium hover:underline focus-visible:underline focus:outline-none"
                 >
                   {chunks}

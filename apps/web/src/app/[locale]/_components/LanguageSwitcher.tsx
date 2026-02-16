@@ -34,7 +34,7 @@ export function LanguageSwitcher({ currentLocale }: Props) {
       '/practice/algebraic-notation',
       '/practice/square-colors',
       '/practice/position-memory',
-      '/game/new',
+      '/games/new',
     ];
 
     return restrictedPaths.some((path) => pathWithoutLocale.startsWith(path));

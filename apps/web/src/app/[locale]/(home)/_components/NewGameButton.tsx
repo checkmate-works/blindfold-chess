@@ -10,7 +10,7 @@ export async function NewGameButton({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'home' });
 
   return (
-    <Link href={`/${locale}/game/new`} className="w-full">
+    <Link href={`/${locale}/games/new`} className="w-full">
       <Button
         variant="primary"
         size="lg"
