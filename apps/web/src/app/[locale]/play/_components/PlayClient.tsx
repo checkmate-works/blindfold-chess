@@ -5,10 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
-import { FaEye, FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
@@ -23,18 +21,17 @@ import {
   useAutoSave,
   useConfirmationDialogs,
   useGameInitialization,
+  useGamePersistence,
   useMoveNavigation,
   useNotation,
 } from '../_hooks';
 import { GameStateService } from '../_lib';
 import type { BoardStatus } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
-import { ButtonInput } from './ButtonInput';
 import { ConfirmationModal } from './ConfirmationModal';
+import { GameInProgressPanel } from './GameInProgressPanel';
 import { GameOverContent } from './GameOverContent';
 import { GameSettingsModal } from './GameSettingsModal';
-import { MoveInput } from './MoveInput';
-import { MoveSelect } from './MoveSelect';
 import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
@@ -85,9 +82,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [savedGameStatus, setSavedGameStatus] = useState<
-    'in_progress' | 'win' | 'loss' | 'draw' | null
-  >(null);
+
+  // Game persistence hook
+  const { isLoadingFromStorage, savedGameStatus, loadedGameData } = useGamePersistence({
+    initialGameId,
+    initialStartingFen,
+  });
 
   // Navigation hook
   const {
@@ -106,33 +106,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
   const previousMovesLength = useRef(moves.length);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-
-  // Load saved game status if gameId exists
-  useEffect(() => {
-    const loadSavedGameStatus = async () => {
-      if (initialGameId) {
-        const gameRepository = new LocalStorageGameRepository();
-        const savedGame = await gameRepository.load(initialGameId);
-        if (savedGame) {
-          setSavedGameStatus(savedGame.status);
-          if (savedGame.status !== 'in_progress') {
-            if (savedGame.status === 'loss') {
-              setGameStatus('checkmate');
-              setPlayerResult('loss');
-            } else if (savedGame.status === 'win') {
-              setGameStatus('checkmate');
-              setPlayerResult('win');
-            } else if (savedGame.status === 'draw') {
-              setGameStatus('draw');
-              setPlayerResult('draw');
-            }
-            setShouldMakeAiMove(false);
-          }
-        }
-      }
-    };
-    loadSavedGameStatus();
-  }, [initialGameId]);
 
   const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
     if (initialGameId) {
@@ -157,6 +130,24 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     return playerSide === 'black';
   });
 
+  // Apply loaded game data from persistence hook
+  useEffect(() => {
+    if (loadedGameData) {
+      if (loadedGameData.startingFen) {
+        setStartingFen(loadedGameData.startingFen);
+      }
+      if (loadedGameData.moves.length > 0) {
+        setMovesTo(loadedGameData.moves);
+        setLastMove(loadedGameData.lastMove);
+      }
+      if (loadedGameData.gameStatus !== 'in_progress') {
+        setGameStatus(loadedGameData.gameStatus);
+        setPlayerResult(loadedGameData.playerResult);
+        setShouldMakeAiMove(false);
+      }
+    }
+  }, [loadedGameData, setMovesTo]);
+
   // Map board status to game outcome for repository
   const mapBoardStatusToOutcome = useCallback(
     (bs: BoardStatus, pr: 'win' | 'loss' | 'draw' | null): GameOutcome => {
@@ -167,16 +158,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     },
     []
   );
-
-  // Track if we're loading from localStorage
-  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(!!initialGameId);
-
-  // Clear save toast flag on mount when we have a gameId
-  useEffect(() => {
-    if (initialGameId && typeof window !== 'undefined') {
-      sessionStorage.removeItem('blindfold_chess_show_save_toast');
-    }
-  }, [initialGameId]);
 
   // Auto-save hook
   const { markPlayerInteraction, gameId } = useAutoSave({
@@ -259,48 +240,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     },
     [startingFen]
   );
-
-  // Load moves from localStorage on client-side
-  useEffect(() => {
-    const loadGame = async () => {
-      if (initialGameId && typeof window !== 'undefined') {
-        setIsLoadingFromStorage(true);
-        sessionStorage.removeItem('blindfold_chess_show_save_toast');
-
-        const gameRepository = new LocalStorageGameRepository();
-        const savedGame = await gameRepository.load(initialGameId);
-
-        if (savedGame) {
-          if (savedGame.startingFen) {
-            setStartingFen(savedGame.startingFen);
-          }
-
-          if (savedGame.moves && savedGame.moves.length > 0) {
-            setMovesTo(savedGame.moves);
-            setLastMove(getLastMoveDetails(savedGame.moves, savedGame.startingFen));
-          }
-
-          if (savedGame.status && savedGame.status !== 'in_progress') {
-            setSavedGameStatus(savedGame.status);
-            if (savedGame.status === 'loss') {
-              setGameStatus('checkmate');
-              setPlayerResult('loss');
-            } else if (savedGame.status === 'win') {
-              setGameStatus('checkmate');
-              setPlayerResult('win');
-            } else if (savedGame.status === 'draw') {
-              setGameStatus('draw');
-              setPlayerResult('draw');
-            }
-          }
-        }
-
-        setIsLoadingFromStorage(false);
-      }
-    };
-
-    loadGame();
-  }, [initialGameId, setMovesTo, getLastMoveDetails]);
 
   // Initialize on mount with initial moves
   useEffect(() => {
@@ -530,119 +469,23 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
           <div className="bg-card rounded-lg shadow-lg p-4">
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && (
-              <div className="flex flex-col gap-6">
-                {/* Move Input */}
-                <div>
-                  {isPlayerTurn ? (
-                    <>
-                      {preferences.moveInputMode === 'select' ? (
-                        <MoveSelect
-                          fen={currentFen}
-                          onSubmit={handleSubmitMove}
-                          onChange={() => {
-                            if (error) setError(null);
-                          }}
-                          disabled={isLoading}
-                          placeholder={t('selectMove')}
-                        />
-                      ) : preferences.moveInputMode === 'button' ? (
-                        <ButtonInput
-                          fen={currentFen}
-                          onSubmit={handleSubmitMove}
-                          disabled={isLoading}
-                        />
-                      ) : (
-                        <MoveInput
-                          value={moveInput}
-                          onChange={(value) => {
-                            setMoveInput(value);
-                            if (error) setError(null);
-                          }}
-                          onSubmit={handleSubmitMove}
-                          disabled={isLoading}
-                          placeholder={t('inputMove')}
-                          showSuggestions={preferences.enableAutoComplete}
-                          showSubmitButton={true}
-                        />
-                      )}
-                      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <p>{isLoading ? t('aiThinking') : t('yourMove')}</p>
-                      {isLoading && <SpinnerIcon size={16} className="animate-spin text-primary" />}
-                    </div>
-                  )}
-                </div>
-
-                {/* Toggle Button */}
-                {isPlayerTurn && (
-                  <div className="flex items-center justify-end">
-                    <button
-                      onClick={() => {
-                        const nextMode =
-                          preferences.moveInputMode === 'text'
-                            ? 'select'
-                            : preferences.moveInputMode === 'select'
-                              ? 'button'
-                              : 'text';
-                        updatePreferences({
-                          moveInputMode: nextMode,
-                        });
-                      }}
-                      className="p-2 border border-border rounded-md hover:bg-muted"
-                      title={t('switchInputMode')}
-                    >
-                      {preferences.moveInputMode === 'text' ? (
-                        <FaList className="w-4 h-4" />
-                      ) : preferences.moveInputMode === 'select' ? (
-                        <FaGamepad className="w-4 h-4" />
-                      ) : (
-                        <FaKeyboard className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-4 md:gap-2 justify-center">
-                  <button
-                    onClick={() => setIsBoardVisible(true)}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                    title={t('showBoard')}
-                  >
-                    <FaEye className="w-4 h-4" />
-                    <span className="hidden md:inline">{t('showBoard')}</span>
-                  </button>
-                  <button
-                    onClick={confirmationDialogs.undo.open}
-                    disabled={moves.length < 2}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center justify-center gap-2"
-                    title={t('undo')}
-                  >
-                    <UndoIcon className="w-4 h-4" />
-                    <span className="hidden md:inline">{t('undo')}</span>
-                  </button>
-                  <button
-                    onClick={confirmationDialogs.resign.open}
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                    title={t('resign')}
-                  >
-                    <FlagIcon className="w-4 h-4" />
-                    <span className="hidden md:inline">{t('resign')}</span>
-                  </button>
-                </div>
-
-                {/* Settings Links */}
-                <div className="text-center">
-                  <button
-                    onClick={() => setShowSkillLevelSettingsModal(true)}
-                    className="text-sm text-muted-foreground hover:text-foreground underline"
-                  >
-                    {t('configureSkillLevel')}
-                  </button>
-                </div>
-              </div>
+              <GameInProgressPanel
+                isPlayerTurn={isPlayerTurn}
+                isLoading={isLoading}
+                preferences={preferences}
+                updatePreferences={updatePreferences}
+                currentFen={currentFen}
+                moveInput={moveInput}
+                setMoveInput={setMoveInput}
+                error={error}
+                setError={setError}
+                handleSubmitMove={handleSubmitMove}
+                moves={moves}
+                confirmationDialogs={confirmationDialogs}
+                onShowBoard={() => setIsBoardVisible(true)}
+                onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
+                t={t}
+              />
             )}
 
             {/* Game Over Content */}
