@@ -12,6 +12,7 @@ This guide explains how to set up the CookieYes cookie consent banner for GDPR/C
 ## What is CookieYes?
 
 CookieYes is a Google-certified Consent Management Platform (CMP) that:
+
 - Displays cookie consent banners
 - Integrates with Google Consent Mode v2
 - Supports IAB TCF 2.2 framework
@@ -73,13 +74,18 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 2. Select "Manual Installation"
 3. You'll see code like this:
    ```html
-   <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/YOUR-ID-HERE/script.js"></script>
+   <script
+     id="cookieyes"
+     type="text/javascript"
+     src="https://cdn-cookieyes.com/client_data/YOUR-ID-HERE/script.js"
+   ></script>
    ```
 4. Copy the ID from the URL (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
 
 ### 5. Add to Environment Variables
 
 1. Create or edit `.env.local` in your project root:
+
    ```bash
    NEXT_PUBLIC_COOKIEYES_ID=your-cookieyes-id-here
    ```
@@ -93,9 +99,11 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 ### 6. Test the Implementation
 
 1. **Local Testing**:
+
    ```bash
    pnpm dev
    ```
+
    - Open your browser
    - The cookie banner should appear at the bottom
    - Try accepting/rejecting cookies
@@ -140,6 +148,7 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 ### Banner Not Appearing
 
 1. **Check Environment Variable**:
+
    ```bash
    # Verify the variable is set
    echo $NEXT_PUBLIC_COOKIEYES_ID
@@ -181,6 +190,7 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 ### Multi-Language Support (English + Japanese)
 
 **How it works automatically:**
+
 - Your Next.js site already sets `<html lang="en">` or `<html lang="ja">` based on the URL
 - CookieYes automatically detects this and displays the banner in the matching language
 - No additional configuration needed for basic functionality
@@ -193,6 +203,7 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
    - Select "Japanese (日本語)"
 
 2. **Customize Japanese Text**:
+
    ```
    Banner Title: クッキーの使用について
    Banner Description: 当サイトでは、ユーザー体験の向上と広告配信のためにクッキーを使用しています。
@@ -212,12 +223,14 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
    - The language switches automatically based on the page URL
 
 **Important Notes:**
+
 - ✅ **Free Plan**: Language detection from HTML `lang` attribute works on free plan
 - ✅ **Automatic Switching**: Works seamlessly with Next.js i18n routing
 - ❌ **Auto-Translation**: Automatic AI translation requires paid plan ($10/month)
 - ✅ **Manual Translation**: You can manually set text for each language on free plan
 
 **Fallback Behavior:**
+
 - If Japanese translation is not configured, it will show English (default language)
 - Configure both languages in CookieYes dashboard for full multi-language support
 
@@ -243,6 +256,7 @@ Add a "Cookie Settings" link to your footer:
 ### A/B Testing Banner Designs
 
 CookieYes allows A/B testing different:
+
 - Banner positions
 - Button texts
 - Color schemes
@@ -275,6 +289,7 @@ For most small-to-medium websites, the free plan is sufficient.
 ## Support
 
 If you encounter issues:
+
 1. Check [CookieYes Help Center](https://www.cookieyes.com/support/)
 2. Contact CookieYes Support (email in dashboard)
 3. Review this project's GitHub issues
