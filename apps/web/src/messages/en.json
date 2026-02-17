@@ -250,6 +250,12 @@
     "score": "Score",
     "correctAnswers": "Correct Answers",
     "relatedLearning": "Related Learning",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "Bishop Movement",
+        "description": "Learn how the bishop moves diagonally across the board"
+      }
+    },
     "problemDetails": "Problem Details",
     "session": "Session",
     "problem": "Problem",

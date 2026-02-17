@@ -251,6 +251,12 @@
     "score": "スコア",
     "correctAnswers": "正解数",
     "relatedLearning": "関連する学習",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "ビショップの動き",
+        "description": "ビショップの斜めの動きを学ぶ"
+      }
+    },
     "problemDetails": "問題ごとの詳細",
     "session": "セッション",
     "problem": "問題",

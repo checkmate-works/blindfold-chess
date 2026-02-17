@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameTimer } from '../../_hooks/useGameTimer';
@@ -12,29 +14,20 @@ import {
   normalizeDiagonal,
 } from '../_lib/utils';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
-import { DiagonalQuizResult } from './DiagonalQuizResult';
-import type { QuestionResult } from './DiagonalQuizResult';
+import type { QuestionResult } from './DiagonalQuizProblemList';
 
 type Props = {
   locale: Locale;
   initialTimeLimit: number;
 };
 
-type GameStats = {
-  correct: number;
-  incorrect: number;
-  totalTime: number;
-  averageTime: number;
-};
-
 export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props) {
+  const router = useRouter();
   const timeLimit = initialTimeLimit;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [squares, setSquares] = useState<string[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [questionResults, setQuestionResults] = useState<QuestionResult[]>([]);
-  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
-  const [questionTimes, setQuestionTimes] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [lastAnswer, setLastAnswer] = useState<{
@@ -42,6 +35,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const hasStarted = useRef(false);
 
   // Countdown state
@@ -49,17 +43,19 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   const [hasMounted, setHasMounted] = useState(false);
 
   // Timer hook
-  const isPlaying = squares.length > 0 && !isFinished && countdown === null && !showResult;
+  const isPlaying =
+    squares.length > 0 && !isFinished && countdown === null && !showResult && !isPaused;
 
-  const {
-    timeElapsed,
-    // totalTime,
-    reset: resetTimer,
-  } = useGameTimer({
+  const { timeElapsed, totalTime } = useGameTimer({
     timeLimit,
     isActive: isPlaying,
     onTimeLimitReached: useCallback(() => setIsFinished(true), []),
   });
+
+  // Handle pause toggle
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -69,7 +65,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
     const newSquares = generateSquareSequence(100);
     setSquares(newSquares);
-    setQuestionStartTime(Date.now());
   }, []);
 
   // Scroll to session element after mount
@@ -104,7 +99,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
   const handleAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {
-      if (isFinished || countdown !== null || showResult) return;
+      if (isFinished || countdown !== null || showResult || isPaused) return;
 
       const currentSquare = squares[currentIndex];
       const { diagonal, antiDiagonal } = getDiagonals(currentSquare);
@@ -119,11 +114,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         normalizeDiagonal(antiDiagonalAnswer) === normalizeDiagonal(antiDiagonal);
 
       const isCorrect = diagonalCorrect && antiDiagonalCorrect;
-
-      // Update timing
-      const now = Date.now();
-      const questionTime = now - questionStartTime;
-      setQuestionTimes((prev) => [...prev, questionTime / 1000]);
 
       setAnswers((prev) => [...prev, isCorrect]);
       setQuestionResults((prev) => [
@@ -150,69 +140,43 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         () => {
           setShowResult(false);
           setCurrentIndex((prev) => prev + 1);
-          setQuestionStartTime(Date.now());
         },
         isCorrect ? 1000 : 2000
       );
     },
-    [currentIndex, squares, isFinished, questionStartTime, countdown, showResult]
+    [currentIndex, squares, isFinished, countdown, showResult, isPaused]
   );
 
-  const getStats = (): GameStats => {
-    const correct = answers.filter((a) => a).length;
-    const incorrect = answers.filter((a) => !a).length;
-    const averageTime =
-      questionTimes.length > 0
-        ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length
-        : 0;
+  // Redirect on finish
+  useEffect(() => {
+    if (isFinished) {
+      const correct = answers.filter((a) => a).length;
+      const total = answers.length;
 
-    return { correct, incorrect, totalTime: 0, averageTime };
-  };
+      // Serialize results
+      const serializedData = JSON.stringify(
+        questionResults.map((r) => ({
+          s: r.square,
+          c: r.isCorrect ? 1 : 0,
+          dc: r.isDiagonalCorrect ? 1 : 0,
+          ac: r.isAntiDiagonalCorrect ? 1 : 0,
+          cd: r.correctDiagonal,
+          ca: r.correctAntiDiagonal,
+          ud: r.userDiagonal,
+          ua: r.userAntiDiagonal,
+        }))
+      );
 
-  const handlePlayAgain = () => {
-    const newSquares = generateSquareSequence(100);
-    setSquares(newSquares);
-    setCurrentIndex(0);
-    setAnswers([]);
-    setQuestionResults([]);
-    setQuestionTimes([]);
-    setShowResult(false);
-    setLastAnswer(null);
-    setIsFinished(false);
-    setCountdown(3);
-    setQuestionStartTime(Date.now());
+      const params = new URLSearchParams();
+      params.set('score', correct.toString());
+      params.set('total', total.toString());
+      params.set('time', totalTime.toString());
+      params.set('timeLimit', timeLimit.toString());
+      params.set('data', encodeURIComponent(serializedData));
 
-    setTimeout(() => {
-      const element = document.getElementById('diagonal-quiz-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-
-    // Reset timer
-    resetTimer();
-  };
-
-  if (isFinished) {
-    const stats = getStats();
-    const total = answers.length;
-    const accuracy = total > 0 ? (stats.correct / total) * 100 : 0;
-
-    return (
-      <DiagonalQuizResult
-        questionResults={questionResults}
-        score={{
-          correct: stats.correct,
-          total,
-          accuracy,
-          timeElapsed: timeLimit,
-          averageTime: stats.averageTime,
-        }}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-      />
-    );
-  }
+      router.push(`/${locale}/practice/diagonal-quiz/result?${params.toString()}`);
+    }
+  }, [isFinished, answers, questionResults, locale, router, timeLimit, totalTime]);
 
   if (squares.length === 0) {
     return null;
@@ -230,6 +194,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         countdown={countdown}
         correctCount={answers.filter((a) => a).length}
         incorrectCount={answers.filter((a) => !a).length}
+        isPaused={isPaused}
+        onTogglePause={togglePause}
       />
     </div>
   );
