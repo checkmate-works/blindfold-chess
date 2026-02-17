@@ -3,8 +3,9 @@
 import { use, useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { notFound, useSearchParams } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
+import { Breadcrumb, Divider } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
@@ -14,8 +15,10 @@ type Props = {
 
 export default function SquareColorsResultPage({ params }: Props) {
   const { locale } = use(params);
+  const router = useRouter();
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
+  const tNavigation = useTranslations('navigation');
   const searchParams = useSearchParams();
 
   // Validate locale
@@ -27,6 +30,9 @@ export default function SquareColorsResultPage({ params }: Props) {
   const time = parseFloat(searchParams.get('time') || '0');
   const score = parseInt(searchParams.get('score') || '0', 10);
   const total = parseInt(searchParams.get('total') || '0', 10);
+  const timeLimitParam = parseInt(searchParams.get('timeLimit') || '0', 10);
+  // Default to 60 seconds if missing or 0
+  const timeLimit = timeLimitParam > 0 ? timeLimitParam : 60;
   const correct = score;
   const incorrect = total - score;
 
@@ -58,7 +64,7 @@ export default function SquareColorsResultPage({ params }: Props) {
       incorrect: t('incorrect'),
 
       tryAgain: tPractice('tryAgain'),
-      morePractice: tPractice('morePractice'),
+      morePractice: tPractice('changeSettings'),
     }),
     [t, tPractice]
   );
@@ -81,12 +87,30 @@ export default function SquareColorsResultPage({ params }: Props) {
       <PracticeComplete
         score={score}
         total={total}
-        onTryAgain={() => (window.location.href = `/${locale}/practice/square-colors`)}
+        onTryAgain={() =>
+          (window.location.href = `/${locale}/practice/square-colors/session?timeLimit=${timeLimit}`)
+        }
+        onExit={() => router.push(`/${locale}/practice/square-colors`)}
         locale={locale}
         labels={labels}
         detailedStats={detailedStats}
         relatedModule={relatedModule}
         averageTimeText={averageTimeText}
+        otherPracticeLink={{
+          href: `/${locale}/practice`,
+          label: tPractice('doOtherPractice'),
+        }}
+      />
+
+      <Divider className="my-8" />
+
+      <Breadcrumb
+        items={[
+          { label: tNavigation('practice'), href: '/practice' },
+          { label: t('title'), href: '/practice/square-colors' },
+          { label: tPractice('result') },
+        ]}
+        locale={locale}
       />
     </div>
   );

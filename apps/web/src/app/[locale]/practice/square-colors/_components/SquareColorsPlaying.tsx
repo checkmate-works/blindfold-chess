@@ -68,9 +68,9 @@ export function SquareColorsPlaying({
               <QuizTimer
                 timeRemaining={timeRemaining}
                 progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-                size={32}
-                fontSize="text-[10px]"
-                strokeWidth={3}
+                size={40}
+                fontSize="text-xs"
+                strokeWidth={4}
               />
             </div>
           </div>

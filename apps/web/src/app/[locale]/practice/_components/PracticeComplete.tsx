@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
@@ -82,6 +83,10 @@ type Props = {
   onDeleteFen?: (fen: string) => void;
   onExit?: () => void;
   children?: React.ReactNode;
+  otherPracticeLink?: {
+    href: string;
+    label: string;
+  };
 };
 
 export function PracticeComplete({
@@ -98,6 +103,7 @@ export function PracticeComplete({
   onDeleteFen,
   onExit,
   children,
+  otherPracticeLink,
 }: Props) {
   const router = useRouter();
   const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
@@ -471,6 +477,17 @@ export function PracticeComplete({
           >
             {labels.morePractice}
           </Button>
+
+          {otherPracticeLink && (
+            <div className="text-center pt-2">
+              <Link
+                href={otherPracticeLink.href}
+                className="text-primary hover:underline text-sm font-medium"
+              >
+                {otherPracticeLink.label}
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

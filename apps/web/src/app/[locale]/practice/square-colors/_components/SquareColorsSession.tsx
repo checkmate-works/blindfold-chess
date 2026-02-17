@@ -142,6 +142,7 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
         score: stats.correct.toString(),
         total: total.toString(),
         time: stats.totalTime.toString(),
+        timeLimit: timeLimit.toString(),
       });
       router.push(`/${locale}/practice/square-colors/result?${params.toString()}`);
     }

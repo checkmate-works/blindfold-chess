@@ -243,6 +243,8 @@
     "description": "Improve your blindfold chess skills with interactive exercises",
     "modulesTitle": "Practice Modules",
     "tryAgain": "Try Again",
+    "changeSettings": "Change Settings",
+    "doOtherPractice": "Do other practice",
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",
     "score": "Score",
