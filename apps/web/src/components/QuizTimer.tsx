@@ -4,6 +4,8 @@ type QuizTimerProps = {
   timeRemaining: number;
   progress: number; // 0 to 1
   size?: number;
+  fontSize?: string;
+  strokeWidth?: number;
 };
 
 const formatTime = (seconds: number): string => {
@@ -12,8 +14,13 @@ const formatTime = (seconds: number): string => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
-export function QuizTimer({ timeRemaining, progress, size = 80 }: QuizTimerProps) {
-  const strokeWidth = 6;
+export function QuizTimer({
+  timeRemaining,
+  progress,
+  size = 80,
+  fontSize = 'text-lg',
+  strokeWidth = 6,
+}: QuizTimerProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - (1 - progress));
@@ -60,7 +67,7 @@ export function QuizTimer({ timeRemaining, progress, size = 80 }: QuizTimerProps
         />
       </svg>
       <div className="flex items-center justify-center relative z-10">
-        <span className="text-lg font-bold" style={{ color }}>
+        <span className={`${fontSize} font-bold`} style={{ color }}>
           {formatTime(timeRemaining)}
         </span>
       </div>

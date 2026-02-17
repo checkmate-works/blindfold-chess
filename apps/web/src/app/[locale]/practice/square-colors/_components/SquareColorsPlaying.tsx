@@ -43,18 +43,18 @@ export function SquareColorsPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      {/* Header with Timer */}
-      <div className="relative flex items-center justify-center min-h-[50px] mb-8">
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
+        {/* Timer */}
+        <div className="absolute right-4 top-4">
           <QuizTimer
             timeRemaining={timeRemaining}
             progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-            size={50}
+            size={40}
+            fontSize="text-xs"
+            strokeWidth={4}
           />
         </div>
-      </div>
 
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
         {/* Countdown Overlay */}
         <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
           <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">

@@ -198,7 +198,7 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
   }
 
   return (
-    <div id="square-colors-session">
+    <div id="square-colors-session" className="min-h-screen">
       <SquareColorsPlaying
         currentSquare={squares[currentIndex]}
         timeRemaining={Math.max(0, timeLimit - timeElapsed)}
