@@ -96,7 +96,7 @@ export function PositionMemoryMemorize({
                 boardTheme={boardTheme}
               >
                 {/* Countdown Overlay */}
-                <BoardOverlay isVisible={countdown !== null}>
+                <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
                   <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
                     {countdown !== null && (countdown > 0 ? countdown : 'START!')}
                   </span>

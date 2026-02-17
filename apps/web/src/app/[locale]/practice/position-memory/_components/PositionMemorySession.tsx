@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { useMachine } from '@xstate/react';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
@@ -29,6 +29,9 @@ type Props = {
   mode?: SessionMode;
   skipMemorize?: boolean;
   isCustomFen?: boolean;
+  rawProblemsParam?: string;
+  sourceParam?: string;
+  modeParam?: string;
 };
 
 export function PositionMemorySession({
@@ -40,9 +43,12 @@ export function PositionMemorySession({
   mode = 'custom',
   skipMemorize = false,
   isCustomFen = false,
+  rawProblemsParam,
+  sourceParam,
+  modeParam,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
-  const tPractice = useTranslations('practice');
+  const router = useRouter();
   const { preferences } = useGamePreferences();
 
   // Helper function to get score description
@@ -147,6 +153,88 @@ export function PositionMemorySession({
     showQuitModal,
   } = state.context;
 
+  // Final result phase - Redirect to result page
+  useEffect(() => {
+    if (state.value === 'sessionResult') {
+      // Convert Map to array for calculations
+      const resultsArray = Array.from(problemResults.values());
+
+      // Calculate stats
+      const totalAccuracy =
+        resultsArray.length > 0
+          ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
+          : 0;
+
+      const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
+      const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
+      const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
+      const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
+      const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
+
+      // Serialize data
+      // f=fen, r=recreatedFen, b=isBlackToMove, a=accuracy, c=correctPieces
+      // t=totalPieces, i=incorrectPieces, m=missingPieces, e=extraPieces
+      // o=originalIndex, s=skipped
+      const serializedResults = positions.map((position, index) => {
+        const result = problemResults.get(index);
+        const isSkipped = skippedProblems.has(index) || !result;
+        return {
+          f: position.fen,
+          r: recreatedPositions.get(index) || '',
+          b: position.isBlackToMove ? 1 : 0,
+          a: result?.accuracy ?? 0,
+          c: result?.correctPieces ?? 0,
+          t: result?.totalPieces ?? 0,
+          i: result?.incorrectPieces ?? 0,
+          m: result?.missingPieces ?? 0,
+          e: result?.extraPieces ?? 0,
+          o: index,
+          s: isSkipped ? 1 : 0,
+        };
+      });
+
+      const serializedStats = {
+        c: totalCorrect,
+        t: totalPieces,
+        i: totalIncorrect,
+        m: totalMissing,
+        e: totalExtra,
+      };
+
+      const params = new URLSearchParams();
+      params.set('score', Math.round(totalAccuracy).toString());
+      params.set('total', '100');
+      params.set('custom', isCustomFen ? 'true' : 'false');
+      params.set('data', encodeURIComponent(JSON.stringify(serializedResults)));
+      params.set('stats', encodeURIComponent(JSON.stringify(serializedStats)));
+
+      // Pass through session configuration for retry
+      params.set('timeLimit', timeLimit.toString());
+      params.set('shuffle', shuffle ? '1' : '0');
+      params.set('count', problemCount.toString());
+      if (rawProblemsParam) params.set('problems', rawProblemsParam);
+      if (sourceParam) params.set('source', sourceParam);
+      if (modeParam) params.set('mode', modeParam);
+
+      router.push(`/${locale}/practice/position-memory/result?${params.toString()}`);
+    }
+  }, [
+    state.value,
+    problemResults,
+    skippedProblems,
+    positions,
+    recreatedPositions,
+    isCustomFen,
+    locale,
+    router,
+    timeLimit,
+    shuffle,
+    problemCount,
+    rawProblemsParam,
+    sourceParam,
+    modeParam,
+  ]);
+
   const originalPosition = useMemo<PositionData | null>(() => {
     return positions[currentProblemIndex] || null;
   }, [positions, currentProblemIndex]);
@@ -201,11 +289,6 @@ export function PositionMemorySession({
     send({ type: 'NEXT_PROBLEM' });
   }, [send]);
 
-  const handlePlayAgain = useCallback(() => {
-    // Always navigate to setup page
-    window.location.href = `/${locale}/practice/position-memory`;
-  }, [locale]);
-
   const handleViewAgain = useCallback(() => {
     send({ type: 'VIEW_AGAIN' });
   }, [send]);
@@ -239,29 +322,6 @@ export function PositionMemorySession({
     }),
     [t]
   );
-
-  // Delete FEN from localStorage
-  const handleDeleteFen = useCallback((fenToDelete: string) => {
-    try {
-      const savedSettings = localStorage.getItem('positionMemorySettings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        if (settings.customFenInput) {
-          const fensFromStorage = settings.customFenInput
-            .trim()
-            .split('\n')
-            .filter((line: string) => line.trim());
-          const updatedFens = fensFromStorage.filter(
-            (fen: string) => fen.trim() !== fenToDelete.trim()
-          );
-          settings.customFenInput = updatedFens.join('\n');
-          localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-        }
-      }
-    } catch (error) {
-      console.error('Failed to delete FEN from localStorage:', error);
-    }
-  }, []);
 
   // Check if tutorial mode
   const isTutorial = mode === 'tutorial';
@@ -348,100 +408,8 @@ export function PositionMemorySession({
     );
   }
 
-  // Final result phase
   if (state.value === 'sessionResult') {
-    // Convert Map to array for calculations
-    const resultsArray = Array.from(problemResults.values());
-
-    // If no results yet (quit before solving any problem), show 0 score
-    if (resultsArray.length === 0 && skippedProblems.size === 0) {
-      return (
-        <PracticeComplete
-          score={0}
-          total={100}
-          onTryAgain={handlePlayAgain}
-          locale={locale}
-          labels={{
-            practiceComplete: tPractice('practiceComplete'),
-            score: `${t('accuracy')}: 0.0% (0/0)`,
-            tryAgain: tPractice('tryAgain'),
-            morePractice: tPractice('morePractice'),
-          }}
-        />
-      );
-    }
-
-    const totalAccuracy =
-      resultsArray.length > 0
-        ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
-        : 0;
-    const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
-    const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
-    const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
-    const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
-    const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
-
-    // Build individual problem results with FEN (including skipped problems)
-    const individualResults = positions.map((position, index) => {
-      const result = problemResults.get(index);
-      // Mark as skipped if explicitly skipped OR if no result exists (quit before answering)
-      const isSkipped = skippedProblems.has(index) || !result;
-
-      return {
-        fen: position.fen,
-        recreatedFen: recreatedPositions.get(index) || '',
-        isBlackToMove: position.isBlackToMove,
-        accuracy: result?.accuracy ?? 0,
-        correctPieces: result?.correctPieces ?? 0,
-        totalPieces: result?.totalPieces ?? 0,
-        incorrectPieces: result?.incorrectPieces ?? 0,
-        missingPieces: result?.missingPieces ?? 0,
-        extraPieces: result?.extraPieces ?? 0,
-        originalIndex: index,
-        skipped: isSkipped,
-      };
-    });
-
-    return (
-      <PracticeComplete
-        score={Math.round(totalAccuracy)}
-        total={100}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`,
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-          recreationProgress: t('recreationProgress'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-          missing: t('missing'),
-          extra: t('extra'),
-          extraDescription: t('extraDescription'),
-          problemDetails: t('problemDetails'),
-          problem: t('problem'),
-          original: t('original'),
-          yourRecreation: t('yourRecreation'),
-          deleteFenTitle: t('deleteFenTitle'),
-          deleteFenMessage: t('deleteFenMessage'),
-          deleteFenConfirm: t('deleteFenConfirm'),
-          deleteFenCancel: t('deleteFenCancel'),
-          skipped: t('skipped'),
-          analyzeOnLichess: t('analyzeOnLichess'),
-        }}
-        detailedStats={{
-          correctPieces: totalCorrect,
-          totalPieces: totalPieces,
-          incorrectPieces: totalIncorrect,
-          missingPieces: totalMissing,
-          extraPieces: totalExtra,
-        }}
-        problemResults={individualResults}
-        isCustomFen={isCustomFen}
-        onDeleteFen={handleDeleteFen}
-      />
-    );
+    return null;
   }
 
   return null;
