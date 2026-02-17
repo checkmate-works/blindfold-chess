@@ -260,6 +260,7 @@
     "quit": "終了",
     "correct": "正解",
     "incorrect": "不正解",
+    "averageTime": "平均時間",
     "undo": "戻る",
     "resume": "再開",
     "quitConfirmModal": {
