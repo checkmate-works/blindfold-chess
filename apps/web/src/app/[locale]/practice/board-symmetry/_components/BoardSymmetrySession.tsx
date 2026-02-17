@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
@@ -19,8 +18,7 @@ type Props = {
 };
 
 export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props) {
-  const t = useTranslations('practice.boardSymmetry');
-  const tPractice = useTranslations('practice');
+  const router = useRouter();
 
   const timeLimit = initialTimeLimit;
   const [isFinished, setIsFinished] = useState(false);
@@ -32,9 +30,9 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [correctSolution, setCorrectSolution] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(3);
+  const [isPaused, setIsPaused] = useState(false);
 
   const hasStarted = useRef(false);
   const [hasMounted, setHasMounted] = useState(false);
@@ -44,22 +42,24 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setSelectedFile(null);
     setSelectedRank(null);
     setIsCorrect(null);
-    setCorrectSolution(null);
+    setIsCorrect(null);
     setIsProcessing(false);
   }, []);
 
   // Timer hook
-  const isPlaying = !isFinished && countdown === null && !isProcessing;
+  const isPlaying = !isFinished && countdown === null && !isProcessing && !isPaused;
 
-  const {
-    timeElapsed,
-    // totalTime, // Not used in this component's stats calculation logic currently
-    reset: resetTimer,
-  } = useGameTimer({
+  const { timeElapsed, totalTime } = useGameTimer({
     timeLimit,
     isActive: isPlaying,
     onTimeLimitReached: useCallback(() => setIsFinished(true), []),
   });
+
+  // Toggle pause
+  const togglePause = useCallback(() => {
+    if (isFinished || countdown !== null) return;
+    setIsPaused((prev) => !prev);
+  }, [isFinished, countdown]);
 
   // Auto-start and mount detection
   useEffect(() => {
@@ -100,11 +100,10 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
 
   const checkAnswer = useCallback(
     (file: string, rank: string) => {
-      if (!problem || isProcessing || isFinished || countdown !== null) return;
+      if (!problem || isProcessing || isFinished || countdown !== null || isPaused) return;
 
-      const { isCorrect: correct, correctSquare } = checkSymmetryAnswer(file, rank, problem);
+      const { isCorrect: correct } = checkSymmetryAnswer(file, rank, problem);
 
-      setCorrectSolution(correctSquare);
       setIsCorrect(correct);
       setIsProcessing(true);
 
@@ -124,63 +123,49 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         correct ? 1000 : 2000
       );
     },
-    [problem, isProcessing, isFinished, nextProblem, countdown]
+    [problem, isProcessing, isFinished, nextProblem, countdown, isPaused]
   );
 
   const handleFileToggle = (file: string) => {
-    if (isProcessing || countdown !== null) return;
+    if (isProcessing || countdown !== null || isPaused) return;
     setSelectedFile((prev) => (prev === file ? null : file));
   };
 
   const handleRankToggle = (rank: string) => {
-    if (isProcessing || countdown !== null) return;
+    if (isProcessing || countdown !== null || isPaused) return;
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
 
   // Auto-submit effect when both selected
   useEffect(() => {
-    if (selectedFile && selectedRank && !isProcessing && isCorrect === null && countdown === null) {
+    if (
+      selectedFile &&
+      selectedRank &&
+      !isProcessing &&
+      isCorrect === null &&
+      countdown === null &&
+      !isPaused
+    ) {
       checkAnswer(selectedFile, selectedRank);
     }
-  }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown]);
+  }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown, isPaused]);
 
-  const handlePlayAgain = () => {
-    setCorrectCount(0);
-    setIncorrectCount(0);
-    setIsFinished(false);
-    setCountdown(3);
-    nextProblem();
-
-    // Reset timer
-    resetTimer();
-  };
+  // Redirect to result page when finished
+  useEffect(() => {
+    if (isFinished) {
+      const total = correctCount + incorrectCount;
+      const params = new URLSearchParams({
+        score: correctCount.toString(),
+        total: total.toString(),
+        time: totalTime.toString(),
+        timeLimit: timeLimit.toString(),
+      });
+      router.push(`/${locale}/practice/board-symmetry/result?${params.toString()}`);
+    }
+  }, [isFinished, correctCount, incorrectCount, totalTime, timeLimit, locale, router]);
 
   if (isFinished) {
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-    const averageTime = total > 0 ? timeLimit / total : 0;
-
-    return (
-      <PracticeResult
-        score={{
-          correct: correctCount,
-          total,
-          accuracy,
-          timeElapsed: timeLimit,
-          averageTime,
-        }}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          correctAnswers: t('correctAnswers') || tPractice('correctAnswers'), // Fallback if missing
-          accuracy: t('accuracy') || tPractice('accuracy'),
-          timeTaken: t('timeTaken') || tPractice('timeTaken'),
-          averageTime: t('averageTime') || tPractice('averageTime'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-        }}
-      />
-    );
+    return null;
   }
 
   if (!problem) return null;
@@ -200,7 +185,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         timeRemaining={timeLimit - timeElapsed}
         timeLimit={timeLimit}
         countdown={countdown}
-        correctSolution={correctSolution}
+        isPaused={isPaused}
+        onTogglePause={togglePause}
       />
     </div>
   );
