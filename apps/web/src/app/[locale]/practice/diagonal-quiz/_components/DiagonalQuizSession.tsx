@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useGameTimer } from '../../_hooks/useGameTimer';
 import {
   generateSquareSequence,
   getDiagonals,
@@ -28,7 +29,6 @@ type GameStats = {
 
 export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props) {
   const timeLimit = initialTimeLimit;
-  const [timeElapsed, setTimeElapsed] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [squares, setSquares] = useState<string[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -42,12 +42,24 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasStarted = useRef(false);
 
   // Countdown state
   const [countdown, setCountdown] = useState<number | null>(3);
   const [hasMounted, setHasMounted] = useState(false);
+
+  // Timer hook
+  const isPlaying = squares.length > 0 && !isFinished && countdown === null && !showResult;
+
+  const {
+    timeElapsed,
+    // totalTime,
+    reset: resetTimer,
+  } = useGameTimer({
+    timeLimit,
+    isActive: isPlaying,
+    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  });
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -89,27 +101,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
     return () => clearTimeout(timer);
   }, [countdown]);
-
-  // Timer effect
-  useEffect(() => {
-    if (squares.length === 0 || isFinished || countdown !== null || showResult) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        if (newTime >= timeLimit) {
-          setIsFinished(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [squares.length, isFinished, countdown, timeLimit, showResult]);
 
   const handleAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {
@@ -185,7 +176,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     setAnswers([]);
     setQuestionResults([]);
     setQuestionTimes([]);
-    setTimeElapsed(0);
     setShowResult(false);
     setLastAnswer(null);
     setIsFinished(false);
@@ -198,6 +188,9 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
+
+    // Reset timer
+    resetTimer();
   };
 
   if (isFinished) {

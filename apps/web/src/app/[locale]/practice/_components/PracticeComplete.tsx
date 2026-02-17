@@ -13,6 +13,7 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { DeleteFenConfirmModal } from '@/app/[locale]/practice/_components/DeleteFenConfirmModal';
+import { SegmentedProgressBar } from '@/app/[locale]/practice/_components/SegmentedProgressBar';
 
 type ProblemResult = {
   fen: string;
@@ -38,6 +39,7 @@ type Props = {
     score: string;
     tryAgain: string;
     morePractice: string;
+    averageTime?: string;
     recreationProgress?: string;
     correct?: string;
     incorrect?: string;
@@ -62,6 +64,7 @@ type Props = {
     description: string;
     sectionTitle?: string;
   };
+  averageTimeText?: string;
   // Optional detailed breakdown (for position memory practice)
   detailedStats?: {
     correctPieces: number;
@@ -88,6 +91,7 @@ export function PracticeComplete({
   locale,
   labels,
   relatedModule,
+  averageTimeText,
   detailedStats,
   problemResults,
   isCustomFen,
@@ -148,6 +152,11 @@ export function PracticeComplete({
               {score} / {total}
             </p>
             <p className="text-muted-foreground">{labels.score}</p>
+            {averageTimeText && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {labels.averageTime || 'Average Time'}: {averageTimeText}
+              </p>
+            )}
           </div>
         )}
 
@@ -157,58 +166,42 @@ export function PracticeComplete({
             <p className="text-sm font-medium text-muted-foreground mb-2 text-left">
               {labels.recreationProgress}
             </p>
-            <div className="w-full h-8 bg-muted rounded-lg overflow-hidden flex">
-              <div
-                className="bg-green-600 flex items-center justify-center text-white text-sm font-semibold"
-                style={{
-                  width: `${(detailedStats.correctPieces / detailedStats.totalPieces) * 100}%`,
-                }}
-              >
-                {detailedStats.correctPieces > 0 && detailedStats.correctPieces}
-              </div>
-              <div
-                className="bg-red-600 flex items-center justify-center text-white text-sm font-semibold"
-                style={{
-                  width: `${(detailedStats.incorrectPieces / detailedStats.totalPieces) * 100}%`,
-                }}
-              >
-                {detailedStats.incorrectPieces > 0 && detailedStats.incorrectPieces}
-              </div>
-              <div
-                className="bg-muted-foreground/40 flex items-center justify-center text-white text-sm font-semibold"
-                style={{
-                  width: `${(detailedStats.missingPieces / detailedStats.totalPieces) * 100}%`,
-                }}
-              >
-                {detailedStats.missingPieces > 0 && detailedStats.missingPieces}
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-600 rounded"></div>
-                <span>
-                  {labels.correct}: {detailedStats.correctPieces}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-600 rounded"></div>
-                <span>
-                  {labels.incorrect}: {detailedStats.incorrectPieces}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-muted-foreground/40 rounded"></div>
-                <span>
-                  {labels.missing}: {detailedStats.missingPieces}
-                </span>
-              </div>
-            </div>
+            <SegmentedProgressBar
+              segments={[
+                {
+                  key: 'correct',
+                  value: detailedStats.correctPieces,
+                  color: 'bg-green-600',
+                  label: labels.correct,
+                },
+                {
+                  key: 'incorrect',
+                  value: detailedStats.incorrectPieces,
+                  color: 'bg-red-600',
+                  label: labels.incorrect,
+                },
+                {
+                  key: 'missing',
+                  value: detailedStats.missingPieces,
+                  color: 'bg-muted-foreground/40',
+                  label: labels.missing,
+                },
+              ]}
+              total={detailedStats.totalPieces}
+            />
 
             {/* Extra pieces section - 控えめに */}
             {detailedStats.extraPieces > 0 && labels.extra && labels.extraDescription && (
               <p className="text-xs text-muted-foreground mt-3">
                 {labels.extra}: <span className="font-semibold">+{detailedStats.extraPieces}</span>{' '}
                 ({labels.extraDescription})
+              </p>
+            )}
+
+            {/* Average Time per Question */}
+            {averageTimeText && (
+              <p className="text-sm text-center text-muted-foreground mt-4">
+                {labels.averageTime || 'Average Time'}: {averageTimeText}
               </p>
             )}
           </div>
@@ -483,7 +476,7 @@ export function PracticeComplete({
 
       {/* Related learning module */}
       {relatedModule && (
-        <div className="mt-12 p-6 bg-secondary/30 rounded-lg border border-border">
+        <div className="mt-12">
           <SectionTitle className="text-xl font-semibold mb-4">
             {relatedModule.sectionTitle || 'Related Learning'}
           </SectionTitle>

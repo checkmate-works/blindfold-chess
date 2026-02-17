@@ -10,6 +10,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
+import { useGameTimer } from '../../_hooks/useGameTimer';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
 type Props = {
@@ -22,7 +23,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const tPractice = useTranslations('practice');
 
   const timeLimit = initialTimeLimit;
-  const [timeElapsed, setTimeElapsed] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
@@ -36,7 +36,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const [isProcessing, setIsProcessing] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(3);
 
-  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasStarted = useRef(false);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -48,6 +47,19 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setCorrectSolution(null);
     setIsProcessing(false);
   }, []);
+
+  // Timer hook
+  const isPlaying = !isFinished && countdown === null && !isProcessing;
+
+  const {
+    timeElapsed,
+    // totalTime, // Not used in this component's stats calculation logic currently
+    reset: resetTimer,
+  } = useGameTimer({
+    timeLimit,
+    isActive: isPlaying,
+    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  });
 
   // Auto-start and mount detection
   useEffect(() => {
@@ -85,27 +97,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
 
     return () => clearTimeout(timer);
   }, [countdown]);
-
-  // Timer effect
-  useEffect(() => {
-    if (isFinished || countdown !== null || isProcessing) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        if (newTime >= timeLimit) {
-          setIsFinished(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isFinished, timeLimit, countdown, isProcessing]);
 
   const checkAnswer = useCallback(
     (file: string, rank: string) => {
@@ -156,10 +147,12 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const handlePlayAgain = () => {
     setCorrectCount(0);
     setIncorrectCount(0);
-    setTimeElapsed(0);
     setIsFinished(false);
     setCountdown(3);
     nextProblem();
+
+    // Reset timer
+    resetTimer();
   };
 
   if (isFinished) {

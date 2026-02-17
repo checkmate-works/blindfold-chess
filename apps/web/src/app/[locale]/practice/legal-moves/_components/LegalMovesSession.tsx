@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
+import { useGameTimer } from '../../_hooks/useGameTimer';
 import type { MoveQuestion, PieceType } from '../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
@@ -31,7 +32,6 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
   const timeLimit = initialTimeLimit;
-  const [timeElapsed, setTimeElapsed] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<MoveQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -44,12 +44,24 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     userAnswer: boolean;
     isLegal: boolean;
   } | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasStarted = useRef(false);
 
   // Countdown state
   const [countdown, setCountdown] = useState<number | null>(3);
   const [hasMounted, setHasMounted] = useState(false);
+
+  // Timer hook
+  const isPlaying = questions.length > 0 && !isFinished && countdown === null && !showResult;
+
+  const {
+    timeElapsed,
+    totalTime,
+    reset: resetTimer,
+  } = useGameTimer({
+    timeLimit,
+    isActive: isPlaying,
+    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  });
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -93,27 +105,6 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Timer effect
-  useEffect(() => {
-    if (questions.length === 0 || isFinished || countdown !== null || showResult) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        if (newTime >= timeLimit) {
-          setIsFinished(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [questions.length, isFinished, countdown, timeLimit, showResult]);
-
   const handleAnswer = useCallback(
     (userAnswer: boolean) => {
       if (isFinished || countdown !== null || showResult) return;
@@ -150,7 +141,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length
         : 0;
 
-    return { correct, incorrect, totalTime: 0, averageTime };
+    return { correct, incorrect, totalTime, averageTime };
   };
 
   const handlePlayAgain = () => {
@@ -160,11 +151,13 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     setCurrentIndex(0);
     setAnswers([]);
     setQuestionTimes([]);
-    setTimeElapsed(0);
     setShowResult(false);
     setLastAnswer(null);
     setIsFinished(false);
     setQuestionStartTime(Date.now());
+
+    // Reset timer
+    resetTimer();
   };
 
   if (isFinished) {

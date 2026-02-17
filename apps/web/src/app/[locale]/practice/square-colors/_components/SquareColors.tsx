@@ -13,27 +13,31 @@ type Props = {
 const STORAGE_KEY = 'squareColors_settings';
 
 export default function SquareColors({ locale }: Props) {
-  // Load settings from localStorage using lazy initializer
-  const [timeLimit, setTimeLimit] = useState(() => {
-    if (typeof window === 'undefined') return 60;
+  const [timeLimit, setTimeLimit] = useState(60);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load settings from localStorage
+  useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const settings = JSON.parse(saved);
-        return settings.timeLimit || 60;
+        if (settings.timeLimit) {
+          setTimeLimit(settings.timeLimit);
+        }
       } catch {
         // Ignore invalid JSON in localStorage
       }
     }
-    return 60;
-  });
+    setIsLoaded(true);
+  }, []);
 
   // Save settings to localStorage when they change
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isLoaded) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit }));
     }
-  }, [timeLimit]);
+  }, [timeLimit, isLoaded]);
 
   return (
     <SquareColorsSetup locale={locale} timeLimit={timeLimit} onTimeLimitChange={setTimeLimit} />
