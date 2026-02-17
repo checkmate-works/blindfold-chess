@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { Square } from 'chess.js';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
+
+import { useGameTimer } from '../../_hooks/useGameTimer';
+// import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
 import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../_lib/types';
 import { FEEDBACK_SPEED_MS } from '../_lib/types';
-import { calculateScore, checkAnswer, generateSingleQuestion } from '../_lib/utils';
+import { checkAnswer, generateSingleQuestion } from '../_lib/utils';
 import { CoordinateQuizPlaying } from './CoordinateQuizPlaying';
 
 type Props = {
@@ -27,8 +29,7 @@ export default function CoordinateQuizSession({
   initialBoardOrientation,
   initialFeedbackSpeed,
 }: Props) {
-  const t = useTranslations('practice.coordinateQuiz');
-  const tPractice = useTranslations('practice');
+  const router = useRouter();
 
   const timeLimit = initialTimeLimit;
   const boardOrientation = initialBoardOrientation as BoardOrientation;
@@ -41,14 +42,14 @@ export default function CoordinateQuizSession({
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState(0);
-  const [timeElapsed, setTimeElapsed] = useState(0);
+  // const [timeElapsed, setTimeElapsed] = useState(0); // Replaced by hook
   const [lastClickedSquare, setLastClickedSquare] = useState<Square | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(3);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const hasStarted = useRef(false);
   const hasScrolled = useRef(false);
 
@@ -73,30 +74,23 @@ export default function CoordinateQuizSession({
     }
   }, [currentQuestion]);
 
-  // Start timer
-  useEffect(() => {
-    if (!currentQuestion || isFinished || countdown !== null || showFeedback) return;
+  // Timer hook
+  const isPlaying =
+    !!currentQuestion && !isFinished && countdown === null && !showFeedback && !isPaused;
 
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        if (newTime >= timeLimit) {
-          setIsFinished(true);
-        }
-        return newTime;
-      });
-    }, 1000);
+  const { timeElapsed, totalTime } = useGameTimer({
+    timeLimit,
+    isActive: isPlaying,
+    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  });
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [currentQuestion, isFinished, timeLimit, countdown, showFeedback]);
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
 
   const handleSquareClick = useCallback(
     (square: Square) => {
-      if (isFinished || !currentQuestion || showFeedback || countdown !== null) return;
+      if (isFinished || !currentQuestion || showFeedback || countdown !== null || isPaused) return;
 
       setLastClickedSquare(square);
       const correct = checkAnswer(square, currentQuestion.targetSquare);
@@ -131,23 +125,9 @@ export default function CoordinateQuizSession({
       recentSquares,
       feedbackDuration,
       countdown,
+      isPaused,
     ]
   );
-
-  const handlePlayAgain = () => {
-    // Reset and restart
-    const firstQuestion = generateSingleQuestion(boardOrientation);
-    setCurrentQuestion(firstQuestion);
-    setRecentSquares([firstQuestion.targetSquare]);
-    setTotalQuestions(0);
-    setCorrectAnswers(0);
-    setWrongAnswers(0);
-    setTimeElapsed(0);
-    setLastClickedSquare(null);
-    setShowFeedback(false);
-    setIsFinished(false);
-    setCountdown(3);
-  };
 
   // Countdown effect
   useEffect(() => {
@@ -167,34 +147,33 @@ export default function CoordinateQuizSession({
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  const score = isFinished
-    ? calculateScore(correctAnswers, totalQuestions, timeElapsed, timeLimit)
-    : null;
+  // Redirect on finish
+  useEffect(() => {
+    if (isFinished) {
+      const params = new URLSearchParams();
+      params.set('score', correctAnswers.toString());
+      params.set('total', totalQuestions.toString());
+      params.set('time', totalTime.toString());
+      params.set('timeLimit', timeLimit.toString()); // Pass timeLimit separately for restart
+      params.set('orientation', boardOrientation);
+      params.set('speed', feedbackSpeed);
 
-  const timeRemaining = Math.max(0, timeLimit - timeElapsed);
+      router.push(`/${locale}/practice/coordinate-quiz/result?${params.toString()}`);
+    }
+  }, [
+    isFinished,
+    correctAnswers,
+    totalQuestions,
+    locale,
+    router,
+    totalTime,
+    timeLimit,
+    boardOrientation,
+    feedbackSpeed,
+  ]);
 
-  if (isFinished && score) {
-    return (
-      <PracticeResult
-        score={{
-          correct: correctAnswers,
-          total: totalQuestions,
-          accuracy: score.accuracy,
-          timeElapsed,
-          averageTime: score.averageTime,
-        }}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          correctAnswers: t('correctAnswers'),
-          accuracy: t('accuracy'),
-          timeTaken: t('timeTaken'),
-          averageTime: t('averageTime'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-        }}
-      />
-    );
+  if (isFinished) {
+    return null; // Or loading spinner
   }
 
   // Show loading state while question is being generated
@@ -202,19 +181,25 @@ export default function CoordinateQuizSession({
     return null;
   }
 
+  const timeRemaining = Math.max(0, timeLimit - timeElapsed);
+
   return (
-    <CoordinateQuizPlaying
-      currentQuestion={currentQuestion}
-      timeRemaining={timeRemaining}
-      timeLimit={timeLimit}
-      timeElapsed={timeElapsed}
-      correctAnswers={correctAnswers}
-      wrongAnswers={wrongAnswers}
-      lastClickedSquare={lastClickedSquare}
-      showFeedback={showFeedback}
-      isCorrect={isCorrect}
-      onSquareClick={handleSquareClick}
-      countdown={countdown}
-    />
+    <div id="coordinate-quiz-session" className="min-h-screen">
+      <CoordinateQuizPlaying
+        currentQuestion={currentQuestion}
+        timeRemaining={timeRemaining}
+        timeLimit={timeLimit}
+        timeElapsed={timeElapsed}
+        correctAnswers={correctAnswers}
+        wrongAnswers={wrongAnswers}
+        lastClickedSquare={lastClickedSquare}
+        showFeedback={showFeedback}
+        isCorrect={isCorrect}
+        onSquareClick={handleSquareClick}
+        countdown={countdown}
+        isPaused={isPaused}
+        onTogglePause={togglePause}
+      />
+    </div>
   );
 }

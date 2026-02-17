@@ -259,6 +259,7 @@
     "quit": "Quit",
     "correct": "Correct",
     "incorrect": "Incorrect",
+    "accuracy": "Accuracy",
     "averageTime": "Average Time",
     "undo": "Undo",
     "resume": "Resume",
