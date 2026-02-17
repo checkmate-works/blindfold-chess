@@ -259,6 +259,7 @@
     "correct": "正解！",
     "incorrect": "不正解",
     "undo": "戻る",
+    "resume": "再開",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",

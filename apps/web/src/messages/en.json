@@ -258,6 +258,7 @@
     "correct": "Correct!",
     "incorrect": "Incorrect",
     "undo": "Undo",
+    "resume": "Resume",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
