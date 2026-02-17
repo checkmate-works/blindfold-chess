@@ -61,7 +61,15 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema['@type']).toBe('Organization');
       expect(schema.name).toBe('CheckmateWorks');
       expect(schema.url).toBe('https://www.blindfold-chess.online');
-      expect(schema.logo).toBe('https://www.blindfold-chess.online/logo.png');
+      expect(schema.logo).toEqual({
+        '@type': 'ImageObject',
+        url: 'https://www.blindfold-chess.online/logo.png',
+        width: 512,
+        height: 512,
+      });
+      expect(schema.description).toBe(
+        'CheckmateWorks builds tools and training apps for chess players.'
+      );
     });
   });
 

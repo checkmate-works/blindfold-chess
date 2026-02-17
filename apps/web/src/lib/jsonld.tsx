@@ -38,7 +38,38 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: AUTHOR_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/logo.png`,
+      width: 512,
+      height: 512,
+    },
+    description: 'CheckmateWorks builds tools and training apps for chess players.',
+  };
+}
+
+/**
+ * WebApplication schema for the home page
+ * @see https://schema.org/WebApplication
+ */
+export function generateWebApplicationSchema(locale: string) {
+  const description =
+    locale === 'ja' ? '目隠しチェスの無料練習アプリ' : 'A free training app for blindfold chess';
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: SITE_NAME,
+    url: SITE_URL,
+    applicationCategory: 'GameApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    description,
+    inLanguage: ['en-US', 'ja-JP'],
   };
 }
 

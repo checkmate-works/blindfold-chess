@@ -20,6 +20,8 @@ import { getTranslations } from 'next-intl/server';
 import { AdContainer } from '@/components/Ad';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
+import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
+
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { GameListClient, LatestPostsList, LatestPostsSkeleton, NewGameButton } from './_components';
@@ -48,6 +50,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <JsonLd data={generateWebApplicationSchema(locale)} />
       <div id="new-game-card">
         <NewGameButton locale={locale} />
       </div>
