@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
@@ -14,7 +15,7 @@ import {
 } from '../_lib/utils';
 import { KnightTourBlindPlaying } from './KnightTourBlindPlaying';
 import { KnightTourPlaying } from './KnightTourPlaying';
-import { KnightTourResult } from './KnightTourResult';
+// import { KnightTourResult } from './KnightTourResult'; // Logic moved to page
 import { KnightTourSetup } from './KnightTourSetup';
 
 type GameState = 'setup' | 'playing' | 'finished';
@@ -77,6 +78,43 @@ export default function KnightTour({
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
+
+  const router = useRouter();
+
+  // Handle Finish/Result Redirection
+  useEffect(() => {
+    if (gameState === 'finished') {
+      const results = {
+        visitedSquares: Array.from(visitedSquares.entries()),
+        lastSquare: currentSquare,
+        success: isTourComplete(visitedSquares), // Recalculate or use state if available
+        isClosedTour: isClosedTourPossible(currentSquare, startingSquare, visitedSquares),
+      };
+
+      const settings = {
+        startingSquare,
+        blindfoldMode: isBlindfolded,
+      };
+
+      const params = new URLSearchParams();
+      params.set('data', JSON.stringify(results));
+      params.set('settings', JSON.stringify(settings));
+      if (isTutorial) {
+        params.set('mode', 'tutorial');
+      }
+
+      router.push(`/${locale}/practice/knight-tour/result?${params.toString()}`);
+    }
+  }, [
+    gameState,
+    visitedSquares,
+    currentSquare,
+    startingSquare,
+    isBlindfolded,
+    isTutorial,
+    locale,
+    router,
+  ]);
 
   // Scroll to session element after playing starts
   useEffect(() => {
@@ -165,39 +203,9 @@ export default function KnightTour({
     setShowQuitModal(false);
   }, []);
 
-  const handlePlayAgain = useCallback(() => {
-    // Navigate to setup page to start fresh
-    window.location.href = `/${locale}/practice/knight-tour`;
-  }, [locale]);
-
   // Compute available moves
   const availableMoves =
     gameState === 'playing' ? getAvailableKnightMoves(currentSquare, visitedSquares) : [];
-
-  // Check if tour is complete and closed
-  const isComplete = isTourComplete(visitedSquares);
-  const isClosedTour = isClosedTourPossible(currentSquare, startingSquare, visitedSquares);
-
-  const handleFinishTutorial = useCallback(() => {
-    // Use window.location to ensure full page reload and state reset
-    window.location.href = `/${locale}/practice/knight-tour`;
-  }, [locale]);
-
-  if (gameState === 'finished') {
-    return (
-      <KnightTourResult
-        success={isComplete}
-        moveCount={visitedSquares.size}
-        visitedSquares={visitedSquares}
-        lastSquare={currentSquare}
-        startingSquare={startingSquare}
-        isClosedTour={isClosedTour}
-        isTutorial={isTutorial}
-        onPlayAgain={handlePlayAgain}
-        onFinishTutorial={handleFinishTutorial}
-      />
-    );
-  }
 
   if (gameState === 'setup') {
     return (

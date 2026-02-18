@@ -8,21 +8,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PieceSymbol } from 'chess.js';
-import {
-  FaArrowRight,
-  FaChevronDown,
-  FaChevronRight,
-  FaFlagCheckered,
-  FaRedo,
-  FaUndo,
-} from 'react-icons/fa';
-
-import { BoardTheme } from '@/lib/boardThemes';
+import { FaArrowRight, FaFlagCheckered, FaRedo, FaUndo } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
@@ -266,21 +255,22 @@ export function RoutePlannerSession({
     setGameState('result');
   }, [problem, t]);
 
+  // ... (previous code)
+
   const handleNextProblem = useCallback(() => {
-    // Commit result
+    // Commit current result if exists
+    const newResults = [...results];
     if (result && problem) {
-      setResults((prev) => [
-        ...prev,
-        {
-          piece: problem.piece,
-          start: problem.start,
-          end: problem.end,
-          success: result.success,
-          userPath: result.message === t('skipped') ? [] : moves,
-          shortestPath: result.shortestPath,
-          skipped: result.message === t('skipped'),
-        },
-      ]);
+      newResults.push({
+        piece: problem.piece,
+        start: problem.start,
+        end: problem.end,
+        success: result.success,
+        userPath: result.message === t('skipped') ? [] : moves,
+        shortestPath: result.shortestPath,
+        skipped: result.message === t('skipped'),
+      });
+      setResults(newResults);
     }
 
     const nextIndex = currentProblemIndex + 1;
@@ -288,21 +278,28 @@ export function RoutePlannerSession({
       setCurrentProblemIndex(nextIndex);
       startNewProblem();
     } else {
-      setGameState('summary');
+      // Session Complete - Redirect to Result Page
+      const dataStr = encodeURIComponent(JSON.stringify(newResults));
+      const piecesStr = allowedPieces.join('');
+      // Pass mode param too so result page knows if it was tutorial
+      router.push(
+        `/${locale}/practice/route-planner/result?data=${dataStr}&mode=${mode}&count=${problemCount}&pieces=${piecesStr}`
+      );
     }
-  }, [currentProblemIndex, problemCount, result, startNewProblem, problem, t, moves]);
-
-  const handleRestartSession = useCallback(() => {
-    if (mode === 'tutorial') {
-      setCurrentProblemIndex(0);
-      setResults([]);
-      startNewProblem();
-      return;
-    }
-    setCurrentProblemIndex(0);
-    setResults([]);
-    startNewProblem();
-  }, [startNewProblem, mode]);
+  }, [
+    currentProblemIndex,
+    problemCount,
+    result,
+    startNewProblem,
+    problem,
+    t,
+    moves,
+    results,
+    router,
+    locale,
+    mode,
+    allowedPieces,
+  ]);
 
   const handleQuit = useCallback(() => {
     setShowQuitModal(true);
@@ -312,81 +309,46 @@ export function RoutePlannerSession({
     setShowQuitModal(false);
 
     // If we have a pending result (user finished problem but didn't click next), commit it
+    const finalResults = [...results];
     if (gameState === 'result' && result && problem) {
-      setResults((prev) => [
-        ...prev,
-        {
-          piece: problem.piece,
-          start: problem.start,
-          end: problem.end,
-          success: result.success,
-          userPath: result.message === t('skipped') ? [] : moves,
-          shortestPath: result.shortestPath,
-          skipped: result.message === t('skipped'),
-        },
-      ]);
+      finalResults.push({
+        piece: problem.piece,
+        start: problem.start,
+        end: problem.end,
+        success: result.success,
+        userPath: result.message === t('skipped') ? [] : moves,
+        shortestPath: result.shortestPath,
+        skipped: result.message === t('skipped'),
+      });
+      setResults(finalResults);
     }
 
-    setGameState('summary');
-  }, [gameState, result, problem, moves, t]);
+    // Redirect to Result Page with whatever results we have
+    const dataStr = encodeURIComponent(JSON.stringify(finalResults));
+    const piecesStr = allowedPieces.join('');
+    router.push(
+      `/${locale}/practice/route-planner/result?data=${dataStr}&mode=${mode}&count=${problemCount}&pieces=${piecesStr}`
+    );
+  }, [
+    gameState,
+    result,
+    problem,
+    moves,
+    t,
+    results,
+    router,
+    locale,
+    mode,
+    problemCount,
+    allowedPieces,
+  ]);
 
   // Derived sets for CoordinateInput
   const selectedFilesSet = selectedFile ? new Set([selectedFile]) : new Set<string>();
   const selectedRanksSet = selectedRank ? new Set([selectedRank]) : new Set<string>();
 
-  if (gameState === 'summary') {
-    const score = results.filter((r) => r.success).length;
-    return (
-      <div className="max-w-4xl mx-auto">
-        <PracticeComplete
-          score={score}
-          total={results.length}
-          onTryAgain={handleRestartSession}
-          onExit={
-            mode === 'tutorial' ? () => router.push(`/${locale}/practice/route-planner`) : undefined
-          }
-          locale={locale as Locale}
-          labels={{
-            practiceComplete:
-              mode === 'tutorial' ? t('tutorial.complete') : tPractice('practiceComplete'),
-            score: tPractice('score'),
-            tryAgain: mode === 'tutorial' ? t('tutorial.restart') : tPractice('tryAgain'),
-            morePractice: mode === 'tutorial' ? t('tutorial.finish') : tPractice('morePractice'),
-          }}
-          relatedModule={
-            mode === 'tutorial'
-              ? undefined
-              : {
-                  href: '/practice/board-symmetry', // Suggest Board Symmetry?
-                  icon: '🦋',
-                  title: tPractice('boardSymmetry.title'),
-                  description: tPractice('boardSymmetry.description'),
-                }
-          }
-        >
-          {results.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-                {tPractice('problemDetails')}
-              </h3>
-              <ResultList
-                results={results}
-                boardTheme={preferences.boardTheme}
-                labels={{
-                  correct: t('correct'),
-                  badEnd: t('badEnd'),
-                  badMove: t('incorrect'),
-                  shortestPath: t('shortestPath'),
-                  yourPath: t('yourPath'),
-                  skipped: t('skip'),
-                }}
-              />
-            </div>
-          )}
-        </PracticeComplete>
-      </div>
-    );
-  }
+  // NOTE: 'summary' gameState is effectively replaced by redirection.
+  // We can keep the state definition but we won't render it here anymore.
 
   if (!problem) return null;
 
@@ -510,7 +472,6 @@ export function RoutePlannerSession({
         {gameState === 'result' && result && (
           <div className="space-y-6">
             {/* Result Message Section */}
-            {/* Result Message Section */}
             <div className="text-center py-2">
               <h3
                 className={`text-lg font-bold mb-2 ${result.success ? 'text-green-600' : 'text-red-600'}`}
@@ -614,147 +575,6 @@ export function RoutePlannerSession({
           cancelButton: tPractice('quitConfirmModal.cancelButton'),
         }}
       />
-    </div>
-  );
-}
-
-function ResultList({
-  results,
-  boardTheme,
-  labels,
-}: {
-  results: RoutePlannerResult[];
-  boardTheme: BoardTheme;
-  labels: {
-    correct: string;
-    badEnd: string;
-    badMove: string;
-    shortestPath: string;
-    yourPath: string;
-    skipped: string;
-  };
-}) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [hoveredStepIndex, setHoveredStepIndex] = useState<number | null>(null);
-  const [lockedStepIndex, setLockedStepIndex] = useState<number | null>(null);
-
-  const toggleExpand = (index: number) => {
-    setExpandedIndex((prev) => (prev === index ? null : index));
-    setHoveredStepIndex(null);
-    setLockedStepIndex(null);
-  };
-
-  const activeStepIndex = hoveredStepIndex ?? lockedStepIndex;
-
-  return (
-    <div className="space-y-3">
-      {results.map((result, index) => {
-        const isExpanded = expandedIndex === index;
-        return (
-          <div key={index} className="border border-border rounded-lg overflow-hidden">
-            <button
-              onClick={() => toggleExpand(index)}
-              className="w-full flex items-center justify-between p-3 bg-card hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-muted-foreground">
-                  {isExpanded ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
-                </div>
-                <div className="font-mono text-sm text-muted-foreground w-8">#{index + 1}</div>
-                <ChessPiece type={result.piece.toLowerCase() as PieceSymbol} color="w" size={20} />
-                <div className="flex items-center gap-2 font-mono font-bold">
-                  <span>{result.start}</span>
-                  <FaArrowRight size={10} className="text-muted-foreground" />
-                  <span>{result.end}</span>
-                </div>
-              </div>
-              <div
-                className={`text-sm font-bold ${result.success ? 'text-green-600' : result.skipped ? 'text-muted-foreground' : 'text-red-600'}`}
-              >
-                {result.success ? 'OK' : result.skipped ? labels.skipped : 'NG'}
-              </div>
-            </button>
-
-            {isExpanded && (
-              <div className="p-4 bg-muted/30 border-t border-border space-y-4">
-                <div className="flex justify-center">
-                  <div className="w-64">
-                    <RoutePlannerBoard
-                      startSquare={result.start}
-                      targetSquare={result.end}
-                      piece={result.piece}
-                      path={
-                        activeStepIndex !== null
-                          ? result.shortestPath.slice(0, activeStepIndex + 1)
-                          : [result.start, ...result.userPath]
-                      }
-                      boardTheme={boardTheme}
-                      highlightedSquare={
-                        activeStepIndex !== null ? result.shortestPath[activeStepIndex] : null
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-2 text-sm">
-                  {!result.skipped && (
-                    <div className="flex flex-col gap-1 p-3 rounded bg-background border border-border">
-                      <span className="text-muted-foreground text-xs">{labels.yourPath}</span>
-                      <div className="flex flex-wrap items-center gap-1">
-                        <span className="font-mono text-sm font-bold">{result.start}</span>
-                        {result.userPath.map((sq, i) => (
-                          <Fragment key={i}>
-                            <FaArrowRight size={10} className="text-muted-foreground/50 mx-1" />
-                            <span className="font-mono text-sm font-bold">{sq}</span>
-                          </Fragment>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {!result.success && (
-                    <div className="flex flex-col gap-1 p-3 rounded bg-background border border-border">
-                      <span className="text-muted-foreground text-xs">{labels.shortestPath}</span>
-                      <div className="flex flex-wrap items-center gap-1">
-                        {result.shortestPath.map((sq, i) => {
-                          const isActive = activeStepIndex === i;
-                          return (
-                            <Fragment key={i}>
-                              {i > 0 && (
-                                <FaArrowRight
-                                  size={10}
-                                  className="text-muted-foreground/50 mx-0.5"
-                                />
-                              )}
-                              {i === 0 || i === result.shortestPath.length - 1 ? (
-                                <span className="font-mono text-sm font-bold px-1">{sq}</span>
-                              ) : (
-                                <button
-                                  className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
-                                    isActive
-                                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                                      : 'bg-background hover:bg-muted border-border'
-                                  }`}
-                                  onMouseEnter={() => setHoveredStepIndex(i)}
-                                  onMouseLeave={() => setHoveredStepIndex(null)}
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent toggling the accordion
-                                    setLockedStepIndex(i);
-                                  }}
-                                >
-                                  {sq}
-                                </button>
-                              )}
-                            </Fragment>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
     </div>
   );
 }

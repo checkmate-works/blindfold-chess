@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -29,8 +29,6 @@ export default async function CoordinateQuizPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
-
-      <PageDescription>{t('practice.coordinateQuiz.description')}</PageDescription>
 
       <CoordinateQuiz locale={locale} />
 

@@ -243,11 +243,19 @@
     "description": "Improve your blindfold chess skills with interactive exercises",
     "modulesTitle": "Practice Modules",
     "tryAgain": "Try Again",
+    "changeSettings": "Change Settings",
+    "doOtherPractice": "Do other practice",
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",
     "score": "Score",
     "correctAnswers": "Correct Answers",
     "relatedLearning": "Related Learning",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "Bishop Movement",
+        "description": "Learn how the bishop moves diagonally across the board"
+      }
+    },
     "problemDetails": "Problem Details",
     "session": "Session",
     "problem": "Problem",
@@ -255,9 +263,12 @@
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
     "quit": "Quit",
-    "correct": "Correct!",
+    "correct": "Correct",
     "incorrect": "Incorrect",
+    "accuracy": "Accuracy",
+    "averageTime": "Average Time",
     "undo": "Undo",
+    "resume": "Resume",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
@@ -343,6 +354,7 @@
       "correctAnswerIs": "The correct answer is",
       "explanation": "Explanation",
       "nextExercise": "Next Exercise",
+      "next": "Next",
       "complete": "Complete"
     },
     "squareColors": {
@@ -352,7 +364,7 @@
       "question": "What color is square {square}?",
       "white": "Light",
       "black": "Dark",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
@@ -388,7 +400,7 @@
       "start": "Start",
       "question": "Can piece move from {from} to {to}?",
       "questionFormat": "Can piece move from {from} to {to}?",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "legal": "Yes",
       "illegal": "No",
@@ -729,6 +741,7 @@
     "routePlanner": {
       "title": "Route Planner",
       "description": "Calculate the shortest path for a piece to reach a target square",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
       "settings": "Settings",
       "start": "Start",
       "piece": "Piece to Move",
@@ -737,7 +750,7 @@
       "findPath": "Find path for {piece} from {start} to {target}",
       "yourPath": "Your Path",
       "shortestPath": "Shortest Path",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "badEnd": "Path does not reach the goal",
       "badMove": "Incorrect",
@@ -792,14 +805,19 @@
         "previous": "Back",
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
-        "restart": "Restart",
-        "finish": "Start Practice"
-      },
-      "betaNotice": "This feature is in beta and may contain unexpected bugs."
+        "restart": "Restart"
+      }
     },
     "moveSequence": {
-      "title": "Yakusoku Kumite",
-      "description": "Memorize and reproduce chess move sequences from memory",
+      "title": "Move Sequence",
+      "description": "Memorize and visualize a sequence of moves on the board",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
+      "articles": {
+        "algebraicNotation": {
+          "title": "Algebraic Notation",
+          "description": "Learn to read and write chess moves in standard notation"
+        }
+      },
       "showBoard": "Show Board",
       "hideBoard": "Hide Board",
       "fenRequired": "FEN is required",
@@ -884,13 +902,7 @@
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
       "cancel": "Cancel",
-      "relatedArticles": "Related Articles",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Algebraic Notation",
-          "description": "Learn to read and write chess moves in standard notation"
-        }
-      }
+      "relatedArticles": "Related Articles"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",

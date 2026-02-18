@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
+import { useGameTimer } from '../../_hooks/useGameTimer';
 import type { MoveQuestion, PieceType } from '../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
@@ -17,26 +18,16 @@ type Props = {
   selectedPieces: PieceType[];
 };
 
-type GameStats = {
-  correct: number;
-  incorrect: number;
-  totalTime: number;
-  averageTime: number;
-};
-
 export default function LegalMovesSession({ locale, initialTimeLimit, selectedPieces }: Props) {
+  const router = useRouter();
   const t = useTranslations('practice.legalMoves');
-  const tPractice = useTranslations('practice');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
   const timeLimit = initialTimeLimit;
-  const [timeElapsed, setTimeElapsed] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<MoveQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
-  const [questionStartTime, setQuestionStartTime] = useState<number>(0);
-  const [questionTimes, setQuestionTimes] = useState<number[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [lastAnswer, setLastAnswer] = useState<{
@@ -44,12 +35,32 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     userAnswer: boolean;
     isLegal: boolean;
   } | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const [isPaused, setIsPaused] = useState(false);
   const hasStarted = useRef(false);
 
   // Countdown state
   const [countdown, setCountdown] = useState<number | null>(3);
   const [hasMounted, setHasMounted] = useState(false);
+
+  // Timer hook
+  const isPlaying =
+    questions.length > 0 && !isFinished && countdown === null && !showResult && !isPaused;
+
+  const { timeElapsed, totalTime } = useGameTimer({
+    timeLimit,
+    isActive: isPlaying,
+    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  });
+
+  const togglePause = useCallback(() => {
+    if (isPaused) {
+      // Logic when Resuming
+      // setQuestionStartTime(Date.now()); // Removed unused
+    } else {
+      // Logic when Pausing
+    }
+    setIsPaused((prev) => !prev);
+  }, [isPaused]);
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -59,7 +70,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
 
     const newQuestions = generateBalancedMoveQuestions(100, selectedPieces);
     setQuestions(newQuestions);
-    setQuestionStartTime(Date.now());
+    // setQuestionStartTime(Date.now()); // Removed unused
   }, [selectedPieces]);
 
   // Scroll to session element after mount
@@ -93,39 +104,13 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Timer effect
-  useEffect(() => {
-    if (questions.length === 0 || isFinished || countdown !== null || showResult) return;
-
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => {
-        const newTime = prev + 1;
-        if (newTime >= timeLimit) {
-          setIsFinished(true);
-        }
-        return newTime;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [questions.length, isFinished, countdown, timeLimit, showResult]);
-
   const handleAnswer = useCallback(
     (userAnswer: boolean) => {
-      if (isFinished || countdown !== null || showResult) return;
+      if (isFinished || countdown !== null || showResult || isPaused) return;
 
       const currentQuestion = questions[currentIndex];
       const isLegal = isLegalMove(currentQuestion.from, currentQuestion.to, currentQuestion.piece);
       const isCorrect = userAnswer === isLegal;
-
-      // Update timing
-      const now = Date.now();
-      const questionTime = now - questionStartTime;
-      setQuestionTimes((prev) => [...prev, questionTime / 1000]);
 
       // Record answer
       setAnswers((prev) => [...prev, isCorrect]);
@@ -135,64 +120,35 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
       // Move to next question
       setTimeout(() => {
         setShowResult(false);
+        setLastAnswer(null);
         setCurrentIndex((prev) => prev + 1);
-        setQuestionStartTime(Date.now());
+        // setQuestionStartTime(Date.now()); // Removed unused
       }, 500);
     },
-    [currentIndex, questions, isFinished, questionStartTime, countdown, showResult]
+    [currentIndex, questions, isFinished, countdown, showResult, isPaused]
   );
 
-  const getStats = (): GameStats => {
-    const correct = answers.filter((a) => a).length;
-    const incorrect = answers.filter((a) => !a).length;
-    const averageTime =
-      questionTimes.length > 0
-        ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length
-        : 0;
+  // Redirect on finish
+  useEffect(() => {
+    if (isFinished) {
+      const correct = answers.filter((a) => a).length;
+      const total = answers.length;
 
-    return { correct, incorrect, totalTime: 0, averageTime };
-  };
+      const params = new URLSearchParams();
+      params.set('score', correct.toString());
+      params.set('total', total.toString());
+      params.set('time', totalTime.toString());
 
-  const handlePlayAgain = () => {
-    // Reset and restart
-    const newQuestions = generateBalancedMoveQuestions(100, selectedPieces);
-    setQuestions(newQuestions);
-    setCurrentIndex(0);
-    setAnswers([]);
-    setQuestionTimes([]);
-    setTimeElapsed(0);
-    setShowResult(false);
-    setLastAnswer(null);
-    setIsFinished(false);
-    setQuestionStartTime(Date.now());
-  };
+      // Params for retry
+      params.set('timeLimit', timeLimit.toString());
+      params.set('pieces', selectedPieces.join(','));
+
+      router.push(`/${locale}/practice/legal-moves/result?${params.toString()}`);
+    }
+  }, [isFinished, answers, locale, router, timeLimit, selectedPieces, totalTime]);
 
   if (isFinished) {
-    const stats = getStats();
-    const total = answers.length;
-    const accuracy = total > 0 ? (stats.correct / total) * 100 : 0;
-
-    return (
-      <PracticeResult
-        score={{
-          correct: stats.correct,
-          total,
-          accuracy,
-          timeElapsed: timeLimit,
-          averageTime: stats.averageTime,
-        }}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          correctAnswers: t('correctAnswers'),
-          accuracy: t('accuracy'),
-          timeTaken: t('timeTaken'),
-          averageTime: t('averageTime'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-        }}
-      />
-    );
+    return null;
   }
 
   // Show loading state while questions are being generated
@@ -209,7 +165,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div id="legal-moves-session">
+    <div id="legal-moves-session" className="min-h-screen">
       <LegalMovesPlaying
         currentQuestion={currentQuestion}
         timeRemaining={Math.max(0, timeLimit - timeElapsed)}
@@ -222,6 +178,8 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         countdown={countdown}
         correctCount={answers.filter((a) => a).length}
         incorrectCount={answers.filter((a) => !a).length}
+        isPaused={isPaused}
+        onTogglePause={togglePause}
       />
     </div>
   );

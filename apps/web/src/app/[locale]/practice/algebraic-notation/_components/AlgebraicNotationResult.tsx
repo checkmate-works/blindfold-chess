@@ -58,7 +58,7 @@ export function AlgebraicNotationResult({
 
       {/* Next Button */}
       <Button onClick={onNext} variant="primary" size="lg" fullWidth>
-        {currentQuestionIndex < totalQuestions - 1 ? t('nextExercise') : t('complete')}
+        {currentQuestionIndex < totalQuestions - 1 ? t('next') : t('complete')}
       </Button>
     </div>
   );

@@ -1,12 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
-import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { Question } from '../_lib/types';
@@ -19,13 +16,11 @@ type Props = {
 };
 
 export default function AlgebraicNotation({ questions, locale }: Props) {
-  const tPractice = useTranslations('practice');
   const { preferences } = useGamePreferences();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
-  const [completed, setCompleted] = useState(false);
 
   const question = questions[currentQuestionIndex];
 
@@ -44,13 +39,10 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
       setShowResult(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      setCompleted(true);
+      // Redirect to result page
+      window.location.href = `/${locale}/practice/algebraic-notation/result?score=${score}&total=${questions.length}`;
     }
   };
-
-  const handlePlayAgain = useCallback(() => {
-    window.location.href = `/${locale}/practice/algebraic-notation`;
-  }, [locale]);
 
   // Scroll to session element after mount
   useEffect(() => {
@@ -62,23 +54,6 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
       }
     }, 100);
   }, []);
-
-  if (completed) {
-    return (
-      <PracticeComplete
-        score={score}
-        total={questions.length}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: tPractice('score'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-        }}
-      />
-    );
-  }
 
   return (
     <div id="algebraic-notation-session" className="space-y-4">

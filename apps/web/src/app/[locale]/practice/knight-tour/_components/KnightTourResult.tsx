@@ -20,6 +20,7 @@ type Props = {
   isClosedTour: boolean;
   isTutorial?: boolean;
   onPlayAgain: () => void;
+  onChangeSettings?: () => void;
   onFinishTutorial?: () => void;
 };
 
@@ -31,6 +32,7 @@ export function KnightTourResult({
   isClosedTour,
   isTutorial = false,
   onPlayAgain,
+  onChangeSettings,
   onFinishTutorial,
 }: Props) {
   const locale = useLocale();
@@ -41,6 +43,7 @@ export function KnightTourResult({
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+        {/* ... (Header and Board sections unchanged) ... */}
         {/* Result Header */}
         <SectionTitle className="text-2xl font-bold text-center mb-6">
           {t('squaresVisited')}: {moveCount} / 64
@@ -97,11 +100,28 @@ export function KnightTourResult({
               >
                 {tPractice('tryAgain')}
               </Button>
-              <Link href="/practice" locale={locale} className="w-full">
-                <Button variant="secondary" size="lg" fullWidth className="rounded-lg">
+
+              {onChangeSettings && (
+                <Button
+                  onClick={onChangeSettings}
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  className="rounded-lg"
+                >
                   {tPractice('morePractice')}
                 </Button>
-              </Link>
+              )}
+
+              <div className="text-center pt-2">
+                <Link
+                  href="/practice"
+                  locale={locale}
+                  className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+                >
+                  {tPractice('doOtherPractice')}
+                </Link>
+              </div>
             </>
           )}
         </div>

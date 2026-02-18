@@ -32,7 +32,9 @@ export default async function SquareColorsSessionPage({ params, searchParams }: 
   const { timeLimit } = await searchParams;
   const t = await getTranslations({ locale });
 
-  const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
+  // Default to 60 seconds if timeLimit is missing or 0
+  const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
+  const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
 
   return (
     <div className="space-y-8">

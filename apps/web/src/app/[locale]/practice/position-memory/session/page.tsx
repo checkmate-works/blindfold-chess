@@ -93,6 +93,9 @@ export default async function PositionMemorySessionPage({ params, searchParams }
         mode={mode}
         skipMemorize={skipMemorize}
         isCustomFen={isCustomFen}
+        rawProblemsParam={typeof problemsParam === 'string' ? problemsParam : undefined}
+        sourceParam={typeof sourceParam === 'string' ? sourceParam : undefined}
+        modeParam={typeof modeParam === 'string' ? modeParam : undefined}
       />
 
       <Divider />

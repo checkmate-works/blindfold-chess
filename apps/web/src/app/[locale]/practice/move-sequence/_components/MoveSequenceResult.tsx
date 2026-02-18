@@ -14,6 +14,7 @@ type Props = {
   result: MoveSequenceSessionResult;
   isTutorial?: boolean;
   onTryAgain: () => void;
+  onChangeSettings?: () => void;
   onFinishTutorial?: () => void;
 };
 
@@ -21,6 +22,7 @@ export function MoveSequenceResult({
   result,
   isTutorial = false,
   onTryAgain,
+  onChangeSettings,
   onFinishTutorial,
 }: Props) {
   const locale = useLocale();
@@ -102,11 +104,28 @@ export function MoveSequenceResult({
               >
                 {tPractice('tryAgain')}
               </Button>
-              <Link href="/practice" locale={locale} className="w-full">
-                <Button variant="secondary" size="lg" fullWidth className="rounded-lg">
-                  {tPractice('morePractice')}
+
+              {onChangeSettings && (
+                <Button
+                  onClick={onChangeSettings}
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  className="rounded-lg"
+                >
+                  {tPractice('changeSettings')}
                 </Button>
-              </Link>
+              )}
+
+              <div className="text-center pt-2">
+                <Link
+                  href="/practice"
+                  locale={locale}
+                  className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+                >
+                  {tPractice('doOtherPractice')}
+                </Link>
+              </div>
             </>
           )}
         </div>

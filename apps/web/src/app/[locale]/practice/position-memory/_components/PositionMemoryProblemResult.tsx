@@ -13,6 +13,7 @@ import { fenToLichessUrl } from '@/lib/lichess';
 
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { ChessBoardWithOverlay } from '@/app/[locale]/practice/_components/ChessBoardWithOverlay';
+import { SegmentedProgressBar } from '@/app/[locale]/practice/_components/SegmentedProgressBar';
 
 import type { PositionAccuracy, PositionData } from '../_lib/types';
 import { calculateSquareDifferences } from '../_lib/utils';
@@ -66,46 +67,29 @@ export function PositionMemoryProblemResult({
             <p className="text-sm font-medium text-muted-foreground mb-2">
               {t('recreationProgress')}
             </p>
-            <div className="w-full h-8 bg-muted rounded-lg overflow-hidden flex">
-              <div
-                className="bg-green-600 flex items-center justify-center text-white text-sm font-semibold"
-                style={{ width: `${(accuracy.correctPieces / accuracy.totalPieces) * 100}%` }}
-              >
-                {accuracy.correctPieces > 0 && accuracy.correctPieces}
-              </div>
-              <div
-                className="bg-red-600 flex items-center justify-center text-white text-sm font-semibold"
-                style={{ width: `${(accuracy.incorrectPieces / accuracy.totalPieces) * 100}%` }}
-              >
-                {accuracy.incorrectPieces > 0 && accuracy.incorrectPieces}
-              </div>
-              <div
-                className="bg-muted-foreground/40 flex items-center justify-center text-white text-sm font-semibold"
-                style={{ width: `${(accuracy.missingPieces / accuracy.totalPieces) * 100}%` }}
-              >
-                {accuracy.missingPieces > 0 && accuracy.missingPieces}
-              </div>
-            </div>
-            <div className="flex justify-between mt-2 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-600 rounded"></div>
-                <span>
-                  {t('correct')}: {accuracy.correctPieces}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-600 rounded"></div>
-                <span>
-                  {t('incorrect')}: {accuracy.incorrectPieces}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-muted-foreground/40 rounded"></div>
-                <span>
-                  {t('missing')}: {accuracy.missingPieces}
-                </span>
-              </div>
-            </div>
+            <SegmentedProgressBar
+              segments={[
+                {
+                  key: 'correct',
+                  value: accuracy.correctPieces,
+                  color: 'bg-green-600',
+                  label: t('correct'),
+                },
+                {
+                  key: 'incorrect',
+                  value: accuracy.incorrectPieces,
+                  color: 'bg-red-600',
+                  label: t('incorrect'),
+                },
+                {
+                  key: 'missing',
+                  value: accuracy.missingPieces,
+                  color: 'bg-muted-foreground/40',
+                  label: t('missing'),
+                },
+              ]}
+              total={accuracy.totalPieces}
+            />
 
             {/* Extra pieces display */}
             {accuracy.extraPieces > 0 && (
