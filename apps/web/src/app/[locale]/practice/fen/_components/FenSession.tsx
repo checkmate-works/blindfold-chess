@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 import { calculateAccuracy } from '@/app/[locale]/practice/_lib/accuracy';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_lib/types';
@@ -46,7 +45,7 @@ export function FenSession({
   fens,
 }: Props) {
   const t = useTranslations('practice.fen');
-  const tPractice = useTranslations('practice');
+
   const { preferences } = useGamePreferences();
 
   // Helper function to get score description
@@ -292,20 +291,15 @@ export function FenSession({
     const resultsArray = Array.from(problemResults.values());
 
     if (resultsArray.length === 0 && skippedProblems.size === 0) {
-      return (
-        <PracticeComplete
-          score={0}
-          total={100}
-          onTryAgain={handlePlayAgain}
-          locale={locale}
-          labels={{
-            practiceComplete: tPractice('practiceComplete'),
-            score: `${t('accuracy')}: 0.0% (0/0)`,
-            tryAgain: tPractice('tryAgain'),
-            morePractice: tPractice('morePractice'),
-          }}
-        />
-      );
+      const data = JSON.stringify({
+        score: 0,
+        total: 100,
+        results: [],
+        detailedStats: null,
+      });
+      const scoreText = `${t('accuracy')}: 0.0% (0/0)`;
+      window.location.href = `/${locale}/practice/fen/result?data=${encodeURIComponent(data)}&scoreText=${encodeURIComponent(scoreText)}`;
+      return null;
     }
 
     const totalAccuracy =
@@ -337,39 +331,25 @@ export function FenSession({
       };
     });
 
-    return (
-      <PracticeComplete
-        score={Math.round(totalAccuracy)}
-        total={100}
-        onTryAgain={handlePlayAgain}
-        locale={locale}
-        labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`,
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-          recreationProgress: t('recreationProgress'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-          missing: t('missing'),
-          extra: t('extra'),
-          extraDescription: t('extraDescription'),
-          problemDetails: t('problemDetails'),
-          problem: t('problem'),
-          original: t('original'),
-          yourRecreation: t('yourRecreation'),
-          skipped: t('skipped'),
-        }}
-        detailedStats={{
-          correctPieces: totalCorrect,
-          totalPieces: totalPieces,
-          incorrectPieces: totalIncorrect,
-          missingPieces: totalMissing,
-          extraPieces: totalExtra,
-        }}
-        problemResults={individualResults}
-      />
-    );
+    const detailedStats = {
+      correctPieces: totalCorrect,
+      totalPieces,
+      incorrectPieces: totalIncorrect,
+      missingPieces: totalMissing,
+      extraPieces: totalExtra,
+    };
+
+    const data = JSON.stringify({
+      score: Math.round(totalAccuracy),
+      total: 100,
+      results: individualResults,
+      detailedStats,
+    });
+
+    const scoreText = `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`;
+
+    window.location.href = `/${locale}/practice/fen/result?data=${encodeURIComponent(data)}&scoreText=${encodeURIComponent(scoreText)}`;
+    return null;
   }
 
   return null;
