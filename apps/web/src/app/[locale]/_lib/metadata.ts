@@ -28,6 +28,7 @@ export function generateCanonicalMetadata({
       languages: {
         en: enUrl,
         ja: jaUrl,
+        'x-default': baseUrl,
       },
     },
   };

@@ -44,7 +44,12 @@ export default async function PrivacyPage({ params }: Props) {
         </ul>
         <p>
           {t('analyticsPrivacyPolicy')}{' '}
-          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-muted-foreground hover:text-foreground"
+          >
             {t('googlePrivacyPolicyLink')}
           </a>
         </p>
@@ -58,7 +63,12 @@ export default async function PrivacyPage({ params }: Props) {
         </ul>
         <p>
           {t('adsenseOptOut')}{' '}
-          <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://www.google.com/settings/ads"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-muted-foreground hover:text-foreground"
+          >
             {t('adsSettingsLink')}
           </a>
         </p>
@@ -68,6 +78,7 @@ export default async function PrivacyPage({ params }: Props) {
             href="https://policies.google.com/technologies/partner-sites"
             target="_blank"
             rel="noopener noreferrer"
+            className="underline text-muted-foreground hover:text-foreground"
           >
             {t('partnerSitesLink')}
           </a>
@@ -90,6 +101,31 @@ export default async function PrivacyPage({ params }: Props) {
 
         <SectionTitle>{t('childrenPrivacyTitle')}</SectionTitle>
         <p>{t('childrenPrivacyDescription')}</p>
+
+        <SectionTitle>{t('yourRightsTitle')}</SectionTitle>
+        <p>{t('yourRightsDescription')}</p>
+        <ul className="list-disc ml-6 space-y-2">
+          <li className="text-foreground/90 pl-2">{t('yourRightsItem1')}</li>
+          <li className="text-foreground/90 pl-2">{t('yourRightsItem2')}</li>
+          <li className="text-foreground/90 pl-2">{t('yourRightsItem3')}</li>
+          <li className="text-foreground/90 pl-2">{t('yourRightsItem4')}</li>
+        </ul>
+
+        <SectionTitle>{t('cookieDetailsTitle')}</SectionTitle>
+        <p>{t('cookieDetailsDescription')}</p>
+        <ul className="list-disc ml-6 space-y-2">
+          <li className="text-foreground/90 pl-2">{t('cookieDetailsItem1')}</li>
+          <li className="text-foreground/90 pl-2">{t('cookieDetailsItem2')}</li>
+          <li className="text-foreground/90 pl-2">{t('cookieDetailsItem3')}</li>
+        </ul>
+        <p>{t('cookieDetailsNote')}</p>
+
+        <SectionTitle>{t('dataRetentionTitle')}</SectionTitle>
+        <p>{t('dataRetentionDescription')}</p>
+        <ul className="list-disc ml-6 space-y-2">
+          <li className="text-foreground/90 pl-2">{t('dataRetentionItem1')}</li>
+          <li className="text-foreground/90 pl-2">{t('dataRetentionItem2')}</li>
+        </ul>
 
         <SectionTitle>{t('changesTitle')}</SectionTitle>
         <p>{t('changesDescription')}</p>
