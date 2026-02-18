@@ -9,7 +9,7 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import { FaInfoCircle, FaLink, FaPlay } from 'react-icons/fa';
 
-import { CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import { BetaNotice, CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -366,6 +366,10 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
         <SectionTitle className="mb-6">{t('title')}</SectionTitle>
+
+        <BetaNotice className="mb-6">
+          <p>{t('betaNotice')}</p>
+        </BetaNotice>
 
         <div className="space-y-6">
           {/* Problem Source Toggle */}

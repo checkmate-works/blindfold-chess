@@ -742,6 +742,7 @@
     "routePlanner": {
       "title": "ルートプランナー",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
       "settings": "設定",
       "start": "開始",
       "piece": "動かす駒",
@@ -805,14 +806,19 @@
         "previous": "戻る",
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
-        "restart": "もう一度",
-        "finish": "練習を開始する"
-      },
-      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。"
+        "restart": "もう一度"
+      }
     },
     "moveSequence": {
-      "title": "約束組手",
-      "description": "手順を記憶して再現するトレーニング",
+      "title": "ムーブシーケンス",
+      "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
+      "articles": {
+        "algebraicNotation": {
+          "title": "代数表記法",
+          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
+        }
+      },
       "showBoard": "ボードを表示",
       "hideBoard": "ボードを隠す",
       "fenRequired": "FENを入力してください",
@@ -897,13 +903,7 @@
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
       "cancel": "キャンセル",
-      "relatedArticles": "関連記事",
-      "articles": {
-        "algebraicNotation": {
-          "title": "代数表記法",
-          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
-        }
-      }
+      "relatedArticles": "関連記事"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",
