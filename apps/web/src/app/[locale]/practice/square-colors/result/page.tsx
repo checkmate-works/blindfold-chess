@@ -65,13 +65,14 @@ export default function SquareColorsResultPage({ params }: Props) {
 
       tryAgain: tPractice('tryAgain'),
       morePractice: tPractice('changeSettings'),
+      relatedLearning: tPractice('relatedLearning'),
     }),
     [t, tPractice]
   );
 
   // Define related module
   const relatedModule = {
-    href: `/${locale}/learn/board-visualization/square-colors`,
+    href: '/learn/board-visualization/square-colors',
     icon: '🎨',
     title: t('viewArticle'),
     description: t('articleDescription'),

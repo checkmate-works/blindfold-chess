@@ -67,17 +67,17 @@ export default function BoardSymmetryResultPage({ params }: Props) {
 
       tryAgain: tPractice('tryAgain'),
       morePractice: tPractice('changeSettings'),
+      relatedLearning: tPractice('relatedLearning'),
     }),
     [tPractice]
   );
 
   // Define related module
   const relatedModule = {
-    href: `/${locale}/learn/coordinates/symmetry`,
+    href: '/learn/coordinates/symmetry',
     icon: '↔️',
     title: t('viewArticle'),
     description: t('articleDescription'),
-    sectionTitle: tPractice('relatedLearning'),
   };
 
   // Format average time text

@@ -72,6 +72,7 @@ export default function LegalMovesResultPage(props: Props) {
           recreationProgress: t('accuracy'),
           correct: t('correct'),
           incorrect: t('incorrect'),
+          relatedLearning: tPractice('relatedLearning'),
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         detailedStats={detailedStats}

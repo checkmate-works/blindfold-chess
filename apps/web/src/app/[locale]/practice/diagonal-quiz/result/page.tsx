@@ -86,10 +86,11 @@ export default function DiagonalQuizResultPage(props: Props) {
           tryAgain: tPractice('tryAgain'),
           morePractice: tPractice('changeSettings'),
           averageTime: tPractice('averageTime'),
+          relatedLearning: tPractice('relatedLearning'),
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         relatedModule={{
-          href: '/learn/bishop-movement',
+          href: '/learn/moves/bishop-movement',
           icon: '♗',
           title: tPractice('relatedArticles.bishopMovement.title'),
           description: tPractice('relatedArticles.bishopMovement.description'),
@@ -108,10 +109,10 @@ export default function DiagonalQuizResultPage(props: Props) {
 
       <Breadcrumb
         items={[
-          { label: tPractice('title'), href: `/${locale}/practice` },
+          { label: tPractice('title'), href: '/practice' },
           {
             label: t('title'),
-            href: `/${locale}/practice/diagonal-quiz`,
+            href: '/practice/diagonal-quiz',
           },
           { label: tPractice('result') },
         ]}

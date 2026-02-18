@@ -15,31 +15,16 @@ type Props = {
   }>;
 };
 
-export default function CoordinateQuizResultPage(props: Props) {
+export default function AlgebraicNotationResultPage(props: Props) {
   const params = use(props.params);
   const { locale } = params;
-  const t = useTranslations('practice.coordinateQuiz');
+  const t = useTranslations('practice.algebraicNotation');
   const tPractice = useTranslations('practice');
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const score = parseInt(searchParams.get('score') || '0', 10);
   const total = parseInt(searchParams.get('total') || '0', 10);
-  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
-
-  const timeLimit = searchParams.get('timeLimit');
-  const orientation = searchParams.get('orientation');
-  const speed = searchParams.get('speed');
-
-  // Construct URL for retrying with same settings
-  const tryAgainParams = new URLSearchParams();
-  if (timeLimit) tryAgainParams.set('timeLimit', timeLimit);
-  if (orientation) tryAgainParams.set('boardOrientation', orientation);
-  if (speed) tryAgainParams.set('feedbackSpeed', speed);
-  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/session?${tryAgainParams.toString()}`;
-
-  // Calculate average time if total > 0
-  const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
 
   const detailedStats = useMemo(
     () => ({
@@ -57,27 +42,27 @@ export default function CoordinateQuizResultPage(props: Props) {
       <PracticeComplete
         score={score}
         total={total}
-        onTryAgain={() => router.push(tryAgainUrl)}
-        onExit={() => router.push(`/${locale}/practice/coordinate-quiz`)}
+        onTryAgain={() =>
+          router.push(`/${locale}/practice/algebraic-notation/session#algebraic-notation-session`)
+        }
+        onExit={() => router.push(`/${locale}/practice/algebraic-notation`)}
         locale={locale}
         labels={{
           practiceComplete: tPractice('practiceComplete'),
           score: tPractice('score'),
           tryAgain: tPractice('tryAgain'),
           morePractice: tPractice('changeSettings'),
-          averageTime: tPractice('averageTime'),
           recreationProgress: tPractice('accuracy'),
           correct: tPractice('correct'),
           incorrect: tPractice('incorrect'),
           relatedLearning: tPractice('relatedLearning'),
         }}
-        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         detailedStats={detailedStats}
         relatedModule={{
-          href: '/learn/coordinates/coordinate-confusion',
-          icon: '🔄',
-          title: t('articles.coordinateConfusion.title'),
-          description: t('articles.coordinateConfusion.description'),
+          href: '/learn/notation/algebraic-notation',
+          icon: '🔤',
+          title: t('viewArticle'),
+          description: t('articleDescription'),
         }}
         otherPracticeLink={{
           href: `/${locale}/practice`,
@@ -93,7 +78,7 @@ export default function CoordinateQuizResultPage(props: Props) {
             { label: tPractice('title'), href: '/practice' },
             {
               label: t('title'),
-              href: '/practice/coordinate-quiz',
+              href: '/practice/algebraic-notation',
             },
             { label: tPractice('result') },
           ]}

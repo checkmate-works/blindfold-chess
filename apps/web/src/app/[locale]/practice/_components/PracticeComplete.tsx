@@ -57,6 +57,7 @@ type Props = {
     deleteFenCancel?: string;
     skipped?: string;
     analyzeOnLichess?: string;
+    relatedLearning?: string;
   };
   relatedModule?: {
     href: string;
@@ -495,7 +496,7 @@ export function PracticeComplete({
       {relatedModule && (
         <div className="mt-12">
           <SectionTitle className="text-xl font-semibold mb-4">
-            {relatedModule.sectionTitle || 'Related Learning'}
+            {relatedModule.sectionTitle || labels.relatedLearning || 'Related Learning'}
           </SectionTitle>
           <CardLink
             href={relatedModule.href}
