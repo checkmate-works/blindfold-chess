@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
@@ -132,17 +130,6 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     }
   };
 
-  const handleTryAgain = () => {
-    setCorrectAnswers(0);
-    setWrongAnswers(0);
-    setRound(0);
-    setIsFinished(false);
-    setFeedbackState({});
-    setCurrentSquare('');
-    hasStarted.current = false;
-    // Effect will trigger nextProblem
-  };
-
   const handleQuit = () => {
     setShowQuitModal(true);
   };
@@ -152,23 +139,22 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
   };
 
   if (isFinished) {
-    return (
-      <div className="max-w-4xl mx-auto">
-        <PracticeComplete
-          score={correctAnswers}
-          total={initialProblemCount}
-          onTryAgain={handleTryAgain}
-          onExit={confirmQuit} // Exit to menu
-          locale={locale}
-          labels={{
-            practiceComplete: tCommon('practiceComplete'),
-            score: tCommon('correctAnswers'), // Show correct answers count instead of score points
-            tryAgain: tCommon('tryAgain'),
-            morePractice: tCommon('morePractice'),
-          }}
-        />
-      </div>
-    );
+    const settings = {
+      count: initialProblemCount,
+      orientation: initialOrientation,
+    };
+
+    const result = {
+      score: correctAnswers,
+      total: initialProblemCount,
+    };
+
+    const params = new URLSearchParams();
+    params.set('data', JSON.stringify(result));
+    params.set('settings', JSON.stringify(settings));
+
+    router.push(`/${locale}/practice/quadrants/result?${params.toString()}`);
+    return null;
   }
 
   return (
@@ -205,17 +191,6 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
             orientation={currentOrientation}
           />
         </div>
-
-        <AnswerFeedback
-          isCorrect={
-            feedbackState.correct && !feedbackState.wrong
-              ? true
-              : feedbackState.wrong
-                ? false
-                : null
-          }
-          isVisible={!!feedbackState.correct}
-        />
       </div>
 
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
