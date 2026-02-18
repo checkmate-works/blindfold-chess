@@ -18,7 +18,7 @@ export default function SquareColorsResultPage({ params }: Props) {
   const router = useRouter();
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
-  const tNavigation = useTranslations('navigation');
+
   const searchParams = useSearchParams();
 
   // Validate locale
@@ -89,7 +89,7 @@ export default function SquareColorsResultPage({ params }: Props) {
         score={score}
         total={total}
         onTryAgain={() =>
-          (window.location.href = `/${locale}/practice/square-colors/session?timeLimit=${timeLimit}`)
+          router.push(`/${locale}/practice/square-colors/session?timeLimit=${timeLimit}`)
         }
         onExit={() => router.push(`/${locale}/practice/square-colors`)}
         locale={locale}
@@ -107,7 +107,7 @@ export default function SquareColorsResultPage({ params }: Props) {
 
       <Breadcrumb
         items={[
-          { label: tNavigation('practice'), href: '/practice' },
+          { label: tPractice('title'), href: '/practice' },
           { label: t('title'), href: '/practice/square-colors' },
           { label: tPractice('result') },
         ]}
