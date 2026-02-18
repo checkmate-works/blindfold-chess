@@ -10,6 +10,7 @@ import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfir
 import { calculateAccuracy } from '@/app/[locale]/practice/_lib/accuracy';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { getFenPositions } from '../_data/positions';
 import { FenProblemResult } from './FenProblemResult';
 import { FenRecreate } from './FenRecreate';
@@ -299,7 +300,7 @@ export function FenSession({
       });
       const scoreText = `${t('accuracy')}: 0.0% (0/0)`;
       window.location.href = `/${locale}/practice/fen/result?data=${encodeURIComponent(data)}&scoreText=${encodeURIComponent(scoreText)}`;
-      return null;
+      return <PracticeResultSkeleton />;
     }
 
     const totalAccuracy =
@@ -349,8 +350,8 @@ export function FenSession({
     const scoreText = `${t('accuracy')}: ${totalAccuracy.toFixed(1)}% (${totalCorrect}/${totalPieces})`;
 
     window.location.href = `/${locale}/practice/fen/result?data=${encodeURIComponent(data)}&scoreText=${encodeURIComponent(scoreText)}`;
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
-  return null;
+  return <PracticeResultSkeleton />;
 }

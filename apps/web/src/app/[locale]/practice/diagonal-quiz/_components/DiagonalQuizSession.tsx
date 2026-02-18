@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import {
   generateSquareSequence,
@@ -178,8 +179,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     }
   }, [isFinished, answers, questionResults, locale, router, timeLimit, totalTime]);
 
-  if (squares.length === 0) {
-    return null;
+  if (squares.length === 0 || isFinished) {
+    return <PracticeResultSkeleton />;
   }
 
   return (

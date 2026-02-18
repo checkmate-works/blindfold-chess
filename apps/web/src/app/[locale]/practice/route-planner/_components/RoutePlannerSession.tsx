@@ -15,6 +15,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import {
   PIECES,
   type PieceType,
@@ -350,7 +351,7 @@ export function RoutePlannerSession({
   // NOTE: 'summary' gameState is effectively replaced by redirection.
   // We can keep the state definition but we won't render it here anymore.
 
-  if (!problem) return null;
+  if (!problem) return <PracticeResultSkeleton />;
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
