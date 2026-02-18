@@ -66,6 +66,12 @@ Configuration for site URL, database connection, Google Analytics, cookie consen
 
 See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
+## Authentication
+
+User authentication via Supabase Auth with Google Sign-In (Apple Sign-In planned). Enables cross-platform account sharing between web, mobile, and desktop apps.
+
+See [docs/authentication-setup.md](docs/authentication-setup.md) for setup instructions.
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:

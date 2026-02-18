@@ -32,6 +32,10 @@
     "contact": {
       "title": "Contact Us",
       "description": "Contact form for Blindfold Chess inquiries"
+    },
+    "signIn": {
+      "title": "Sign In",
+      "description": "Sign in to your Blindfold Chess account"
     }
   },
   "Header": {
@@ -1396,6 +1400,13 @@
       "descriptionSuffix": ".",
       "cta": "Read All Articles"
     }
+  },
+  "signIn": {
+    "title": "Sign In",
+    "description": "Sign in to your Blindfold Chess account",
+    "signInWithGoogle": "Sign in with Google",
+    "signingIn": "Signing in...",
+    "authError": "Sign-in failed. Please try again."
   },
   "posts": {
     "pageTitle": "Posts",

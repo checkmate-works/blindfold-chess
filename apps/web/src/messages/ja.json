@@ -32,6 +32,10 @@
     "contact": {
       "title": "お問い合わせ",
       "description": "Blindfold Chessに関するお問い合わせフォーム"
+    },
+    "signIn": {
+      "title": "サインイン",
+      "description": "Blindfold Chess アカウントにサインイン"
     }
   },
   "Header": {
@@ -1397,6 +1401,13 @@
       "descriptionSuffix": "など、目隠しチェスのヒントとなる知識が収集できます。",
       "cta": "記事一覧を読む"
     }
+  },
+  "signIn": {
+    "title": "サインイン",
+    "description": "Blindfold Chess アカウントにサインイン",
+    "signInWithGoogle": "Google でサインイン",
+    "signingIn": "サインイン中...",
+    "authError": "サインインに失敗しました。もう一度お試しください。"
   },
   "posts": {
     "pageTitle": "投稿",

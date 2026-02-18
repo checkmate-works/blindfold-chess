@@ -31,6 +31,8 @@
     "@blindfold-chess/ui": "workspace:^",
     "@next/third-parties": "^16.0.7",
     "@sentry/nextjs": "^10.26.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.96.0",
     "@types/chess.js": "^0.13.7",
     "@xstate/react": "^6.0.0",
     "chess.js": "^1.4.0",
