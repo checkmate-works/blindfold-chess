@@ -8,6 +8,7 @@ import { Square } from 'chess.js';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 // import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
@@ -173,12 +174,12 @@ export default function CoordinateQuizSession({
   ]);
 
   if (isFinished) {
-    return null; // Or loading spinner
+    return <PracticeResultSkeleton />; // Or loading spinner
   }
 
   // Show loading state while question is being generated
   if (!currentQuestion) {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
   const timeRemaining = Math.max(0, timeLimit - timeElapsed);

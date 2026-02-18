@@ -9,6 +9,7 @@ import { Button } from '@/app/_components';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { parseMoveSequence } from '../_lib/pgn-parser';
 import type { MoveSequenceData, MoveSequencePhase, MoveSequenceSessionResult } from '../_lib/types';
 import { MoveSequenceMemorize } from './MoveSequenceMemorize';
@@ -162,7 +163,7 @@ export function MoveSequenceSession({
             );
 
           case 'result':
-            return null;
+            return <PracticeResultSkeleton />;
 
           default:
             return null;

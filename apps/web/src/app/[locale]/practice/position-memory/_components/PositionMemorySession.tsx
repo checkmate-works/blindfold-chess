@@ -11,6 +11,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
 import type { PositionData } from '../_lib/types';
@@ -409,8 +410,8 @@ export function PositionMemorySession({
   }
 
   if (state.value === 'sessionResult') {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
-  return null;
+  return <PracticeResultSkeleton />;
 }

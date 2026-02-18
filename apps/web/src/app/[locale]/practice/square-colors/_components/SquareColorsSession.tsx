@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import { generateSquareSequence, getSquareColor } from '../_lib/utils';
 import { SquareColorsPlaying } from './SquareColorsPlaying';
@@ -149,12 +150,12 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
   }, [isFinished, answers, locale, router, getStats]);
 
   if (isFinished) {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
   // Show loading state while squares are being generated
   if (squares.length === 0) {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
   return (

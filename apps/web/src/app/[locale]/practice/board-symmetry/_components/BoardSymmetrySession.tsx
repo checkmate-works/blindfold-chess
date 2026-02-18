@@ -9,6 +9,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
@@ -165,10 +166,10 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   }, [isFinished, correctCount, incorrectCount, totalTime, timeLimit, locale, router]);
 
   if (isFinished) {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
-  if (!problem) return null;
+  if (!problem) return <PracticeResultSkeleton />;
 
   return (
     <div id="board-symmetry-session">

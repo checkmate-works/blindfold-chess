@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import type { MoveQuestion, PieceType } from '../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../_lib/utils';
@@ -148,7 +149,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   }, [isFinished, answers, locale, router, timeLimit, selectedPieces, totalTime]);
 
   if (isFinished) {
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
   // Show loading state while questions are being generated
