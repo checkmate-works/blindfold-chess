@@ -4,6 +4,8 @@ import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } fro
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
+
 import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
 
 import '../globals.css';
@@ -48,6 +50,8 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <JsonLd data={generateWebSiteSchema('en')} />
+        <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body>
