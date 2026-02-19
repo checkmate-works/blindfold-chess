@@ -1,8 +1,6 @@
-import type { DiagonalPair } from "./types";
+import { isValidSquare } from "../common";
 
-function isValidSquare(square: string): boolean {
-  return /^[a-h][1-8]$/.test(square);
-}
+import type { DiagonalPair } from "./types";
 
 function fileIndex(file: string): number {
   return file.charCodeAt(0) - "a".charCodeAt(0);

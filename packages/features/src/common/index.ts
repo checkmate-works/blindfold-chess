@@ -1,1 +1,7 @@
-export { generateRandomSquare, generateSquareSequence } from "./utils";
+export { FILES, RANKS } from "./constants";
+export {
+  isValidSquare,
+  computeSquareColor,
+  generateRandomSquare,
+  generateSquareSequence,
+} from "./utils";

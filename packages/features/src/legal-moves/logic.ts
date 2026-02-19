@@ -1,5 +1,7 @@
 import { Chess, Square } from "chess.js";
 
+import { FILES, RANKS } from "../common";
+
 import { pieceSymbolMap } from "./constants";
 import type { MoveQuestion, PieceType } from "./types";
 
@@ -60,14 +62,11 @@ export function generateMoveQuestionForPiece(
   pieceType: PieceType,
   preferLegal: boolean,
 ): MoveQuestion | null {
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
-
   // Try multiple times to generate a suitable question
   for (let attempts = 0; attempts < 50; attempts++) {
     const fromFile = Math.floor(Math.random() * 8);
     const fromRank = Math.floor(Math.random() * 8);
-    const fromSquare = files[fromFile] + ranks[fromRank];
+    const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
     let toFile: number;
     let toRank: number;
@@ -191,7 +190,7 @@ export function generateMoveQuestionForPiece(
 
     // Check if destination is valid
     if (toFile >= 0 && toFile < 8 && toRank >= 0 && toRank < 8) {
-      toSquare = files[toFile] + ranks[toRank];
+      toSquare = FILES[toFile] + RANKS[toRank];
 
       // Ensure from and to are different
       if (toSquare !== fromSquare) {
@@ -212,16 +211,16 @@ export function generateMoveQuestionForPiece(
   // Fallback: return any valid question
   const fromFile = Math.floor(Math.random() * 8);
   const fromRank = Math.floor(Math.random() * 8);
-  const fromSquare = files[fromFile] + ranks[fromRank];
+  const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
   let toFile = Math.floor(Math.random() * 8);
   let toRank = Math.floor(Math.random() * 8);
-  let toSquare = files[toFile] + ranks[toRank];
+  let toSquare = FILES[toFile] + RANKS[toRank];
 
   while (toSquare === fromSquare) {
     toFile = Math.floor(Math.random() * 8);
     toRank = Math.floor(Math.random() * 8);
-    toSquare = files[toFile] + ranks[toRank];
+    toSquare = FILES[toFile] + RANKS[toRank];
   }
 
   return {
