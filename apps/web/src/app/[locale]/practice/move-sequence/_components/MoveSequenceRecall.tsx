@@ -7,11 +7,10 @@ import { useTranslations } from 'next-intl';
 import { ChessBoard } from '@/app/_components';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
-import { FaEye, FaKeyboard, FaList } from 'react-icons/fa';
+import { FaEye } from 'react-icons/fa';
 
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
-import { MoveSelect } from '@/app/[locale]/play/_components/MoveSelect';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
@@ -215,11 +214,6 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
     }
   };
 
-  const handleInputChange = (value: string) => {
-    setMoveInput(value);
-    if (error) setError(null);
-  };
-
   const flipped = data.playerColor === 'b';
 
   // Format completed moves as PGN notation
@@ -283,23 +277,22 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
           {/* Move Input */}
           {requiresUserInput ? (
             <>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3">{turnLabel}</h3>
-                {preferences.moveInputMode === 'select' ? (
-                  <MoveSelect fen={currentFen} onSubmit={handleSubmit} disabled={false} />
-                ) : (
-                  <MoveInput
-                    value={moveInput}
-                    onChange={handleInputChange}
-                    onSubmit={handleSubmit}
-                    disabled={false}
-                    showSuggestions={preferences.enableAutoComplete}
-                    showSubmitButton={true}
-                  />
-                )}
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-              </div>
-              <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-muted-foreground">{turnLabel}</h3>
+              <MoveInputPanel
+                preferences={preferences}
+                updatePreferences={updatePreferences}
+                currentFen={currentFen}
+                moveInput={moveInput}
+                onMoveInputChange={setMoveInput}
+                error={error}
+                onErrorClear={() => {
+                  if (error) setError(null);
+                }}
+                onSubmit={handleSubmit}
+                disabled={false}
+                toggleTitle={t('switchInputMode')}
+              />
+              <div className="flex justify-start">
                 <button
                   onClick={() => setIsBoardVisible(true)}
                   className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center gap-2"
@@ -307,23 +300,6 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
                 >
                   <FaEye className="w-4 h-4" />
                   <span>{t('showBoard')}</span>
-                </button>
-                <button
-                  onClick={() =>
-                    updatePreferences({
-                      moveInputMode: preferences.moveInputMode === 'text' ? 'select' : 'text',
-                    })
-                  }
-                  className="p-2 border border-border rounded-md hover:bg-muted"
-                  title={
-                    preferences.moveInputMode === 'text' ? t('switchToSelect') : t('switchToText')
-                  }
-                >
-                  {preferences.moveInputMode === 'text' ? (
-                    <FaList className="w-4 h-4" />
-                  ) : (
-                    <FaKeyboard className="w-4 h-4" />
-                  )}
                 </button>
               </div>
             </>

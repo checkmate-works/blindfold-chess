@@ -809,7 +809,7 @@
       }
     },
     "moveSequence": {
-      "title": "Move Sequence",
+      "title": "Yakusoku Kumite",
       "description": "Memorize and visualize a sequence of moves on the board",
       "betaNotice": "This feature is in beta and may contain unexpected bugs.",
       "articles": {
@@ -853,6 +853,7 @@
       "opponentTurn": "Waiting for opponent's move...",
       "switchToSelect": "Switch to list selection",
       "switchToText": "Switch to text input",
+      "switchInputMode": "Switch input mode",
       "wrongMove": "{move} is incorrect",
       "perfect": "Perfect!",
       "completed": "Completed",

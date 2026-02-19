@@ -2,14 +2,12 @@
 
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaEye, FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
+import { FaEye } from 'react-icons/fa';
 
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { ConfirmationDialogs } from '../_hooks';
-import { ButtonInput } from './ButtonInput';
-import { MoveInput } from './MoveInput';
-import { MoveSelect } from './MoveSelect';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -49,71 +47,29 @@ export function GameInProgressPanel({
   return (
     <div className="flex flex-col gap-6">
       {/* Move Input */}
-      <div>
-        {isPlayerTurn ? (
-          <>
-            {preferences.moveInputMode === 'select' ? (
-              <MoveSelect
-                fen={currentFen}
-                onSubmit={handleSubmitMove}
-                onChange={() => {
-                  if (error) setError(null);
-                }}
-                disabled={isLoading}
-                placeholder={t('selectMove')}
-              />
-            ) : preferences.moveInputMode === 'button' ? (
-              <ButtonInput fen={currentFen} onSubmit={handleSubmitMove} disabled={isLoading} />
-            ) : (
-              <MoveInput
-                value={moveInput}
-                onChange={(value) => {
-                  setMoveInput(value);
-                  if (error) setError(null);
-                }}
-                onSubmit={handleSubmitMove}
-                disabled={isLoading}
-                placeholder={t('inputMove')}
-                showSuggestions={preferences.enableAutoComplete}
-                showSubmitButton={true}
-              />
-            )}
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          </>
-        ) : (
+      {isPlayerTurn ? (
+        <MoveInputPanel
+          preferences={preferences}
+          updatePreferences={updatePreferences}
+          currentFen={currentFen}
+          moveInput={moveInput}
+          onMoveInputChange={setMoveInput}
+          error={error}
+          onErrorClear={() => {
+            if (error) setError(null);
+          }}
+          onSubmit={handleSubmitMove}
+          disabled={isLoading}
+          inputPlaceholder={t('inputMove')}
+          selectPlaceholder={t('selectMove')}
+          toggleTitle={t('switchInputMode')}
+        />
+      ) : (
+        <div>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <p>{isLoading ? t('aiThinking') : t('yourMove')}</p>
             {isLoading && <SpinnerIcon size={16} className="animate-spin text-primary" />}
           </div>
-        )}
-      </div>
-
-      {/* Toggle Button */}
-      {isPlayerTurn && (
-        <div className="flex items-center justify-end">
-          <button
-            onClick={() => {
-              const nextMode =
-                preferences.moveInputMode === 'text'
-                  ? 'select'
-                  : preferences.moveInputMode === 'select'
-                    ? 'button'
-                    : 'text';
-              updatePreferences({
-                moveInputMode: nextMode,
-              });
-            }}
-            className="p-2 border border-border rounded-md hover:bg-muted"
-            title={t('switchInputMode')}
-          >
-            {preferences.moveInputMode === 'text' ? (
-              <FaList className="w-4 h-4" />
-            ) : preferences.moveInputMode === 'select' ? (
-              <FaGamepad className="w-4 h-4" />
-            ) : (
-              <FaKeyboard className="w-4 h-4" />
-            )}
-          </button>
         </div>
       )}
 

@@ -810,7 +810,7 @@
       }
     },
     "moveSequence": {
-      "title": "ムーブシーケンス",
+      "title": "約束組手",
       "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
       "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
       "articles": {
@@ -854,6 +854,7 @@
       "opponentTurn": "相手の手を待っています...",
       "switchToSelect": "リスト選択に切り替え",
       "switchToText": "テキスト入力に切り替え",
+      "switchInputMode": "入力モードを切り替え",
       "wrongMove": "{move}は間違いです",
       "perfect": "完璧！",
       "completed": "完了",
