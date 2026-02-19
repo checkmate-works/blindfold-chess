@@ -5,8 +5,9 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import { MoveSequenceResult } from '../_components/MoveSequenceResult';
 import { encodeMoveSequenceToBase64 } from '../_lib/share';
@@ -78,12 +79,6 @@ export default function MoveSequenceResultPage(props: Props) {
     router.push(`/${locale}/practice/move-sequence`);
   };
 
-  const breadcrumbItems = [
-    { label: tPractice('title'), href: '/practice' },
-    { label: t('title'), href: '/practice/move-sequence' },
-    { label: tPractice('result') },
-  ];
-
   /* TODO: Add related learning links when available */
   const relatedLinks: Array<{
     href: string;
@@ -97,9 +92,15 @@ export default function MoveSequenceResultPage(props: Props) {
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/move-sequence' },
+        { label: tPractice('result') },
+      ]}
+    >
       <MoveSequenceResult
         result={result}
         isTutorial={isTutorial}
@@ -128,10 +129,6 @@ export default function MoveSequenceResultPage(props: Props) {
           </div>
         </div>
       )}
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeResultPage>
   );
 }

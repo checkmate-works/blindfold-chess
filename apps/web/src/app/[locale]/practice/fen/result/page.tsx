@@ -5,9 +5,9 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 type Props = {
   params: Promise<{
@@ -37,16 +37,16 @@ export default function FenResultPage(props: Props) {
     }
   }, [dataParam]);
 
-  const breadcrumbItems = [
-    { label: tPractice('title'), href: '/practice' },
-    { label: t('title'), href: '/practice/fen' },
-    { label: tPractice('result') },
-  ];
-
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('pageTitle')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/fen' },
+        { label: tPractice('result') },
+      ]}
+    >
       <PracticeComplete
         score={score}
         total={total}
@@ -84,10 +84,6 @@ export default function FenResultPage(props: Props) {
           label: tPractice('doOtherPractice'),
         }}
       />
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeResultPage>
   );
 }

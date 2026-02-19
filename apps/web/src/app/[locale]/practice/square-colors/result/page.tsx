@@ -5,9 +5,9 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -84,9 +84,17 @@ export default function SquareColorsResultPage({ params }: Props) {
     total > 0 ? tPractice('secondsFormat', { seconds: timePerQuestion.toFixed(1) }) : undefined;
 
   return (
-    <div className="container py-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/square-colors' },
+        { label: tPractice('result') },
+      ]}
+      containerClassName="container py-8"
+      dividerClassName="my-8"
+    >
       <PracticeComplete
         score={score}
         total={total}
@@ -104,17 +112,6 @@ export default function SquareColorsResultPage({ params }: Props) {
           label: tPractice('doOtherPractice'),
         }}
       />
-
-      <Divider className="my-8" />
-
-      <Breadcrumb
-        items={[
-          { label: tPractice('title'), href: '/practice' },
-          { label: t('title'), href: '/practice/square-colors' },
-          { label: tPractice('result') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeResultPage>
   );
 }

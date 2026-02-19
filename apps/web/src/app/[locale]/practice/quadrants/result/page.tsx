@@ -5,9 +5,10 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 type Props = {
   params: Promise<{
@@ -57,20 +58,20 @@ export default function QuadrantAnchorsResultPage(props: Props) {
     }
   };
 
-  const breadcrumbItems = [
-    { label: tPractice('title'), href: '/practice' },
-    { label: t('title'), href: '/practice/quadrants' },
-    { label: tPractice('result') },
-  ];
-
   if (!result) {
     return null; // Or some error state
   }
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/quadrants' },
+        { label: tPractice('result') },
+      ]}
+    >
       <PracticeComplete
         score={result.score}
         total={result.total}
@@ -103,10 +104,6 @@ export default function QuadrantAnchorsResultPage(props: Props) {
           />
         </div>
       </div>
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeResultPage>
   );
 }

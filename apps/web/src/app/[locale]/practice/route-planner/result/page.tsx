@@ -6,10 +6,11 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import {
   type RoutePlannerResult,
@@ -51,12 +52,6 @@ export default function RoutePlannerResultPage(props: Props) {
     }
   }, [dataParam]);
 
-  const breadcrumbItems = [
-    { label: tPractice('title'), href: '/practice' },
-    { label: t('title'), href: '/practice/route-planner' },
-    { label: tPractice('result') },
-  ];
-
   const handleTryAgain = () => {
     if (isTutorial) {
       router.push(`/${locale}/practice/route-planner?mode=tutorial`);
@@ -93,9 +88,15 @@ export default function RoutePlannerResultPage(props: Props) {
   ];
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/route-planner' },
+        { label: tPractice('result') },
+      ]}
+    >
       <PracticeComplete
         score={score}
         total={total}
@@ -154,10 +155,6 @@ export default function RoutePlannerResultPage(props: Props) {
           </div>
         </div>
       )}
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeResultPage>
   );
 }

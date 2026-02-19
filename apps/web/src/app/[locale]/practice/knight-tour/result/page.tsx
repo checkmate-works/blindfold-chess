@@ -6,8 +6,9 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import { KnightTourResult } from '../_components/KnightTourResult';
 
@@ -76,12 +77,6 @@ export default function KnightTourResultPage(props: Props) {
     router.push(`/${locale}/practice/knight-tour`);
   };
 
-  const breadcrumbItems = [
-    { label: tPractice('title'), href: '/practice' },
-    { label: t('title'), href: '/practice/knight-tour' },
-    { label: tPractice('result') },
-  ];
-
   const relatedLinks = [
     {
       href: '/learn/practice/knight-tour',
@@ -98,9 +93,15 @@ export default function KnightTourResultPage(props: Props) {
   ];
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/knight-tour' },
+        { label: tPractice('result') },
+      ]}
+    >
       <KnightTourResult
         success={success}
         moveCount={visitedSquares.size}
@@ -133,10 +134,6 @@ export default function KnightTourResultPage(props: Props) {
           </div>
         </div>
       )}
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeResultPage>
   );
 }

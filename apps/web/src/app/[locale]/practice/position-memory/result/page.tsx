@@ -5,9 +5,9 @@ import { use, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 type Props = {
   params: Promise<{
@@ -132,9 +132,17 @@ export default function PositionMemoryResultPage(props: Props) {
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tNavigation('practice'), href: '/practice' },
+        { label: t('title'), href: '/practice/position-memory' },
+        { label: tPractice('result') },
+      ]}
+      containerClassName="space-y-8"
+      dividerClassName="my-8"
+    >
       <PracticeComplete
         score={score}
         total={total}
@@ -172,20 +180,6 @@ export default function PositionMemoryResultPage(props: Props) {
           label: tPractice('doOtherPractice'),
         }}
       />
-
-      <Divider className="my-8" />
-
-      <Breadcrumb
-        items={[
-          { label: tNavigation('practice'), href: '/practice' },
-          {
-            label: t('title'),
-            href: '/practice/position-memory',
-          },
-          { label: tPractice('result') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeResultPage>
   );
 }

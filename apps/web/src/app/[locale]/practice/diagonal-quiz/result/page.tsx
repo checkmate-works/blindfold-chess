@@ -5,9 +5,9 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import { DiagonalQuizProblemList } from '../_components/DiagonalQuizProblemList';
 import type { QuestionResult } from '../_components/DiagonalQuizProblemList';
@@ -69,9 +69,15 @@ export default function DiagonalQuizResultPage(props: Props) {
     questionResults.length > 0 ? (timeElapsed / questionResults.length).toFixed(1) : '0.0';
 
   return (
-    <div className="container py-8 max-w-4xl mx-auto space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
+    <PracticeResultPage
+      locale={locale}
+      title={t('title')}
+      breadcrumbItems={[
+        { label: tPractice('title'), href: '/practice' },
+        { label: t('title'), href: '/practice/diagonal-quiz' },
+        { label: tPractice('result') },
+      ]}
+    >
       <PracticeComplete
         score={score}
         total={total}
@@ -106,20 +112,6 @@ export default function DiagonalQuizResultPage(props: Props) {
           <DiagonalQuizProblemList results={questionResults} />
         </div>
       </PracticeComplete>
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: tPractice('title'), href: '/practice' },
-          {
-            label: t('title'),
-            href: '/practice/diagonal-quiz',
-          },
-          { label: tPractice('result') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeResultPage>
   );
 }
