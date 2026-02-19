@@ -5,7 +5,7 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
@@ -39,6 +39,8 @@ export default function AlgebraicNotationResultPage(props: Props) {
 
   return (
     <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <PageTitle>{t('pageTitle')}</PageTitle>
+
       <PracticeComplete
         score={score}
         total={total}

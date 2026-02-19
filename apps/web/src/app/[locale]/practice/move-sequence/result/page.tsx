@@ -5,7 +5,7 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, CardLink, Divider, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MoveSequenceResult } from '../_components/MoveSequenceResult';
@@ -98,6 +98,8 @@ export default function MoveSequenceResultPage(props: Props) {
 
   return (
     <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+
       <MoveSequenceResult
         result={result}
         isTutorial={isTutorial}

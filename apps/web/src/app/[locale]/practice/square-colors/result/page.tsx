@@ -5,7 +5,7 @@ import { use, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
-import { Breadcrumb, Divider } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
 
@@ -85,6 +85,8 @@ export default function SquareColorsResultPage({ params }: Props) {
 
   return (
     <div className="container py-8">
+      <PageTitle>{t('title')}</PageTitle>
+
       <PracticeComplete
         score={score}
         total={total}
