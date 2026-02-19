@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { getDiagonals } from '@blindfold-chess/features';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -13,7 +14,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 
-import { getDiagonals } from '../_lib/utils';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
 

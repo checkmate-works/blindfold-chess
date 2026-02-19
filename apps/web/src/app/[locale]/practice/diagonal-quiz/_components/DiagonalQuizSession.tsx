@@ -4,16 +4,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useGameTimer } from '../../_hooks/useGameTimer';
 import {
   generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from '../_lib/utils';
+} from '@blindfold-chess/features';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
+import { useGameTimer } from '../../_hooks/useGameTimer';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 import type { QuestionResult } from './DiagonalQuizProblemList';
 

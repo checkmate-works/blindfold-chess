@@ -6,14 +6,13 @@ import { useTranslations } from 'next-intl';
 
 import { Button, ChessPiece, Square } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { getDiagonalSquares } from '@blindfold-chess/features';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { getDiagonalSquares } from '../_lib/utils';
 
 export type QuestionResult = {
   square: string;

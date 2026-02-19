@@ -1,11 +1,10 @@
-import { describe, expect, it } from 'vitest';
-
 import {
   generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from './utils';
+} from '@blindfold-chess/features';
+import { describe, expect, it } from 'vitest';
 
 describe('getDiagonals', () => {
   describe('corner squares', () => {
