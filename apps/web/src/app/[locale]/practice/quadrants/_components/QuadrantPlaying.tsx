@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
@@ -138,23 +139,29 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     router.push(`/${locale}/practice/quadrants`);
   };
 
+  // Redirect to result page when finished
+  useEffect(() => {
+    if (isFinished) {
+      const settings = {
+        count: initialProblemCount,
+        orientation: initialOrientation,
+      };
+
+      const result = {
+        score: correctAnswers,
+        total: initialProblemCount,
+      };
+
+      const params = new URLSearchParams();
+      params.set('data', JSON.stringify(result));
+      params.set('settings', JSON.stringify(settings));
+
+      router.push(`/${locale}/practice/quadrants/result?${params.toString()}`);
+    }
+  }, [isFinished, correctAnswers, initialProblemCount, initialOrientation, locale, router]);
+
   if (isFinished) {
-    const settings = {
-      count: initialProblemCount,
-      orientation: initialOrientation,
-    };
-
-    const result = {
-      score: correctAnswers,
-      total: initialProblemCount,
-    };
-
-    const params = new URLSearchParams();
-    params.set('data', JSON.stringify(result));
-    params.set('settings', JSON.stringify(settings));
-
-    router.push(`/${locale}/practice/quadrants/result?${params.toString()}`);
-    return null;
+    return <PracticeResultSkeleton />;
   }
 
   return (
