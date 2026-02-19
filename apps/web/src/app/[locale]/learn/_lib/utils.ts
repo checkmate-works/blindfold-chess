@@ -32,6 +32,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
     en: () => import('../_content/de-groot-experiment/en').then((m) => m.default),
     ja: () => import('../_content/de-groot-experiment/ja').then((m) => m.default),
   },
+  diagonals: {
+    en: () => import('../_content/diagonals/en').then((m) => m.default),
+    ja: () => import('../_content/diagonals/ja').then((m) => m.default),
+  },
   'fen-notation': {
     en: () => import('../_content/fen-notation/en').then((m) => m.default),
     ja: () => import('../_content/fen-notation/ja').then((m) => m.default),
@@ -87,6 +91,10 @@ const articleRegistry = {
   'de-groot-experiment': {
     en: () => import('../_content/de-groot-experiment/metadata.en'),
     ja: () => import('../_content/de-groot-experiment/metadata.ja'),
+  },
+  diagonals: {
+    en: () => import('../_content/diagonals/metadata.en'),
+    ja: () => import('../_content/diagonals/metadata.ja'),
   },
   'fen-notation': {
     en: () => import('../_content/fen-notation/metadata.en'),

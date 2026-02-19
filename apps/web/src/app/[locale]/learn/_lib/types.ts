@@ -44,6 +44,7 @@ export type ArticleSlug =
   | 'board-symmetry'
   | 'coordinate-confusion'
   | 'de-groot-experiment'
+  | 'diagonals'
   | 'fen-notation'
   | 'king-movement'
   | 'knight-movement'
@@ -80,6 +81,7 @@ export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
   'board-symmetry': '🦋',
   'coordinate-confusion': '🤔',
   'de-groot-experiment': '🔬',
+  diagonals: '↗️',
   'fen-notation': '📝',
   'king-movement': '♔',
   'knight-movement': '♞',
@@ -93,6 +95,7 @@ export const ARTICLE_ICONS: Record<ArticleSlug, string> = {
 export const ARTICLE_PRACTICE_MAPPING: Record<string, PracticeModuleId[]> = {
   'algebraic-notation': [PRACTICE_MODULES.ALGEBRAIC_NOTATION],
   'coordinate-quiz': [PRACTICE_MODULES.COORDINATE_QUIZ],
+  diagonals: [PRACTICE_MODULES.DIAGONAL_QUIZ],
   'square-colors': [PRACTICE_MODULES.SQUARE_COLORS],
   'board-symmetry': [PRACTICE_MODULES.BOARD_SYMMETRY],
   'knight-tour': [PRACTICE_MODULES.KNIGHT_TOUR],

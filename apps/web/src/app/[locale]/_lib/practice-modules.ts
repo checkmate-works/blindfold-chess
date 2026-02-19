@@ -9,6 +9,7 @@
 export const PRACTICE_MODULES = {
   ALGEBRAIC_NOTATION: 'algebraic-notation',
   COORDINATE_QUIZ: 'coordinate-quiz',
+  DIAGONAL_QUIZ: 'diagonal-quiz',
   FEN: 'fen',
   KNIGHT_TOUR: 'knight-tour',
   LEGAL_MOVES: 'legal-moves',
@@ -23,6 +24,7 @@ export type PracticeModuleId = (typeof PRACTICE_MODULES)[keyof typeof PRACTICE_M
 export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> = {
   [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: 'algebraicNotation',
   [PRACTICE_MODULES.COORDINATE_QUIZ]: 'coordinateQuiz',
+  [PRACTICE_MODULES.DIAGONAL_QUIZ]: 'diagonalQuiz',
   [PRACTICE_MODULES.FEN]: 'fen',
   [PRACTICE_MODULES.KNIGHT_TOUR]: 'knightTour',
   [PRACTICE_MODULES.LEGAL_MOVES]: 'legalMoves',
@@ -35,6 +37,7 @@ export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> 
 export const PRACTICE_MODULE_ICONS: Record<PracticeModuleId, string> = {
   [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: '🔤',
   [PRACTICE_MODULES.COORDINATE_QUIZ]: '🎯',
+  [PRACTICE_MODULES.DIAGONAL_QUIZ]: '↗️',
   [PRACTICE_MODULES.FEN]: '📝',
   [PRACTICE_MODULES.KNIGHT_TOUR]: '♞',
   [PRACTICE_MODULES.LEGAL_MOVES]: '♗',

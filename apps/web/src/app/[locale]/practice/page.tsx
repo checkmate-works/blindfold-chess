@@ -105,7 +105,7 @@ export default async function PracticePage({ params }: Props) {
       id: 'diagonal-quiz',
       title: t('practice.diagonalQuiz.title'),
       description: t('practice.diagonalQuiz.description'),
-      icon: '↗',
+      icon: '↗️',
     },
   ];
 
