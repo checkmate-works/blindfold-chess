@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button, ChessPiece, Square } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { getDiagonalSquares } from '@blindfold-chess/features';
+import { formatTime, getDiagonalSquares } from '@blindfold-chess/features';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -139,12 +139,6 @@ export function DiagonalQuizResult({ questionResults, score, onTryAgain, locale 
       }
       return next;
     });
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const formatAverageTime = (seconds: number) => {

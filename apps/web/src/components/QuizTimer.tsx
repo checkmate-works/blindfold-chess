@@ -1,17 +1,13 @@
 import React from 'react';
 
+import { formatTime } from '@blindfold-chess/features';
+
 type QuizTimerProps = {
   timeRemaining: number;
   progress: number; // 0 to 1
   size?: number;
   fontSize?: string;
   strokeWidth?: number;
-};
-
-const formatTime = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
 export function QuizTimer({
