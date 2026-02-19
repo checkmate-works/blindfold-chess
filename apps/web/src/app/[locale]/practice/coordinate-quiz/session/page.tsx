@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import CoordinateQuizSession from '../_components/CoordinateQuizSession';
 
@@ -39,26 +39,21 @@ export default async function CoordinateQuizSessionPage({ params, searchParams }
   const feedbackSpeedValue = feedbackSpeed || 'normal';
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.coordinateQuiz.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.coordinateQuiz.title'), href: '/practice/coordinate-quiz' },
+        { label: t('practice.coordinateQuiz.session') },
+      ]}
+    >
       <CoordinateQuizSession
         locale={locale}
         initialTimeLimit={timeLimitValue}
         initialBoardOrientation={orientationValue}
         initialFeedbackSpeed={feedbackSpeedValue}
       />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.coordinateQuiz.title'), href: '/practice/coordinate-quiz' },
-          { label: t('practice.coordinateQuiz.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

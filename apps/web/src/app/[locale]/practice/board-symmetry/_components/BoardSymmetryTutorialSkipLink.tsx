@@ -1,33 +1,21 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/practice/_components/TutorialSkipLink';
+
+export const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = 'boardSymmetryTutorialSkipped';
 
 type Props = {
   locale: Locale;
 };
 
-const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = 'boardSymmetryTutorialSkipped';
-
 export function BoardSymmetryTutorialSkipLink({ locale }: Props) {
-  const t = useTranslations('practice.boardSymmetry');
-  const router = useRouter();
-
-  const handleSkip = () => {
-    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
-    router.push(`/${locale}/practice/board-symmetry`);
-  };
-
   return (
-    <button
-      onClick={handleSkip}
-      className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-    >
-      {t('tutorial.skip')}
-    </button>
+    <SharedTutorialSkipLink
+      locale={locale}
+      storageKey={BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY}
+      redirectPath="board-symmetry"
+      translationNamespace="practice.boardSymmetry"
+    />
   );
 }
-
-export { BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY };

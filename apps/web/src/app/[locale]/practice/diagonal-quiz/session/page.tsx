@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import DiagonalQuizSession from '../_components/DiagonalQuizSession';
 
@@ -35,21 +35,16 @@ export default async function DiagonalQuizSessionPage({ params, searchParams }: 
   const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.diagonalQuiz.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.diagonalQuiz.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.diagonalQuiz.title'), href: '/practice/diagonal-quiz' },
+        { label: t('practice.diagonalQuiz.session') },
+      ]}
+    >
       <DiagonalQuizSession locale={locale} initialTimeLimit={timeLimitValue} />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.diagonalQuiz.title'), href: '/practice/diagonal-quiz' },
-          { label: t('practice.diagonalQuiz.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

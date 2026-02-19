@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import LegalMovesSession from '../_components/LegalMovesSession';
 import type { PieceType } from '../_lib/types';
@@ -41,25 +41,20 @@ export default async function LegalMovesSessionPage({ params, searchParams }: Pr
   const selectedPieces: PieceType[] = pieces ? (pieces.split(',') as PieceType[]) : defaultPieces;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.legalMoves.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.legalMoves.title'), href: '/practice/legal-moves' },
+        { label: t('practice.legalMoves.session') },
+      ]}
+    >
       <LegalMovesSession
         locale={locale}
         initialTimeLimit={timeLimitValue}
         selectedPieces={selectedPieces}
       />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.legalMoves.title'), href: '/practice/legal-moves' },
-          { label: t('practice.legalMoves.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

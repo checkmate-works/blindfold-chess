@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import { RoutePlannerSession } from '../_components/RoutePlannerSession';
 import { PIECES } from '../_lib/utils';
@@ -74,9 +74,19 @@ export default async function RoutePlannerSessionPage({ params, searchParams }: 
   }
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.routePlanner.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.routePlanner.title')}
+      showDivider={false}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        {
+          label: t('practice.routePlanner.title'),
+          href: '/practice/route-planner',
+        },
+        { label: t('practice.session') },
+      ]}
+    >
       <RoutePlannerSession
         locale={locale}
         problemCount={problemCount}
@@ -84,18 +94,6 @@ export default async function RoutePlannerSessionPage({ params, searchParams }: 
         mode={mode}
         initialProblem={initialProblem}
       />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          {
-            label: t('practice.routePlanner.title'),
-            href: '/practice/route-planner',
-          },
-          { label: t('practice.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import SquareColorsSession from '../_components/SquareColorsSession';
 
@@ -37,21 +37,16 @@ export default async function SquareColorsSessionPage({ params, searchParams }: 
   const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.squareColors.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.squareColors.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.squareColors.title'), href: '/practice/square-colors' },
+        { label: t('practice.squareColors.session') },
+      ]}
+    >
       <SquareColorsSession locale={locale} initialTimeLimit={timeLimitValue} />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.squareColors.title'), href: '/practice/square-colors' },
-          { label: t('practice.squareColors.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

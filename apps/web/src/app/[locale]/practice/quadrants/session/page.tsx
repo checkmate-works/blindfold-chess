@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import QuadrantPlaying from '../_components/QuadrantPlaying';
 
@@ -37,9 +37,15 @@ export default async function QuadrantSessionPage({ params, searchParams }: Prop
   const initialOrientation = (orientation as 'white' | 'black' | 'random') || 'white';
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.quadrantAnchors.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.quadrantAnchors.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.quadrantAnchors.title'), href: '/practice/quadrants' },
+        { label: t('practice.quadrantAnchors.session') },
+      ]}
+    >
       <div className="max-w-3xl mx-auto">
         <QuadrantPlaying
           key={initialOrientation}
@@ -47,17 +53,6 @@ export default async function QuadrantSessionPage({ params, searchParams }: Prop
           initialOrientation={initialOrientation}
         />
       </div>
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.quadrantAnchors.title'), href: '/practice/quadrants' },
-          { label: t('practice.quadrantAnchors.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }
