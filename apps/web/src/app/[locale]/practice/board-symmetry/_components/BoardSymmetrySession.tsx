@@ -10,7 +10,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useGameTimer } from '../../_hooks/useGameTimer';
+import { useTimedSession } from '../../_hooks/useTimedSession';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
 type Props = {
@@ -21,110 +21,65 @@ type Props = {
 export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props) {
   const router = useRouter();
 
-  const timeLimit = initialTimeLimit;
-  const [isFinished, setIsFinished] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [incorrectCount, setIncorrectCount] = useState(0);
-
-  // Game state
-  const [problem, setProblem] = useState<BoardSymmetryProblem | null>(null);
+  // Module-specific UI state
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(3);
-  const [isPaused, setIsPaused] = useState(false);
+  const hasMounted = useRef(false);
 
-  const hasStarted = useRef(false);
-  const [hasMounted, setHasMounted] = useState(false);
-
-  const nextProblem = useCallback(() => {
-    setProblem(generateProblem());
-    setSelectedFile(null);
-    setSelectedRank(null);
-    setIsCorrect(null);
-    setIsCorrect(null);
-    setIsProcessing(false);
+  const generateQuestion = useCallback((): BoardSymmetryProblem => {
+    return generateProblem();
   }, []);
 
-  // Timer hook
-  const isPlaying = !isFinished && countdown === null && !isProcessing && !isPaused;
-
-  const { timeElapsed, totalTime } = useGameTimer({
-    timeLimit,
-    isActive: isPlaying,
-    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+  const {
+    currentQuestion: problem,
+    timeRemaining,
+    totalTime,
+    correctCount,
+    incorrectCount,
+    showFeedback: isProcessing,
+    isFinished,
+    countdown,
+    isPaused,
+    handleAnswer,
+    togglePause,
+  } = useTimedSession<BoardSymmetryProblem>({
+    timeLimit: initialTimeLimit,
+    generateQuestion,
+    feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
   });
-
-  // Toggle pause
-  const togglePause = useCallback(() => {
-    if (isFinished || countdown !== null) return;
-    setIsPaused((prev) => !prev);
-  }, [isFinished, countdown]);
-
-  // Auto-start and mount detection
-  useEffect(() => {
-    if (hasStarted.current) return;
-    hasStarted.current = true;
-    setHasMounted(true);
-    nextProblem();
-  }, [nextProblem]);
 
   // Scroll to session element after mount
   useEffect(() => {
-    if (!hasMounted) return;
+    if (hasMounted.current) return;
+    hasMounted.current = true;
+
     setTimeout(() => {
       const element = document.getElementById('board-symmetry-session');
       if (element) {
         element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
-  }, [hasMounted]);
+  }, []);
 
-  // Countdown effect
+  // Clear module-specific state when feedback ends (next problem loaded)
   useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500); // Show "START!" for 0.5s
-      return () => clearTimeout(timer);
+    if (!isProcessing) {
+      setSelectedFile(null);
+      setSelectedRank(null);
+      setIsCorrect(null);
     }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
+  }, [isProcessing]);
 
   const checkAnswer = useCallback(
     (file: string, rank: string) => {
       if (!problem || isProcessing || isFinished || countdown !== null || isPaused) return;
 
       const { isCorrect: correct } = checkSymmetryAnswer(file, rank, problem);
-
       setIsCorrect(correct);
-      setIsProcessing(true);
-
-      if (correct) {
-        setCorrectCount((c) => c + 1);
-      } else {
-        setIncorrectCount((c) => c + 1);
-      }
-
-      // Auto-advance
-      setTimeout(
-        () => {
-          if (!isFinished) {
-            nextProblem();
-          }
-        },
-        correct ? 1000 : 2000
-      );
+      handleAnswer(correct);
     },
-    [problem, isProcessing, isFinished, nextProblem, countdown, isPaused]
+    [problem, isProcessing, isFinished, countdown, isPaused, handleAnswer]
   );
 
   const handleFileToggle = (file: string) => {
@@ -137,7 +92,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
 
-  // Auto-submit effect when both selected
+  // Auto-submit when both file and rank are selected
   useEffect(() => {
     if (
       selectedFile &&
@@ -159,11 +114,11 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         score: correctCount.toString(),
         total: total.toString(),
         time: totalTime.toString(),
-        timeLimit: timeLimit.toString(),
+        timeLimit: initialTimeLimit.toString(),
       });
       router.push(`/${locale}/practice/board-symmetry/result?${params.toString()}`);
     }
-  }, [isFinished, correctCount, incorrectCount, totalTime, timeLimit, locale, router]);
+  }, [isFinished, correctCount, incorrectCount, totalTime, initialTimeLimit, locale, router]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;
@@ -183,8 +138,8 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         onFileToggle={handleFileToggle}
         onRankToggle={handleRankToggle}
         isProcessing={isProcessing}
-        timeRemaining={timeLimit - timeElapsed}
-        timeLimit={timeLimit}
+        timeRemaining={timeRemaining}
+        timeLimit={initialTimeLimit}
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={togglePause}
