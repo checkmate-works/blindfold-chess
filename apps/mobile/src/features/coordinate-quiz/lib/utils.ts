@@ -6,4 +6,4 @@ export {
   formatTime,
   calculateScore,
   getSquareColor,
-} from "@blindfold-chess/features";
+} from "@blindfold-chess/features/coordinate-quiz";

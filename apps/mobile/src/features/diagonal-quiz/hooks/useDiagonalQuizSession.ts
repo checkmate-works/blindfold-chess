@@ -1,11 +1,11 @@
 import { useState, useCallback, useRef } from "react";
 import * as Haptics from "expo-haptics";
+import { generateSquareSequence } from "@blindfold-chess/features/common";
 import {
-  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from "@blindfold-chess/features";
+} from "@blindfold-chess/features/diagonal-quiz";
 import type { DiagonalQuestionResult, DiagonalQuizResult } from "../lib/types";
 
 type UseDiagonalQuizSessionProps = {

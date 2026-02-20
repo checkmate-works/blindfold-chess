@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { Button, ChessPiece, Square } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { formatTime, getDiagonalSquares } from '@blindfold-chess/features';
+import { formatTime } from '@blindfold-chess/features/coordinate-quiz';
+import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';

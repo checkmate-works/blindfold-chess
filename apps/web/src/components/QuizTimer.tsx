@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { formatTime } from '@blindfold-chess/features';
+import { formatTime } from '@blindfold-chess/features/coordinate-quiz';
 
 type QuizTimerProps = {
   timeRemaining: number;

@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import {
   generateProblem,
   checkSymmetryAnswer,
-} from "@blindfold-chess/features";
+} from "@blindfold-chess/features/board-symmetry";
 import type { BoardSymmetryProblem, BoardSymmetryResult } from "../lib/types";
 
 type UseBoardSymmetrySessionProps = {

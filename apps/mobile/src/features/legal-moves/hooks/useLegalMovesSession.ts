@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import {
   generateBalancedMoveQuestions,
   isLegalMove,
-} from "@blindfold-chess/features";
+} from "@blindfold-chess/features/legal-moves";
 import type { MoveQuestion, PieceType, LegalMovesResult } from "../lib/types";
 
 type UseLegalMovesSessionProps = {

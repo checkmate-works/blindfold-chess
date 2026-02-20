@@ -5,12 +5,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { generateSquareSequence } from '@blindfold-chess/features/common';
 import {
-  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from '@blindfold-chess/features';
+} from '@blindfold-chess/features/diagonal-quiz';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';

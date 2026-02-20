@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { generateBalancedMoveQuestions, isLegalMove } from '@blindfold-chess/features';
-import type { PieceType } from '@blindfold-chess/features';
+import { generateBalancedMoveQuestions, isLegalMove } from '@blindfold-chess/features/legal-moves';
+import type { PieceType } from '@blindfold-chess/features/legal-moves';
 import { describe, expect, it } from 'vitest';
 
 const BATCH_SIZE = 100;

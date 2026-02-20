@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { COUNTDOWN_INITIAL_VALUE, getNextCountdownValue } from '@blindfold-chess/features';
+import { COUNTDOWN_INITIAL_VALUE, getNextCountdownValue } from '@blindfold-chess/features/common';
 
 export function useCountdown() {
   const [countdown, setCountdown] = useState<number | null>(COUNTDOWN_INITIAL_VALUE);

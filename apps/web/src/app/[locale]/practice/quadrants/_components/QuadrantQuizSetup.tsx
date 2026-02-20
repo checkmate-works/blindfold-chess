@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import type { PracticeMode } from '@blindfold-chess/features';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
 import { BetaNotice, CardLink, SectionTitle } from '@/app/[locale]/_components';

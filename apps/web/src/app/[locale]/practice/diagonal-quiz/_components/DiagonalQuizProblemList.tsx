@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece, Square } from '@/app/_components';
-import { getDiagonalSquares } from '@blindfold-chess/features';
+import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';

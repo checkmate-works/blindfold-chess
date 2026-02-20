@@ -1,1 +1,1 @@
-export { generateRandomSquare, generateSquareSequence } from '@blindfold-chess/features';
+export { generateRandomSquare, generateSquareSequence } from '@blindfold-chess/features/common';

@@ -1,6 +1,6 @@
 'use client';
 
-import type { PracticeMode } from '@blindfold-chess/features';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/usePersistentSettings';
