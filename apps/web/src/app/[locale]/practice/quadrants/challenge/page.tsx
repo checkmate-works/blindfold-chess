@@ -22,13 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/quadrants/session' }),
+    ...generateCanonicalMetadata({ locale, path: 'practice/quadrants/challenge' }),
     title: `${t('practice.quadrantAnchors.title')} - ${t('practice.quadrantAnchors.session')}`,
     description: t('practice.quadrantAnchors.description'),
   };
 }
 
-export default async function QuadrantSessionPage({ params, searchParams }: Props) {
+export default async function QuadrantChallengePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { count, orientation } = await searchParams;
   const t = await getTranslations({ locale });

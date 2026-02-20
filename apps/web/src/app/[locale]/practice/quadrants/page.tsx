@@ -4,7 +4,7 @@ import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import QuadrantQuizSetup from './_components/QuadrantQuizSetup';
+import QuadrantQuiz from './_components/QuadrantQuiz';
 
 type Props = {
   params: Promise<{
@@ -30,7 +30,7 @@ export default async function QuadrantAnchorsPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.quadrantAnchors.title')}</PageTitle>
 
-      <QuadrantQuizSetup locale={locale} />
+      <QuadrantQuiz locale={locale} />
 
       <Divider />
 
