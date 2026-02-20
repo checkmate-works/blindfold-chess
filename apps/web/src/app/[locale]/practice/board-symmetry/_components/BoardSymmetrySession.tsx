@@ -127,7 +127,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   if (!problem) return <PracticeResultSkeleton />;
 
   return (
-    <div id="board-symmetry-session">
+    <div id="board-symmetry-session" className="min-h-screen">
       <BoardSymmetryPlaying
         problem={problem}
         selectedFile={selectedFile}

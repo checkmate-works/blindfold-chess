@@ -105,7 +105,7 @@ export default function QuadrantPlaying({
     setTimeout(() => {
       const element = document.getElementById('quadrant-session');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
   }, []);
@@ -171,7 +171,7 @@ export default function QuadrantPlaying({
   }
 
   return (
-    <div id="quadrant-session" className="max-w-2xl mx-auto space-y-4">
+    <div id="quadrant-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
       <div className="bg-card border border-border rounded-lg p-6 space-y-6">
         {!isTraining && initialProblemCount > 1 && (
           <ProgressBar current={round} total={initialProblemCount} />
