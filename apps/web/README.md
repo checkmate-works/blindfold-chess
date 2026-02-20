@@ -78,6 +78,7 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
 - `pnpm test:run` - Run unit tests once (CI mode)
 - `pnpm test:e2e` - Run E2E tests in headless mode (auto-starts dev server)
+- `pnpm capture-screenshots` - Capture practice page thumbnails for the practice menu
 
 ## Tech Stack
 
@@ -89,6 +90,12 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 - PostgreSQL (Supabase)
 - Playwright (E2E Testing)
 - Vitest (Unit Testing)
+
+## Practice Screenshots
+
+Thumbnail screenshots for the practice menu page, including capture setup, script usage, and how to add new practices.
+
+See [docs/practice-screenshots.md](docs/practice-screenshots.md) for details.
 
 ## Release Process
 
