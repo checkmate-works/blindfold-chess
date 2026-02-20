@@ -40,10 +40,10 @@ export function useLegalMovesSettings() {
     }
   }, []);
 
-  // Update duration
-  const updateDuration = useCallback(
-    (duration: number) => {
-      const newSettings = { ...settings, duration };
+  // Update timeLimit
+  const updateTimeLimit = useCallback(
+    (timeLimit: number) => {
+      const newSettings = { ...settings, timeLimit };
       saveSettings(newSettings);
     },
     [settings, saveSettings],
@@ -77,7 +77,7 @@ export function useLegalMovesSettings() {
   return {
     settings,
     isLoading,
-    updateDuration,
+    updateTimeLimit,
     togglePiece,
     saveSettings,
     resetSettings,

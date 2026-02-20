@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
-import type { PieceSymbol } from 'chess.js';
+import type { RoutePlannerPieceType } from '@blindfold-chess/features/route-planner';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -11,7 +11,7 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 type Props = {
   startSquare: string;
   targetSquare: string;
-  piece: string;
+  piece: RoutePlannerPieceType;
   path: string[]; // sequence of squares visited, excluding start
   showCoordinates?: boolean;
   boardTheme?: BoardTheme;
@@ -93,7 +93,7 @@ export function RoutePlannerBoard({
             {/* Show Piece on the last move */}
             {moveNumber === path.length && (
               <div className="opacity-80 absolute inset-0 flex items-center justify-center">
-                <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={35} />
+                <ChessPiece type={piece} color="w" size={35} />
               </div>
             )}
             <span

@@ -66,8 +66,8 @@ export function SettingsForm({ settings, onUpdateSetting }: SettingsFormProps) {
           {DURATION_OPTIONS.map((duration) =>
             renderOptionButton(
               duration.toString(),
-              settings.duration === duration,
-              () => onUpdateSetting("duration", duration),
+              settings.timeLimit === duration,
+              () => onUpdateSetting("timeLimit", duration),
               t("coordinateQuiz.setup.durationSeconds", { seconds: duration }),
             ),
           )}

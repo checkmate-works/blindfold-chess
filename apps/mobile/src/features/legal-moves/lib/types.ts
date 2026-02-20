@@ -1,6 +1,5 @@
 export {
   PIECE_TYPES,
-  pieceSymbolMap,
   pieceDisplayMap,
   DEFAULT_LEGAL_MOVES_SETTINGS,
 } from "@blindfold-chess/features/legal-moves";

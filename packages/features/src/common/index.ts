@@ -1,5 +1,9 @@
 export { FILES, RANKS } from "./constants";
-export type { PracticeMode } from "./types";
+export type {
+  BasePracticeResult,
+  BasePracticeSettings,
+  PracticeMode,
+} from "./types";
 export {
   type CountdownState,
   COUNTDOWN_STEP_DURATION,

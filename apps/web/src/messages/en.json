@@ -401,11 +401,11 @@
       "selectAtLeastOne": "Please select at least one piece",
       "selectedCount": "{count} selected",
       "pieces": {
-        "bishop": "Bishop",
-        "knight": "Knight",
-        "rook": "Rook",
-        "queen": "Queen",
-        "king": "King"
+        "b": "Bishop",
+        "n": "Knight",
+        "r": "Rook",
+        "q": "Queen",
+        "k": "King"
       },
       "start": "Start",
       "question": "Can piece move from {from} to {to}?",
@@ -768,10 +768,10 @@
       "distance": "Distance: {count}",
       "inputPlaceholder": "Enter next square...",
       "pieces": {
-        "N": "Knight",
-        "B": "Bishop",
-        "R": "Rook",
-        "Q": "Queen"
+        "n": "Knight",
+        "b": "Bishop",
+        "r": "Rook",
+        "q": "Queen"
       },
       "moves": "Moves",
       "currentPosition": "Current Position",

@@ -37,7 +37,7 @@ export default async function LegalMovesChallengePage({ params, searchParams }: 
   const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
 
   // Parse selected pieces from URL
-  const defaultPieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
+  const defaultPieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
   const selectedPieces: PieceType[] = pieces ? (pieces.split(',') as PieceType[]) : defaultPieces;
 
   return (

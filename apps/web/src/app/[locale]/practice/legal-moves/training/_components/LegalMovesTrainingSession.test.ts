@@ -4,7 +4,7 @@ import type { PieceType } from '@blindfold-chess/features/legal-moves';
 import { describe, expect, it } from 'vitest';
 
 const BATCH_SIZE = 100;
-const ALL_PIECES: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
+const ALL_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
 
 describe('LegalMovesTrainingSession logic', () => {
   describe('question generation for training mode', () => {
@@ -130,13 +130,13 @@ describe('LegalMovesTrainingSession logic', () => {
   describe('answer validation', () => {
     it('correctly validates a legal move as legal', () => {
       // e1 to e2 is a legal king move
-      const isLegal = isLegalMove('e1', 'e2', 'king');
+      const isLegal = isLegalMove('e1', 'e2', 'k');
       expect(isLegal).toBe(true);
     });
 
     it('correctly validates an illegal move as illegal', () => {
       // e1 to e4 is not a legal king move
-      const isLegal = isLegalMove('e1', 'e4', 'king');
+      const isLegal = isLegalMove('e1', 'e4', 'k');
       expect(isLegal).toBe(false);
     });
   });

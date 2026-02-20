@@ -12,8 +12,8 @@ export type {
 } from "@blindfold-chess/features/route-planner";
 
 export const PIECE_DISPLAY_MAP: Record<string, string> = {
-  N: "\u2658",
-  B: "\u2657",
-  R: "\u2656",
-  Q: "\u2655",
+  n: "\u2658",
+  b: "\u2657",
+  r: "\u2656",
+  q: "\u2655",
 };

@@ -11,7 +11,7 @@ import { useTheme, spacing } from "../../../../theme";
 export default function LegalMovesSetup() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { settings, isLoading, updateDuration, togglePiece } =
+  const { settings, isLoading, updateTimeLimit, togglePiece } =
     useLegalMovesSettings();
   const { colors } = useTheme();
 
@@ -19,7 +19,7 @@ export default function LegalMovesSetup() {
     router.push({
       pathname: "/(tabs)/practice/legal-moves/session",
       params: {
-        duration: settings.duration.toString(),
+        duration: settings.timeLimit.toString(),
         pieces: settings.selectedPieces.join(","),
       },
     });
@@ -49,9 +49,9 @@ export default function LegalMovesSetup() {
         showsVerticalScrollIndicator={false}
       >
         <SettingsForm
-          duration={settings.duration}
+          timeLimit={settings.timeLimit}
           selectedPieces={settings.selectedPieces}
-          onUpdateDuration={updateDuration}
+          onUpdateTimeLimit={updateTimeLimit}
           onTogglePiece={togglePiece}
         />
       </ScrollView>

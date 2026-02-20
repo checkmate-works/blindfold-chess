@@ -17,7 +17,7 @@ type Props = {
 };
 
 const TUTORIAL_PROBLEM = {
-  piece: 'N',
+  piece: 'n',
   start: 'e4',
   end: 'h5',
 };

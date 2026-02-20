@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from 'chess.js';
 import { FaArrowRight, FaFlagCheckered, FaRedo, FaUndo } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
@@ -391,7 +390,7 @@ export function RoutePlannerSession({
         <div className="flex justify-between items-center border-b border-border pb-4">
           <div className="flex items-center gap-6">
             <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
-              <ChessPiece type={problem.piece.toLowerCase() as PieceSymbol} color="w" size={32} />
+              <ChessPiece type={problem.piece} color="w" size={32} />
             </div>
             <div className="flex items-center gap-4">
               <div>
@@ -447,7 +446,7 @@ export function RoutePlannerSession({
             <div className="flex flex-col gap-3 p-4 bg-card rounded-lg border border-border">
               {/* Piece Row (Read Only Indicator) */}
               <div className="flex gap-2 justify-center">
-                {['K', 'Q', 'R', 'B', 'N'].map((piece) => (
+                {(['k', 'q', 'r', 'b', 'n'] as const).map((piece) => (
                   <button
                     key={piece}
                     disabled
@@ -457,7 +456,7 @@ export function RoutePlannerSession({
                         : 'bg-background border-border opacity-50'
                     }`}
                   >
-                    <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={24} />
+                    <ChessPiece type={piece} color="w" size={24} />
                   </button>
                 ))}
               </div>

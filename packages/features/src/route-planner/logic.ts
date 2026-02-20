@@ -40,7 +40,7 @@ export function getPossibleMoves(
     }
   };
 
-  if (piece === "N") {
+  if (piece === "n") {
     const jumps = [
       [1, 2],
       [1, -2],
@@ -54,7 +54,7 @@ export function getPossibleMoves(
     jumps.forEach((d) => addMove(d[0], d[1]));
   }
 
-  if (piece === "B" || piece === "Q") {
+  if (piece === "b" || piece === "q") {
     const dirs = [
       [1, 1],
       [1, -1],
@@ -64,7 +64,7 @@ export function getPossibleMoves(
     dirs.forEach((d) => addLine(d[0], d[1]));
   }
 
-  if (piece === "R" || piece === "Q") {
+  if (piece === "r" || piece === "q") {
     const dirs = [
       [1, 0],
       [-1, 0],
@@ -191,7 +191,7 @@ export function generateProblem(
     }
 
     // Bishop: start and end must be on the same color
-    if (piece === "B") {
+    if (piece === "b") {
       while (!isSameColor(start, end) || start === end) {
         end = getRandomSquare();
       }
@@ -212,14 +212,14 @@ function meetsPathConstraint(
 ): boolean {
   switch (piece) {
     // Rook/Queen: at least 2 moves (must pass through at least one intermediate square)
-    case "R":
-    case "Q":
+    case "r":
+    case "q":
       return path.length >= 3;
     // Bishop: exactly 2 moves (path.length === 3)
-    case "B":
+    case "b":
       return path.length === 3;
     // Knight: 2-3 moves (path.length 3 or 4)
-    case "N":
+    case "n":
       return path.length >= 3 && path.length <= 4;
   }
 }

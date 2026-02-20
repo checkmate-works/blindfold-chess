@@ -4,6 +4,9 @@ export type File = (typeof ALL_FILES)[number];
 export const ALL_RANKS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 export type Rank = (typeof ALL_RANKS)[number];
 
+export const ALL_PIECE_TYPES = ["p", "n", "b", "r", "q", "k"] as const;
+export type PieceType = (typeof ALL_PIECE_TYPES)[number];
+
 export const ALL_PIECE_SYMBOLS = ["K", "Q", "R", "B", "N"] as const;
 export type PieceSymbol = (typeof ALL_PIECE_SYMBOLS)[number];
 

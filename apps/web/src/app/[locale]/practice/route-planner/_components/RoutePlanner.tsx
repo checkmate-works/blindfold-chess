@@ -20,7 +20,7 @@ type RoutePlannerLocalSettings = {
 export const STORAGE_KEY = 'routePlannerSettings';
 const DEFAULTS: RoutePlannerLocalSettings = {
   problemCount: 5,
-  selectedPieces: { N: true, B: true, R: true, Q: true },
+  selectedPieces: { n: true, b: true, r: true, q: true },
   mode: 'timed',
 };
 

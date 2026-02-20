@@ -1,1 +1,1 @@
-export { pieceSymbolMap, pieceDisplayMap } from '@blindfold-chess/features/legal-moves';
+export { pieceDisplayMap } from '@blindfold-chess/features/legal-moves';

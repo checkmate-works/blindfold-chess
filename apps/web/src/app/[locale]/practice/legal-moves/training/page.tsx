@@ -45,7 +45,7 @@ export default async function LegalMovesTrainingPage({ params, searchParams }: P
   const t = await getTranslations({ locale });
 
   // Parse selected pieces from URL
-  const defaultPieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
+  const defaultPieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
   const selectedPieces: PieceType[] = pieces ? (pieces.split(',') as PieceType[]) : defaultPieces;
 
   return (

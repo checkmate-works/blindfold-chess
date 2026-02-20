@@ -1,4 +1,8 @@
-import type { PracticeMode } from "../common/types";
+import type {
+  BasePracticeResult,
+  BasePracticeSettings,
+  PracticeMode,
+} from "../common/types";
 export type { PracticeMode };
 
 export type DiagonalPair = {
@@ -6,10 +10,7 @@ export type DiagonalPair = {
   antiDiagonal: string; // SE-NW direction (h1-a8 direction), e.g., "b7-h1"
 };
 
-export type DiagonalQuizSettings = {
-  timeLimit: number;
-  mode: PracticeMode;
-};
+export type DiagonalQuizSettings = BasePracticeSettings;
 
 export const DEFAULT_DIAGONAL_QUIZ_SETTINGS: DiagonalQuizSettings = {
   timeLimit: 60,
@@ -27,11 +28,6 @@ export type DiagonalQuestionResult = {
   userAntiDiagonal?: string;
 };
 
-export type DiagonalQuizResult = {
-  correctAnswers: number;
+export type DiagonalQuizResult = BasePracticeResult & {
   incorrectAnswers: number;
-  totalQuestions: number;
-  accuracy: number;
-  timeTaken: number;
-  averageTime: number;
 };

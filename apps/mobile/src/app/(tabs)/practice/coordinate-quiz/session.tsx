@@ -34,9 +34,10 @@ export default function CoordinateQuizSession() {
 
   // Parse settings from URL params
   const settings: QuizSettings = {
-    duration: parseInt(params.duration || "60", 10),
+    timeLimit: parseInt(params.duration || "60", 10),
     orientation: (params.orientation || "white") as BoardOrientation,
     feedbackSpeed: (params.feedbackSpeed || "normal") as FeedbackSpeed,
+    mode: "timed",
   };
 
   const handleComplete = useCallback(
@@ -71,7 +72,7 @@ export default function CoordinateQuizSession() {
   });
 
   const { timeRemaining, progress, start } = useQuizTimer({
-    duration: settings.duration,
+    duration: settings.timeLimit,
     onTimeUp: endSession,
   });
 

@@ -402,11 +402,11 @@
       "selectAtLeastOne": "少なくとも1つの駒を選択してください",
       "selectedCount": "{count}個選択中",
       "pieces": {
-        "bishop": "ビショップ",
-        "knight": "ナイト",
-        "rook": "ルーク",
-        "queen": "クイーン",
-        "king": "キング"
+        "b": "ビショップ",
+        "n": "ナイト",
+        "r": "ルーク",
+        "q": "クイーン",
+        "k": "キング"
       },
       "start": "開始",
       "question": "{from}から{to}へ移動できますか？",
@@ -769,10 +769,10 @@
       "distance": "手数: {count}",
       "inputPlaceholder": "次のマスを入力...",
       "pieces": {
-        "N": "ナイト",
-        "B": "ビショップ",
-        "R": "ルーク",
-        "Q": "クイーン"
+        "n": "ナイト",
+        "b": "ビショップ",
+        "r": "ルーク",
+        "q": "クイーン"
       },
       "moves": "移動",
       "currentPosition": "現在位置",

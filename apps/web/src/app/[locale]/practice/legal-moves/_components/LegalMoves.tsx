@@ -20,11 +20,11 @@ const STORAGE_KEY = 'legalMoves_settings';
 const DEFAULTS: LegalMovesLocalSettings = {
   timeLimit: 60,
   selectedPieces: {
-    king: true,
-    queen: true,
-    rook: true,
-    bishop: true,
-    knight: true,
+    k: true,
+    q: true,
+    r: true,
+    b: true,
+    n: true,
   },
   mode: 'timed',
 };

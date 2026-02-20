@@ -2,7 +2,6 @@ import { Chess, Square } from "chess.js";
 
 import { FILES, RANKS } from "../common";
 
-import { pieceSymbolMap } from "./constants";
 import type { MoveQuestion, PieceType } from "./types";
 
 // Check if a move is legal for a given piece
@@ -16,8 +15,7 @@ export function isLegalMove(
   chess.clear();
 
   // Place a white piece at the from square
-  const pieceSymbol = pieceSymbolMap[pieceType];
-  chess.put({ type: pieceSymbol, color: "w" }, from as Square);
+  chess.put({ type: pieceType, color: "w" }, from as Square);
 
   // Try to make the move
   try {
@@ -31,7 +29,7 @@ export function isLegalMove(
 // Get a mix of legal and illegal moves for better distribution
 export function generateBalancedMoveQuestions(
   count: number,
-  allowedPieces: PieceType[] = ["bishop", "knight", "rook", "queen", "king"],
+  allowedPieces: PieceType[] = ["b", "n", "r", "q", "k"],
 ): MoveQuestion[] {
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
@@ -75,7 +73,7 @@ export function generateMoveQuestionForPiece(
     if (preferLegal) {
       // Generate likely legal moves based on piece type
       switch (pieceType) {
-        case "bishop": {
+        case "b": {
           // Diagonal moves
           const diagonalOffset = Math.floor(Math.random() * 7) + 1;
           const direction = Math.floor(Math.random() * 4);
@@ -99,7 +97,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "rook":
+        case "r":
           // Straight moves
           if (Math.random() < 0.5) {
             // Horizontal
@@ -112,7 +110,7 @@ export function generateMoveQuestionForPiece(
           }
           break;
 
-        case "knight": {
+        case "n": {
           // L-shaped moves
           const knightMoves = [
             [2, 1],
@@ -131,7 +129,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "queen": {
+        case "q": {
           // Any direction
           if (Math.random() < 0.5) {
             // Like bishop
@@ -163,7 +161,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "king": {
+        case "k": {
           // One square in any direction
           const kingMoves = [
             [1, 0],

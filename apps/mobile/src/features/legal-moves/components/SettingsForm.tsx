@@ -11,18 +11,18 @@ import type { PieceType } from "../lib/types";
 import { PIECE_TYPES, pieceDisplayMap } from "../lib/types";
 
 type SettingsFormProps = {
-  duration: number;
+  timeLimit: number;
   selectedPieces: PieceType[];
-  onUpdateDuration: (duration: number) => void;
+  onUpdateTimeLimit: (timeLimit: number) => void;
   onTogglePiece: (piece: PieceType) => void;
 };
 
 const DURATION_OPTIONS = [30, 60, 90, 120];
 
 export function SettingsForm({
-  duration,
+  timeLimit,
   selectedPieces,
-  onUpdateDuration,
+  onUpdateTimeLimit,
   onTogglePiece,
 }: SettingsFormProps) {
   const { t } = useTranslation();
@@ -39,13 +39,13 @@ export function SettingsForm({
           {DURATION_OPTIONS.map((d) => (
             <TouchableOpacity
               key={d}
-              onPress={() => onUpdateDuration(d)}
+              onPress={() => onUpdateTimeLimit(d)}
               style={[
                 styles.optionButton,
                 {
-                  borderColor: duration === d ? colors.primary : colors.border,
+                  borderColor: timeLimit === d ? colors.primary : colors.border,
                   backgroundColor:
-                    duration === d ? colors.primary : colors.card,
+                    timeLimit === d ? colors.primary : colors.card,
                 },
               ]}
             >
@@ -54,11 +54,11 @@ export function SettingsForm({
                   styles.optionText,
                   {
                     color:
-                      duration === d
+                      timeLimit === d
                         ? colors.primaryForeground
                         : colors.foreground,
                     fontWeight:
-                      duration === d ? fontWeight.medium : fontWeight.normal,
+                      timeLimit === d ? fontWeight.medium : fontWeight.normal,
                   },
                 ]}
               >

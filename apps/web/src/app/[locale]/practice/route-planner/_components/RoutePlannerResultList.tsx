@@ -3,7 +3,6 @@
 import { Fragment, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from 'chess.js';
 import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 import { BoardTheme } from '@/lib/boardThemes';
@@ -62,7 +61,7 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
                   {isExpanded ? <FaChevronDown size={12} /> : <FaChevronRight size={12} />}
                 </div>
                 <div className="font-mono text-sm text-muted-foreground w-8">#{index + 1}</div>
-                <ChessPiece type={result.piece.toLowerCase() as PieceSymbol} color="w" size={20} />
+                <ChessPiece type={result.piece} color="w" size={20} />
                 <div className="flex items-center gap-2 font-mono font-bold">
                   <span>{result.start}</span>
                   <FaArrowRight size={10} className="text-muted-foreground" />

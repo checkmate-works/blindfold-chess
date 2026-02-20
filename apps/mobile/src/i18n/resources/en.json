@@ -93,11 +93,11 @@
       "backToMenu": "Back to Menu"
     },
     "pieces": {
-      "bishop": "Bishop",
-      "knight": "Knight",
-      "rook": "Rook",
-      "queen": "Queen",
-      "king": "King"
+      "b": "Bishop",
+      "n": "Knight",
+      "r": "Rook",
+      "q": "Queen",
+      "k": "King"
     }
   },
   "boardSymmetry": {
@@ -221,10 +221,10 @@
       "backToMenu": "Back to Menu"
     },
     "pieces": {
-      "N": "Knight",
-      "B": "Bishop",
-      "R": "Rook",
-      "Q": "Queen"
+      "n": "Knight",
+      "b": "Bishop",
+      "r": "Rook",
+      "q": "Queen"
     }
   },
   "aiGame": {

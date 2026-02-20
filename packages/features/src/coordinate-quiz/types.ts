@@ -1,6 +1,10 @@
 import type { Square } from "chess.js";
 
-import type { PracticeMode } from "../common/types";
+import type {
+  BasePracticeResult,
+  BasePracticeSettings,
+  PracticeMode,
+} from "../common/types";
 
 export type { PracticeMode };
 
@@ -22,24 +26,17 @@ export type CoordinateQuestion = {
   orientation: Exclude<BoardOrientation, "random">;
 };
 
-export type QuizSettings = {
-  duration: number; // seconds
+export type QuizSettings = BasePracticeSettings & {
   orientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
-  mode: PracticeMode;
 };
 
-export type QuizResult = {
-  totalQuestions: number;
-  correctAnswers: number;
-  accuracy: number;
-  averageTime: number;
+export type QuizResult = BasePracticeResult & {
   points: number;
-  timeTaken: number;
 };
 
 export const DEFAULT_QUIZ_SETTINGS: QuizSettings = {
-  duration: 60,
+  timeLimit: 60,
   orientation: "white",
   feedbackSpeed: "normal",
   mode: "timed",

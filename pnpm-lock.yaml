@@ -310,6 +310,10 @@ importers:
         version: 5.9.3
 
   packages/icons:
+    dependencies:
+      '@blindfold-chess/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@blindfold-chess/eslint-config':
         specifier: workspace:*

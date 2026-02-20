@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PracticeMode } from '@blindfold-chess/features/common';
-import type { PieceSymbol } from 'chess.js';
 import { FaPlay } from 'react-icons/fa';
 
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
@@ -130,30 +129,21 @@ export function RoutePlannerSettings({
             {tLegalMoves('pieceSelection')}
           </label>
           <div className="flex justify-center gap-2">
-            {PIECES.map((piece) => {
-              const mapKey = {
-                N: 'knight',
-                B: 'bishop',
-                R: 'rook',
-                Q: 'queen',
-              }[piece] as string;
-
-              return (
-                <button
-                  key={piece}
-                  onClick={() => handlePieceToggle(piece)}
-                  className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                    selectedPieces[piece]
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background hover:bg-muted border-border'
-                  }`}
-                  aria-label={tLegalMoves(`pieces.${mapKey}`)}
-                  title={tLegalMoves(`pieces.${mapKey}`)}
-                >
-                  <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={28} />
-                </button>
-              );
-            })}
+            {PIECES.map((piece) => (
+              <button
+                key={piece}
+                onClick={() => handlePieceToggle(piece)}
+                className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
+                  selectedPieces[piece]
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted border-border'
+                }`}
+                aria-label={tLegalMoves(`pieces.${piece}`)}
+                title={tLegalMoves(`pieces.${piece}`)}
+              >
+                <ChessPiece type={piece} color="w" size={28} />
+              </button>
+            ))}
           </div>
           <div className="mt-2 text-xs text-muted-foreground text-center animate-in fade-in duration-300">
             {tLegalMoves('selectedCount', {

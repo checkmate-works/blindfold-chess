@@ -1,10 +1,12 @@
-export type RoutePlannerPieceType = "N" | "B" | "R" | "Q";
+import type { PieceType } from "@blindfold-chess/types";
+
+export type RoutePlannerPieceType = Extract<PieceType, "n" | "b" | "r" | "q">;
 
 export const ROUTE_PLANNER_PIECES: RoutePlannerPieceType[] = [
-  "N",
-  "B",
-  "R",
-  "Q",
+  "n",
+  "b",
+  "r",
+  "q",
 ];
 
 export type RoutePlannerProblem = {
