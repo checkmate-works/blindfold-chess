@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-import { GameStateService } from '@blindfold-chess/features/ai-game';
-import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
@@ -22,6 +19,9 @@ import {
   useGamePersistence,
   useNotation,
 } from './index';
+import { useGameState } from './use-game-state';
+import { usePlayerMove } from './use-player-move';
+import { useUrlSync } from './use-url-sync';
 
 type UseGameSessionOptions = {
   locale: Locale;
@@ -30,11 +30,10 @@ type UseGameSessionOptions = {
 
 export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions) {
   const t = useTranslations('play');
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const searchParamsFromHook = useSearchParams();
 
   // Parse URL parameters
-  const urlParams = parseUrlSearchParams(searchParams);
+  const urlParams = parseUrlSearchParams(searchParamsFromHook);
   const {
     playerSide,
     initialSkillLevel,
@@ -51,6 +50,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
 
+  // Move input state (managed here to avoid circular deps between usePlayerMove and useAiMoveOrchestration)
+  const [moveInput, setMoveInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
   // Notation hook
   const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } = useNotation({
     initialMoves: initialMovesFromUrl,
@@ -58,66 +61,40 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   });
   const { getAiMove } = useAiVersus(skillLevel);
 
-  // State
-  const [moveInput, setMoveInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null);
-  const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
-  const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
-  const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-
   // Game persistence hook
   const { isLoadingFromStorage, savedGameStatus, loadedGameData } = useGamePersistence({
     initialGameId,
     initialStartingFen,
   });
 
-  const [shouldMakeAiMove, setShouldMakeAiMove] = useState(() => {
-    if (initialGameId) {
-      return false;
-    }
-    if (initialMovesFromUrl.length > 0) {
-      const gameStateService = new GameStateService(
-        initialMovesFromUrl,
-        playerSide,
-        initialStartingFen
-      );
-      return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
-    }
-    if (initialStartingFen) {
-      const fenParts = initialStartingFen.split(' ');
-      const turnFromFen = fenParts[1];
-      const isWhiteToMove = turnFromFen === 'w';
-      return (
-        (playerSide === 'white' && !isWhiteToMove) || (playerSide === 'black' && isWhiteToMove)
-      );
-    }
-    return playerSide === 'black';
+  // Game state hook
+  const {
+    gameStatus,
+    setGameStatus,
+    playerResult,
+    setPlayerResult,
+    isPlayerTurn,
+    lastMove,
+    setLastMove,
+    shouldMakeAiMove,
+    setShouldMakeAiMove,
+    getLastMoveDetails,
+  } = useGameState({
+    playerSide,
+    startingFen,
+    moves,
+    initialMovesFromUrl,
+    initialGameId,
+    isLoadingFromStorage,
+    savedGameStatus,
+    loadedGameData,
+    setMovesTo,
+    setStartingFen,
   });
-
-  // Apply loaded game data from persistence hook
-  useEffect(() => {
-    if (loadedGameData) {
-      if (loadedGameData.startingFen) {
-        setStartingFen(loadedGameData.startingFen);
-      }
-      if (loadedGameData.moves.length > 0) {
-        setMovesTo(loadedGameData.moves);
-        setLastMove(loadedGameData.lastMove);
-      }
-      if (loadedGameData.gameStatus !== 'in_progress') {
-        setGameStatus(loadedGameData.gameStatus);
-        setPlayerResult(loadedGameData.playerResult);
-        setShouldMakeAiMove(false);
-      }
-    }
-  }, [loadedGameData, setMovesTo]);
 
   // Map board status to game outcome for repository
   const mapGameStatusToOutcome = useCallback(
-    (bs: GameStatus, pr: 'win' | 'loss' | 'draw' | null): GameOutcome => {
+    (bs: typeof gameStatus, pr: typeof playerResult): GameOutcome => {
       if (bs === 'in_progress') return 'in_progress';
       if (pr === 'win') return 'win';
       if (pr === 'loss') return 'loss';
@@ -138,109 +115,17 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
 
-  // Redirect to error page if invalid moves detected
-  useEffect(() => {
-    if (shouldRedirectToError && errorDetails) {
-      const params = new URLSearchParams();
-      params.set('invalidMove', errorDetails.invalidMove);
-      params.set('invalidIndex', errorDetails.invalidIndex.toString());
-      params.set('validMoves', JSON.stringify(errorDetails.validMoves));
-      params.set('allMoves', JSON.stringify(errorDetails.allMoves));
-      params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
-
-      if (initialStartingFen) {
-        params.set('fen', initialStartingFen);
-      }
-
-      const effectiveGameId = initialGameId || gameId;
-      if (effectiveGameId) {
-        params.set('gameId', effectiveGameId);
-      }
-
-      router.replace(`/${locale}/play/error?${params.toString()}`);
-    }
-  }, [
-    shouldRedirectToError,
-    errorDetails,
-    router,
+  // URL sync hook
+  const { searchParams, router } = useUrlSync({
     locale,
+    gameId,
+    initialGameId,
     playerSide,
     skillLevel,
-    initialGameId,
-    gameId,
     initialStartingFen,
-  ]);
-
-  // Update URL when gameId is generated
-  useEffect(() => {
-    if (gameId && !initialGameId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('gameId', gameId);
-      params.delete('moves');
-      router.replace(`?${params.toString()}`, { scroll: false });
-    }
-  }, [gameId, initialGameId, searchParams, router]);
-
-  // Helper function to get last move details
-  const getLastMoveDetails = useCallback(
-    (movesArray: AlgebraicNotation[], customFen?: string) => {
-      if (movesArray.length === 0) return null;
-
-      try {
-        const fenToUse = customFen ?? startingFen;
-        const chess = fenToUse ? new Chess(fenToUse) : new Chess();
-        let lastMoveDetails = null;
-
-        for (let i = 0; i < movesArray.length; i++) {
-          const move = chess.move(movesArray[i]);
-          if (i === movesArray.length - 1 && move) {
-            lastMoveDetails = { from: move.from, to: move.to };
-          }
-        }
-
-        return lastMoveDetails;
-      } catch (error) {
-        console.error('Error getting last move details:', error);
-        return null;
-      }
-    },
-    [startingFen]
-  );
-
-  // Initialize on mount with initial moves
-  useEffect(() => {
-    if (!isInitialized && initialMovesFromUrl.length > 0) {
-      setLastMove(getLastMoveDetails(initialMovesFromUrl));
-      setIsInitialized(true);
-    }
-  }, [isInitialized, initialMovesFromUrl, getLastMoveDetails]);
-
-  // Update game state whenever moves change
-  useEffect(() => {
-    if (isLoadingFromStorage) {
-      return;
-    }
-
-    if (savedGameStatus && savedGameStatus !== 'in_progress') {
-      return;
-    }
-
-    const gameStateService = new GameStateService(moves, playerSide, startingFen);
-
-    const newIsPlayerTurn = gameStateService.isPlayerTurn();
-    const newGameStatus = gameStateService.getGameStatus();
-
-    setIsPlayerTurn(newIsPlayerTurn);
-    setGameStatus(newGameStatus);
-    setPlayerResult(gameStateService.getPlayerResult());
-
-    if (!newIsPlayerTurn && newGameStatus === 'in_progress') {
-      setShouldMakeAiMove(true);
-    } else {
-      setShouldMakeAiMove(false);
-    }
-  }, [moves, playerSide, savedGameStatus, startingFen, isLoadingFromStorage]);
+    shouldRedirectToError,
+    errorDetails,
+  });
 
   // AI move orchestration
   const handleAiMoveSuccess = useCallback(
@@ -249,13 +134,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       const newMoves = [...moves, move];
       setLastMove(getLastMoveDetails(newMoves));
     },
-    [pushMove, moves, getLastMoveDetails]
+    [pushMove, moves, getLastMoveDetails, setLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {
     setError('AI move failed');
     setShouldMakeAiMove(false);
-  }, []);
+  }, [setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove,
@@ -267,59 +152,27 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     onAiMoveError: handleAiMoveError,
   });
 
-  // Handle player move submission
-  const handleSubmitMove = useCallback(
-    (move: AlgebraicNotation) => {
-      if (isLoading) {
-        return;
-      }
-
-      if (!isPlayerTurn) {
-        return;
-      }
-
-      const now = Date.now();
-      if (lastSubmittedMoveRef.current) {
-        const { move: lastMove, timestamp } = lastSubmittedMoveRef.current;
-        if (lastMove === move && now - timestamp < 500) {
-          return;
-        }
-      }
-
-      const gameStateService = new GameStateService(moves, playerSide, startingFen);
-
-      if (gameStateService.validateMove(move)) {
-        lastSubmittedMoveRef.current = { move, timestamp: now };
-        markPlayerInteraction();
-        pushMove(move);
-        setMoveInput('');
-        setError(null);
-
-        const newMoves = [...moves, move];
-        setLastMove(getLastMoveDetails(newMoves));
-      } else {
-        setError(t('invalidMove'));
-      }
-    },
-    [
-      moves,
-      playerSide,
-      pushMove,
-      t,
-      getLastMoveDetails,
-      markPlayerInteraction,
-      isLoading,
-      isPlayerTurn,
-      startingFen,
-    ]
-  );
+  // Player move hook
+  const { handleSubmitMove } = usePlayerMove({
+    moves,
+    playerSide,
+    startingFen,
+    isLoading,
+    isPlayerTurn,
+    pushMove,
+    markPlayerInteraction,
+    getLastMoveDetails,
+    setLastMove,
+    setMoveInput,
+    setError,
+  });
 
   // Resign handler
   const handleResign = useCallback(() => {
     markPlayerInteraction();
     setGameStatus('checkmate');
     setPlayerResult('loss');
-  }, [markPlayerInteraction]);
+  }, [markPlayerInteraction, setGameStatus, setPlayerResult]);
 
   // Undo handler
   const handleUndo = useCallback(() => {
@@ -328,7 +181,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setError(null);
     const newMoves = moves.slice(0, -2);
     setLastMove(getLastMoveDetails(newMoves));
-  }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails]);
+  }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails, setLastMove]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -341,7 +194,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       const newMoves = moves.slice(0, position + 1);
       setLastMove(getLastMoveDetails(newMoves));
     },
-    [markPlayerInteraction, moves, removeMoves, getLastMoveDetails]
+    [markPlayerInteraction, moves, removeMoves, getLastMoveDetails, setLastMove]
   );
 
   // Handle new game from position
