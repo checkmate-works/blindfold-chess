@@ -21,30 +21,12 @@ export function useAiVersus(skillLevel: SkillLevel) {
   }, []);
 
   useEffect(() => {
-    const setSkill = async () => {
-      const engine = engineRef.current;
-      if (!engine) return;
+    const engine = engineRef.current;
+    if (!engine) return;
 
-      // Wait for engine to be ready before setting skill level
-      let retries = 0;
-      const maxRetries = 100;
-
-      while (!engine.isReady && retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        retries++;
-      }
-
-      if (engine.isReady) {
-        await engine.setSkillLevel(skillLevel);
-      }
-    };
-
-    setSkill();
-
-    return () => {
-      // Note: We don't destroy the singleton engine here as it's shared
-      // destroyChessEngine();
-    };
+    // setSkillLevel stores the level immediately; the actual UCI commands
+    // are sent once the engine worker is created (during ensureInitialized)
+    engine.setSkillLevel(skillLevel);
   }, [skillLevel]);
 
   const getAiMove = useCallback(
@@ -54,18 +36,8 @@ export function useAiVersus(skillLevel: SkillLevel) {
         throw new Error('Chess engine not available');
       }
 
-      // Wait for engine to be ready
-      let retries = 0;
-      const maxRetries = 100; // 10 seconds max
-
-      while (!engine.isReady && retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        retries++;
-      }
-
-      if (!engine.isReady) {
-        throw new Error('Engine initialization timeout');
-      }
+      // getBestMove() calls ensureInitialized() internally,
+      // so no need to poll isReady here
 
       // Create a fresh chess instance to calculate current position
       const { Chess } = await import('chess.js');

@@ -145,7 +145,7 @@ export class ChessEngine {
   async setSkillLevel(level: SkillLevel): Promise<void> {
     this.skillLevel = level;
 
-    if (!this.isInitialized || !this.engine) {
+    if (!this.engine) {
       return;
     }
 
