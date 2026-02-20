@@ -44,6 +44,7 @@ export function useAutoSave({
   const currentStatusRef = useRef(status);
   const hasPendingChanges = useRef(false);
   const hasSavedInSession = useRef(false);
+  const isInitialSyncSave = useRef(false);
   const previousPathname = useRef(pathname);
   const hasInitialSaveExecuted = useRef(false);
 
@@ -173,7 +174,11 @@ export function useAutoSave({
         lastSavedMovesLength.current = moves.length;
         lastSavedStatus.current = status;
         hasPendingChanges.current = false;
-        hasSavedInSession.current = true;
+        if (isInitialSyncSave.current) {
+          isInitialSyncSave.current = false;
+        } else {
+          hasSavedInSession.current = true;
+        }
 
         // Update save status
         setLastSavedAt(new Date());
@@ -243,6 +248,14 @@ export function useAutoSave({
       lastSavedMovesLength.current = moves.length;
       lastSavedStatus.current = status;
       prevEnabled.current = enabled;
+      // Only set the sync flag if moves haven't been loaded yet (length 0).
+      // In production, the enabled transition always fires before moves are
+      // set via setMovesTo, so moves.length is 0 at this point.
+      // This guard also protects against future refactors that might change
+      // the render timing.
+      if (moves.length === 0) {
+        isInitialSyncSave.current = true;
+      }
       return;
     }
 
