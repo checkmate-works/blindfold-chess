@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
+import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import { FaBackspace } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
@@ -37,38 +38,6 @@ type Props = {
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
-
-/**
- * Check if a square is a corner (single-square diagonal or anti-diagonal).
- * Corner squares: a1, a8, h1, h8
- * - a1: diagonal is "a1-h8" (not single), anti-diagonal is "a1" (single)
- * - h8: diagonal is "a1-h8" (not single), anti-diagonal is "h8" (single)
- * - a8: diagonal is "a8" (single), anti-diagonal is "a8-h1" (not single)
- * - h1: diagonal is "h1" (single), anti-diagonal is "a8-h1" (not single)
- */
-function getCornerInfo(square: string): {
-  singleDiagonal: boolean;
-  singleAntiDiagonal: boolean;
-} {
-  const f = square.charCodeAt(0) - 'a'.charCodeAt(0);
-  const r = parseInt(square[1], 10) - 1;
-
-  // Diagonal length: determined by f - r constant
-  const diag = f - r;
-  const diagStartF = diag >= 0 ? diag : 0;
-  const diagStartR = diag >= 0 ? 0 : -diag;
-  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
-  const singleDiagonal = diagLength === 0;
-
-  // Anti-diagonal length: determined by f + r constant
-  const antiDiag = f + r;
-  const antiStartF = antiDiag <= 7 ? antiDiag : 7;
-  const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
-  const antiLength = Math.min(antiStartF, 7 - antiStartR);
-  const singleAntiDiagonal = antiLength === 0;
-
-  return { singleDiagonal, singleAntiDiagonal };
-}
 
 export function DiagonalQuizPlaying({
   currentSquare,

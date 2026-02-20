@@ -61,7 +61,6 @@ export type AlgebraicNotation =
 export type Square = `${File}${Rank}`;
 
 export type Side = "white" | "black";
-export type PlayerColor = Side;
 
 export type UciMove = `${string}${number}${string}${number}`;
 export type Fen = string;

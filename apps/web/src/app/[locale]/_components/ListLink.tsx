@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
-import { RiPushpinFill } from 'react-icons/ri';
+import { FaThumbtack } from 'react-icons/fa';
 
 type ListLinkContainerProps = {
   children: ReactNode;
@@ -29,7 +29,7 @@ export function ListLink({ href, icon, title, meta, locale, isPinned }: ListLink
           <div className="flex-1 min-w-0">
             <span className="text-foreground font-medium truncate block">{title}</span>
           </div>
-          {isPinned && <RiPushpinFill className="text-muted-foreground flex-shrink-0" />}
+          {isPinned && <FaThumbtack className="text-muted-foreground flex-shrink-0" />}
           {meta && <span className="text-xs text-muted-foreground flex-shrink-0">{meta}</span>}
         </div>
       </Link>
