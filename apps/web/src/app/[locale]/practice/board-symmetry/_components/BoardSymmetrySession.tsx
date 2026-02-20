@@ -10,7 +10,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useTimedSession } from '../../_hooks/useTimedSession';
+import { useTimedSession } from '../../_hooks/use-timed-session';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
 type Props = {

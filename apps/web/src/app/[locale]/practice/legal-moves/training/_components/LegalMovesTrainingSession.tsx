@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
 
 import type { MoveQuestion, PieceType } from '../../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';

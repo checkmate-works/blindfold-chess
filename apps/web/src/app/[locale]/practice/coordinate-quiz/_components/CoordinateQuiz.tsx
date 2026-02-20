@@ -1,7 +1,7 @@
 'use client';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/usePersistentSettings';
+import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/use-persistent-settings';
 
 import type { BoardOrientation, FeedbackSpeed, PracticeMode } from '../_lib/types';
 import { CoordinateQuizSetup } from './CoordinateQuizSetup';

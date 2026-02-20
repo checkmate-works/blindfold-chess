@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
-import { useGameTimer } from '@/app/[locale]/practice/_hooks/useGameTimer';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
+import { useGameTimer } from '@/app/[locale]/practice/_hooks/use-game-timer';
 
 export type UseTimedSessionConfig<TQuestion> = {
   timeLimit: number;

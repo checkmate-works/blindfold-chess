@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
 
 import { PracticeResultSkeleton } from '../../../_components/PracticeResultSkeleton';
 import { generateSquareSequence, getSquareColor } from '../../_lib/utils';

@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { usePersistentSettings } from './usePersistentSettings';
+import { usePersistentSettings } from './use-persistent-settings';
 
 describe('usePersistentSettings', () => {
   const storageKey = 'test_settings';

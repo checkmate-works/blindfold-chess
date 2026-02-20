@@ -8,7 +8,7 @@ import { Square } from 'chess.js';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useTimedSession } from '@/app/[locale]/practice/_hooks/useTimedSession';
+import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
 
 import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
 import { FEEDBACK_SPEED_MS } from '../../_lib/types';
