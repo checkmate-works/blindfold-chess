@@ -3,7 +3,7 @@
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/usePersistentSettings';
 
-import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
+import type { BoardOrientation, FeedbackSpeed, PracticeMode } from '../_lib/types';
 import { CoordinateQuizSetup } from './CoordinateQuizSetup';
 
 type Props = {
@@ -14,6 +14,7 @@ type CoordinateQuizLocalSettings = {
   timeLimit: number;
   boardOrientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
+  mode: PracticeMode;
 };
 
 const STORAGE_KEY = 'coordinateQuiz_settings';
@@ -21,6 +22,7 @@ const DEFAULTS: CoordinateQuizLocalSettings = {
   timeLimit: 60,
   boardOrientation: 'white',
   feedbackSpeed: 'normal',
+  mode: 'timed',
 };
 
 export default function CoordinateQuiz({ locale }: Props) {
@@ -32,9 +34,11 @@ export default function CoordinateQuiz({ locale }: Props) {
       timeLimit={settings.timeLimit}
       boardOrientation={settings.boardOrientation}
       feedbackSpeed={settings.feedbackSpeed}
+      mode={settings.mode}
       onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
       onBoardOrientationChange={(boardOrientation) => updateSettings({ boardOrientation })}
       onFeedbackSpeedChange={(feedbackSpeed) => updateSettings({ feedbackSpeed })}
+      onModeChange={(mode) => updateSettings({ mode })}
     />
   );
 }

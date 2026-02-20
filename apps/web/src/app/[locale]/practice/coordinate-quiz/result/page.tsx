@@ -36,7 +36,7 @@ export default function CoordinateQuizResultPage(props: Props) {
   if (timeLimit) tryAgainParams.set('timeLimit', timeLimit);
   if (orientation) tryAgainParams.set('boardOrientation', orientation);
   if (speed) tryAgainParams.set('feedbackSpeed', speed);
-  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/session?${tryAgainParams.toString()}`;
+  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge?${tryAgainParams.toString()}`;
 
   // Calculate average time if total > 0
   const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';

@@ -7,16 +7,14 @@ import { useRouter } from 'next/navigation';
 import { Square } from 'chess.js';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
+import { useGameTimer } from '@/app/[locale]/practice/_hooks/useGameTimer';
 
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useCountdown } from '../../_hooks/useCountdown';
-import { useGameTimer } from '../../_hooks/useGameTimer';
-// import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
-
-import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../_lib/types';
-import { FEEDBACK_SPEED_MS } from '../_lib/types';
-import { checkAnswer, generateSingleQuestion } from '../_lib/utils';
-import { CoordinateQuizPlaying } from './CoordinateQuizPlaying';
+import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
+import { FEEDBACK_SPEED_MS } from '../../_lib/types';
+import { checkAnswer, generateSingleQuestion } from '../../_lib/utils';
+import { CoordinateQuizChallengePlaying } from './CoordinateQuizChallengePlaying';
 
 type Props = {
   locale: Locale;
@@ -25,7 +23,7 @@ type Props = {
   initialFeedbackSpeed: string;
 };
 
-export default function CoordinateQuizSession({
+export default function CoordinateQuizChallenge({
   locale,
   initialTimeLimit,
   initialBoardOrientation,
@@ -44,7 +42,6 @@ export default function CoordinateQuizSession({
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState(0);
-  // const [timeElapsed, setTimeElapsed] = useState(0); // Replaced by hook
   const [lastClickedSquare, setLastClickedSquare] = useState<Square | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -158,7 +155,7 @@ export default function CoordinateQuizSession({
   ]);
 
   if (isFinished) {
-    return <PracticeResultSkeleton />; // Or loading spinner
+    return <PracticeResultSkeleton />;
   }
 
   // Show loading state while question is being generated
@@ -169,8 +166,8 @@ export default function CoordinateQuizSession({
   const timeRemaining = Math.max(0, timeLimit - timeElapsed);
 
   return (
-    <div id="coordinate-quiz-session" className="min-h-screen">
-      <CoordinateQuizPlaying
+    <div id="coordinate-quiz-challenge" className="min-h-screen">
+      <CoordinateQuizChallengePlaying
         currentQuestion={currentQuestion}
         timeRemaining={timeRemaining}
         timeLimit={timeLimit}

@@ -4,4 +4,5 @@ export type {
   BoardOrientation,
   FeedbackSpeed,
   CoordinateQuestion,
+  PracticeMode,
 } from '@blindfold-chess/features';

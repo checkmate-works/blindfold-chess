@@ -8,8 +8,9 @@ import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
-import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
+import type { BoardOrientation, FeedbackSpeed, PracticeMode } from '../_lib/types';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
 
 type Props = {
@@ -17,9 +18,11 @@ type Props = {
   timeLimit: number;
   boardOrientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
+  mode: PracticeMode;
   onTimeLimitChange: (value: number) => void;
   onBoardOrientationChange: (value: BoardOrientation) => void;
   onFeedbackSpeedChange: (value: FeedbackSpeed) => void;
+  onModeChange: (mode: PracticeMode) => void;
 };
 
 export function CoordinateQuizSetup({
@@ -27,23 +30,47 @@ export function CoordinateQuizSetup({
   timeLimit,
   boardOrientation,
   feedbackSpeed,
+  mode,
   onTimeLimitChange,
   onBoardOrientationChange,
   onFeedbackSpeedChange,
+  onModeChange,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
+  const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleStart = () => {
-    router.push(
-      `/${locale}/practice/coordinate-quiz/session?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#quiz-session`
-    );
+    if (mode === 'training') {
+      router.push(
+        `/${locale}/practice/coordinate-quiz/training?boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#coordinate-quiz-training-session`
+      );
+    } else {
+      router.push(
+        `/${locale}/practice/coordinate-quiz/challenge?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#quiz-session`
+      );
+    }
   };
+
+  const modeOptions: { value: PracticeMode; label: string }[] = [
+    { value: 'timed', label: tp('modeTimed') },
+    { value: 'training', label: tp('modeTraining') },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
+
+        <div className="mb-6">
+          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+        </div>
+
+        {mode === 'training' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+          </div>
+        )}
 
         <CoordinateQuizSettings
           timeLimit={timeLimit}
@@ -52,6 +79,7 @@ export function CoordinateQuizSetup({
           onTimeLimitChange={onTimeLimitChange}
           onBoardOrientationChange={onBoardOrientationChange}
           onFeedbackSpeedChange={onFeedbackSpeedChange}
+          showTimeSlider={mode === 'timed'}
         />
 
         <Button
@@ -61,7 +89,7 @@ export function CoordinateQuizSetup({
           className="w-full mt-6"
           icon={<FaPlay />}
         >
-          {t('start')}
+          {mode === 'training' ? tp('startTraining') : t('start')}
         </Button>
       </div>
 

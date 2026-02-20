@@ -2,20 +2,16 @@
 
 import { useTranslations } from 'next-intl';
 
-import { BoardOverlay } from '@/app/_components';
-import { QuizTimer } from '@/components/QuizTimer';
+import { BoardOverlay, Button } from '@/app/_components';
 import { Square } from 'chess.js';
-import { LuPause, LuPlay } from 'react-icons/lu';
 
-import { ScoreCounter } from '../../_components/ScoreCounter';
-import type { CoordinateQuestion } from '../_lib/types';
-import { CoordinateQuizBoard } from './CoordinateQuizBoard';
+import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+
+import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
+import type { CoordinateQuestion } from '../../_lib/types';
 
 type Props = {
   currentQuestion: CoordinateQuestion | null;
-  timeRemaining: number;
-  timeLimit: number;
-  timeElapsed: number;
   correctAnswers: number;
   wrongAnswers: number;
   lastClickedSquare: Square | null;
@@ -23,15 +19,11 @@ type Props = {
   isCorrect: boolean;
   onSquareClick: (square: Square) => void;
   countdown: number | null;
-  isPaused?: boolean;
-  onTogglePause?: () => void;
+  onEndTraining: () => void;
 };
 
-export function CoordinateQuizPlaying({
+export function CoordinateQuizTrainingPlaying({
   currentQuestion,
-  timeRemaining,
-  timeLimit,
-  timeElapsed,
   correctAnswers,
   wrongAnswers,
   lastClickedSquare,
@@ -39,16 +31,16 @@ export function CoordinateQuizPlaying({
   isCorrect,
   onSquareClick,
   countdown,
-  isPaused = false,
-  onTogglePause,
+  onEndTraining,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
-  const tPractice = useTranslations('practice');
+  const tp = useTranslations('practice');
+
   return (
-    <div id="quiz-session">
+    <div>
       <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
-          <div className="mb-4 relative flex items-center justify-center min-h-[50px]">
+          <div className="mb-4 flex items-center justify-center min-h-[50px]">
             <div className="flex items-center gap-2">
               <div
                 className={`w-5 h-5 rounded-full border-2 ${
@@ -61,43 +53,9 @@ export function CoordinateQuizPlaying({
                 {currentQuestion?.orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
               </span>
             </div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              {onTogglePause && (
-                <button
-                  onClick={onTogglePause}
-                  className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
-                  disabled={countdown !== null}
-                  aria-label={isPaused ? 'Resume' : 'Pause'}
-                >
-                  {isPaused ? (
-                    <LuPlay size={18} className="fill-current" />
-                  ) : (
-                    <LuPause size={18} className="fill-current" />
-                  )}
-                </button>
-              )}
-              <QuizTimer
-                timeRemaining={timeRemaining}
-                progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-                size={40}
-                fontSize="text-xs"
-                strokeWidth={4}
-              />
-            </div>
           </div>
 
           <div className="relative overflow-hidden rounded-lg">
-            {/* Pause Overlay with Play Button */}
-            <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
-              <button
-                onClick={onTogglePause}
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
-                aria-label={tPractice('resume')}
-              >
-                <LuPlay size={48} className="fill-current ml-1" />
-              </button>
-            </BoardOverlay>
-
             {/* Countdown Overlay */}
             <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md z-50">
               <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
@@ -105,9 +63,7 @@ export function CoordinateQuizPlaying({
               </span>
             </BoardOverlay>
 
-            <div
-              className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
-            >
+            <div className={`transition-all duration-300 ${countdown !== null ? 'blur-sm' : ''}`}>
               <CoordinateQuizBoard
                 orientation={currentQuestion?.orientation || 'white'}
                 onSquareClick={onSquareClick}
@@ -139,6 +95,12 @@ export function CoordinateQuizPlaying({
       </div>
 
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
+
+      <div className="mt-6">
+        <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
+          {tp('endTraining')}
+        </Button>
+      </div>
     </div>
   );
 }

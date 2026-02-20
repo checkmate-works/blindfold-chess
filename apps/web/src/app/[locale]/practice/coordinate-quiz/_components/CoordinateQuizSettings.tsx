@@ -18,6 +18,7 @@ type Props = {
   onTimeLimitChange: (time: number) => void;
   onBoardOrientationChange: (orientation: BoardOrientation) => void;
   onFeedbackSpeedChange: (speed: FeedbackSpeed) => void;
+  showTimeSlider?: boolean;
 };
 
 export function CoordinateQuizSettings({
@@ -27,6 +28,7 @@ export function CoordinateQuizSettings({
   onTimeLimitChange,
   onBoardOrientationChange,
   onFeedbackSpeedChange,
+  showTimeSlider = true,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const { preferences } = useGamePreferences();
@@ -35,15 +37,17 @@ export function CoordinateQuizSettings({
   return (
     <div className="flex flex-col gap-8">
       {/* Time Limit */}
-      <TimeSlider
-        timeLimit={timeLimit}
-        onTimeLimitChange={onTimeLimitChange}
-        labels={{
-          timeLimit: t('timeLimit'),
-        }}
-        showSeconds={false}
-        formatTime={formatTime}
-      />
+      {showTimeSlider && (
+        <TimeSlider
+          timeLimit={timeLimit}
+          onTimeLimitChange={onTimeLimitChange}
+          labels={{
+            timeLimit: t('timeLimit'),
+          }}
+          showSeconds={false}
+          formatTime={formatTime}
+        />
+      )}
 
       {/* Board Orientation */}
       <div className="flex flex-col gap-2">

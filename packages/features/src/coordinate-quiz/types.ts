@@ -1,5 +1,9 @@
 import type { Square } from "chess.js";
 
+import type { PracticeMode } from "../common/types";
+
+export type { PracticeMode };
+
 export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
 
@@ -22,6 +26,7 @@ export type QuizSettings = {
   duration: number; // seconds
   orientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
+  mode: PracticeMode;
 };
 
 export type QuizResult = {
@@ -37,6 +42,7 @@ export const DEFAULT_QUIZ_SETTINGS: QuizSettings = {
   duration: 60,
   orientation: "white",
   feedbackSpeed: "normal",
+  mode: "timed",
 };
 
 export type AnswerFeedback = "correct" | "incorrect" | null;
