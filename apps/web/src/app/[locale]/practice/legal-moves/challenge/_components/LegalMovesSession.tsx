@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
+import { useGameTimer } from '@/app/[locale]/practice/_hooks/useGameTimer';
 
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useGameTimer } from '../../_hooks/useGameTimer';
-import type { MoveQuestion, PieceType } from '../_lib/types';
-import { generateBalancedMoveQuestions, isLegalMove } from '../_lib/utils';
+import type { MoveQuestion, PieceType } from '../../_lib/types';
+import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {

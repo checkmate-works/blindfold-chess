@@ -5,8 +5,8 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import LegalMovesSession from '../_components/LegalMovesSession';
 import type { PieceType } from '../_lib/types';
+import LegalMovesSession from './_components/LegalMovesSession';
 
 type Props = {
   params: Promise<{
@@ -23,13 +23,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/legal-moves/session' }),
+    ...generateCanonicalMetadata({ locale, path: 'practice/legal-moves/challenge' }),
     title: `${t('practice.legalMoves.title')} - ${t('practice.legalMoves.session')}`,
     description: t('practice.legalMoves.description'),
   };
 }
 
-export default async function LegalMovesSessionPage({ params, searchParams }: Props) {
+export default async function LegalMovesChallengePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { timeLimit, pieces } = await searchParams;
   const t = await getTranslations({ locale });

@@ -1,64 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/usePersistentSettings';
 
-import type { PieceType } from '../_lib/types';
+import type { PieceType, PracticeMode } from '../_lib/types';
 import { LegalMovesSetup } from './LegalMovesSetup';
 
 type Props = {
   locale: Locale;
 };
 
-const STORAGE_KEY = 'legalMoves_settings';
+type LegalMovesLocalSettings = {
+  timeLimit: number;
+  selectedPieces: Record<PieceType, boolean>;
+  mode: PracticeMode;
+};
 
-const defaultPieces: Record<PieceType, boolean> = {
-  king: true,
-  queen: true,
-  rook: true,
-  bishop: true,
-  knight: true,
+const STORAGE_KEY = 'legalMoves_settings';
+const DEFAULTS: LegalMovesLocalSettings = {
+  timeLimit: 60,
+  selectedPieces: {
+    king: true,
+    queen: true,
+    rook: true,
+    bishop: true,
+    knight: true,
+  },
+  mode: 'timed',
 };
 
 export function LegalMoves({ locale }: Props) {
-  const [timeLimit, setTimeLimit] = useState(60);
-  const [selectedPieces, setSelectedPieces] = useState<Record<PieceType, boolean>>(defaultPieces);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load settings from localStorage after mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        if (settings.timeLimit) setTimeLimit(settings.timeLimit);
-        if (settings.selectedPieces) setSelectedPieces(settings.selectedPieces);
-      } catch {
-        // Ignore invalid JSON in localStorage
-      }
-    }
-    setIsLoaded(true);
-  }, []);
-
-  // Save settings to localStorage when they change (only after initial load)
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit, selectedPieces }));
-    }
-  }, [timeLimit, selectedPieces, isLoaded]);
+  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
 
   const togglePiece = (piece: PieceType) => {
-    setSelectedPieces((prev) => ({ ...prev, [piece]: !prev[piece] }));
+    updateSettings({
+      selectedPieces: { ...settings.selectedPieces, [piece]: !settings.selectedPieces[piece] },
+    });
   };
 
   return (
     <LegalMovesSetup
       locale={locale}
-      timeLimit={timeLimit}
-      selectedPieces={selectedPieces}
-      onTimeLimitChange={setTimeLimit}
+      timeLimit={settings.timeLimit}
+      selectedPieces={settings.selectedPieces}
+      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
       onPieceToggle={togglePiece}
+      mode={settings.mode}
+      onModeChange={(mode) => updateSettings({ mode })}
     />
   );
 }
