@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
 import { BoardViewModal } from './BoardViewModal';
-import { ConfirmationModal } from './ConfirmationModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { GameOverContent } from './GameOverContent';
 import { GameSettingsModal } from './GameSettingsModal';
@@ -165,37 +165,35 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       {/* Resign Confirmation Modal */}
       <ConfirmationModal
         isOpen={confirmationDialogs.resign.isOpen}
-        onClose={confirmationDialogs.resign.close}
+        onCancel={confirmationDialogs.resign.close}
         onConfirm={confirmationDialogs.resign.confirm}
         title={t('confirmResignTitle')}
         message={t('confirmResignMessage')}
         confirmText={t('confirmResign')}
         cancelText={t('cancel')}
-        variant="destructive"
+        confirmVariant="danger"
       />
 
       {/* Undo Confirmation Modal */}
       <ConfirmationModal
         isOpen={confirmationDialogs.undo.isOpen}
-        onClose={confirmationDialogs.undo.close}
+        onCancel={confirmationDialogs.undo.close}
         onConfirm={confirmationDialogs.undo.confirm}
         title={t('confirmUndoTitle')}
         message={t('confirmUndoMessage')}
         confirmText={t('confirmUndo')}
         cancelText={t('cancel')}
-        variant="primary"
       />
 
       {/* Restart Confirmation Modal */}
       <ConfirmationModal
         isOpen={confirmationDialogs.restart.isOpen}
-        onClose={confirmationDialogs.restart.close}
+        onCancel={confirmationDialogs.restart.close}
         onConfirm={confirmationDialogs.restart.confirm}
         title={t('confirmRestartTitle')}
         message={t('confirmRestartMessage')}
         confirmText={t('confirmRestart')}
         cancelText={t('cancel')}
-        variant="primary"
       />
 
       {/* Board View Modal */}
