@@ -19,12 +19,17 @@ export type EvaluationResult = {
 export class ChessEngine {
   private engine: Worker | null = null;
   private isInitialized = false;
+  private initializationPromise: Promise<void> | null = null;
   private pendingCallbacks: Map<string, (response: EngineResponse) => void> = new Map();
   private skillLevel: SkillLevel = 5;
   private isProcessing = false;
 
-  constructor() {
-    this.initializeEngine().catch(console.error);
+  private async ensureInitialized(): Promise<void> {
+    if (this.isInitialized) return;
+    if (!this.initializationPromise) {
+      this.initializationPromise = this.initializeEngine();
+    }
+    await this.initializationPromise;
   }
 
   private async initializeEngine(): Promise<void> {
@@ -49,16 +54,14 @@ export class ChessEngine {
         throw new Error(`Worker error: ${errorMessage}`);
       };
 
-      // Wait a bit for the worker to initialize
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Initialize UCI protocol
+      // Initialize UCI protocol and wait for uciok response
       await this.sendCommand('uci');
       await this.sendCommand('isready');
       await this.setSkillLevel(this.skillLevel);
 
       this.isInitialized = true;
     } catch (error) {
+      this.initializationPromise = null;
       console.error('Failed to initialize chess engine:', error);
       throw new Error(
         `Chess engine initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -73,7 +76,13 @@ export class ChessEngine {
       return;
     }
 
-    if (message.includes('readyok')) {
+    if (message.includes('uciok')) {
+      const callback = this.pendingCallbacks.get('uciok');
+      if (callback) {
+        this.pendingCallbacks.delete('uciok');
+        callback({ type: 'uci', data: message });
+      }
+    } else if (message.includes('readyok')) {
       const callback = this.pendingCallbacks.get('readyok');
       if (callback) {
         this.pendingCallbacks.delete('readyok'); // Delete first to prevent duplicate calls
@@ -108,7 +117,12 @@ export class ChessEngine {
         reject(new Error(`Engine command timeout: ${command}`));
       }, 10000);
 
-      if (command === 'isready') {
+      if (command === 'uci') {
+        this.pendingCallbacks.set('uciok', (response) => {
+          clearTimeout(timeoutId);
+          resolve(response);
+        });
+      } else if (command === 'isready') {
         this.pendingCallbacks.set('readyok', (response) => {
           clearTimeout(timeoutId);
           resolve(response);
@@ -164,9 +178,7 @@ export class ChessEngine {
       throw new Error('Chess engine can only be used in browser environment');
     }
 
-    if (!this.isInitialized || !this.engine) {
-      throw new Error('Engine not ready');
-    }
+    await this.ensureInitialized();
 
     if (this.isProcessing) {
       throw new Error('Engine is already processing a request');
@@ -202,9 +214,7 @@ export class ChessEngine {
       throw new Error('Chess engine can only be used in browser environment');
     }
 
-    if (!this.isInitialized || !this.engine) {
-      throw new Error('Engine not ready');
-    }
+    await this.ensureInitialized();
 
     if (this.isProcessing) {
       throw new Error('Engine is already processing a request');
@@ -338,6 +348,7 @@ export class ChessEngine {
       this.engine = null;
     }
     this.isInitialized = false;
+    this.initializationPromise = null;
     this.isProcessing = false;
     this.pendingCallbacks.clear();
   }

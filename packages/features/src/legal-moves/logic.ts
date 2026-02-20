@@ -1,4 +1,5 @@
-import { Chess, Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
+import { Chess } from "chess.js";
 
 import { FILES, RANKS } from "../common";
 
@@ -9,9 +10,10 @@ export function isLegalMove(
   from: string,
   to: string,
   pieceType: PieceType,
+  chessInstance?: Chess,
 ): boolean {
-  // Create a chess instance with only the specified piece
-  const chess = new Chess();
+  // Reuse provided chess instance or create a new one
+  const chess = chessInstance ?? new Chess();
   chess.clear();
 
   // Place a white piece at the from square
@@ -34,6 +36,7 @@ export function generateBalancedMoveQuestions(
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
   let legalCount = 0;
+  const chess = new Chess();
 
   while (questions.length < count) {
     const piece =
@@ -41,11 +44,12 @@ export function generateBalancedMoveQuestions(
     const question = generateMoveQuestionForPiece(
       piece,
       legalCount < targetLegalCount,
+      chess,
     );
 
     if (question) {
       questions.push(question);
-      if (isLegalMove(question.from, question.to, question.piece)) {
+      if (isLegalMove(question.from, question.to, question.piece, chess)) {
         legalCount++;
       }
     }
@@ -59,6 +63,7 @@ export function generateBalancedMoveQuestions(
 export function generateMoveQuestionForPiece(
   pieceType: PieceType,
   preferLegal: boolean,
+  chessInstance?: Chess,
 ): MoveQuestion | null {
   // Try multiple times to generate a suitable question
   for (let attempts = 0; attempts < 50; attempts++) {
@@ -192,7 +197,12 @@ export function generateMoveQuestionForPiece(
 
       // Ensure from and to are different
       if (toSquare !== fromSquare) {
-        const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
+        const isLegal = isLegalMove(
+          fromSquare,
+          toSquare,
+          pieceType,
+          chessInstance,
+        );
 
         // Return if we got what we wanted
         if ((preferLegal && isLegal) || (!preferLegal && !isLegal)) {
