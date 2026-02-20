@@ -12,8 +12,7 @@ vi.mock('next/navigation', () => ({
 
 // Mock repositories
 
-const { mockSave, mockUpdate, mockCreate } = vi.hoisted(() => ({
-  mockSave: vi.fn().mockResolvedValue('new-game-id'),
+const { mockUpdate, mockCreate } = vi.hoisted(() => ({
   mockUpdate: vi.fn().mockResolvedValue(undefined),
   mockCreate: vi.fn().mockResolvedValue('new-game-id'),
 }));
@@ -21,7 +20,6 @@ const { mockSave, mockUpdate, mockCreate } = vi.hoisted(() => ({
 vi.mock('@/lib/repositories', () => {
   return {
     LocalStorageGameRepository: class {
-      save = mockSave;
       update = mockUpdate;
       create = mockCreate;
       load = vi.fn();
@@ -57,7 +55,7 @@ describe('useAutoSave', () => {
       },
     });
 
-    expect(mockSave).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
     expect(mockUpdate).not.toHaveBeenCalled();
 
     // 2. Transition to enabled=true (simulating load complete)
@@ -70,7 +68,7 @@ describe('useAutoSave', () => {
     });
 
     // Should NOT save because of the protection logic we added
-    expect(mockSave).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 

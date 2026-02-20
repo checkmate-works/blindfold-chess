@@ -8,7 +8,6 @@ import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 interface IGameRepository {
   create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string>;
   update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void>;
-  save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string>;
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
   loadAllSorted(sortBy: GameSortOption, direction?: SortDirection): Promise<Game[]>;
@@ -73,44 +72,6 @@ export class LocalStorageGameRepository implements IGameRepository {
     } catch (error) {
       console.error('Failed to update game:', error);
       throw error;
-    }
-  }
-
-  /**
-   * @deprecated Use create() for new games or update() for existing games instead.
-   * This method is kept for backward compatibility.
-   */
-  async save(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>, id?: string): Promise<string> {
-    try {
-      if (id) {
-        // Try to update existing game
-        const existingGame = await this.load(id);
-        if (existingGame) {
-          await this.update(id, game);
-          return id;
-        } else {
-          // ID provided but game doesn't exist, create new with same ID attempt
-          // This is legacy behavior - in new code, this should throw an error
-          const games = await this.loadAll();
-          if (games.length >= MAX_GAMES) {
-            throw new GameLimitError(`Cannot save game: limit of ${MAX_GAMES} games reached`);
-          }
-          const now = new Date().toISOString();
-          games.push({ ...game, id, date: now, lastPlayed: now });
-          this.saveToStorage(games);
-          return id;
-        }
-      } else {
-        // Create new game
-        return await this.create(game);
-      }
-    } catch (error) {
-      // Re-throw GameLimitError as-is
-      if (error instanceof GameLimitError) {
-        throw error;
-      }
-      console.error('Failed to save game:', error);
-      throw new Error('Failed to save game');
     }
   }
 

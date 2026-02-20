@@ -69,21 +69,16 @@ export function useAutoSave({
         hasInitialSaveExecuted.current = true; // Mark as executed to prevent duplicates
 
         try {
-          const savedGameId = await gameRepository.save(
-            {
-              moves: currentMovesRef.current,
-              playerColor,
-              skillLevel,
-              status: currentStatusRef.current,
-              startingFen,
-            },
-            currentGameId
-          );
+          const gameData = {
+            moves: currentMovesRef.current,
+            playerColor,
+            skillLevel,
+            status: currentStatusRef.current,
+            startingFen,
+          };
 
-          // Update game ID if it was newly created
-          if (!currentGameId) {
-            setCurrentGameId(savedGameId);
-          }
+          const savedGameId = await gameRepository.create(gameData);
+          setCurrentGameId(savedGameId);
 
           lastSavedMovesLength.current = currentMovesRef.current.length;
           lastSavedStatus.current = currentStatusRef.current;
