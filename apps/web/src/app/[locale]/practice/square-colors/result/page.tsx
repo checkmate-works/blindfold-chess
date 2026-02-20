@@ -99,7 +99,7 @@ export default function SquareColorsResultPage({ params }: Props) {
         score={score}
         total={total}
         onTryAgain={() =>
-          router.push(`/${locale}/practice/square-colors/session?timeLimit=${timeLimit}`)
+          router.push(`/${locale}/practice/square-colors/challenge?timeLimit=${timeLimit}`)
         }
         onExit={() => router.push(`/${locale}/practice/square-colors`)}
         locale={locale}

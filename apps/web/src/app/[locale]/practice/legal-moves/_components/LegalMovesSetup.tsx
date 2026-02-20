@@ -8,8 +8,9 @@ import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
-import type { PieceType } from '../_lib/types';
+import type { PieceType, PracticeMode } from '../_lib/types';
 import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {
@@ -18,6 +19,8 @@ type Props = {
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (value: number) => void;
   onPieceToggle: (piece: PieceType) => void;
+  mode: PracticeMode;
+  onModeChange: (mode: PracticeMode) => void;
 };
 
 export function LegalMovesSetup({
@@ -26,11 +29,19 @@ export function LegalMovesSetup({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
+  mode,
+  onModeChange,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
+  const tp = useTranslations('practice');
   const router = useRouter();
 
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
+
+  const modeOptions: { value: PracticeMode; label: string }[] = [
+    { value: 'timed', label: tp('modeTimed') },
+    { value: 'training', label: tp('modeTraining') },
+  ];
 
   const handleStart = () => {
     const selectedPieceTypes = Object.entries(selectedPieces)
@@ -38,9 +49,15 @@ export function LegalMovesSetup({
       .map(([piece]) => piece)
       .join(',');
 
-    router.push(
-      `/${locale}/practice/legal-moves/session?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}#legal-moves-session`
-    );
+    if (mode === 'training') {
+      router.push(
+        `/${locale}/practice/legal-moves/training?pieces=${selectedPieceTypes}#legal-moves-training-session`
+      );
+    } else {
+      router.push(
+        `/${locale}/practice/legal-moves/challenge?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}#legal-moves-session`
+      );
+    }
   };
 
   return (
@@ -48,12 +65,23 @@ export function LegalMovesSetup({
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
 
+        <div className="mb-6">
+          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+        </div>
+
         <LegalMovesSettings
           timeLimit={timeLimit}
           selectedPieces={selectedPieces}
           onTimeLimitChange={onTimeLimitChange}
           onPieceToggle={onPieceToggle}
+          showTimeSlider={mode === 'timed'}
         />
+
+        {mode === 'training' && (
+          <div className="mt-6 mb-6">
+            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+          </div>
+        )}
 
         <Button
           onClick={handleStart}
@@ -63,7 +91,7 @@ export function LegalMovesSetup({
           className="w-full mt-6"
           icon={<FaPlay />}
         >
-          {t('start')}
+          {mode === 'training' ? tp('startTraining') : t('start')}
         </Button>
       </div>
 

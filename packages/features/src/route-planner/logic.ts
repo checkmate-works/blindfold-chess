@@ -1,12 +1,11 @@
+import { FILES, RANKS, isValidSquare } from "../common";
+
 import type { RoutePlannerPieceType, RoutePlannerProblem } from "./types";
 import { ROUTE_PLANNER_PIECES } from "./types";
 
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
-
 export function squareToCoords(square: string): [number, number] {
-  const file = FILES.indexOf(square[0]);
-  const rank = RANKS.indexOf(square[1]);
+  const file = FILES.indexOf(square[0] as (typeof FILES)[number]);
+  const rank = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
   return [file, rank];
 }
 
@@ -15,14 +14,7 @@ export function coordsToSquare(file: number, rank: number): string {
   return `${FILES[file]}${RANKS[rank]}`;
 }
 
-export function isValidRoutePlannerSquare(square: string): boolean {
-  if (!square) return false;
-  return (
-    square.length === 2 &&
-    FILES.includes(square[0]) &&
-    RANKS.includes(square[1])
-  );
-}
+export { isValidSquare as isValidRoutePlannerSquare };
 
 export function getPossibleMoves(
   piece: RoutePlannerPieceType,
@@ -138,7 +130,7 @@ export function validateUserPath(
   const fullPath = [start];
 
   for (const nextSquare of userPath) {
-    if (!isValidRoutePlannerSquare(nextSquare))
+    if (!isValidSquare(nextSquare))
       return { valid: false, error: `Invalid square: ${nextSquare}` };
 
     const possible = getPossibleMoves(piece, current);

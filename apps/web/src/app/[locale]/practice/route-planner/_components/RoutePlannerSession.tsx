@@ -12,8 +12,10 @@ import { FaArrowRight, FaFlagCheckered, FaRedo, FaUndo } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
+import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import {
@@ -41,7 +43,7 @@ type Props = {
   locale: string;
   problemCount?: number; // default 5
   allowedPieces?: PieceType[]; // default all
-  mode?: 'standard' | 'tutorial';
+  mode?: 'standard' | 'tutorial' | 'training';
   initialProblem?: {
     piece: PieceType;
     start: string;
@@ -59,8 +61,11 @@ export function RoutePlannerSession({
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
 
-  const { preferences } = useGamePreferences(); // Keep if needed for other prefs
+  const { preferences } = useGamePreferences();
   const router = useRouter();
+  const { showToast } = useToast();
+
+  const isTraining = mode === 'training';
 
   /* State */
   const [gameState, setGameState] = useState<GameState>('playing');
@@ -99,7 +104,7 @@ export function RoutePlannerSession({
     // Only in standard mode (User pressed Start), not in tutorial or implicit flows
     const timer = setTimeout(() => {
       const element = document.getElementById('route-planner-session');
-      if (element && mode === 'standard') {
+      if (element && (mode === 'standard' || mode === 'training')) {
         element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
@@ -274,6 +279,13 @@ export function RoutePlannerSession({
       setResults(newResults);
     }
 
+    if (isTraining) {
+      // Training mode: always continue with a new problem
+      setCurrentProblemIndex((prev) => prev + 1);
+      startNewProblem();
+      return;
+    }
+
     const nextIndex = currentProblemIndex + 1;
     if (nextIndex < problemCount) {
       setCurrentProblemIndex(nextIndex);
@@ -300,7 +312,13 @@ export function RoutePlannerSession({
     locale,
     mode,
     allowedPieces,
+    isTraining,
   ]);
+
+  const handleEndTraining = useCallback(() => {
+    showToast(tPractice('trainingEnded'), 'info');
+    router.push(`/${locale}/practice/route-planner`);
+  }, [showToast, tPractice, router, locale]);
 
   const handleQuit = useCallback(() => {
     setShowQuitModal(true);
@@ -359,7 +377,16 @@ export function RoutePlannerSession({
         id="route-planner-session"
         className="bg-card border border-border rounded-lg p-6 space-y-6"
       >
-        {problemCount > 1 && <ProgressBar current={currentProblemIndex + 1} total={problemCount} />}
+        {!isTraining && problemCount > 1 && (
+          <ProgressBar current={currentProblemIndex + 1} total={problemCount} />
+        )}
+
+        {isTraining && (
+          <ScoreCounter
+            correct={results.filter((r) => r.success).length}
+            incorrect={results.filter((r) => !r.success).length}
+          />
+        )}
 
         <div className="flex justify-between items-center border-b border-border pb-4">
           <div className="flex items-center gap-6">
@@ -540,14 +567,18 @@ export function RoutePlannerSession({
             <div className="flex gap-4">
               <Button onClick={handleNextProblem} variant="primary" className="flex-1">
                 <FaRedo className="mr-2" />
-                {currentProblemIndex < problemCount - 1 ? t('nextProblem') : t('finish')}
+                {isTraining
+                  ? t('nextProblem')
+                  : currentProblemIndex < problemCount - 1
+                    ? t('nextProblem')
+                    : t('finish')}
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Quit Link outside the card */}
+      {/* Quit / End Training section outside the card */}
       <div className="flex flex-col items-center gap-2">
         {gameState === 'playing' && (
           <button
@@ -557,25 +588,36 @@ export function RoutePlannerSession({
             {t('skip')}
           </button>
         )}
-        <button
-          onClick={handleQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('quit')}
-        </button>
+        {isTraining ? (
+          <button
+            onClick={handleEndTraining}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {tPractice('endTraining')}
+          </button>
+        ) : (
+          <button
+            onClick={handleQuit}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {t('quit')}
+          </button>
+        )}
       </div>
 
-      <QuitConfirmModal
-        isOpen={showQuitModal}
-        onConfirm={confirmQuit}
-        onCancel={() => setShowQuitModal(false)}
-        labels={{
-          title: tPractice('quitConfirmModal.title'),
-          message: tPractice('quitConfirmModal.message'),
-          confirmButton: tPractice('quitConfirmModal.confirmButton'),
-          cancelButton: tPractice('quitConfirmModal.cancelButton'),
-        }}
-      />
+      {!isTraining && (
+        <QuitConfirmModal
+          isOpen={showQuitModal}
+          onConfirm={confirmQuit}
+          onCancel={() => setShowQuitModal(false)}
+          labels={{
+            title: tPractice('quitConfirmModal.title'),
+            message: tPractice('quitConfirmModal.message'),
+            confirmButton: tPractice('quitConfirmModal.confirmButton'),
+            cancelButton: tPractice('quitConfirmModal.cancelButton'),
+          }}
+        />
+      )}
     </div>
   );
 }

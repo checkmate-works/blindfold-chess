@@ -52,7 +52,7 @@ export default function QuadrantAnchorsResultPage(props: Props) {
       const params = new URLSearchParams();
       if (settings.count) params.set('count', settings.count.toString());
       if (settings.orientation) params.set('orientation', settings.orientation);
-      router.push(`/${locale}/practice/quadrants/session?${params.toString()}`);
+      router.push(`/${locale}/practice/quadrants/challenge?${params.toString()}`);
     } else {
       router.push(`/${locale}/practice/quadrants`);
     }

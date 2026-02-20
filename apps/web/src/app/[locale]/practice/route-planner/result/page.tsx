@@ -59,7 +59,7 @@ export default function RoutePlannerResultPage(props: Props) {
       const count = searchParams.get('count');
       const pieces = searchParams.get('pieces');
       if (count && pieces) {
-        router.push(`/${locale}/practice/route-planner/session?count=${count}&pieces=${pieces}`);
+        router.push(`/${locale}/practice/route-planner/challenge?count=${count}&pieces=${pieces}`);
       } else {
         router.push(`/${locale}/practice/route-planner`);
       }

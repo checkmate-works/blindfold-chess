@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
@@ -17,14 +18,22 @@ import QuadrantBoard, { QuadrantId } from './QuadrantBoard';
 type Props = {
   initialProblemCount: number;
   initialOrientation: 'white' | 'black' | 'random';
+  mode?: 'standard' | 'training';
 };
 
-export default function QuadrantPlaying({ initialProblemCount, initialOrientation }: Props) {
+export default function QuadrantPlaying({
+  initialProblemCount,
+  initialOrientation,
+  mode = 'standard',
+}: Props) {
   const t = useTranslations('practice.quadrantAnchors');
   const tCommon = useTranslations('practice');
-  const tQuiz = useTranslations('practice.coordinateQuiz'); // Reusing translations for turn view
+  const tQuiz = useTranslations('practice.coordinateQuiz');
   const locale = useLocale() as Locale;
   const router = useRouter();
+  const { showToast } = useToast();
+
+  const isTraining = mode === 'training';
 
   const [currentSquare, setCurrentSquare] = useState<string>('');
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -32,13 +41,11 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
   const [round, setRound] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [showQuitModal, setShowQuitModal] = useState(false);
-  // Initialize orientation from prop (default to white for random, nextProblem will randomize it)
   const [currentOrientation, setCurrentOrientation] = useState<'white' | 'black'>(
     initialOrientation === 'black' ? 'black' : 'white'
   );
   const hasStarted = useRef(false);
 
-  // Sync state if prop changes (e.g. component reuse)
   useEffect(() => {
     if (initialOrientation === 'white') setCurrentOrientation('white');
     else if (initialOrientation === 'black') setCurrentOrientation('black');
@@ -63,15 +70,14 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     const isKingSide = ['e', 'f', 'g', 'h'].includes(file);
     const isUpper = rank >= 5;
 
-    if (isKingSide && isUpper) return 'q1'; // Top-Right (White perspective)
-    if (!isKingSide && isUpper) return 'q2'; // Top-Left (White perspective)
-    if (!isKingSide && !isUpper) return 'q3'; // Bottom-Left (White perspective)
-    return 'q4'; // Bottom-Right (White perspective)
+    if (isKingSide && isUpper) return 'q1';
+    if (!isKingSide && isUpper) return 'q2';
+    if (!isKingSide && !isUpper) return 'q3';
+    return 'q4';
   };
 
   const nextProblem = useCallback(() => {
-    // Check if game should end
-    if (round >= initialProblemCount) {
+    if (!isTraining && round >= initialProblemCount) {
       setIsFinished(true);
       return;
     }
@@ -80,26 +86,22 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     const newSquare = generateSquare();
     setCurrentSquare(newSquare);
 
-    // Handle orientation update for random mode
     if (initialOrientation === 'random') {
       const isWhite = Math.random() < 0.5;
       setCurrentOrientation(isWhite ? 'white' : 'black');
     }
 
     setRound((r) => r + 1);
-  }, [generateSquare, round, initialProblemCount, initialOrientation]);
+  }, [generateSquare, round, initialProblemCount, initialOrientation, isTraining]);
 
   useEffect(() => {
-    // Initial start
     if (round === 0 && !currentSquare && !hasStarted.current) {
       hasStarted.current = true;
       nextProblem();
     }
   }, [nextProblem, round, currentSquare]);
 
-  // Scroll to session element after mount
   useEffect(() => {
-    // Tiny delay to ensure DOM is ready
     setTimeout(() => {
       const element = document.getElementById('quadrant-session');
       if (element) {
@@ -109,7 +111,7 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
   }, []);
 
   const handleQuadrantClick = (id: QuadrantId) => {
-    if (feedbackState.correct) return; // Already answered
+    if (feedbackState.correct) return;
 
     const correctId = getCorrectQuadrant(currentSquare);
     const isCorrect = id === correctId;
@@ -131,6 +133,11 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     }
   };
 
+  const handleEndTraining = useCallback(() => {
+    showToast(tCommon('trainingEnded'), 'info');
+    router.push(`/${locale}/practice/quadrants`);
+  }, [showToast, tCommon, router, locale]);
+
   const handleQuit = () => {
     setShowQuitModal(true);
   };
@@ -139,7 +146,6 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
     router.push(`/${locale}/practice/quadrants`);
   };
 
-  // Redirect to result page when finished
   useEffect(() => {
     if (isFinished) {
       const settings = {
@@ -167,7 +173,9 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
   return (
     <div id="quadrant-session" className="max-w-2xl mx-auto space-y-4">
       <div className="bg-card border border-border rounded-lg p-6 space-y-6">
-        {initialProblemCount > 1 && <ProgressBar current={round} total={initialProblemCount} />}
+        {!isTraining && initialProblemCount > 1 && (
+          <ProgressBar current={round} total={initialProblemCount} />
+        )}
 
         {/* Orientation Indicator */}
         <div className="flex justify-center mb-2">
@@ -194,7 +202,7 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
             correctQuadrant={feedbackState.correct}
             wrongQuadrant={feedbackState.wrong}
             onQuadrantClick={handleQuadrantClick}
-            disabled={!!feedbackState.correct} // Disable input during feedback
+            disabled={!!feedbackState.correct}
             orientation={currentOrientation}
           />
         </div>
@@ -203,25 +211,36 @@ export default function QuadrantPlaying({ initialProblemCount, initialOrientatio
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
 
       <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={handleQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {tCommon('quit')}
-        </button>
+        {isTraining ? (
+          <button
+            onClick={handleEndTraining}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {tCommon('endTraining')}
+          </button>
+        ) : (
+          <button
+            onClick={handleQuit}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {tCommon('quit')}
+          </button>
+        )}
       </div>
 
-      <QuitConfirmModal
-        isOpen={showQuitModal}
-        onConfirm={confirmQuit}
-        onCancel={() => setShowQuitModal(false)}
-        labels={{
-          title: tCommon('quitConfirmModal.title'),
-          message: tCommon('quitConfirmModal.message'),
-          confirmButton: tCommon('quitConfirmModal.confirmButton'),
-          cancelButton: tCommon('quitConfirmModal.cancelButton'),
-        }}
-      />
+      {!isTraining && (
+        <QuitConfirmModal
+          isOpen={showQuitModal}
+          onConfirm={confirmQuit}
+          onCancel={() => setShowQuitModal(false)}
+          labels={{
+            title: tCommon('quitConfirmModal.title'),
+            message: tCommon('quitConfirmModal.message'),
+            confirmButton: tCommon('quitConfirmModal.confirmButton'),
+            cancelButton: tCommon('quitConfirmModal.cancelButton'),
+          }}
+        />
+      )}
     </div>
   );
 }

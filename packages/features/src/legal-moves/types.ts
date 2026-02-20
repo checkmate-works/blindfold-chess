@@ -1,3 +1,7 @@
+import type { PracticeMode } from "../common/types";
+
+export type { PracticeMode };
+
 export const PIECE_TYPES = [
   "bishop",
   "knight",
@@ -16,11 +20,13 @@ export type MoveQuestion = {
 export type LegalMovesSettings = {
   duration: number; // seconds
   selectedPieces: PieceType[];
+  mode: PracticeMode;
 };
 
 export const DEFAULT_LEGAL_MOVES_SETTINGS: LegalMovesSettings = {
   duration: 60,
   selectedPieces: [...PIECE_TYPES],
+  mode: "timed",
 };
 
 export type LegalMovesResult = {

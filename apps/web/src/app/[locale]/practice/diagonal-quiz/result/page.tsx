@@ -83,7 +83,7 @@ export default function DiagonalQuizResultPage(props: Props) {
         total={total}
         onTryAgain={() =>
           router.push(
-            `/${locale}/practice/diagonal-quiz/session?timeLimit=${timeLimit || '60'}#diagonal-quiz-session`
+            `/${locale}/practice/diagonal-quiz/challenge?timeLimit=${timeLimit || '60'}#diagonal-quiz-session`
           )
         }
         onExit={() => router.push(`/${locale}/practice/diagonal-quiz`)}

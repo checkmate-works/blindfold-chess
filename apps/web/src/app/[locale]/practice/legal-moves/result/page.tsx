@@ -40,7 +40,7 @@ export default function LegalMovesResultPage(props: Props) {
   if (timeLimit) retryParams.set('timeLimit', timeLimit);
   if (pieces) retryParams.set('pieces', pieces);
 
-  const retryUrl = `/${locale}/practice/legal-moves/session?${retryParams.toString()}`;
+  const retryUrl = `/${locale}/practice/legal-moves/challenge?${retryParams.toString()}`;
 
   const detailedStats = useMemo(
     () => ({

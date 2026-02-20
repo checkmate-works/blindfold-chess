@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { TutorialSkipLink } from '@/app/[locale]/practice/_components/TutorialSkipLink';
 
 export const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = 'routePlannerTutorialSkipped';
 
@@ -9,16 +9,13 @@ type Props = {
 };
 
 export function RoutePlannerTutorialSkipLink({ onStartTutorial }: Props) {
-  const t = useTranslations('practice.routePlanner.tutorial');
-
   return (
     <div className="flex justify-center mt-6">
-      <button
+      <TutorialSkipLink
         onClick={onStartTutorial}
-        className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-      >
-        {t('viewTutorial')}
-      </button>
+        translationNamespace="practice.routePlanner.tutorial"
+        translationKey="viewTutorial"
+      />
     </div>
   );
 }

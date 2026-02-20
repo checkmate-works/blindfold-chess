@@ -12,6 +12,7 @@ type Props = {
   selectedPieces: Record<PieceType, boolean>;
   onTimeLimitChange: (timeLimit: number) => void;
   onPieceToggle: (piece: PieceType) => void;
+  showTimeSlider?: boolean;
 };
 
 export function LegalMovesSettings({
@@ -19,6 +20,7 @@ export function LegalMovesSettings({
   selectedPieces,
   onTimeLimitChange,
   onPieceToggle,
+  showTimeSlider = true,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
@@ -26,14 +28,16 @@ export function LegalMovesSettings({
   return (
     <div className="space-y-6">
       {/* Time Limit */}
-      <TimeSlider
-        timeLimit={timeLimit}
-        onTimeLimitChange={onTimeLimitChange}
-        labels={{
-          timeLimit: t('timeLimit'),
-          seconds: t('seconds'),
-        }}
-      />
+      {showTimeSlider && (
+        <TimeSlider
+          timeLimit={timeLimit}
+          onTimeLimitChange={onTimeLimitChange}
+          labels={{
+            timeLimit: t('timeLimit'),
+            seconds: t('seconds'),
+          }}
+        />
+      )}
 
       {/* Piece Selection */}
       <div>

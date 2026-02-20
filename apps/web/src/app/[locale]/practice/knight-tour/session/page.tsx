@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import KnightTour from '../_components/KnightTour';
 
@@ -37,26 +37,21 @@ export default async function KnightTourSessionPage({ params, searchParams }: Pr
   const isTutorial = search.mode === 'tutorial';
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.knightTour.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.knightTour.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.knightTour.title'), href: '/practice/knight-tour' },
+        { label: t('practice.knightTour.session') },
+      ]}
+    >
       <KnightTour
         autoStart={true}
         initialStartingSquare={startingSquare}
         initialBlindfoldMode={blindfoldMode}
         isTutorial={isTutorial}
       />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.knightTour.title'), href: '/practice/knight-tour' },
-          { label: t('practice.knightTour.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

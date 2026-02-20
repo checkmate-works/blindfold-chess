@@ -1,9 +1,19 @@
+import { FILES, RANKS } from "./constants";
+
+export function isValidSquare(square: string): boolean {
+  return /^[a-h][1-8]$/.test(square);
+}
+
+export function computeSquareColor(square: string): "light" | "dark" {
+  const file = square.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
+  const rank = parseInt(square[1]) - 1; // 1=0, 2=1, ..., 8=7
+  return (file + rank) % 2 === 0 ? "dark" : "light";
+}
+
 export function generateRandomSquare(): string {
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
   return (
-    files[Math.floor(Math.random() * files.length)] +
-    ranks[Math.floor(Math.random() * ranks.length)]
+    FILES[Math.floor(Math.random() * FILES.length)] +
+    RANKS[Math.floor(Math.random() * RANKS.length)]
   );
 }
 
