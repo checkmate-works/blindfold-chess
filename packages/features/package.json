@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@blindfold-chess/types": "workspace:*",
     "chess.js": "^1.4.0"
   },
   "devDependencies": {
