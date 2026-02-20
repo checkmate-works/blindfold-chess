@@ -1,3 +1,14 @@
+/**
+ * Square Colors Training (マスの色トレーニング)
+ *
+ * @description
+ * Untimed training mode for square color identification.
+ * Questions continue infinitely until the user explicitly ends the session.
+ * No timer, no result page — navigates back to setup with a toast notification on end.
+ *
+ * @flow
+ * Setup (training selected) → Countdown → Infinite Q&A → End button → Setup + toast
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -5,14 +16,11 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import SquareColorsSession from '../_components/SquareColorsSession';
+import SquareColorsTrainingSession from './_components/SquareColorsTrainingSession';
 
 type Props = {
   params: Promise<{
     locale: Locale;
-  }>;
-  searchParams: Promise<{
-    timeLimit?: string;
   }>;
 };
 
@@ -21,20 +29,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/session' }),
-    title: `${t('practice.squareColors.title')} - ${t('practice.squareColors.session')}`,
+    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/training' }),
+    title: `${t('practice.squareColors.title')} - ${t('practice.modeTraining')}`,
     description: t('practice.squareColors.description'),
   };
 }
 
-export default async function SquareColorsSessionPage({ params, searchParams }: Props) {
+export default async function SquareColorsTrainingPage({ params }: Props) {
   const { locale } = await params;
-  const { timeLimit } = await searchParams;
   const t = await getTranslations({ locale });
-
-  // Default to 60 seconds if timeLimit is missing or 0
-  const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-  const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
 
   return (
     <PracticeSessionPage
@@ -43,10 +46,10 @@ export default async function SquareColorsSessionPage({ params, searchParams }: 
       breadcrumbItems={[
         { label: t('navigation.practice'), href: '/practice' },
         { label: t('practice.squareColors.title'), href: '/practice/square-colors' },
-        { label: t('practice.squareColors.session') },
+        { label: t('practice.modeTraining') },
       ]}
     >
-      <SquareColorsSession locale={locale} initialTimeLimit={timeLimitValue} />
+      <SquareColorsTrainingSession locale={locale} />
     </PracticeSessionPage>
   );
 }

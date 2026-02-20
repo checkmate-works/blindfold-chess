@@ -7,9 +7,11 @@ import { QuizTimer } from '@/components/QuizTimer';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { SquareColorAnswerButtons } from '@/app/[locale]/practice/square-colors/_components/SquareColorAnswerButtons';
+import { SquareColorQuestionDisplay } from '@/app/[locale]/practice/square-colors/_components/SquareColorQuestionDisplay';
 
 type Props = {
   currentSquare: string;
@@ -43,7 +45,6 @@ export function SquareColorsPlaying({
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
   const timeElapsed = timeLimit - timeRemaining;
-  const themeColors = getBoardThemeColors(boardTheme);
 
   return (
     <div className="max-w-md mx-auto">
@@ -98,39 +99,14 @@ export function SquareColorsPlaying({
         <div
           className={`transition-all duration-300 ${isPaused ? 'blur-md grayscale opacity-50 pointer-events-none' : ''}`}
         >
-          <div className="mb-8">
-            <div
-              className={`text-6xl font-bold mb-4 transition-colors duration-200 ${
-                lastAnswer
-                  ? lastAnswer.correct
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                  : 'text-foreground'
-              }`}
-            >
-              {currentSquare}
-            </div>
-          </div>
+          <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
 
-          <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
-            {/* Light square button */}
-            <button
-              onClick={() => onAnswer('light')}
-              disabled={showResult || countdown !== null || isPaused}
-              className={`aspect-square rounded-md border border-border ${themeColors.light} ${themeColors.lightCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md flex items-center justify-center`}
-            >
-              <span className="text-lg font-bold">{t('white')}</span>
-            </button>
-
-            {/* Dark square button */}
-            <button
-              onClick={() => onAnswer('dark')}
-              disabled={showResult || countdown !== null || isPaused}
-              className={`aspect-square rounded-md border border-border ${themeColors.dark} ${themeColors.darkCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md flex items-center justify-center`}
-            >
-              <span className="text-lg font-bold">{t('black')}</span>
-            </button>
-          </div>
+          <SquareColorAnswerButtons
+            onAnswer={onAnswer}
+            disabled={showResult || countdown !== null || isPaused}
+            labels={{ white: t('white'), black: t('black') }}
+            boardTheme={boardTheme}
+          />
         </div>
       </div>
 

@@ -269,6 +269,12 @@
     "averageTime": "Average Time",
     "undo": "Undo",
     "resume": "Resume",
+    "modeTimed": "Timed",
+    "modeTraining": "Training",
+    "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
+    "startTraining": "Start Training",
+    "endTraining": "End",
+    "trainingEnded": "Training ended",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",

@@ -270,6 +270,12 @@
     "averageTime": "平均時間",
     "undo": "戻る",
     "resume": "再開",
+    "modeTimed": "タイム制",
+    "modeTraining": "トレーニング",
+    "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
+    "startTraining": "トレーニング開始",
+    "endTraining": "終了",
+    "trainingEnded": "訓練を終了しました",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",

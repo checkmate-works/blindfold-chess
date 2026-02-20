@@ -6,10 +6,14 @@ import { useRouter } from 'next/navigation';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
+import { useGameTimer } from '@/app/[locale]/practice/_hooks/useGameTimer';
+import {
+  generateSquareSequence,
+  getSquareColor,
+} from '@/app/[locale]/practice/square-colors/_lib/utils';
 
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useGameTimer } from '../../_hooks/useGameTimer';
-import { generateSquareSequence, getSquareColor } from '../_lib/utils';
 import { SquareColorsPlaying } from './SquareColorsPlaying';
 
 type Props = {
@@ -24,7 +28,9 @@ type GameStats = {
   averageTime: number;
 };
 
-export default function SquareColorsSession({ locale, initialTimeLimit }: Props) {
+const BATCH_SIZE = 100;
+
+export default function SquareColorsChallenge({ locale, initialTimeLimit }: Props) {
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
@@ -37,21 +43,21 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
   const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; square: string } | null>(null);
   const hasStarted = useRef(false);
 
-  // Countdown state
-  const [countdown, setCountdown] = useState<number | null>(3);
+  const { countdown } = useCountdown();
   const [hasMounted, setHasMounted] = useState(false);
 
   // Pause state
   const [isPaused, setIsPaused] = useState(false);
 
-  // Timer hook
   const isPlaying =
     squares.length > 0 && !isFinished && countdown === null && !showResult && !isPaused;
 
   const { timeElapsed, totalTime } = useGameTimer({
     timeLimit,
     isActive: isPlaying,
-    onTimeLimitReached: useCallback(() => setIsFinished(true), []),
+    onTimeLimitReached: useCallback(() => {
+      setIsFinished(true);
+    }, []),
   });
 
   // Auto-start the game on mount
@@ -60,40 +66,22 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
     hasStarted.current = true;
     setHasMounted(true);
 
-    const newSquares = generateSquareSequence(100);
+    const newSquares = generateSquareSequence(BATCH_SIZE);
     setSquares(newSquares);
   }, []);
 
-  // Scroll to session element after mount
+  // Scroll to challenge element after mount
   useEffect(() => {
     if (hasMounted) return;
 
     // Tiny delay to ensure DOM is ready
     setTimeout(() => {
-      const element = document.getElementById('square-colors-session');
+      const element = document.getElementById('square-colors-challenge');
       if (element) {
         element.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
     }, 100);
   }, [hasMounted]);
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500); // Show "START!" for 0.5s
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
 
   const togglePause = useCallback(() => {
     if (isFinished || countdown !== null) return;
@@ -115,7 +103,6 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
 
       // Move to next question
       setTimeout(() => {
-        // Keep moving index forward
         setShowResult(false);
         setLastAnswer(null);
         setCurrentIndex((prev) => prev + 1);
@@ -147,7 +134,7 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
       });
       router.push(`/${locale}/practice/square-colors/result?${params.toString()}`);
     }
-  }, [isFinished, answers, locale, router, getStats]);
+  }, [isFinished, answers, locale, router, getStats, timeLimit]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;
@@ -159,7 +146,7 @@ export default function SquareColorsSession({ locale, initialTimeLimit }: Props)
   }
 
   return (
-    <div id="square-colors-session" className="min-h-screen">
+    <div id="square-colors-challenge" className="min-h-screen">
       <SquareColorsPlaying
         currentSquare={squares[currentIndex]}
         timeRemaining={Math.max(0, timeLimit - timeElapsed)}

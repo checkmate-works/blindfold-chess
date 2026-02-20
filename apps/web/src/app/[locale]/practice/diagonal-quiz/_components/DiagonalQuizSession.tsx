@@ -14,6 +14,7 @@ import {
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
+import { useCountdown } from '../../_hooks/useCountdown';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 import type { QuestionResult } from './DiagonalQuizProblemList';
@@ -40,8 +41,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   const [isPaused, setIsPaused] = useState(false);
   const hasStarted = useRef(false);
 
-  // Countdown state
-  const [countdown, setCountdown] = useState<number | null>(3);
+  const { countdown } = useCountdown();
   const [hasMounted, setHasMounted] = useState(false);
 
   // Timer hook
@@ -80,24 +80,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
       }
     }, 100);
   }, [hasMounted]);
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
 
   const handleAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {

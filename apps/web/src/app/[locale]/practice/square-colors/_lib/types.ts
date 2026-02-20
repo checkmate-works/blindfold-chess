@@ -1,1 +1,1 @@
-export type { SquareColor } from '@blindfold-chess/features/square-colors';
+export type { PracticeMode, SquareColor } from '@blindfold-chess/features/square-colors';

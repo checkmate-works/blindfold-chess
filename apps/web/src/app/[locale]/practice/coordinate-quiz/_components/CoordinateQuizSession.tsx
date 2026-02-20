@@ -9,6 +9,7 @@ import { Square } from 'chess.js';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
+import { useCountdown } from '../../_hooks/useCountdown';
 import { useGameTimer } from '../../_hooks/useGameTimer';
 // import { PracticeResult } from '@/app/[locale]/practice/_components/PracticeResult';
 
@@ -48,8 +49,9 @@ export default function CoordinateQuizSession({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(3);
   const [isPaused, setIsPaused] = useState(false);
+
+  const { countdown } = useCountdown();
 
   const hasStarted = useRef(false);
   const hasScrolled = useRef(false);
@@ -129,24 +131,6 @@ export default function CoordinateQuizSession({
       isPaused,
     ]
   );
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500); // Show "START!" for 0.5s
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
 
   // Redirect on finish
   useEffect(() => {
