@@ -84,21 +84,30 @@ export function findShortestPath(
 ): string[] | null {
   if (start === end) return [start];
 
-  const queue: [string, string[]][] = [[start, [start]]];
-  const visited = new Set<string>([start]);
+  const parent = new Map<string, string>();
+  const queue: string[] = [start];
+  parent.set(start, "");
 
   while (queue.length > 0) {
-    const [current, path] = queue.shift()!;
+    const current = queue.shift()!;
 
     if (current === end) {
+      // Reconstruct path from parent map
+      const path: string[] = [];
+      let node: string | undefined = end;
+      while (node !== undefined && node !== "") {
+        path.push(node);
+        node = parent.get(node);
+      }
+      path.reverse();
       return path;
     }
 
     const moves = getPossibleMoves(piece, current);
     for (const move of moves) {
-      if (!visited.has(move)) {
-        visited.add(move);
-        queue.push([move, [...path, move]]);
+      if (!parent.has(move)) {
+        parent.set(move, current);
+        queue.push(move);
       }
     }
   }
