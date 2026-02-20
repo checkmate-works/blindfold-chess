@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { formatTime } from '@blindfold-chess/features';
+import { formatTime } from '@blindfold-chess/features/coordinate-quiz';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';

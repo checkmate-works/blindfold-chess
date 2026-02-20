@@ -1,9 +1,9 @@
+import { generateSquareSequence } from '@blindfold-chess/features/common';
 import {
-  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from '@blindfold-chess/features';
+} from '@blindfold-chess/features/diagonal-quiz';
 import { describe, expect, it } from 'vitest';
 
 describe('getDiagonals', () => {

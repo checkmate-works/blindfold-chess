@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features';
-import type { BoardSymmetryProblem } from '@blindfold-chess/features';
+import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
+import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

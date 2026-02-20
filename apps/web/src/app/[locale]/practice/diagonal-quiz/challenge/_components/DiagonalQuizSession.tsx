@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { generateSquareSequence } from '@blindfold-chess/features/common';
 import {
-  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
-} from '@blindfold-chess/features';
+} from '@blindfold-chess/features/diagonal-quiz';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';

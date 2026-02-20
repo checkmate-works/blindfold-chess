@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import type { PracticeMode } from '@blindfold-chess/features';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

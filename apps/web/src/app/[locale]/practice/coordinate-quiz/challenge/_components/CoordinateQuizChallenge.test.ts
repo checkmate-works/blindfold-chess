@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { checkAnswer, generateSingleQuestion } from '@blindfold-chess/features';
+import { checkAnswer, generateSingleQuestion } from '@blindfold-chess/features/coordinate-quiz';
 import { describe, expect, it } from 'vitest';
 
 describe('CoordinateQuizChallenge timed mode logic', () => {

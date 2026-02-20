@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import type { PracticeMode } from '@blindfold-chess/features';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

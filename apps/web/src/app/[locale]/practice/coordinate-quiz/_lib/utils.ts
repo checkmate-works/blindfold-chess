@@ -5,4 +5,4 @@ export {
   coordinatesToSquare,
   formatTime,
   calculateScore,
-} from '@blindfold-chess/features';
+} from '@blindfold-chess/features/coordinate-quiz';

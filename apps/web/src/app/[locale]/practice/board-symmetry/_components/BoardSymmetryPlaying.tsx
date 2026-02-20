@@ -4,14 +4,14 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import { QuizTimer } from '@/components/QuizTimer';
-import type { BoardSymmetryProblem } from '@blindfold-chess/features';
+import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
-export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features';
+export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features/board-symmetry';
 
 type Props = {
   problem: BoardSymmetryProblem;

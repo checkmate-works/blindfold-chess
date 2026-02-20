@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PracticeMode } from '@blindfold-chess/features';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 import type { PieceSymbol } from 'chess.js';
 import { FaPlay } from 'react-icons/fa';
 

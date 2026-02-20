@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { getDiagonals } from '@blindfold-chess/features';
+import { getDiagonals } from '@blindfold-chess/features/diagonal-quiz';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
