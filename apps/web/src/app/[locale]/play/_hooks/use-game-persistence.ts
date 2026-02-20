@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
 
+import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 
-import type { BoardStatus } from '../_lib';
-
 type SavedGameData = {
   moves: AlgebraicNotation[];
   startingFen?: string;
   lastMove: { from: string; to: string } | null;
-  gameStatus: BoardStatus;
+  gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
   shouldMakeAiMove: boolean;
 };
@@ -108,7 +107,7 @@ export function useGamePersistence({
           const lastMove =
             moves.length > 0 ? getLastMoveDetails(moves, savedGame.startingFen) : null;
 
-          let gameStatus: BoardStatus = 'in_progress';
+          let gameStatus: GameStatus = 'in_progress';
           let playerResult: 'win' | 'loss' | 'draw' | null = null;
           let shouldMakeAiMove = true;
 

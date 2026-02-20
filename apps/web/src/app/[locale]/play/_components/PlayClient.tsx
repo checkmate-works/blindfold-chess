@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { GameStateService } from '@blindfold-chess/features/ai-game';
+import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
 
@@ -25,8 +27,6 @@ import {
   useMoveNavigation,
   useNotation,
 } from '../_hooks';
-import { GameStateService } from '../_lib';
-import type { BoardStatus } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
@@ -78,7 +78,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const { preferences, updatePreferences } = useGamePreferences();
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
-  const [gameStatus, setGameStatus] = useState<BoardStatus>('in_progress');
+  const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
   const [playerResult, setPlayerResult] = useState<'win' | 'loss' | 'draw' | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -149,8 +149,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [loadedGameData, setMovesTo]);
 
   // Map board status to game outcome for repository
-  const mapBoardStatusToOutcome = useCallback(
-    (bs: BoardStatus, pr: 'win' | 'loss' | 'draw' | null): GameOutcome => {
+  const mapGameStatusToOutcome = useCallback(
+    (bs: GameStatus, pr: 'win' | 'loss' | 'draw' | null): GameOutcome => {
       if (bs === 'in_progress') return 'in_progress';
       if (pr === 'win') return 'win';
       if (pr === 'loss') return 'loss';
@@ -165,7 +165,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     moves,
     playerColor: playerSide,
     skillLevel,
-    status: mapBoardStatusToOutcome(gameStatus, playerResult),
+    status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
     enabled: !isLoadingFromStorage && !shouldRedirectToError,
     saveOnInit: !initialGameId && !shouldRedirectToError,
