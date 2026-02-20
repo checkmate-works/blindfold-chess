@@ -12,12 +12,12 @@ import {
 } from '@blindfold-chess/features';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
+import { useCountdown } from '@/app/[locale]/practice/_hooks/useCountdown';
+import { useGameTimer } from '@/app/[locale]/practice/_hooks/useGameTimer';
 
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
-import { useCountdown } from '../../_hooks/useCountdown';
-import { useGameTimer } from '../../_hooks/useGameTimer';
+import type { QuestionResult } from '../../_components/DiagonalQuizProblemList';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
-import type { QuestionResult } from './DiagonalQuizProblemList';
 
 type Props = {
   locale: Locale;

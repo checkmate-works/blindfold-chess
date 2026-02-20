@@ -14,7 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 
-import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
+import { DiagonalQuizPlaying } from '../challenge/_components/DiagonalQuizPlaying';
 import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
 
 type Props = {

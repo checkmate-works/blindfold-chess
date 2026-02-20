@@ -4,22 +4,18 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { BoardOverlay } from '@/app/_components';
-import { QuizTimer } from '@/components/QuizTimer';
+import { BoardOverlay, Button } from '@/app/_components';
 import { FaBackspace } from 'react-icons/fa';
-import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
-import type { ActiveField } from './useDiagonalInput';
-import { useDiagonalInput } from './useDiagonalInput';
+import type { ActiveField } from '../../_components/useDiagonalInput';
+import { useDiagonalInput } from '../../_components/useDiagonalInput';
 
 type Props = {
   currentSquare: string;
-  timeRemaining: number;
-  timeLimit: number;
   showResult: boolean;
   lastAnswer: {
     correct: boolean;
@@ -30,9 +26,7 @@ type Props = {
   countdown: number | null;
   correctCount: number;
   incorrectCount: number;
-  showStats?: boolean;
-  isPaused?: boolean;
-  onTogglePause?: () => void;
+  onEndTraining: () => void;
 };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -40,11 +34,6 @@ const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 /**
  * Check if a square is a corner (single-square diagonal or anti-diagonal).
- * Corner squares: a1, a8, h1, h8
- * - a1: diagonal is "a1-h8" (not single), anti-diagonal is "a1" (single)
- * - h8: diagonal is "a1-h8" (not single), anti-diagonal is "h8" (single)
- * - a8: diagonal is "a8" (single), anti-diagonal is "a8-h1" (not single)
- * - h1: diagonal is "h1" (single), anti-diagonal is "a8-h1" (not single)
  */
 function getCornerInfo(square: string): {
   singleDiagonal: boolean;
@@ -53,14 +42,12 @@ function getCornerInfo(square: string): {
   const f = square.charCodeAt(0) - 'a'.charCodeAt(0);
   const r = parseInt(square[1], 10) - 1;
 
-  // Diagonal length: determined by f - r constant
   const diag = f - r;
   const diagStartF = diag >= 0 ? diag : 0;
   const diagStartR = diag >= 0 ? 0 : -diag;
   const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
   const singleDiagonal = diagLength === 0;
 
-  // Anti-diagonal length: determined by f + r constant
   const antiDiag = f + r;
   const antiStartF = antiDiag <= 7 ? antiDiag : 7;
   const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
@@ -70,23 +57,19 @@ function getCornerInfo(square: string): {
   return { singleDiagonal, singleAntiDiagonal };
 }
 
-export function DiagonalQuizPlaying({
+export function DiagonalQuizTrainingPlaying({
   currentSquare,
-  timeRemaining,
-  timeLimit,
   showResult,
   lastAnswer,
   onAnswer,
   countdown,
   correctCount,
   incorrectCount,
-  showStats = true,
-  isPaused = false,
-  onTogglePause,
+  onEndTraining,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
-  const timeElapsed = timeLimit - timeRemaining;
-  const isDisabled = showResult || countdown !== null || isPaused;
+  const tp = useTranslations('practice');
+  const isDisabled = showResult || countdown !== null;
 
   const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
 
@@ -143,7 +126,6 @@ export function DiagonalQuizPlaying({
 
   const handleFieldClick = (field: ActiveField) => {
     if (isDisabled) return;
-    // Allow switching to an already-complete field to edit it
     setActiveField(field);
   };
 
@@ -157,51 +139,8 @@ export function DiagonalQuizPlaying({
           </span>
         </BoardOverlay>
 
-        {/* Pause Overlay */}
-        <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
-          <button
-            onClick={onTogglePause}
-            className="bg-white/90 hover:bg-white text-gray-900 rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
-            aria-label="Resume"
-          >
-            <LuPlay size={48} className="fill-current ml-1" />
-          </button>
-        </BoardOverlay>
-
-        <div
-          className={
-            isPaused || countdown !== null
-              ? 'blur-sm transition-all duration-300'
-              : 'transition-all duration-300'
-          }
-        >
+        <div>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
-
-          <div className="flex justify-end mb-4 min-h-[40px] relative">
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
-              {onTogglePause && (
-                <button
-                  onClick={onTogglePause}
-                  className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
-                  disabled={countdown !== null}
-                  aria-label={isPaused ? 'Resume' : 'Pause'}
-                >
-                  {isPaused ? (
-                    <LuPlay size={18} className="fill-current" />
-                  ) : (
-                    <LuPause size={18} className="fill-current" />
-                  )}
-                </button>
-              )}
-              <QuizTimer
-                timeRemaining={timeRemaining}
-                progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-                size={40}
-                fontSize="text-xs"
-                strokeWidth={4}
-              />
-            </div>
-          </div>
 
           <div className="mb-6">
             <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>
@@ -423,9 +362,13 @@ export function DiagonalQuizPlaying({
         </div>
       </div>
 
-      {showStats && (
-        <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-      )}
+      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+
+      <div className="mt-6">
+        <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
+          {tp('endTraining')}
+        </Button>
+      </div>
     </div>
   );
 }

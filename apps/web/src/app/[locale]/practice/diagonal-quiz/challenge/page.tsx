@@ -5,7 +5,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import DiagonalQuizSession from '../_components/DiagonalQuizSession';
+import DiagonalQuizSession from './_components/DiagonalQuizSession';
 
 type Props = {
   params: Promise<{
@@ -21,13 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz/session' }),
+    ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz/challenge' }),
     title: `${t('practice.diagonalQuiz.title')} - ${t('practice.diagonalQuiz.session')}`,
     description: t('practice.diagonalQuiz.description'),
   };
 }
 
-export default async function DiagonalQuizSessionPage({ params, searchParams }: Props) {
+export default async function DiagonalQuizChallengePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { timeLimit } = await searchParams;
   const t = await getTranslations({ locale });
