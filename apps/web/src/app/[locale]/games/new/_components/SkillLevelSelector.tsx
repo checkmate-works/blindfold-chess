@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { FaInfoCircle } from 'react-icons/fa';
 
 import { getEloRating } from '@/lib/chess/elo';
+import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -19,7 +20,7 @@ type Props = {
 };
 
 // Generate skill level options (1-20)
-const SKILL_LEVELS = Array.from({ length: 20 }, (_, i) => i + 1);
+const SKILL_LEVELS: SkillLevel[] = Array.from({ length: 20 }, (_, i) => (i + 1) as SkillLevel);
 
 export function SkillLevelSelector({ value, onChange }: Props) {
   const t = useTranslations('newGame');
@@ -27,7 +28,9 @@ export function SkillLevelSelector({ value, onChange }: Props) {
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const level = parseInt(event.target.value, 10);
-    onChange(level);
+    if (isValidSkillLevel(level)) {
+      onChange(level);
+    }
   };
 
   return (

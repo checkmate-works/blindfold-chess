@@ -1,12 +1,6 @@
-import type { Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
 
-import type {
-  BasePracticeResult,
-  BasePracticeSettings,
-  PracticeMode,
-} from "../common/types";
-
-export type { PracticeMode };
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];

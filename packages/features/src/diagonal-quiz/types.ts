@@ -1,9 +1,4 @@
-import type {
-  BasePracticeResult,
-  BasePracticeSettings,
-  PracticeMode,
-} from "../common/types";
-export type { PracticeMode };
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export type DiagonalPair = {
   diagonal: string; // SW-NE direction (a1-h8 direction), e.g., "b1-h7"

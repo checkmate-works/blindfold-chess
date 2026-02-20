@@ -1,8 +1,11 @@
-export const ALL_FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
-export type File = (typeof ALL_FILES)[number];
+export const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+export const ALL_FILES = FILES;
+export type File = (typeof FILES)[number];
 
 export const ALL_RANKS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 export type Rank = (typeof ALL_RANKS)[number];
+
+export const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 
 export const ALL_PIECE_TYPES = ["p", "n", "b", "r", "q", "k"] as const;
 export type PieceType = (typeof ALL_PIECE_TYPES)[number];
@@ -54,6 +57,8 @@ export type AlgebraicNotation =
   | EnPassant
   | PieceMove
   | PieceCapture;
+
+export type Square = `${File}${Rank}`;
 
 export type Side = "white" | "black";
 export type PlayerColor = Side;

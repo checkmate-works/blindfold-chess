@@ -58,3 +58,27 @@ export const feedbackColors = {
   error: "#ef4444",
   warning: "#f59e0b",
 } as const;
+
+// Board theme colors (moved from @blindfold-chess/types to keep that package type-only)
+import type { BoardTheme, BoardThemeColors } from "@blindfold-chess/types";
+
+export const boardThemeColors: Record<BoardTheme, BoardThemeColors> = {
+  monotone: {
+    light: "#e6e3de",
+    dark: "#78716c",
+    lightText: "#57534e",
+    darkText: "#d6d3d1",
+  },
+  lichess: {
+    light: "#f0d9b5",
+    dark: "#b58863",
+    lightText: "#b58863",
+    darkText: "#f0d9b5",
+  },
+  chesscom: {
+    light: "#eeeed2",
+    dark: "#769656",
+    lightText: "#769656",
+    darkText: "#eeeed2",
+  },
+};

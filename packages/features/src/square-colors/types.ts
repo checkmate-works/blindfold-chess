@@ -1,12 +1,6 @@
-import type {
-  BasePracticeResult,
-  BasePracticeSettings,
-  PracticeMode,
-} from "../common/types";
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export type SquareColor = "light" | "dark";
-
-export type { PracticeMode };
 
 export type SquareColorsSettings = BasePracticeSettings;
 

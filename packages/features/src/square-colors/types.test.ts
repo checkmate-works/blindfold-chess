@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import type { PracticeMode } from "../common/types";
+
 import {
   DEFAULT_SQUARE_COLORS_SETTINGS,
-  type PracticeMode,
   type SquareColorsSettings,
 } from "./types";
 

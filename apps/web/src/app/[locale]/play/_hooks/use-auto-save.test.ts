@@ -39,7 +39,7 @@ describe('useAutoSave', () => {
   const defaultProps = {
     moves: [] as AlgebraicNotation[],
     playerColor: 'white' as const,
-    skillLevel: 1,
+    skillLevel: 1 as const,
     status: 'in_progress' as const,
     enabled: true,
     saveOnInit: false,

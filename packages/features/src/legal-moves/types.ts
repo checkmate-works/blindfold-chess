@@ -1,12 +1,6 @@
 import type { PieceType as AllPieceType } from "@blindfold-chess/types";
 
-import type {
-  BasePracticeResult,
-  BasePracticeSettings,
-  PracticeMode,
-} from "../common/types";
-
-export type { PracticeMode };
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export type PieceType = Extract<AllPieceType, "b" | "n" | "r" | "q" | "k">;
 export const PIECE_TYPES: readonly PieceType[] = [

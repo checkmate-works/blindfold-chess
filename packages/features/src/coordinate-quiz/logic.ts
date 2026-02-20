@@ -1,4 +1,4 @@
-import type { Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
 
 import { computeSquareColor } from "../common";
 
