@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.11.0 - 2026-02-20
+
+ref: https://www.blindfold-chess.online/en/posts/updates/v0.11.0
+
 ## 0.10.0 - 2026-02-19
 
 ref: https://www.blindfold-chess.online/en/posts/updates/v0.10.0
