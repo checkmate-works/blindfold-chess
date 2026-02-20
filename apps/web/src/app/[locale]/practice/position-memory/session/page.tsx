@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import { PositionMemorySession } from '../_components/PositionMemorySession';
 import { decodeFensFromBase64, validateFEN } from '../_lib/utils';
+
+const PositionMemorySession = dynamic(() =>
+  import('../_components/PositionMemorySession').then((mod) => mod.PositionMemorySession)
+);
 
 type Props = {
   params: Promise<{

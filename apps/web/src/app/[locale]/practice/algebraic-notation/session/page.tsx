@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import AlgebraicNotation from '../_components/AlgebraicNotation';
 import { questions } from '../_data/questions';
+
+const AlgebraicNotation = dynamic(() => import('../_components/AlgebraicNotation'));
 
 type Props = {
   params: Promise<{

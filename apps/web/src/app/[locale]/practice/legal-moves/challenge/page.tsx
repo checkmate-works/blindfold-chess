@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import type { PieceType } from '../_lib/types';
-import LegalMovesSession from './_components/LegalMovesSession';
+
+const LegalMovesSession = dynamic(() => import('./_components/LegalMovesSession'));
 
 type Props = {
   params: Promise<{

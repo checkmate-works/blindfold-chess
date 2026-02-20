@@ -1,11 +1,17 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import KnightTour from '../_components/KnightTour';
+const KnightTour = dynamic<{
+  autoStart?: boolean;
+  initialStartingSquare?: string;
+  initialBlindfoldMode?: boolean;
+  isTutorial?: boolean;
+}>(() => import('../_components/KnightTour'));
 
 type Props = {
   params: Promise<{

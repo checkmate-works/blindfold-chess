@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import { MoveSequenceSession } from '../_components/MoveSequenceSession';
 import { decodeMoveSequenceFromBase64, validateFEN } from '../_lib/share';
+
+const MoveSequenceSession = dynamic(() =>
+  import('../_components/MoveSequenceSession').then((mod) => mod.MoveSequenceSession)
+);
 
 type Props = {
   params: Promise<{

@@ -34,7 +34,7 @@ export default function KnightTour({
   initialStartingSquare,
   initialBlindfoldMode,
   isTutorial = false,
-}: Props = {}) {
+}: Props) {
   const locale = useLocale();
   const tQuit = useTranslations('practice.quitConfirmModal');
 

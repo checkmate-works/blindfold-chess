@@ -11,12 +11,15 @@
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import CoordinateQuizTrainingSession from './_components/CoordinateQuizTrainingSession';
+const CoordinateQuizTrainingSession = dynamic(
+  () => import('./_components/CoordinateQuizTrainingSession')
+);
 
 type Props = {
   params: Promise<{

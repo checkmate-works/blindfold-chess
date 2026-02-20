@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PositionMemoryTutorial } from '../_components/PositionMemoryTutorial';
 import { TutorialSkipLink } from '../_components/TutorialSkipLink';
+
+const PositionMemoryTutorial = dynamic(() =>
+  import('../_components/PositionMemoryTutorial').then((mod) => mod.PositionMemoryTutorial)
+);
 
 type Props = {
   params: Promise<{
