@@ -17,13 +17,16 @@ export function PracticeTabs({ tabs }: Props) {
 
   return (
     <div>
-      <div className="flex gap-2 border-b border-border" role="tablist">
+      <div
+        className="flex gap-2 border-b border-border overflow-x-auto scrollbar-none"
+        role="tablist"
+      >
         {tabs.map((tab, index) => (
           <button
             key={tab.label}
             role="tab"
             aria-selected={activeIndex === index}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 px-4 py-2 text-sm font-medium transition-colors ${
               activeIndex === index
                 ? 'border-b-2 border-foreground text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
