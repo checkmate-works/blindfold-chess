@@ -175,7 +175,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   }
 
   return (
-    <div id="diagonal-quiz-session">
+    <div id="diagonal-quiz-session" className="min-h-screen">
       <DiagonalQuizPlaying
         currentSquare={currentSquare}
         timeRemaining={timeRemaining}

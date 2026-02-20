@@ -372,7 +372,7 @@ export function RoutePlannerSession({
   if (!problem) return <PracticeResultSkeleton />;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="min-h-screen max-w-2xl mx-auto space-y-4">
       <div
         id="route-planner-session"
         className="bg-card border border-border rounded-lg p-6 space-y-6"

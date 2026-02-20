@@ -243,7 +243,7 @@ export function FenSession({
   if (phase === 'recreate' && originalPosition) {
     return (
       <>
-        <div id="fen-session">
+        <div id="fen-session" className="min-h-screen">
           <FenRecreate
             originalPosition={originalPosition}
             recreatedPosition={recreatedPosition}

@@ -147,7 +147,7 @@ export function MoveSequenceSession({
   }
 
   return (
-    <div id="move-sequence-session">
+    <div id="move-sequence-session" className="min-h-screen">
       {(() => {
         switch (phase) {
           case 'memorize':

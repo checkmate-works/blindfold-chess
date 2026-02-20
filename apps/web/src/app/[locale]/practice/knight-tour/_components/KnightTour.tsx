@@ -222,7 +222,7 @@ export default function KnightTour({
 
   return (
     <>
-      <div id="knight-tour-session">
+      <div id="knight-tour-session" className="min-h-screen">
         <PlayingComponent
           currentSquare={currentSquare}
           visitedSquares={visitedSquares}
