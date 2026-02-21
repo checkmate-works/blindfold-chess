@@ -188,6 +188,10 @@ export function ChessBoard({
                   rank={displayRanks[rankIndex]}
                   isLight={isLight}
                   showCoordinates={showCoordinates}
+                  // NOTE: Rank/file labels are always shown on the left and bottom edges of
+                  // the visual board, matching Chess.com's convention. Lichess instead pins
+                  // labels to the a-file and 1st-rank squares regardless of orientation.
+                  // Consider adopting the Lichess style if feedback warrants it.
                   showRankCoordinate={fileIndex === 0}
                   showFileCoordinate={rankIndex === 7}
                   onClick={onSquareClick ? () => onSquareClick(square) : undefined}
