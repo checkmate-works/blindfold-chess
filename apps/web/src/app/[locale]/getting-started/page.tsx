@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { ChessBoard } from '@/app/_components';
 import {
   FaBrain,
   FaChess,
@@ -125,6 +126,22 @@ export default async function GettingStartedPage({ params }: Props) {
               className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
             >
               {t('whatYouCanDo.stockfish.cta')}
+            </Link>
+          </div>
+
+          {/* Try a Simple Position */}
+          <p className="text-muted-foreground">
+            {t('whatYouCanDo.stockfish.trySimpleDescription')}
+          </p>
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-64 sm:w-72">
+              <ChessBoard fen="6k1/8/8/3KQ3/8/8/8/8 w - - 0 1" showCoordinates={false} />
+            </div>
+            <Link
+              href={`/${locale}/games/new/position?fen=${encodeURIComponent('6k1/8/8/3KQ3/8/8/8/8 w - - 0 1')}`}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            >
+              {t('whatYouCanDo.stockfish.trySimpleCta')}
             </Link>
           </div>
         </div>

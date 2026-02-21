@@ -238,7 +238,9 @@
         "featureUndoDesc": "自由に手を戻せます",
         "featureHelp": "ヘルプ機能",
         "featureHelpDesc": "困ったときにヒントを表示",
-        "cta": "対局を始める"
+        "cta": "対局を始める",
+        "trySimpleDescription": "簡単なポジションから試してみることもできます。駒が少ない局面なら頭の中でイメージしやすく、はじめての目隠しチェスに最適です。",
+        "trySimpleCta": "このポジションで開始"
       },
       "training": {
         "title": "豊富な訓練メニュー",

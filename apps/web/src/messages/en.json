@@ -237,7 +237,9 @@
         "featureUndoDesc": "Take back moves freely",
         "featureHelp": "Help Function",
         "featureHelpDesc": "Get hints when stuck",
-        "cta": "Start Playing"
+        "cta": "Start Playing",
+        "trySimpleDescription": "You can also try starting from a simple position. With just a few pieces on the board, it's easy to visualize and a great way to get started.",
+        "trySimpleCta": "Start with this position"
       },
       "training": {
         "title": "Rich Training Menu",
