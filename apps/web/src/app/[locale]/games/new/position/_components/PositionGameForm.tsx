@@ -22,6 +22,7 @@ import {
 import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
 import { buildFenFromParts } from '@/app/[locale]/games/new/_lib/build-fen-from-parts';
 import { getCastlingAvailability } from '@/app/[locale]/games/new/_lib/get-castling-availability';
+import { getEnPassantAvailability } from '@/app/[locale]/games/new/_lib/get-en-passant-availability';
 import { validatePosition } from '@/app/[locale]/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 
@@ -89,6 +90,22 @@ export function PositionGameForm({ locale }: Props) {
 
   // Compute castling availability based on piece positions
   const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);
+
+  // Compute en passant availability based on pawn positions
+  const enPassantAvailability = useMemo(
+    () => getEnPassantAvailability(positionFen, positionTurn),
+    [positionFen, positionTurn]
+  );
+
+  // Auto-reset en passant when current selection becomes unavailable
+  useEffect(() => {
+    if (positionEnPassant !== '-') {
+      const file = positionEnPassant[0];
+      if (!enPassantAvailability[file]) {
+        setPositionEnPassant('-');
+      }
+    }
+  }, [enPassantAvailability, positionEnPassant]);
 
   // Auto-uncheck castling rights that become unavailable
   useEffect(() => {
@@ -184,6 +201,7 @@ export function PositionGameForm({ locale }: Props) {
                 castlingAvailability={castlingAvailability}
                 onCastlingChange={setPositionCastling}
                 enPassant={positionEnPassant}
+                enPassantAvailability={enPassantAvailability}
                 onEnPassantChange={setPositionEnPassant}
               />
             </div>

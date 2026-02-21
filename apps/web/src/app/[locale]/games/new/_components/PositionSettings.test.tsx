@@ -14,6 +14,16 @@ afterEach(() => {
 
 const defaultCastling: CastlingRights = { K: false, Q: false, k: false, q: false };
 const allAvailable: CastlingRights = { K: true, Q: true, k: true, q: true };
+const allEnPassantAvailable: Record<string, boolean> = {
+  a: true,
+  b: true,
+  c: true,
+  d: true,
+  e: true,
+  f: true,
+  g: true,
+  h: true,
+};
 
 function renderPositionSettings(
   overrides: Partial<React.ComponentProps<typeof PositionSettings>> = {}
@@ -24,6 +34,7 @@ function renderPositionSettings(
     castlingAvailability: allAvailable,
     onCastlingChange: vi.fn(),
     enPassant: '-',
+    enPassantAvailability: allEnPassantAvailable,
     onEnPassantChange: vi.fn(),
     ...overrides,
   };

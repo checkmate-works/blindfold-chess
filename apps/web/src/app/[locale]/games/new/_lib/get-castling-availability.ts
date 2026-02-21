@@ -1,4 +1,5 @@
 import type { CastlingRights } from '../_components/PositionSettings';
+import { expandRank } from './fen-utils';
 
 /**
  * Given a board FEN (piece placement only), returns which castling rights
@@ -18,18 +19,4 @@ export function getCastlingAvailability(boardFen: string): CastlingRights {
     k: rank8[4] === 'k' && rank8[7] === 'r', // e8=king, h8=rook
     q: rank8[4] === 'k' && rank8[0] === 'r', // e8=king, a8=rook
   };
-}
-
-/** Expands a FEN rank string into an 8-element array of piece characters (or empty string). */
-function expandRank(rank: string): string[] {
-  const result: string[] = [];
-  for (const ch of rank) {
-    const digit = Number(ch);
-    if (digit >= 1 && digit <= 8) {
-      for (let i = 0; i < digit; i++) result.push('');
-    } else {
-      result.push(ch);
-    }
-  }
-  return result;
 }

@@ -15,6 +15,7 @@ type Props = {
   castlingAvailability: CastlingRights;
   onCastlingChange: (castling: CastlingRights) => void;
   enPassant: string;
+  enPassantAvailability: Record<string, boolean>;
   onEnPassantChange: (square: string) => void;
 };
 
@@ -32,6 +33,7 @@ export function PositionSettings({
   castlingAvailability,
   onCastlingChange,
   enPassant,
+  enPassantAvailability,
   onEnPassantChange,
 }: Props) {
   const t = useTranslations('newGame.positionSettings');
@@ -81,11 +83,15 @@ export function PositionSettings({
           className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm"
         >
           <option value="-">{t('none')}</option>
-          {enPassantOptions.map((sq) => (
-            <option key={sq} value={sq}>
-              {sq}
-            </option>
-          ))}
+          {enPassantOptions.map((sq) => {
+            const file = sq[0];
+            const disabled = !enPassantAvailability[file];
+            return (
+              <option key={sq} value={sq} disabled={disabled}>
+                {sq}
+              </option>
+            );
+          })}
         </select>
       </div>
     </div>
