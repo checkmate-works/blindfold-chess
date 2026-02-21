@@ -1184,6 +1184,7 @@
     "selectMove": "手を選択",
     "switchToSelect": "リスト選択に切り替え",
     "switchToText": "テキスト入力に切り替え",
+    "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
     "analyzeAll": "全て解析",
     "autoFillAll": "全て自動入力",

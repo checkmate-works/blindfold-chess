@@ -14,8 +14,6 @@ import {
   FaEye,
   FaFilter,
   FaInfoCircle,
-  FaKeyboard,
-  FaList,
   FaQuestionCircle,
   FaSpinner,
   FaStar,
@@ -25,12 +23,11 @@ import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
 import { fenToLichessUrl } from '@/lib/lichess';
 
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
-import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
-import { MoveSelect } from '@/app/[locale]/play/_components/MoveSelect';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
@@ -903,52 +900,20 @@ export function PostmortemClient({
                       )}
 
                       {/* Move Input */}
-                      <div>
-                        {preferences.moveInputMode === 'select' ? (
-                          <MoveSelect
-                            fen={displayFen || currentFen}
-                            onSubmit={handleSubmitMove}
-                            disabled={isEvaluating}
-                            placeholder={t('selectMove')}
-                          />
-                        ) : (
-                          <MoveInput
-                            value={moveInput}
-                            onChange={(value) => {
-                              setMoveInput(value);
-                            }}
-                            onSubmit={handleSubmitMove}
-                            disabled={isEvaluating}
-                            placeholder={t('inputMove')}
-                            showSuggestions={preferences.enableAutoComplete}
-                            showSubmitButton={true}
-                          />
-                        )}
-                      </div>
-
-                      {/* Toggle Input Mode */}
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() =>
-                            updatePreferences({
-                              moveInputMode:
-                                preferences.moveInputMode === 'text' ? 'select' : 'text',
-                            })
-                          }
-                          className="p-2 border border-border rounded-md hover:bg-muted"
-                          title={
-                            preferences.moveInputMode === 'text'
-                              ? t('switchToSelect')
-                              : t('switchToText')
-                          }
-                        >
-                          {preferences.moveInputMode === 'text' ? (
-                            <FaList className="w-4 h-4" />
-                          ) : (
-                            <FaKeyboard className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
+                      <MoveInputPanel
+                        preferences={preferences}
+                        updatePreferences={updatePreferences}
+                        currentFen={displayFen || currentFen}
+                        moveInput={moveInput}
+                        onMoveInputChange={setMoveInput}
+                        error={null}
+                        onErrorClear={() => {}}
+                        onSubmit={handleSubmitMove}
+                        disabled={isEvaluating}
+                        inputPlaceholder={t('inputMove')}
+                        selectPlaceholder={t('selectMove')}
+                        toggleTitle={t('switchInputMode')}
+                      />
 
                       {/* Action Buttons */}
                       <div className="flex gap-2 justify-center">

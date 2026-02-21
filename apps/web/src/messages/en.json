@@ -1183,6 +1183,7 @@
     "selectMove": "Select a move",
     "switchToSelect": "Switch to list selection",
     "switchToText": "Switch to text input",
+    "switchInputMode": "Switch input mode",
     "dontKnow": "I don't know",
     "analyzeAll": "Analyze All",
     "autoFillAll": "Auto-fill All",
