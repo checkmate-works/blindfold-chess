@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
@@ -35,6 +35,7 @@ type Props = {
 export function PositionGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { preferences } = useGamePreferences();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
@@ -50,6 +51,7 @@ export function PositionGameForm({ locale }: Props) {
     q: false,
   });
   const [positionEnPassant, setPositionEnPassant] = useState('-');
+  const skipEnPassantResetRef = useRef(false);
 
   // Derive turn from color selection
   const positionTurn = useMemo(() => (color === 'white' ? 'w' : 'b'), [color]);
@@ -76,10 +78,47 @@ export function PositionGameForm({ locale }: Props) {
     return { valid: positionResult.valid };
   }, [positionResult, t, color]);
 
-  // Reset en passant when color changes
+  // Reset en passant when color changes (skip if FEN initialization triggered the color change)
   useEffect(() => {
+    if (skipEnPassantResetRef.current) {
+      skipEnPassantResetRef.current = false;
+      return;
+    }
     setPositionEnPassant('-');
   }, [color]);
+
+  // Initialize from FEN URL parameter
+  useEffect(() => {
+    const urlFen = searchParams.get('fen');
+    if (!urlFen) return;
+
+    const parts = urlFen.split(' ');
+    if (parts.length < 1) return;
+
+    // Board part
+    setPositionFen(parts[0]);
+
+    // Turn → color (skip en passant reset triggered by this color change)
+    if (parts[1] === 'w' || parts[1] === 'b') {
+      skipEnPassantResetRef.current = true;
+      setColor(parts[1] === 'w' ? 'white' : 'black');
+    }
+
+    // Castling rights
+    if (parts[2]) {
+      setPositionCastling({
+        K: parts[2].includes('K'),
+        Q: parts[2].includes('Q'),
+        k: parts[2].includes('k'),
+        q: parts[2].includes('q'),
+      });
+    }
+
+    // En passant
+    if (parts[3]) {
+      setPositionEnPassant(parts[3]);
+    }
+  }, [searchParams]);
 
   // Compute castling availability based on piece positions
   const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);

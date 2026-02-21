@@ -10,9 +10,10 @@ vi.mock('next-intl', () => ({
 
 // Mock next/navigation
 const mockPush = vi.fn();
+let mockSearchParams = new URLSearchParams();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
   usePathname: () => '/en',
   redirect: vi.fn(),
   notFound: vi.fn(),
@@ -57,8 +58,16 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
 
 // Track FEN changes from EditableChessBoard mock
 let capturedOnFenChange: ((fen: string) => void) | null = null;
+let capturedFen: string | null = null;
 vi.mock('@/app/[locale]/practice/_components/EditableChessBoard', () => ({
-  EditableChessBoard: ({ onFenChange }: { onFenChange: (fen: string) => void }) => {
+  EditableChessBoard: ({
+    fen,
+    onFenChange,
+  }: {
+    fen: string;
+    onFenChange: (fen: string) => void;
+  }) => {
+    capturedFen = fen;
     capturedOnFenChange = onFenChange;
     return <div data-testid="editable-chess-board" />;
   },
@@ -68,6 +77,8 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   capturedOnFenChange = null;
+  capturedFen = null;
+  mockSearchParams = new URLSearchParams();
 });
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -290,5 +301,51 @@ describe('PositionGameForm', () => {
     fireEvent.click(startButton);
 
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  describe('FEN query parameter initialization', () => {
+    it('initializes board, color, castling, and en passant from FEN query parameter', () => {
+      mockSearchParams = new URLSearchParams({
+        fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
+      });
+      render(<PositionGameForm locale="en" />);
+
+      // Board FEN should be set
+      expect(capturedFen).toBe('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR');
+
+      // Color should be black
+      const blackColorButton = screen.getByText('playAsBlack').closest('button')!;
+      expect(blackColorButton.className).toContain('border-foreground');
+
+      // En passant should be e3
+      const enPassantSelect = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+      expect(enPassantSelect.value).toBe('e3');
+    });
+
+    it('initializes only board part from incomplete FEN (board part only)', () => {
+      mockSearchParams = new URLSearchParams({
+        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+      });
+      render(<PositionGameForm locale="en" />);
+
+      // Board FEN should be set
+      expect(capturedFen).toBe('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR');
+
+      // Color should remain default (white)
+      const whiteColorButton = screen.getByText('playAsWhite').closest('button')!;
+      expect(whiteColorButton.className).toContain('border-foreground');
+    });
+
+    it('uses default empty board when no FEN query parameter is present', () => {
+      mockSearchParams = new URLSearchParams();
+      render(<PositionGameForm locale="en" />);
+
+      // Board should be empty
+      expect(capturedFen).toBe('8/8/8/8/8/8/8/8 w - - 0 1');
+
+      // Color should be default (white)
+      const whiteColorButton = screen.getByText('playAsWhite').closest('button')!;
+      expect(whiteColorButton.className).toContain('border-foreground');
+    });
   });
 });
