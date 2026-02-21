@@ -20,7 +20,7 @@ import {
 } from '@/app/[locale]/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
 import { buildFenFromParts } from '@/app/[locale]/games/new/_lib/build-fen-from-parts';
-import { validateFen } from '@/app/[locale]/play/_lib/pgn-parser';
+import { validatePosition } from '@/app/[locale]/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
@@ -36,6 +36,7 @@ export function PositionGameForm({ locale }: Props) {
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [isLoading, setIsLoading] = useState(false);
+  const [checkCorrected, setCheckCorrected] = useState(false);
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
@@ -56,17 +57,28 @@ export function PositionGameForm({ locale }: Props) {
     [positionFen, positionTurn, positionCastling, positionEnPassant]
   );
 
-  // Validate custom position FEN
+  // Validate custom position FEN (single computation)
+  const positionResult = useMemo(
+    () => validatePosition(positionFen, fullPositionFen),
+    [positionFen, fullPositionFen]
+  );
+
   const positionValidation = useMemo((): { valid: boolean; error?: string } => {
-    const boardPart = positionFen.split(' ')[0];
-    if (boardPart === '8/8/8/8/8/8/8/8') {
-      return { valid: false, error: t('positionEmpty') };
+    if (!positionResult.valid && positionResult.errorKey) {
+      return { valid: false, error: t(positionResult.errorKey) };
     }
-    if (validateFen(fullPositionFen)) {
-      return { valid: true };
+    return { valid: positionResult.valid };
+  }, [positionResult, t]);
+
+  // Handle check auto-correction
+  useEffect(() => {
+    if (positionResult.correctedColor) {
+      setColor(positionResult.correctedColor);
+      setCheckCorrected(true);
+    } else {
+      setCheckCorrected(false);
     }
-    return { valid: false, error: t('positionInvalid') };
-  }, [fullPositionFen, positionFen, t]);
+  }, [positionResult]);
 
   // Reset en passant when color changes
   useEffect(() => {
@@ -134,6 +146,7 @@ export function PositionGameForm({ locale }: Props) {
       {positionValidation.error && (
         <p className="text-sm text-red-500">{positionValidation.error}</p>
       )}
+      {checkCorrected && <p className="text-sm text-blue-600">{t('positionCheckCorrected')}</p>}
       {positionValidation.valid && <p className="text-sm text-green-600">{t('positionValid')}</p>}
 
       {/* Skill Level Selection */}

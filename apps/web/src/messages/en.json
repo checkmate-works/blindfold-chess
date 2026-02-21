@@ -1273,6 +1273,10 @@
     "customPositionDescription": "Set up a custom board position",
     "positionEmpty": "Place at least one piece on the board",
     "positionInvalid": "Invalid position (e.g., each side must have exactly one king)",
+    "positionAlreadyCheckmate": "This position is already checkmate — the game would end immediately",
+    "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
+    "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
+    "positionCheckCorrected": "Color automatically switched — the checked side must move first",
     "positionValid": "Valid position",
     "positionSettings": {
       "title": "Position Settings",

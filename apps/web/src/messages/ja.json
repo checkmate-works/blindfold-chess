@@ -1274,6 +1274,10 @@
     "customPositionDescription": "任意の盤面を設定して開始",
     "positionEmpty": "駒を1つ以上配置してください",
     "positionInvalid": "無効なポジションです（例：各サイドにキングが1つずつ必要です）",
+    "positionAlreadyCheckmate": "この局面は既にチェックメイトです — ゲームは即座に終了します",
+    "positionAlreadyStalemate": "この局面は既にステイルメイトです — ゲームは即座に終了します",
+    "positionInsufficientMaterial": "駒が不十分です — ゲームは即座に引き分けになります",
+    "positionCheckCorrected": "色が自動的に切り替わりました — チェックされている側が先に動く必要があります",
     "positionValid": "有効なポジション",
     "positionSettings": {
       "title": "ポジション設定",
