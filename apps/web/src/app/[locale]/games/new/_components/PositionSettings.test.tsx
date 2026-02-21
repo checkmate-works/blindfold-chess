@@ -13,6 +13,7 @@ afterEach(() => {
 });
 
 const defaultCastling: CastlingRights = { K: false, Q: false, k: false, q: false };
+const allAvailable: CastlingRights = { K: true, Q: true, k: true, q: true };
 
 function renderPositionSettings(
   overrides: Partial<React.ComponentProps<typeof PositionSettings>> = {}
@@ -20,6 +21,7 @@ function renderPositionSettings(
   const props = {
     turn: 'w' as const,
     castling: defaultCastling,
+    castlingAvailability: allAvailable,
     onCastlingChange: vi.fn(),
     enPassant: '-',
     onEnPassantChange: vi.fn(),
@@ -107,6 +109,29 @@ describe('PositionSettings', () => {
         k: true,
         q: true,
       });
+    });
+
+    it('disables checkboxes when castling is unavailable', () => {
+      renderPositionSettings({
+        castlingAvailability: { K: false, Q: false, k: true, q: true },
+      });
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      expect(checkboxes[0]).toBeDisabled(); // K
+      expect(checkboxes[1]).toBeDisabled(); // Q
+      expect(checkboxes[2]).not.toBeDisabled(); // k
+      expect(checkboxes[3]).not.toBeDisabled(); // q
+    });
+
+    it('applies reduced opacity to labels of unavailable castling rights', () => {
+      renderPositionSettings({
+        castlingAvailability: { K: false, Q: true, k: true, q: true },
+      });
+
+      const labels = screen.getAllByText(/Kingside|Queenside/i).map((el) => el.closest('label')!);
+
+      expect(labels[0].className).toContain('opacity-50');
+      expect(labels[1].className).not.toContain('opacity-50');
     });
   });
 

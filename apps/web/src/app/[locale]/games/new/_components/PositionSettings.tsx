@@ -12,6 +12,7 @@ export type CastlingRights = {
 type Props = {
   turn: 'w' | 'b';
   castling: CastlingRights;
+  castlingAvailability: CastlingRights;
   onCastlingChange: (castling: CastlingRights) => void;
   enPassant: string;
   onEnPassantChange: (square: string) => void;
@@ -28,6 +29,7 @@ function getEnPassantOptions(turn: 'w' | 'b'): string[] {
 export function PositionSettings({
   turn,
   castling,
+  castlingAvailability,
   onCastlingChange,
   enPassant,
   onEnPassantChange,
@@ -49,17 +51,24 @@ export function PositionSettings({
               { key: 'k', label: t('blackKingside') },
               { key: 'q', label: t('blackQueenside') },
             ] as const
-          ).map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={castling[key]}
-                onChange={(e) => onCastlingChange({ ...castling, [key]: e.target.checked })}
-                className="rounded border-border"
-              />
-              {label}
-            </label>
-          ))}
+          ).map(({ key, label }) => {
+            const disabled = !castlingAvailability[key];
+            return (
+              <label
+                key={key}
+                className={`flex items-center gap-2 text-sm ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={castling[key]}
+                  disabled={disabled}
+                  onChange={(e) => onCastlingChange({ ...castling, [key]: e.target.checked })}
+                  className="rounded border-border"
+                />
+                {label}
+              </label>
+            );
+          })}
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
+import { FaChevronDown } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
@@ -20,6 +21,7 @@ import {
 } from '@/app/[locale]/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
 import { buildFenFromParts } from '@/app/[locale]/games/new/_lib/build-fen-from-parts';
+import { getCastlingAvailability } from '@/app/[locale]/games/new/_lib/get-castling-availability';
 import { validatePosition } from '@/app/[locale]/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 
@@ -85,6 +87,24 @@ export function PositionGameForm({ locale }: Props) {
     setPositionEnPassant('-');
   }, [color]);
 
+  // Compute castling availability based on piece positions
+  const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);
+
+  // Auto-uncheck castling rights that become unavailable
+  useEffect(() => {
+    const updated = { ...positionCastling };
+    let changed = false;
+    for (const key of ['K', 'Q', 'k', 'q'] as const) {
+      if (updated[key] && !castlingAvailability[key]) {
+        updated[key] = false;
+        changed = true;
+      }
+    }
+    if (changed) {
+      setPositionCastling(updated);
+    }
+  }, [castlingAvailability, positionCastling]);
+
   const handlePositionFenChange = useCallback((newFen: string) => {
     setPositionFen(newFen);
   }, []);
@@ -116,6 +136,8 @@ export function PositionGameForm({ locale }: Props) {
     [t]
   );
 
+  const [positionSettingsOpen, setPositionSettingsOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       <SectionTitle>{t('customPosition')}</SectionTitle>
@@ -129,18 +151,49 @@ export function PositionGameForm({ locale }: Props) {
         showCoordinates={preferences.showCoordinates}
       />
 
-      {/* Color Selection (right below the board) */}
+      {/* Position Settings Accordion */}
+      <div className="rounded-md border border-border overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setPositionSettingsOpen((prev) => !prev)}
+          className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset"
+          aria-expanded={positionSettingsOpen}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">
+              {t('positionSettings.title')}
+            </span>
+            <FaChevronDown
+              className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+                positionSettingsOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </div>
+        </button>
+        <div
+          className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+          style={{
+            gridTemplateRows: positionSettingsOpen ? '1fr' : '0fr',
+          }}
+        >
+          <div className="overflow-hidden">
+            <div className="px-4 pb-4 pt-2">
+              <PositionSettings
+                turn={positionTurn}
+                castling={positionCastling}
+                castlingAvailability={castlingAvailability}
+                onCastlingChange={setPositionCastling}
+                enPassant={positionEnPassant}
+                onEnPassantChange={setPositionEnPassant}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Color Selection */}
       <SectionTitle>{t('selectColor')}</SectionTitle>
       <ColorSelector value={color} onChange={setColor} />
-
-      <SectionTitle>{t('positionSettings.title')}</SectionTitle>
-      <PositionSettings
-        turn={positionTurn}
-        castling={positionCastling}
-        onCastlingChange={setPositionCastling}
-        enPassant={positionEnPassant}
-        onEnPassantChange={setPositionEnPassant}
-      />
 
       {/* Validation message */}
       {positionValidation.error && (

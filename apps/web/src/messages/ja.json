@@ -1280,7 +1280,7 @@
     "positionCheckCorrected": "色が自動的に切り替わりました — チェックされている側が先に動く必要があります",
     "positionValid": "有効なポジション",
     "positionSettings": {
-      "title": "ポジション設定",
+      "title": "詳細設定",
       "castling": "キャスリング権",
       "whiteKingside": "白 O-O（キングサイド）",
       "whiteQueenside": "白 O-O-O（クイーンサイド）",

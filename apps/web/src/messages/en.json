@@ -1279,7 +1279,7 @@
     "positionCheckCorrected": "Color automatically switched — the checked side must move first",
     "positionValid": "Valid position",
     "positionSettings": {
-      "title": "Position Settings",
+      "title": "Advanced Settings",
       "castling": "Castling Rights",
       "whiteKingside": "White O-O (Kingside)",
       "whiteQueenside": "White O-O-O (Queenside)",
