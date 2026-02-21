@@ -210,7 +210,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         params.set('fen', startingFen);
       }
 
-      router.push(`/${locale}/games/new?${params.toString()}`);
+      router.push(`/${locale}/games/new/pgn?${params.toString()}`);
     },
     [moves, playerSide, skillLevel, locale, router, startingFen]
   );
@@ -255,14 +255,33 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       return;
     }
 
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
     const isAiMove = (index: number) => {
-      return playerSide === 'white' ? index % 2 === 1 : index % 2 === 0;
+      const isStartingSideMove = index % 2 === 0;
+      const startingSide = startsAsBlack ? 'black' : 'white';
+      const movingSide = isStartingSideMove
+        ? startingSide
+        : startingSide === 'white'
+          ? 'black'
+          : 'white';
+      return movingSide !== playerSide;
     };
 
     for (let i = moves.length - 1; i >= 0; i--) {
       if (isAiMove(i)) {
-        const moveNumber = Math.floor(i / 2) + 1;
-        const isWhiteMove = i % 2 === 0;
+        let moveNumber: number;
+        let isWhiteMove: boolean;
+
+        if (startsAsBlack) {
+          moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
+          isWhiteMove = i % 2 === 1;
+        } else {
+          moveNumber = startMoveNumber + Math.floor(i / 2);
+          isWhiteMove = i % 2 === 0;
+        }
+
         const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
         const moveText = t('aiPlayed', { move: moveNotation });
         onAiMoveChange(moveText);
@@ -271,7 +290,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     }
 
     onAiMoveChange(null);
-  }, [moves, playerSide, onAiMoveChange, t]);
+  }, [moves, playerSide, startingFen, onAiMoveChange, t]);
 
   return {
     // Game identity

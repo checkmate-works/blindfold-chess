@@ -57,6 +57,9 @@ export function GameOverContent({
     const pgnMoves = formattedPgn
       .map((move: FormattedPgnMove) => {
         const moveNumber = `${move.moveNumber}.`;
+        if (!move.whiteMove && move.blackMove) {
+          return `${moveNumber}.. ${move.blackMove}`;
+        }
         const movePair = move.blackMove
           ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
           : `${moveNumber} ${move.whiteMove}`;

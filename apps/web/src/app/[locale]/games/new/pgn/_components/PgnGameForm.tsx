@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -15,26 +15,21 @@ import type { SkillLevel } from '@/lib/types';
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { ColorSelector } from '@/app/[locale]/games/new/_components/ColorSelector';
+import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { useMoveNavigation } from '@/app/[locale]/play/_hooks/use-move-navigation';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
-
-import { ColorSelector } from './ColorSelector';
-import { SkillLevelSelector } from './SkillLevelSelector';
-import { StartMethodSelector } from './StartMethodSelector';
-
-type StartMethod = 'new' | 'pgn';
 
 type Props = {
   locale: Locale;
 };
 
-export function NewGameForm({ locale }: Props) {
+export function PgnGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const searchParams = useSearchParams();
   const { preferences } = useGamePreferences();
-  const [startMethod, setStartMethod] = useState<StartMethod>('new');
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
@@ -77,7 +72,6 @@ export function NewGameForm({ locale }: Props) {
   // Current display FEN
   const displayFen = useMemo(() => {
     if (hookDisplayFen) return hookDisplayFen;
-    // Default to latest position (calculated by hook)
     return latestFen;
   }, [hookDisplayFen, latestFen]);
 
@@ -101,7 +95,6 @@ export function NewGameForm({ locale }: Props) {
     if (position < 0) return null;
 
     try {
-      // Initialize with custom FEN or standard starting position
       const chess = startingFen ? new Chess(startingFen) : new Chess();
       let lastMoveDetails: { from: string; to: string } | null = null;
       for (let i = 0; i <= position; i++) {
@@ -127,14 +120,12 @@ export function NewGameForm({ locale }: Props) {
       try {
         const movesArray = JSON.parse(urlMoves) as AlgebraicNotation[];
         if (movesArray.length > 0) {
-          // Convert moves array to PGN format
           const pgnParts: string[] = [];
 
-          // Add FEN header if custom starting position is provided
           if (urlFen) {
             pgnParts.push(`[SetUp "1"]`);
             pgnParts.push(`[FEN "${urlFen}"]`);
-            pgnParts.push(''); // Empty line between headers and moves
+            pgnParts.push('');
           }
 
           for (let i = 0; i < movesArray.length; i += 2) {
@@ -149,7 +140,6 @@ export function NewGameForm({ locale }: Props) {
           }
           const pgnText = pgnParts.join(urlFen ? '\n' : ' ');
           setPgn(pgnText);
-          setStartMethod('pgn');
         }
       } catch (error) {
         console.error('Failed to parse moves from URL:', error);
@@ -158,7 +148,7 @@ export function NewGameForm({ locale }: Props) {
 
     if (urlColor) {
       setColor(urlColor);
-      setColorLockedFromUrl(true); // Lock color from URL to prevent auto-derivation
+      setColorLockedFromUrl(true);
     }
 
     if (urlSkillLevel) {
@@ -169,34 +159,27 @@ export function NewGameForm({ locale }: Props) {
     }
   }, [searchParams]);
 
-  // Auto-derive color from PGN when PGN method is selected
+  // Auto-derive color from PGN
   // Skip auto-derivation if color was set from URL
   useEffect(() => {
-    if (colorLockedFromUrl) return; // Don't auto-derive if color came from URL
+    if (colorLockedFromUrl) return;
 
-    if (startMethod === 'pgn' && pgn.trim() && validatePgn(pgn)) {
+    if (pgn.trim() && validatePgn(pgn)) {
       try {
         const chess = new Chess();
         chess.loadPgn(pgn);
         const history = chess.history({ verbose: true });
 
         if (history.length > 0) {
-          // Determine which color made the last move
           const lastMove = history[history.length - 1];
-          // If last move was by white, user should play as black (next to move)
-          // If last move was by black, user should play as white (next to move)
           const derivedColor: Side = lastMove.color === 'w' ? 'black' : 'white';
           setColor(derivedColor);
         } else {
-          // No moves in PGN, check if there's a custom starting FEN
-          // FEN format: "position turn castling en_passant halfmove fullmove"
-          // The turn is the second field: 'w' for white, 'b' for black
           const headers = chess.header();
           if (headers.FEN) {
             const fenParts = headers.FEN.split(' ');
             if (fenParts.length >= 2) {
               const turnFromFen = fenParts[1];
-              // User should play as the side to move
               const derivedColor: Side = turnFromFen === 'w' ? 'white' : 'black';
               setColor(derivedColor);
             }
@@ -206,93 +189,71 @@ export function NewGameForm({ locale }: Props) {
         // If PGN parsing fails, keep current color selection
       }
     }
-  }, [startMethod, pgn, colorLockedFromUrl]);
+  }, [pgn, colorLockedFromUrl]);
 
-  const handlePgnChange = (value: string) => {
+  const handlePgnChange = useCallback((value: string) => {
     setPgn(value);
-  };
+  }, []);
 
-  const handleStartGame = async () => {
+  const handleStartGame = () => {
     setIsLoading(true);
 
-    try {
-      let moves: string[] | undefined;
-      let fenToPass: string | undefined;
-
-      if (startMethod === 'pgn') {
-        if (!pgn.trim() || !validatePgn(pgn)) {
-          setIsLoading(false);
-          return;
-        }
-
-        // Use parsePgnWithFen to get both moves and starting FEN
-        const parsed = parsePgnWithFen(pgn);
-        moves = parsed.moves;
-        fenToPass = parsed.startingFen;
-      }
-
-      const finalColor: Side = color;
-
-      // Navigate to game play screen with settings
-      const searchParams = new URLSearchParams({
-        color: finalColor,
-        skillLevel: skillLevel.toString(),
-      });
-
-      // Add moves if from PGN
-      if (moves && moves.length > 0) {
-        searchParams.set('moves', JSON.stringify(moves));
-      }
-
-      // Add custom starting FEN if present
-      if (fenToPass) {
-        searchParams.set('fen', fenToPass);
-      }
-
-      router.push(`/${locale}/play?${searchParams.toString()}`);
-    } finally {
+    if (!pgn.trim() || !validatePgn(pgn)) {
       setIsLoading(false);
+      return;
     }
+
+    const parsed = parsePgnWithFen(pgn);
+    const moves = parsed.moves;
+    const fenToPass = parsed.startingFen;
+
+    const params = new URLSearchParams({
+      color,
+      skillLevel: skillLevel.toString(),
+    });
+
+    if (moves && moves.length > 0) {
+      params.set('moves', JSON.stringify(moves));
+    }
+
+    if (fenToPass) {
+      params.set('fen', fenToPass);
+    }
+
+    router.push(`/${locale}/play?${params.toString()}`);
   };
+
+  const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
 
   return (
     <div className="space-y-4">
-      {/* Start Method Selector */}
-      <SectionTitle>{t('startMethod')}</SectionTitle>
-      <StartMethodSelector value={startMethod} onChange={setStartMethod} />
-
-      {/* PGN Input (only show if pgn method selected) */}
-      {startMethod === 'pgn' && (
-        <>
-          <SectionTitle>{t('pgnTitle')}</SectionTitle>
-          <PgnInput value={pgn} onChange={handlePgnChange} />
-          {/* Preview Button - show when PGN is valid */}
-          {(pgnMoves.length > 0 || startingFen) && (
-            <div className="flex justify-center">
-              <Button
-                variant="outline"
-                shadow={false}
-                icon={<FaEye className="w-4 h-4" />}
-                onClick={() => setIsBoardVisible(true)}
-              >
-                {t('previewBoard')}
-              </Button>
-            </div>
-          )}
-        </>
+      <SectionTitle>{t('pgnTitle')}</SectionTitle>
+      <PgnInput value={pgn} onChange={handlePgnChange} />
+      {/* Preview Button - show when PGN is valid */}
+      {(pgnMoves.length > 0 || startingFen) && (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            shadow={false}
+            icon={<FaEye className="w-4 h-4" />}
+            onClick={() => setIsBoardVisible(true)}
+          >
+            {t('previewBoard')}
+          </Button>
+        </div>
       )}
 
-      {/* Color Selection (disabled when using PGN with valid moves, unless color was set from URL) */}
+      {/* Color Selection */}
       <SectionTitle>{t('selectColor')}</SectionTitle>
       <ColorSelector
         value={color}
         onChange={(newColor) => {
           setColor(newColor);
-          setColorLockedFromUrl(false); // Unlock when user manually changes color
+          setColorLockedFromUrl(false);
         }}
-        disabled={!colorLockedFromUrl && startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+        disabled={!colorLockedFromUrl && !!pgn.trim() && validatePgn(pgn)}
       />
-      {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && !colorLockedFromUrl && (
+      {pgn.trim() && validatePgn(pgn) && !colorLockedFromUrl && (
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
       )}
 
@@ -301,7 +262,7 @@ export function NewGameForm({ locale }: Props) {
 
       <Button
         onClick={handleStartGame}
-        disabled={startMethod === 'pgn' && (!pgn.trim() || !validatePgn(pgn))}
+        disabled={isStartDisabled}
         loading={isLoading}
         variant="primary"
         size="lg"

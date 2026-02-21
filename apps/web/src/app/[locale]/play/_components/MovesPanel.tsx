@@ -133,27 +133,33 @@ export function MovesPanel({
         <div className="p-4 max-h-[70vh] overflow-y-auto font-mono">
           {formattedPgn.length > 0 ? (
             <div className="space-y-0.5">
-              {formattedPgn.map((move: FormattedPgnMove, index: number) => {
-                const whiteIndex = index * 2;
-                const blackIndex = index * 2 + 1;
-                const isWhiteHighlighted = currentPosition === whiteIndex;
-                const isBlackHighlighted = currentPosition === blackIndex;
+              {formattedPgn.map((move: FormattedPgnMove) => {
+                const whiteIndex = move.whiteMoveIndex;
+                const blackIndex = move.blackMoveIndex;
+                const isWhiteHighlighted =
+                  whiteIndex !== undefined && currentPosition === whiteIndex;
+                const isBlackHighlighted =
+                  blackIndex !== undefined && currentPosition === blackIndex;
 
                 return (
                   <div key={move.moveNumber} className="flex items-center text-sm">
                     <span className="w-10 text-right pr-2 text-muted-foreground">
                       {move.moveNumber}.
                     </span>
-                    <span
-                      className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                        isWhiteHighlighted
-                          ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                          : 'hover:bg-muted/40'
-                      }`}
-                      onClick={() => onNavigateToPosition(whiteIndex)}
-                    >
-                      {move.whiteMove}
-                    </span>
+                    {move.whiteMove ? (
+                      <span
+                        className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                          isWhiteHighlighted
+                            ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                            : 'hover:bg-muted/40'
+                        }`}
+                        onClick={() => whiteIndex !== undefined && onNavigateToPosition(whiteIndex)}
+                      >
+                        {move.whiteMove}
+                      </span>
+                    ) : (
+                      <span className="flex-1 px-2 py-0.5 text-muted-foreground">...</span>
+                    )}
                     <span
                       className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
                         isBlackHighlighted
@@ -162,7 +168,11 @@ export function MovesPanel({
                             ? 'hover:bg-muted/40'
                             : ''
                       } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                      onClick={() => move.blackMove && onNavigateToPosition(blackIndex)}
+                      onClick={() =>
+                        move.blackMove &&
+                        blackIndex !== undefined &&
+                        onNavigateToPosition(blackIndex)
+                      }
                     >
                       {move.blackMove || ''}
                     </span>
