@@ -215,7 +215,44 @@
   },
   "gettingStarted": {
     "title": "Getting Started",
-    "description": "Learn how to get started with blindfold chess training and improve your visualization skills."
+    "description": "Learn how to get started with blindfold chess training and improve your visualization skills.",
+    "whyBlindfoldChess": {
+      "title": "Why Blindfold Chess?",
+      "intro": "Blindfold Chess is the best way to develop visualization skills in chess.",
+      "explanation": "Strong players can \"see\" several moves ahead in their minds. This ability is not innate, but a skill acquired through deliberate practice.",
+      "abilitiesIntro": "Blindfold Chess directly trains the following abilities:",
+      "ability1": "Ability to imagine piece positions without looking at the board",
+      "ability2": "Ability to calculate variations in your head",
+      "ability3": "Ability to recognize patterns and structures",
+      "conclusion": "As a result, your overall chess strength will improve."
+    },
+    "whatYouCanDo": {
+      "title": "What You Can Do Here",
+      "stockfish": {
+        "title": "Play Against Stockfish",
+        "description": "You can play blindfold chess against Stockfish, the most popular chess engine in the world.",
+        "featureDifficulty": "20 Difficulty Levels",
+        "featureDifficultyDesc": "From beginner to grandmaster",
+        "featureUndo": "Undo Support",
+        "featureUndoDesc": "Take back moves freely",
+        "featureHelp": "Help Function",
+        "featureHelpDesc": "Get hints when stuck",
+        "cta": "Start Playing"
+      },
+      "training": {
+        "title": "Rich Training Menu",
+        "description": "You can build visualization skills through systematic training.",
+        "cta": "View All Training Menus",
+        "categories": {
+          "positionMemory": "Position Memory",
+          "knightTour": "Knight's Tour",
+          "coordinateQuiz": "Coordinate Quiz",
+          "squareColors": "Square Colors",
+          "legalMoves": "Legal Moves",
+          "routePlanner": "Route Planner"
+        }
+      }
+    }
   },
   "learn": {
     "title": "Learn Chess",
