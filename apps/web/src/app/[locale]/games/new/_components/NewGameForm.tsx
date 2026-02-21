@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,13 +17,31 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { useMoveNavigation } from '@/app/[locale]/play/_hooks/use-move-navigation';
-import { parsePgnWithFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
+import { parsePgnWithFen, validateFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
+import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 
 import { ColorSelector } from './ColorSelector';
+import { type CastlingRights, PositionSettings } from './PositionSettings';
 import { SkillLevelSelector } from './SkillLevelSelector';
-import { StartMethodSelector } from './StartMethodSelector';
+import { type StartMethod, StartMethodSelector } from './StartMethodSelector';
 
-type StartMethod = 'new' | 'pgn';
+const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+
+function buildFenFromParts(
+  boardFen: string,
+  turn: 'w' | 'b',
+  castling: CastlingRights,
+  enPassant: string
+): string {
+  const boardPart = boardFen.split(' ')[0];
+  let castlingStr = '';
+  if (castling.K) castlingStr += 'K';
+  if (castling.Q) castlingStr += 'Q';
+  if (castling.k) castlingStr += 'k';
+  if (castling.q) castlingStr += 'q';
+  if (!castlingStr) castlingStr = '-';
+  return `${boardPart} ${turn} ${castlingStr} ${enPassant} 0 1`;
+}
 
 type Props = {
   locale: Locale;
@@ -41,6 +59,48 @@ export function NewGameForm({ locale }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+
+  // Custom position state
+  const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
+  const [positionTurn, setPositionTurn] = useState<'w' | 'b'>('w');
+  const [positionCastling, setPositionCastling] = useState<CastlingRights>({
+    K: false,
+    Q: false,
+    k: false,
+    q: false,
+  });
+  const [positionEnPassant, setPositionEnPassant] = useState('-');
+
+  // Full FEN built from parts
+  const fullPositionFen = useMemo(
+    () => buildFenFromParts(positionFen, positionTurn, positionCastling, positionEnPassant),
+    [positionFen, positionTurn, positionCastling, positionEnPassant]
+  );
+
+  // Validate custom position FEN
+  const positionValidation = useMemo((): { valid: boolean; error?: string } => {
+    const boardPart = positionFen.split(' ')[0];
+    // Check if board is empty (no pieces placed)
+    if (boardPart === '8/8/8/8/8/8/8/8') {
+      return { valid: false, error: t('positionEmpty') };
+    }
+    if (validateFen(fullPositionFen)) {
+      return { valid: true };
+    }
+    return { valid: false, error: t('positionInvalid') };
+  }, [fullPositionFen, positionFen, t]);
+
+  // Auto-derive color from position turn and reset en passant
+  useEffect(() => {
+    if (startMethod === 'position') {
+      setColor(positionTurn === 'w' ? 'white' : 'black');
+      setPositionEnPassant('-');
+    }
+  }, [startMethod, positionTurn]);
+
+  const handlePositionFenChange = useCallback((newFen: string) => {
+    setPositionFen(newFen);
+  }, []);
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
@@ -231,6 +291,14 @@ export function NewGameForm({ locale }: Props) {
         fenToPass = parsed.startingFen;
       }
 
+      if (startMethod === 'position') {
+        if (!positionValidation.valid) {
+          setIsLoading(false);
+          return;
+        }
+        fenToPass = fullPositionFen;
+      }
+
       const finalColor: Side = color;
 
       // Navigate to game play screen with settings
@@ -254,6 +322,20 @@ export function NewGameForm({ locale }: Props) {
       setIsLoading(false);
     }
   };
+
+  const isStartDisabled =
+    (startMethod === 'pgn' && (!pgn.trim() || !validatePgn(pgn))) ||
+    (startMethod === 'position' && !positionValidation.valid);
+
+  const editableBoardLabels = useMemo(
+    () => ({
+      whitePieces: t('positionSettings.whitePieces'),
+      blackPieces: t('positionSettings.blackPieces'),
+      removePieceMode: t('positionSettings.removePieceMode'),
+      placingPiece: t('positionSettings.placingPiece'),
+    }),
+    [t]
+  );
 
   return (
     <div className="space-y-4">
@@ -282,6 +364,39 @@ export function NewGameForm({ locale }: Props) {
         </>
       )}
 
+      {/* Custom Position Editor (only show if position method selected) */}
+      {startMethod === 'position' && (
+        <>
+          <SectionTitle>{t('customPosition')}</SectionTitle>
+          <EditableChessBoard
+            fen={positionFen}
+            onFenChange={handlePositionFenChange}
+            labels={editableBoardLabels}
+            editable
+            boardTheme={preferences.boardTheme}
+            showCoordinates={preferences.showCoordinates}
+          />
+
+          <SectionTitle>{t('positionSettings.title')}</SectionTitle>
+          <PositionSettings
+            turn={positionTurn}
+            onTurnChange={setPositionTurn}
+            castling={positionCastling}
+            onCastlingChange={setPositionCastling}
+            enPassant={positionEnPassant}
+            onEnPassantChange={setPositionEnPassant}
+          />
+
+          {/* Validation message */}
+          {positionValidation.error && (
+            <p className="text-sm text-red-500">{positionValidation.error}</p>
+          )}
+          {positionValidation.valid && (
+            <p className="text-sm text-green-600">{t('positionValid')}</p>
+          )}
+        </>
+      )}
+
       {/* Color Selection (disabled when using PGN with valid moves, unless color was set from URL) */}
       <SectionTitle>{t('selectColor')}</SectionTitle>
       <ColorSelector
@@ -290,10 +405,16 @@ export function NewGameForm({ locale }: Props) {
           setColor(newColor);
           setColorLockedFromUrl(false); // Unlock when user manually changes color
         }}
-        disabled={!colorLockedFromUrl && startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)}
+        disabled={
+          (!colorLockedFromUrl && startMethod === 'pgn' && !!pgn.trim() && validatePgn(pgn)) ||
+          startMethod === 'position'
+        }
       />
       {startMethod === 'pgn' && pgn.trim() && validatePgn(pgn) && !colorLockedFromUrl && (
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
+      )}
+      {startMethod === 'position' && (
+        <p className="text-sm text-muted-foreground">{t('derivedFromPosition')}</p>
       )}
 
       {/* Skill Level Selection */}
@@ -301,7 +422,7 @@ export function NewGameForm({ locale }: Props) {
 
       <Button
         onClick={handleStartGame}
-        disabled={startMethod === 'pgn' && (!pgn.trim() || !validatePgn(pgn))}
+        disabled={isStartDisabled}
         loading={isLoading}
         variant="primary"
         size="lg"
