@@ -210,7 +210,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         params.set('fen', startingFen);
       }
 
-      router.push(`/${locale}/games/new?${params.toString()}`);
+      router.push(`/${locale}/games/new/pgn?${params.toString()}`);
     },
     [moves, playerSide, skillLevel, locale, router, startingFen]
   );

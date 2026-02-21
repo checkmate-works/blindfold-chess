@@ -1,14 +1,11 @@
-import { Suspense } from 'react';
-
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, CardLink, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameLimitCheck } from './_components/GameLimitCheck';
-import { NewGameForm } from './_components/NewGameForm';
 
 type Props = {
   params: Promise<{
@@ -32,11 +29,28 @@ export default async function NewGamePage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('newGame.title')}</PageTitle>
+      <PageTitle>{t('newGame.selectTitle')}</PageTitle>
       <GameLimitCheck locale={locale}>
-        <Suspense fallback={null}>
-          <NewGameForm locale={locale} />
-        </Suspense>
+        <div className="grid grid-cols-1 gap-4">
+          <CardLink
+            href="/games/new/standard"
+            icon="♟"
+            title={t('newGame.standardTitle')}
+            description={t('newGame.standardDescription')}
+          />
+          <CardLink
+            href="/games/new/pgn"
+            icon="📋"
+            title={t('newGame.pgnPageTitle')}
+            description={t('newGame.pgnPageDescription')}
+          />
+          <CardLink
+            href="/games/new/position"
+            icon="♜"
+            title={t('newGame.positionPageTitle')}
+            description={t('newGame.positionPageDescription')}
+          />
+        </div>
         <Divider />
         <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />
       </GameLimitCheck>

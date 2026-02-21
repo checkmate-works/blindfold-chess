@@ -19,7 +19,6 @@ function renderPositionSettings(
 ) {
   const props = {
     turn: 'w' as const,
-    onTurnChange: vi.fn(),
     castling: defaultCastling,
     onCastlingChange: vi.fn(),
     enPassant: '-',
@@ -31,43 +30,6 @@ function renderPositionSettings(
 }
 
 describe('PositionSettings', () => {
-  describe('turn selector', () => {
-    it('renders white and black turn buttons', () => {
-      renderPositionSettings();
-
-      expect(screen.getByText('white')).toBeInTheDocument();
-      expect(screen.getByText('black')).toBeInTheDocument();
-    });
-
-    it('calls onTurnChange with "w" when white button is clicked', () => {
-      const { props } = renderPositionSettings({ turn: 'b' });
-
-      fireEvent.click(screen.getByText('white'));
-
-      expect(props.onTurnChange).toHaveBeenCalledTimes(1);
-      expect(props.onTurnChange).toHaveBeenCalledWith('w');
-    });
-
-    it('calls onTurnChange with "b" when black button is clicked', () => {
-      const { props } = renderPositionSettings({ turn: 'w' });
-
-      fireEvent.click(screen.getByText('black'));
-
-      expect(props.onTurnChange).toHaveBeenCalledTimes(1);
-      expect(props.onTurnChange).toHaveBeenCalledWith('b');
-    });
-
-    it('applies active styling to the selected turn', () => {
-      renderPositionSettings({ turn: 'w' });
-
-      const whiteButton = screen.getByText('white');
-      expect(whiteButton.className).toContain('border-foreground');
-
-      const blackButton = screen.getByText('black');
-      expect(blackButton.className).not.toContain('border-foreground bg-foreground/10 font-medium');
-    });
-  });
-
   describe('castling rights', () => {
     it('renders all four castling checkboxes', () => {
       renderPositionSettings();

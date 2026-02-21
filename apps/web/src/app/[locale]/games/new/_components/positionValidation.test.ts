@@ -2,31 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { validateFen } from '@/app/[locale]/play/_lib/pgn-parser';
 
+import { buildFenFromParts } from '../_lib/build-fen-from-parts';
 import type { CastlingRights } from './PositionSettings';
-
-/**
- * Tests for position validation logic as used in NewGameForm.
- * The validation consists of two steps:
- *   1. Check if the board is empty (board part equals '8/8/8/8/8/8/8/8')
- *   2. Validate the full FEN with chess.js via validateFen()
- *
- * We replicate buildFenFromParts here since it is not exported.
- */
-function buildFenFromParts(
-  boardFen: string,
-  turn: 'w' | 'b',
-  castling: CastlingRights,
-  enPassant: string
-): string {
-  const boardPart = boardFen.split(' ')[0];
-  let castlingStr = '';
-  if (castling.K) castlingStr += 'K';
-  if (castling.Q) castlingStr += 'Q';
-  if (castling.k) castlingStr += 'k';
-  if (castling.q) castlingStr += 'q';
-  if (!castlingStr) castlingStr = '-';
-  return `${boardPart} ${turn} ${castlingStr} ${enPassant} 0 1`;
-}
 
 function validatePosition(
   boardFen: string,
