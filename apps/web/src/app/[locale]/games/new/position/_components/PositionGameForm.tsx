@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown, FaSyncAlt } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
@@ -39,7 +39,7 @@ export function PositionGameForm({ locale }: Props) {
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [isLoading, setIsLoading] = useState(false);
-  const [checkCorrected, setCheckCorrected] = useState(false);
+  const [flipped, setFlipped] = useState(false);
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
@@ -70,18 +70,11 @@ export function PositionGameForm({ locale }: Props) {
     if (!positionResult.valid && positionResult.errorKey) {
       return { valid: false, error: t(positionResult.errorKey) };
     }
-    return { valid: positionResult.valid };
-  }, [positionResult, t]);
-
-  // Handle check auto-correction
-  useEffect(() => {
-    if (positionResult.correctedColor) {
-      setColor(positionResult.correctedColor);
-      setCheckCorrected(true);
-    } else {
-      setCheckCorrected(false);
+    if (positionResult.correctedColor && positionResult.correctedColor !== color) {
+      return { valid: false, error: t('positionCheckCorrected') };
     }
-  }, [positionResult]);
+    return { valid: positionResult.valid };
+  }, [positionResult, t, color]);
 
   // Reset en passant when color changes
   useEffect(() => {
@@ -158,12 +151,21 @@ export function PositionGameForm({ locale }: Props) {
   return (
     <div className="space-y-4">
       <SectionTitle>{t('customPosition')}</SectionTitle>
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => setFlipped((prev) => !prev)}
+          className="p-2 border border-border rounded-md hover:bg-muted"
+          title={t('flipBoard')}
+        >
+          <FaSyncAlt className="w-4 h-4" />
+        </button>
+      </div>
       <EditableChessBoard
         fen={positionFen}
         onFenChange={handlePositionFenChange}
         labels={editableBoardLabels}
         editable
-        flipped={color === 'black'}
+        flipped={flipped}
         boardTheme={preferences.boardTheme}
         showCoordinates={preferences.showCoordinates}
       />
@@ -217,7 +219,6 @@ export function PositionGameForm({ locale }: Props) {
       {positionValidation.error && (
         <p className="text-sm text-red-500">{positionValidation.error}</p>
       )}
-      {checkCorrected && <p className="text-sm text-blue-600">{t('positionCheckCorrected')}</p>}
       {positionValidation.valid && <p className="text-sm text-green-600">{t('positionValid')}</p>}
 
       {/* Skill Level Selection */}

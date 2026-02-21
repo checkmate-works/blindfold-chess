@@ -1276,8 +1276,9 @@
     "positionAlreadyCheckmate": "This position is already checkmate — the game would end immediately",
     "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
     "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
-    "positionCheckCorrected": "Color automatically switched — the checked side must move first",
+    "positionCheckCorrected": "The checked side must move first — please select the other color",
     "positionValid": "Valid position",
+    "flipBoard": "Flip Board",
     "positionSettings": {
       "title": "Advanced Settings",
       "castling": "Castling Rights",
