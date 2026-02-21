@@ -60,6 +60,10 @@ export function validatePosition(boardFen: string, fullFen: string): PositionVal
     const flippedFen = swapTurn(fullFen);
     try {
       const flippedChess = new Chess(flippedFen);
+      // Both kings in check = illegal position (unreachable in a real game)
+      if (isOpponentKingInCheck(flippedChess)) {
+        return { valid: false, errorKey: 'positionInvalid' };
+      }
       if (flippedChess.isCheckmate()) {
         return { valid: false, errorKey: 'positionAlreadyCheckmate' };
       }

@@ -179,14 +179,13 @@ describe('validatePosition', () => {
   });
 
   describe('both kings in check', () => {
-    it('corrects turn when both kings are in check', () => {
+    it('returns positionInvalid when both kings are in check', () => {
       // White queen on d4 checks black king on h8 (diagonal), black bishop on b2 checks white king on a1
       // White to move: opponent (black) king is in check -> correction triggers
       const fen = '7k/8/8/8/3Q4/8/1b6/K7 w - - 0 1';
       const result = validatePosition('7k/8/8/8/3Q4/8/1b6/K7', fen);
 
-      expect(result.valid).toBe(true);
-      expect(result.correctedColor).toBe('black');
+      expect(result).toEqual({ valid: false, errorKey: 'positionInvalid' });
     });
   });
 
