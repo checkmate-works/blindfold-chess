@@ -8,14 +8,9 @@ import type { Side } from '@blindfold-chess/types';
 import type { EvaluationMark } from '@/lib/evaluation';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { FormattedPgnMove } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
-
-type FormattedMove = {
-  moveNumber: number;
-  whiteMove: string;
-  blackMove?: string;
-};
 
 type Props = {
   isOpen: boolean;
@@ -26,7 +21,7 @@ type Props = {
   preferences: GamePreferences;
   movesLength: number;
   currentPosition: number;
-  formattedPgn: FormattedMove[];
+  formattedPgn: FormattedPgnMove[];
   evaluationMark?: EvaluationMark | null;
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
@@ -88,25 +83,33 @@ export function BoardViewModal({
             >
               <div className="flex items-center gap-1 text-sm whitespace-nowrap">
                 {formattedPgn.map((move) => {
-                  const whiteIndex = (move.moveNumber - 1) * 2;
-                  const blackIndex = whiteIndex + 1;
-                  const isWhiteHighlighted = currentPosition === whiteIndex;
-                  const isBlackHighlighted = currentPosition === blackIndex;
+                  const whiteIndex = move.whiteMoveIndex;
+                  const blackIndex = move.blackMoveIndex;
+                  const isWhiteHighlighted =
+                    whiteIndex !== undefined && currentPosition === whiteIndex;
+                  const isBlackHighlighted =
+                    blackIndex !== undefined && currentPosition === blackIndex;
 
                   return (
                     <div key={move.moveNumber} className="flex items-center gap-0.5">
                       <span className="text-muted-foreground text-xs">{move.moveNumber}.</span>
-                      <button
-                        type="button"
-                        className={`px-1.5 py-0.5 rounded transition-colors ${
-                          isWhiteHighlighted
-                            ? 'bg-foreground/15 font-semibold'
-                            : 'hover:bg-muted/40'
-                        }`}
-                        onClick={() => onNavigateToPosition(whiteIndex)}
-                      >
-                        {move.whiteMove}
-                      </button>
+                      {move.whiteMove ? (
+                        <button
+                          type="button"
+                          className={`px-1.5 py-0.5 rounded transition-colors ${
+                            isWhiteHighlighted
+                              ? 'bg-foreground/15 font-semibold'
+                              : 'hover:bg-muted/40'
+                          }`}
+                          onClick={() =>
+                            whiteIndex !== undefined && onNavigateToPosition(whiteIndex)
+                          }
+                        >
+                          {move.whiteMove}
+                        </button>
+                      ) : (
+                        <span className="px-1.5 py-0.5 text-muted-foreground">..</span>
+                      )}
                       {move.blackMove && (
                         <button
                           type="button"
@@ -115,7 +118,9 @@ export function BoardViewModal({
                               ? 'bg-foreground/15 font-semibold'
                               : 'hover:bg-muted/40'
                           }`}
-                          onClick={() => onNavigateToPosition(blackIndex)}
+                          onClick={() =>
+                            blackIndex !== undefined && onNavigateToPosition(blackIndex)
+                          }
                         >
                           {move.blackMove}
                         </button>

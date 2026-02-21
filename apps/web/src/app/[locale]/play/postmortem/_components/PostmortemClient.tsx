@@ -131,7 +131,7 @@ async function getPositionEvaluation(
     // Calculate evaluation loss
     // For white's move: loss = evalBefore - evalAfter (positive means worse for white)
     // For black's move: loss = evalAfter - evalBefore (positive means worse for black)
-    const isWhiteMove = moveIndex % 2 === 0;
+    const isWhiteMove = fenBefore.split(' ')[1] === 'w';
     let loss: number;
 
     if (evalAfter.mate !== undefined) {
@@ -395,9 +395,16 @@ export function PostmortemClient({
     // If autoOpponent is disabled, player enters all moves
     if (!autoOpponent) return true;
 
-    const isWhiteTurn = currentMoveIndex % 2 === 0;
-    return (playerColor === 'white' && isWhiteTurn) || (playerColor === 'black' && !isWhiteTurn);
-  }, [currentMoveIndex, playerColor, autoOpponent]);
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const isStartingSideMove = currentMoveIndex % 2 === 0;
+    const startingSide = startsAsBlack ? 'black' : 'white';
+    const movingSide = isStartingSideMove
+      ? startingSide
+      : startingSide === 'white'
+        ? 'black'
+        : 'white';
+    return movingSide === playerColor;
+  }, [currentMoveIndex, playerColor, autoOpponent, startingFen]);
 
   // Update URL with current offset
   useEffect(() => {
@@ -422,8 +429,12 @@ export function PostmortemClient({
         setIsEvaluating(true);
         // Auto-fill opponent's move
         const opponentMove = originalMoves[currentMoveIndex];
-        const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-        const isWhiteMove = currentMoveIndex % 2 === 0;
+        const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+        const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+        const moveNumber = startsAsBlack
+          ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+          : startMoveNumber + Math.floor(currentMoveIndex / 2);
+        const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
         const newIndex = currentMoveIndex + 1;
 
         setUserMoves((prev) => [...prev, opponentMove]);
@@ -491,8 +502,12 @@ export function PostmortemClient({
       if (isEvaluating) return; // Prevent submission while evaluating
 
       const expectedMove = originalMoves[currentMoveIndex];
-      const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-      const isWhiteMove = currentMoveIndex % 2 === 0;
+      const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+      const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+      const moveNumber = startsAsBlack
+        ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+        : startMoveNumber + Math.floor(currentMoveIndex / 2);
+      const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
 
       if (move === expectedMove) {
         setIsEvaluating(true);
@@ -556,7 +571,16 @@ export function PostmortemClient({
         ]);
       }
     },
-    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, moveLog, gamePositions]
+    [
+      currentMoveIndex,
+      originalMoves,
+      showEvaluation,
+      isEvaluating,
+      t,
+      moveLog,
+      gamePositions,
+      startingFen,
+    ]
   );
 
   // Handle "I don't know" button
@@ -567,8 +591,12 @@ export function PostmortemClient({
     setDontKnowCount((prev) => prev + 1);
 
     const correctMove = originalMoves[currentMoveIndex];
-    const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-    const isWhiteMove = currentMoveIndex % 2 === 0;
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+    const moveNumber = startsAsBlack
+      ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+      : startMoveNumber + Math.floor(currentMoveIndex / 2);
+    const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
     const newIndex = currentMoveIndex + 1;
 
     setUserMoves((prev) => [...prev, correctMove]);
@@ -604,7 +632,15 @@ export function PostmortemClient({
     }
 
     setIsEvaluating(false);
-  }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, gamePositions]);
+  }, [
+    currentMoveIndex,
+    originalMoves,
+    showEvaluation,
+    isEvaluating,
+    t,
+    gamePositions,
+    startingFen,
+  ]);
 
   // Handle "Analyze All" button
   const handleAnalyzeAll = useCallback(async () => {
@@ -629,10 +665,15 @@ export function PostmortemClient({
           }
         : undefined;
 
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
     for (let i = currentMoveIndex; i < originalMoves.length; i++) {
       const move = originalMoves[i];
-      const moveNumber = Math.floor(i / 2) + 1;
-      const isWhiteMove = i % 2 === 0;
+      const moveNumber = startsAsBlack
+        ? startMoveNumber + Math.floor((i + 1) / 2)
+        : startMoveNumber + Math.floor(i / 2);
+      const isWhiteMove = startsAsBlack ? i % 2 === 1 : i % 2 === 0;
 
       const evaluation = showEvaluation
         ? await getPositionEvaluation(
@@ -675,6 +716,7 @@ export function PostmortemClient({
     isEvaluating,
     t,
     gamePositions,
+    startingFen,
   ]);
 
   // Check if any move has evaluation
@@ -811,16 +853,50 @@ export function PostmortemClient({
 
   // Format moves for display (like in PlayClient)
   const getFormattedPgn = useCallback(() => {
-    const formatted: { moveNumber: number; whiteMove: string; blackMove?: string }[] = [];
-    for (let i = 0; i < userMoves.length; i += 2) {
+    if (userMoves.length === 0) return [];
+
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
+    const formatted: {
+      moveNumber: number;
+      whiteMove?: string;
+      whiteMoveIndex?: number;
+      blackMove?: string;
+      blackMoveIndex?: number;
+    }[] = [];
+
+    if (startsAsBlack) {
       formatted.push({
-        moveNumber: Math.floor(i / 2) + 1,
-        whiteMove: userMoves[i],
-        blackMove: userMoves[i + 1],
+        moveNumber: startMoveNumber,
+        blackMove: userMoves[0],
+        blackMoveIndex: 0,
       });
+      for (let i = 1; i < userMoves.length; i += 2) {
+        const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
+        formatted.push({
+          moveNumber,
+          whiteMove: userMoves[i],
+          whiteMoveIndex: i,
+          blackMove: userMoves[i + 1],
+          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
+        });
+      }
+    } else {
+      for (let i = 0; i < userMoves.length; i += 2) {
+        const moveNumber = startMoveNumber + Math.floor(i / 2);
+        formatted.push({
+          moveNumber,
+          whiteMove: userMoves[i],
+          whiteMoveIndex: i,
+          blackMove: userMoves[i + 1],
+          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
+        });
+      }
     }
+
     return formatted;
-  }, [userMoves]);
+  }, [userMoves, startingFen]);
 
   const formattedPgn = getFormattedPgn();
 
@@ -1232,27 +1308,35 @@ export function PostmortemClient({
               {formattedPgn.length > 0 ? (
                 <>
                   <div className="space-y-0.5">
-                    {formattedPgn.map((move, index) => {
-                      const whiteIndex = index * 2;
-                      const blackIndex = index * 2 + 1;
-                      const isWhiteHighlighted = currentPosition === whiteIndex;
-                      const isBlackHighlighted = currentPosition === blackIndex;
+                    {formattedPgn.map((move) => {
+                      const whiteIndex = move.whiteMoveIndex;
+                      const blackIndex = move.blackMoveIndex;
+                      const isWhiteHighlighted =
+                        whiteIndex !== undefined && currentPosition === whiteIndex;
+                      const isBlackHighlighted =
+                        blackIndex !== undefined && currentPosition === blackIndex;
 
                       return (
                         <div key={move.moveNumber} className="flex items-center text-sm">
                           <span className="w-10 text-right pr-2 text-muted-foreground">
                             {move.moveNumber}.
                           </span>
-                          <span
-                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                              isWhiteHighlighted
-                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                                : 'hover:bg-muted/40'
-                            }`}
-                            onClick={() => navigateToPosition(whiteIndex)}
-                          >
-                            {move.whiteMove}
-                          </span>
+                          {move.whiteMove ? (
+                            <span
+                              className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                                isWhiteHighlighted
+                                  ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                  : 'hover:bg-muted/40'
+                              }`}
+                              onClick={() =>
+                                whiteIndex !== undefined && navigateToPosition(whiteIndex)
+                              }
+                            >
+                              {move.whiteMove}
+                            </span>
+                          ) : (
+                            <span className="flex-1 px-2 py-0.5 text-muted-foreground">...</span>
+                          )}
                           <span
                             className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
                               isBlackHighlighted
@@ -1261,7 +1345,11 @@ export function PostmortemClient({
                                   ? 'hover:bg-muted/40'
                                   : ''
                             } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                            onClick={() => move.blackMove && navigateToPosition(blackIndex)}
+                            onClick={() =>
+                              move.blackMove &&
+                              blackIndex !== undefined &&
+                              navigateToPosition(blackIndex)
+                            }
                           >
                             {move.blackMove || ''}
                           </span>

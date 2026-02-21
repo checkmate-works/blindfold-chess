@@ -5,8 +5,10 @@ import { Chess } from 'chess.js';
  */
 export type FormattedPgnMove = {
   moveNumber: number;
-  whiteMove: string;
+  whiteMove?: string;
+  whiteMoveIndex?: number;
   blackMove?: string;
+  blackMoveIndex?: number;
 };
 
 /**
@@ -123,6 +125,9 @@ export function formatPgnToText(formattedPgn: FormattedPgn, startingFen?: string
   const movesText = formattedPgn
     .map((move) => {
       const moveNumber = `${move.moveNumber}.`;
+      if (!move.whiteMove && move.blackMove) {
+        return `${moveNumber}.. ${move.blackMove}`;
+      }
       const movePair = move.blackMove
         ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
         : `${moveNumber} ${move.whiteMove}`;
