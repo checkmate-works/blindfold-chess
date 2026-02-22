@@ -1,7 +1,7 @@
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { describe, expect, it } from 'vitest';
 
-import { formatLastMove } from './utils';
+import { formatLastMove } from './game-display-utils';
 
 describe('formatLastMove', () => {
   describe('empty moves', () => {
