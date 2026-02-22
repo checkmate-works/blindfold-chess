@@ -42,6 +42,7 @@ describe('useAutoSave', () => {
     status: 'in_progress' as const,
     enabled: true,
     saveOnInit: false,
+    gameId: undefined as string | undefined,
   };
 
   it('should not auto-save when enabled transitions from false to true with existing moves (loading scenario)', async () => {
