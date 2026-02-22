@@ -17,10 +17,11 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { AdContainer } from '@/components/Ad';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
+
+import { AdContainer } from '@/app/[locale]/_components/Ad';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';

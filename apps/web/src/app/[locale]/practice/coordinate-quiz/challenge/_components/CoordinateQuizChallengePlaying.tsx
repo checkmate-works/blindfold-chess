@@ -3,10 +3,10 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
-import { QuizTimer } from '@/components/QuizTimer';
 import { Square } from 'chess.js';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
