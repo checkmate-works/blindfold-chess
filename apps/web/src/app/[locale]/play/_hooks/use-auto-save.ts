@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePathname } from 'next/navigation';
 
-import { STORAGE_KEYS } from '@/config';
+import { notifyGameListUpdated } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
@@ -85,8 +85,7 @@ export function useAutoSave({
           lastSavedStatus.current = currentStatusRef.current;
           hasSavedInSession.current = true;
 
-          // Set session storage flag for cross-component updates
-          sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
+          notifyGameListUpdated();
         } catch (error) {
           if (error instanceof GameLimitError) {
             // Game limit reached - store pending game data for later
@@ -184,8 +183,7 @@ export function useAutoSave({
         setLastSavedAt(new Date());
         setIsSaving(false);
 
-        // Set session storage flag for cross-component updates
-        sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, Date.now().toString());
+        notifyGameListUpdated();
 
         // Show notification if requested
         if (showNotification) {

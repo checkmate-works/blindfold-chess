@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { Chess } from 'chess.js';
@@ -43,7 +43,7 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     setMoves(newMoves);
   }, []);
 
-  const getFen = useCallback(() => {
+  const fen = useMemo(() => {
     // Initialize with custom FEN or standard starting position
     const chess = startingFen ? new Chess(startingFen) : new Chess();
     try {
@@ -57,12 +57,9 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
       }
     } catch (error) {
       console.error('[getFen] Critical error:', error);
-      // fallback to starting position ONLY if even the empty board crashed (highly unlikely)
-      // or we can just return whatever state we have
     }
 
-    const fen = chess.fen();
-    return fen;
+    return chess.fen();
   }, [moves, startingFen]);
 
   const getPgn = useCallback(() => {
@@ -130,7 +127,7 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     return formattedMoves.join(' ');
   }, [moves, startingFen]);
 
-  const getFormattedPgn = useCallback(() => {
+  const formattedPgn = useMemo(() => {
     if (moves.length === 0) {
       return [];
     }
@@ -182,10 +179,10 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     clearMoves,
     removeMoves,
     setMovesTo,
-    getFen,
+    fen,
     getPgn,
     getSimplePgn,
-    getFormattedPgn,
+    formattedPgn,
     getStartingFen,
   };
 }

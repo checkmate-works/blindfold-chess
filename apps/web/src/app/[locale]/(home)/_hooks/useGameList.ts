@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { STORAGE_KEYS } from '@/config';
+import { GAME_UPDATED_EVENT } from '@/config';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
@@ -16,8 +16,7 @@ type Return = {
  *
  * Features:
  * - Loads games from localStorage sorted by specified criteria
- * - Listens to storage events for cross-tab synchronization
- * - Polls sessionStorage for same-tab update notifications
+ * - Listens for custom events for same-tab update notifications
  * - Automatically reloads when sort parameters change
  *
  * @param sortBy - Sort column (e.g., 'lastPlayed', 'createdAt')
@@ -45,29 +44,15 @@ export function useGameList(sortBy: GameSortOption, sortDirection: SortDirection
   useEffect(() => {
     loadGames();
 
-    // Listen to storage events for cross-tab synchronization
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.GAME_UPDATED) {
-        loadGames();
-      }
+    // Listen for same-tab game update notifications via custom event
+    const handleGameUpdated = () => {
+      loadGames();
     };
 
-    // Poll sessionStorage for same-tab update notifications
-    const checkSessionStorage = () => {
-      const updated = sessionStorage.getItem(STORAGE_KEYS.GAME_UPDATED);
-      if (updated) {
-        sessionStorage.removeItem(STORAGE_KEYS.GAME_UPDATED);
-        loadGames();
-      }
-    };
-
-    const interval = setInterval(checkSessionStorage, 1000);
-
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener(GAME_UPDATED_EVENT, handleGameUpdated);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener(GAME_UPDATED_EVENT, handleGameUpdated);
     };
   }, [loadGames]);
 

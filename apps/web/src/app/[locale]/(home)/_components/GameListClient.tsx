@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
-import { STORAGE_KEYS } from '@/config';
+import { notifyGameListUpdated } from '@/config';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameSortOption, SortDirection } from '@/lib/types';
@@ -46,7 +46,7 @@ export function GameListClient({ locale }: Props) {
 
     try {
       await gameRepository.delete(deleteConfirmGameId);
-      sessionStorage.setItem(STORAGE_KEYS.GAME_UPDATED, 'true');
+      notifyGameListUpdated();
       showToast(t('gameDeletedToast'), 'success');
     } catch (error) {
       console.error('Failed to delete game:', error);

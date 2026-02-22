@@ -11,6 +11,8 @@ export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
 export const MAX_GAMES = 20;
 
-export const STORAGE_KEYS = {
-  GAME_UPDATED: 'blindfold_chess_game_updated',
-} as const;
+export const GAME_UPDATED_EVENT = 'blindfold-chess:game-updated';
+
+export function notifyGameListUpdated() {
+  window.dispatchEvent(new CustomEvent(GAME_UPDATED_EVENT));
+}

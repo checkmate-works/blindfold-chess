@@ -55,7 +55,14 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const [error, setError] = useState<string | null>(null);
 
   // Notation hook
-  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } = useNotation({
+  const {
+    moves,
+    pushMove,
+    removeMoves,
+    setMovesTo,
+    fen: currentFen,
+    formattedPgn,
+  } = useNotation({
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
@@ -242,9 +249,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     [markPlayerInteraction, searchParams, router, gameId]
   );
 
-  // Get current FEN for board display
-  const currentFen = getFen();
-  const formattedPgn = getFormattedPgn();
+  // Current FEN and formatted PGN are memoized values from useNotation
 
   // Update parent component with AI's last move
   useEffect(() => {
