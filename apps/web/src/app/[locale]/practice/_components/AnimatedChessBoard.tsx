@@ -3,7 +3,8 @@
 import { useMemo, useRef } from 'react';
 
 import { BoardOverlay, ChessPiece, Square } from '@/app/_components';
-import { Chess, Color, PieceSymbol } from 'chess.js';
+import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -25,8 +26,7 @@ type Props = {
 // Parse FEN into piece list, with manual fallback for invalid positions (e.g. missing king)
 function parseFenToPieces(fen: string): Array<{ type: PieceSymbol; color: Color; square: string }> {
   try {
-    const chess = new Chess(fen);
-    const board = chess.board();
+    const board = fenToBoard(fen);
     const result: Array<{ type: PieceSymbol; color: Color; square: string }> = [];
 
     for (let rank = 0; rank < 8; rank++) {
@@ -90,20 +90,15 @@ export function AnimatedChessBoard({
   const moveDetails = useMemo(() => {
     if (!move) return null;
     try {
-      const chess = new Chess(initialFen);
-      const moveResult = chess.move(move);
-
-      if (!moveResult) {
-        console.error('Invalid move:', move);
-        return null;
-      }
+      const result = executeMove(initialFen, move);
+      if (!result) return null;
 
       return {
-        from: moveResult.from,
-        to: moveResult.to,
-        piece: moveResult.piece,
-        color: moveResult.color,
-        finalFen: chess.fen(),
+        from: result.moveResult.from,
+        to: result.moveResult.to,
+        piece: result.moveResult.piece,
+        color: result.moveResult.color,
+        finalFen: result.fen,
       };
     } catch (error) {
       console.error('Error parsing move:', error);

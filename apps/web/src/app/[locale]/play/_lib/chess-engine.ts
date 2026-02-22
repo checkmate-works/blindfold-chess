@@ -1,5 +1,5 @@
+import { movesToUci, uciToAlgebraic } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Fen, UciMove } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 import type { SkillLevel } from '@/lib/types';
 
@@ -295,43 +295,12 @@ export class ChessEngine {
   }
 
   private convertMovesToUci(moves: AlgebraicNotation[], startingFen?: string): string[] {
-    // Convert algebraic notation to UCI format using chess.js
-    // Initialize with custom FEN or standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
-    const uciMoves: string[] = [];
-
-    for (const move of moves) {
-      try {
-        const result = chess.move(move);
-        if (result) {
-          uciMoves.push(result.from + result.to + (result.promotion || ''));
-        } else {
-          console.warn(`Invalid move in UCI conversion: ${move}`);
-          break;
-        }
-      } catch (error) {
-        console.warn(`Error converting move to UCI: ${move}`, error);
-        break;
-      }
-    }
-
-    return uciMoves;
+    return movesToUci(moves as string[], startingFen);
   }
 
   convertUciToAlgebraic(uciMove: UciMove, fen: Fen): AlgebraicNotation {
-    const chess = new Chess(fen);
-    const from = uciMove.slice(0, 2);
-    const to = uciMove.slice(2, 4);
-    const promotion = uciMove.slice(4);
-
     try {
-      const result = chess.move({
-        from,
-        to,
-        promotion: promotion || undefined,
-      });
-
-      return result.san as AlgebraicNotation;
+      return uciToAlgebraic(uciMove, fen) as AlgebraicNotation;
     } catch (error) {
       console.error('Failed to convert UCI to algebraic:', uciMove, error);
       throw new Error(`Invalid UCI move: ${uciMove}`);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
-import { Color, PieceSymbol } from 'chess.js';
+import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';

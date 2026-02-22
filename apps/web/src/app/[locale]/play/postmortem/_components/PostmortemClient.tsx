@@ -5,8 +5,12 @@ import { type ReactElement, useCallback, useEffect, useMemo, useState } from 're
 import { useTranslations } from 'next-intl';
 
 import { Button, InfoModal, ProgressBar } from '@/app/_components';
+import {
+  executeMove,
+  replayMoves,
+  validateMoveSequence,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 import {
   FaCheck,
   FaCopy,
@@ -168,10 +172,9 @@ async function getPositionEvaluation(
           );
         } else {
           // Already in algebraic notation, verify it's valid
-          const chess = new Chess(fenBefore);
-          const testMove = chess.move(evalBefore.bestMove);
-          if (testMove) {
-            bestMoveAlgebraic = testMove.san;
+          const testResult = executeMove(fenBefore, evalBefore.bestMove);
+          if (testResult) {
+            bestMoveAlgebraic = testResult.moveResult.san;
           }
         }
       } catch (error) {
@@ -248,22 +251,14 @@ export function PostmortemClient({
     evaluationCache.clear();
 
     try {
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
       // Remove move numbers and periods from PGN
       const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
       const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);
 
       // Validate moves
-      const validMoves: AlgebraicNotation[] = [];
-      for (const move of moves) {
-        const result = chess.move(move);
-        if (result) {
-          validMoves.push(move as AlgebraicNotation);
-        } else {
-          break;
-        }
-      }
+      const fen = startingFen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const result = validateMoveSequence(fen, moves);
+      const validMoves = result.validMoves as AlgebraicNotation[];
 
       setOriginalMoves(validMoves);
 
@@ -285,22 +280,7 @@ export function PostmortemClient({
   // Pre-compute all game positions (FEN + lastMove) from originalMoves
   // Index 0 = starting position (before any moves), index i+1 = position after move i
   const gamePositions = useMemo(() => {
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
-    const positions: { fen: string; lastMove?: { from: string; to: string } }[] = [
-      { fen: chess.fen() }, // Starting position (no lastMove)
-    ];
-
-    for (const move of originalMoves) {
-      const result = chess.move(move);
-      if (result) {
-        positions.push({
-          fen: chess.fen(),
-          lastMove: { from: result.from, to: result.to },
-        });
-      }
-    }
-
-    return positions;
+    return replayMoves(originalMoves as string[], startingFen);
   }, [originalMoves, startingFen]);
 
   // Get current FEN for board display

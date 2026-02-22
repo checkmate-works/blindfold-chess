@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai-game": "./src/ai-game/index.ts",
+    "./chess-core": "./src/chess-core/index.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./common": "./src/common/index.ts",
     "./coordinate-quiz": "./src/coordinate-quiz/index.ts",
@@ -17,6 +18,7 @@
   },
   "scripts": {
     "lint": "eslint",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

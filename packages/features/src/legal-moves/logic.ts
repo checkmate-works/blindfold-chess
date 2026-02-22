@@ -1,4 +1,6 @@
 import type { Square } from "@blindfold-chess/types";
+// TODO: Replace direct chess.js import with chess-core module to align with
+// the project's design principle of isolating chess.js behind a single API.
 import { Chess } from "chess.js";
 
 import { FILES, RANKS } from "../common";

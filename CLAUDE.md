@@ -25,6 +25,7 @@ This project is a pnpm + Turborepo monorepo.
 
 - **Platform independence in packages**: Packages under `packages/` should not depend on platform-specific APIs. Platform adaptation is handled at the app level or via conditional exports (e.g., `@blindfold-chess/icons` uses the `exports` field in package.json to switch between web and native renderers).
 - **Theme unification**: Theme colors are defined once in `@blindfold-chess/ui` and shared across web and mobile. Web injects them as CSS custom properties via `generateThemeCSS()`; mobile uses them directly as JavaScript values.
+- **chess.js isolation**: The external library `chess.js` must only be imported within `packages/features/src/chess-core/`. Apps (`apps/web`, `apps/mobile`) must use `@blindfold-chess/features/chess-core` instead of importing `chess.js` directly. This keeps the dependency isolated behind a stable, typed API and makes it possible to replace or upgrade `chess.js` with changes confined to one module.
 
 ## Development
 

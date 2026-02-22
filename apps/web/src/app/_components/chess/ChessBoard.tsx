@@ -3,19 +3,14 @@
 import { memo, useCallback, useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
+import type { BoardPiece } from '@blindfold-chess/features/chess-core';
+import { fenToBoard } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
-import { Chess, Color, PieceSymbol, Square as SquareType } from 'chess.js';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
-
-type BoardPiece = {
-  square: SquareType;
-  type: PieceSymbol;
-  color: Color;
-} | null;
 
 type Props = {
   fen: string;
@@ -67,8 +62,7 @@ export const ChessBoard = memo(function ChessBoard({
 
   const board = useMemo(() => {
     try {
-      const chess = new Chess(fen);
-      return chess.board();
+      return fenToBoard(fen);
     } catch (error) {
       console.error('Invalid FEN:', error);
       // Return empty board on error

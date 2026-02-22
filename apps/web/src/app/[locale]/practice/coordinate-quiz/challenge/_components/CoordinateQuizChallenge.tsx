@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Square } from 'chess.js';
+import type { Square } from '@blindfold-chess/types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';

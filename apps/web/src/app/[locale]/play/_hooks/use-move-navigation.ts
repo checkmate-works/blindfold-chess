@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { getFenAfterMoves, getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 type UseMoveNavigationProps = {
   moves: AlgebraicNotation[];
@@ -30,26 +30,22 @@ export function useMoveNavigation({
   // Helper to calculate FEN at a specific position
   const getFenAtPosition = useCallback(
     (position: number): string => {
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
+      const initialFen = startingFen ?? getStartingFen();
 
       // If position is -2 (start), return initial FEN
       if (position === -2) {
-        return chess.fen();
+        return initialFen;
       }
 
       // If position is -1 (end), apply all moves
       // Otherwise apply up to position
-      const movesToApply =
-        position === -1 ? moves : position === -2 ? [] : moves.slice(0, position + 1);
+      const movesToApply = position === -1 ? moves : moves.slice(0, position + 1);
 
       try {
-        for (const move of movesToApply) {
-          chess.move(move);
-        }
-        return chess.fen();
+        return getFenAfterMoves(initialFen, movesToApply as string[]);
       } catch (error) {
         console.error('Error calculating FEN:', error);
-        return startingFen || new Chess().fen();
+        return initialFen;
       }
     },
     [moves, startingFen]

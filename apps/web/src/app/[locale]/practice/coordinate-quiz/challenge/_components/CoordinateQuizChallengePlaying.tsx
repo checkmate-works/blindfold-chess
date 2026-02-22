@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
-import { Square } from 'chess.js';
+import type { Square } from '@blindfold-chess/types';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';

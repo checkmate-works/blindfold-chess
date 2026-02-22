@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
+import { validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 import type { SkillLevel } from '@/lib/types';
 
@@ -52,43 +52,26 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
     let errorDetails: ValidationErrorDetails | null = null;
 
     if (parsedMoves.length > 0 && !gameId) {
-      const validMoves: AlgebraicNotation[] = [];
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
+      const fen = startingFen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const result = validateMoveSequence(fen, parsedMoves as string[]);
 
-      for (let i = 0; i < parsedMoves.length; i++) {
-        const move = parsedMoves[i];
-        try {
-          const result = chess.move(move);
-          if (result) {
-            validMoves.push(move as AlgebraicNotation);
-          } else {
-            // Invalid move found - log warning instead of throwing error
-            console.warn(`Invalid move detected in URL: ${move} at index ${i}`);
-            shouldRedirectToError = true;
-            errorDetails = {
-              invalidMove: move,
-              invalidIndex: i,
-              validMoves,
-              allMoves: parsedMoves,
-            };
-            break;
-          }
-        } catch (error) {
-          // Error processing move - log warning instead of throwing error
-          console.warn(`Error processing move from URL: ${move} at index ${i}`, error);
-          shouldRedirectToError = true;
-          errorDetails = {
-            invalidMove: move,
-            invalidIndex: i,
-            validMoves,
-            allMoves: parsedMoves,
-          };
-          break;
-        }
+      if (result.valid) {
+        initialMovesFromUrl = result.validMoves as AlgebraicNotation[];
+      } else {
+        const validMoves = result.validMoves as AlgebraicNotation[];
+        const invalidIndex = validMoves.length;
+        const invalidMove = parsedMoves[invalidIndex];
+
+        console.warn(`Invalid move detected in URL: ${invalidMove} at index ${invalidIndex}`);
+        shouldRedirectToError = true;
+        errorDetails = {
+          invalidMove,
+          invalidIndex,
+          validMoves,
+          allMoves: parsedMoves,
+        };
+        initialMovesFromUrl = validMoves;
       }
-
-      initialMovesFromUrl = validMoves;
     } else if (gameId) {
       // When gameId exists, don't use URL moves - they will be loaded from localStorage
       initialMovesFromUrl = [];

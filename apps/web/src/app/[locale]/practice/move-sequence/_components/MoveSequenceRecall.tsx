@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessBoard } from '@/app/_components';
+import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 import { FaEye } from 'react-icons/fa';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
@@ -35,7 +35,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [completedMoves, setCompletedMoves] = useState<AlgebraicNotation[]>([]);
 
-  const chessRef = useRef<Chess | null>(null);
+  const chessRef = useRef<ChessGameManager | null>(null);
   // Track attempts per move index using a Map (synchronous access)
   const attemptsMapRef = useRef<Map<number, number>>(new Map());
   // Track wrong attempts per move index using a Map
@@ -66,7 +66,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
   // Initialize chess instance
   useEffect(() => {
-    chessRef.current = new Chess(data.fen);
+    chessRef.current = new ChessGameManager(data.fen);
   }, [data.fen]);
 
   // Auto-play opponent's move (only when includeOpponentMoves is false)

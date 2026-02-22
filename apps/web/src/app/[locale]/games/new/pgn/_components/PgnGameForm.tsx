@@ -6,8 +6,12 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import {
+  getLastMoveDetails,
+  getPgnHeaders,
+  getPgnHistory,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 import { FaEye } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
@@ -95,15 +99,8 @@ export function PgnGameForm({ locale }: Props) {
     if (position < 0) return null;
 
     try {
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-      let lastMoveDetails: { from: string; to: string } | null = null;
-      for (let i = 0; i <= position; i++) {
-        const move = chess.move(pgnMoves[i]);
-        if (i === position && move) {
-          lastMoveDetails = { from: move.from, to: move.to };
-        }
-      }
-      return lastMoveDetails;
+      const movesUpToPosition = pgnMoves.slice(0, position + 1) as string[];
+      return getLastMoveDetails(movesUpToPosition, startingFen);
     } catch {
       return null;
     }
@@ -166,16 +163,14 @@ export function PgnGameForm({ locale }: Props) {
 
     if (pgn.trim() && validatePgn(pgn)) {
       try {
-        const chess = new Chess();
-        chess.loadPgn(pgn);
-        const history = chess.history({ verbose: true });
+        const history = getPgnHistory(pgn, { verbose: true }) as { color: string }[];
 
         if (history.length > 0) {
-          const lastMove = history[history.length - 1];
-          const derivedColor: Side = lastMove.color === 'w' ? 'black' : 'white';
+          const lastMoveEntry = history[history.length - 1];
+          const derivedColor: Side = lastMoveEntry.color === 'w' ? 'black' : 'white';
           setColor(derivedColor);
         } else {
-          const headers = chess.header();
+          const headers = getPgnHeaders(pgn);
           if (headers.FEN) {
             const fenParts = headers.FEN.split(' ');
             if (fenParts.length >= 2) {

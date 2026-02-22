@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { GameStateService } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
+import { getLastMoveDetails as chessCoreGetLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 type LoadedGameData = {
   startingFen?: string;
@@ -70,17 +70,7 @@ export function useGameState({
 
       try {
         const fenToUse = customFen ?? startingFen;
-        const chess = fenToUse ? new Chess(fenToUse) : new Chess();
-        let lastMoveDetails = null;
-
-        for (let i = 0; i < movesArray.length; i++) {
-          const move = chess.move(movesArray[i]);
-          if (i === movesArray.length - 1 && move) {
-            lastMoveDetails = { from: move.from, to: move.to };
-          }
-        }
-
-        return lastMoveDetails;
+        return chessCoreGetLastMoveDetails(movesArray as string[], fenToUse);
       } catch (error) {
         console.error('Error getting last move details:', error);
         return null;

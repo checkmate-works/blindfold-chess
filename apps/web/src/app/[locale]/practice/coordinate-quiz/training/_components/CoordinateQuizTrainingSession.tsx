@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Square } from 'chess.js';
+import type { Square } from '@blindfold-chess/types';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';

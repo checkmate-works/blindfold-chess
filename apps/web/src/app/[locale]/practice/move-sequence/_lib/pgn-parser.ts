@@ -1,5 +1,10 @@
+import {
+  getFenAfterMoves as chessCoreFenAfterMoves,
+  getTurnFromFen,
+  validateFen,
+  validateMoveSequence,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 import type { ParsedMove, ParsedMoveSequence } from './types';
 
@@ -68,31 +73,15 @@ export function validateMoves(
   moves: AlgebraicNotation[]
 ): { valid: boolean; error?: string; validMoves: AlgebraicNotation[] } {
   try {
-    const chess = new Chess(fen);
-    const validMoves: AlgebraicNotation[] = [];
-
-    for (let i = 0; i < moves.length; i++) {
-      const move = moves[i];
-      try {
-        const result = chess.move(move);
-        if (!result) {
-          return {
-            valid: false,
-            error: `Move ${i + 1} "${move}" is invalid`,
-            validMoves,
-          };
-        }
-        validMoves.push(move);
-      } catch {
-        return {
-          valid: false,
-          error: `Move ${i + 1} "${move}" is invalid`,
-          validMoves,
-        };
-      }
+    const result = validateMoveSequence(fen, moves as string[]);
+    if (!result.valid) {
+      return {
+        valid: false,
+        error: result.error,
+        validMoves: result.validMoves as AlgebraicNotation[],
+      };
     }
-
-    return { valid: true, validMoves };
+    return { valid: true, validMoves: result.validMoves as AlgebraicNotation[] };
   } catch {
     return {
       valid: false,
@@ -109,40 +98,38 @@ export function parseMoveSequence(
   fen: string,
   pgn: string
 ): { success: true; data: ParsedMoveSequence } | { success: false; error: string } {
-  // Validate FEN
-  try {
-    const chess = new Chess(fen);
-    const turn = chess.turn(); // 'w' or 'b'
-
-    // Parse PGN
-    const parsedMoves = parsePgnMoves(pgn);
-    if (parsedMoves.length === 0) {
-      return { success: false, error: 'No moves found in PGN' };
-    }
-
-    // Flatten moves
-    const moves = flattenMoves(parsedMoves);
-    if (moves.length === 0) {
-      return { success: false, error: 'No valid moves found in PGN' };
-    }
-
-    // Validate moves
-    const validation = validateMoves(fen, moves);
-    if (!validation.valid) {
-      return { success: false, error: validation.error || 'Invalid moves' };
-    }
-
-    return {
-      success: true,
-      data: {
-        fen,
-        moves: validation.validMoves,
-        playerColor: turn,
-      },
-    };
-  } catch {
+  if (!validateFen(fen)) {
     return { success: false, error: 'Invalid FEN position' };
   }
+
+  const turn = getTurnFromFen(fen); // 'w' or 'b'
+
+  // Parse PGN
+  const parsedMoves = parsePgnMoves(pgn);
+  if (parsedMoves.length === 0) {
+    return { success: false, error: 'No moves found in PGN' };
+  }
+
+  // Flatten moves
+  const moves = flattenMoves(parsedMoves);
+  if (moves.length === 0) {
+    return { success: false, error: 'No valid moves found in PGN' };
+  }
+
+  // Validate moves
+  const validation = validateMoves(fen, moves);
+  if (!validation.valid) {
+    return { success: false, error: validation.error || 'Invalid moves' };
+  }
+
+  return {
+    success: true,
+    data: {
+      fen,
+      moves: validation.validMoves,
+      playerColor: turn,
+    },
+  };
 }
 
 /**
@@ -168,9 +155,5 @@ export function getPlayerMoves(
  * Get the FEN after applying a certain number of moves
  */
 export function getFenAfterMoves(initialFen: string, moves: AlgebraicNotation[]): string {
-  const chess = new Chess(initialFen);
-  for (const move of moves) {
-    chess.move(move);
-  }
-  return chess.fen();
+  return chessCoreFenAfterMoves(initialFen, moves as string[]);
 }

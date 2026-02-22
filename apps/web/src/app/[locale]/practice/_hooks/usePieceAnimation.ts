@@ -1,6 +1,6 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { Color, PieceSymbol } from 'chess.js';
+import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 
 type AnimatingPiece = {
   type: PieceSymbol;

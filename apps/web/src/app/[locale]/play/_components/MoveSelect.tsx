@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { getLegalMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 import { FaChevronDown } from 'react-icons/fa';
 
 import { sortMoves } from '../_lib';
@@ -24,8 +24,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
   // Calculate legal moves from FEN (derived state)
   const legalMoves = useMemo(() => {
     try {
-      const chess = new Chess(fen);
-      const moves = chess.moves({ verbose: false });
+      const moves = getLegalMoves(fen);
       return sortMoves(moves);
     } catch (error) {
       console.error('Error calculating legal moves:', error);
