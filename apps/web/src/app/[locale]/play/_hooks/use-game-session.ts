@@ -293,37 +293,38 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   }, [moves, playerSide, startingFen, onAiMoveChange, t]);
 
   return {
-    // Game identity
-    playerSide,
-    skillLevel,
-    initialGameId,
-    startingFen,
-    locale,
-
-    // Game state
-    gameStatus,
-    playerResult,
-    isPlayerTurn,
-    isLoading,
-    lastMove,
-
-    // Move data
-    moves,
-    currentFen,
-    formattedPgn,
-
-    // Move input state
-    moveInput,
-    setMoveInput,
-    error,
-    setError,
-
-    // Handlers
-    handleSubmitMove,
-    handleResign,
-    handleUndo,
-    handleRestartFromPosition,
-    handleNewGameFromPosition,
-    handleSkillLevelChange,
+    gameConfig: {
+      playerSide,
+      skillLevel,
+      initialGameId,
+      startingFen,
+      locale,
+    },
+    gameState: {
+      gameStatus,
+      playerResult,
+      isPlayerTurn,
+      isLoading,
+      lastMove,
+    },
+    moveState: {
+      moves,
+      currentFen,
+      formattedPgn,
+    },
+    moveInput: {
+      value: moveInput,
+      setValue: setMoveInput,
+      error,
+      setError,
+    },
+    actions: {
+      handleSubmitMove,
+      handleResign,
+      handleUndo,
+      handleRestartFromPosition,
+      handleNewGameFromPosition,
+      handleSkillLevelChange,
+    },
   };
 }
