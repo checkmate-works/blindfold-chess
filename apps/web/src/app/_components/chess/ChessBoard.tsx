@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
@@ -35,7 +35,18 @@ type Props = {
   className?: string;
 };
 
-export function ChessBoard({
+const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
+const isLightSquare = (file: number, rank: number) => {
+  return (file + rank) % 2 === 0;
+};
+
+const getSquareName = (fileIndex: number, rankIndex: number) => {
+  return `${files[fileIndex]}${ranks[rankIndex]}`;
+};
+
+export const ChessBoard = memo(function ChessBoard({
   fen,
   flipped = false,
   playerSide = 'white',
@@ -67,76 +78,77 @@ export function ChessBoard({
     }
   }, [fen]);
 
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+  const renderPiece = useCallback(
+    (piece: BoardPiece) => {
+      if (!piece) return null;
 
-  const renderPiece = (piece: BoardPiece) => {
-    if (!piece) return null;
+      // Check if piece should be shown based on settings
+      const isOwnPiece = piece.color === playerSide.charAt(0);
+      if (isOwnPiece && !showOwnPieces) return null;
+      if (!isOwnPiece && !showOpponentPieces) return null;
 
-    // Check if piece should be shown based on settings
-    const isOwnPiece = piece.color === playerSide.charAt(0);
-    if (isOwnPiece && !showOwnPieces) return null;
-    if (!isOwnPiece && !showOpponentPieces) return null;
+      // Determine if piece should be shown as circle
+      const shouldShowAsCircle =
+        pieceShapeMode === 'circles-all' ||
+        (pieceShapeMode === 'circles-own' && isOwnPiece) ||
+        (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
 
-    // Determine if piece should be shown as circle
-    const shouldShowAsCircle =
-      pieceShapeMode === 'circles-all' ||
-      (pieceShapeMode === 'circles-own' && isOwnPiece) ||
-      (pieceShapeMode === 'circles-opponent' && !isOwnPiece);
-
-    // Determine piece color based on settings
-    let displayColor = piece.color;
-    if (pieceColors === 'white-only') {
-      displayColor = 'w';
-    } else if (pieceColors === 'black-only') {
-      displayColor = 'b';
-    }
-
-    if (shouldShowAsCircle) {
-      // Show as Go stone-like circle with subtle gradient and shadow
-      if (displayColor === 'w') {
-        return (
-          <div
-            className="w-[60%] h-[60%] rounded-full shadow-lg"
-            style={{
-              background:
-                'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
-              boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(0, 0, 0, 0.1)',
-            }}
-          />
-        );
-      } else {
-        return (
-          <div
-            className="w-[60%] h-[60%] rounded-full shadow-lg"
-            style={{
-              background:
-                'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
-              boxShadow:
-                '2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1)',
-            }}
-          />
-        );
+      // Determine piece color based on settings
+      let displayColor = piece.color;
+      if (pieceColors === 'white-only') {
+        displayColor = 'w';
+      } else if (pieceColors === 'black-only') {
+        displayColor = 'b';
       }
-    }
 
-    // Show normal piece
-    return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <ChessPiece type={piece.type} color={displayColor} size={45} />
-      </div>
-    );
-  };
+      if (shouldShowAsCircle) {
+        // Show as Go stone-like circle with subtle gradient and shadow
+        if (displayColor === 'w') {
+          return (
+            <div
+              className="w-[60%] h-[60%] rounded-full shadow-lg"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
+                boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(0, 0, 0, 0.1)',
+              }}
+            />
+          );
+        } else {
+          return (
+            <div
+              className="w-[60%] h-[60%] rounded-full shadow-lg"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+                boxShadow:
+                  '2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(255, 255, 255, 0.1)',
+              }}
+            />
+          );
+        }
+      }
 
-  const isLightSquare = (file: number, rank: number) => {
-    return (file + rank) % 2 === 0;
-  };
+      // Show normal piece
+      return (
+        <div className="w-[80%] h-[80%] flex items-center justify-center">
+          <ChessPiece type={piece.type} color={displayColor} size={45} />
+        </div>
+      );
+    },
+    [playerSide, showOwnPieces, showOpponentPieces, pieceShapeMode, pieceColors]
+  );
 
-  const getSquareName = (fileIndex: number, rankIndex: number) => {
-    const file = files[fileIndex];
-    const rank = ranks[rankIndex];
-    return `${file}${rank}`;
-  };
+  const handleBoardClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!onSquareClick) return;
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
+      if (target?.dataset.square) {
+        onSquareClick(target.dataset.square);
+      }
+    },
+    [onSquareClick]
+  );
 
   const isLastMoveSquare = (square: string) => {
     return lastMove && (lastMove.from === square || lastMove.to === square);
@@ -164,6 +176,7 @@ export function ChessBoard({
     <div className={`w-full ${className}`}>
       <div
         className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
+        onClick={onSquareClick ? handleBoardClick : undefined}
       >
         {displayBoard.map((row, rankIndex) => (
           <div key={rankIndex} className="flex h-[12.5%]">
@@ -181,6 +194,10 @@ export function ChessBoard({
                 ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
                 : undefined;
 
+              // NOTE: Inside ChessBoard, Square's React.memo has limited effect because
+              // children (renderPiece result) is a new JSX reference each render.
+              // The primary optimization here is event delegation (eliminating 64 onClick closures).
+              // Square's memo is more effective for external consumers (KnightTourBoard, EditableChessBoard, etc.).
               return (
                 <Square
                   key={fileIndex}
@@ -194,7 +211,7 @@ export function ChessBoard({
                   // Consider adopting the Lichess style if feedback warrants it.
                   showRankCoordinate={fileIndex === 0}
                   showFileCoordinate={rankIndex === 7}
-                  onClick={onSquareClick ? () => onSquareClick(square) : undefined}
+                  dataSquare={onSquareClick ? square : undefined}
                   highlightType={isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none'}
                   themeColors={themeColors}
                   badge={evalBadge}
@@ -208,4 +225,4 @@ export function ChessBoard({
       </div>
     </div>
   );
-}
+});
