@@ -2,6 +2,8 @@
 
 import { ReactNode, useEffect } from 'react';
 
+import { useScrollLock } from '../_hooks/useScrollLock';
+
 type Props = {
   isOpen: boolean;
   title?: string;
@@ -11,6 +13,8 @@ type Props = {
 };
 
 export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl' }: Props) {
+  useScrollLock(isOpen);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -20,12 +24,10 @@ export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl'
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
 

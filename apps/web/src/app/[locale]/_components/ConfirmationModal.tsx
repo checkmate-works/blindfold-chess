@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 
 import { Button } from '@/app/_components';
 
+import { useScrollLock } from '../_hooks/useScrollLock';
+
 type Props = {
   isOpen: boolean;
   title: string;
@@ -27,6 +29,8 @@ export function ConfirmationModal({
   onConfirm,
   onCancel,
 }: Props) {
+  useScrollLock(isOpen);
+
   // Handle escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -37,13 +41,10 @@ export function ConfirmationModal({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
     };
   }, [isOpen, onCancel]);
 

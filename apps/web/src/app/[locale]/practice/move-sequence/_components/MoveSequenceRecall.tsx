@@ -11,6 +11,7 @@ import { FaEye } from 'react-icons/fa';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
@@ -108,6 +109,8 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
     }
   }, [currentMoveIndex, data.moves.length, results, totalTargetMoves, onComplete]);
 
+  useScrollLock(isBoardVisible);
+
   // Handle board modal visibility
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -118,12 +121,10 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
     if (isBoardVisible) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
     };
   }, [isBoardVisible]);
 
