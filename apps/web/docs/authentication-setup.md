@@ -8,6 +8,16 @@ This project uses Supabase Auth for user authentication, enabling cross-platform
 - **Sign-in methods**: Google, Apple (planned)
 - **Cross-platform**: Same account works on Web (Next.js), Mobile (Expo), and Mac
 
+## Supabase Project Settings
+
+### Data API (PostgREST)
+
+When creating the Supabase project, **disable** the "Autogenerate a RESTful API for your public schema" option.
+
+This project uses `supabase-js` only for Auth (GoTrue). Database access is handled directly via Drizzle ORM + `postgres`, so the auto-generated REST API (PostgREST) is not needed. Leaving it enabled exposes an unused endpoint and unnecessarily increases the attack surface.
+
+> **Note:** Disabling the Data API does not affect Auth functionality. `supabase.auth.*` methods communicate with GoTrue (`/auth/v1/...`), which is independent of PostgREST (`/rest/v1/...`).
+
 ## Google Sign-In Setup
 
 ### 1. Create OAuth Credentials in Google Cloud Console
@@ -27,7 +37,9 @@ This project uses Supabase Auth for user authentication, enabling cross-platform
 | Field                         | Value                                                           |
 | ----------------------------- | --------------------------------------------------------------- |
 | Authorized JavaScript origins | `http://localhost:3000` (dev), `https://your-domain.com` (prod) |
-| Authorized redirect URIs      | `https://<your-project-ref>.supabase.co/auth/v1/callback`       |
+| Authorized redirect URIs      | `https://<reference-id>.supabase.co/auth/v1/callback`           |
+
+> **Tip:** `<reference-id>` is the short alphanumeric string shown as **Project ID** ("Reference used in APIs and URLs.") in Supabase Dashboard > **Project Settings** > **General**. It is the subdomain of your Supabase URL (e.g., `abcdefghijkl.supabase.co`), not a UUID.
 
 8. Save and note the **Client ID** and **Client Secret**
 
@@ -53,9 +65,11 @@ This project uses Supabase Auth for user authentication, enabling cross-platform
 The following environment variables are required (should already exist if Supabase is set up):
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://<reference-id>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
+
+Both values can be found in Supabase Dashboard > **Project Settings** > **API** under **Project URL** and **Project API keys** (`anon` `public`). If your project is integrated with Vercel, these are automatically set as environment variables on the Vercel side.
 
 No additional environment variables are needed for Google Sign-In — the provider configuration is managed entirely in the Supabase Dashboard.
 
