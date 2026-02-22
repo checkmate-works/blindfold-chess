@@ -6,14 +6,14 @@ import { useTranslations } from 'next-intl';
 
 import { Button, ChessPiece, Square } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { formatTime } from '@blindfold-chess/features/coordinate-quiz';
+import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { getDiagonalSquares } from '../_lib/utils';
 
 export type QuestionResult = {
   square: string;
@@ -140,12 +140,6 @@ export function DiagonalQuizResult({ questionResults, score, onTryAgain, locale 
       }
       return next;
     });
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const formatAverageTime = (seconds: number) => {

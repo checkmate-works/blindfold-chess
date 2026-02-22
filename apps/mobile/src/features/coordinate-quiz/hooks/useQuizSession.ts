@@ -105,7 +105,7 @@ export function useQuizSession({ settings, onComplete }: UseQuizSessionProps) {
       correctCount,
       totalCount,
       timeTaken,
-      settings.duration,
+      settings.timeLimit,
     );
 
     const result: QuizResult = {
@@ -118,7 +118,7 @@ export function useQuizSession({ settings, onComplete }: UseQuizSessionProps) {
     };
 
     onComplete(result);
-  }, [correctCount, totalCount, settings.duration, onComplete]);
+  }, [correctCount, totalCount, settings.timeLimit, onComplete]);
 
   return {
     currentQuestion,

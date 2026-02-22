@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { formatTime } from '@blindfold-chess/features/coordinate-quiz';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -30,11 +31,6 @@ type Props = {
 
 export function PracticeResult({ score, onTryAgain, locale, labels }: Props) {
   const t = useTranslations('practice');
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const formatAverageTime = (seconds: number) => {
     const formatted = seconds.toFixed(1);

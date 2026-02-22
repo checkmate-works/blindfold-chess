@@ -118,7 +118,7 @@ describe("isSameColor", () => {
 describe("getPossibleMoves", () => {
   describe("Knight", () => {
     it("returns 8 moves from center square d4", () => {
-      const moves = getPossibleMoves("N", "d4");
+      const moves = getPossibleMoves("n", "d4");
       expect(moves).toHaveLength(8);
       expect(moves).toContain("e6");
       expect(moves).toContain("e2");
@@ -131,21 +131,21 @@ describe("getPossibleMoves", () => {
     });
 
     it("returns 2 moves from corner a1", () => {
-      const moves = getPossibleMoves("N", "a1");
+      const moves = getPossibleMoves("n", "a1");
       expect(moves).toHaveLength(2);
       expect(moves).toContain("b3");
       expect(moves).toContain("c2");
     });
 
     it("returns 2 moves from corner h8", () => {
-      const moves = getPossibleMoves("N", "h8");
+      const moves = getPossibleMoves("n", "h8");
       expect(moves).toHaveLength(2);
       expect(moves).toContain("g6");
       expect(moves).toContain("f7");
     });
 
     it("returns 4 moves from edge square a4", () => {
-      const moves = getPossibleMoves("N", "a4");
+      const moves = getPossibleMoves("n", "a4");
       expect(moves).toHaveLength(4);
       expect(moves).toContain("b6");
       expect(moves).toContain("b2");
@@ -156,7 +156,7 @@ describe("getPossibleMoves", () => {
 
   describe("Bishop", () => {
     it("returns 13 moves from center d4", () => {
-      const moves = getPossibleMoves("B", "d4");
+      const moves = getPossibleMoves("b", "d4");
       expect(moves).toHaveLength(13);
       // main diagonal: e5, f6, g7, h8, c3, b2, a1
       expect(moves).toContain("a1");
@@ -167,14 +167,14 @@ describe("getPossibleMoves", () => {
     });
 
     it("returns 7 moves from corner a1", () => {
-      const moves = getPossibleMoves("B", "a1");
+      const moves = getPossibleMoves("b", "a1");
       expect(moves).toHaveLength(7);
       expect(moves).toContain("b2");
       expect(moves).toContain("h8");
     });
 
     it("only returns diagonal squares, not rank/file squares", () => {
-      const moves = getPossibleMoves("B", "d4");
+      const moves = getPossibleMoves("b", "d4");
       // d5 is on the same file, not reachable by bishop
       expect(moves).not.toContain("d5");
       // e4 is on the same rank, not reachable by bishop
@@ -184,12 +184,12 @@ describe("getPossibleMoves", () => {
 
   describe("Rook", () => {
     it("returns 14 moves from any square", () => {
-      const moves = getPossibleMoves("R", "d4");
+      const moves = getPossibleMoves("r", "d4");
       expect(moves).toHaveLength(14);
     });
 
     it("includes all file and rank squares", () => {
-      const moves = getPossibleMoves("R", "a1");
+      const moves = getPossibleMoves("r", "a1");
       expect(moves).toHaveLength(14);
       // along file a
       expect(moves).toContain("a2");
@@ -200,7 +200,7 @@ describe("getPossibleMoves", () => {
     });
 
     it("does not include diagonal squares", () => {
-      const moves = getPossibleMoves("R", "a1");
+      const moves = getPossibleMoves("r", "a1");
       expect(moves).not.toContain("b2");
       expect(moves).not.toContain("c3");
     });
@@ -208,19 +208,19 @@ describe("getPossibleMoves", () => {
 
   describe("Queen", () => {
     it("returns 27 moves from center d4", () => {
-      const moves = getPossibleMoves("Q", "d4");
+      const moves = getPossibleMoves("q", "d4");
       // 7 along file + 7 along rank + 13 diagonal = 27
       expect(moves).toHaveLength(27);
     });
 
     it("returns 21 moves from corner a1", () => {
-      const moves = getPossibleMoves("Q", "a1");
+      const moves = getPossibleMoves("q", "a1");
       // 7 along file + 7 along rank + 7 diagonal = 21
       expect(moves).toHaveLength(21);
     });
 
     it("includes both diagonal and straight moves", () => {
-      const moves = getPossibleMoves("Q", "d4");
+      const moves = getPossibleMoves("q", "d4");
       // straight
       expect(moves).toContain("d8");
       expect(moves).toContain("a4");
@@ -236,12 +236,12 @@ describe("getPossibleMoves", () => {
 // ============================================================
 describe("findShortestPath", () => {
   it("returns [start] when start === end", () => {
-    expect(findShortestPath("N", "e4", "e4")).toEqual(["e4"]);
+    expect(findShortestPath("n", "e4", "e4")).toEqual(["e4"]);
   });
 
   describe("Rook paths", () => {
     it("finds 1-move path on the same rank", () => {
-      const path = findShortestPath("R", "a1", "h1");
+      const path = findShortestPath("r", "a1", "h1");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2);
       expect(path![0]).toBe("a1");
@@ -249,13 +249,13 @@ describe("findShortestPath", () => {
     });
 
     it("finds 1-move path on the same file", () => {
-      const path = findShortestPath("R", "a1", "a8");
+      const path = findShortestPath("r", "a1", "a8");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2);
     });
 
     it("finds 2-move path from a1 to h8 (corner to corner)", () => {
-      const path = findShortestPath("R", "a1", "h8");
+      const path = findShortestPath("r", "a1", "h8");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(3);
     });
@@ -263,26 +263,26 @@ describe("findShortestPath", () => {
 
   describe("Bishop paths", () => {
     it("finds 1-move path for adjacent diagonal", () => {
-      const path = findShortestPath("B", "a1", "b2");
+      const path = findShortestPath("b", "a1", "b2");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2);
     });
 
     it("finds path between same-color squares", () => {
-      const path = findShortestPath("B", "a1", "h8");
+      const path = findShortestPath("b", "a1", "h8");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2); // a1 and h8 are on the same diagonal
     });
 
     it("returns null for different-color squares", () => {
       // a1 (dark) and a2 (light) - bishop cannot reach
-      const path = findShortestPath("B", "a1", "a2");
+      const path = findShortestPath("b", "a1", "a2");
       expect(path).toBeNull();
     });
 
     it("finds 2-move path for same-color squares not on same diagonal", () => {
       // a1 is dark, a3 is dark but not on the same diagonal
-      const path = findShortestPath("B", "a1", "a3");
+      const path = findShortestPath("b", "a1", "a3");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(3); // 2 moves
     });
@@ -290,13 +290,13 @@ describe("findShortestPath", () => {
 
   describe("Knight paths", () => {
     it("finds 1-move path for direct knight jump", () => {
-      const path = findShortestPath("N", "a1", "b3");
+      const path = findShortestPath("n", "a1", "b3");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2);
     });
 
     it("finds path from corner to corner a1->h8", () => {
-      const path = findShortestPath("N", "a1", "h8");
+      const path = findShortestPath("n", "a1", "h8");
       expect(path).not.toBeNull();
       // Knight from a1 to h8 takes 6 moves
       expect(path!.length).toBeGreaterThanOrEqual(2);
@@ -306,7 +306,7 @@ describe("findShortestPath", () => {
 
     it("can reach any square from any other square", () => {
       // Knight can reach any square on the board
-      const path = findShortestPath("N", "a1", "b1");
+      const path = findShortestPath("n", "a1", "b1");
       expect(path).not.toBeNull();
     });
   });
@@ -314,14 +314,14 @@ describe("findShortestPath", () => {
   describe("Queen paths", () => {
     it("finds 1-move path for any reachable square", () => {
       // Queen can reach h8 from a1 in 1 move (diagonal)
-      const path = findShortestPath("Q", "a1", "h8");
+      const path = findShortestPath("q", "a1", "h8");
       expect(path).not.toBeNull();
       expect(path!).toHaveLength(2);
     });
 
     it("finds path between any two distinct squares in at most 2 moves", () => {
       // Queen can always reach any square in at most 2 moves
-      const path = findShortestPath("Q", "a1", "b3");
+      const path = findShortestPath("q", "a1", "b3");
       expect(path).not.toBeNull();
       expect(path!.length).toBeLessThanOrEqual(3);
     });
@@ -330,10 +330,10 @@ describe("findShortestPath", () => {
   describe("path validity", () => {
     it("every step in the path is a valid move", () => {
       const testCases = [
-        { piece: "N" as const, start: "a1", end: "h8" },
-        { piece: "B" as const, start: "a1", end: "h8" },
-        { piece: "R" as const, start: "a1", end: "h8" },
-        { piece: "Q" as const, start: "a1", end: "h8" },
+        { piece: "n" as const, start: "a1", end: "h8" },
+        { piece: "b" as const, start: "a1", end: "h8" },
+        { piece: "r" as const, start: "a1", end: "h8" },
+        { piece: "q" as const, start: "a1", end: "h8" },
       ];
       for (const { piece, start, end } of testCases) {
         const path = findShortestPath(piece, start, end);
@@ -353,68 +353,68 @@ describe("findShortestPath", () => {
 // ============================================================
 describe("validateUserPath", () => {
   it("returns invalid for empty path", () => {
-    const result = validateUserPath("N", "a1", [], "b3");
+    const result = validateUserPath("n", "a1", [], "b3");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Empty path");
   });
 
   it("returns invalid when path does not end at goal", () => {
-    const result = validateUserPath("N", "a1", ["c2"], "b3");
+    const result = validateUserPath("n", "a1", ["c2"], "b3");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Path does not end at goal");
   });
 
   it("returns invalid for an invalid square in the path", () => {
-    const result = validateUserPath("N", "a1", ["z9"], "z9");
+    const result = validateUserPath("n", "a1", ["z9"], "z9");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Invalid square: z9");
   });
 
   it("returns invalid for an illegal move", () => {
     // Knight from a1 cannot go to a2
-    const result = validateUserPath("N", "a1", ["a2", "b3"], "b3");
+    const result = validateUserPath("n", "a1", ["a2", "b3"], "b3");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Invalid move");
   });
 
   it("validates a correct knight path", () => {
-    const result = validateUserPath("N", "a1", ["b3"], "b3");
+    const result = validateUserPath("n", "a1", ["b3"], "b3");
     expect(result.valid).toBe(true);
     expect(result.fullPath).toEqual(["a1", "b3"]);
   });
 
   it("validates a correct multi-step knight path", () => {
-    const result = validateUserPath("N", "a1", ["c2", "e3"], "e3");
+    const result = validateUserPath("n", "a1", ["c2", "e3"], "e3");
     expect(result.valid).toBe(true);
     expect(result.fullPath).toEqual(["a1", "c2", "e3"]);
   });
 
   it("validates a correct rook path", () => {
-    const result = validateUserPath("R", "a1", ["a8"], "a8");
+    const result = validateUserPath("r", "a1", ["a8"], "a8");
     expect(result.valid).toBe(true);
     expect(result.fullPath).toEqual(["a1", "a8"]);
   });
 
   it("validates a correct bishop path", () => {
-    const result = validateUserPath("B", "a1", ["d4", "g7"], "g7");
+    const result = validateUserPath("b", "a1", ["d4", "g7"], "g7");
     expect(result.valid).toBe(true);
     expect(result.fullPath).toEqual(["a1", "d4", "g7"]);
   });
 
   it("validates a correct queen path", () => {
-    const result = validateUserPath("Q", "a1", ["h8"], "h8");
+    const result = validateUserPath("q", "a1", ["h8"], "h8");
     expect(result.valid).toBe(true);
     expect(result.fullPath).toEqual(["a1", "h8"]);
   });
 
   it("rejects a rook moving diagonally", () => {
-    const result = validateUserPath("R", "a1", ["b2"], "b2");
+    const result = validateUserPath("r", "a1", ["b2"], "b2");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Invalid move");
   });
 
   it("rejects a bishop moving along a rank", () => {
-    const result = validateUserPath("B", "a1", ["b1"], "b1");
+    const result = validateUserPath("b", "a1", ["b1"], "b1");
     expect(result.valid).toBe(false);
     expect(result.error).toBe("Invalid move");
   });
@@ -429,11 +429,11 @@ describe("generateProblem", () => {
   describe("Rook constraints", () => {
     it("always generates problems where path.length >= 3 (min 2 moves, at least one intermediate square)", () => {
       for (let i = 0; i < ITERATIONS; i++) {
-        const problem = generateProblem(["R"]);
-        expect(problem.piece).toBe("R");
+        const problem = generateProblem(["r"]);
+        expect(problem.piece).toBe("r");
         expect(problem.start).not.toBe(problem.end);
 
-        const path = findShortestPath("R", problem.start, problem.end);
+        const path = findShortestPath("r", problem.start, problem.end);
         expect(path).not.toBeNull();
         expect(path!.length).toBeGreaterThanOrEqual(3);
       }
@@ -443,11 +443,11 @@ describe("generateProblem", () => {
   describe("Queen constraints", () => {
     it("always generates problems where path.length >= 3 (min 2 moves, at least one intermediate square)", () => {
       for (let i = 0; i < ITERATIONS; i++) {
-        const problem = generateProblem(["Q"]);
-        expect(problem.piece).toBe("Q");
+        const problem = generateProblem(["q"]);
+        expect(problem.piece).toBe("q");
         expect(problem.start).not.toBe(problem.end);
 
-        const path = findShortestPath("Q", problem.start, problem.end);
+        const path = findShortestPath("q", problem.start, problem.end);
         expect(path).not.toBeNull();
         expect(path!.length).toBeGreaterThanOrEqual(3);
       }
@@ -457,11 +457,11 @@ describe("generateProblem", () => {
   describe("Bishop constraints", () => {
     it("always generates problems where path.length === 3 (exactly 2 moves)", () => {
       for (let i = 0; i < ITERATIONS; i++) {
-        const problem = generateProblem(["B"]);
-        expect(problem.piece).toBe("B");
+        const problem = generateProblem(["b"]);
+        expect(problem.piece).toBe("b");
         expect(problem.start).not.toBe(problem.end);
 
-        const path = findShortestPath("B", problem.start, problem.end);
+        const path = findShortestPath("b", problem.start, problem.end);
         expect(path).not.toBeNull();
         expect(path!).toHaveLength(3);
       }
@@ -469,7 +469,7 @@ describe("generateProblem", () => {
 
     it("always generates start and end on the same color", () => {
       for (let i = 0; i < ITERATIONS; i++) {
-        const problem = generateProblem(["B"]);
+        const problem = generateProblem(["b"]);
         expect(isSameColor(problem.start, problem.end)).toBe(true);
       }
     });
@@ -478,11 +478,11 @@ describe("generateProblem", () => {
   describe("Knight constraints", () => {
     it("always generates problems where 3 <= path.length <= 4 (2-3 moves)", () => {
       for (let i = 0; i < ITERATIONS; i++) {
-        const problem = generateProblem(["N"]);
-        expect(problem.piece).toBe("N");
+        const problem = generateProblem(["n"]);
+        expect(problem.piece).toBe("n");
         expect(problem.start).not.toBe(problem.end);
 
-        const path = findShortestPath("N", problem.start, problem.end);
+        const path = findShortestPath("n", problem.start, problem.end);
         expect(path).not.toBeNull();
         expect(path!.length).toBeGreaterThanOrEqual(3);
         expect(path!.length).toBeLessThanOrEqual(4);
@@ -496,7 +496,7 @@ describe("generateProblem", () => {
       expect(problem).toHaveProperty("piece");
       expect(problem).toHaveProperty("start");
       expect(problem).toHaveProperty("end");
-      expect(["N", "B", "R", "Q"]).toContain(problem.piece);
+      expect(["n", "b", "r", "q"]).toContain(problem.piece);
       expect(isValidRoutePlannerSquare(problem.start)).toBe(true);
       expect(isValidRoutePlannerSquare(problem.end)).toBe(true);
       expect(problem.start).not.toBe(problem.end);
@@ -504,14 +504,14 @@ describe("generateProblem", () => {
 
     it("respects allowedPieces parameter", () => {
       for (let i = 0; i < 20; i++) {
-        const problem = generateProblem(["N", "R"]);
-        expect(["N", "R"]).toContain(problem.piece);
+        const problem = generateProblem(["n", "r"]);
+        expect(["n", "r"]).toContain(problem.piece);
       }
     });
 
     it("uses default pieces when given empty array", () => {
       const problem = generateProblem([]);
-      expect(["N", "B", "R", "Q"]).toContain(problem.piece);
+      expect(["n", "b", "r", "q"]).toContain(problem.piece);
     });
 
     it("generated problems always have a valid shortest path", () => {

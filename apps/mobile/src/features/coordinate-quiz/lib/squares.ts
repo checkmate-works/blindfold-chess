@@ -1,1 +1,1 @@
-export { allSquares } from "@blindfold-chess/features";
+export { allSquares } from "@blindfold-chess/features/coordinate-quiz";

@@ -1,9 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/practice/_components/TutorialSkipLink';
 
 export const DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY = 'diagonalQuizTutorialSkipped';
 
@@ -12,20 +10,13 @@ type Props = {
 };
 
 export function DiagonalQuizTutorialSkipLink({ locale }: Props) {
-  const router = useRouter();
-  const t = useTranslations('practice.diagonalQuiz.tutorial');
-
-  const handleSkip = () => {
-    localStorage.setItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY, 'true');
-    router.push(`/${locale}/practice/diagonal-quiz`);
-  };
-
   return (
-    <button
-      onClick={handleSkip}
-      className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
-    >
-      {t('skip')}
-    </button>
+    <SharedTutorialSkipLink
+      locale={locale}
+      storageKey={DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY}
+      redirectPath="diagonal-quiz"
+      translationNamespace="practice.diagonalQuiz.tutorial"
+      translationKey="skip"
+    />
   );
 }

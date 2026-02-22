@@ -220,7 +220,46 @@
   },
   "gettingStarted": {
     "title": "はじめに",
-    "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。"
+    "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。",
+    "whyBlindfoldChess": {
+      "title": "なぜ目隠しチェスが必要なのか？",
+      "intro": "目隠しチェスは、チェスにおけるビジュアライゼーションスキルを養うための最良の方法です。",
+      "explanation": "強いプレイヤーは、頭の中で数手先を「見る」ことができます。この能力は生まれつきのものではなく、意図的な練習によって身につけられるスキルです。",
+      "abilitiesIntro": "目隠しチェスは以下の能力を直接的に鍛えます：",
+      "ability1": "盤面を見ずに駒の位置を想像する力",
+      "ability2": "頭の中で変化を計算する力",
+      "ability3": "パターンや構造を認識する力",
+      "conclusion": "結果的に、総合的なチェスの実力が向上します。"
+    },
+    "whatYouCanDo": {
+      "title": "このサービスでできること",
+      "stockfish": {
+        "title": "Stockfish と対戦",
+        "description": "世界で最も利用者数が多いチェスエンジンである Stockfish と目隠しチェスで対戦できます。",
+        "featureDifficulty": "20段階の難易度",
+        "featureDifficultyDesc": "初心者からグランドマスターまで",
+        "featureUndo": "Undo対応",
+        "featureUndoDesc": "自由に手を戻せます",
+        "featureHelp": "ヘルプ機能",
+        "featureHelpDesc": "困ったときにヒントを表示",
+        "cta": "対局を始める",
+        "trySimpleDescription": "簡単なポジションから試してみることもできます。駒が少ない局面なら頭の中でイメージしやすく、はじめての目隠しチェスに最適です。",
+        "trySimpleCta": "このポジションで開始"
+      },
+      "training": {
+        "title": "豊富な訓練メニュー",
+        "description": "体系的なトレーニングでビジュアライゼーションスキルを高めることができます。",
+        "cta": "すべての訓練メニューを見る",
+        "categories": {
+          "positionMemory": "ポジションの記憶",
+          "knightTour": "ナイトツアー",
+          "coordinateQuiz": "座標クイズ",
+          "squareColors": "マスの色",
+          "legalMoves": "合法手",
+          "routePlanner": "ルートプランナー"
+        }
+      }
+    }
   },
   "learn": {
     "title": "チェスを学ぶ",
@@ -247,12 +286,24 @@
     "title": "練習",
     "description": "インタラクティブな練習問題で目隠しチェスのスキルを向上させましょう",
     "modulesTitle": "練習メニュー一覧",
-    "tryAgain": "もう一度",
-    "morePractice": "他の練習",
+    "levelBeginner": "初級",
+    "levelIntermediate": "中級",
+    "levelAdvanced": "上級",
+    "levelIntroduction": "入門",
+    "tryAgain": "もう一度行う",
+    "changeSettings": "設定を変更する",
+    "doOtherPractice": "他の練習を行う",
+    "morePractice": "他の練習を行う",
     "practiceComplete": "練習完了！",
     "score": "スコア",
     "correctAnswers": "正解数",
     "relatedLearning": "関連する学習",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "ビショップの動き",
+        "description": "ビショップの斜めの動きを学ぶ"
+      }
+    },
     "problemDetails": "問題ごとの詳細",
     "session": "セッション",
     "problem": "問題",
@@ -260,9 +311,18 @@
     "secondsFormat": "{seconds}秒",
     "minutesFormat": "{minutes}分",
     "quit": "終了",
-    "correct": "正解！",
+    "correct": "正解",
     "incorrect": "不正解",
+    "accuracy": "正解率",
+    "averageTime": "平均時間",
     "undo": "戻る",
+    "resume": "再開",
+    "modeTimed": "タイム制",
+    "modeTraining": "トレーニング",
+    "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
+    "startTraining": "トレーニング開始",
+    "endTraining": "終了",
+    "trainingEnded": "訓練を終了しました",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
@@ -348,6 +408,7 @@
       "correctAnswerIs": "正解は",
       "explanation": "解説",
       "nextExercise": "次の問題",
+      "next": "次へ",
       "complete": "完了"
     },
     "squareColors": {
@@ -357,7 +418,7 @@
       "question": "{square}マスは何色ですか？",
       "white": "白",
       "black": "黒",
-      "correct": "正解！",
+      "correct": "正解",
       "incorrect": "不正解",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
@@ -384,16 +445,16 @@
       "selectAtLeastOne": "少なくとも1つの駒を選択してください",
       "selectedCount": "{count}個選択中",
       "pieces": {
-        "bishop": "ビショップ",
-        "knight": "ナイト",
-        "rook": "ルーク",
-        "queen": "クイーン",
-        "king": "キング"
+        "b": "ビショップ",
+        "n": "ナイト",
+        "r": "ルーク",
+        "q": "クイーン",
+        "k": "キング"
       },
       "start": "開始",
       "question": "{from}から{to}へ移動できますか？",
       "questionFormat": "{from}から{to}へ移動できますか？",
-      "correct": "正解！",
+      "correct": "正解",
       "incorrect": "不正解",
       "legal": "できる",
       "illegal": "できない",
@@ -734,6 +795,7 @@
     "routePlanner": {
       "title": "ルートプランナー",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
       "settings": "設定",
       "start": "開始",
       "piece": "動かす駒",
@@ -742,7 +804,7 @@
       "findPath": "{piece}を{start}から{target}へ移動させる経路を見つけてください",
       "yourPath": "あなたの回答",
       "shortestPath": "最短経路",
-      "correct": "正解！",
+      "correct": "正解",
       "incorrect": "不正解",
       "badEnd": "ゴールに到達していません",
       "badMove": "不正解",
@@ -750,10 +812,10 @@
       "distance": "手数: {count}",
       "inputPlaceholder": "次のマスを入力...",
       "pieces": {
-        "N": "ナイト",
-        "B": "ビショップ",
-        "R": "ルーク",
-        "Q": "クイーン"
+        "n": "ナイト",
+        "b": "ビショップ",
+        "r": "ルーク",
+        "q": "クイーン"
       },
       "moves": "移動",
       "currentPosition": "現在位置",
@@ -797,14 +859,19 @@
         "previous": "戻る",
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
-        "restart": "もう一度",
-        "finish": "練習を開始する"
-      },
-      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。"
+        "restart": "もう一度"
+      }
     },
     "moveSequence": {
       "title": "約束組手",
-      "description": "手順を記憶して再現するトレーニング",
+      "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
+      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
+      "articles": {
+        "algebraicNotation": {
+          "title": "代数表記法",
+          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
+        }
+      },
       "showBoard": "ボードを表示",
       "hideBoard": "ボードを隠す",
       "fenRequired": "FENを入力してください",
@@ -840,6 +907,7 @@
       "opponentTurn": "相手の手を待っています...",
       "switchToSelect": "リスト選択に切り替え",
       "switchToText": "テキスト入力に切り替え",
+      "switchInputMode": "入力モードを切り替え",
       "wrongMove": "{move}は間違いです",
       "perfect": "完璧！",
       "completed": "完了",
@@ -889,13 +957,7 @@
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
       "cancel": "キャンセル",
-      "relatedArticles": "関連記事",
-      "articles": {
-        "algebraicNotation": {
-          "title": "代数表記法",
-          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
-        }
-      }
+      "relatedArticles": "関連記事"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",
@@ -1128,6 +1190,7 @@
     "selectMove": "手を選択",
     "switchToSelect": "リスト選択に切り替え",
     "switchToText": "テキスト入力に切り替え",
+    "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
     "analyzeAll": "全て解析",
     "autoFillAll": "全て自動入力",
@@ -1195,6 +1258,13 @@
   },
   "newGame": {
     "title": "新規ゲーム",
+    "selectTitle": "開始方法を選択",
+    "standardTitle": "標準ゲーム",
+    "standardDescription": "通常の初期配置から新しいゲームを開始します",
+    "pgnPageTitle": "PGNからインポート",
+    "pgnPageDescription": "PGN記法を使って特定の局面から続けます",
+    "positionPageTitle": "カスタムポジション",
+    "positionPageDescription": "任意の盤面を設定してプレイを開始します",
     "startMethod": "開始方法を選択",
     "newGame": "新規ゲーム",
     "newGameDescription": "初期配置から新しいゲームを開始",
@@ -1206,6 +1276,30 @@
     "validWithMovesCount": "手",
     "invalidPgn": "無効なPGN形式",
     "derivedFromPgn": "PGNに基づいて色が自動選択されました",
+    "customPosition": "カスタムポジション",
+    "customPositionDescription": "任意の盤面を設定して開始",
+    "positionEmpty": "駒を1つ以上配置してください",
+    "positionInvalid": "無効なポジションです（例：各サイドにキングが1つずつ必要です）",
+    "positionAlreadyCheckmate": "この局面は既にチェックメイトです — ゲームは即座に終了します",
+    "positionAlreadyStalemate": "この局面は既にステイルメイトです — ゲームは即座に終了します",
+    "positionInsufficientMaterial": "駒が不十分です — ゲームは即座に引き分けになります",
+    "positionCheckCorrected": "チェックされている側が先に動く必要があります — 色を変更してください",
+    "positionValid": "有効なポジション",
+    "flipBoard": "ボードを反転",
+    "positionSettings": {
+      "title": "詳細設定",
+      "castling": "キャスリング権",
+      "whiteKingside": "白 O-O（キングサイド）",
+      "whiteQueenside": "白 O-O-O（クイーンサイド）",
+      "blackKingside": "黒 O-O（キングサイド）",
+      "blackQueenside": "黒 O-O-O（クイーンサイド）",
+      "enPassant": "アンパッサン対象マス",
+      "none": "なし",
+      "whitePieces": "白の駒",
+      "blackPieces": "黒の駒",
+      "removePieceMode": "駒削除モード - マスをクリックして駒を削除",
+      "placingPiece": "配置中"
+    },
     "selectColor": "色を選択",
     "playAsWhite": "白でプレイ",
     "playAsBlack": "黒でプレイ",
@@ -1238,7 +1332,7 @@
   "privacy": {
     "title": "プライバシーポリシー",
     "description": "当サイトのプライバシーポリシーと個人情報の取り扱いについて",
-    "lastUpdated": "最終更新日: 2025年1月15日",
+    "lastUpdated": "最終更新日: 2026年2月18日",
     "introduction": "Blindfold Chess(「当サイト」)は、ユーザーのプライバシーを尊重し、個人情報の保護に努めています。本プライバシーポリシーでは、当サイトがどのように情報を収集、使用、保護するかについて説明します。",
     "cookiesTitle": "Cookieの使用について",
     "cookiesDescription": "当サイトでは、サービスの品質向上および広告配信のためにCookieを使用しています。Cookieとは、ウェブサイトがお使いのデバイスに保存する小さなテキストファイルです。Cookieを無効にすることも可能ですが、その場合、一部の機能が正常に動作しない可能性があります。",
@@ -1265,11 +1359,27 @@
     "localStorageItem3": "練習モードの進捗管理",
     "localStorageNote": "これらの情報は、お使いのデバイス上にのみ保存され、外部のサーバーに送信されることはありません。ブラウザのキャッシュをクリアすることで、いつでもこれらの情報を削除できます。",
     "personalDataTitle": "個人情報の収集について",
-    "personalDataDescription": "当サイトでは、ユーザー登録や問い合わせフォームを設けておらず、氏名、メールアドレス、電話番号などの個人を特定できる情報を直接収集することはありません。",
+    "personalDataDescription": "当サイトでは、ユーザー登録機能は設けておりません。お問い合わせフォームはございますが、フォームから送信された情報はお問い合わせへの対応のみに使用し、それ以外の目的では使用いたしません。その他、氏名、メールアドレス、電話番号などの個人を特定できる情報を直接収集することはありません。",
     "thirdPartyLinksTitle": "第三者サイトへのリンク",
     "thirdPartyLinksDescription": "当サイトには、外部サイトへのリンクが含まれている場合があります。これらの外部サイトのプライバシーポリシーについては、当サイトは責任を負いません。外部サイトを訪問する際は、それぞれのプライバシーポリシーをご確認ください。",
     "childrenPrivacyTitle": "お子様のプライバシー",
     "childrenPrivacyDescription": "当サイトは、13歳未満のお子様から意図的に個人情報を収集することはありません。保護者の方は、お子様のインターネット利用を適切に監督してください。",
+    "yourRightsTitle": "お客様の権利",
+    "yourRightsDescription": "お客様には、ご自身のデータに関して以下の権利があります:",
+    "yourRightsItem1": "アクセス権 — 自分に関するどのようなデータが収集されているかを確認する権利",
+    "yourRightsItem2": "削除権 — データの削除を要求する権利",
+    "yourRightsItem3": "オプトアウト権 — パーソナライズ広告を拒否する権利",
+    "yourRightsItem4": "これらの権利を行使するには、お問い合わせフォームからご連絡ください",
+    "cookieDetailsTitle": "Cookieの詳細",
+    "cookieDetailsDescription": "当サイトでは、以下の種類のCookieを使用しています:",
+    "cookieDetailsItem1": "必須Cookie — Cookie同意の記録に使用(CookieYes)",
+    "cookieDetailsItem2": "分析用Cookie — アクセス解析に使用(Google Analytics)",
+    "cookieDetailsItem3": "広告用Cookie — パーソナライズ広告の配信に使用(Google AdSense)",
+    "cookieDetailsNote": "CookieYesバナーから、Cookieの種類ごとに同意または拒否を選択できます。",
+    "dataRetentionTitle": "データの保持",
+    "dataRetentionDescription": "データの保持期間は種類によって異なります:",
+    "dataRetentionItem1": "Google Analyticsのデータは14ヶ月間保持されます",
+    "dataRetentionItem2": "ブラウザのlocalStorageに保存されるゲームデータは、ユーザーがブラウザデータを削除するまで端末上に保持されます",
     "changesTitle": "プライバシーポリシーの変更",
     "changesDescription": "当サイトは、必要に応じて本プライバシーポリシーを変更することがあります。変更後のプライバシーポリシーは、本ページに掲載した時点で効力を生じるものとします。定期的に本ページをご確認ください。"
   },

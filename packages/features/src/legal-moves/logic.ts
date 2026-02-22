@@ -1,6 +1,8 @@
-import { Chess, Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
+import { Chess } from "chess.js";
 
-import { pieceSymbolMap } from "./constants";
+import { FILES, RANKS } from "../common";
+
 import type { MoveQuestion, PieceType } from "./types";
 
 // Check if a move is legal for a given piece
@@ -8,14 +10,14 @@ export function isLegalMove(
   from: string,
   to: string,
   pieceType: PieceType,
+  chessInstance?: Chess,
 ): boolean {
-  // Create a chess instance with only the specified piece
-  const chess = new Chess();
+  // Reuse provided chess instance or create a new one
+  const chess = chessInstance ?? new Chess();
   chess.clear();
 
   // Place a white piece at the from square
-  const pieceSymbol = pieceSymbolMap[pieceType];
-  chess.put({ type: pieceSymbol, color: "w" }, from as Square);
+  chess.put({ type: pieceType, color: "w" }, from as Square);
 
   // Try to make the move
   try {
@@ -29,11 +31,12 @@ export function isLegalMove(
 // Get a mix of legal and illegal moves for better distribution
 export function generateBalancedMoveQuestions(
   count: number,
-  allowedPieces: PieceType[] = ["bishop", "knight", "rook", "queen", "king"],
+  allowedPieces: PieceType[] = ["b", "n", "r", "q", "k"],
 ): MoveQuestion[] {
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
   let legalCount = 0;
+  const chess = new Chess();
 
   while (questions.length < count) {
     const piece =
@@ -41,11 +44,12 @@ export function generateBalancedMoveQuestions(
     const question = generateMoveQuestionForPiece(
       piece,
       legalCount < targetLegalCount,
+      chess,
     );
 
     if (question) {
       questions.push(question);
-      if (isLegalMove(question.from, question.to, question.piece)) {
+      if (isLegalMove(question.from, question.to, question.piece, chess)) {
         legalCount++;
       }
     }
@@ -59,15 +63,13 @@ export function generateBalancedMoveQuestions(
 export function generateMoveQuestionForPiece(
   pieceType: PieceType,
   preferLegal: boolean,
+  chessInstance?: Chess,
 ): MoveQuestion | null {
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
-
   // Try multiple times to generate a suitable question
   for (let attempts = 0; attempts < 50; attempts++) {
     const fromFile = Math.floor(Math.random() * 8);
     const fromRank = Math.floor(Math.random() * 8);
-    const fromSquare = files[fromFile] + ranks[fromRank];
+    const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
     let toFile: number;
     let toRank: number;
@@ -76,7 +78,7 @@ export function generateMoveQuestionForPiece(
     if (preferLegal) {
       // Generate likely legal moves based on piece type
       switch (pieceType) {
-        case "bishop": {
+        case "b": {
           // Diagonal moves
           const diagonalOffset = Math.floor(Math.random() * 7) + 1;
           const direction = Math.floor(Math.random() * 4);
@@ -100,7 +102,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "rook":
+        case "r":
           // Straight moves
           if (Math.random() < 0.5) {
             // Horizontal
@@ -113,7 +115,7 @@ export function generateMoveQuestionForPiece(
           }
           break;
 
-        case "knight": {
+        case "n": {
           // L-shaped moves
           const knightMoves = [
             [2, 1],
@@ -132,7 +134,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "queen": {
+        case "q": {
           // Any direction
           if (Math.random() < 0.5) {
             // Like bishop
@@ -164,7 +166,7 @@ export function generateMoveQuestionForPiece(
           break;
         }
 
-        case "king": {
+        case "k": {
           // One square in any direction
           const kingMoves = [
             [1, 0],
@@ -191,11 +193,16 @@ export function generateMoveQuestionForPiece(
 
     // Check if destination is valid
     if (toFile >= 0 && toFile < 8 && toRank >= 0 && toRank < 8) {
-      toSquare = files[toFile] + ranks[toRank];
+      toSquare = FILES[toFile] + RANKS[toRank];
 
       // Ensure from and to are different
       if (toSquare !== fromSquare) {
-        const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
+        const isLegal = isLegalMove(
+          fromSquare,
+          toSquare,
+          pieceType,
+          chessInstance,
+        );
 
         // Return if we got what we wanted
         if ((preferLegal && isLegal) || (!preferLegal && !isLegal)) {
@@ -212,16 +219,16 @@ export function generateMoveQuestionForPiece(
   // Fallback: return any valid question
   const fromFile = Math.floor(Math.random() * 8);
   const fromRank = Math.floor(Math.random() * 8);
-  const fromSquare = files[fromFile] + ranks[fromRank];
+  const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
   let toFile = Math.floor(Math.random() * 8);
   let toRank = Math.floor(Math.random() * 8);
-  let toSquare = files[toFile] + ranks[toRank];
+  let toSquare = FILES[toFile] + RANKS[toRank];
 
   while (toSquare === fromSquare) {
     toFile = Math.floor(Math.random() * 8);
     toRank = Math.floor(Math.random() * 8);
-    toSquare = files[toFile] + ranks[toRank];
+    toSquare = FILES[toFile] + RANKS[toRank];
   }
 
   return {

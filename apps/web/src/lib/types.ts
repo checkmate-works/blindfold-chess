@@ -1,8 +1,8 @@
+import type { SkillLevel as AiGameSkillLevel } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-// Skill level types and options
-// Stockfish supports Skill Level 0-20
-export type SkillLevel = number;
+// Re-export the canonical SkillLevel type from @blindfold-chess/features
+export type SkillLevel = AiGameSkillLevel;
 
 // Validate skill level is within valid range (1-20)
 // We start from 1 instead of 0 to avoid complete random moves

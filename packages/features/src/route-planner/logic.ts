@@ -1,12 +1,11 @@
+import { FILES, RANKS, isValidSquare } from "../common";
+
 import type { RoutePlannerPieceType, RoutePlannerProblem } from "./types";
 import { ROUTE_PLANNER_PIECES } from "./types";
 
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"];
-
 export function squareToCoords(square: string): [number, number] {
-  const file = FILES.indexOf(square[0]);
-  const rank = RANKS.indexOf(square[1]);
+  const file = FILES.indexOf(square[0] as (typeof FILES)[number]);
+  const rank = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
   return [file, rank];
 }
 
@@ -15,14 +14,7 @@ export function coordsToSquare(file: number, rank: number): string {
   return `${FILES[file]}${RANKS[rank]}`;
 }
 
-export function isValidRoutePlannerSquare(square: string): boolean {
-  if (!square) return false;
-  return (
-    square.length === 2 &&
-    FILES.includes(square[0]) &&
-    RANKS.includes(square[1])
-  );
-}
+export { isValidSquare as isValidRoutePlannerSquare };
 
 export function getPossibleMoves(
   piece: RoutePlannerPieceType,
@@ -48,7 +40,7 @@ export function getPossibleMoves(
     }
   };
 
-  if (piece === "N") {
+  if (piece === "n") {
     const jumps = [
       [1, 2],
       [1, -2],
@@ -62,7 +54,7 @@ export function getPossibleMoves(
     jumps.forEach((d) => addMove(d[0], d[1]));
   }
 
-  if (piece === "B" || piece === "Q") {
+  if (piece === "b" || piece === "q") {
     const dirs = [
       [1, 1],
       [1, -1],
@@ -72,7 +64,7 @@ export function getPossibleMoves(
     dirs.forEach((d) => addLine(d[0], d[1]));
   }
 
-  if (piece === "R" || piece === "Q") {
+  if (piece === "r" || piece === "q") {
     const dirs = [
       [1, 0],
       [-1, 0],
@@ -92,21 +84,30 @@ export function findShortestPath(
 ): string[] | null {
   if (start === end) return [start];
 
-  const queue: [string, string[]][] = [[start, [start]]];
-  const visited = new Set<string>([start]);
+  const parent = new Map<string, string>();
+  const queue: string[] = [start];
+  parent.set(start, "");
 
   while (queue.length > 0) {
-    const [current, path] = queue.shift()!;
+    const current = queue.shift()!;
 
     if (current === end) {
+      // Reconstruct path from parent map
+      const path: string[] = [];
+      let node: string | undefined = end;
+      while (node !== undefined && node !== "") {
+        path.push(node);
+        node = parent.get(node);
+      }
+      path.reverse();
       return path;
     }
 
     const moves = getPossibleMoves(piece, current);
     for (const move of moves) {
-      if (!visited.has(move)) {
-        visited.add(move);
-        queue.push([move, [...path, move]]);
+      if (!parent.has(move)) {
+        parent.set(move, current);
+        queue.push(move);
       }
     }
   }
@@ -138,7 +139,7 @@ export function validateUserPath(
   const fullPath = [start];
 
   for (const nextSquare of userPath) {
-    if (!isValidRoutePlannerSquare(nextSquare))
+    if (!isValidSquare(nextSquare))
       return { valid: false, error: `Invalid square: ${nextSquare}` };
 
     const possible = getPossibleMoves(piece, current);
@@ -199,7 +200,7 @@ export function generateProblem(
     }
 
     // Bishop: start and end must be on the same color
-    if (piece === "B") {
+    if (piece === "b") {
       while (!isSameColor(start, end) || start === end) {
         end = getRandomSquare();
       }
@@ -220,14 +221,14 @@ function meetsPathConstraint(
 ): boolean {
   switch (piece) {
     // Rook/Queen: at least 2 moves (must pass through at least one intermediate square)
-    case "R":
-    case "Q":
+    case "r":
+    case "q":
       return path.length >= 3;
     // Bishop: exactly 2 moves (path.length === 3)
-    case "B":
+    case "b":
       return path.length === 3;
     // Knight: 2-3 moves (path.length 3 or 4)
-    case "N":
+    case "n":
       return path.length >= 3 && path.length <= 4;
   }
 }

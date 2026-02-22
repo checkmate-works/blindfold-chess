@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { BoardSymmetryTutorial } from '../_components/BoardSymmetryTutorial';
 import { BoardSymmetryTutorialSkipLink } from '../_components/BoardSymmetryTutorialSkipLink';
+
+const BoardSymmetryTutorial = dynamic(() =>
+  import('../_components/BoardSymmetryTutorial').then((mod) => mod.BoardSymmetryTutorial)
+);
 
 type Props = {
   params: Promise<{

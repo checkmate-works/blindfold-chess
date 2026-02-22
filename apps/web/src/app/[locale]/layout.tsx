@@ -97,7 +97,32 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const messages = await getMessages({ locale });
+  const allMessages = await getMessages({ locale });
+
+  // Namespaces used only by Server Components (via getTranslations()), not by
+  // client-side useTranslations(). Excluding them reduces the client payload.
+  // New namespaces are included in the client bundle by default for safety;
+  // add a namespace here only after confirming it is never used in client code.
+  const serverOnlyNamespaces = [
+    'metadata',
+    'Header',
+    'faq',
+    'glossary',
+    'manual',
+    'gettingStarted',
+    'learn',
+    'privacy',
+    'terms',
+    'company',
+    'landing',
+    'posts',
+  ];
+
+  const messages = Object.fromEntries(
+    Object.entries(allMessages as Record<string, unknown>).filter(
+      ([key]) => !serverOnlyNamespaces.includes(key)
+    )
+  );
 
   return (
     <html lang={locale} suppressHydrationWarning>

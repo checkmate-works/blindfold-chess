@@ -1,0 +1,329 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+
+import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { GameOutcome, SkillLevel } from '@/lib/types';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import {
+  parseUrlSearchParams,
+  useAiMoveOrchestration,
+  useAiVersus,
+  useAutoSave,
+  useGameInitialization,
+  useGamePersistence,
+  useNotation,
+} from './index';
+import { useGameState } from './use-game-state';
+import { usePlayerMove } from './use-player-move';
+import { useUrlSync } from './use-url-sync';
+
+type UseGameSessionOptions = {
+  locale: Locale;
+  onAiMoveChange?: (move: string | null) => void;
+};
+
+export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions) {
+  const t = useTranslations('play');
+  const searchParamsFromHook = useSearchParams();
+
+  // Parse URL parameters
+  const urlParams = parseUrlSearchParams(searchParamsFromHook);
+  const {
+    playerSide,
+    initialSkillLevel,
+    initialGameId,
+    initialStartingFen,
+    initialMovesFromUrl,
+    shouldRedirectToError,
+    errorDetails,
+  } = useGameInitialization(urlParams);
+
+  // Skill level state (can be changed during game)
+  const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
+
+  // Track starting FEN - can be from URL or loaded from saved game
+  const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
+
+  // Move input state (managed here to avoid circular deps between usePlayerMove and useAiMoveOrchestration)
+  const [moveInput, setMoveInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  // Notation hook
+  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } = useNotation({
+    initialMoves: initialMovesFromUrl,
+    startingFen,
+  });
+  const { getAiMove } = useAiVersus(skillLevel);
+
+  // Game persistence hook
+  const { isLoadingFromStorage, savedGameStatus, loadedGameData } = useGamePersistence({
+    initialGameId,
+    initialStartingFen,
+  });
+
+  // Game state hook
+  const {
+    gameStatus,
+    setGameStatus,
+    playerResult,
+    setPlayerResult,
+    isPlayerTurn,
+    lastMove,
+    setLastMove,
+    shouldMakeAiMove,
+    setShouldMakeAiMove,
+    getLastMoveDetails,
+  } = useGameState({
+    playerSide,
+    startingFen,
+    moves,
+    initialMovesFromUrl,
+    initialGameId,
+    isLoadingFromStorage,
+    savedGameStatus,
+    loadedGameData,
+    setMovesTo,
+    setStartingFen,
+  });
+
+  // Map board status to game outcome for repository
+  const mapGameStatusToOutcome = useCallback(
+    (bs: typeof gameStatus, pr: typeof playerResult): GameOutcome => {
+      if (bs === 'in_progress') return 'in_progress';
+      if (pr === 'win') return 'win';
+      if (pr === 'loss') return 'loss';
+      return 'draw';
+    },
+    []
+  );
+
+  // Auto-save hook
+  const { markPlayerInteraction, gameId } = useAutoSave({
+    gameId: initialGameId,
+    moves,
+    playerColor: playerSide,
+    skillLevel,
+    status: mapGameStatusToOutcome(gameStatus, playerResult),
+    startingFen,
+    enabled: !isLoadingFromStorage && !shouldRedirectToError,
+    saveOnInit: !initialGameId && !shouldRedirectToError,
+  });
+
+  // URL sync hook
+  const { searchParams, router } = useUrlSync({
+    locale,
+    gameId,
+    initialGameId,
+    playerSide,
+    skillLevel,
+    initialStartingFen,
+    shouldRedirectToError,
+    errorDetails,
+  });
+
+  // AI move orchestration
+  const handleAiMoveSuccess = useCallback(
+    (move: AlgebraicNotation) => {
+      pushMove(move);
+      const newMoves = [...moves, move];
+      setLastMove(getLastMoveDetails(newMoves));
+    },
+    [pushMove, moves, getLastMoveDetails, setLastMove]
+  );
+
+  const handleAiMoveError = useCallback(() => {
+    setError('AI move failed');
+    setShouldMakeAiMove(false);
+  }, [setShouldMakeAiMove]);
+
+  const { isLoading } = useAiMoveOrchestration({
+    shouldMakeAiMove,
+    gameStatus,
+    moves,
+    startingFen,
+    getAiMove,
+    onAiMoveSuccess: handleAiMoveSuccess,
+    onAiMoveError: handleAiMoveError,
+  });
+
+  // Player move hook
+  const { handleSubmitMove } = usePlayerMove({
+    moves,
+    playerSide,
+    startingFen,
+    isLoading,
+    isPlayerTurn,
+    pushMove,
+    markPlayerInteraction,
+    getLastMoveDetails,
+    setLastMove,
+    setMoveInput,
+    setError,
+  });
+
+  // Resign handler
+  const handleResign = useCallback(() => {
+    markPlayerInteraction();
+    setGameStatus('checkmate');
+    setPlayerResult('loss');
+  }, [markPlayerInteraction, setGameStatus, setPlayerResult]);
+
+  // Undo handler
+  const handleUndo = useCallback(() => {
+    markPlayerInteraction();
+    removeMoves(2);
+    setError(null);
+    const newMoves = moves.slice(0, -2);
+    setLastMove(getLastMoveDetails(newMoves));
+  }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails, setLastMove]);
+
+  // Restart from position handler
+  const handleRestartFromPosition = useCallback(
+    (position: number) => {
+      markPlayerInteraction();
+      const movesToRemove = moves.length - position - 1;
+      if (movesToRemove > 0) {
+        removeMoves(movesToRemove);
+      }
+      const newMoves = moves.slice(0, position + 1);
+      setLastMove(getLastMoveDetails(newMoves));
+    },
+    [markPlayerInteraction, moves, removeMoves, getLastMoveDetails, setLastMove]
+  );
+
+  // Handle new game from position
+  const handleNewGameFromPosition = useCallback(
+    (position: number) => {
+      const movesToKeep = moves.slice(0, position + 1);
+      const params = new URLSearchParams();
+      params.set('moves', JSON.stringify(movesToKeep));
+      params.set('color', playerSide);
+      params.set('skillLevel', skillLevel.toString());
+
+      if (startingFen) {
+        params.set('fen', startingFen);
+      }
+
+      router.push(`/${locale}/games/new/pgn?${params.toString()}`);
+    },
+    [moves, playerSide, skillLevel, locale, router, startingFen]
+  );
+
+  // Handle skill level change
+  const handleSkillLevelChange = useCallback(
+    async (newSkillLevel: SkillLevel) => {
+      markPlayerInteraction();
+      setSkillLevel(newSkillLevel);
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('skillLevel', newSkillLevel.toString());
+      router.replace(`?${params.toString()}`, { scroll: false });
+
+      if (gameId) {
+        const gameRepository = new LocalStorageGameRepository();
+        const savedGame = await gameRepository.load(gameId);
+        if (savedGame) {
+          await gameRepository.update(gameId, {
+            moves: savedGame.moves,
+            playerColor: savedGame.playerColor,
+            skillLevel: newSkillLevel,
+            status: savedGame.status,
+            startingFen: savedGame.startingFen,
+          });
+        }
+      }
+    },
+    [markPlayerInteraction, searchParams, router, gameId]
+  );
+
+  // Get current FEN for board display
+  const currentFen = getFen();
+  const formattedPgn = getFormattedPgn();
+
+  // Update parent component with AI's last move
+  useEffect(() => {
+    if (!onAiMoveChange) return;
+
+    if (moves.length === 0) {
+      onAiMoveChange(null);
+      return;
+    }
+
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
+    const isAiMove = (index: number) => {
+      const isStartingSideMove = index % 2 === 0;
+      const startingSide = startsAsBlack ? 'black' : 'white';
+      const movingSide = isStartingSideMove
+        ? startingSide
+        : startingSide === 'white'
+          ? 'black'
+          : 'white';
+      return movingSide !== playerSide;
+    };
+
+    for (let i = moves.length - 1; i >= 0; i--) {
+      if (isAiMove(i)) {
+        let moveNumber: number;
+        let isWhiteMove: boolean;
+
+        if (startsAsBlack) {
+          moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
+          isWhiteMove = i % 2 === 1;
+        } else {
+          moveNumber = startMoveNumber + Math.floor(i / 2);
+          isWhiteMove = i % 2 === 0;
+        }
+
+        const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
+        const moveText = t('aiPlayed', { move: moveNotation });
+        onAiMoveChange(moveText);
+        return;
+      }
+    }
+
+    onAiMoveChange(null);
+  }, [moves, playerSide, startingFen, onAiMoveChange, t]);
+
+  return {
+    // Game identity
+    playerSide,
+    skillLevel,
+    initialGameId,
+    startingFen,
+    locale,
+
+    // Game state
+    gameStatus,
+    playerResult,
+    isPlayerTurn,
+    isLoading,
+    lastMove,
+
+    // Move data
+    moves,
+    currentFen,
+    formattedPgn,
+
+    // Move input state
+    moveInput,
+    setMoveInput,
+    error,
+    setError,
+
+    // Handlers
+    handleSubmitMove,
+    handleResign,
+    handleUndo,
+    handleRestartFromPosition,
+    handleNewGameFromPosition,
+    handleSkillLevelChange,
+  };
+}

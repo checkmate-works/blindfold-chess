@@ -1,4 +1,6 @@
-import type { Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
+
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
 export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
@@ -18,25 +20,20 @@ export type CoordinateQuestion = {
   orientation: Exclude<BoardOrientation, "random">;
 };
 
-export type QuizSettings = {
-  duration: number; // seconds
+export type QuizSettings = BasePracticeSettings & {
   orientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
 };
 
-export type QuizResult = {
-  totalQuestions: number;
-  correctAnswers: number;
-  accuracy: number;
-  averageTime: number;
+export type QuizResult = BasePracticeResult & {
   points: number;
-  timeTaken: number;
 };
 
 export const DEFAULT_QUIZ_SETTINGS: QuizSettings = {
-  duration: 60,
+  timeLimit: 60,
   orientation: "white",
   feedbackSpeed: "normal",
+  mode: "timed",
 };
 
 export type AnswerFeedback = "correct" | "incorrect" | null;

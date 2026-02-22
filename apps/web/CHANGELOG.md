@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.12.0 - 2026-02-22
+
+### Added
+
+- Custom position start for AI games — set up any board position and play against AI from there, with automatic castling/en passant availability detection and board validation
+
+## 0.11.0 - 2026-02-20
+
+ref: https://www.blindfold-chess.online/en/posts/updates/v0.11.0
+
+## 0.10.0 - 2026-02-19
+
+ref: https://www.blindfold-chess.online/en/posts/updates/v0.10.0
+
 ## 0.9.0 - 2026-02-13
 
 ref: https://www.blindfold-chess.online/en/posts/updates/v0.9.0

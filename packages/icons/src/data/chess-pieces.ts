@@ -1,3 +1,5 @@
+import type { PieceType } from "@blindfold-chess/types";
+
 import type { PieceColor, PieceSvgData } from "./types";
 
 const VIEWBOX = "0 0 45 45";
@@ -341,7 +343,7 @@ function getKingData(color: PieceColor): PieceSvgData {
   };
 }
 
-export type PieceType = "p" | "r" | "n" | "b" | "q" | "k";
+export type { PieceType };
 
 export function getPieceData(
   piece: PieceType,

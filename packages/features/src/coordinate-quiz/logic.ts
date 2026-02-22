@@ -1,4 +1,6 @@
-import type { Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
+
+import { computeSquareColor } from "../common";
 
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
@@ -138,7 +140,5 @@ export function calculateScore(
  * Get square color (light or dark)
  */
 export function getSquareColor(square: Square): "light" | "dark" {
-  const file = square.charCodeAt(0) - "a".charCodeAt(0); // 0-7
-  const rank = parseInt(square[1]) - 1; // 0-7
-  return (file + rank) % 2 === 0 ? "dark" : "light";
+  return computeSquareColor(square);
 }

@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 
-import { pieceSymbolMap } from '../_data/constants';
 import type { PieceType } from '../_lib/types';
 
 type Props = {
@@ -14,7 +13,7 @@ type Props = {
 
 export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
   const t = useTranslations('practice.legalMoves');
-  const pieces: PieceType[] = ['king', 'queen', 'rook', 'bishop', 'knight'];
+  const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
   const selectedCount = Object.values(selectedPieces).filter(Boolean).length;
 
   return (
@@ -32,7 +31,7 @@ export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
             aria-label={t(`pieces.${piece}`)}
             title={t(`pieces.${piece}`)}
           >
-            <ChessPiece type={pieceSymbolMap[piece]} color="w" size={28} />
+            <ChessPiece type={piece} color="w" size={28} />
           </button>
         ))}
       </div>

@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { DiagonalQuizTutorial } from '../_components/DiagonalQuizTutorial';
 import { DiagonalQuizTutorialSkipLink } from '../_components/DiagonalQuizTutorialSkipLink';
+
+const DiagonalQuizTutorial = dynamic(() =>
+  import('../_components/DiagonalQuizTutorial').then((mod) => mod.DiagonalQuizTutorial)
+);
 
 type Props = {
   params: Promise<{

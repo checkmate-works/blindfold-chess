@@ -49,6 +49,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/getting-started',
     '/posts',
     '/games/new',
+    '/games/new/standard',
+    '/games/new/pgn',
+    '/games/new/position',
     '/play',
   ];
 

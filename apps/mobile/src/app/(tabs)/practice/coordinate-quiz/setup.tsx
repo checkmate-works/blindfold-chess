@@ -19,7 +19,7 @@ export default function CoordinateQuizSetup() {
     router.push({
       pathname: "/(tabs)/practice/coordinate-quiz/session",
       params: {
-        duration: settings.duration.toString(),
+        duration: settings.timeLimit.toString(),
         orientation: settings.orientation,
         feedbackSpeed: settings.feedbackSpeed,
       },

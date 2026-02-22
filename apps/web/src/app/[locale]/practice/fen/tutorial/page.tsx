@@ -1,11 +1,15 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { Breadcrumb, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { FenTutorial } from '../_components/FenTutorial';
 import { TutorialSkipLink } from '../_components/TutorialSkipLink';
+
+const FenTutorial = dynamic(() =>
+  import('../_components/FenTutorial').then((mod) => mod.FenTutorial)
+);
 
 type Props = {
   params: Promise<{

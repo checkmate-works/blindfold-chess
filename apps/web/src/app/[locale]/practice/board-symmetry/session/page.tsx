@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import BoardSymmetrySession from '../_components/BoardSymmetrySession';
+const BoardSymmetrySession = dynamic(() => import('../_components/BoardSymmetrySession'));
 
 type Props = {
   params: Promise<{
@@ -35,26 +36,16 @@ export default async function BoardSymmetrySessionPage({ params, searchParams }:
   const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
 
   return (
-    <div className="space-y-8">
-      {/* 
-        User requested NO description on displaying page. 
-        PageTitle is kept for semantic structure but session view focuses on the board.
-        Actually, let's keep PageTitle but minimal.
-      */}
-      <PageTitle>{t('practice.boardSymmetry.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.boardSymmetry.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.boardSymmetry.title'), href: '/practice/board-symmetry' },
+        { label: t('practice.session') },
+      ]}
+    >
       <BoardSymmetrySession locale={locale} initialTimeLimit={timeLimitValue} />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.boardSymmetry.title'), href: '/practice/board-symmetry' },
-          { label: t('practice.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

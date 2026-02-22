@@ -1,12 +1,16 @@
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
 import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { MoveSequenceTutorial } from '../_components/MoveSequenceTutorial';
 import { TutorialSectionTitle } from '../_components/TutorialSectionTitle';
 import { TutorialSkipLink } from '../_components/TutorialSkipLink';
+
+const MoveSequenceTutorial = dynamic(() =>
+  import('../_components/MoveSequenceTutorial').then((mod) => mod.MoveSequenceTutorial)
+);
 
 type Props = {
   params: Promise<{

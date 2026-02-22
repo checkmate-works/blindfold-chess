@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-
-import type { BoardStatus } from '../_lib/game-state-service';
 
 type UseAiMoveOrchestrationOptions = {
   shouldMakeAiMove: boolean;
-  gameStatus: BoardStatus;
+  gameStatus: GameStatus;
   moves: AlgebraicNotation[];
   startingFen: string | undefined;
   getAiMove: (moves: AlgebraicNotation[], startingFen?: string) => Promise<string | null>;

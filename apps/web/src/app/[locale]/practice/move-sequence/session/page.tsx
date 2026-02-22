@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import { MoveSequenceSession } from '../_components/MoveSequenceSession';
 import { decodeMoveSequenceFromBase64, validateFEN } from '../_lib/share';
+
+const MoveSequenceSession = dynamic(() =>
+  import('../_components/MoveSequenceSession').then((mod) => mod.MoveSequenceSession)
+);
 
 type Props = {
   params: Promise<{
@@ -62,9 +66,15 @@ export default async function MoveSequenceSessionPage({ params, searchParams }: 
   }
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.moveSequence.title')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.moveSequence.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.moveSequence.title'), href: '/practice/move-sequence' },
+        { label: t('practice.moveSequence.session') },
+      ]}
+    >
       <MoveSequenceSession
         locale={locale}
         fen={fen}
@@ -74,17 +84,6 @@ export default async function MoveSequenceSessionPage({ params, searchParams }: 
         isTutorial={isTutorial}
         error={error}
       />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.moveSequence.title'), href: '/practice/move-sequence' },
-          { label: t('practice.moveSequence.session') },
-        ]}
-        locale={locale}
-      />
-    </div>
+    </PracticeSessionPage>
   );
 }

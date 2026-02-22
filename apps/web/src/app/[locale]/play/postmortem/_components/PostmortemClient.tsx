@@ -14,8 +14,6 @@ import {
   FaEye,
   FaFilter,
   FaInfoCircle,
-  FaKeyboard,
-  FaList,
   FaQuestionCircle,
   FaSpinner,
   FaStar,
@@ -25,12 +23,11 @@ import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
 import { fenToLichessUrl } from '@/lib/lichess';
 
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
 import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
-import { MoveInput } from '@/app/[locale]/play/_components/MoveInput';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
-import { MoveSelect } from '@/app/[locale]/play/_components/MoveSelect';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
 
@@ -74,11 +71,11 @@ const evaluationCache = new Map<string, { score: number; mate?: number; bestMove
 
 // Helper function to get evaluation from engine
 async function getPositionEvaluation(
-  moves: AlgebraicNotation[],
+  fenBefore: string, // FEN of the position before the move
+  fenAfter: string, // FEN of the position after the move
   moveIndex: number,
   t: (key: string) => string,
-  previousEval?: { score: number; mate?: number; bestMove?: string }, // Pass previous evaluation to avoid re-calculation
-  startingFen?: string // Custom starting position FEN
+  previousEval?: { score: number; mate?: number; bestMove?: string } // Pass previous evaluation to avoid re-calculation
 ): Promise<
   | {
       score: number;
@@ -113,13 +110,6 @@ async function getPositionEvaluation(
       evalBefore = previousEval;
     } else {
       // First move - evaluate the starting position
-      // Initialize with custom FEN or standard starting position
-      const chessBefore = startingFen ? new Chess(startingFen) : new Chess();
-      for (let i = 0; i < moveIndex; i++) {
-        chessBefore.move(moves[i]);
-      }
-      const fenBefore = chessBefore.fen();
-
       // Check cache
       if (evaluationCache.has(fenBefore)) {
         evalBefore = evaluationCache.get(fenBefore)!;
@@ -130,13 +120,6 @@ async function getPositionEvaluation(
     }
 
     // Get evaluation AFTER the move
-    // Initialize with custom FEN or standard starting position
-    const chessAfter = startingFen ? new Chess(startingFen) : new Chess();
-    for (let i = 0; i <= moveIndex; i++) {
-      chessAfter.move(moves[i]);
-    }
-    const fenAfter = chessAfter.fen();
-
     let evalAfter: { score: number; mate?: number; bestMove?: string };
     if (evaluationCache.has(fenAfter)) {
       evalAfter = evaluationCache.get(fenAfter)!;
@@ -148,7 +131,7 @@ async function getPositionEvaluation(
     // Calculate evaluation loss
     // For white's move: loss = evalBefore - evalAfter (positive means worse for white)
     // For black's move: loss = evalAfter - evalBefore (positive means worse for black)
-    const isWhiteMove = moveIndex % 2 === 0;
+    const isWhiteMove = fenBefore.split(' ')[1] === 'w';
     let loss: number;
 
     if (evalAfter.mate !== undefined) {
@@ -175,13 +158,6 @@ async function getPositionEvaluation(
     if (evalBefore.bestMove && loss > 20) {
       // Only show best move if loss > 20 centipawns (not a best move)
       try {
-        // Initialize with custom FEN or standard starting position
-        const chessBefore = startingFen ? new Chess(startingFen) : new Chess();
-        for (let i = 0; i < moveIndex; i++) {
-          chessBefore.move(moves[i]);
-        }
-        const fenBefore = chessBefore.fen();
-
         // Check if bestMove is in UCI format (e.g., "e2e4") or already in algebraic notation
         const isUciFormat = /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(evalBefore.bestMove);
 
@@ -192,7 +168,8 @@ async function getPositionEvaluation(
           );
         } else {
           // Already in algebraic notation, verify it's valid
-          const testMove = chessBefore.move(evalBefore.bestMove);
+          const chess = new Chess(fenBefore);
+          const testMove = chess.move(evalBefore.bestMove);
           if (testMove) {
             bestMoveAlgebraic = testMove.san;
           }
@@ -305,26 +282,40 @@ export function PostmortemClient({
     }
   }, [pgn, initialOffset, startingFen]);
 
+  // Pre-compute all game positions (FEN + lastMove) from originalMoves
+  // Index 0 = starting position (before any moves), index i+1 = position after move i
+  const gamePositions = useMemo(() => {
+    const chess = startingFen ? new Chess(startingFen) : new Chess();
+    const positions: { fen: string; lastMove?: { from: string; to: string } }[] = [
+      { fen: chess.fen() }, // Starting position (no lastMove)
+    ];
+
+    for (const move of originalMoves) {
+      const result = chess.move(move);
+      if (result) {
+        positions.push({
+          fen: chess.fen(),
+          lastMove: { from: result.from, to: result.to },
+        });
+      }
+    }
+
+    return positions;
+  }, [originalMoves, startingFen]);
+
   // Get current FEN for board display
   const getCurrentFen = useCallback(() => {
-    // Initialize with custom FEN or standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
     // If a move is selected for review, show that position
-    const movesToShow = selectedMoveIndex !== null ? selectedMoveIndex + 1 : userMoves.length;
-    const moves = selectedMoveIndex !== null ? originalMoves : userMoves;
-
-    for (let i = 0; i < movesToShow; i++) {
-      chess.move(moves[i]);
+    if (selectedMoveIndex !== null) {
+      return gamePositions[selectedMoveIndex + 1]?.fen ?? gamePositions[0].fen;
     }
-    return chess.fen();
-  }, [userMoves, originalMoves, selectedMoveIndex, startingFen]);
+    // Show position after userMoves
+    return gamePositions[userMoves.length]?.fen ?? gamePositions[0].fen;
+  }, [userMoves.length, gamePositions, selectedMoveIndex]);
 
   // Navigation functions for move history
   const navigateToPosition = useCallback(
     (position: number) => {
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-
       // Reset board
       if (position === -1 || position >= originalMoves.length) {
         // Show latest position
@@ -334,33 +325,27 @@ export function PostmortemClient({
         return;
       }
 
-      // Apply moves up to the specified position
-      const movesToApply = originalMoves.slice(0, position + 1);
-      try {
-        for (const move of movesToApply) {
-          chess.move(move);
-        }
+      // Use pre-computed position (position + 1 because index 0 is starting position)
+      const posData = gamePositions[position + 1];
+      if (posData) {
         setCurrentPosition(position);
-        setDisplayFen(chess.fen());
+        setDisplayFen(posData.fen);
         setSelectedMoveIndex(position);
-      } catch (error) {
-        console.error('Error navigating to position:', error);
+      } else {
         setCurrentPosition(-1);
         setDisplayFen(null);
         setSelectedMoveIndex(null);
       }
     },
-    [originalMoves, startingFen]
+    [originalMoves.length, gamePositions]
   );
 
   const navigateToStart = useCallback(() => {
     // Show initial position (before any moves)
-    // Use custom FEN if available, otherwise standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
-    setDisplayFen(chess.fen());
+    setDisplayFen(gamePositions[0].fen);
     setCurrentPosition(-2); // Special value to indicate start position
     setSelectedMoveIndex(null);
-  }, [startingFen]);
+  }, [gamePositions]);
 
   const navigateToEnd = useCallback(() => {
     setCurrentPosition(-1);
@@ -410,9 +395,16 @@ export function PostmortemClient({
     // If autoOpponent is disabled, player enters all moves
     if (!autoOpponent) return true;
 
-    const isWhiteTurn = currentMoveIndex % 2 === 0;
-    return (playerColor === 'white' && isWhiteTurn) || (playerColor === 'black' && !isWhiteTurn);
-  }, [currentMoveIndex, playerColor, autoOpponent]);
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const isStartingSideMove = currentMoveIndex % 2 === 0;
+    const startingSide = startsAsBlack ? 'black' : 'white';
+    const movingSide = isStartingSideMove
+      ? startingSide
+      : startingSide === 'white'
+        ? 'black'
+        : 'white';
+    return movingSide === playerColor;
+  }, [currentMoveIndex, playerColor, autoOpponent, startingFen]);
 
   // Update URL with current offset
   useEffect(() => {
@@ -437,8 +429,12 @@ export function PostmortemClient({
         setIsEvaluating(true);
         // Auto-fill opponent's move
         const opponentMove = originalMoves[currentMoveIndex];
-        const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-        const isWhiteMove = currentMoveIndex % 2 === 0;
+        const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+        const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+        const moveNumber = startsAsBlack
+          ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+          : startMoveNumber + Math.floor(currentMoveIndex / 2);
+        const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
         const newIndex = currentMoveIndex + 1;
 
         setUserMoves((prev) => [...prev, opponentMove]);
@@ -457,11 +453,11 @@ export function PostmortemClient({
 
         const evaluation = showEvaluation
           ? await getPositionEvaluation(
-              originalMoves,
+              gamePositions[currentMoveIndex].fen,
+              gamePositions[currentMoveIndex + 1].fen,
               currentMoveIndex,
               t,
-              previousEval,
-              startingFen
+              previousEval
             )
           : undefined;
 
@@ -497,7 +493,7 @@ export function PostmortemClient({
     showEvaluation,
     t,
     moveLog,
-    startingFen,
+    gamePositions,
   ]);
 
   // Handle move submission
@@ -506,8 +502,12 @@ export function PostmortemClient({
       if (isEvaluating) return; // Prevent submission while evaluating
 
       const expectedMove = originalMoves[currentMoveIndex];
-      const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-      const isWhiteMove = currentMoveIndex % 2 === 0;
+      const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+      const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+      const moveNumber = startsAsBlack
+        ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+        : startMoveNumber + Math.floor(currentMoveIndex / 2);
+      const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
 
       if (move === expectedMove) {
         setIsEvaluating(true);
@@ -531,11 +531,11 @@ export function PostmortemClient({
 
         const evaluation = showEvaluation
           ? await getPositionEvaluation(
-              originalMoves,
+              gamePositions[currentMoveIndex].fen,
+              gamePositions[currentMoveIndex + 1].fen,
               currentMoveIndex,
               t,
-              previousEval,
-              startingFen
+              previousEval
             )
           : undefined;
 
@@ -571,7 +571,16 @@ export function PostmortemClient({
         ]);
       }
     },
-    [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, moveLog, startingFen]
+    [
+      currentMoveIndex,
+      originalMoves,
+      showEvaluation,
+      isEvaluating,
+      t,
+      moveLog,
+      gamePositions,
+      startingFen,
+    ]
   );
 
   // Handle "I don't know" button
@@ -582,8 +591,12 @@ export function PostmortemClient({
     setDontKnowCount((prev) => prev + 1);
 
     const correctMove = originalMoves[currentMoveIndex];
-    const moveNumber = Math.floor(currentMoveIndex / 2) + 1;
-    const isWhiteMove = currentMoveIndex % 2 === 0;
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+    const moveNumber = startsAsBlack
+      ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
+      : startMoveNumber + Math.floor(currentMoveIndex / 2);
+    const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
     const newIndex = currentMoveIndex + 1;
 
     setUserMoves((prev) => [...prev, correctMove]);
@@ -592,7 +605,13 @@ export function PostmortemClient({
 
     // Get evaluation if enabled
     const evaluation = showEvaluation
-      ? await getPositionEvaluation(originalMoves, currentMoveIndex, t, undefined, startingFen)
+      ? await getPositionEvaluation(
+          gamePositions[currentMoveIndex].fen,
+          gamePositions[currentMoveIndex + 1].fen,
+          currentMoveIndex,
+          t,
+          undefined
+        )
       : undefined;
 
     // Add to log as auto-filled
@@ -613,7 +632,15 @@ export function PostmortemClient({
     }
 
     setIsEvaluating(false);
-  }, [currentMoveIndex, originalMoves, showEvaluation, isEvaluating, t, startingFen]);
+  }, [
+    currentMoveIndex,
+    originalMoves,
+    showEvaluation,
+    isEvaluating,
+    t,
+    gamePositions,
+    startingFen,
+  ]);
 
   // Handle "Analyze All" button
   const handleAnalyzeAll = useCallback(async () => {
@@ -638,13 +665,24 @@ export function PostmortemClient({
           }
         : undefined;
 
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
     for (let i = currentMoveIndex; i < originalMoves.length; i++) {
       const move = originalMoves[i];
-      const moveNumber = Math.floor(i / 2) + 1;
-      const isWhiteMove = i % 2 === 0;
+      const moveNumber = startsAsBlack
+        ? startMoveNumber + Math.floor((i + 1) / 2)
+        : startMoveNumber + Math.floor(i / 2);
+      const isWhiteMove = startsAsBlack ? i % 2 === 1 : i % 2 === 0;
 
       const evaluation = showEvaluation
-        ? await getPositionEvaluation(originalMoves, i, t, previousEval, startingFen)
+        ? await getPositionEvaluation(
+            gamePositions[i].fen,
+            gamePositions[i + 1].fen,
+            i,
+            t,
+            previousEval
+          )
         : undefined;
 
       if (evaluation) {
@@ -677,6 +715,7 @@ export function PostmortemClient({
     showEvaluation,
     isEvaluating,
     t,
+    gamePositions,
     startingFen,
   ]);
 
@@ -814,16 +853,50 @@ export function PostmortemClient({
 
   // Format moves for display (like in PlayClient)
   const getFormattedPgn = useCallback(() => {
-    const formatted: { moveNumber: number; whiteMove: string; blackMove?: string }[] = [];
-    for (let i = 0; i < userMoves.length; i += 2) {
+    if (userMoves.length === 0) return [];
+
+    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
+    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+
+    const formatted: {
+      moveNumber: number;
+      whiteMove?: string;
+      whiteMoveIndex?: number;
+      blackMove?: string;
+      blackMoveIndex?: number;
+    }[] = [];
+
+    if (startsAsBlack) {
       formatted.push({
-        moveNumber: Math.floor(i / 2) + 1,
-        whiteMove: userMoves[i],
-        blackMove: userMoves[i + 1],
+        moveNumber: startMoveNumber,
+        blackMove: userMoves[0],
+        blackMoveIndex: 0,
       });
+      for (let i = 1; i < userMoves.length; i += 2) {
+        const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
+        formatted.push({
+          moveNumber,
+          whiteMove: userMoves[i],
+          whiteMoveIndex: i,
+          blackMove: userMoves[i + 1],
+          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
+        });
+      }
+    } else {
+      for (let i = 0; i < userMoves.length; i += 2) {
+        const moveNumber = startMoveNumber + Math.floor(i / 2);
+        formatted.push({
+          moveNumber,
+          whiteMove: userMoves[i],
+          whiteMoveIndex: i,
+          blackMove: userMoves[i + 1],
+          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
+        });
+      }
     }
+
     return formatted;
-  }, [userMoves]);
+  }, [userMoves, startingFen]);
 
   const formattedPgn = getFormattedPgn();
 
@@ -832,30 +905,14 @@ export function PostmortemClient({
     // No highlight for start position
     if (currentPosition === -2) return null;
 
-    // Determine which moves to use and how many
-    const movesToCheck =
-      currentPosition === -1 ? userMoves : originalMoves.slice(0, currentPosition + 1);
+    // Determine which position index to look up in gamePositions
+    // currentPosition === -1 means latest (userMoves.length), otherwise currentPosition + 1
+    const posIndex = currentPosition === -1 ? userMoves.length : currentPosition + 1;
 
-    if (movesToCheck.length === 0) return null;
+    if (posIndex <= 0 || posIndex >= gamePositions.length) return null;
 
-    try {
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-      let lastMoveDetails: { from: string; to: string } | null = null;
-
-      for (let i = 0; i < movesToCheck.length; i++) {
-        const move = chess.move(movesToCheck[i]);
-        if (i === movesToCheck.length - 1 && move) {
-          lastMoveDetails = { from: move.from, to: move.to };
-        }
-      }
-
-      return lastMoveDetails;
-    } catch (error) {
-      console.error('Error getting last move details:', error);
-      return null;
-    }
-  }, [currentPosition, userMoves, originalMoves, startingFen]);
+    return gamePositions[posIndex].lastMove ?? null;
+  }, [currentPosition, userMoves.length, gamePositions]);
 
   // Calculate evaluation mark for the current position
   const currentEvaluationMark = useMemo((): EvaluationMark | null => {
@@ -919,52 +976,20 @@ export function PostmortemClient({
                       )}
 
                       {/* Move Input */}
-                      <div>
-                        {preferences.moveInputMode === 'select' ? (
-                          <MoveSelect
-                            fen={displayFen || currentFen}
-                            onSubmit={handleSubmitMove}
-                            disabled={isEvaluating}
-                            placeholder={t('selectMove')}
-                          />
-                        ) : (
-                          <MoveInput
-                            value={moveInput}
-                            onChange={(value) => {
-                              setMoveInput(value);
-                            }}
-                            onSubmit={handleSubmitMove}
-                            disabled={isEvaluating}
-                            placeholder={t('inputMove')}
-                            showSuggestions={preferences.enableAutoComplete}
-                            showSubmitButton={true}
-                          />
-                        )}
-                      </div>
-
-                      {/* Toggle Input Mode */}
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() =>
-                            updatePreferences({
-                              moveInputMode:
-                                preferences.moveInputMode === 'text' ? 'select' : 'text',
-                            })
-                          }
-                          className="p-2 border border-border rounded-md hover:bg-muted"
-                          title={
-                            preferences.moveInputMode === 'text'
-                              ? t('switchToSelect')
-                              : t('switchToText')
-                          }
-                        >
-                          {preferences.moveInputMode === 'text' ? (
-                            <FaList className="w-4 h-4" />
-                          ) : (
-                            <FaKeyboard className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
+                      <MoveInputPanel
+                        preferences={preferences}
+                        updatePreferences={updatePreferences}
+                        currentFen={displayFen || currentFen}
+                        moveInput={moveInput}
+                        onMoveInputChange={setMoveInput}
+                        error={null}
+                        onErrorClear={() => {}}
+                        onSubmit={handleSubmitMove}
+                        disabled={isEvaluating}
+                        inputPlaceholder={t('inputMove')}
+                        selectPlaceholder={t('selectMove')}
+                        toggleTitle={t('switchInputMode')}
+                      />
 
                       {/* Action Buttons */}
                       <div className="flex gap-2 justify-center">
@@ -1283,27 +1308,35 @@ export function PostmortemClient({
               {formattedPgn.length > 0 ? (
                 <>
                   <div className="space-y-0.5">
-                    {formattedPgn.map((move, index) => {
-                      const whiteIndex = index * 2;
-                      const blackIndex = index * 2 + 1;
-                      const isWhiteHighlighted = currentPosition === whiteIndex;
-                      const isBlackHighlighted = currentPosition === blackIndex;
+                    {formattedPgn.map((move) => {
+                      const whiteIndex = move.whiteMoveIndex;
+                      const blackIndex = move.blackMoveIndex;
+                      const isWhiteHighlighted =
+                        whiteIndex !== undefined && currentPosition === whiteIndex;
+                      const isBlackHighlighted =
+                        blackIndex !== undefined && currentPosition === blackIndex;
 
                       return (
                         <div key={move.moveNumber} className="flex items-center text-sm">
                           <span className="w-10 text-right pr-2 text-muted-foreground">
                             {move.moveNumber}.
                           </span>
-                          <span
-                            className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                              isWhiteHighlighted
-                                ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
-                                : 'hover:bg-muted/40'
-                            }`}
-                            onClick={() => navigateToPosition(whiteIndex)}
-                          >
-                            {move.whiteMove}
-                          </span>
+                          {move.whiteMove ? (
+                            <span
+                              className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                                isWhiteHighlighted
+                                  ? 'bg-foreground/15 font-semibold dark:bg-foreground/10'
+                                  : 'hover:bg-muted/40'
+                              }`}
+                              onClick={() =>
+                                whiteIndex !== undefined && navigateToPosition(whiteIndex)
+                              }
+                            >
+                              {move.whiteMove}
+                            </span>
+                          ) : (
+                            <span className="flex-1 px-2 py-0.5 text-muted-foreground">...</span>
+                          )}
                           <span
                             className={`flex-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
                               isBlackHighlighted
@@ -1312,7 +1345,11 @@ export function PostmortemClient({
                                   ? 'hover:bg-muted/40'
                                   : ''
                             } ${!move.blackMove ? 'pointer-events-none' : ''}`}
-                            onClick={() => move.blackMove && navigateToPosition(blackIndex)}
+                            onClick={() =>
+                              move.blackMove &&
+                              blackIndex !== undefined &&
+                              navigateToPosition(blackIndex)
+                            }
                           >
                             {move.blackMove || ''}
                           </span>

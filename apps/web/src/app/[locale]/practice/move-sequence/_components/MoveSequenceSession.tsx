@@ -9,12 +9,13 @@ import { Button } from '@/app/_components';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { parseMoveSequence } from '../_lib/pgn-parser';
 import type { MoveSequenceData, MoveSequencePhase, MoveSequenceSessionResult } from '../_lib/types';
 import { MoveSequenceMemorize } from './MoveSequenceMemorize';
 import { MoveSequenceRecall } from './MoveSequenceRecall';
-import { MoveSequenceResult } from './MoveSequenceResult';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
+
+// import { MoveSequenceResult } from './MoveSequenceResult'; // Logic moved to page
 
 type Props = {
   locale: Locale;
@@ -101,10 +102,26 @@ export function MoveSequenceSession({
     setPhase('result');
   };
 
-  const handleFinishTutorial = () => {
-    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
-    window.location.href = `/${locale}/practice/move-sequence`;
-  };
+  // Handle Result Redirection
+  useEffect(() => {
+    if (phase === 'result' && result) {
+      const settings = {
+        fen,
+        pgn,
+        includeOpponentMoves,
+        skipMemorize,
+      };
+
+      const params = new URLSearchParams();
+      params.set('data', JSON.stringify(result));
+      params.set('settings', JSON.stringify(settings));
+      if (isTutorial) {
+        params.set('mode', 'tutorial');
+      }
+
+      router.push(`/${locale}/practice/move-sequence/result?${params.toString()}`);
+    }
+  }, [phase, result, fen, pgn, includeOpponentMoves, skipMemorize, isTutorial, locale, router]);
 
   // Show error state
   if (parseError) {
@@ -130,7 +147,7 @@ export function MoveSequenceSession({
   }
 
   return (
-    <div id="move-sequence-session">
+    <div id="move-sequence-session" className="min-h-screen">
       {(() => {
         switch (phase) {
           case 'memorize':
@@ -146,15 +163,7 @@ export function MoveSequenceSession({
             );
 
           case 'result':
-            if (!result) return null;
-            return (
-              <MoveSequenceResult
-                result={result}
-                isTutorial={isTutorial}
-                onTryAgain={handleTryAgain}
-                onFinishTutorial={handleFinishTutorial}
-              />
-            );
+            return <PracticeResultSkeleton />;
 
           default:
             return null;

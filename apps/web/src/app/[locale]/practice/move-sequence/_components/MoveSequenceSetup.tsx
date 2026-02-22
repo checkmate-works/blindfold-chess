@@ -9,7 +9,7 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Chess } from 'chess.js';
 import { FaInfoCircle, FaLink, FaPlay } from 'react-icons/fa';
 
-import { CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import { BetaNotice, CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -19,6 +19,7 @@ import { presetOpenings } from '../_data/presetOpenings';
 import { parseMoveSequence } from '../_lib/pgn-parser';
 import { encodeMoveSequenceToBase64, generateShareUrl } from '../_lib/share';
 import { clearSettings, loadSettings, saveSettings } from '../_lib/storage';
+import { AboutFeatureInfoModal } from './AboutFeatureInfoModal';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type CopyStatus = 'idle' | 'success' | 'error' | 'too_long';
@@ -49,6 +50,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isShareLinkHelpOpen, setIsShareLinkHelpOpen] = useState(false);
+  const [isAboutFeatureOpen, setIsAboutFeatureOpen] = useState(false);
   const validationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Preview state
@@ -365,7 +367,23 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-        <SectionTitle className="mb-6">{t('title')}</SectionTitle>
+        <SectionTitle className="mb-6">
+          <span className="inline-flex items-center gap-2">
+            {t('title')}
+            <button
+              type="button"
+              onClick={() => setIsAboutFeatureOpen(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Show feature information"
+            >
+              <FaInfoCircle className="w-4 h-4" />
+            </button>
+          </span>
+        </SectionTitle>
+
+        <BetaNotice className="mb-6">
+          <p>{t('betaNotice')}</p>
+        </BetaNotice>
 
         <div className="space-y-6">
           {/* Problem Source Toggle */}
@@ -628,6 +646,11 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
       >
         <p className="text-foreground">{t('shareLinkHelp')}</p>
       </Modal>
+
+      <AboutFeatureInfoModal
+        isOpen={isAboutFeatureOpen}
+        onClose={() => setIsAboutFeatureOpen(false)}
+      />
     </div>
   );
 }

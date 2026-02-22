@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
@@ -92,22 +92,25 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
   }, [preferences, isLoaded]);
 
-  const updatePreferences = (updates: Partial<GamePreferences>) => {
+  const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
     setPreferences((prev) => ({
       ...prev,
       ...updates,
     }));
-  };
+  }, []);
 
-  const resetPreferences = () => {
+  const resetPreferences = useCallback(() => {
     setPreferences(defaultPreferences);
-  };
+  }, []);
 
-  const value: GamePreferencesContextType = {
-    preferences,
-    updatePreferences,
-    resetPreferences,
-  };
+  const value = useMemo<GamePreferencesContextType>(
+    () => ({
+      preferences,
+      updatePreferences,
+      resetPreferences,
+    }),
+    [preferences, updatePreferences, resetPreferences]
+  );
 
   return (
     <GamePreferencesContext.Provider value={value}>{children}</GamePreferencesContext.Provider>

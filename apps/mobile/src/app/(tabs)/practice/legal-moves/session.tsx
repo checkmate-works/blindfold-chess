@@ -26,9 +26,9 @@ export default function LegalMovesSession() {
   }>();
 
   const duration = parseInt(params.duration || "60", 10);
-  const selectedPieces = (
-    params.pieces || "bishop,knight,rook,queen,king"
-  ).split(",") as PieceType[];
+  const selectedPieces = (params.pieces || "b,n,r,q,k").split(
+    ",",
+  ) as PieceType[];
 
   // Countdown state
   const [countdown, setCountdown] = useState<number | null>(3);

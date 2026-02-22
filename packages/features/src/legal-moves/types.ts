@@ -1,11 +1,15 @@
-export const PIECE_TYPES = [
-  "bishop",
-  "knight",
-  "rook",
-  "queen",
-  "king",
+import type { PieceType as AllPieceType } from "@blindfold-chess/types";
+
+import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
+
+export type PieceType = Extract<AllPieceType, "b" | "n" | "r" | "q" | "k">;
+export const PIECE_TYPES: readonly PieceType[] = [
+  "b",
+  "n",
+  "r",
+  "q",
+  "k",
 ] as const;
-export type PieceType = (typeof PIECE_TYPES)[number];
 
 export type MoveQuestion = {
   from: string;
@@ -13,21 +17,16 @@ export type MoveQuestion = {
   piece: PieceType;
 };
 
-export type LegalMovesSettings = {
-  duration: number; // seconds
+export type LegalMovesSettings = BasePracticeSettings & {
   selectedPieces: PieceType[];
 };
 
 export const DEFAULT_LEGAL_MOVES_SETTINGS: LegalMovesSettings = {
-  duration: 60,
+  timeLimit: 60,
   selectedPieces: [...PIECE_TYPES],
+  mode: "timed",
 };
 
-export type LegalMovesResult = {
-  correctAnswers: number;
+export type LegalMovesResult = BasePracticeResult & {
   incorrectAnswers: number;
-  totalQuestions: number;
-  accuracy: number;
-  timeTaken: number;
-  averageTime: number;
 };

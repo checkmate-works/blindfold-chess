@@ -1,41 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/use-persistent-settings';
 
+import type { PracticeMode } from '../_lib/types';
 import { SquareColorsSetup } from './SquareColorsSetup';
 
 type Props = {
   locale: Locale;
 };
 
+type SquareColorsLocalSettings = {
+  timeLimit: number;
+  mode: PracticeMode;
+};
+
 const STORAGE_KEY = 'squareColors_settings';
+const DEFAULTS: SquareColorsLocalSettings = { timeLimit: 60, mode: 'timed' };
 
 export default function SquareColors({ locale }: Props) {
-  // Load settings from localStorage using lazy initializer
-  const [timeLimit, setTimeLimit] = useState(() => {
-    if (typeof window === 'undefined') return 60;
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        return settings.timeLimit || 60;
-      } catch {
-        // Ignore invalid JSON in localStorage
-      }
-    }
-    return 60;
-  });
-
-  // Save settings to localStorage when they change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit }));
-    }
-  }, [timeLimit]);
+  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
 
   return (
-    <SquareColorsSetup locale={locale} timeLimit={timeLimit} onTimeLimitChange={setTimeLimit} />
+    <SquareColorsSetup
+      locale={locale}
+      timeLimit={settings.timeLimit}
+      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
+      mode={settings.mode}
+      onModeChange={(mode) => updateSettings({ mode })}
+    />
   );
 }

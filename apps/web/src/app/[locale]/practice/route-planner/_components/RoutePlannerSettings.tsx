@@ -1,21 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from 'chess.js';
+import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { ProblemCountSlider } from '@/app/[locale]/practice/_components/ProblemCountSlider';
+import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
 import { PIECES } from '../_lib/utils';
+import { STORAGE_KEY } from './RoutePlanner';
 import {
   ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY,
   RoutePlannerTutorialSkipLink,
@@ -23,86 +25,76 @@ import {
 
 type Props = {
   locale: Locale;
+  problemCount: number;
+  selectedPieces: Record<string, boolean>;
+  mode: PracticeMode;
+  onProblemCountChange: (count: number) => void;
+  onSelectedPiecesChange: (pieces: Record<string, boolean>) => void;
+  onModeChange: (mode: PracticeMode) => void;
   onShowTutorial?: () => void;
 };
 
-const STORAGE_KEY = 'routePlannerSettings';
-const DEFAULT_PROBLEM_COUNT = 5;
-
-export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
+export function RoutePlannerSettings({
+  locale,
+  problemCount,
+  selectedPieces,
+  mode,
+  onProblemCountChange,
+  onSelectedPiecesChange,
+  onModeChange,
+  onShowTutorial,
+}: Props) {
   const t = useTranslations('practice.routePlanner');
+  const tp = useTranslations('practice');
   const tSettings = useTranslations('practice.settings');
-  const tLegalMoves = useTranslations('practice.legalMoves'); // For piece names
+  const tLegalMoves = useTranslations('practice.legalMoves');
   const router = useRouter();
 
-  const [problemCount, setProblemCount] = useState(DEFAULT_PROBLEM_COUNT);
-  const [selectedPieces, setSelectedPieces] = useState<Record<string, boolean>>({
-    N: true,
-    B: true,
-    R: true,
-    Q: true,
-  });
-  const [hasLoaded, setHasLoaded] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  const modeOptions: { value: PracticeMode; label: string }[] = [
+    { value: 'timed', label: tp('modeTimed') },
+    { value: 'training', label: tp('modeTraining') },
+  ];
 
   const handleResetConfirm = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY);
     setIsResetConfirmOpen(false);
 
-    // Refresh page to trigger tutorial check in RoutePlannerPageContent
     if (onShowTutorial) {
       onShowTutorial();
     }
-    // Force reload just in case onShowTutorial isn't enough or state needs clearing
-    // but onShowTutorial updates parent state to show tutorial, so that should be enough.
   };
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        if (settings.problemCount) {
-          setProblemCount(settings.problemCount);
-        }
-        if (settings.selectedPieces) {
-          setSelectedPieces(settings.selectedPieces);
-        }
-      } catch {
-        // ignore
-      }
-    }
-    setHasLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoaded) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ problemCount, selectedPieces }));
-  }, [problemCount, selectedPieces, hasLoaded]);
-
   const handlePieceToggle = (piece: string) => {
-    setSelectedPieces((prev) => {
-      const next = { ...prev, [piece]: !prev[piece] };
-      // Prevent deselecting all
-      if (!Object.values(next).some((v) => v)) return prev;
-      return next;
-    });
+    const next = { ...selectedPieces, [piece]: !selectedPieces[piece] };
+    // Prevent deselecting all
+    if (!Object.values(next).some((v) => v)) return;
+    onSelectedPiecesChange(next);
   };
 
   const handleStart = () => {
     const piecesStr = PIECES.filter((p) => selectedPieces[p]).join('');
-    router.push(
-      `/${locale}/practice/route-planner/session?count=${problemCount}&pieces=${piecesStr}#route-planner-session`
-    );
+    if (mode === 'training') {
+      router.push(
+        `/${locale}/practice/route-planner/training?pieces=${piecesStr}#route-planner-session`
+      );
+    } else {
+      router.push(
+        `/${locale}/practice/route-planner/challenge?count=${problemCount}&pieces=${piecesStr}#route-planner-session`
+      );
+    }
   };
-
-  if (!hasLoaded) return null;
 
   return (
     <div>
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
+
+        <div className="mb-6">
+          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+        </div>
 
         <BetaNotice className="mb-6">
           <p>{t('betaNotice')}</p>
@@ -112,16 +104,24 @@ export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
           <p>{t('description')}</p>
         </div>
 
-        <div className="mb-6">
-          <ProblemCountSlider
-            count={problemCount}
-            onCountChange={setProblemCount}
-            labels={{
-              count: tSettings('problemCount'),
-              unit: tSettings('problems'),
-            }}
-          />
-        </div>
+        {mode === 'timed' && (
+          <div className="mb-6">
+            <ProblemCountSlider
+              count={problemCount}
+              onCountChange={onProblemCountChange}
+              labels={{
+                count: tSettings('problemCount'),
+                unit: tSettings('problems'),
+              }}
+            />
+          </div>
+        )}
+
+        {mode === 'training' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+          </div>
+        )}
 
         {/* Piece Selector */}
         <div className="mb-6">
@@ -129,33 +129,21 @@ export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
             {tLegalMoves('pieceSelection')}
           </label>
           <div className="flex justify-center gap-2">
-            {PIECES.map((piece) => {
-              // Map route planner piece type to display map key if needed
-              // RoutePlanner: N, B, R, Q
-              // displayMap: knight, bishop, rook, queen
-              const mapKey = {
-                N: 'knight',
-                B: 'bishop',
-                R: 'rook',
-                Q: 'queen',
-              }[piece] as string;
-
-              return (
-                <button
-                  key={piece}
-                  onClick={() => handlePieceToggle(piece)}
-                  className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                    selectedPieces[piece]
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background hover:bg-muted border-border'
-                  }`}
-                  aria-label={tLegalMoves(`pieces.${mapKey}`)}
-                  title={tLegalMoves(`pieces.${mapKey}`)}
-                >
-                  <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={28} />
-                </button>
-              );
-            })}
+            {PIECES.map((piece) => (
+              <button
+                key={piece}
+                onClick={() => handlePieceToggle(piece)}
+                className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
+                  selectedPieces[piece]
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted border-border'
+                }`}
+                aria-label={tLegalMoves(`pieces.${piece}`)}
+                title={tLegalMoves(`pieces.${piece}`)}
+              >
+                <ChessPiece type={piece} color="w" size={28} />
+              </button>
+            ))}
           </div>
           <div className="mt-2 text-xs text-muted-foreground text-center animate-in fade-in duration-300">
             {tLegalMoves('selectedCount', {
@@ -171,7 +159,7 @@ export function RoutePlannerSettings({ locale, onShowTutorial }: Props) {
           icon={<FaPlay />}
           className="w-full"
         >
-          {tSettings('start')}
+          {mode === 'training' ? tp('startTraining') : tSettings('start')}
         </Button>
 
         {onShowTutorial && <RoutePlannerTutorialSkipLink onStartTutorial={onShowTutorial} />}

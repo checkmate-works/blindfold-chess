@@ -17,7 +17,7 @@ type Props = {
 };
 
 const TUTORIAL_PROBLEM = {
-  piece: 'N',
+  piece: 'n',
   start: 'e4',
   end: 'h5',
 };
@@ -41,7 +41,7 @@ export function RoutePlannerTutorial({ locale }: Props) {
     params.set('start', TUTORIAL_PROBLEM.start);
     params.set('end', TUTORIAL_PROBLEM.end);
 
-    router.push(`/${locale}/practice/route-planner/session?${params.toString()}`);
+    router.push(`/${locale}/practice/route-planner/challenge?${params.toString()}`);
   };
 
   const steps: TutorialStep[] = ['intro', 'visualization', 'start'];

@@ -33,6 +33,9 @@
       "optional": true
     }
   },
+  "dependencies": {
+    "@blindfold-chess/types": "workspace:*"
+  },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
     "@types/react": "^19.2.14",

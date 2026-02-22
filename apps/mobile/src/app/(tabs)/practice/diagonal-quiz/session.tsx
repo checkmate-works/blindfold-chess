@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Check, X } from "lucide-react-native";
-import { getCornerInfo } from "@blindfold-chess/features";
+import { getCornerInfo } from "@blindfold-chess/features/diagonal-quiz";
 
 import {
   QuestionCard,

@@ -219,7 +219,46 @@
   },
   "gettingStarted": {
     "title": "Getting Started",
-    "description": "Learn how to get started with blindfold chess training and improve your visualization skills."
+    "description": "Learn how to get started with blindfold chess training and improve your visualization skills.",
+    "whyBlindfoldChess": {
+      "title": "Why Blindfold Chess?",
+      "intro": "Blindfold Chess is the best way to develop visualization skills in chess.",
+      "explanation": "Strong players can \"see\" several moves ahead in their minds. This ability is not innate, but a skill acquired through deliberate practice.",
+      "abilitiesIntro": "Blindfold Chess directly trains the following abilities:",
+      "ability1": "Ability to imagine piece positions without looking at the board",
+      "ability2": "Ability to calculate variations in your head",
+      "ability3": "Ability to recognize patterns and structures",
+      "conclusion": "As a result, your overall chess strength will improve."
+    },
+    "whatYouCanDo": {
+      "title": "What You Can Do Here",
+      "stockfish": {
+        "title": "Play Against Stockfish",
+        "description": "You can play blindfold chess against Stockfish, the most popular chess engine in the world.",
+        "featureDifficulty": "20 Difficulty Levels",
+        "featureDifficultyDesc": "From beginner to grandmaster",
+        "featureUndo": "Undo Support",
+        "featureUndoDesc": "Take back moves freely",
+        "featureHelp": "Help Function",
+        "featureHelpDesc": "Get hints when stuck",
+        "cta": "Start Playing",
+        "trySimpleDescription": "You can also try starting from a simple position. With just a few pieces on the board, it's easy to visualize and a great way to get started.",
+        "trySimpleCta": "Start with this position"
+      },
+      "training": {
+        "title": "Rich Training Menu",
+        "description": "You can build visualization skills through systematic training.",
+        "cta": "View All Training Menus",
+        "categories": {
+          "positionMemory": "Position Memory",
+          "knightTour": "Knight's Tour",
+          "coordinateQuiz": "Coordinate Quiz",
+          "squareColors": "Square Colors",
+          "legalMoves": "Legal Moves",
+          "routePlanner": "Route Planner"
+        }
+      }
+    }
   },
   "learn": {
     "title": "Learn Chess",
@@ -246,12 +285,24 @@
     "title": "Practice",
     "description": "Improve your blindfold chess skills with interactive exercises",
     "modulesTitle": "Practice Modules",
+    "levelBeginner": "Beginner",
+    "levelIntermediate": "Intermediate",
+    "levelAdvanced": "Advanced",
+    "levelIntroduction": "Introduction",
     "tryAgain": "Try Again",
+    "changeSettings": "Change Settings",
+    "doOtherPractice": "Do other practice",
     "morePractice": "More Practice",
     "practiceComplete": "Practice Complete!",
     "score": "Score",
     "correctAnswers": "Correct Answers",
     "relatedLearning": "Related Learning",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "Bishop Movement",
+        "description": "Learn how the bishop moves diagonally across the board"
+      }
+    },
     "problemDetails": "Problem Details",
     "session": "Session",
     "problem": "Problem",
@@ -259,9 +310,18 @@
     "secondsFormat": "{seconds}s",
     "minutesFormat": "{minutes}m",
     "quit": "Quit",
-    "correct": "Correct!",
+    "correct": "Correct",
     "incorrect": "Incorrect",
+    "accuracy": "Accuracy",
+    "averageTime": "Average Time",
     "undo": "Undo",
+    "resume": "Resume",
+    "modeTimed": "Timed",
+    "modeTraining": "Training",
+    "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
+    "startTraining": "Start Training",
+    "endTraining": "End",
+    "trainingEnded": "Training ended",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
@@ -347,6 +407,7 @@
       "correctAnswerIs": "The correct answer is",
       "explanation": "Explanation",
       "nextExercise": "Next Exercise",
+      "next": "Next",
       "complete": "Complete"
     },
     "squareColors": {
@@ -356,7 +417,7 @@
       "question": "What color is square {square}?",
       "white": "Light",
       "black": "Dark",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
@@ -383,16 +444,16 @@
       "selectAtLeastOne": "Please select at least one piece",
       "selectedCount": "{count} selected",
       "pieces": {
-        "bishop": "Bishop",
-        "knight": "Knight",
-        "rook": "Rook",
-        "queen": "Queen",
-        "king": "King"
+        "b": "Bishop",
+        "n": "Knight",
+        "r": "Rook",
+        "q": "Queen",
+        "k": "King"
       },
       "start": "Start",
       "question": "Can piece move from {from} to {to}?",
       "questionFormat": "Can piece move from {from} to {to}?",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "legal": "Yes",
       "illegal": "No",
@@ -733,6 +794,7 @@
     "routePlanner": {
       "title": "Route Planner",
       "description": "Calculate the shortest path for a piece to reach a target square",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
       "settings": "Settings",
       "start": "Start",
       "piece": "Piece to Move",
@@ -741,7 +803,7 @@
       "findPath": "Find path for {piece} from {start} to {target}",
       "yourPath": "Your Path",
       "shortestPath": "Shortest Path",
-      "correct": "Correct!",
+      "correct": "Correct",
       "incorrect": "Incorrect",
       "badEnd": "Path does not reach the goal",
       "badMove": "Incorrect",
@@ -749,10 +811,10 @@
       "distance": "Distance: {count}",
       "inputPlaceholder": "Enter next square...",
       "pieces": {
-        "N": "Knight",
-        "B": "Bishop",
-        "R": "Rook",
-        "Q": "Queen"
+        "n": "Knight",
+        "b": "Bishop",
+        "r": "Rook",
+        "q": "Queen"
       },
       "moves": "Moves",
       "currentPosition": "Current Position",
@@ -796,14 +858,19 @@
         "previous": "Back",
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
-        "restart": "Restart",
-        "finish": "Start Practice"
-      },
-      "betaNotice": "This feature is in beta and may contain unexpected bugs."
+        "restart": "Restart"
+      }
     },
     "moveSequence": {
       "title": "Yakusoku Kumite",
-      "description": "Memorize and reproduce chess move sequences from memory",
+      "description": "Memorize and visualize a sequence of moves on the board",
+      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
+      "articles": {
+        "algebraicNotation": {
+          "title": "Algebraic Notation",
+          "description": "Learn to read and write chess moves in standard notation"
+        }
+      },
       "showBoard": "Show Board",
       "hideBoard": "Hide Board",
       "fenRequired": "FEN is required",
@@ -839,6 +906,7 @@
       "opponentTurn": "Waiting for opponent's move...",
       "switchToSelect": "Switch to list selection",
       "switchToText": "Switch to text input",
+      "switchInputMode": "Switch input mode",
       "wrongMove": "{move} is incorrect",
       "perfect": "Perfect!",
       "completed": "Completed",
@@ -888,13 +956,7 @@
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
       "cancel": "Cancel",
-      "relatedArticles": "Related Articles",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Algebraic Notation",
-          "description": "Learn to read and write chess moves in standard notation"
-        }
-      }
+      "relatedArticles": "Related Articles"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",
@@ -1127,6 +1189,7 @@
     "selectMove": "Select a move",
     "switchToSelect": "Switch to list selection",
     "switchToText": "Switch to text input",
+    "switchInputMode": "Switch input mode",
     "dontKnow": "I don't know",
     "analyzeAll": "Analyze All",
     "autoFillAll": "Auto-fill All",
@@ -1194,6 +1257,13 @@
   },
   "newGame": {
     "title": "New Game",
+    "selectTitle": "Choose How to Start",
+    "standardTitle": "Standard Game",
+    "standardDescription": "Start a fresh game from the standard opening position",
+    "pgnPageTitle": "Import PGN",
+    "pgnPageDescription": "Continue from a specific position using PGN notation",
+    "positionPageTitle": "Custom Position",
+    "positionPageDescription": "Set up a custom board position and start playing from there",
     "startMethod": "How would you like to start?",
     "newGame": "New Game",
     "newGameDescription": "Start a fresh game from the beginning",
@@ -1205,6 +1275,30 @@
     "validWithMovesCount": "moves",
     "invalidPgn": "Invalid PGN format",
     "derivedFromPgn": "Color automatically selected based on PGN",
+    "customPosition": "Custom Position",
+    "customPositionDescription": "Set up a custom board position",
+    "positionEmpty": "Place at least one piece on the board",
+    "positionInvalid": "Invalid position (e.g., each side must have exactly one king)",
+    "positionAlreadyCheckmate": "This position is already checkmate — the game would end immediately",
+    "positionAlreadyStalemate": "This position is already stalemate — the game would end immediately",
+    "positionInsufficientMaterial": "Insufficient material to continue — the game would be an immediate draw",
+    "positionCheckCorrected": "The checked side must move first — please select the other color",
+    "positionValid": "Valid position",
+    "flipBoard": "Flip Board",
+    "positionSettings": {
+      "title": "Advanced Settings",
+      "castling": "Castling Rights",
+      "whiteKingside": "White O-O (Kingside)",
+      "whiteQueenside": "White O-O-O (Queenside)",
+      "blackKingside": "Black O-O (Kingside)",
+      "blackQueenside": "Black O-O-O (Queenside)",
+      "enPassant": "En Passant Target Square",
+      "none": "None",
+      "whitePieces": "White Pieces",
+      "blackPieces": "Black Pieces",
+      "removePieceMode": "Remove piece mode - Click on a square to remove piece",
+      "placingPiece": "Placing"
+    },
     "selectColor": "Select Your Color",
     "playAsWhite": "Play as White",
     "playAsBlack": "Play as Black",
@@ -1237,7 +1331,7 @@
   "privacy": {
     "title": "Privacy Policy",
     "description": "Our privacy policy and how we handle your personal information",
-    "lastUpdated": "Last Updated: January 15, 2025",
+    "lastUpdated": "Last Updated: February 18, 2026",
     "introduction": "Blindfold Chess (\"the Site\") respects user privacy and is committed to protecting personal information. This Privacy Policy explains how the Site collects, uses, and protects information.",
     "cookiesTitle": "Use of Cookies",
     "cookiesDescription": "The Site uses cookies to improve service quality and deliver advertisements. Cookies are small text files stored on your device by websites. While you can disable cookies, some features may not function properly.",
@@ -1264,11 +1358,27 @@
     "localStorageItem3": "Managing practice mode progress",
     "localStorageNote": "This information is stored only on your device and is not transmitted to external servers. You can delete this information at any time by clearing your browser cache.",
     "personalDataTitle": "Collection of Personal Information",
-    "personalDataDescription": "The Site does not provide user registration or contact forms, and does not directly collect personally identifiable information such as names, email addresses, or phone numbers.",
+    "personalDataDescription": "The Site does not provide user registration. While a contact form is available, information submitted through it is used solely for responding to inquiries and is not used for any other purpose. The Site does not otherwise directly collect personally identifiable information such as names, email addresses, or phone numbers.",
     "thirdPartyLinksTitle": "Links to Third-Party Sites",
     "thirdPartyLinksDescription": "The Site may contain links to external sites. The Site is not responsible for the privacy policies of these external sites. When visiting external sites, please review their respective privacy policies.",
     "childrenPrivacyTitle": "Children's Privacy",
     "childrenPrivacyDescription": "The Site does not intentionally collect personal information from children under 13 years of age. Parents should appropriately supervise their children's internet use.",
+    "yourRightsTitle": "Your Rights",
+    "yourRightsDescription": "You have the following rights regarding your data:",
+    "yourRightsItem1": "Right of access — You have the right to know what data is being collected about you",
+    "yourRightsItem2": "Right to deletion — You have the right to request the deletion of your data",
+    "yourRightsItem3": "Right to opt out — You have the right to refuse personalized advertising",
+    "yourRightsItem4": "To exercise these rights, please contact us through the contact form",
+    "cookieDetailsTitle": "Cookie Details",
+    "cookieDetailsDescription": "The following types of cookies are used on the Site:",
+    "cookieDetailsItem1": "Essential cookies — Used for recording cookie consent (CookieYes)",
+    "cookieDetailsItem2": "Analytics cookies — Used for access analysis (Google Analytics)",
+    "cookieDetailsItem3": "Advertising cookies — Used for delivering personalized ads (Google AdSense)",
+    "cookieDetailsNote": "You can consent to or reject each type of cookie through the CookieYes banner.",
+    "dataRetentionTitle": "Data Retention",
+    "dataRetentionDescription": "Data retention periods vary by type:",
+    "dataRetentionItem1": "Google Analytics data is retained for 14 months",
+    "dataRetentionItem2": "Game data stored in your browser's localStorage is retained on your device until you clear your browser data",
     "changesTitle": "Changes to Privacy Policy",
     "changesDescription": "The Site may update this Privacy Policy as needed. Updated Privacy Policy will take effect from the time it is posted on this page. Please check this page regularly."
   },

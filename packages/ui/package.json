@@ -8,6 +8,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@blindfold-chess/types": "workspace:*"
+  },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
     "eslint": "^9.39.1",

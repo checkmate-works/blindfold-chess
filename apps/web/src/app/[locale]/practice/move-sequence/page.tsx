@@ -6,6 +6,12 @@
  * Users input a FEN position and a series of moves, watch the sequence play out,
  * then reproduce the moves from memory.
  *
+ * @naming
+ * The feature name "Yakusoku Kumite" (約束組手) is intentionally kept in romanized Japanese
+ * across all locales, including English. This is a deliberate branding decision — the Japanese
+ * name has proven to attract international users' curiosity and engagement.
+ * Do NOT "correct" this to a plain English translation like "Move Sequence".
+ *
  * @flow
  * 1. Setup Phase: Input FEN and PGN moves
  * 2. Memorize Phase: Watch the sequence play on the board

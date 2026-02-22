@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
-import { FenSession } from '../_components/FenSession';
+const FenSession = dynamic(() => import('../_components/FenSession').then((mod) => mod.FenSession));
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -75,16 +76,16 @@ export default async function FenSessionPage({ params, searchParams }: Props) {
     }
   }
 
-  const breadcrumbItems = [
-    { label: t('navigation.practice'), href: '/practice' },
-    { label: t('practice.fen.title'), href: '/practice/fen' },
-    { label: t('practice.fen.session') },
-  ];
-
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.fen.session')}</PageTitle>
-
+    <PracticeSessionPage
+      locale={locale}
+      title={t('practice.fen.session')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.fen.title'), href: '/practice/fen' },
+        { label: t('practice.fen.session') },
+      ]}
+    >
       <FenSession
         locale={locale}
         problemCount={problemCount}
@@ -93,10 +94,6 @@ export default async function FenSessionPage({ params, searchParams }: Props) {
         customFen={customFen ?? undefined}
         fens={fens ?? undefined}
       />
-
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
-    </div>
+    </PracticeSessionPage>
   );
 }

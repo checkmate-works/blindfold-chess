@@ -1,4 +1,4 @@
-import type { Square } from "chess.js";
+import type { Square } from "@blindfold-chess/types";
 
 export const allSquares: Square[] = [
   "a8",

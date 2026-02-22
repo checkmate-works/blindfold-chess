@@ -5,7 +5,7 @@ import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { RoutePlannerPageContent } from './_components/RoutePlannerPageContent';
+import RoutePlanner from './_components/RoutePlanner';
 
 type Props = {
   params: Promise<{
@@ -32,7 +32,7 @@ export default async function RoutePlannerPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.routePlanner.title')}</PageTitle>
 
-      <RoutePlannerPageContent locale={locale} />
+      <RoutePlanner locale={locale} />
 
       <Divider />
 

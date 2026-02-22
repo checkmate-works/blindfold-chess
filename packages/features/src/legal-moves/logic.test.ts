@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { pieceDisplayMap, pieceSymbolMap } from "./constants";
+import { pieceDisplayMap } from "./constants";
 import {
   generateBalancedMoveQuestions,
   generateMoveQuestionForPiece,
@@ -17,23 +17,23 @@ describe("isLegalMove", () => {
   // ----------------------------------------------------------
   describe("bishop", () => {
     it("accepts diagonal moves", () => {
-      expect(isLegalMove("d4", "f6", "bishop")).toBe(true); // up-right
-      expect(isLegalMove("d4", "b6", "bishop")).toBe(true); // up-left
-      expect(isLegalMove("d4", "f2", "bishop")).toBe(true); // down-right
-      expect(isLegalMove("d4", "b2", "bishop")).toBe(true); // down-left
+      expect(isLegalMove("d4", "f6", "b")).toBe(true); // up-right
+      expect(isLegalMove("d4", "b6", "b")).toBe(true); // up-left
+      expect(isLegalMove("d4", "f2", "b")).toBe(true); // down-right
+      expect(isLegalMove("d4", "b2", "b")).toBe(true); // down-left
     });
 
     it("rejects non-diagonal moves", () => {
-      expect(isLegalMove("d4", "d6", "bishop")).toBe(false); // vertical
-      expect(isLegalMove("d4", "f4", "bishop")).toBe(false); // horizontal
-      expect(isLegalMove("d4", "e6", "bishop")).toBe(false); // knight-like
+      expect(isLegalMove("d4", "d6", "b")).toBe(false); // vertical
+      expect(isLegalMove("d4", "f4", "b")).toBe(false); // horizontal
+      expect(isLegalMove("d4", "e6", "b")).toBe(false); // knight-like
     });
 
     it("handles moves from the board edge", () => {
-      expect(isLegalMove("a1", "h8", "bishop")).toBe(true);
-      expect(isLegalMove("h1", "a8", "bishop")).toBe(true);
-      expect(isLegalMove("a8", "h1", "bishop")).toBe(true);
-      expect(isLegalMove("a1", "b2", "bishop")).toBe(true);
+      expect(isLegalMove("a1", "h8", "b")).toBe(true);
+      expect(isLegalMove("h1", "a8", "b")).toBe(true);
+      expect(isLegalMove("a8", "h1", "b")).toBe(true);
+      expect(isLegalMove("a1", "b2", "b")).toBe(true);
     });
   });
 
@@ -42,27 +42,27 @@ describe("isLegalMove", () => {
   // ----------------------------------------------------------
   describe("knight", () => {
     it("accepts L-shaped moves", () => {
-      expect(isLegalMove("d4", "e6", "knight")).toBe(true);
-      expect(isLegalMove("d4", "f5", "knight")).toBe(true);
-      expect(isLegalMove("d4", "f3", "knight")).toBe(true);
-      expect(isLegalMove("d4", "e2", "knight")).toBe(true);
-      expect(isLegalMove("d4", "c2", "knight")).toBe(true);
-      expect(isLegalMove("d4", "b3", "knight")).toBe(true);
-      expect(isLegalMove("d4", "b5", "knight")).toBe(true);
-      expect(isLegalMove("d4", "c6", "knight")).toBe(true);
+      expect(isLegalMove("d4", "e6", "n")).toBe(true);
+      expect(isLegalMove("d4", "f5", "n")).toBe(true);
+      expect(isLegalMove("d4", "f3", "n")).toBe(true);
+      expect(isLegalMove("d4", "e2", "n")).toBe(true);
+      expect(isLegalMove("d4", "c2", "n")).toBe(true);
+      expect(isLegalMove("d4", "b3", "n")).toBe(true);
+      expect(isLegalMove("d4", "b5", "n")).toBe(true);
+      expect(isLegalMove("d4", "c6", "n")).toBe(true);
     });
 
     it("rejects non L-shaped moves", () => {
-      expect(isLegalMove("d4", "d5", "knight")).toBe(false); // one square up
-      expect(isLegalMove("d4", "e5", "knight")).toBe(false); // diagonal
-      expect(isLegalMove("d4", "f6", "knight")).toBe(false); // two diagonal
+      expect(isLegalMove("d4", "d5", "n")).toBe(false); // one square up
+      expect(isLegalMove("d4", "e5", "n")).toBe(false); // diagonal
+      expect(isLegalMove("d4", "f6", "n")).toBe(false); // two diagonal
     });
 
     it("handles moves from the corner", () => {
-      expect(isLegalMove("a1", "b3", "knight")).toBe(true);
-      expect(isLegalMove("a1", "c2", "knight")).toBe(true);
+      expect(isLegalMove("a1", "b3", "n")).toBe(true);
+      expect(isLegalMove("a1", "c2", "n")).toBe(true);
       // only 2 legal knight moves from a1
-      expect(isLegalMove("a1", "a3", "knight")).toBe(false);
+      expect(isLegalMove("a1", "a3", "n")).toBe(false);
     });
   });
 
@@ -71,22 +71,22 @@ describe("isLegalMove", () => {
   // ----------------------------------------------------------
   describe("rook", () => {
     it("accepts straight line moves", () => {
-      expect(isLegalMove("d4", "d8", "rook")).toBe(true); // vertical
-      expect(isLegalMove("d4", "a4", "rook")).toBe(true); // horizontal
-      expect(isLegalMove("d4", "d1", "rook")).toBe(true);
-      expect(isLegalMove("d4", "h4", "rook")).toBe(true);
+      expect(isLegalMove("d4", "d8", "r")).toBe(true); // vertical
+      expect(isLegalMove("d4", "a4", "r")).toBe(true); // horizontal
+      expect(isLegalMove("d4", "d1", "r")).toBe(true);
+      expect(isLegalMove("d4", "h4", "r")).toBe(true);
     });
 
     it("rejects diagonal moves", () => {
-      expect(isLegalMove("d4", "e5", "rook")).toBe(false);
-      expect(isLegalMove("d4", "f6", "rook")).toBe(false);
+      expect(isLegalMove("d4", "e5", "r")).toBe(false);
+      expect(isLegalMove("d4", "f6", "r")).toBe(false);
     });
 
     it("handles moves from the edge", () => {
-      expect(isLegalMove("a1", "a8", "rook")).toBe(true);
-      expect(isLegalMove("a1", "h1", "rook")).toBe(true);
-      expect(isLegalMove("h8", "h1", "rook")).toBe(true);
-      expect(isLegalMove("h8", "a8", "rook")).toBe(true);
+      expect(isLegalMove("a1", "a8", "r")).toBe(true);
+      expect(isLegalMove("a1", "h1", "r")).toBe(true);
+      expect(isLegalMove("h8", "h1", "r")).toBe(true);
+      expect(isLegalMove("h8", "a8", "r")).toBe(true);
     });
   });
 
@@ -95,18 +95,18 @@ describe("isLegalMove", () => {
   // ----------------------------------------------------------
   describe("queen", () => {
     it("accepts diagonal moves", () => {
-      expect(isLegalMove("d4", "f6", "queen")).toBe(true);
-      expect(isLegalMove("d4", "a7", "queen")).toBe(true);
+      expect(isLegalMove("d4", "f6", "q")).toBe(true);
+      expect(isLegalMove("d4", "a7", "q")).toBe(true);
     });
 
     it("accepts straight line moves", () => {
-      expect(isLegalMove("d4", "d8", "queen")).toBe(true);
-      expect(isLegalMove("d4", "h4", "queen")).toBe(true);
+      expect(isLegalMove("d4", "d8", "q")).toBe(true);
+      expect(isLegalMove("d4", "h4", "q")).toBe(true);
     });
 
     it("rejects knight-like moves", () => {
-      expect(isLegalMove("d4", "e6", "queen")).toBe(false);
-      expect(isLegalMove("d4", "f5", "queen")).toBe(false);
+      expect(isLegalMove("d4", "e6", "q")).toBe(false);
+      expect(isLegalMove("d4", "f5", "q")).toBe(false);
     });
   });
 
@@ -115,26 +115,26 @@ describe("isLegalMove", () => {
   // ----------------------------------------------------------
   describe("king", () => {
     it("accepts one-square moves in all directions", () => {
-      expect(isLegalMove("d4", "d5", "king")).toBe(true); // up
-      expect(isLegalMove("d4", "e5", "king")).toBe(true); // up-right
-      expect(isLegalMove("d4", "e4", "king")).toBe(true); // right
-      expect(isLegalMove("d4", "e3", "king")).toBe(true); // down-right
-      expect(isLegalMove("d4", "d3", "king")).toBe(true); // down
-      expect(isLegalMove("d4", "c3", "king")).toBe(true); // down-left
-      expect(isLegalMove("d4", "c4", "king")).toBe(true); // left
-      expect(isLegalMove("d4", "c5", "king")).toBe(true); // up-left
+      expect(isLegalMove("d4", "d5", "k")).toBe(true); // up
+      expect(isLegalMove("d4", "e5", "k")).toBe(true); // up-right
+      expect(isLegalMove("d4", "e4", "k")).toBe(true); // right
+      expect(isLegalMove("d4", "e3", "k")).toBe(true); // down-right
+      expect(isLegalMove("d4", "d3", "k")).toBe(true); // down
+      expect(isLegalMove("d4", "c3", "k")).toBe(true); // down-left
+      expect(isLegalMove("d4", "c4", "k")).toBe(true); // left
+      expect(isLegalMove("d4", "c5", "k")).toBe(true); // up-left
     });
 
     it("rejects moves more than one square away", () => {
-      expect(isLegalMove("d4", "d6", "king")).toBe(false);
-      expect(isLegalMove("d4", "f6", "king")).toBe(false);
-      expect(isLegalMove("d4", "b2", "king")).toBe(false);
+      expect(isLegalMove("d4", "d6", "k")).toBe(false);
+      expect(isLegalMove("d4", "f6", "k")).toBe(false);
+      expect(isLegalMove("d4", "b2", "k")).toBe(false);
     });
 
     it("handles moves from the corner", () => {
-      expect(isLegalMove("a1", "a2", "king")).toBe(true);
-      expect(isLegalMove("a1", "b1", "king")).toBe(true);
-      expect(isLegalMove("a1", "b2", "king")).toBe(true);
+      expect(isLegalMove("a1", "a2", "k")).toBe(true);
+      expect(isLegalMove("a1", "b1", "k")).toBe(true);
+      expect(isLegalMove("a1", "b2", "k")).toBe(true);
     });
   });
 
@@ -151,11 +151,11 @@ describe("isLegalMove", () => {
     it("works correctly after chess.clear() without kings on the board", () => {
       // Verify that chess.js clear() + put() approach works for each piece
       // This is a regression guard for the chess.js internal state concern
-      expect(isLegalMove("e2", "e4", "rook")).toBe(true);
-      expect(isLegalMove("b1", "c3", "knight")).toBe(true);
-      expect(isLegalMove("c1", "f4", "bishop")).toBe(true);
-      expect(isLegalMove("d1", "d7", "queen")).toBe(true);
-      expect(isLegalMove("e1", "e2", "king")).toBe(true);
+      expect(isLegalMove("e2", "e4", "r")).toBe(true);
+      expect(isLegalMove("b1", "c3", "n")).toBe(true);
+      expect(isLegalMove("c1", "f4", "b")).toBe(true);
+      expect(isLegalMove("d1", "d7", "q")).toBe(true);
+      expect(isLegalMove("e1", "e2", "k")).toBe(true);
     });
   });
 });
@@ -198,7 +198,7 @@ describe("generateBalancedMoveQuestions", () => {
   });
 
   it("only includes pieces from the allowedPieces parameter", () => {
-    const allowedPieces: PieceType[] = ["knight", "bishop"];
+    const allowedPieces: PieceType[] = ["n", "b"];
     const questions = generateBalancedMoveQuestions(20, allowedPieces);
 
     for (const q of questions) {
@@ -207,10 +207,10 @@ describe("generateBalancedMoveQuestions", () => {
   });
 
   it("works with a single allowed piece", () => {
-    const questions = generateBalancedMoveQuestions(10, ["rook"]);
+    const questions = generateBalancedMoveQuestions(10, ["r"]);
     expect(questions).toHaveLength(10);
     for (const q of questions) {
-      expect(q.piece).toBe("rook");
+      expect(q.piece).toBe("r");
     }
   });
 
@@ -252,7 +252,7 @@ describe("generateMoveQuestionForPiece", () => {
   it("generates a legal move when preferLegal is true", () => {
     // Run multiple times to increase confidence
     for (let i = 0; i < 10; i++) {
-      const q = generateMoveQuestionForPiece("knight", true);
+      const q = generateMoveQuestionForPiece("n", true);
       expect(q).not.toBeNull();
       if (q) {
         expect(isLegalMove(q.from, q.to, q.piece)).toBe(true);
@@ -263,7 +263,7 @@ describe("generateMoveQuestionForPiece", () => {
   it("generates an illegal move when preferLegal is false", () => {
     // Run multiple times to increase confidence
     for (let i = 0; i < 10; i++) {
-      const q = generateMoveQuestionForPiece("bishop", false);
+      const q = generateMoveQuestionForPiece("b", false);
       expect(q).not.toBeNull();
       if (q) {
         expect(isLegalMove(q.from, q.to, q.piece)).toBe(false);
@@ -288,7 +288,7 @@ describe("generateMoveQuestionForPiece", () => {
 // ============================================================
 describe("PIECE_TYPES", () => {
   it("contains exactly the five standard chess piece types", () => {
-    expect(PIECE_TYPES).toEqual(["bishop", "knight", "rook", "queen", "king"]);
+    expect(PIECE_TYPES).toEqual(["b", "n", "r", "q", "k"]);
   });
 
   it("has length 5", () => {
@@ -296,29 +296,13 @@ describe("PIECE_TYPES", () => {
   });
 });
 
-describe("pieceSymbolMap", () => {
-  it("maps every PieceType to the correct chess.js symbol", () => {
-    expect(pieceSymbolMap.bishop).toBe("b");
-    expect(pieceSymbolMap.knight).toBe("n");
-    expect(pieceSymbolMap.rook).toBe("r");
-    expect(pieceSymbolMap.queen).toBe("q");
-    expect(pieceSymbolMap.king).toBe("k");
-  });
-
-  it("has an entry for every PIECE_TYPE", () => {
-    for (const piece of PIECE_TYPES) {
-      expect(pieceSymbolMap[piece]).toBeDefined();
-    }
-  });
-});
-
 describe("pieceDisplayMap", () => {
   it("maps every PieceType to a Unicode chess symbol", () => {
-    expect(pieceDisplayMap.bishop).toBe("\u2657");
-    expect(pieceDisplayMap.knight).toBe("\u2658");
-    expect(pieceDisplayMap.rook).toBe("\u2656");
-    expect(pieceDisplayMap.queen).toBe("\u2655");
-    expect(pieceDisplayMap.king).toBe("\u2654");
+    expect(pieceDisplayMap.b).toBe("\u2657");
+    expect(pieceDisplayMap.n).toBe("\u2658");
+    expect(pieceDisplayMap.r).toBe("\u2656");
+    expect(pieceDisplayMap.q).toBe("\u2655");
+    expect(pieceDisplayMap.k).toBe("\u2654");
   });
 
   it("has an entry for every PIECE_TYPE", () => {
