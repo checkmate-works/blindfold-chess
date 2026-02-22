@@ -109,7 +109,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 confirmationDialogs={confirmationDialogs}
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
-                t={t}
               />
             )}
 

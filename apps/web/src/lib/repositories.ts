@@ -209,10 +209,12 @@ export class LocalStorageGameRepository implements IGameRepository {
       typeof g.id === 'string' &&
       typeof g.date === 'string' &&
       Array.isArray(g.moves) &&
+      g.moves.every((m) => typeof m === 'string') &&
       (g.playerColor === 'white' || g.playerColor === 'black') &&
       typeof g.skillLevel === 'number' &&
       ['in_progress', 'win', 'loss', 'draw'].includes(g.status as string) &&
-      (g.lastPlayed === undefined || typeof g.lastPlayed === 'string')
+      (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
+      (g.startingFen === undefined || typeof g.startingFen === 'string')
     );
   }
 }

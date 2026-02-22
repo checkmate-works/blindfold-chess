@@ -40,6 +40,55 @@ const defaultPreferences: GamePreferences = {
   adsEnabled: true,
 };
 
+// Validate and sanitize parsed preferences from localStorage.
+// Only picks known keys with valid types/values; unknown keys are ignored.
+function validatePreferences(parsed: unknown): Partial<GamePreferences> {
+  if (typeof parsed !== 'object' || parsed === null) return {};
+
+  const p = parsed as Record<string, unknown>;
+  const result: Partial<GamePreferences> = {};
+
+  if (typeof p.showCoordinates === 'boolean') result.showCoordinates = p.showCoordinates;
+  if (typeof p.highlightLastMove === 'boolean') result.highlightLastMove = p.highlightLastMove;
+  if (
+    typeof p.boardTheme === 'string' &&
+    ['monotone', 'lichess', 'chesscom'].includes(p.boardTheme)
+  ) {
+    result.boardTheme = p.boardTheme as BoardTheme;
+  }
+  if (typeof p.showOwnPieces === 'boolean') result.showOwnPieces = p.showOwnPieces;
+  if (typeof p.showOpponentPieces === 'boolean') result.showOpponentPieces = p.showOpponentPieces;
+  if (
+    typeof p.pieceShapeMode === 'string' &&
+    ['normal', 'circles-all', 'circles-own', 'circles-opponent'].includes(p.pieceShapeMode)
+  ) {
+    result.pieceShapeMode = p.pieceShapeMode as GamePreferences['pieceShapeMode'];
+  }
+  if (
+    typeof p.pieceColors === 'string' &&
+    ['normal', 'white-only', 'black-only'].includes(p.pieceColors)
+  ) {
+    result.pieceColors = p.pieceColors as GamePreferences['pieceColors'];
+  }
+  if (
+    typeof p.moveInputMode === 'string' &&
+    ['text', 'select', 'button'].includes(p.moveInputMode)
+  ) {
+    result.moveInputMode = p.moveInputMode as GamePreferences['moveInputMode'];
+  }
+  if (
+    typeof p.buttonInputPieceLabel === 'string' &&
+    ['text', 'icon'].includes(p.buttonInputPieceLabel)
+  ) {
+    result.buttonInputPieceLabel =
+      p.buttonInputPieceLabel as GamePreferences['buttonInputPieceLabel'];
+  }
+  if (typeof p.enableAutoComplete === 'boolean') result.enableAutoComplete = p.enableAutoComplete;
+  if (typeof p.adsEnabled === 'boolean') result.adsEnabled = p.adsEnabled;
+
+  return result;
+}
+
 // Local storage key
 const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
 
@@ -60,18 +109,10 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     try {
       const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored);
-
-        // Migration for renamed "default" theme to prevent crashes
-        // If the theme is "default" (old terminology), fallback to "lichess" (safe default)
-        // This ensures users don't see a broken board or get runtime errors.
-        if (parsed.boardTheme === 'default') {
-          parsed.boardTheme = DEFAULT_BOARD_THEME;
-        }
-
+        const validated = validatePreferences(JSON.parse(stored));
         setPreferences({
           ...defaultPreferences,
-          ...parsed,
+          ...validated,
         });
       }
     } catch (error) {
