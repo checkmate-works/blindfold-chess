@@ -12,6 +12,18 @@ export {
   getEloForSkillLevel,
   isLimitedStrength,
 } from "./constants";
+export { buildSkillLevelCommands } from "./skill-level";
+export type {
+  ParsedUciResponse,
+  UciResponseType,
+  UciScore,
+} from "./uci-protocol";
+export {
+  parseUciResponse,
+  parseUciScore,
+  buildPositionCommand,
+  buildGoCommand,
+} from "./uci-protocol";
 export type {
   CastlingMove,
   NotationInputAction,

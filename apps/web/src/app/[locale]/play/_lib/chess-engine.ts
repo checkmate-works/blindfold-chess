@@ -1,3 +1,10 @@
+import {
+  buildGoCommand,
+  buildPositionCommand,
+  buildSkillLevelCommands,
+  parseUciResponse,
+  parseUciScore,
+} from '@blindfold-chess/features/ai-game';
 import { movesToUci, uciToAlgebraic } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Fen, UciMove } from '@blindfold-chess/types';
 
@@ -76,33 +83,40 @@ export class ChessEngine {
       return;
     }
 
-    if (message.includes('uciok')) {
-      const callback = this.pendingCallbacks.get('uciok');
-      if (callback) {
-        this.pendingCallbacks.delete('uciok');
-        callback({ type: 'uci', data: message });
+    const parsed = parseUciResponse(message);
+    if (!parsed) return;
+
+    switch (parsed.type) {
+      case 'uciok': {
+        const callback = this.pendingCallbacks.get('uciok');
+        if (callback) {
+          this.pendingCallbacks.delete('uciok');
+          callback({ type: 'uci', data: message });
+        }
+        break;
       }
-    } else if (message.includes('readyok')) {
-      const callback = this.pendingCallbacks.get('readyok');
-      if (callback) {
-        this.pendingCallbacks.delete('readyok'); // Delete first to prevent duplicate calls
-        callback({ type: 'readyok', data: message });
+      case 'readyok': {
+        const callback = this.pendingCallbacks.get('readyok');
+        if (callback) {
+          this.pendingCallbacks.delete('readyok');
+          callback({ type: 'readyok', data: message });
+        }
+        break;
       }
-    } else if (message.includes('bestmove')) {
-      const matches = message.match(/bestmove (\w+)/);
-      if (matches) {
-        const move = matches[1];
+      case 'bestmove': {
         const callback = this.pendingCallbacks.get('bestmove');
         if (callback) {
-          this.pendingCallbacks.delete('bestmove'); // Delete first to prevent duplicate calls
-          callback({ type: 'bestmove', data: message, move });
+          this.pendingCallbacks.delete('bestmove');
+          callback({ type: 'bestmove', data: message, move: parsed.move });
         }
+        break;
       }
-    } else if (message.includes('info') && message.includes('score')) {
-      // Handle evaluation info messages
-      const callback = this.pendingCallbacks.get('evaluation');
-      if (callback) {
-        callback({ type: 'info', data: message });
+      case 'info': {
+        const callback = this.pendingCallbacks.get('evaluation');
+        if (callback) {
+          callback({ type: 'info', data: message });
+        }
+        break;
       }
     }
   }
@@ -149,21 +163,9 @@ export class ChessEngine {
       return;
     }
 
-    // Set Stockfish skill level (1-20)
-    // Stockfish 17 NNUE supports the same UCI Skill Level parameter as earlier versions
-    await this.sendCommand(`setoption name Skill Level value ${level}`);
-
-    // For levels below 15, also use UCI_LimitStrength to cap playing strength
-    // This provides more consistent behavior across different skill levels
-    if (level < 15) {
-      await this.sendCommand(`setoption name UCI_LimitStrength value true`);
-      // Map skill level to approximate Elo rating
-      // Level 1 (~800 Elo) to Level 14 (~2100 Elo)
-      const targetElo = Math.max(800, 700 + level * 100);
-      await this.sendCommand(`setoption name UCI_Elo value ${targetElo}`);
-    } else {
-      // For higher levels (15-20), disable UCI_LimitStrength to allow full strength
-      await this.sendCommand(`setoption name UCI_LimitStrength value false`);
+    const commands = buildSkillLevelCommands(level);
+    for (const cmd of commands) {
+      await this.sendCommand(cmd);
     }
   }
 
@@ -188,15 +190,11 @@ export class ChessEngine {
       this.isProcessing = true;
 
       // Set position
-      if (moves.length > 0) {
-        const moveString = this.convertMovesToUci(moves, startingFen).join(' ');
-        await this.sendCommand(`position fen ${fen} moves ${moveString}`);
-      } else {
-        await this.sendCommand(`position fen ${fen}`);
-      }
+      const uciMoves = moves.length > 0 ? this.convertMovesToUci(moves, startingFen) : undefined;
+      await this.sendCommand(buildPositionCommand(fen, uciMoves));
 
       // Get best move
-      const response = await this.sendCommand(`go movetime ${timeLimit}`);
+      const response = await this.sendCommand(buildGoCommand({ movetime: timeLimit }));
 
       if (!response.move) {
         throw new Error('Engine failed to return a move');
@@ -224,7 +222,7 @@ export class ChessEngine {
       this.isProcessing = true;
 
       // Set position
-      await this.sendCommand(`position fen ${fen}`);
+      await this.sendCommand(buildPositionCommand(fen));
 
       // Get evaluation with depth
       return new Promise((resolve, reject) => {
@@ -239,25 +237,20 @@ export class ChessEngine {
         let bestMoveUci: string | undefined;
 
         this.pendingCallbacks.set('evaluation', (response) => {
-          const message = response.data;
+          const score = parseUciScore(response.data);
+          if (!score) return;
 
-          // Parse score from info messages
-          // Format: "info depth 15 score cp 123" or "info depth 15 score mate 5"
-          const cpMatch = message.match(/score cp (-?\d+)/);
-          const mateMatch = message.match(/score mate (-?\d+)/);
-
-          if (cpMatch) {
-            latestScore = parseInt(cpMatch[1], 10);
+          if (score.kind === 'cp') {
+            latestScore = score.value;
             latestMate = undefined;
-          } else if (mateMatch) {
-            latestMate = parseInt(mateMatch[1], 10);
-            // Use a large score to indicate mate
-            latestScore = latestMate > 0 ? 10000 : -10000;
+          } else {
+            latestMate = score.value;
+            latestScore = score.value > 0 ? 10000 : -10000;
           }
         });
 
         // Start evaluation
-        this.engine?.postMessage(`go depth ${depth}`);
+        this.engine?.postMessage(buildGoCommand({ depth }));
 
         // Wait for bestmove to know evaluation is complete
         this.pendingCallbacks.set('bestmove', (response) => {
@@ -273,7 +266,6 @@ export class ChessEngine {
           if (latestScore !== null) {
             // Stockfish returns score from the perspective of the side to move
             // We need to convert it to always be from white's perspective
-            // FEN format: "... w ..." means white to move, "... b ..." means black to move
             const isWhiteToMove = fen.split(' ')[1] === 'w';
             const scoreFromWhitePerspective = isWhiteToMove ? latestScore : -latestScore;
             const mateFromWhitePerspective =
