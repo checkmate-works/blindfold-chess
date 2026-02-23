@@ -34,7 +34,7 @@ const defaultPreferences: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
-  moveInputMode: 'text',
+  moveInputMode: 'button',
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   adsEnabled: true,
