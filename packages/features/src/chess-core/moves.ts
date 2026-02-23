@@ -1,3 +1,4 @@
+import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess } from "chess.js";
 
 import type { MoveResult } from "./types";
@@ -171,4 +172,23 @@ export function replayMoves(
   }
 
   return positions;
+}
+
+/**
+ * Extract a player's moves from an alternating move sequence.
+ * White's moves are at even indices (0, 2, 4, …),
+ * Black's moves are at odd indices (1, 3, 5, …).
+ */
+export function getPlayerMovesFromSequence(
+  moves: AlgebraicNotation[],
+  playerColor: "w" | "b",
+): AlgebraicNotation[] {
+  const startIndex = playerColor === "w" ? 0 : 1;
+  const playerMoves: AlgebraicNotation[] = [];
+
+  for (let i = startIndex; i < moves.length; i += 2) {
+    playerMoves.push(moves[i]);
+  }
+
+  return playerMoves;
 }

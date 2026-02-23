@@ -33,7 +33,15 @@ export {
   uciToAlgebraic,
   getLastMoveDetails,
   replayMoves,
+  getPlayerMovesFromSequence,
 } from "./moves";
+
+export type {
+  FormattedPgn,
+  FormattedPgnMove,
+  ParsedPgnMove,
+  ParsedMoveSequence,
+} from "./pgn";
 
 export {
   validatePgn,
@@ -43,6 +51,12 @@ export {
   validatePgnWithDetails,
   getPgnHeaders,
   getPgnHistory,
+  formatPgnToText,
+  getPgnSuggestion,
+  parsePgnMoves,
+  flattenPgnMoves,
+  validatePgnMoves,
+  parsePgnMoveSequence,
 } from "./pgn";
 
 export {
