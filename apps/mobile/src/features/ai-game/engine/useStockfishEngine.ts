@@ -1,5 +1,14 @@
 import { useCallback, useRef, useState } from "react";
-import { Chess } from "chess.js";
+import {
+  buildSkillLevelCommands,
+  parseUciResponse,
+  buildPositionCommand,
+  buildGoCommand,
+} from "@blindfold-chess/features/ai-game";
+import {
+  movesToUci,
+  uciToAlgebraic,
+} from "@blindfold-chess/features/chess-core";
 import type { AlgebraicNotation, Fen, UciMove } from "@blindfold-chess/types";
 
 import type { SkillLevel } from "../lib/types";
@@ -28,27 +37,36 @@ export function useStockfishEngine() {
 
   const handleMessage = useCallback((message: string) => {
     const callbacks = pendingCallbacksRef.current;
+    const parsed = parseUciResponse(message);
+    if (!parsed) return;
 
-    if (message.includes("readyok")) {
-      const pending = callbacks.get("readyok");
-      if (pending) {
-        callbacks.delete("readyok");
-        clearTimeout(pending.timeoutId);
-        pending.resolve(message);
+    switch (parsed.type) {
+      case "readyok": {
+        const pending = callbacks.get("readyok");
+        if (pending) {
+          callbacks.delete("readyok");
+          clearTimeout(pending.timeoutId);
+          pending.resolve(message);
+        }
+        break;
       }
-    } else if (message.includes("bestmove")) {
-      const pending = callbacks.get("bestmove");
-      if (pending) {
-        callbacks.delete("bestmove");
-        clearTimeout(pending.timeoutId);
-        pending.resolve(message);
+      case "bestmove": {
+        const pending = callbacks.get("bestmove");
+        if (pending) {
+          callbacks.delete("bestmove");
+          clearTimeout(pending.timeoutId);
+          pending.resolve(message);
+        }
+        break;
       }
-    } else if (message.includes("uciok")) {
-      const pending = callbacks.get("uciok");
-      if (pending) {
-        callbacks.delete("uciok");
-        clearTimeout(pending.timeoutId);
-        pending.resolve(message);
+      case "uciok": {
+        const pending = callbacks.get("uciok");
+        if (pending) {
+          callbacks.delete("uciok");
+          clearTimeout(pending.timeoutId);
+          pending.resolve(message);
+        }
+        break;
       }
     }
   }, []);
@@ -108,14 +126,9 @@ export function useStockfishEngine() {
 
   const setSkillLevel = useCallback(
     async (level: SkillLevel) => {
-      sendCommand(`setoption name Skill Level value ${level}`);
-
-      if (level < 15) {
-        sendCommand("setoption name UCI_LimitStrength value true");
-        const targetElo = Math.max(800, 700 + level * 100);
-        sendCommand(`setoption name UCI_Elo value ${targetElo}`);
-      } else {
-        sendCommand("setoption name UCI_LimitStrength value false");
+      const commands = buildSkillLevelCommands(level);
+      for (const cmd of commands) {
+        sendCommand(cmd);
       }
 
       // Wait for engine to be ready after setting options
@@ -128,41 +141,14 @@ export function useStockfishEngine() {
 
   const convertMovesToUci = useCallback(
     (moves: AlgebraicNotation[], startingFen?: string): string[] => {
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-      const uciMoves: string[] = [];
-
-      for (const move of moves) {
-        try {
-          const result = chess.move(move);
-          if (result) {
-            uciMoves.push(result.from + result.to + (result.promotion || ""));
-          } else {
-            break;
-          }
-        } catch {
-          break;
-        }
-      }
-
-      return uciMoves;
+      return movesToUci(moves as string[], startingFen);
     },
     [],
   );
 
   const convertUciToAlgebraic = useCallback(
     (uciMove: UciMove, fen: Fen): AlgebraicNotation => {
-      const chess = new Chess(fen);
-      const from = uciMove.slice(0, 2);
-      const to = uciMove.slice(2, 4);
-      const promotion = uciMove.slice(4);
-
-      const result = chess.move({
-        from,
-        to,
-        promotion: promotion || undefined,
-      });
-
-      return result.san as AlgebraicNotation;
+      return uciToAlgebraic(uciMove, fen) as AlgebraicNotation;
     },
     [],
   );
@@ -192,22 +178,22 @@ export function useStockfishEngine() {
         if (moves.length > 0) {
           const baseFen = startingFen || DEFAULT_START_FEN;
           const uciMoves = convertMovesToUci(moves, startingFen);
-          sendCommand(`position fen ${baseFen} moves ${uciMoves.join(" ")}`);
+          sendCommand(buildPositionCommand(baseFen, uciMoves));
         } else {
-          sendCommand(`position fen ${fen}`);
+          sendCommand(buildPositionCommand(fen));
         }
 
         // Get best move
         const bestMovePromise = waitForResponse("bestmove", timeLimit + 5000);
-        sendCommand(`go movetime ${timeLimit}`);
+        sendCommand(buildGoCommand({ movetime: timeLimit }));
         const response = await bestMovePromise;
 
-        const match = response.match(/bestmove (\w+)/);
-        if (!match) {
+        const parsed = parseUciResponse(response);
+        if (!parsed || parsed.type !== "bestmove") {
           throw new Error("Engine failed to return a move");
         }
 
-        const uciMove = match[1] as UciMove;
+        const uciMove = parsed.move as UciMove;
 
         // fen is already the current position (after all moves),
         // so use it directly for UCI-to-algebraic conversion

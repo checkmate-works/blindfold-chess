@@ -1,52 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCallback } from "react";
+import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
 import type { RoutePlannerPieceType, RoutePlannerSettings } from "../lib/types";
 import { DEFAULT_ROUTE_PLANNER_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "ROUTE_PLANNER_SETTINGS";
 
 export function useRoutePlannerSettings() {
-  const [settings, setSettings] = useState<RoutePlannerSettings>(
-    DEFAULT_ROUTE_PLANNER_SETTINGS,
-  );
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as RoutePlannerSettings;
-          setSettings(parsed);
-        }
-      } catch (error) {
-        console.error("Failed to load route planner settings:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadSettings();
-  }, []);
-
-  const saveSettings = useCallback(
-    async (newSettings: RoutePlannerSettings) => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-        setSettings(newSettings);
-      } catch (error) {
-        console.error("Failed to save route planner settings:", error);
-      }
-    },
-    [],
-  );
+  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
+    usePersistentSettings<RoutePlannerSettings>(
+      STORAGE_KEY,
+      DEFAULT_ROUTE_PLANNER_SETTINGS,
+    );
 
   const updateProblemCount = useCallback(
-    (problemCount: number) => {
-      const newSettings = { ...settings, problemCount };
-      saveSettings(newSettings);
-    },
-    [settings, saveSettings],
+    (problemCount: number) => updateSettings({ problemCount }),
+    [updateSettings],
   );
 
   const togglePiece = useCallback(
@@ -61,15 +29,10 @@ export function useRoutePlannerSettings() {
         newPieces = [...settings.selectedPieces, piece];
       }
 
-      const newSettings = { ...settings, selectedPieces: newPieces };
-      saveSettings(newSettings);
+      updateSettings({ selectedPieces: newPieces });
     },
-    [settings, saveSettings],
+    [settings.selectedPieces, updateSettings],
   );
-
-  const resetSettings = useCallback(() => {
-    saveSettings(DEFAULT_ROUTE_PLANNER_SETTINGS);
-  }, [saveSettings]);
 
   return {
     settings,
