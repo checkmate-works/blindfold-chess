@@ -1,7 +1,7 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess } from "chess.js";
 
-import type { MoveResult } from "./types";
+import type { MoveResult, Square } from "./types";
 
 export function validateMoveSequence(
   fen: string,
@@ -126,7 +126,7 @@ export function uciToAlgebraic(uciMove: string, fen: string): string {
 export function getLastMoveDetails(
   moves: string[],
   startingFen?: string,
-): { from: string; to: string } | null {
+): { from: Square; to: Square } | null {
   if (moves.length === 0) return null;
 
   const chess = startingFen ? new Chess(startingFen) : new Chess();
@@ -148,11 +148,11 @@ export function getLastMoveDetails(
 export function replayMoves(
   moves: string[],
   startingFen?: string,
-): Array<{ fen: string; lastMove?: { from: string; to: string } }> {
+): Array<{ fen: string; lastMove?: { from: Square; to: Square } }> {
   const chess = startingFen ? new Chess(startingFen) : new Chess();
   const positions: Array<{
     fen: string;
-    lastMove?: { from: string; to: string };
+    lastMove?: { from: Square; to: Square };
   }> = [{ fen: chess.fen() }];
 
   for (const move of moves) {

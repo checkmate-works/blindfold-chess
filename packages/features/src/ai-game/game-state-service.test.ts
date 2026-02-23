@@ -400,6 +400,49 @@ describe("GameStateService", () => {
     });
   });
 
+  describe("getLastMoveDetails", () => {
+    it("should return null when no moves have been played", () => {
+      const service = new GameStateService();
+      expect(service.getLastMoveDetails()).toBeNull();
+    });
+
+    it("should return from/to of the last move after a single move", () => {
+      const service = new GameStateService(["e4"] as AlgebraicNotation[]);
+      expect(service.getLastMoveDetails()).toEqual({ from: "e2", to: "e4" });
+    });
+
+    it("should return from/to of the last move after multiple moves", () => {
+      const moves = ["e4", "e5", "Nf3"] as AlgebraicNotation[];
+      const service = new GameStateService(moves);
+      expect(service.getLastMoveDetails()).toEqual({ from: "g1", to: "f3" });
+    });
+
+    it("should work with custom starting FEN", () => {
+      const customFen =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+      const service = new GameStateService(
+        ["e5"] as AlgebraicNotation[],
+        "white",
+        customFen,
+      );
+      expect(service.getLastMoveDetails()).toEqual({ from: "e7", to: "e5" });
+    });
+
+    it("should reflect the last move after makeMove", () => {
+      const service = new GameStateService();
+      service.makeMove("d4" as AlgebraicNotation);
+      expect(service.getLastMoveDetails()).toEqual({ from: "d2", to: "d4" });
+      service.makeMove("d5" as AlgebraicNotation);
+      expect(service.getLastMoveDetails()).toEqual({ from: "d7", to: "d5" });
+    });
+
+    it("should return null when construction stopped at invalid move", () => {
+      const moves = ["InvalidMove" as AlgebraicNotation];
+      const service = new GameStateService(moves);
+      expect(service.getLastMoveDetails()).toBeNull();
+    });
+  });
+
   describe("getStartingFen", () => {
     it("should return undefined when using standard starting position", () => {
       const service = new GameStateService();

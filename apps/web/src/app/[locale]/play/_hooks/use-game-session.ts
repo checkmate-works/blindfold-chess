@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
@@ -85,7 +86,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setLastMove,
     shouldMakeAiMove,
     setShouldMakeAiMove,
-    getLastMoveDetails,
   } = useGameState({
     playerSide,
     startingFen,
@@ -139,9 +139,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...moves, move];
-      setLastMove(getLastMoveDetails(newMoves));
+      setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
-    [pushMove, moves, getLastMoveDetails, setLastMove]
+    [pushMove, moves, startingFen, setLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {
@@ -168,7 +168,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     isPlayerTurn,
     pushMove,
     markPlayerInteraction,
-    getLastMoveDetails,
     setLastMove,
     setMoveInput,
     setError,
@@ -187,8 +186,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     removeMoves(2);
     setError(null);
     const newMoves = moves.slice(0, -2);
-    setLastMove(getLastMoveDetails(newMoves));
-  }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails, setLastMove]);
+    setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
+  }, [markPlayerInteraction, removeMoves, moves, startingFen, setLastMove]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -199,9 +198,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         removeMoves(movesToRemove);
       }
       const newMoves = moves.slice(0, position + 1);
-      setLastMove(getLastMoveDetails(newMoves));
+      setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
-    [markPlayerInteraction, moves, removeMoves, getLastMoveDetails, setLastMove]
+    [markPlayerInteraction, moves, removeMoves, startingFen, setLastMove]
   );
 
   // Handle new game from position

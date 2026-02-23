@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { GameStateService } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
-import { getLastMoveDetails as chessCoreGetLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 type LoadedGameData = {
@@ -63,22 +63,6 @@ export function useGameState({
     return playerSide === 'black';
   });
 
-  // Helper function to get last move details
-  const getLastMoveDetails = useCallback(
-    (movesArray: AlgebraicNotation[], customFen?: string) => {
-      if (movesArray.length === 0) return null;
-
-      try {
-        const fenToUse = customFen ?? startingFen;
-        return chessCoreGetLastMoveDetails(movesArray as string[], fenToUse);
-      } catch (error) {
-        console.error('Error getting last move details:', error);
-        return null;
-      }
-    },
-    [startingFen]
-  );
-
   // Apply loaded game data from persistence hook
   useEffect(() => {
     if (loadedGameData) {
@@ -100,10 +84,10 @@ export function useGameState({
   // Initialize on mount with initial moves
   useEffect(() => {
     if (!isInitialized && initialMovesFromUrl.length > 0) {
-      setLastMove(getLastMoveDetails(initialMovesFromUrl));
+      setLastMove(getLastMoveDetails(initialMovesFromUrl as string[], startingFen));
       setIsInitialized(true);
     }
-  }, [isInitialized, initialMovesFromUrl, getLastMoveDetails]);
+  }, [isInitialized, initialMovesFromUrl, startingFen]);
 
   // Update game state whenever moves change
   useEffect(() => {
@@ -141,6 +125,5 @@ export function useGameState({
     setLastMove,
     shouldMakeAiMove,
     setShouldMakeAiMove,
-    getLastMoveDetails,
   };
 }

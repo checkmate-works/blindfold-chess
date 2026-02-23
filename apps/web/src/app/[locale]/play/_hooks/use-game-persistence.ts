@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
-import { getLastMoveDetails as chessCoreGetLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
@@ -25,20 +25,6 @@ type UseGamePersistenceReturn = {
   savedGameStatus: 'in_progress' | 'win' | 'loss' | 'draw' | null;
   loadedGameData: SavedGameData | null;
 };
-
-function getLastMoveDetails(
-  movesArray: AlgebraicNotation[],
-  startingFen?: string
-): { from: string; to: string } | null {
-  if (movesArray.length === 0) return null;
-
-  try {
-    return chessCoreGetLastMoveDetails(movesArray as string[], startingFen);
-  } catch (error) {
-    console.error('Error getting last move details:', error);
-    return null;
-  }
-}
 
 /**
  * Hook for loading saved game data from localStorage.
@@ -95,7 +81,7 @@ export function useGamePersistence({
           const moves = (savedGame.moves ?? []) as AlgebraicNotation[];
           const startingFen = savedGame.startingFen ?? initialStartingFen;
           const lastMove =
-            moves.length > 0 ? getLastMoveDetails(moves, savedGame.startingFen) : null;
+            moves.length > 0 ? getLastMoveDetails(moves as string[], savedGame.startingFen) : null;
 
           let gameStatus: GameStatus = 'in_progress';
           let playerResult: 'win' | 'loss' | 'draw' | null = null;
