@@ -1,223 +1,161 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AlgebraicNotation } from "@blindfold-chess/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type PromotionPiece = "q" | "r" | "b" | "n";
+import type { AlgebraicNotation } from "@blindfold-chess/types";
+import {
+  type NotationInputState,
+  type PromotionPiece,
+  computeIsPawnCaptureMode,
+  computeIsSubmittable,
+  computePreviewText,
+  computeShowPromotion,
+  createInitialState,
+  notationInputReducer,
+} from "@blindfold-chess/features/ai-game/notation-input";
 
 type UseMoveInputProps = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
 };
 
-export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
-  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedRank, setSelectedRank] = useState<string | null>(null);
-  const [targetFile, setTargetFile] = useState<string | null>(null);
-  const [isCapture, setIsCapture] = useState(false);
-  const [isCheck, setIsCheck] = useState(false);
-  const [castling, setCastling] = useState<"O-O" | "O-O-O" | null>(null);
-  const [promotionPiece, setPromotionPiece] = useState<PromotionPiece | null>(
-    null,
+function useReducerState() {
+  const [state, setState] = useState<NotationInputState>(createInitialState);
+
+  const dispatch = useCallback(
+    (...actions: Parameters<typeof notationInputReducer>[1][]) => {
+      setState((prev) =>
+        actions.reduce((s, action) => notationInputReducer(s, action), prev),
+      );
+    },
+    [],
   );
-  const [sourceFile, setSourceFile] = useState<string | null>(null);
-  const [sourceRank, setSourceRank] = useState<string | null>(null);
-  const [isAmbiguous, setIsAmbiguous] = useState(false);
 
-  const isPawnCaptureMode =
-    !selectedPiece && selectedFile !== null && isCapture;
-  const showPromotion =
-    !selectedPiece &&
-    !castling &&
-    selectedRank !== null &&
-    (selectedRank === "1" || selectedRank === "8");
+  return [state, dispatch] as const;
+}
 
-  // Reset target file if mode conditions are no longer met
-  useEffect(() => {
-    if (!isPawnCaptureMode) {
-      setTargetFile(null);
-    }
-  }, [isPawnCaptureMode]);
-
-  // Clear promotion if rank changes away from 1/8
-  useEffect(() => {
-    if (!showPromotion) {
-      setPromotionPiece(null);
-    }
-  }, [showPromotion]);
-
-  // Clear target file if capture is unchecked
-  useEffect(() => {
-    if (!isCapture) setTargetFile(null);
-  }, [isCapture]);
+export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
+  const [state, dispatch] = useReducerState();
+  const prevFenRef = useRef(fen);
 
   // Reset when FEN changes (new move was made)
   useEffect(() => {
-    resetAll();
-  }, [fen]);
+    if (prevFenRef.current !== fen) {
+      prevFenRef.current = fen;
+      dispatch({ type: "reset" });
+    }
+  }, [fen, dispatch]);
 
-  const resetAll = useCallback(() => {
-    setSelectedPiece(null);
-    setSelectedFile(null);
-    setSelectedRank(null);
-    setTargetFile(null);
-    setIsCapture(false);
-    setIsCheck(false);
-    setCastling(null);
-    setPromotionPiece(null);
-    setSourceFile(null);
-    setSourceRank(null);
-    setIsAmbiguous(false);
-  }, []);
+  const previewText = useMemo(() => computePreviewText(state), [state]);
+  const showPromotion = useMemo(() => computeShowPromotion(state), [state]);
+  const isPawnCaptureMode = useMemo(
+    () => computeIsPawnCaptureMode(state),
+    [state],
+  );
+  const isSubmittable = useMemo(() => computeIsSubmittable(state), [state]);
+
+  // Expose singular selectedFile/selectedRank for backward compatibility
+  const selectedFile = useMemo(() => {
+    const files = Array.from(state.selectedFiles);
+    return files.length > 0 ? files[0] : null;
+  }, [state.selectedFiles]);
+
+  const selectedRank = useMemo(() => {
+    const ranks = Array.from(state.selectedRanks);
+    return ranks.length > 0 ? ranks[0] : null;
+  }, [state.selectedRanks]);
 
   const handlePieceSelect = useCallback(
-    (piece: string) => {
-      const newPiece = selectedPiece === piece ? null : piece;
-      setSelectedPiece(newPiece);
-      if (castling) setCastling(null);
-      if (!newPiece) {
-        setSelectedFile(null);
-      }
-    },
-    [selectedPiece, castling],
+    (piece: string) => dispatch({ type: "selectPiece", piece }),
+    [dispatch],
   );
 
+  // Mobile's handleFileSelect has special behavior: in pawn capture mode,
+  // it sets/toggles the target file instead of the selected file.
   const handleFileSelect = useCallback(
     (file: string) => {
-      if (isPawnCaptureMode) {
-        // In pawn capture mode, second file is the target
-        if (targetFile === file) {
-          setTargetFile(null);
+      if (computeIsPawnCaptureMode(state)) {
+        if (state.targetFile === file) {
+          dispatch({ type: "setTargetFile", file: null });
         } else {
-          setTargetFile(file);
+          dispatch({ type: "setTargetFile", file });
         }
       } else {
-        setSelectedFile(selectedFile === file ? null : file);
+        dispatch({ type: "selectFile", file });
       }
-      if (castling) setCastling(null);
     },
-    [selectedFile, castling, isPawnCaptureMode, targetFile],
+    [dispatch, state],
   );
 
   const handleRankSelect = useCallback(
-    (rank: string) => {
-      setSelectedRank(selectedRank === rank ? null : rank);
-      if (castling) setCastling(null);
-    },
-    [selectedRank, castling],
+    (rank: string) => dispatch({ type: "selectRank", rank }),
+    [dispatch],
   );
 
-  const handleCaptureToggle = useCallback(() => {
-    setIsCapture((prev) => !prev);
-  }, []);
+  const handleCaptureToggle = useCallback(
+    () => dispatch({ type: "toggleCapture" }),
+    [dispatch],
+  );
 
-  const handleCheckToggle = useCallback(() => {
-    setIsCheck((prev) => !prev);
-  }, []);
+  const handleCheckToggle = useCallback(
+    () => dispatch({ type: "toggleCheck" }),
+    [dispatch],
+  );
 
   const handleCastlingSelect = useCallback(
-    (move: "O-O" | "O-O-O") => {
-      if (castling === move) {
-        setCastling(null);
-      } else {
-        setCastling(move);
-        setSelectedPiece(null);
-        setSelectedFile(null);
-        setSelectedRank(null);
-        setTargetFile(null);
-        setPromotionPiece(null);
-        setIsCapture(false);
-      }
-    },
-    [castling],
+    (move: "O-O" | "O-O-O") => dispatch({ type: "selectCastling", move }),
+    [dispatch],
   );
 
   const handlePromotionSelect = useCallback(
-    (piece: PromotionPiece) => {
-      setPromotionPiece(promotionPiece === piece ? null : piece);
-    },
-    [promotionPiece],
+    (piece: PromotionPiece) => dispatch({ type: "selectPromotion", piece }),
+    [dispatch],
   );
 
   const handleSourceFileSelect = useCallback(
-    (file: string) => {
-      setSourceFile(sourceFile === file ? null : file);
-    },
-    [sourceFile],
+    (file: string) => dispatch({ type: "selectSourceFile", file }),
+    [dispatch],
   );
 
   const handleSourceRankSelect = useCallback(
-    (rank: string) => {
-      setSourceRank(sourceRank === rank ? null : rank);
-    },
-    [sourceRank],
+    (rank: string) => dispatch({ type: "selectSourceRank", rank }),
+    [dispatch],
   );
 
-  const previewText = useMemo(() => {
-    if (castling) return castling;
-
-    let text = "";
-
-    if (selectedPiece) {
-      text += selectedPiece;
-      if (sourceFile) text += sourceFile;
-      if (sourceRank) text += sourceRank;
-      if (isCapture) text += "x";
-      if (selectedFile) text += selectedFile;
-      if (selectedRank) text += selectedRank;
-    } else {
-      // Pawn move
-      if (selectedFile) {
-        text += selectedFile;
-        if (isCapture && targetFile) {
-          text += "x";
-          text += targetFile;
-        }
-        if (selectedRank) text += selectedRank;
+  const setIsAmbiguous = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      if (typeof value === "function") {
+        dispatch({ type: "toggleAmbiguous" });
+      } else if (value !== state.isAmbiguous) {
+        dispatch({ type: "toggleAmbiguous" });
       }
-      if (promotionPiece) {
-        text += `=${promotionPiece.toUpperCase()}`;
-      }
-    }
-    if (isCheck) text += "+";
+    },
+    [dispatch, state.isAmbiguous],
+  );
 
-    return text;
-  }, [
-    castling,
-    selectedPiece,
-    selectedFile,
-    selectedRank,
-    targetFile,
-    isCapture,
-    isCheck,
-    sourceFile,
-    sourceRank,
-    promotionPiece,
-  ]);
-
-  const isSubmittable = previewText.length > 0;
+  const resetAll = useCallback(() => dispatch({ type: "reset" }), [dispatch]);
 
   const handleSubmit = useCallback(() => {
-    if (previewText) {
-      onSubmit(previewText as AlgebraicNotation);
-      resetAll();
+    const text = computePreviewText(state);
+    if (text) {
+      onSubmit(text as AlgebraicNotation);
+      dispatch({ type: "reset" });
     }
-  }, [previewText, onSubmit, resetAll]);
+  }, [state, onSubmit, dispatch]);
 
   return {
-    // State
-    selectedPiece,
+    // State (backward compatible: singular selectedFile/selectedRank)
+    selectedPiece: state.selectedPiece,
     selectedFile,
     selectedRank,
-    targetFile,
-    isCapture,
-    isCheck,
-    castling,
-    promotionPiece,
+    targetFile: state.targetFile,
+    isCapture: state.isCapture,
+    isCheck: state.isCheck,
+    castling: state.castling,
+    promotionPiece: state.promotionPiece,
     showPromotion,
     isPawnCaptureMode,
-    sourceFile,
-    sourceRank,
-    isAmbiguous,
+    sourceFile: state.sourceFile,
+    sourceRank: state.sourceRank,
+    isAmbiguous: state.isAmbiguous,
 
     // Derived
     previewText,

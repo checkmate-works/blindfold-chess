@@ -12,3 +12,17 @@ export {
   getEloForSkillLevel,
   isLimitedStrength,
 } from "./constants";
+export type {
+  CastlingMove,
+  NotationInputAction,
+  NotationInputState,
+  PromotionPiece,
+} from "./notation-input";
+export {
+  computeIsSubmittable,
+  computeIsPawnCaptureMode,
+  computePreviewText,
+  computeShowPromotion,
+  createInitialState,
+  notationInputReducer,
+} from "./notation-input";
