@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { ReactNode } from 'react';
 
 import type { TailwindThemeClasses } from '@/lib/boardThemes';
@@ -30,9 +31,12 @@ type Props = {
 
   // Theme
   themeColors?: TailwindThemeClasses;
+
+  // Data attribute for event delegation
+  dataSquare?: string;
 };
 
-export function Square({
+export const Square = memo(function Square({
   file,
   rank,
   isLight,
@@ -45,6 +49,7 @@ export function Square({
   badge,
   layoutMode = 'flex',
   themeColors,
+  dataSquare,
 }: Props) {
   // Use default colors if themeColors not provided
   const defaultColors = {
@@ -74,10 +79,11 @@ export function Square({
         ${sizeClass} relative flex items-center justify-center
         ${squareColorClass}
         ${highlightClass}
-        ${onClick ? 'cursor-pointer hover:opacity-80' : ''}
+        ${onClick || dataSquare ? 'cursor-pointer hover:opacity-80' : ''}
         ${layoutMode === 'grid' ? 'transition-colors select-none' : ''}
       `}
       onClick={onClick}
+      data-square={dataSquare}
     >
       <div className="flex items-center justify-center w-full h-full">{children}</div>
 
@@ -101,4 +107,4 @@ export function Square({
       {badge && <div className="absolute -right-1 -top-1 z-10 pointer-events-none">{badge}</div>}
     </div>
   );
-}
+});

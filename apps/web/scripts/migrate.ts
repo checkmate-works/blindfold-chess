@@ -5,10 +5,12 @@ import postgres from 'postgres';
 
 // Use the same env var priority as drizzle.config.ts
 const connectionString =
-  process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.POSTGRES_URL ||
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/blindfold_chess';
+  process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.log('No database connection configured. Skipping migration.');
+  process.exit(0);
+}
 
 // prepare: false is required for Supabase Connection Pooler (Transaction mode / PgBouncer)
 // max: 1 to avoid connection pool issues during migration

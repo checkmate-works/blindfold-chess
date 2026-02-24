@@ -1,4 +1,4 @@
-import { Chess } from 'chess.js';
+import { validateFen } from '@blindfold-chess/features/chess-core';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -35,12 +35,7 @@ export function decodeMoveSequenceFromBase64(encoded: string): { fen: string; pg
  * Validate FEN string
  */
 export function validateFEN(fen: string): boolean {
-  try {
-    new Chess(fen);
-    return true;
-  } catch {
-    return false;
-  }
+  return validateFen(fen);
 }
 
 /**

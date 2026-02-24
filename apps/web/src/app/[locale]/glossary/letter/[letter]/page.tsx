@@ -23,6 +23,7 @@ type Props = {
   }>;
 };
 
+// Queries the database at build time — requires a running DB connection for `next build`.
 export async function generateStaticParams() {
   const letters = await getUniqueLetters();
   return letters.map((letter) => ({ letter: letter.toLowerCase() }));

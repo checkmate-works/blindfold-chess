@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { PrimaryButton } from '../../_components/PrimaryButton';
+import { Button } from '@/app/_components';
+
 import { submitContactForm } from '../_lib/contact-action';
 import type { ContactFormData } from '../_lib/contact-schema';
 
@@ -90,18 +91,30 @@ export function ContactConfirm({ formData, locale }: Props) {
       </div>
 
       <div className="mt-8 flex flex-col-reverse sm:flex-row gap-4">
-        <PrimaryButton
+        <Button
           type="button"
           onClick={handleBack}
           disabled={isSubmitting}
           variant="secondary"
+          size="lg"
+          fullWidth
+          shadow={false}
+          className="border-0 hover:bg-secondary/80"
         >
           {t('form.backToForm')}
-        </PrimaryButton>
+        </Button>
 
-        <PrimaryButton type="button" onClick={handleSubmit} loading={isSubmitting}>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          loading={isSubmitting}
+          variant="primary"
+          size="lg"
+          fullWidth
+          shadow={false}
+        >
           {t('form.sendEmail')}
-        </PrimaryButton>
+        </Button>
       </div>
     </div>
   );

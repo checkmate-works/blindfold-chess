@@ -1,10 +1,12 @@
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
-import { Chess } from "chess.js";
+
+import { ChessGameManager } from "../chess-core/game-manager";
+import type { Square } from "../chess-core/types";
 
 import type { GameStatus, PlayerResult } from "./types";
 
 export class GameStateService {
-  private chess: Chess;
+  private manager: ChessGameManager;
   private playerSide: Side;
   private startingFen?: string;
 
@@ -13,16 +15,15 @@ export class GameStateService {
     playerSide: Side = "white",
     startingFen?: string,
   ) {
-    this.chess = startingFen ? new Chess(startingFen) : new Chess();
+    this.manager = startingFen
+      ? new ChessGameManager(startingFen)
+      : new ChessGameManager();
     this.playerSide = playerSide;
     this.startingFen = startingFen;
 
     for (const move of moves) {
       try {
-        const result = this.chess.move(move);
-        if (!result) {
-          break;
-        }
+        this.manager.move(move);
       } catch {
         break;
       }
@@ -35,9 +36,9 @@ export class GameStateService {
 
   validateMove(move: AlgebraicNotation): boolean {
     try {
-      const testChess = new Chess(this.chess.fen());
-      const result = testChess.move(move);
-      return result !== null;
+      const testManager = new ChessGameManager(this.manager.fen());
+      testManager.move(move);
+      return true;
     } catch {
       return false;
     }
@@ -45,15 +46,15 @@ export class GameStateService {
 
   makeMove(move: AlgebraicNotation): boolean {
     try {
-      const result = this.chess.move(move);
-      return result !== null;
+      this.manager.move(move);
+      return true;
     } catch {
       return false;
     }
   }
 
   isPlayerTurn(): boolean {
-    const currentTurn = this.chess.turn();
+    const currentTurn = this.manager.turn();
     return (
       (this.playerSide === "white" && currentTurn === "w") ||
       (this.playerSide === "black" && currentTurn === "b")
@@ -61,34 +62,34 @@ export class GameStateService {
   }
 
   getGameStatus(): GameStatus {
-    if (this.chess.isCheckmate()) {
+    if (this.manager.isCheckmate()) {
       return "checkmate";
-    } else if (this.chess.isStalemate()) {
+    } else if (this.manager.isStalemate()) {
       return "stalemate";
-    } else if (this.chess.isDraw()) {
+    } else if (this.manager.isDraw()) {
       return "draw";
     }
     return "in_progress";
   }
 
   isCheck(): boolean {
-    return this.chess.isCheck();
+    return this.manager.isCheck();
   }
 
   isGameOver(): boolean {
-    return this.chess.isGameOver();
+    return this.manager.isGameOver();
   }
 
   getLegalMoves(): AlgebraicNotation[] {
-    return this.chess.moves() as AlgebraicNotation[];
+    return this.manager.moves() as AlgebraicNotation[];
   }
 
   getFen(): string {
-    return this.chess.fen();
+    return this.manager.fen();
   }
 
   getCurrentTurn(): Side {
-    return this.chess.turn() === "w" ? "white" : "black";
+    return this.manager.turn() === "w" ? "white" : "black";
   }
 
   getPlayerResult(): PlayerResult | null {
@@ -103,5 +104,12 @@ export class GameStateService {
     }
 
     return null;
+  }
+
+  getLastMoveDetails(): { from: Square; to: Square } | null {
+    const history = this.manager.history({ verbose: true });
+    if (history.length === 0) return null;
+    const lastMove = history[history.length - 1];
+    return { from: lastMove.from, to: lastMove.to };
   }
 }

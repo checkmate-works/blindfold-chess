@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button, ChessBoard } from '@/app/_components';
-import { Chess } from 'chess.js';
+import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import { FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -37,10 +37,10 @@ export function MoveSequenceTutorial({ locale }: Props) {
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const chessRef = useRef<Chess | null>(null);
+  const chessRef = useRef<ChessGameManager | null>(null);
 
   useEffect(() => {
-    chessRef.current = new Chess(TUTORIAL_FEN);
+    chessRef.current = new ChessGameManager(TUTORIAL_FEN);
   }, []);
 
   const playNextMove = useCallback(
@@ -82,7 +82,7 @@ export function MoveSequenceTutorial({ locale }: Props) {
   const handlePlay = () => {
     if (isPlaying) return;
 
-    chessRef.current = new Chess(TUTORIAL_FEN);
+    chessRef.current = new ChessGameManager(TUTORIAL_FEN);
     setCurrentFen(TUTORIAL_FEN);
     setCurrentMoveIndex(-1);
     setLastMove(null);

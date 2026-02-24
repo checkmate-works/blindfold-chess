@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
@@ -55,7 +56,14 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const [error, setError] = useState<string | null>(null);
 
   // Notation hook
-  const { moves, pushMove, removeMoves, setMovesTo, getFen, getFormattedPgn } = useNotation({
+  const {
+    moves,
+    pushMove,
+    removeMoves,
+    setMovesTo,
+    fen: currentFen,
+    formattedPgn,
+  } = useNotation({
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
@@ -78,7 +86,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setLastMove,
     shouldMakeAiMove,
     setShouldMakeAiMove,
-    getLastMoveDetails,
   } = useGameState({
     playerSide,
     startingFen,
@@ -132,9 +139,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...moves, move];
-      setLastMove(getLastMoveDetails(newMoves));
+      setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
-    [pushMove, moves, getLastMoveDetails, setLastMove]
+    [pushMove, moves, startingFen, setLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {
@@ -161,7 +168,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     isPlayerTurn,
     pushMove,
     markPlayerInteraction,
-    getLastMoveDetails,
     setLastMove,
     setMoveInput,
     setError,
@@ -180,8 +186,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     removeMoves(2);
     setError(null);
     const newMoves = moves.slice(0, -2);
-    setLastMove(getLastMoveDetails(newMoves));
-  }, [markPlayerInteraction, removeMoves, moves, getLastMoveDetails, setLastMove]);
+    setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
+  }, [markPlayerInteraction, removeMoves, moves, startingFen, setLastMove]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -192,9 +198,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         removeMoves(movesToRemove);
       }
       const newMoves = moves.slice(0, position + 1);
-      setLastMove(getLastMoveDetails(newMoves));
+      setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
-    [markPlayerInteraction, moves, removeMoves, getLastMoveDetails, setLastMove]
+    [markPlayerInteraction, moves, removeMoves, startingFen, setLastMove]
   );
 
   // Handle new game from position
@@ -242,9 +248,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     [markPlayerInteraction, searchParams, router, gameId]
   );
 
-  // Get current FEN for board display
-  const currentFen = getFen();
-  const formattedPgn = getFormattedPgn();
+  // Current FEN and formatted PGN are memoized values from useNotation
 
   // Update parent component with AI's last move
   useEffect(() => {
@@ -293,37 +297,38 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   }, [moves, playerSide, startingFen, onAiMoveChange, t]);
 
   return {
-    // Game identity
-    playerSide,
-    skillLevel,
-    initialGameId,
-    startingFen,
-    locale,
-
-    // Game state
-    gameStatus,
-    playerResult,
-    isPlayerTurn,
-    isLoading,
-    lastMove,
-
-    // Move data
-    moves,
-    currentFen,
-    formattedPgn,
-
-    // Move input state
-    moveInput,
-    setMoveInput,
-    error,
-    setError,
-
-    // Handlers
-    handleSubmitMove,
-    handleResign,
-    handleUndo,
-    handleRestartFromPosition,
-    handleNewGameFromPosition,
-    handleSkillLevelChange,
+    gameConfig: {
+      playerSide,
+      skillLevel,
+      initialGameId,
+      startingFen,
+      locale,
+    },
+    gameState: {
+      gameStatus,
+      playerResult,
+      isPlayerTurn,
+      isLoading,
+      lastMove,
+    },
+    moveState: {
+      moves,
+      currentFen,
+      formattedPgn,
+    },
+    moveInput: {
+      value: moveInput,
+      setValue: setMoveInput,
+      error,
+      setError,
+    },
+    actions: {
+      handleSubmitMove,
+      handleResign,
+      handleUndo,
+      handleRestartFromPosition,
+      handleNewGameFromPosition,
+      handleSkillLevelChange,
+    },
   };
 }

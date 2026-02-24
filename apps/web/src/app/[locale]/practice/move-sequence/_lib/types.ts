@@ -1,4 +1,10 @@
+import type { ParsedMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+
+export type {
+  ParsedMoveSequence,
+  ParsedPgnMove as ParsedMove,
+} from '@blindfold-chess/features/chess-core';
 
 export type MoveSequencePhase = 'setup' | 'memorize' | 'recall' | 'result';
 
@@ -6,18 +12,6 @@ export type MoveSequenceSettings = {
   fen: string;
   pgn: string;
   includeOpponentMoves: boolean;
-};
-
-export type ParsedMove = {
-  moveNumber: number;
-  white: AlgebraicNotation | null;
-  black: AlgebraicNotation | null;
-};
-
-export type ParsedMoveSequence = {
-  fen: string;
-  moves: AlgebraicNotation[];
-  playerColor: 'w' | 'b';
 };
 
 export type MoveSequenceData = ParsedMoveSequence & {

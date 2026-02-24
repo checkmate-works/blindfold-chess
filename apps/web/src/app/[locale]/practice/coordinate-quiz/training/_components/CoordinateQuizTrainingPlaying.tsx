@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay, Button } from '@/app/_components';
-import { Square } from 'chess.js';
+import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 

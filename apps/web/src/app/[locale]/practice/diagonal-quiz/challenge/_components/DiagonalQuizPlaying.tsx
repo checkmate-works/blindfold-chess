@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
-import { QuizTimer } from '@/components/QuizTimer';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import { FaBackspace } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
+import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import type { ActiveField } from '../../_components/useDiagonalInput';

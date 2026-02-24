@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import { FaCheck, FaStar } from 'react-icons/fa';
 
@@ -15,6 +15,26 @@ const sizeClasses: Record<EvaluationIconSize, { container: string; icon: string;
   md: { container: 'w-5 h-5', icon: 'w-2.5 h-2.5', text: 'text-[11px]' },
 };
 
+function EvaluationBadge({
+  bgColor,
+  classes,
+  shadow,
+  children,
+}: {
+  bgColor: string;
+  classes: { container: string; text: string };
+  shadow: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center justify-center ${classes.container} rounded-full ${bgColor} text-white ${classes.text} font-bold ${shadow}`}
+    >
+      {children}
+    </span>
+  );
+}
+
 /**
  * Get evaluation icon based on evaluation loss (chess.com style)
  * @param loss - Centipawn loss from the move
@@ -30,63 +50,37 @@ export function getEvaluationIcon(
   const classes = sizeClasses[size];
   const shadow = size === 'md' ? 'shadow-md' : '';
 
-  if (isMate) {
-    // Checkmate - star (same as best move)
+  if (isMate || loss <= 20) {
     return (
-      <span
-        className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-green-500 ${shadow}`}
-      >
+      <EvaluationBadge bgColor="bg-green-500" classes={classes} shadow={shadow}>
         <FaStar className={`${classes.icon} text-white`} />
-      </span>
-    );
-  }
-
-  if (loss <= 20) {
-    // Best move - star with green background
-    return (
-      <span
-        className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-green-500 ${shadow}`}
-      >
-        <FaStar className={`${classes.icon} text-white`} />
-      </span>
+      </EvaluationBadge>
     );
   }
   if (loss <= 50) {
-    // Good move - checkmark with green background
     return (
-      <span
-        className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-green-500 ${shadow}`}
-      >
+      <EvaluationBadge bgColor="bg-green-500" classes={classes} shadow={shadow}>
         <FaCheck className={`${classes.icon} text-white`} />
-      </span>
+      </EvaluationBadge>
     );
   }
   if (loss <= 100) {
-    // Inaccuracy - ?! with yellow background
     return (
-      <span
-        className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-yellow-500 text-white ${classes.text} font-bold ${shadow}`}
-      >
+      <EvaluationBadge bgColor="bg-yellow-500" classes={classes} shadow={shadow}>
         ?!
-      </span>
+      </EvaluationBadge>
     );
   }
   if (loss <= 300) {
-    // Mistake - ? with orange background
     return (
-      <span
-        className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-orange-500 text-white ${classes.text} font-bold ${shadow}`}
-      >
+      <EvaluationBadge bgColor="bg-orange-500" classes={classes} shadow={shadow}>
         ?
-      </span>
+      </EvaluationBadge>
     );
   }
-  // Blunder - ?? with red background
   return (
-    <span
-      className={`inline-flex items-center justify-center ${classes.container} rounded-full bg-red-500 text-white ${classes.text} font-bold ${shadow}`}
-    >
+    <EvaluationBadge bgColor="bg-red-500" classes={classes} shadow={shadow}>
       ??
-    </span>
+    </EvaluationBadge>
   );
 }

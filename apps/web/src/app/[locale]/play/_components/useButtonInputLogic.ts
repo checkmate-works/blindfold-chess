@@ -1,205 +1,158 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import {
+  type NotationInputState,
+  type PromotionPiece,
+  computeIsPawnCaptureMode,
+  computePreviewText,
+  computeShowPromotion,
+  createInitialState,
+  notationInputReducer,
+} from '@blindfold-chess/features/ai-game/notation-input';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-
-type PromotionPiece = 'q' | 'r' | 'b' | 'n';
 
 type ButtonInputLogicProps = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
 };
 
+function useReducerState() {
+  const [state, setState] = useState<NotationInputState>(createInitialState);
+
+  const dispatch = useCallback((...actions: Parameters<typeof notationInputReducer>[1][]) => {
+    setState((prev) => actions.reduce((s, action) => notationInputReducer(s, action), prev));
+  }, []);
+
+  return [state, dispatch] as const;
+}
+
 export function useButtonInputLogic({ fen, onSubmit }: ButtonInputLogicProps) {
-  // Selection States
-  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [selectedRanks, setSelectedRanks] = useState<Set<string>>(new Set());
-
-  // Target File (for Pawn Captures e.g. dxc5)
-  const [targetFile, setTargetFile] = useState<string | null>(null);
-
-  const [isCapture, setIsCapture] = useState(false);
-  const [isCheck, setIsCheck] = useState(false);
-
-  const [castling, setCastling] = useState<'O-O' | 'O-O-O' | null>(null);
-
-  // Promotion State
-  const [promotionPiece, setPromotionPiece] = useState<PromotionPiece | null>(null);
-  const [showPromotion, setShowPromotion] = useState(false);
-
-  // Disambiguation State (for Pieces)
-  const [sourceFile, setSourceFile] = useState<string | null>(null);
-  const [sourceRank, setSourceRank] = useState<string | null>(null);
-  const [isAmbiguous, setIsAmbiguous] = useState(false);
-
-  // Derived State: Pawn Capture Mode
-  const isPawnCaptureMode = !selectedPiece && selectedFiles.size === 1 && isCapture;
-
-  // Reset target file if mode conditions are no longer met
-  useEffect(() => {
-    if (!isPawnCaptureMode) {
-      setTargetFile(null);
-    }
-  }, [isPawnCaptureMode]);
-
-  const handlePieceClick = (piece: string) => {
-    const newPiece = selectedPiece === piece ? null : piece;
-    setSelectedPiece(newPiece);
-    if (castling) setCastling(null);
-
-    // If switching to Pawn mode (newPiece is null), clear file selections
-    // so user starts fresh with single selection logic.
-    if (!newPiece) {
-      setSelectedFiles(new Set());
-    }
-  };
+  const [state, dispatch] = useReducerState();
+  const prevFenRef = useRef(fen);
 
   // Reset selections when FEN changes
   useEffect(() => {
-    resetSelections();
-  }, [fen]);
-
-  const resetSelections = () => {
-    setSelectedPiece(null);
-    setSelectedFiles(new Set());
-    setTargetFile(null);
-    setSelectedRanks(new Set());
-    setIsCapture(false);
-    setIsCheck(false);
-    setCastling(null);
-    setPromotionPiece(null);
-    setShowPromotion(false);
-    // Reset disambiguation
-    setSourceFile(null);
-    setSourceRank(null);
-    setIsAmbiguous(false);
-  };
-
-  // Toggle helpers
-  const toggleSelection = (
-    set: Set<string>,
-    setValue: React.Dispatch<React.SetStateAction<Set<string>>>,
-    item: string
-  ) => {
-    const newSet = new Set(set);
-    if (newSet.has(item)) {
-      // If clicking the same item, toggle it off (clear selection)
-      setValue(new Set());
-    } else {
-      // If clicking a new item, replace the selection (Single Select)
-      setValue(new Set([item]));
+    if (prevFenRef.current !== fen) {
+      prevFenRef.current = fen;
+      dispatch({ type: 'reset' });
     }
+  }, [fen, dispatch]);
 
-    // Reset castling when selecting other parts
-    if (castling) setCastling(null);
-  };
+  const previewText = useMemo(() => computePreviewText(state), [state]);
+  const showPromotion = useMemo(() => computeShowPromotion(state), [state]);
+  const isPawnCaptureMode = useMemo(() => computeIsPawnCaptureMode(state), [state]);
 
-  const handleFileClick = (file: string) => {
-    toggleSelection(selectedFiles, setSelectedFiles, file);
-  };
+  const handlePieceClick = useCallback(
+    (piece: string) => dispatch({ type: 'selectPiece', piece }),
+    [dispatch]
+  );
 
-  const handleCastlingClick = (move: 'O-O' | 'O-O-O') => {
-    if (castling === move) {
-      setCastling(null);
-    } else {
-      setCastling(move);
-      setSelectedPiece(null);
-      setSelectedFiles(new Set());
-      setTargetFile(null);
-      setSelectedRanks(new Set());
-      setPromotionPiece(null);
-      setShowPromotion(false);
-      setIsCapture(false);
-    }
-  };
+  const handleFileClick = useCallback(
+    (file: string) => dispatch({ type: 'selectFile', file }),
+    [dispatch]
+  );
 
-  // Preview Text Logic
-  const previewText = useMemo(() => {
-    if (castling) return castling;
+  const handleCastlingClick = useCallback(
+    (move: 'O-O' | 'O-O-O') => dispatch({ type: 'selectCastling', move }),
+    [dispatch]
+  );
 
-    let text = '';
+  const toggleSelectionRanks = useCallback(
+    (rank: string) => dispatch({ type: 'selectRank', rank }),
+    [dispatch]
+  );
 
-    if (selectedPiece) {
-      // Piece Move: Piece + [SourceFile/Rank] + (x) + TargetFile + TargetRank
-      text += selectedPiece;
-
-      // Disambiguation
-      if (sourceFile) text += sourceFile;
-      if (sourceRank) text += sourceRank;
-
-      if (isCapture) text += 'x';
-
-      text += Array.from(selectedFiles).sort().join('');
-      text += Array.from(selectedRanks).sort().join('');
-    } else {
-      // Pawn Move
-      const file = Array.from(selectedFiles)[0];
-      if (file) {
-        text += file;
-        if (isCapture && targetFile) {
-          text += 'x';
-          text += targetFile;
-        }
-        const rank = Array.from(selectedRanks)[0];
-        if (rank) text += rank;
+  const setTargetFile = useCallback(
+    (file: string | null) => {
+      if (file !== null) {
+        dispatch({ type: 'setTargetFile', file });
       }
-      // Promotion
-      if (promotionPiece) {
-        text += `=${promotionPiece.toUpperCase()}`;
+    },
+    [dispatch]
+  );
+
+  const setIsCapture = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      if (typeof value === 'function') {
+        // For callback style, we can't easily support this with the reducer,
+        // but the existing usage always passes a boolean directly.
+        dispatch({ type: 'toggleCapture' });
+      } else if (value !== state.isCapture) {
+        dispatch({ type: 'toggleCapture' });
       }
-    }
-    if (isCheck) text += '+';
+    },
+    [dispatch, state.isCapture]
+  );
 
-    return text;
-  }, [
-    castling,
-    selectedPiece,
-    selectedFiles,
-    targetFile,
-    selectedRanks,
-    isCapture,
-    isCheck,
-    sourceFile,
-    sourceRank,
-    promotionPiece,
-  ]);
-
-  useEffect(() => {
-    // Trigger promotion UI if in Pawn mode and Rank 1 or 8 is selected
-    if (!selectedPiece && !castling && selectedRanks.size > 0) {
-      const rank = Array.from(selectedRanks)[0];
-      if (rank === '1' || rank === '8') {
-        setShowPromotion(true);
-        return;
+  const setIsCheck = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      if (typeof value === 'function') {
+        dispatch({ type: 'toggleCheck' });
+      } else if (value !== state.isCheck) {
+        dispatch({ type: 'toggleCheck' });
       }
+    },
+    [dispatch, state.isCheck]
+  );
+
+  const setPromotionPiece = useCallback(
+    (piece: PromotionPiece | null) => {
+      if (piece !== null) {
+        dispatch({ type: 'selectPromotion', piece });
+      }
+    },
+    [dispatch]
+  );
+
+  const resetSelections = useCallback(() => dispatch({ type: 'reset' }), [dispatch]);
+
+  const handleSubmit = useCallback(() => {
+    const text = computePreviewText(state);
+    if (text) {
+      onSubmit(text as AlgebraicNotation);
+      dispatch({ type: 'reset' });
     }
+  }, [state, onSubmit, dispatch]);
 
-    setShowPromotion(false);
-    setPromotionPiece(null);
-  }, [selectedPiece, castling, selectedRanks]);
+  const setSourceFile = useCallback(
+    (file: string | null) => {
+      if (file !== null) {
+        dispatch({ type: 'selectSourceFile', file });
+      }
+    },
+    [dispatch]
+  );
 
-  // Clear target file if capture is unchecked
-  useEffect(() => {
-    if (!isCapture) setTargetFile(null);
-  }, [isCapture]);
+  const setSourceRank = useCallback(
+    (rank: string | null) => {
+      if (rank !== null) {
+        dispatch({ type: 'selectSourceRank', rank });
+      }
+    },
+    [dispatch]
+  );
 
-  const handleSubmit = () => {
-    if (previewText) {
-      onSubmit(previewText as AlgebraicNotation);
-      resetSelections();
-    }
-  };
+  const setIsAmbiguous = useCallback(
+    (value: boolean | ((prev: boolean) => boolean)) => {
+      if (typeof value === 'function') {
+        dispatch({ type: 'toggleAmbiguous' });
+      } else if (value !== state.isAmbiguous) {
+        dispatch({ type: 'toggleAmbiguous' });
+      }
+    },
+    [dispatch, state.isAmbiguous]
+  );
 
   return {
     // States
-    selectedPiece,
-    selectedFiles,
-    selectedRanks,
-    targetFile,
-    isCapture,
-    isCheck,
-    castling,
-    promotionPiece,
+    selectedPiece: state.selectedPiece,
+    selectedFiles: state.selectedFiles,
+    selectedRanks: state.selectedRanks,
+    targetFile: state.targetFile,
+    isCapture: state.isCapture,
+    isCheck: state.isCheck,
+    castling: state.castling,
+    promotionPiece: state.promotionPiece,
     showPromotion,
     isPawnCaptureMode,
 
@@ -210,7 +163,7 @@ export function useButtonInputLogic({ fen, onSubmit }: ButtonInputLogicProps) {
     handlePieceClick,
     handleFileClick,
     handleCastlingClick,
-    toggleSelectionRanks: (rank: string) => toggleSelection(selectedRanks, setSelectedRanks, rank),
+    toggleSelectionRanks,
     setTargetFile,
     setIsCapture,
     setIsCheck,
@@ -218,9 +171,9 @@ export function useButtonInputLogic({ fen, onSubmit }: ButtonInputLogicProps) {
     resetSelections,
     handleSubmit,
     // Disambiguation
-    sourceFile,
-    sourceRank,
-    isAmbiguous,
+    sourceFile: state.sourceFile,
+    sourceRank: state.sourceRank,
+    isAmbiguous: state.isAmbiguous,
     setSourceFile,
     setSourceRank,
     setIsAmbiguous,

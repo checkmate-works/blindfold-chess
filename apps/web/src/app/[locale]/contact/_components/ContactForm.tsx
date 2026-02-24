@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { PrimaryButton } from '../../_components/PrimaryButton';
+import { Button } from '@/app/_components';
 
 type Props = {
   locale: string;
@@ -99,7 +99,9 @@ export function ContactForm({ locale }: Props) {
           />
         </div>
 
-        <PrimaryButton type="submit">{t('form.submit')}</PrimaryButton>
+        <Button type="submit" variant="primary" size="lg" fullWidth shadow={false}>
+          {t('form.submit')}
+        </Button>
       </form>
     </div>
   );

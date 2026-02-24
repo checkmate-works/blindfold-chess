@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 
-import { Square } from 'chess.js';
+import type { Square } from '@blindfold-chess/types';
 
 import { getBoardThemeColors } from '@/lib/boardThemes';
 

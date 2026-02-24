@@ -1,16 +1,13 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { FaTrash } from 'react-icons/fa';
 
 import type { Game } from '@/lib/types';
 
-import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
+import { GameListItemBase } from '@/app/[locale]/_components/GameListItemBase';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { formatLastMove } from '../_lib/utils';
 
 type Props = {
   game: Game;
@@ -20,7 +17,6 @@ type Props = {
 
 export function GameListItem({ game, locale, onDelete }: Props) {
   const router = useRouter();
-  const t = useTranslations('home.gameList');
 
   const handleGameClick = () => {
     // Build URL parameters for resuming the game
@@ -35,80 +31,14 @@ export function GameListItem({ game, locale, onDelete }: Props) {
     router.push(`/${locale}/play?${params.toString()}`);
   };
 
-  const getStatusStyles = (status: Game['status']) => {
-    switch (status) {
-      case 'win':
-        return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20';
-      case 'loss':
-        return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
-      case 'draw':
-        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20';
-      default:
-        return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
-    }
-  };
-
-  const getStatusIcon = (status: Game['status']) => {
-    switch (status) {
-      case 'win':
-        return '✓';
-      case 'loss':
-        return '✗';
-      case 'draw':
-        return '=';
-      default:
-        return '⏸';
-    }
-  };
-
-  const getStatusText = (status: Game['status']) => {
-    switch (status) {
-      case 'win':
-        return t('win');
-      case 'loss':
-        return t('loss');
-      case 'draw':
-        return t('draw');
-      default:
-        return t('inProgress');
-    }
-  };
-
   return (
     <li
       className="hover:bg-muted transition-all duration-200 cursor-pointer group border-b border-border last:border-b-0"
       onClick={handleGameClick}
     >
-      <div className="px-4 sm:px-6 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Status Icon */}
-            <span
-              className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-base ${getStatusStyles(
-                game.status
-              )}`}
-              title={getStatusText(game.status)}
-            >
-              {getStatusIcon(game.status)}
-            </span>
-
-            {/* Game Info */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center" title={game.playerColor}>
-                <ColorIcon color={game.playerColor} />
-              </div>
-
-              <span className="font-medium font-mono">
-                {formatLastMove(game.moves, game.playerColor)}
-              </span>
-
-              <span className="font-medium">
-                {t('level')} {game.skillLevel}
-              </span>
-            </div>
-          </div>
-
-          {/* Delete button */}
+      <GameListItemBase
+        game={game}
+        after={
           <div className="flex-shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-200">
             <button
               onClick={(e) => {
@@ -121,8 +51,8 @@ export function GameListItem({ game, locale, onDelete }: Props) {
               <FaTrash className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      </div>
+        }
+      />
     </li>
   );
 }

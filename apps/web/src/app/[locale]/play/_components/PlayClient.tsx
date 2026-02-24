@@ -24,34 +24,23 @@ type Props = {
 export function PlayClient({ locale, onAiMoveChange }: Props) {
   const t = useTranslations('play');
 
+  const { gameConfig, gameState, moveState, moveInput, actions } = useGameSession({
+    locale,
+    onAiMoveChange,
+  });
+
+  const { playerSide, skillLevel, initialGameId, startingFen } = gameConfig;
+  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove } = gameState;
+  const { moves, currentFen, formattedPgn } = moveState;
+  const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
   const {
-    playerSide,
-    skillLevel,
-    initialGameId,
-    startingFen,
-
-    gameStatus,
-    playerResult,
-    isPlayerTurn,
-    isLoading,
-    lastMove,
-
-    moves,
-    currentFen,
-    formattedPgn,
-
-    moveInput,
-    setMoveInput,
-    error,
-    setError,
-
     handleSubmitMove,
     handleResign,
     handleUndo,
     handleRestartFromPosition,
     handleNewGameFromPosition,
     handleSkillLevelChange,
-  } = useGameSession({ locale, onAiMoveChange });
+  } = actions;
 
   // Preferences
   const { preferences, updatePreferences } = useGamePreferences();
@@ -111,7 +100,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 preferences={preferences}
                 updatePreferences={updatePreferences}
                 currentFen={currentFen}
-                moveInput={moveInput}
+                moveInput={moveInputValue}
                 setMoveInput={setMoveInput}
                 error={error}
                 setError={setError}
@@ -120,7 +109,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 confirmationDialogs={confirmationDialogs}
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
-                t={t}
               />
             )}
 

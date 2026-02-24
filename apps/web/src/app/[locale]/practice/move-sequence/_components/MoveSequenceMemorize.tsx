@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button, ChessBoard } from '@/app/_components';
-import { Chess } from 'chess.js';
+import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -31,11 +31,11 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const chessRef = useRef<Chess | null>(null);
+  const chessRef = useRef<ChessGameManager | null>(null);
 
   // Initialize chess instance
   useEffect(() => {
-    chessRef.current = new Chess(data.fen);
+    chessRef.current = new ChessGameManager(data.fen);
   }, [data.fen]);
 
   // Play moves one by one (optionally from a specific index for replay)
@@ -82,7 +82,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
     if (isPlaying) return;
 
     // Reset to initial position
-    chessRef.current = new Chess(data.fen);
+    chessRef.current = new ChessGameManager(data.fen);
     setCurrentFen(data.fen);
     setCurrentMoveIndex(-1);
     setLastMove(null);
@@ -100,23 +100,21 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
     if (isPlaying) return;
 
     // Reset chess instance and replay moves up to target
-    const chess = new Chess(data.fen);
+    const manager = new ChessGameManager(data.fen);
     let lastMoveResult: { from: string; to: string } | null = null;
 
     for (let i = 0; i <= targetIndex; i++) {
       try {
-        const result = chess.move(data.moves[i]);
-        if (result) {
-          lastMoveResult = { from: result.from, to: result.to };
-        }
+        const result = manager.move(data.moves[i]);
+        lastMoveResult = { from: result.from, to: result.to };
       } catch (error) {
         console.error('Error replaying move:', error);
         return;
       }
     }
 
-    chessRef.current = chess;
-    setCurrentFen(chess.fen());
+    chessRef.current = manager;
+    setCurrentFen(manager.fen());
     setCurrentMoveIndex(targetIndex);
     setSelectedMoveIndex(targetIndex);
     setLastMove(lastMoveResult);

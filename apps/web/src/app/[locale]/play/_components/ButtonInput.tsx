@@ -3,8 +3,8 @@
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import type { PieceSymbol } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import type { PieceSymbol } from 'chess.js';
 import { FaTrash } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';

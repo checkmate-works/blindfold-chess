@@ -8,6 +8,7 @@ import type { Side } from '@blindfold-chess/types';
 import type { EvaluationMark } from '@/lib/evaluation';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
 import type { FormattedPgnMove } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
@@ -47,6 +48,8 @@ export function BoardViewModal({
   onNavigateToEnd,
   onNavigateToPosition,
 }: Props) {
+  useScrollLock(isOpen);
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -56,12 +59,10 @@ export function BoardViewModal({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
 

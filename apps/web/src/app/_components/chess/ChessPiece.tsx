@@ -1,5 +1,5 @@
+import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 import { ChessPieceIcon, type PieceType } from '@blindfold-chess/icons';
-import type { Color, PieceSymbol } from 'chess.js';
 
 type Props = {
   type: PieceSymbol;

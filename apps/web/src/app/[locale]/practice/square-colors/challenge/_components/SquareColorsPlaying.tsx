@@ -3,12 +3,12 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
-import { QuizTimer } from '@/components/QuizTimer';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
+import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 import { SquareColorAnswerButtons } from '@/app/[locale]/practice/square-colors/_components/SquareColorAnswerButtons';
 import { SquareColorQuestionDisplay } from '@/app/[locale]/practice/square-colors/_components/SquareColorQuestionDisplay';

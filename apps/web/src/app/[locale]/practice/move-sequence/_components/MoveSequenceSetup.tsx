@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button, ChessBoard } from '@/app/_components';
-import { Chess } from 'chess.js';
+import { ChessGameManager, validateFen } from '@blindfold-chess/features/chess-core';
 import { FaInfoCircle, FaLink, FaPlay } from 'react-icons/fa';
 
 import { BetaNotice, CardLink, PgnInput, SectionTitle } from '@/app/[locale]/_components';
@@ -59,7 +59,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const [previewMoveIndex, setPreviewMoveIndex] = useState(-1);
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
-  const previewChessRef = useRef<Chess | null>(null);
+  const previewChessRef = useRef<ChessGameManager | null>(null);
   const previewIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate preset data for preview
@@ -90,7 +90,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
       setPreviewMoveIndex(-1);
       setIsPlayingPreview(false);
       setLastMove(null);
-      previewChessRef.current = new Chess(selectedPresetData.startFen);
+      previewChessRef.current = new ChessGameManager(selectedPresetData.startFen);
     }
   }, [selectedPresetData]);
 
@@ -120,11 +120,9 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
     const move = selectedPresetData.moves[nextIndex];
     try {
       const result = previewChessRef.current.move(move);
-      if (result) {
-        setPreviewFen(previewChessRef.current.fen());
-        setPreviewMoveIndex(nextIndex);
-        setLastMove({ from: result.from, to: result.to });
-      }
+      setPreviewFen(previewChessRef.current.fen());
+      setPreviewMoveIndex(nextIndex);
+      setLastMove({ from: result.from, to: result.to });
     } catch {
       setIsPlayingPreview(false);
       if (previewIntervalRef.current) {
@@ -160,7 +158,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   const handlePlayPreview = useCallback(() => {
     if (isPlayingPreview || !selectedPresetData) return;
 
-    previewChessRef.current = new Chess(selectedPresetData.startFen);
+    previewChessRef.current = new ChessGameManager(selectedPresetData.startFen);
     setPreviewFen(selectedPresetData.startFen);
     setPreviewMoveIndex(-1);
     setLastMove(null);
@@ -268,9 +266,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
       }
 
       // Validate FEN
-      try {
-        new Chess(fenValue.trim());
-      } catch {
+      if (!validateFen(fenValue.trim())) {
         return t('invalidFen');
       }
 

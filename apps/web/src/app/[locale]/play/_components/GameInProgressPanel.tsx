@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
@@ -24,7 +26,6 @@ type Props = {
   confirmationDialogs: ConfirmationDialogs;
   onShowBoard: () => void;
   onShowSkillLevelSettings: () => void;
-  t: (key: string) => string;
 };
 
 export function GameInProgressPanel({
@@ -42,8 +43,8 @@ export function GameInProgressPanel({
   confirmationDialogs,
   onShowBoard,
   onShowSkillLevelSettings,
-  t,
 }: Props) {
+  const t = useTranslations('play');
   return (
     <div className="flex flex-col gap-6">
       {/* Move Input */}

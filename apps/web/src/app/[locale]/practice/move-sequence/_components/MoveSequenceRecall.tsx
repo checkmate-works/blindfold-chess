@@ -5,12 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { ChessBoard } from '@/app/_components';
+import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 import { FaEye } from 'react-icons/fa';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
@@ -34,7 +35,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [completedMoves, setCompletedMoves] = useState<AlgebraicNotation[]>([]);
 
-  const chessRef = useRef<Chess | null>(null);
+  const chessRef = useRef<ChessGameManager | null>(null);
   // Track attempts per move index using a Map (synchronous access)
   const attemptsMapRef = useRef<Map<number, number>>(new Map());
   // Track wrong attempts per move index using a Map
@@ -65,7 +66,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
   // Initialize chess instance
   useEffect(() => {
-    chessRef.current = new Chess(data.fen);
+    chessRef.current = new ChessGameManager(data.fen);
   }, [data.fen]);
 
   // Auto-play opponent's move (only when includeOpponentMoves is false)
@@ -108,6 +109,8 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
     }
   }, [currentMoveIndex, data.moves.length, results, totalTargetMoves, onComplete]);
 
+  useScrollLock(isBoardVisible);
+
   // Handle board modal visibility
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -118,12 +121,10 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
     if (isBoardVisible) {
       document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
     };
   }, [isBoardVisible]);
 

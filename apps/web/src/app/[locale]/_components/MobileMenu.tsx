@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { FaHome } from 'react-icons/fa';
 
+import { useScrollLock } from '../_hooks/useScrollLock';
 import type { NavigationItem } from '../_lib/types';
 import { getIcon } from '../_lib/utils';
 
@@ -23,20 +24,7 @@ export function MobileMenu({ title, items }: Props) {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [isOpen]);
+  useScrollLock(isOpen);
 
   return (
     <>

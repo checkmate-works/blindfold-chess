@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { GameStateService } from '@blindfold-chess/features/ai-game';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 type UsePlayerMoveOptions = {
@@ -13,10 +14,6 @@ type UsePlayerMoveOptions = {
   isPlayerTurn: boolean;
   pushMove: (move: AlgebraicNotation) => void;
   markPlayerInteraction: () => void;
-  getLastMoveDetails: (
-    movesArray: AlgebraicNotation[],
-    customFen?: string
-  ) => { from: string; to: string } | null;
   setLastMove: (lastMove: { from: string; to: string } | null) => void;
   setMoveInput: (input: string) => void;
   setError: (error: string | null) => void;
@@ -30,7 +27,6 @@ export function usePlayerMove({
   isPlayerTurn,
   pushMove,
   markPlayerInteraction,
-  getLastMoveDetails,
   setLastMove,
   setMoveInput,
   setError,
@@ -66,7 +62,7 @@ export function usePlayerMove({
         setError(null);
 
         const newMoves = [...moves, move];
-        setLastMove(getLastMoveDetails(newMoves));
+        setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
       } else {
         setError(t('invalidMove'));
       }
@@ -76,7 +72,6 @@ export function usePlayerMove({
       playerSide,
       pushMove,
       t,
-      getLastMoveDetails,
       markPlayerInteraction,
       isLoading,
       isPlayerTurn,

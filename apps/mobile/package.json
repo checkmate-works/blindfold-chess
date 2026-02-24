@@ -10,6 +10,8 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "copy-stockfish": "tsx scripts/copy-stockfish.ts"
   },
   "dependencies": {
@@ -41,10 +43,16 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "~19.1.0",
+    "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.2",
+    "jsdom": "^27.2.0",
+    "react-dom": "19.1.0",
     "stockfish": "17.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.12"
   },
   "private": true
 }

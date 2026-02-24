@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+
+  <!-- Board background (light squares) -->
+  <rect x="0" y="0" width="400" height="400" fill="#f0d9b5" />
+
+  <!-- Dark squares -->
+  <g fill="#b58863">
+    <rect x="50" y="0" width="50" height="50" />
+    <rect x="150" y="0" width="50" height="50" />
+    <rect x="250" y="0" width="50" height="50" />
+    <rect x="350" y="0" width="50" height="50" />
+    <rect x="0" y="50" width="50" height="50" />
+    <rect x="100" y="50" width="50" height="50" />
+    <rect x="200" y="50" width="50" height="50" />
+    <rect x="300" y="50" width="50" height="50" />
+    <rect x="50" y="100" width="50" height="50" />
+    <rect x="150" y="100" width="50" height="50" />
+    <rect x="250" y="100" width="50" height="50" />
+    <rect x="350" y="100" width="50" height="50" />
+    <rect x="0" y="150" width="50" height="50" />
+    <rect x="100" y="150" width="50" height="50" />
+    <rect x="200" y="150" width="50" height="50" />
+    <rect x="300" y="150" width="50" height="50" />
+    <rect x="50" y="200" width="50" height="50" />
+    <rect x="150" y="200" width="50" height="50" />
+    <rect x="250" y="200" width="50" height="50" />
+    <rect x="350" y="200" width="50" height="50" />
+    <rect x="0" y="250" width="50" height="50" />
+    <rect x="100" y="250" width="50" height="50" />
+    <rect x="200" y="250" width="50" height="50" />
+    <rect x="300" y="250" width="50" height="50" />
+    <rect x="50" y="300" width="50" height="50" />
+    <rect x="150" y="300" width="50" height="50" />
+    <rect x="250" y="300" width="50" height="50" />
+    <rect x="350" y="300" width="50" height="50" />
+    <rect x="0" y="350" width="50" height="50" />
+    <rect x="100" y="350" width="50" height="50" />
+    <rect x="200" y="350" width="50" height="50" />
+    <rect x="300" y="350" width="50" height="50" />
+  </g>
+
+  <!-- Highlight: a8-h1 diagonal (green) -->
+  <!-- a8=x0,y0 b7=x50,y50 c6=x100,y100 d5=x150,y150 e4=x200,y200 f3=x250,y250 g2=x300,y300 h1=x350,y350 -->
+  <rect x="0"   y="0"   width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="50"  y="50"  width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="100" y="100" width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="150" y="150" width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="200" y="200" width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="250" y="250" width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="300" y="300" width="50" height="50" fill="#4ade80" opacity="0.75" />
+  <rect x="350" y="350" width="50" height="50" fill="#4ade80" opacity="0.75" />
+
+  <!-- Highlight: a6-c8 diagonal (blue) -->
+  <!-- a6=x0,y100 b7=x50,y50 c8=x100,y0 -->
+  <rect x="0"   y="100" width="50" height="50" fill="#60a5fa" opacity="0.75" />
+  <!-- b7 is on both diagonals -->
+  <rect x="50"  y="50"  width="50" height="50" fill="#60a5fa" opacity="0.5" />
+  <rect x="100" y="0"   width="50" height="50" fill="#60a5fa" opacity="0.75" />
+
+  <!-- Black Bishop at b7 -->
+  <g transform="translate(50, 50) scale(1.111)">
+    <g fill="none" fill-rule="evenodd" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+      <g fill="#000" stroke-linecap="butt">
+        <path d="M9 36c3.39-.97 10.11.43 13.5-2 3.39 2.43 10.11 1.03 13.5 2 0 0 1.65.54 3 2-.68.97-1.65.99-3 .5-3.39-.97-10.11.46-13.5-1-3.39 1.46-10.11.03-13.5 1-1.35.49-2.32.47-3-.5 1.35-1.94 3-2 3-2z"/>
+        <path d="M15 32c2.5 2.5 12.5 2.5 15 0 .5-1.5 0-2 0-2 0-2.5-2.5-4-2.5-4 5.5-1.5 6-11.5-5-15.5-11 4-10.5 14-5 15.5 0 0-2.5 1.5-2.5 4 0 0-.5.5 0 2z"/>
+        <path d="M25 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0z"/>
+      </g>
+      <path stroke="#fff" stroke-linejoin="miter" d="M17.5 26h10M15 30h15m-7.5-14.5v5M20 18h5"/>
+    </g>
+  </g>
+
+  <!-- Labels -->
+  <style>
+    .lbl { font-family: sans-serif; font-size: 12px; opacity: 0.5; }
+    .lbl-file { text-anchor: middle; }
+    .lbl-rank { text-anchor: end; alignment-baseline: middle; }
+  </style>
+  <text x="25"  y="390" class="lbl lbl-file">a</text>
+  <text x="75"  y="390" class="lbl lbl-file">b</text>
+  <text x="125" y="390" class="lbl lbl-file">c</text>
+  <text x="175" y="390" class="lbl lbl-file">d</text>
+  <text x="225" y="390" class="lbl lbl-file">e</text>
+  <text x="275" y="390" class="lbl lbl-file">f</text>
+  <text x="325" y="390" class="lbl lbl-file">g</text>
+  <text x="375" y="390" class="lbl lbl-file">h</text>
+
+  <text x="10" y="375" class="lbl lbl-rank">1</text>
+  <text x="10" y="325" class="lbl lbl-rank">2</text>
+  <text x="10" y="275" class="lbl lbl-rank">3</text>
+  <text x="10" y="225" class="lbl lbl-rank">4</text>
+  <text x="10" y="175" class="lbl lbl-rank">5</text>
+  <text x="10" y="125" class="lbl lbl-rank">6</text>
+  <text x="10" y="75"  class="lbl lbl-rank">7</text>
+  <text x="10" y="25"  class="lbl lbl-rank">8</text>
+
+  <!-- Diagonal labels -->
+  <text x="355" y="370" text-anchor="start" font-family="sans-serif" font-size="11" fill="#166534" font-weight="bold">h1</text>
+  <text x="5"   y="95" text-anchor="start" font-family="sans-serif" font-size="11" fill="#1e40af" font-weight="bold">a6</text>
+
+</svg>

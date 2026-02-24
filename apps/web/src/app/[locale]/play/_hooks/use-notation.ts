@@ -1,7 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
+import {
+  getStartingFen as chessCoreGetStartingFen,
+  generatePgn,
+  getFenAfterMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { Chess } from 'chess.js';
 
 import type { FormattedPgnMove } from '../_lib/pgn-parser';
 
@@ -43,46 +47,23 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     setMoves(newMoves);
   }, []);
 
-  const getFen = useCallback(() => {
-    // Initialize with custom FEN or standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
+  const fen = useMemo(() => {
     try {
-      for (const move of moves) {
-        try {
-          chess.move(move);
-        } catch (error) {
-          console.warn('[getFen] Error applying move, stopping at last valid state:', move, error);
-          break;
-        }
-      }
+      const initialFen = startingFen ?? chessCoreGetStartingFen();
+      return getFenAfterMoves(initialFen, moves as string[]);
     } catch (error) {
       console.error('[getFen] Critical error:', error);
-      // fallback to starting position ONLY if even the empty board crashed (highly unlikely)
-      // or we can just return whatever state we have
+      return startingFen ?? chessCoreGetStartingFen();
     }
-
-    const fen = chess.fen();
-    return fen;
   }, [moves, startingFen]);
 
   const getPgn = useCallback(() => {
-    // Initialize with custom FEN or standard starting position
-    const chess = startingFen ? new Chess(startingFen) : new Chess();
     try {
-      for (const move of moves) {
-        try {
-          chess.move(move);
-        } catch (error) {
-          console.warn('[getPgn] Error applying move, stopping at last valid state:', move, error);
-          break;
-        }
-      }
+      return generatePgn(moves as string[], startingFen);
     } catch (error) {
       console.error('[getPgn] Critical error:', error);
+      return '';
     }
-
-    const pgn = chess.pgn();
-    return pgn;
   }, [moves, startingFen]);
 
   const getStartingFen = useCallback(() => {
@@ -130,7 +111,7 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     return formattedMoves.join(' ');
   }, [moves, startingFen]);
 
-  const getFormattedPgn = useCallback(() => {
+  const formattedPgn = useMemo(() => {
     if (moves.length === 0) {
       return [];
     }
@@ -182,10 +163,10 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
     clearMoves,
     removeMoves,
     setMovesTo,
-    getFen,
+    fen,
     getPgn,
     getSimplePgn,
-    getFormattedPgn,
+    formattedPgn,
     getStartingFen,
   };
 }
