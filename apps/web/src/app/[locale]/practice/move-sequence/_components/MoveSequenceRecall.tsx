@@ -292,6 +292,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
                 onSubmit={handleSubmit}
                 disabled={false}
                 toggleTitle={t('switchInputMode')}
+                playerColor={data.playerColor}
               />
               <div className="flex justify-start">
                 <button

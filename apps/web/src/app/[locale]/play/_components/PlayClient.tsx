@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { GameOverContent } from './GameOverContent';
-import { GameSettingsModal } from './GameSettingsModal';
 import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
@@ -29,7 +29,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     onAiMoveChange,
   });
 
-  const { playerSide, skillLevel, initialGameId, startingFen } = gameConfig;
+  const { playerSide, skillLevel, initialGameId, startingFen, perGamePrefs } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
@@ -42,11 +42,25 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     handleSkillLevelChange,
   } = actions;
 
-  // Preferences
-  const { preferences, updatePreferences } = useGamePreferences();
+  // Global preferences
+  const { preferences: globalPreferences, updatePreferences } = useGamePreferences();
+
+  // Merge per-game preferences with global preferences
+  // Per-game fields override global; other fields come from global
+  const preferences: GamePreferences = useMemo(() => {
+    if (!perGamePrefs) return globalPreferences;
+    return {
+      ...globalPreferences,
+      showBoardButtonInGame: perGamePrefs.showBoardButtonInGame,
+      highlightLastMove: perGamePrefs.highlightLastMove,
+      showOwnPieces: perGamePrefs.showOwnPieces,
+      showOpponentPieces: perGamePrefs.showOpponentPieces,
+      pieceShapeMode: perGamePrefs.pieceShapeMode,
+      pieceColors: perGamePrefs.pieceColors,
+    };
+  }, [globalPreferences, perGamePrefs]);
 
   // UI state
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
 
@@ -109,6 +123,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 confirmationDialogs={confirmationDialogs}
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
+                playerColor={playerSide === 'black' ? 'b' : 'w'}
               />
             )}
 
@@ -200,13 +215,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onNavigateNext={navigateNext}
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
-      />
-
-      {/* Settings Modal */}
-      <GameSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        playerSide={playerSide}
       />
 
       {/* Skill Level Settings Modal */}

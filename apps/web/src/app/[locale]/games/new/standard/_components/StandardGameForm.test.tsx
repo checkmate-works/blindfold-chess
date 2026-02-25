@@ -1,6 +1,8 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 import { StandardGameForm } from './StandardGameForm';
 
 // Mock next-intl
@@ -39,16 +41,24 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function renderWithProvider(locale: 'en' | 'ja' = 'en') {
+  return render(
+    <GamePreferencesProvider>
+      <StandardGameForm locale={locale} />
+    </GamePreferencesProvider>
+  );
+}
+
 describe('StandardGameForm', () => {
   it('renders color selector with white and black options', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     expect(screen.getByText('playAsWhite')).toBeInTheDocument();
     expect(screen.getByText('playAsBlack')).toBeInTheDocument();
   });
 
   it('renders skill level selector', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     expect(screen.getByText('selectLevel')).toBeInTheDocument();
     const select = screen.getByRole('combobox');
@@ -56,13 +66,13 @@ describe('StandardGameForm', () => {
   });
 
   it('renders start game button', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     expect(screen.getByText('startGame')).toBeInTheDocument();
   });
 
   it('defaults to white color and skill level 5', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     // White should have active styling
     const whiteButton = screen.getByText('playAsWhite').closest('button')!;
@@ -74,7 +84,7 @@ describe('StandardGameForm', () => {
   });
 
   it('navigates to play page with default params on start', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     fireEvent.click(screen.getByText('startGame'));
 
@@ -86,7 +96,7 @@ describe('StandardGameForm', () => {
   });
 
   it('navigates with selected black color', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     fireEvent.click(screen.getByText('playAsBlack'));
     fireEvent.click(screen.getByText('startGame'));
@@ -97,7 +107,7 @@ describe('StandardGameForm', () => {
   });
 
   it('navigates with changed skill level', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: '10' } });
@@ -109,7 +119,7 @@ describe('StandardGameForm', () => {
   });
 
   it('uses locale in the navigation URL', () => {
-    render(<StandardGameForm locale="ja" />);
+    renderWithProvider('ja');
 
     fireEvent.click(screen.getByText('startGame'));
 
@@ -118,7 +128,7 @@ describe('StandardGameForm', () => {
   });
 
   it('disables start button after clicking (loading state)', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     const startButton = screen.getByText('startGame').closest('button')!;
     fireEvent.click(startButton);
@@ -128,7 +138,7 @@ describe('StandardGameForm', () => {
   });
 
   it('renders all 20 skill level options', () => {
-    render(<StandardGameForm locale="en" />);
+    renderWithProvider();
 
     const select = screen.getByRole('combobox');
     const options = within(select).getAllByRole('option');

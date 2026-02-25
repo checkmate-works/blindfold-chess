@@ -166,6 +166,7 @@ export class LocalStorageGameRepository implements IGameRepository {
         skillLevel: game.skillLevel,
         status: game.status,
         startingFen: game.startingFen,
+        gamePreferences: game.gamePreferences,
       });
     } catch (error) {
       console.error('Failed to save move:', error);
@@ -206,7 +207,9 @@ export class LocalStorageGameRepository implements IGameRepository {
       typeof g.skillLevel === 'number' &&
       ['in_progress', 'win', 'loss', 'draw'].includes(g.status as string) &&
       (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
-      (g.startingFen === undefined || typeof g.startingFen === 'string')
+      (g.startingFen === undefined || typeof g.startingFen === 'string') &&
+      (g.gamePreferences === undefined ||
+        (typeof g.gamePreferences === 'object' && g.gamePreferences !== null))
     );
   }
 }

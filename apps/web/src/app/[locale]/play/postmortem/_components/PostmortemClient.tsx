@@ -30,7 +30,6 @@ import { fenToLichessUrl } from '@/lib/lichess';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
-import { GameSettingsModal } from '@/app/[locale]/play/_components/GameSettingsModal';
 import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
 import { getChessEngine } from '@/app/[locale]/play/_lib/chess-engine';
 import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
@@ -242,7 +241,6 @@ export function PostmortemClient({
   });
   const [currentPosition, setCurrentPosition] = useState(-1); // -1 means latest position
   const [displayFen, setDisplayFen] = useState<string | null>(null);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
 
   // Parse PGN on mount and clear evaluation cache
@@ -969,6 +967,7 @@ export function PostmortemClient({
                         inputPlaceholder={t('inputMove')}
                         selectPlaceholder={t('selectMove')}
                         toggleTitle={t('switchInputMode')}
+                        playerColor={playerColor === 'black' ? 'b' : 'w'}
                       />
 
                       {/* Action Buttons */}
@@ -1492,14 +1491,6 @@ export function PostmortemClient({
           </div>
         </div>
       </InfoModal>
-
-      {/* Settings Modal */}
-      <GameSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        playerSide={playerColor}
-        translationNamespace="postmortem"
-      />
 
       {/* Filter Modal */}
       <InfoModal

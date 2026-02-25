@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { isAdsSystemEnabled } from '@/lib/ads/config';
 
 import { AdSettings } from './AdSettings';
+import { AppearanceSettings } from './AppearanceSettings';
 import { ControlSettings } from './ControlSettings';
 import { GameSettings } from './GameSettings';
-import { ThemeSelector } from './ThemeSelector';
 
 type Props = {
   locale: string;
@@ -63,20 +63,7 @@ export function PreferencesTabs({ locale }: Props) {
       <div className="py-6">
         {activeTab === 'game' && <GameSettings />}
         {activeTab === 'controls' && <ControlSettings />}
-        {activeTab === 'appearance' && (
-          <div>
-            <div className="bg-card rounded-md p-6 shadow-sm border border-border">
-              <div className="space-y-6">
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground mb-4">
-                    {t('appearance.theme')}
-                  </h4>
-                  <ThemeSelector />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {activeTab === 'appearance' && <AppearanceSettings />}
         {activeTab === 'ads' && adsSystemEnabled && <AdSettings />}
       </div>
     </div>

@@ -16,11 +16,12 @@ type Props = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
+  playerColor?: 'w' | 'b';
 };
 
 type PromotionPiece = 'q' | 'r' | 'b' | 'n';
 
-export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
+export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w' }: Props) {
   const t = useTranslations('ButtonInput');
   const { preferences } = useGamePreferences();
   const { buttonInputPieceLabel } = preferences;
@@ -72,7 +73,11 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
               }`}
             >
               {buttonInputPieceLabel === 'icon' ? (
-                <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={24} />
+                <ChessPiece
+                  type={piece.toLowerCase() as PieceSymbol}
+                  color={playerColor}
+                  size={24}
+                />
               ) : (
                 piece
               )}

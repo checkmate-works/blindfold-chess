@@ -5,12 +5,15 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { SkillLevel } from '@/lib/types';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type UrlParams = {
   playerSide: Side;
   skillLevel: SkillLevel;
   gameId: string | undefined;
   startingFen: string | undefined;
   urlMoves: string | null;
+  gamePrefs: PerGamePreferences | undefined;
 };
 
 type ValidationErrorDetails = {
@@ -26,6 +29,7 @@ type GameInitializationResult = {
   initialGameId: string | undefined;
   initialStartingFen: string | undefined;
   initialMovesFromUrl: AlgebraicNotation[];
+  initialGamePrefs: PerGamePreferences | undefined;
   shouldRedirectToError: boolean;
   errorDetails: ValidationErrorDetails | null;
 };
@@ -40,7 +44,7 @@ type GameInitializationResult = {
  */
 export function useGameInitialization(urlParams: UrlParams): GameInitializationResult {
   return useMemo(() => {
-    const { playerSide, skillLevel, gameId, startingFen, urlMoves } = urlParams;
+    const { playerSide, skillLevel, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
 
     // Get initial moves from URL and validate them
     const parsedMoves: AlgebraicNotation[] = urlMoves ? JSON.parse(urlMoves) : [];
@@ -83,6 +87,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
       initialGameId: gameId,
       initialStartingFen: startingFen,
       initialMovesFromUrl,
+      initialGamePrefs: gamePrefs,
       shouldRedirectToError,
       errorDetails,
     };
@@ -94,11 +99,22 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
  * This is a pure function that can be called in the component.
  */
 export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
+  let gamePrefs: PerGamePreferences | undefined;
+  const gamePrefsParam = searchParams.get('gamePrefs');
+  if (gamePrefsParam) {
+    try {
+      gamePrefs = JSON.parse(gamePrefsParam);
+    } catch {
+      // Invalid JSON, ignore
+    }
+  }
+
   return {
     playerSide: (searchParams.get('color') as Side) || 'white',
     skillLevel: (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5,
     gameId: searchParams.get('gameId') || undefined,
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),
+    gamePrefs,
   };
 }
