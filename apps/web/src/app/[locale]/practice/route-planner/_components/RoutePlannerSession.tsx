@@ -9,9 +9,9 @@ import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { FaArrowRight, FaFlagCheckered, FaRedo, FaUndo } from 'react-icons/fa';
 
-import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+import { PieceCoordinateInput } from '@/app/[locale]/practice/_components/PieceCoordinateInput';
 import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
@@ -361,10 +361,6 @@ export function RoutePlannerSession({
     allowedPieces,
   ]);
 
-  // Derived sets for CoordinateInput
-  const selectedFilesSet = selectedFile ? new Set([selectedFile]) : new Set<string>();
-  const selectedRanksSet = selectedRank ? new Set([selectedRank]) : new Set<string>();
-
   // NOTE: 'summary' gameState is effectively replaced by redirection.
   // We can keep the state definition but we won't render it here anymore.
 
@@ -443,40 +439,13 @@ export function RoutePlannerSession({
           )}
 
           {gameState === 'playing' && (
-            <div className="flex flex-col gap-3 p-4 bg-card rounded-lg border border-border">
-              {/* Piece Row (Read Only Indicator) */}
-              <div className="flex gap-2 justify-center">
-                {(['k', 'q', 'r', 'b', 'n'] as const).map((piece) => (
-                  <button
-                    key={piece}
-                    disabled
-                    className={`w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                      problem.piece === piece
-                        ? 'bg-primary text-primary-foreground border-primary opacity-100'
-                        : 'bg-background border-border opacity-50'
-                    }`}
-                  >
-                    <ChessPiece type={piece} color="w" size={24} />
-                  </button>
-                ))}
-              </div>
-
-              {/* File Selection */}
-              <CoordinateInput
-                selectedFiles={selectedFilesSet}
-                onFileToggle={handleFileToggle}
-                showRanks={false}
-              />
-
-              {/* Rank Selection (Always shown) */}
-              <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                <CoordinateInput
-                  selectedRanks={selectedRanksSet}
-                  onRankToggle={handleRankToggle}
-                  showFiles={false}
-                />
-              </div>
-
+            <PieceCoordinateInput
+              activePiece={problem.piece}
+              selectedFile={selectedFile}
+              selectedRank={selectedRank}
+              onFileToggle={handleFileToggle}
+              onRankToggle={handleRankToggle}
+            >
               {/* Answer Action */}
               <div className="flex pt-4 border-t border-border mt-2">
                 <Button
@@ -492,7 +461,7 @@ export function RoutePlannerSession({
                   {t('submit')}
                 </Button>
               </div>
-            </div>
+            </PieceCoordinateInput>
           )}
         </div>
 

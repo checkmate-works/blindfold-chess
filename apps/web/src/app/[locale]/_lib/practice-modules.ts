@@ -47,7 +47,6 @@
  *    - `ProblemCountSlider`    — Slider for selecting number of problems in setup
  *    - `TimeSlider`            — Slider for selecting time limit in setup
  *    - `AnswerFeedback`        — Correct/incorrect flash feedback overlay
- *    - `SquareInput`           — Input for entering square names (e.g. "e4")
  *    - `BoardOrientationSelector` — White/Black perspective toggle
  *
  *    **Hooks** (`practice/_hooks/`):
