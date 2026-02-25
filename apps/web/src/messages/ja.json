@@ -51,7 +51,7 @@
     "title": "設定",
     "cancel": "キャンセル",
     "tabs": {
-      "board": "ボード",
+      "board": "ゲーム",
       "controls": "コントロール",
       "appearance": "外観",
       "ads": "広告"
@@ -98,7 +98,7 @@
       }
     },
     "appearance": {
-      "theme": "テーマ",
+      "theme": "システムテーマ",
       "themes": {
         "system": "システム",
         "systemDescription": "システム設定に従う",

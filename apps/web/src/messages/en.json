@@ -51,7 +51,7 @@
     "title": "Settings",
     "cancel": "Cancel",
     "tabs": {
-      "board": "Board",
+      "board": "Game",
       "controls": "Controls",
       "appearance": "Appearance",
       "ads": "Ads"
@@ -98,7 +98,7 @@
       }
     },
     "appearance": {
-      "theme": "Theme",
+      "theme": "System Theme",
       "themes": {
         "system": "System",
         "systemDescription": "Follow system theme",
