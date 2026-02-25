@@ -76,14 +76,16 @@ export function GameInProgressPanel({
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">
-        <button
-          onClick={onShowBoard}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-          title={t('showBoard')}
-        >
-          <FaEye className="w-4 h-4" />
-          <span className="hidden md:inline">{t('showBoard')}</span>
-        </button>
+        {preferences.showBoardButtonInGame && (
+          <button
+            onClick={onShowBoard}
+            className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+            title={t('showBoard')}
+          >
+            <FaEye className="w-4 h-4" />
+            <span className="hidden md:inline">{t('showBoard')}</span>
+          </button>
+        )}
         <button
           onClick={confirmationDialogs.undo.open}
           disabled={moves.length < 2}

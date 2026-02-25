@@ -31,7 +31,15 @@ export function AppearanceSettings() {
         <div className="border-t border-border"></div>
 
         {/* Preview */}
-        <BoardPreview settings={preferences} />
+        <BoardPreview
+          settings={{
+            ...preferences,
+            showOwnPieces: true,
+            showOpponentPieces: true,
+            pieceShapeMode: 'normal',
+            pieceColors: 'normal',
+          }}
+        />
       </div>
     </div>
   );

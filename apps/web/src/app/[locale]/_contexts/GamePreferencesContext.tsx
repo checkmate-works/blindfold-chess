@@ -21,6 +21,8 @@ export type GamePreferences = {
   moveInputMode: 'text' | 'select' | 'button'; // Move input mode
   buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
   enableAutoComplete: boolean; // Enable auto-complete for text input
+  // Board button visibility
+  showBoardButtonInGame: boolean; // Show "View Board" button during AI games
   // Advertisements
   adsEnabled: boolean; // Show advertisements
 };
@@ -37,6 +39,7 @@ const defaultPreferences: GamePreferences = {
   moveInputMode: 'button',
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
+  showBoardButtonInGame: true,
   adsEnabled: true,
 };
 
@@ -84,6 +87,8 @@ function validatePreferences(parsed: unknown): Partial<GamePreferences> {
       p.buttonInputPieceLabel as GamePreferences['buttonInputPieceLabel'];
   }
   if (typeof p.enableAutoComplete === 'boolean') result.enableAutoComplete = p.enableAutoComplete;
+  if (typeof p.showBoardButtonInGame === 'boolean')
+    result.showBoardButtonInGame = p.showBoardButtonInGame;
   if (typeof p.adsEnabled === 'boolean') result.adsEnabled = p.adsEnabled;
 
   return result;

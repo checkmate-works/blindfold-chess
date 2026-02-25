@@ -52,12 +52,6 @@ export function BoardAppearanceContent({ settings, onSettingsChange }: Props) {
             onChange={(e) => onSettingsChange({ showCoordinates: e.target.checked })}
             label={t('game.showCoordinates')}
           />
-          <PreferenceOption
-            type="checkbox"
-            checked={settings.highlightLastMove}
-            onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
-            label={t('game.highlightLastMove')}
-          />
         </div>
       </div>
     </div>

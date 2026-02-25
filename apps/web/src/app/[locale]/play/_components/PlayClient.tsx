@@ -12,7 +12,6 @@ import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_h
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { GameOverContent } from './GameOverContent';
-import { GameSettingsModal } from './GameSettingsModal';
 import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
@@ -46,7 +45,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const { preferences, updatePreferences } = useGamePreferences();
 
   // UI state
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
 
@@ -200,13 +198,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onNavigateNext={navigateNext}
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
-      />
-
-      {/* Settings Modal */}
-      <GameSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        playerSide={playerSide}
       />
 
       {/* Skill Level Settings Modal */}

@@ -91,6 +91,7 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
+      "showBoardButtonInGame": "Show 'View Board' button during AI games",
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",

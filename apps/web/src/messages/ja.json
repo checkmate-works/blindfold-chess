@@ -91,6 +91,7 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
+      "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",

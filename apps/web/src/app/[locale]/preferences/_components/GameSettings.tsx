@@ -27,7 +27,7 @@ export function GameSettings() {
         <GameSettingsContent
           settings={preferences}
           onSettingsChange={updatePreferences}
-          showPreview={false}
+          showPreview={true}
           showBoardAppearance={false}
         />
 
