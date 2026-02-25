@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
@@ -11,6 +12,12 @@ import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
 
 import '../globals.css';
 import { Providers } from './_lib/providers';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 const siteDescription =
   'A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.';
@@ -67,7 +74,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
-      <body>
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers>{children}</Providers>
