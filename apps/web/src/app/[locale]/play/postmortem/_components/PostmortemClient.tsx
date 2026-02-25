@@ -967,6 +967,7 @@ export function PostmortemClient({
                         inputPlaceholder={t('inputMove')}
                         selectPlaceholder={t('selectMove')}
                         toggleTitle={t('switchInputMode')}
+                        playerColor={playerColor === 'black' ? 'b' : 'w'}
                       />
 
                       {/* Action Buttons */}

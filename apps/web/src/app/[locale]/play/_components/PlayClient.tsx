@@ -123,6 +123,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 confirmationDialogs={confirmationDialogs}
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
+                playerColor={playerSide === 'black' ? 'b' : 'w'}
               />
             )}
 

@@ -26,6 +26,7 @@ type Props = {
   confirmationDialogs: ConfirmationDialogs;
   onShowBoard: () => void;
   onShowSkillLevelSettings: () => void;
+  playerColor?: 'w' | 'b';
 };
 
 export function GameInProgressPanel({
@@ -43,6 +44,7 @@ export function GameInProgressPanel({
   confirmationDialogs,
   onShowBoard,
   onShowSkillLevelSettings,
+  playerColor,
 }: Props) {
   const t = useTranslations('play');
   return (
@@ -64,6 +66,7 @@ export function GameInProgressPanel({
           inputPlaceholder={t('inputMove')}
           selectPlaceholder={t('selectMove')}
           toggleTitle={t('switchInputMode')}
+          playerColor={playerColor}
         />
       ) : (
         <div>

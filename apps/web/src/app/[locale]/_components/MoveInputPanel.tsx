@@ -23,6 +23,7 @@ type Props = {
   inputPlaceholder?: string;
   selectPlaceholder?: string;
   toggleTitle?: string;
+  playerColor?: 'w' | 'b';
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -44,6 +45,7 @@ export function MoveInputPanel({
   inputPlaceholder,
   selectPlaceholder,
   toggleTitle,
+  playerColor,
 }: Props) {
   const enabledModes = preferences.enabledMoveInputModes;
 
@@ -68,7 +70,12 @@ export function MoveInputPanel({
             placeholder={selectPlaceholder}
           />
         ) : currentMode === 'button' ? (
-          <ButtonInput fen={currentFen} onSubmit={onSubmit} disabled={disabled} />
+          <ButtonInput
+            fen={currentFen}
+            onSubmit={onSubmit}
+            disabled={disabled}
+            playerColor={playerColor}
+          />
         ) : (
           <MoveInput
             value={moveInput}
