@@ -1,6 +1,8 @@
 import type { SkillLevel as AiGameSkillLevel } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
 export type SkillLevel = AiGameSkillLevel;
 
@@ -29,6 +31,8 @@ export type Game = {
   status: GameOutcome;
   /** Custom starting position FEN. If undefined, standard starting position is used. */
   startingFen?: string;
+  /** Per-game preferences saved at game start. If undefined, global preferences are used. */
+  gamePreferences?: PerGamePreferences;
 };
 
 export type GameSortOption = 'lastPlayed' | 'created';

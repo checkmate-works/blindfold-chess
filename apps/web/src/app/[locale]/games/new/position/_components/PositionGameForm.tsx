@@ -12,8 +12,10 @@ import { FaChevronDown, FaSyncAlt } from 'react-icons/fa';
 import type { SkillLevel } from '@/lib/types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { CollapsibleGameSettings } from '@/app/[locale]/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/games/new/_components/ColorSelector';
 import {
   type CastlingRights,
@@ -41,6 +43,20 @@ export function PositionGameForm({ locale }: Props) {
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [isLoading, setIsLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
+
+  // Initialize local per-game settings from global preferences
+  const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
+    showBoardButtonInGame: preferences.showBoardButtonInGame,
+    highlightLastMove: preferences.highlightLastMove,
+    showOwnPieces: preferences.showOwnPieces,
+    showOpponentPieces: preferences.showOpponentPieces,
+    pieceShapeMode: preferences.pieceShapeMode,
+    pieceColors: preferences.pieceColors,
+  });
+
+  const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {
+    setLocalSettings((prev) => ({ ...prev, ...updates }));
+  };
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
@@ -170,6 +186,7 @@ export function PositionGameForm({ locale }: Props) {
       color,
       skillLevel: skillLevel.toString(),
       fen: fullPositionFen,
+      gamePrefs: JSON.stringify(localSettings),
     });
 
     router.push(`/${locale}/play?${searchParams.toString()}`);
@@ -262,6 +279,9 @@ export function PositionGameForm({ locale }: Props) {
 
       {/* Skill Level Selection */}
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
+
+      <SectionTitle>{t('gameSettings')}</SectionTitle>
+      <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
         onClick={handleStartGame}

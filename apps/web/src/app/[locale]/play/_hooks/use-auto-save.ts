@@ -9,6 +9,8 @@ import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
@@ -16,6 +18,7 @@ type UseAutoSaveOptions = {
   skillLevel: SkillLevel;
   status: GameOutcome;
   startingFen?: string;
+  gamePreferences?: PerGamePreferences;
   enabled?: boolean;
   saveOnInit?: boolean;
 };
@@ -30,6 +33,7 @@ export function useAutoSave({
   skillLevel,
   status,
   startingFen,
+  gamePreferences,
   enabled = true,
   saveOnInit = false,
 }: UseAutoSaveOptions) {
@@ -76,6 +80,7 @@ export function useAutoSave({
             skillLevel,
             status: currentStatusRef.current,
             startingFen,
+            gamePreferences,
           };
 
           const savedGameId = await gameRepository.create(gameData);
@@ -148,6 +153,7 @@ export function useAutoSave({
           skillLevel,
           status,
           startingFen,
+          gamePreferences,
         };
 
         let savedGameId: string;
@@ -222,6 +228,7 @@ export function useAutoSave({
       skillLevel,
       status,
       startingFen,
+      gamePreferences,
       saveOnInit,
     ]
   );

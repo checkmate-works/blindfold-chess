@@ -1304,6 +1304,7 @@
     "levelWithNumber": "レベル {level}",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
     "previewBoard": "ボードをプレビュー",
+    "gameSettings": "ゲーム設定",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",

@@ -5,6 +5,16 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
+// Per-game preferences (subset of GamePreferences saved with each game)
+export type PerGamePreferences = {
+  showBoardButtonInGame: boolean;
+  highlightLastMove: boolean;
+  showOwnPieces: boolean;
+  showOpponentPieces: boolean;
+  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
+  pieceColors: 'normal' | 'white-only' | 'black-only';
+};
+
 // Game preferences
 export type GamePreferences = {
   // Board appearance
