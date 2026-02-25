@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.13.0 - 2026-02-25
+
+### Added
+
+- Selectable move input modes — choose which move input modes (text, select, button) are available in Preferences
+- Per-game settings on setup forms — all game setup forms now include a collapsible "Game Settings" section
+- Show/Hide "View Board" button — new preference to control visibility during AI games
+
+### Changed
+
+- Reorganized Preferences — Board Appearance and Preview moved to "Appearance" tab, "Board" tab renamed to "Game"
+
 ## 0.12.0 - 2026-02-22
 
 ### Added
