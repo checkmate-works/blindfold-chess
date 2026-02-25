@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
@@ -23,6 +25,12 @@ type Props = {
   toggleTitle?: string;
 };
 
+const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
+  text: <FaKeyboard className="w-4 h-4" />,
+  select: <FaList className="w-4 h-4" />,
+  button: <FaGamepad className="w-4 h-4" />,
+};
+
 export function MoveInputPanel({
   preferences,
   updatePreferences,
@@ -37,10 +45,21 @@ export function MoveInputPanel({
   selectPlaceholder,
   toggleTitle,
 }: Props) {
+  const enabledModes = preferences.enabledMoveInputModes;
+
+  // Defensive: if current mode is not in enabled list, fall back to first enabled mode
+  const currentMode = enabledModes.includes(preferences.moveInputMode)
+    ? preferences.moveInputMode
+    : enabledModes[0];
+
+  // Compute next mode for cycling
+  const currentIndex = enabledModes.indexOf(currentMode);
+  const nextMode = enabledModes[(currentIndex + 1) % enabledModes.length];
+
   return (
     <>
       <div>
-        {preferences.moveInputMode === 'select' ? (
+        {currentMode === 'select' ? (
           <MoveSelect
             fen={currentFen}
             onSubmit={onSubmit}
@@ -48,7 +67,7 @@ export function MoveInputPanel({
             disabled={disabled}
             placeholder={selectPlaceholder}
           />
-        ) : preferences.moveInputMode === 'button' ? (
+        ) : currentMode === 'button' ? (
           <ButtonInput fen={currentFen} onSubmit={onSubmit} disabled={disabled} />
         ) : (
           <MoveInput
@@ -66,29 +85,19 @@ export function MoveInputPanel({
         )}
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
-      <div className="flex items-center justify-end">
-        <button
-          onClick={() => {
-            const nextMode =
-              preferences.moveInputMode === 'text'
-                ? 'select'
-                : preferences.moveInputMode === 'select'
-                  ? 'button'
-                  : 'text';
-            updatePreferences({ moveInputMode: nextMode });
-          }}
-          className="p-2 border border-border rounded-md hover:bg-muted"
-          title={toggleTitle}
-        >
-          {preferences.moveInputMode === 'text' ? (
-            <FaList className="w-4 h-4" />
-          ) : preferences.moveInputMode === 'select' ? (
-            <FaGamepad className="w-4 h-4" />
-          ) : (
-            <FaKeyboard className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+      {enabledModes.length >= 2 && (
+        <div className="flex items-center justify-end">
+          <button
+            onClick={() => {
+              updatePreferences({ moveInputMode: nextMode });
+            }}
+            className="p-2 border border-border rounded-md hover:bg-muted"
+            title={toggleTitle}
+          >
+            {modeIcons[nextMode]}
+          </button>
+        </div>
+      )}
     </>
   );
 }

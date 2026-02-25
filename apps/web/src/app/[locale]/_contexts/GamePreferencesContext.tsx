@@ -29,6 +29,7 @@ export type GamePreferences = {
   pieceColors: 'normal' | 'white-only' | 'black-only'; // Piece color mode
   // Move input
   moveInputMode: 'text' | 'select' | 'button'; // Move input mode
+  enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available
   buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Board button visibility
@@ -47,6 +48,7 @@ const defaultPreferences: GamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'button',
+  enabledMoveInputModes: ['text', 'select', 'button'],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   showBoardButtonInGame: true,
@@ -89,6 +91,16 @@ function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   ) {
     result.moveInputMode = p.moveInputMode as GamePreferences['moveInputMode'];
   }
+  if (Array.isArray(p.enabledMoveInputModes)) {
+    const validModes = ['text', 'select', 'button'] as const;
+    const filtered = p.enabledMoveInputModes.filter(
+      (m: unknown): m is GamePreferences['moveInputMode'] =>
+        typeof m === 'string' && validModes.includes(m as (typeof validModes)[number])
+    );
+    if (filtered.length > 0) {
+      result.enabledMoveInputModes = filtered;
+    }
+  }
   if (
     typeof p.buttonInputPieceLabel === 'string' &&
     ['text', 'icon'].includes(p.buttonInputPieceLabel)
@@ -125,10 +137,15 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       const stored = localStorage.getItem(PREFERENCES_STORAGE_KEY);
       if (stored) {
         const validated = validatePreferences(JSON.parse(stored));
-        setPreferences({
+        const merged = {
           ...defaultPreferences,
           ...validated,
-        });
+        };
+        // If current moveInputMode is not in enabledMoveInputModes, switch to first enabled mode
+        if (!merged.enabledMoveInputModes.includes(merged.moveInputMode)) {
+          merged.moveInputMode = merged.enabledMoveInputModes[0];
+        }
+        setPreferences(merged);
       }
     } catch (error) {
       console.warn('Failed to load game preferences from localStorage:', error);

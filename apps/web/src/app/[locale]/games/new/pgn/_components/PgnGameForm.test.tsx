@@ -47,6 +47,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
       pieceShapeMode: 'normal',
       pieceColors: 'normal',
       moveInputMode: 'text',
+      enabledMoveInputModes: ['text', 'select', 'button'],
       buttonInputPieceLabel: 'icon',
       enableAutoComplete: true,
       adsEnabled: true,
