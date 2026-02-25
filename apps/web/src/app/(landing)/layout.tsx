@@ -26,6 +26,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     alternates: {
       canonical: '/',
+      languages: {
+        en: '/en',
+        ja: '/ja',
+        'x-default': '/',
+      },
     },
     openGraph: {
       title: SITE_NAME,
