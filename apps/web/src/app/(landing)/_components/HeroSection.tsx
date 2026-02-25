@@ -28,6 +28,7 @@ export function HeroSection({ locale, t }: Props) {
               width={120}
               height={120}
               className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
+              priority
             />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">

@@ -68,6 +68,7 @@ export async function Header({ locale }: Props) {
                 width={40}
                 height={40}
                 className="w-10 h-10"
+                priority
               />
               {/* Title - hidden on mobile/tablet, visible on desktop */}
               <span className="hidden lg:block text-xl font-bold text-foreground">
