@@ -23,7 +23,6 @@ import { useTranslations } from 'next-intl';
 import { useParams, useSearchParams } from 'next/navigation';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
-import { PageDescription } from '@/app/[locale]/_components/PageDescription';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,7 +80,6 @@ export default function PostmortemPage() {
   return (
     <div className="space-y-8">
       <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
-      {!selectedMoveDisplay && <PageDescription>{t('description')}</PageDescription>}
       <PostmortemClient
         pgn={pgn}
         playerColor={playerColor}

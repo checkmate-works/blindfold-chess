@@ -21,6 +21,7 @@ import {
   FaQuestionCircle,
   FaSpinner,
   FaStar,
+  FaTimes,
 } from 'react-icons/fa';
 
 import type { EvaluationMark } from '@/lib/evaluation';
@@ -92,18 +93,6 @@ async function getPositionEvaluation(
 > {
   try {
     const engine = getChessEngine();
-
-    // Wait for engine to be ready
-    let retries = 0;
-    const maxRetries = 50; // 5 seconds max
-    while (!engine.isReady && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      retries++;
-    }
-
-    if (!engine.isReady) {
-      return undefined;
-    }
 
     // Get evaluation BEFORE the move (use cached value if available)
     let evalBefore: { score: number; mate?: number; bestMove?: string };
@@ -780,11 +769,52 @@ export function PostmortemClient({
     [moveLog, navigateToPosition, navigateToStart]
   );
 
-  // Update parent component with selected move display
+  // Update parent with latest move result during play
+  useEffect(() => {
+    if (!onSelectedMoveChange) return;
+    if (isCompleted) return; // 完了後は既存ロジック（selectedMoveIndex）に任せる
+    if (moveLog.length === 0) {
+      onSelectedMoveChange(null);
+      return;
+    }
+
+    const latestEntry = moveLog[moveLog.length - 1];
+    const moveNotation = latestEntry.isWhiteMove
+      ? `${latestEntry.moveNumber}. ${latestEntry.move}`
+      : `${latestEntry.moveNumber}... ${latestEntry.move}`;
+
+    let displayElement: ReactElement;
+
+    if (latestEntry.status === 'correct') {
+      displayElement = (
+        <span className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+          <FaCheck className="w-4 h-4" /> {moveNotation}
+        </span>
+      );
+    } else if (latestEntry.status === 'incorrect') {
+      const incorrectNotation = latestEntry.isWhiteMove
+        ? `${latestEntry.moveNumber}. ${latestEntry.incorrectMove}`
+        : `${latestEntry.moveNumber}... ${latestEntry.incorrectMove}`;
+      displayElement = (
+        <span className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
+          <FaTimes className="w-4 h-4" /> {incorrectNotation}
+        </span>
+      );
+    } else {
+      // auto (opponent auto-fill or "don't know")
+      displayElement = <span className="text-muted-foreground">{moveNotation}</span>;
+    }
+
+    onSelectedMoveChange(displayElement);
+  }, [moveLog, isCompleted, onSelectedMoveChange]);
+
+  // Update parent component with selected move display (post-completion navigation)
   useEffect(() => {
     if (!onSelectedMoveChange) return;
 
     if (selectedMoveIndex === null) {
+      // During play, let the moveLog useEffect above handle the display
+      if (!isCompleted) return;
       onSelectedMoveChange(null);
       return;
     }
@@ -823,7 +853,7 @@ export function PostmortemClient({
     );
 
     onSelectedMoveChange(displayElement);
-  }, [selectedMoveIndex, moveLog, onSelectedMoveChange]);
+  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange]);
 
   const currentFen = getCurrentFen();
   const totalMoves = originalMoves.length;
@@ -967,7 +997,7 @@ export function PostmortemClient({
                         inputPlaceholder={t('inputMove')}
                         selectPlaceholder={t('selectMove')}
                         toggleTitle={t('switchInputMode')}
-                        playerColor={playerColor === 'black' ? 'b' : 'w'}
+                        playerColor={currentFen.split(' ')[1] === 'b' ? 'b' : 'w'}
                       />
 
                       {/* Action Buttons */}
