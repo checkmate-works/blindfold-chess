@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import type { Side } from '@blindfold-chess/types';
@@ -9,6 +11,8 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { BoardAppearanceContent } from './BoardAppearanceContent';
 import { BoardPreview } from './BoardPreview';
 import { PreferenceOption } from './PreferenceOption';
+
+const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 
 type Props = {
   settings: GamePreferences;
@@ -30,6 +34,22 @@ export function GameSettingsContent({
   compact = false,
 }: Props) {
   const t = useTranslations('Preferences');
+
+  const availableShapeOptions = useMemo(() => {
+    return allShapeOptions.filter((mode) => {
+      if (mode === 'normal') return true;
+      if (mode === 'circles-all') return settings.showOwnPieces && settings.showOpponentPieces;
+      if (mode === 'circles-own') return settings.showOwnPieces;
+      if (mode === 'circles-opponent') return settings.showOpponentPieces;
+      return false;
+    });
+  }, [settings.showOwnPieces, settings.showOpponentPieces]);
+
+  useEffect(() => {
+    if (!availableShapeOptions.includes(settings.pieceShapeMode)) {
+      onSettingsChange({ pieceShapeMode: 'normal' });
+    }
+  }, [availableShapeOptions, settings.pieceShapeMode, onSettingsChange]);
 
   const containerClass = compact ? '' : 'bg-card rounded-md p-6 shadow-sm border border-border';
 
@@ -120,23 +140,21 @@ export function GameSettingsContent({
                       {t('game.pieceShape')}
                     </h5>
                     <div className="space-y-2">
-                      {(['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const).map(
-                        (mode) => (
-                          <PreferenceOption
-                            key={mode}
-                            type="radio"
-                            name="pieceShapeMode"
-                            value={mode}
-                            checked={settings.pieceShapeMode === mode}
-                            onChange={(e) =>
-                              onSettingsChange({
-                                pieceShapeMode: e.target.value as typeof mode,
-                              })
-                            }
-                            label={t(`game.pieceShapes.${mode}`)}
-                          />
-                        )
-                      )}
+                      {availableShapeOptions.map((mode) => (
+                        <PreferenceOption
+                          key={mode}
+                          type="radio"
+                          name="pieceShapeMode"
+                          value={mode}
+                          checked={settings.pieceShapeMode === mode}
+                          onChange={(e) =>
+                            onSettingsChange({
+                              pieceShapeMode: e.target.value as typeof mode,
+                            })
+                          }
+                          label={t(`game.pieceShapes.${mode}`)}
+                        />
+                      ))}
                     </div>
                   </div>
 

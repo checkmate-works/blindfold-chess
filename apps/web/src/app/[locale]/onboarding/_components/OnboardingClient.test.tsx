@@ -649,9 +649,9 @@ describe('OnboardingClient', () => {
         .closest('label')!;
       fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
 
-      // Change shape to circles-all
-      const circlesAllLabel = screen.getByText('step3.shape.circles-all').closest('label')!;
-      fireEvent.click(circlesAllLabel.querySelector('input[type="radio"]')!);
+      // Change shape to circles-own (circles-all is not available when opponent is hidden)
+      const circlesOwnLabel = screen.getByText('step3.shape.circles-own').closest('label')!;
+      fireEvent.click(circlesOwnLabel.querySelector('input[type="radio"]')!);
 
       // Change color to black-only
       const blackOnlyLabel = screen.getByText('step3.color.black-only').closest('label')!;
@@ -666,7 +666,7 @@ describe('OnboardingClient', () => {
         const parsed = JSON.parse(stored!);
         expect(parsed.showOwnPieces).toBe(true);
         expect(parsed.showOpponentPieces).toBe(false);
-        expect(parsed.pieceShapeMode).toBe('circles-all');
+        expect(parsed.pieceShapeMode).toBe('circles-own');
         expect(parsed.pieceColors).toBe('black-only');
       });
     });
@@ -707,12 +707,14 @@ describe('OnboardingClient', () => {
       // Go to STEP3
       fireEvent.click(screen.getByText('next'));
 
-      // STEP3: uncheck own pieces, keep opponent pieces, circles-own shape, white-only color
+      // STEP3: uncheck own pieces, keep opponent pieces, circles-opponent shape, white-only color
       const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
       fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
 
-      const circlesOwnLabel = screen.getByText('step3.shape.circles-own').closest('label')!;
-      fireEvent.click(circlesOwnLabel.querySelector('input[type="radio"]')!);
+      const circlesOpponentLabel = screen
+        .getByText('step3.shape.circles-opponent')
+        .closest('label')!;
+      fireEvent.click(circlesOpponentLabel.querySelector('input[type="radio"]')!);
 
       const whiteOnlyLabel = screen.getByText('step3.color.white-only').closest('label')!;
       fireEvent.click(whiteOnlyLabel.querySelector('input[type="radio"]')!);
@@ -732,7 +734,7 @@ describe('OnboardingClient', () => {
         // STEP3 preferences
         expect(parsed.showOwnPieces).toBe(false);
         expect(parsed.showOpponentPieces).toBe(true);
-        expect(parsed.pieceShapeMode).toBe('circles-own');
+        expect(parsed.pieceShapeMode).toBe('circles-opponent');
         expect(parsed.pieceColors).toBe('white-only');
       });
     });
@@ -869,6 +871,131 @@ describe('OnboardingClient', () => {
         // Other preferences should be preserved
         expect(parsed.showCoordinates).toBe(false);
       });
+    });
+  });
+
+  describe('STEP3: Piece shape option filtering', () => {
+    it('shows all 4 shape options when both visibility checkboxes are checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('step3.shape.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-all')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-own')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-opponent')).toBeInTheDocument();
+    });
+
+    it('shows only normal and circles-own when only showOwnPieces is checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck opponent pieces
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      expect(screen.getByText('step3.shape.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-own')).toBeInTheDocument();
+      expect(screen.queryByText('step3.shape.circles-all')).not.toBeInTheDocument();
+      expect(screen.queryByText('step3.shape.circles-opponent')).not.toBeInTheDocument();
+    });
+
+    it('shows only normal and circles-opponent when only showOpponentPieces is checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck own pieces
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+
+      expect(screen.getByText('step3.shape.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-opponent')).toBeInTheDocument();
+      expect(screen.queryByText('step3.shape.circles-all')).not.toBeInTheDocument();
+      expect(screen.queryByText('step3.shape.circles-own')).not.toBeInTheDocument();
+    });
+
+    it('does not filter piece color options regardless of visibility state', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck opponent pieces
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // All color options should still be visible
+      expect(screen.getByText('step3.color.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.white-only')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.black-only')).toBeInTheDocument();
+    });
+
+    it('auto-resets to normal when circles-all is selected and opponent is unchecked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Select circles-all
+      const circlesAllLabel = screen.getByText('step3.shape.circles-all').closest('label')!;
+      fireEvent.click(circlesAllLabel.querySelector('input[type="radio"]')!);
+
+      // Uncheck opponent pieces
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // circles-all is gone; normal should be selected
+      const normalLabel = screen.getByText('step3.shape.normal').closest('label')!;
+      const normalRadio = normalLabel.querySelector('input[type="radio"]')!;
+      expect(normalRadio).toBeChecked();
+    });
+
+    it('auto-resets to normal when circles-opponent is selected and opponent is unchecked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Select circles-opponent
+      const circlesOpponentLabel = screen
+        .getByText('step3.shape.circles-opponent')
+        .closest('label')!;
+      fireEvent.click(circlesOpponentLabel.querySelector('input[type="radio"]')!);
+
+      // Uncheck opponent pieces
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // circles-opponent is gone; normal should be selected
+      const normalLabel = screen.getByText('step3.shape.normal').closest('label')!;
+      const normalRadio = normalLabel.querySelector('input[type="radio"]')!;
+      expect(normalRadio).toBeChecked();
+    });
+
+    it('auto-resets to normal when circles-own is selected and own is unchecked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Select circles-own
+      const circlesOwnLabel = screen.getByText('step3.shape.circles-own').closest('label')!;
+      fireEvent.click(circlesOwnLabel.querySelector('input[type="radio"]')!);
+
+      // Uncheck own pieces
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+
+      // circles-own is gone; normal should be selected
+      const normalLabel = screen.getByText('step3.shape.normal').closest('label')!;
+      const normalRadio = normalLabel.querySelector('input[type="radio"]')!;
+      expect(normalRadio).toBeChecked();
     });
   });
 

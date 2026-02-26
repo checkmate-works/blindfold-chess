@@ -1,10 +1,14 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { BoardPreview } from '@/app/[locale]/preferences/_components/BoardPreview';
 import { PreferenceOption } from '@/app/[locale]/preferences/_components/PreferenceOption';
+
+const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 
 type Props = {
   showOwnPieces: boolean;
@@ -28,6 +32,22 @@ export function PieceSettingsStep({
   onSelectPieceColors,
 }: Props) {
   const t = useTranslations('onboarding');
+
+  const availableShapeOptions = useMemo(() => {
+    return allShapeOptions.filter((mode) => {
+      if (mode === 'normal') return true;
+      if (mode === 'circles-all') return showOwnPieces && showOpponentPieces;
+      if (mode === 'circles-own') return showOwnPieces;
+      if (mode === 'circles-opponent') return showOpponentPieces;
+      return false;
+    });
+  }, [showOwnPieces, showOpponentPieces]);
+
+  useEffect(() => {
+    if (!availableShapeOptions.includes(selectedPieceShape)) {
+      onSelectPieceShape('normal');
+    }
+  }, [availableShapeOptions, selectedPieceShape, onSelectPieceShape]);
 
   const previewSettings: GamePreferences = {
     showCoordinates: true,
@@ -93,21 +113,19 @@ export function PieceSettingsStep({
                 {t('step3.shape.title')}
               </h5>
               <div className="space-y-2">
-                {(['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const).map(
-                  (mode) => (
-                    <PreferenceOption
-                      key={mode}
-                      type="radio"
-                      name="pieceShapeMode"
-                      value={mode}
-                      checked={selectedPieceShape === mode}
-                      onChange={(e) =>
-                        onSelectPieceShape(e.target.value as GamePreferences['pieceShapeMode'])
-                      }
-                      label={t(`step3.shape.${mode}`)}
-                    />
-                  )
-                )}
+                {availableShapeOptions.map((mode) => (
+                  <PreferenceOption
+                    key={mode}
+                    type="radio"
+                    name="pieceShapeMode"
+                    value={mode}
+                    checked={selectedPieceShape === mode}
+                    onChange={(e) =>
+                      onSelectPieceShape(e.target.value as GamePreferences['pieceShapeMode'])
+                    }
+                    label={t(`step3.shape.${mode}`)}
+                  />
+                ))}
               </div>
             </div>
 
