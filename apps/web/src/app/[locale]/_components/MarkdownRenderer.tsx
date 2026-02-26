@@ -104,7 +104,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
               | 'stones';
             return <ChessBoardDemo type={demoType} />;
           }
-          if (!src) return null;
+          if (!src || typeof src !== 'string') return null;
 
           const isSvg = src.endsWith('.svg');
 
