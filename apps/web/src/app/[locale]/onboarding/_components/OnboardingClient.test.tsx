@@ -44,12 +44,29 @@ vi.mock('@blindfold-chess/icons', () => ({
     }),
 }));
 
+// Mock ChessBoard used by BoardPreview (in PieceSettingsStep)
+vi.mock('@/app/_components', () => ({
+  ChessBoard: (props: Record<string, unknown>) =>
+    React.createElement('div', { 'data-testid': 'chess-board-preview', 'data-fen': props.fen }),
+}));
+
 function renderWithProviders(locale = 'en') {
   return render(
     <GamePreferencesProvider>
       <OnboardingClient locale={locale} />
     </GamePreferencesProvider>
   );
+}
+
+/** Navigate to STEP2 */
+function goToStep2() {
+  fireEvent.click(screen.getByText('next'));
+}
+
+/** Navigate to STEP3 */
+function goToStep3() {
+  goToStep2();
+  fireEvent.click(screen.getByText('next'));
 }
 
 describe('OnboardingClient', () => {
@@ -67,8 +84,10 @@ describe('OnboardingClient', () => {
     it('renders the step indicator', () => {
       renderWithProviders();
 
-      // Step indicator should show step number "1"
+      // Step indicator should show step numbers "1", "2", "3"
       expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
     });
 
     it('renders the MoveInputStep content', () => {
@@ -87,7 +106,7 @@ describe('OnboardingClient', () => {
     it('renders next button on the first step (not last step)', () => {
       renderWithProviders();
 
-      // With two steps, first step should show "next" not "finish"
+      // With three steps, first step should show "next" not "finish"
       expect(screen.getByText('next')).toBeInTheDocument();
       expect(screen.queryByText('finish')).not.toBeInTheDocument();
     });
@@ -208,7 +227,7 @@ describe('OnboardingClient', () => {
     it('clicking next on STEP1 advances to STEP2', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       // STEP2 content should appear
       expect(screen.getByText('step2.title')).toBeInTheDocument();
@@ -220,25 +239,26 @@ describe('OnboardingClient', () => {
     it('shows back button on STEP2', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       expect(screen.getByText('back')).toBeInTheDocument();
     });
 
-    it('shows finish button on STEP2 (last step)', () => {
+    it('shows next button on STEP2 (not last step)', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
-      expect(screen.getByText('finish')).toBeInTheDocument();
-      expect(screen.queryByText('next')).not.toBeInTheDocument();
+      // STEP2 is now the middle step, should show "next" not "finish"
+      expect(screen.getByText('next')).toBeInTheDocument();
+      expect(screen.queryByText('finish')).not.toBeInTheDocument();
     });
 
     it('clicking back on STEP2 returns to STEP1', () => {
       renderWithProviders();
 
       // Go to STEP2
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
       expect(screen.getByText('step2.title')).toBeInTheDocument();
 
       // Go back to STEP1
@@ -251,7 +271,7 @@ describe('OnboardingClient', () => {
       renderWithProviders();
 
       // Go to STEP2 and back
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
       fireEvent.click(screen.getByText('back'));
 
       expect(screen.queryByText('back')).not.toBeInTheDocument();
@@ -262,7 +282,7 @@ describe('OnboardingClient', () => {
     it('displays modal and inline peek mode options on STEP2', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       expect(screen.getByText('step2.modes.modal.label')).toBeInTheDocument();
       expect(screen.getByText('step2.modes.inline.label')).toBeInTheDocument();
@@ -271,7 +291,7 @@ describe('OnboardingClient', () => {
     it('defaults to modal mode selected on STEP2', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
       const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
@@ -283,7 +303,7 @@ describe('OnboardingClient', () => {
     it('allows switching to inline mode on STEP2', () => {
       renderWithProviders();
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
       fireEvent.click(inlineOption);
@@ -296,20 +316,283 @@ describe('OnboardingClient', () => {
     });
   });
 
-  describe('finish from STEP2', () => {
-    it('navigates to /en/play when finish is clicked on STEP2', () => {
+  describe('step navigation (STEP2 -> STEP3)', () => {
+    it('clicking next on STEP2 advances to STEP3', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // STEP3 content should appear
+      expect(screen.getByText('step3.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.description')).toBeInTheDocument();
+      // STEP2 content should be gone
+      expect(screen.queryByText('step2.title')).not.toBeInTheDocument();
+    });
+
+    it('shows back button on STEP3', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('back')).toBeInTheDocument();
+    });
+
+    it('shows finish button on STEP3 (last step)', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('finish')).toBeInTheDocument();
+      expect(screen.queryByText('next')).not.toBeInTheDocument();
+    });
+
+    it('clicking back on STEP3 returns to STEP2', () => {
+      renderWithProviders();
+
+      goToStep3();
+      expect(screen.getByText('step3.title')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('back'));
+      expect(screen.getByText('step2.title')).toBeInTheDocument();
+      expect(screen.queryByText('step3.title')).not.toBeInTheDocument();
+    });
+
+    it('can navigate back from STEP3 to STEP2 to STEP1', () => {
+      renderWithProviders();
+
+      // Navigate forward to STEP3
+      goToStep3();
+      expect(screen.getByText('step3.title')).toBeInTheDocument();
+
+      // Back to STEP2
+      fireEvent.click(screen.getByText('back'));
+      expect(screen.getByText('step2.title')).toBeInTheDocument();
+
+      // Back to STEP1
+      fireEvent.click(screen.getByText('back'));
+      expect(screen.getByText('step1.title')).toBeInTheDocument();
+      expect(screen.queryByText('back')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('STEP3 piece settings', () => {
+    it('displays all setting sections on STEP3', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('step3.visibility.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.appearance.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.title')).toBeInTheDocument();
+    });
+
+    it('displays visibility checkboxes', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('step3.visibility.showOwnPieces')).toBeInTheDocument();
+      expect(screen.getByText('step3.visibility.showOpponentPieces')).toBeInTheDocument();
+    });
+
+    it('displays all shape options', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('step3.shape.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-all')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-own')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.circles-opponent')).toBeInTheDocument();
+    });
+
+    it('displays all color options', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByText('step3.color.normal')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.white-only')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.black-only')).toBeInTheDocument();
+    });
+
+    it('defaults to both visibility checkboxes checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      // Both showOwnPieces and showOpponentPieces should be checked
+      checkboxes.forEach((cb) => {
+        expect(cb).toBeChecked();
+      });
+    });
+
+    it('defaults to "normal" shape and color selected', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Both shape and color have "normal" as default — check by radio group name
+      const shapeNormalLabel = screen.getByText('step3.shape.normal').closest('label')!;
+      const shapeRadio = shapeNormalLabel.querySelector('input[type="radio"]')!;
+      expect(shapeRadio).toBeChecked();
+
+      const colorNormalLabel = screen.getByText('step3.color.normal').closest('label')!;
+      const colorRadio = colorNormalLabel.querySelector('input[type="radio"]')!;
+      expect(colorRadio).toBeChecked();
+    });
+
+    it('allows unchecking showOwnPieces', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      const ownPiecesLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      const checkbox = ownPiecesLabel.querySelector('input[type="checkbox"]')!;
+      fireEvent.click(checkbox);
+
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('allows unchecking showOpponentPieces', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      const opponentPiecesLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      const checkbox = opponentPiecesLabel.querySelector('input[type="checkbox"]')!;
+      fireEvent.click(checkbox);
+
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('allows switching shape to circles-all', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      const circlesAllLabel = screen.getByText('step3.shape.circles-all').closest('label')!;
+      const radio = circlesAllLabel.querySelector('input[type="radio"]')!;
+      fireEvent.click(radio);
+
+      expect(radio).toBeChecked();
+    });
+
+    it('allows switching color to white-only', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      const whiteOnlyLabel = screen.getByText('step3.color.white-only').closest('label')!;
+      const radio = whiteOnlyLabel.querySelector('input[type="radio"]')!;
+      fireEvent.click(radio);
+
+      expect(radio).toBeChecked();
+    });
+
+    it('displays board preview', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      expect(screen.getByTestId('chess-board-preview')).toBeInTheDocument();
+    });
+
+    it('hides appearance section when both visibility checkboxes are unchecked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck both
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // Appearance section should be hidden
+      expect(screen.queryByText('step3.appearance.title')).not.toBeInTheDocument();
+      expect(screen.queryByText('step3.shape.title')).not.toBeInTheDocument();
+      expect(screen.queryByText('step3.color.title')).not.toBeInTheDocument();
+
+      // Preview should still be visible
+      expect(screen.getByTestId('chess-board-preview')).toBeInTheDocument();
+    });
+
+    it('shows appearance section when only showOwnPieces is checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck opponent only
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // Appearance section should still be visible
+      expect(screen.getByText('step3.appearance.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.shape.title')).toBeInTheDocument();
+      expect(screen.getByText('step3.color.title')).toBeInTheDocument();
+    });
+
+    it('shows appearance section when only showOpponentPieces is checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck own only
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+
+      // Appearance section should still be visible
+      expect(screen.getByText('step3.appearance.title')).toBeInTheDocument();
+    });
+
+    it('re-shows appearance section when a visibility checkbox is re-checked', () => {
+      renderWithProviders();
+
+      goToStep3();
+
+      // Uncheck both
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      const ownCheckbox = ownLabel.querySelector('input[type="checkbox"]')!;
+      fireEvent.click(ownCheckbox);
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // Hidden
+      expect(screen.queryByText('step3.appearance.title')).not.toBeInTheDocument();
+
+      // Re-check own
+      fireEvent.click(ownCheckbox);
+
+      // Visible again
+      expect(screen.getByText('step3.appearance.title')).toBeInTheDocument();
+    });
+  });
+
+  describe('finish from STEP3', () => {
+    it('navigates to /en/play when finish is clicked on STEP3', () => {
       renderWithProviders('en');
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep3();
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/en/play');
     });
 
-    it('navigates to /ja/play when finish is clicked on STEP2 (ja locale)', () => {
+    it('navigates to /ja/play when finish is clicked on STEP3 (ja locale)', () => {
       renderWithProviders('ja');
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep3();
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/ja/play');
@@ -323,7 +606,7 @@ describe('OnboardingClient', () => {
       fireEvent.click(textOption);
 
       // Click next to go to STEP2 (this saves STEP1 preferences)
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       await vi.waitFor(() => {
         const stored = localStorage.getItem('blindfold-chess-game-preferences');
@@ -334,18 +617,18 @@ describe('OnboardingClient', () => {
       });
     });
 
-    it('saves peek mode preference on finish from STEP2', async () => {
+    it('saves peek mode preference when advancing from STEP2 to STEP3', async () => {
       renderWithProviders();
 
       // Go to STEP2
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       // Select inline peek mode
       const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
       fireEvent.click(inlineOption);
 
-      // Click finish
-      fireEvent.click(screen.getByText('finish'));
+      // Click next to go to STEP3 (this saves STEP2 preferences)
+      fireEvent.click(screen.getByText('next'));
 
       await vi.waitFor(() => {
         const stored = localStorage.getItem('blindfold-chess-game-preferences');
@@ -355,22 +638,59 @@ describe('OnboardingClient', () => {
       });
     });
 
-    it('saves default modal peek mode on finish without changing selection', async () => {
+    it('saves piece settings on finish from STEP3', async () => {
       renderWithProviders();
 
-      // Go to STEP2 and finish without changing
-      fireEvent.click(screen.getByText('next'));
+      goToStep3();
+
+      // Uncheck showOpponentPieces
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+
+      // Change shape to circles-all
+      const circlesAllLabel = screen.getByText('step3.shape.circles-all').closest('label')!;
+      fireEvent.click(circlesAllLabel.querySelector('input[type="radio"]')!);
+
+      // Change color to black-only
+      const blackOnlyLabel = screen.getByText('step3.color.black-only').closest('label')!;
+      fireEvent.click(blackOnlyLabel.querySelector('input[type="radio"]')!);
+
+      // Click finish
       fireEvent.click(screen.getByText('finish'));
 
       await vi.waitFor(() => {
         const stored = localStorage.getItem('blindfold-chess-game-preferences');
         expect(stored).toBeTruthy();
         const parsed = JSON.parse(stored!);
-        expect(parsed.peekMode).toBe('modal');
+        expect(parsed.showOwnPieces).toBe(true);
+        expect(parsed.showOpponentPieces).toBe(false);
+        expect(parsed.pieceShapeMode).toBe('circles-all');
+        expect(parsed.pieceColors).toBe('black-only');
       });
     });
 
-    it('saves both STEP1 and STEP2 preferences through full flow', async () => {
+    it('saves default piece settings on finish without changing selection', async () => {
+      renderWithProviders();
+
+      // Go through all steps without changing anything
+      goToStep3();
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        expect(stored).toBeTruthy();
+        const parsed = JSON.parse(stored!);
+        // Default: all pieces visible, normal shape, normal colors
+        expect(parsed.showOwnPieces).toBe(true);
+        expect(parsed.showOpponentPieces).toBe(true);
+        expect(parsed.pieceShapeMode).toBe('normal');
+        expect(parsed.pieceColors).toBe('normal');
+      });
+    });
+
+    it('saves all preferences through full 3-step flow', async () => {
       renderWithProviders();
 
       // STEP1: select text mode in addition to button
@@ -378,11 +698,24 @@ describe('OnboardingClient', () => {
       fireEvent.click(textOption);
 
       // Go to STEP2
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
 
       // STEP2: select inline peek mode
       const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
       fireEvent.click(inlineOption);
+
+      // Go to STEP3
+      fireEvent.click(screen.getByText('next'));
+
+      // STEP3: uncheck own pieces, keep opponent pieces, circles-own shape, white-only color
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+
+      const circlesOwnLabel = screen.getByText('step3.shape.circles-own').closest('label')!;
+      fireEvent.click(circlesOwnLabel.querySelector('input[type="radio"]')!);
+
+      const whiteOnlyLabel = screen.getByText('step3.color.white-only').closest('label')!;
+      fireEvent.click(whiteOnlyLabel.querySelector('input[type="radio"]')!);
 
       // Finish
       fireEvent.click(screen.getByText('finish'));
@@ -396,14 +729,19 @@ describe('OnboardingClient', () => {
         expect(parsed.moveInputMode).toBe('button');
         // STEP2 preferences
         expect(parsed.peekMode).toBe('inline');
+        // STEP3 preferences
+        expect(parsed.showOwnPieces).toBe(false);
+        expect(parsed.showOpponentPieces).toBe(true);
+        expect(parsed.pieceShapeMode).toBe('circles-own');
+        expect(parsed.pieceColors).toBe('white-only');
       });
     });
 
     it('saves only default preferences through full flow without changes', async () => {
       renderWithProviders();
 
-      // Go through both steps without changing anything
-      fireEvent.click(screen.getByText('next'));
+      // Go through all three steps without changing anything
+      goToStep3();
       fireEvent.click(screen.getByText('finish'));
 
       await vi.waitFor(() => {
@@ -413,6 +751,80 @@ describe('OnboardingClient', () => {
         expect(parsed.enabledMoveInputModes).toEqual(['button']);
         expect(parsed.moveInputMode).toBe('button');
         expect(parsed.peekMode).toBe('modal');
+        expect(parsed.showOwnPieces).toBe(true);
+        expect(parsed.showOpponentPieces).toBe(true);
+        expect(parsed.pieceShapeMode).toBe('normal');
+        expect(parsed.pieceColors).toBe('normal');
+      });
+    });
+  });
+
+  describe('STEP3 visibility checkbox to preferences mapping', () => {
+    it('saves both true when both checkboxes remain checked (default)', async () => {
+      renderWithProviders();
+
+      goToStep3();
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        const parsed = JSON.parse(stored!);
+        expect(parsed.showOwnPieces).toBe(true);
+        expect(parsed.showOpponentPieces).toBe(true);
+      });
+    });
+
+    it('saves showOpponentPieces=false when opponent checkbox is unchecked', async () => {
+      renderWithProviders();
+
+      goToStep3();
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        const parsed = JSON.parse(stored!);
+        expect(parsed.showOwnPieces).toBe(true);
+        expect(parsed.showOpponentPieces).toBe(false);
+      });
+    });
+
+    it('saves showOwnPieces=false when own checkbox is unchecked', async () => {
+      renderWithProviders();
+
+      goToStep3();
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        const parsed = JSON.parse(stored!);
+        expect(parsed.showOwnPieces).toBe(false);
+        expect(parsed.showOpponentPieces).toBe(true);
+      });
+    });
+
+    it('saves both false when both checkboxes are unchecked', async () => {
+      renderWithProviders();
+
+      goToStep3();
+      const ownLabel = screen.getByText('step3.visibility.showOwnPieces').closest('label')!;
+      fireEvent.click(ownLabel.querySelector('input[type="checkbox"]')!);
+      const opponentLabel = screen
+        .getByText('step3.visibility.showOpponentPieces')
+        .closest('label')!;
+      fireEvent.click(opponentLabel.querySelector('input[type="checkbox"]')!);
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        const parsed = JSON.parse(stored!);
+        expect(parsed.showOwnPieces).toBe(false);
+        expect(parsed.showOpponentPieces).toBe(false);
       });
     });
   });
@@ -442,9 +854,12 @@ describe('OnboardingClient', () => {
       fireEvent.click(selectOption);
 
       // Go to STEP2
+      goToStep2();
+
+      // Go to STEP3
       fireEvent.click(screen.getByText('next'));
 
-      // Finish from STEP2
+      // Finish from STEP3
       fireEvent.click(screen.getByText('finish'));
 
       await vi.waitFor(() => {
@@ -458,10 +873,10 @@ describe('OnboardingClient', () => {
   });
 
   describe('locale handling', () => {
-    it('passes locale correctly to navigation on finish from STEP2', () => {
+    it('passes locale correctly to navigation on finish from STEP3', () => {
       renderWithProviders('fr');
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep3();
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/fr/play');
@@ -478,7 +893,16 @@ describe('OnboardingClient', () => {
     it('passes locale correctly on skip from STEP2', () => {
       renderWithProviders('ja');
 
-      fireEvent.click(screen.getByText('next'));
+      goToStep2();
+      fireEvent.click(screen.getByText('skip'));
+
+      expect(mockPush).toHaveBeenCalledWith('/ja/play');
+    });
+
+    it('passes locale correctly on skip from STEP3', () => {
+      renderWithProviders('ja');
+
+      goToStep3();
       fireEvent.click(screen.getByText('skip'));
 
       expect(mockPush).toHaveBeenCalledWith('/ja/play');

@@ -1584,6 +1584,32 @@
       "preview": {
         "label": "プレビュー"
       }
+    },
+    "step3": {
+      "shortLabel": "駒",
+      "title": "駒の設定",
+      "description": "盤上の駒の表示方法をカスタマイズします。",
+      "visibility": {
+        "title": "駒の表示",
+        "showOwnPieces": "自分の駒を表示",
+        "showOpponentPieces": "相手の駒を表示"
+      },
+      "appearance": {
+        "title": "駒の外観"
+      },
+      "shape": {
+        "title": "駒の形状",
+        "normal": "通常の駒",
+        "circles-all": "すべての駒をストーンで表示",
+        "circles-own": "自分の駒をストーンで表示",
+        "circles-opponent": "相手の駒をストーンで表示"
+      },
+      "color": {
+        "title": "駒の色",
+        "normal": "通常の色（白と黒）",
+        "white-only": "すべての駒を白で表示",
+        "black-only": "すべての駒を黒で表示"
+      }
     }
   }
 }

@@ -1583,6 +1583,32 @@
       "preview": {
         "label": "Preview"
       }
+    },
+    "step3": {
+      "shortLabel": "Pieces",
+      "title": "Piece Settings",
+      "description": "Customize how pieces are displayed on the board.",
+      "visibility": {
+        "title": "Piece Visibility",
+        "showOwnPieces": "Show own pieces",
+        "showOpponentPieces": "Show opponent pieces"
+      },
+      "appearance": {
+        "title": "Piece Appearance"
+      },
+      "shape": {
+        "title": "Piece Shape",
+        "normal": "Normal pieces",
+        "circles-all": "Show all pieces as stones",
+        "circles-own": "Show own pieces as stones",
+        "circles-opponent": "Show opponent pieces as stones"
+      },
+      "color": {
+        "title": "Piece Color",
+        "normal": "Normal colors (White & Black)",
+        "white-only": "Show all pieces as white",
+        "black-only": "Show all pieces as black"
+      }
     }
   }
 }

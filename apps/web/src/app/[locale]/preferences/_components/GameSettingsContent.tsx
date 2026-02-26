@@ -103,65 +103,69 @@ export function GameSettingsContent({
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-border"></div>
+            {/* Divider + Piece Appearance - only when at least one piece type is visible */}
+            {(settings.showOwnPieces || settings.showOpponentPieces) && (
+              <>
+                <div className="border-t border-border"></div>
 
-            {/* Piece Appearance */}
-            <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">
-                {t('game.pieceAppearance')}
-              </h4>
+                {/* Piece Appearance */}
+                <div>
+                  <h4 className="text-lg font-semibold text-foreground mb-4">
+                    {t('game.pieceAppearance')}
+                  </h4>
 
-              {/* Piece Shape */}
-              <div className="mb-6">
-                <h5 className="text-sm font-medium text-muted-foreground mb-3">
-                  {t('game.pieceShape')}
-                </h5>
-                <div className="space-y-2">
-                  {(['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const).map(
-                    (mode) => (
-                      <PreferenceOption
-                        key={mode}
-                        type="radio"
-                        name="pieceShapeMode"
-                        value={mode}
-                        checked={settings.pieceShapeMode === mode}
-                        onChange={(e) =>
-                          onSettingsChange({
-                            pieceShapeMode: e.target.value as typeof mode,
-                          })
-                        }
-                        label={t(`game.pieceShapes.${mode}`)}
-                      />
-                    )
-                  )}
+                  {/* Piece Shape */}
+                  <div className="mb-6">
+                    <h5 className="text-sm font-medium text-muted-foreground mb-3">
+                      {t('game.pieceShape')}
+                    </h5>
+                    <div className="space-y-2">
+                      {(['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const).map(
+                        (mode) => (
+                          <PreferenceOption
+                            key={mode}
+                            type="radio"
+                            name="pieceShapeMode"
+                            value={mode}
+                            checked={settings.pieceShapeMode === mode}
+                            onChange={(e) =>
+                              onSettingsChange({
+                                pieceShapeMode: e.target.value as typeof mode,
+                              })
+                            }
+                            label={t(`game.pieceShapes.${mode}`)}
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Piece Colors */}
+                  <div>
+                    <h5 className="text-sm font-medium text-muted-foreground mb-3">
+                      {t('game.pieceColor')}
+                    </h5>
+                    <div className="space-y-2">
+                      {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
+                        <PreferenceOption
+                          key={colors}
+                          type="radio"
+                          name="pieceColors"
+                          value={colors}
+                          checked={settings.pieceColors === colors}
+                          onChange={(e) =>
+                            onSettingsChange({
+                              pieceColors: e.target.value as typeof colors,
+                            })
+                          }
+                          label={t(`game.pieceColors.${colors}`)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Piece Colors */}
-              <div>
-                <h5 className="text-sm font-medium text-muted-foreground mb-3">
-                  {t('game.pieceColor')}
-                </h5>
-                <div className="space-y-2">
-                  {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
-                    <PreferenceOption
-                      key={colors}
-                      type="radio"
-                      name="pieceColors"
-                      value={colors}
-                      checked={settings.pieceColors === colors}
-                      onChange={(e) =>
-                        onSettingsChange({
-                          pieceColors: e.target.value as typeof colors,
-                        })
-                      }
-                      label={t(`game.pieceColors.${colors}`)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+              </>
+            )}
 
             {/* Preview */}
             {showPreview && (

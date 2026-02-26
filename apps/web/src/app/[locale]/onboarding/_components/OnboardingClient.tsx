@@ -10,10 +10,13 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { MoveInputStep } from './MoveInputStep';
 import { PeekModeStep } from './PeekModeStep';
+import { PieceSettingsStep } from './PieceSettingsStep';
 import { StepIndicator } from './StepIndicator';
 
 type MoveInputMode = GamePreferences['moveInputMode'];
 type PeekMode = GamePreferences['peekMode'];
+type PieceShapeMode = GamePreferences['pieceShapeMode'];
+type PieceColors = GamePreferences['pieceColors'];
 
 type StepDefinition = {
   id: string;
@@ -23,6 +26,7 @@ type StepDefinition = {
 const STEPS: StepDefinition[] = [
   { id: 'move-input', labelKey: 'step1.shortLabel' },
   { id: 'peek-mode', labelKey: 'step2.shortLabel' },
+  { id: 'piece-settings', labelKey: 'step3.shortLabel' },
 ];
 
 type Props = {
@@ -36,6 +40,10 @@ export function OnboardingClient({ locale }: Props) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedModes, setSelectedModes] = useState<MoveInputMode[]>(['button']);
   const [selectedPeekMode, setSelectedPeekMode] = useState<PeekMode>('modal');
+  const [showOwnPieces, setShowOwnPieces] = useState(true);
+  const [showOpponentPieces, setShowOpponentPieces] = useState(true);
+  const [selectedPieceShape, setSelectedPieceShape] = useState<PieceShapeMode>('normal');
+  const [selectedPieceColors, setSelectedPieceColors] = useState<PieceColors>('normal');
 
   const handleToggleMode = useCallback((mode: MoveInputMode) => {
     setSelectedModes((prev) => {
@@ -65,8 +73,24 @@ export function OnboardingClient({ locale }: Props) {
       });
     } else if (step.id === 'peek-mode') {
       updatePreferences({ peekMode: selectedPeekMode });
+    } else if (step.id === 'piece-settings') {
+      updatePreferences({
+        showOwnPieces,
+        showOpponentPieces,
+        pieceShapeMode: selectedPieceShape,
+        pieceColors: selectedPieceColors,
+      });
     }
-  }, [currentStepIndex, selectedModes, selectedPeekMode, updatePreferences]);
+  }, [
+    currentStepIndex,
+    selectedModes,
+    selectedPeekMode,
+    showOwnPieces,
+    showOpponentPieces,
+    selectedPieceShape,
+    selectedPieceColors,
+    updatePreferences,
+  ]);
 
   const handleNext = useCallback(() => {
     saveCurrentStepPreferences();
@@ -97,6 +121,18 @@ export function OnboardingClient({ locale }: Props) {
         )}
         {STEPS[currentStepIndex].id === 'peek-mode' && (
           <PeekModeStep selectedMode={selectedPeekMode} onSelectMode={setSelectedPeekMode} />
+        )}
+        {STEPS[currentStepIndex].id === 'piece-settings' && (
+          <PieceSettingsStep
+            showOwnPieces={showOwnPieces}
+            onChangeShowOwnPieces={setShowOwnPieces}
+            showOpponentPieces={showOpponentPieces}
+            onChangeShowOpponentPieces={setShowOpponentPieces}
+            selectedPieceShape={selectedPieceShape}
+            onSelectPieceShape={setSelectedPieceShape}
+            selectedPieceColors={selectedPieceColors}
+            onSelectPieceColors={setSelectedPieceColors}
+          />
         )}
       </div>
 
