@@ -76,11 +76,6 @@ export function PeekModeStep({ selectedMode, onSelectMode }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-lg font-semibold text-foreground">{t('step2.title')}</h2>
-        <p className="text-sm text-muted-foreground">{t('step2.description')}</p>
-      </div>
-
       <div className="space-y-3">
         {PEEK_MODE_OPTIONS.map(({ mode, iconElement }) => {
           const isSelected = selectedMode === mode;

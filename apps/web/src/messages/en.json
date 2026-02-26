@@ -1313,7 +1313,8 @@
     "levelWithNumber": "Level {level}",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
     "previewBoard": "Preview Board",
-    "gameSettings": "Game Settings",
+    "gameSettings": "Advanced Settings",
+    "showBoardButtonInGame": "Show 'View Board' button during AI games",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -1569,7 +1570,8 @@
     "step2": {
       "shortLabel": "Peek",
       "title": "Board Peek Mode",
-      "description": "Choose how the board is displayed when you peek during a game.",
+      "description": "You can enable a peek feature to glance at the board as a visual aid.",
+      "showBoardButton": "Show 'View Board' button during AI games",
       "modes": {
         "modal": {
           "label": "Modal",

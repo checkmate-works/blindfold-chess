@@ -2,9 +2,11 @@
 
 import { useCallback } from 'react';
 
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { PreferenceOption } from '@/app/[locale]/preferences/_components/PreferenceOption';
 
 import { OnboardingStepLayout, PeekModeStep } from '../_components';
 
@@ -12,6 +14,7 @@ export default function Step2Page() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const { preferences, updatePreferences } = useGamePreferences();
+  const t = useTranslations('onboarding');
 
   const handleSelectMode = useCallback(
     (mode: typeof preferences.peekMode) => {
@@ -39,7 +42,26 @@ export default function Step2Page() {
       onBack={handleBack}
       onSkip={handleSkip}
     >
-      <PeekModeStep selectedMode={preferences.peekMode} onSelectMode={handleSelectMode} />
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h2 className="text-lg font-semibold text-foreground">{t('step2.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('step2.description')}</p>
+        </div>
+
+        <PreferenceOption
+          type="checkbox"
+          checked={preferences.showBoardButtonInGame}
+          onChange={(e) => updatePreferences({ showBoardButtonInGame: e.target.checked })}
+          label={t('step2.showBoardButton')}
+        />
+
+        {preferences.showBoardButtonInGame && (
+          <>
+            <div className="border-t border-border" />
+            <PeekModeStep selectedMode={preferences.peekMode} onSelectMode={handleSelectMode} />
+          </>
+        )}
+      </div>
     </OnboardingStepLayout>
   );
 }

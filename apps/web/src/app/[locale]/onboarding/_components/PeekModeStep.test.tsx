@@ -27,13 +27,6 @@ vi.mock('react-icons/fa', () => ({
 
 describe('PeekModeStep', () => {
   describe('rendering', () => {
-    it('renders the title and description', () => {
-      render(<PeekModeStep selectedMode="modal" onSelectMode={vi.fn()} />);
-
-      expect(screen.getByText('step2.title')).toBeInTheDocument();
-      expect(screen.getByText('step2.description')).toBeInTheDocument();
-    });
-
     it('renders both peek mode options', () => {
       render(<PeekModeStep selectedMode="modal" onSelectMode={vi.fn()} />);
 

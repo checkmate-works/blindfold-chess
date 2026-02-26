@@ -12,7 +12,7 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  mockPreferences = { peekMode: 'modal' };
+  mockPreferences = { peekMode: 'modal', showBoardButtonInGame: true };
 });
 
 // Mock next/navigation
@@ -45,7 +45,7 @@ vi.mock('@blindfold-chess/icons', () => ({
 
 // Mock GamePreferencesContext
 const mockUpdatePreferences = vi.fn();
-let mockPreferences: Record<string, unknown> = { peekMode: 'modal' };
+let mockPreferences: Record<string, unknown> = { peekMode: 'modal', showBoardButtonInGame: true };
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
     preferences: mockPreferences,
@@ -131,7 +131,7 @@ describe('Step2Page', () => {
   });
 
   it('initializes with saved preferences from context', () => {
-    mockPreferences = { peekMode: 'inline' };
+    mockPreferences = { peekMode: 'inline', showBoardButtonInGame: true };
     render(<Step2Page />);
 
     // Inline should be selected, modal should not
@@ -140,5 +140,40 @@ describe('Step2Page', () => {
 
     expect(inlineOption.className).toContain('border-primary');
     expect(modalOption.className).not.toContain('border-primary');
+  });
+
+  it('shows checkbox and PeekModeStep when showBoardButtonInGame is true', () => {
+    render(<Step2Page />);
+
+    expect(screen.getByText('step2.showBoardButton')).toBeInTheDocument();
+    expect(screen.getByText('step2.modes.modal.label')).toBeInTheDocument();
+    expect(screen.getByText('step2.modes.inline.label')).toBeInTheDocument();
+  });
+
+  it('hides PeekModeStep when showBoardButtonInGame is false', () => {
+    mockPreferences = { peekMode: 'modal', showBoardButtonInGame: false };
+    render(<Step2Page />);
+
+    expect(screen.getByText('step2.showBoardButton')).toBeInTheDocument();
+    expect(screen.queryByText('step2.modes.modal.label')).not.toBeInTheDocument();
+    expect(screen.queryByText('step2.modes.inline.label')).not.toBeInTheDocument();
+  });
+
+  it('calls updatePreferences when checkbox is toggled', () => {
+    render(<Step2Page />);
+
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+
+    expect(mockUpdatePreferences).toHaveBeenCalledWith({ showBoardButtonInGame: false });
+  });
+
+  it('navigates to step3 when Next is clicked with checkbox unchecked', () => {
+    mockPreferences = { peekMode: 'modal', showBoardButtonInGame: false };
+    render(<Step2Page />);
+
+    fireEvent.click(screen.getByText('next'));
+
+    expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step3');
   });
 });

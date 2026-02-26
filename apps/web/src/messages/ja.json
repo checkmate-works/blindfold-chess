@@ -1314,7 +1314,8 @@
     "levelWithNumber": "レベル {level}",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
     "previewBoard": "ボードをプレビュー",
-    "gameSettings": "ゲーム設定",
+    "gameSettings": "詳細設定",
+    "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
@@ -1570,7 +1571,8 @@
     "step2": {
       "shortLabel": "ピーク",
       "title": "盤面ピークモード",
-      "description": "対局中に盤面を確認する際の表示方式を選択してください。",
+      "description": "視覚補助として盤面を覗き見する機能を有効にすることができます。",
+      "showBoardButton": "AI対局中に「ボードを表示」ボタンを表示する",
       "modes": {
         "modal": {
           "label": "モーダル",
