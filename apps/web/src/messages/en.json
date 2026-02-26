@@ -32,6 +32,10 @@
     "contact": {
       "title": "Contact Us",
       "description": "Contact form for Blindfold Chess inquiries"
+    },
+    "onboarding": {
+      "title": "Setup",
+      "description": "Set up your preferences before starting your first game"
     }
   },
   "Header": {
@@ -1526,6 +1530,41 @@
     "categories": {
       "updates": "Updates",
       "blog": "Blog"
+    }
+  },
+  "onboarding": {
+    "title": "Setup",
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Get Started",
+    "step1": {
+      "shortLabel": "Input",
+      "title": "Move Input Method",
+      "description": "Choose how you want to enter your moves during a game.",
+      "modes": {
+        "text": {
+          "label": "Text Input",
+          "description": "Type moves using algebraic notation (e.g., e4, Nf3). Best for experienced players."
+        },
+        "select": {
+          "label": "Select from List",
+          "description": "Choose from a list of available legal moves. Easy to use, no notation knowledge needed."
+        },
+        "button": {
+          "label": "Button Input",
+          "description": "Enter moves by tapping piece and square buttons. A balanced option for all skill levels."
+        }
+      },
+      "preview": {
+        "label": "Preview",
+        "textPlaceholder": "e.g., e4, Nf3, O-O",
+        "selectPlaceholder": "Select a move..."
+      },
+      "hint": {
+        "multiSelect": "If you select multiple methods, you can switch between them during play.",
+        "changeLater": "You can change this later in the settings."
+      }
     }
   }
 }

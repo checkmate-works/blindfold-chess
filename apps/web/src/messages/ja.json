@@ -32,6 +32,10 @@
     "contact": {
       "title": "お問い合わせ",
       "description": "Blindfold Chessに関するお問い合わせフォーム"
+    },
+    "onboarding": {
+      "title": "初期設定",
+      "description": "初めてのゲームの前に設定をカスタマイズしましょう"
     }
   },
   "Header": {
@@ -1527,6 +1531,41 @@
     "categories": {
       "updates": "更新情報",
       "blog": "ブログ"
+    }
+  },
+  "onboarding": {
+    "title": "初期設定",
+    "skip": "スキップ",
+    "back": "戻る",
+    "next": "次へ",
+    "finish": "始める",
+    "step1": {
+      "shortLabel": "入力方法",
+      "title": "手の入力方法",
+      "description": "対局中にどの方法で手を入力するかを選択してください。",
+      "modes": {
+        "text": {
+          "label": "テキスト入力",
+          "description": "代数記法で手を入力します（例: e4, Nf3）。経験者向けです。"
+        },
+        "select": {
+          "label": "リストから選択",
+          "description": "利用可能な合法手のリストから選択します。記法の知識は不要です。"
+        },
+        "button": {
+          "label": "ボタン入力",
+          "description": "駒とマスのボタンをタップして手を入力します。すべてのレベルに適したバランスの良い入力方法です。"
+        }
+      },
+      "preview": {
+        "label": "プレビュー",
+        "textPlaceholder": "例: e4, Nf3, O-O",
+        "selectPlaceholder": "手を選択..."
+      },
+      "hint": {
+        "multiSelect": "複数選択した場合はプレイ中に切り替えができます",
+        "changeLater": "あとで設定画面から変更できます"
+      }
     }
   }
 }
