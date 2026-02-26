@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 
@@ -14,26 +14,29 @@ type MoveInputMode = GamePreferences['moveInputMode'];
 export default function Step1Page() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
-  const { updatePreferences } = useGamePreferences();
-  const [selectedModes, setSelectedModes] = useState<MoveInputMode[]>(['button']);
+  const { preferences, updatePreferences } = useGamePreferences();
 
-  const handleToggleMode = useCallback((mode: MoveInputMode) => {
-    setSelectedModes((prev) => {
-      if (prev.includes(mode)) {
-        if (prev.length <= 1) return prev;
-        return prev.filter((m) => m !== mode);
+  const handleToggleMode = useCallback(
+    (mode: MoveInputMode) => {
+      const current = preferences.enabledMoveInputModes;
+      let newModes: MoveInputMode[];
+      if (current.includes(mode)) {
+        if (current.length <= 1) return;
+        newModes = current.filter((m) => m !== mode);
+      } else {
+        newModes = [...current, mode];
       }
-      return [...prev, mode];
-    });
-  }, []);
+      updatePreferences({
+        enabledMoveInputModes: newModes,
+        moveInputMode: newModes[0],
+      });
+    },
+    [preferences.enabledMoveInputModes, updatePreferences]
+  );
 
   const handleNext = useCallback(() => {
-    updatePreferences({
-      enabledMoveInputModes: selectedModes,
-      moveInputMode: selectedModes[0],
-    });
     router.push(`/${locale}/onboarding/step2`);
-  }, [updatePreferences, selectedModes, router, locale]);
+  }, [router, locale]);
 
   const handleSkip = useCallback(() => {
     router.push(`/${locale}/play`);
@@ -41,7 +44,10 @@ export default function Step1Page() {
 
   return (
     <OnboardingStepLayout currentStepIndex={0} onNext={handleNext} onSkip={handleSkip}>
-      <MoveInputStep selectedModes={selectedModes} onToggleMode={handleToggleMode} />
+      <MoveInputStep
+        selectedModes={preferences.enabledMoveInputModes}
+        onToggleMode={handleToggleMode}
+      />
     </OnboardingStepLayout>
   );
 }

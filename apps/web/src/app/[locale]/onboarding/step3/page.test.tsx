@@ -12,6 +12,12 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  mockPreferences = {
+    showOwnPieces: true,
+    showOpponentPieces: true,
+    pieceShapeMode: 'normal',
+    pieceColors: 'normal',
+  };
 });
 
 // Mock next/navigation
@@ -28,9 +34,15 @@ vi.mock('next-intl', () => ({
 
 // Mock GamePreferencesContext
 const mockUpdatePreferences = vi.fn();
+let mockPreferences: Record<string, unknown> = {
+  showOwnPieces: true,
+  showOpponentPieces: true,
+  pieceShapeMode: 'normal',
+  pieceColors: 'normal',
+};
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {},
+    preferences: mockPreferences,
     updatePreferences: mockUpdatePreferences,
   }),
 }));
@@ -75,7 +87,7 @@ describe('Step3Page', () => {
     expect(screen.queryByText('next')).not.toBeInTheDocument();
   });
 
-  it('checkbox toggles work for visibility', () => {
+  it('checkbox toggles call updatePreferences for visibility', () => {
     render(<Step3Page />);
 
     // Both checkboxes should be checked by default
@@ -84,21 +96,19 @@ describe('Step3Page', () => {
     expect(checkboxes[0]).toBeChecked(); // showOwnPieces
     expect(checkboxes[1]).toBeChecked(); // showOpponentPieces
 
-    // Uncheck own pieces
+    // Uncheck own pieces — should immediately call updatePreferences
     fireEvent.click(checkboxes[0]);
-    expect(checkboxes[0]).not.toBeChecked();
-
-    // Re-check own pieces
-    fireEvent.click(checkboxes[0]);
-    expect(checkboxes[0]).toBeChecked();
+    expect(mockUpdatePreferences).toHaveBeenCalledWith({ showOwnPieces: false });
   });
 
   it('shape filtering: only normal + circles-own when only own visible', () => {
+    mockPreferences = {
+      showOwnPieces: true,
+      showOpponentPieces: false,
+      pieceShapeMode: 'normal',
+      pieceColors: 'normal',
+    };
     render(<Step3Page />);
-
-    // Uncheck opponent pieces
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[1]); // uncheck showOpponentPieces
 
     // Available shape options should be: normal, circles-own
     const shapeRadios = screen
@@ -112,11 +122,13 @@ describe('Step3Page', () => {
   });
 
   it('shape filtering: only normal + circles-opponent when only opponent visible', () => {
+    mockPreferences = {
+      showOwnPieces: false,
+      showOpponentPieces: true,
+      pieceShapeMode: 'normal',
+      pieceColors: 'normal',
+    };
     render(<Step3Page />);
-
-    // Uncheck own pieces
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]); // uncheck showOwnPieces
 
     // Available shape options should be: normal, circles-opponent
     const shapeRadios = screen
@@ -130,49 +142,43 @@ describe('Step3Page', () => {
   });
 
   it('auto-resets shape to normal when selected becomes unavailable', () => {
+    mockPreferences = {
+      showOwnPieces: true,
+      showOpponentPieces: true,
+      pieceShapeMode: 'circles-all',
+      pieceColors: 'normal',
+    };
     render(<Step3Page />);
 
-    // Select circles-all first
+    // circles-all should be selected
     const circlesAllRadio = screen.getByLabelText('step3.shape.circles-all');
-    fireEvent.click(circlesAllRadio);
     expect(circlesAllRadio).toBeChecked();
 
-    // Uncheck opponent pieces - circles-all becomes unavailable
+    // Uncheck opponent pieces — should call updatePreferences
     const checkboxes = screen.getAllByRole('checkbox');
     fireEvent.click(checkboxes[1]); // uncheck showOpponentPieces
-
-    // circles-all should no longer exist, normal should be selected
-    expect(screen.queryByText('step3.shape.circles-all')).not.toBeInTheDocument();
-    const normalRadio = screen.getByLabelText('step3.shape.normal');
-    expect(normalRadio).toBeChecked();
+    expect(mockUpdatePreferences).toHaveBeenCalledWith({ showOpponentPieces: false });
   });
 
   it('hides appearance section when both unchecked', () => {
+    mockPreferences = {
+      showOwnPieces: false,
+      showOpponentPieces: false,
+      pieceShapeMode: 'normal',
+      pieceColors: 'normal',
+    };
     render(<Step3Page />);
 
-    // Appearance section should be visible initially
-    expect(screen.getByText('step3.appearance.title')).toBeInTheDocument();
-
-    // Uncheck both visibility checkboxes
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[0]); // uncheck showOwnPieces
-    fireEvent.click(checkboxes[1]); // uncheck showOpponentPieces
-
-    // Appearance section should be hidden
+    // Appearance section should be hidden when both are unchecked
     expect(screen.queryByText('step3.appearance.title')).not.toBeInTheDocument();
   });
 
-  it('clicking Finish saves preferences and navigates to /play', () => {
+  it('clicking Finish navigates to /play', () => {
     render(<Step3Page />);
 
     fireEvent.click(screen.getByText('finish'));
 
-    expect(mockUpdatePreferences).toHaveBeenCalledWith({
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-    });
+    expect(mockUpdatePreferences).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/en/play');
   });
 
@@ -182,5 +188,24 @@ describe('Step3Page', () => {
     fireEvent.click(screen.getByText('back'));
 
     expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step2');
+  });
+
+  it('initializes with saved preferences from context', () => {
+    mockPreferences = {
+      showOwnPieces: false,
+      showOpponentPieces: true,
+      pieceShapeMode: 'circles-opponent',
+      pieceColors: 'normal',
+    };
+    render(<Step3Page />);
+
+    // showOwnPieces should be unchecked, showOpponentPieces should be checked
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes[0]).not.toBeChecked(); // showOwnPieces
+    expect(checkboxes[1]).toBeChecked(); // showOpponentPieces
+
+    // circles-opponent shape should be selected
+    const circlesOpponentRadio = screen.getByLabelText('step3.shape.circles-opponent');
+    expect(circlesOpponentRadio).toBeChecked();
   });
 });

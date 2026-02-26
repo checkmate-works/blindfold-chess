@@ -131,6 +131,81 @@ describe('GamePreferencesContext - peekMode', () => {
     });
   });
 
+  describe('cross-tab sync via storage event', () => {
+    it('syncs preferences when storage event fires from another tab', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      // Wait for initial load
+      await act(async () => {});
+
+      expect(result.current.preferences.peekMode).toBe('modal');
+
+      // Simulate a storage event from another tab
+      await act(async () => {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: STORAGE_KEY,
+            newValue: JSON.stringify({ peekMode: 'inline', showCoordinates: false }),
+          })
+        );
+      });
+
+      expect(result.current.preferences.peekMode).toBe('inline');
+      expect(result.current.preferences.showCoordinates).toBe(false);
+    });
+
+    it('ignores storage events for other keys', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      await act(async () => {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: 'some-other-key',
+            newValue: JSON.stringify({ peekMode: 'inline' }),
+          })
+        );
+      });
+
+      expect(result.current.preferences.peekMode).toBe('modal');
+    });
+
+    it('ignores storage events with null newValue', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      await act(async () => {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: STORAGE_KEY,
+            newValue: null,
+          })
+        );
+      });
+
+      expect(result.current.preferences.peekMode).toBe('modal');
+    });
+
+    it('ignores storage events with malformed JSON', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      await act(async () => {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: STORAGE_KEY,
+            newValue: 'not-valid-json',
+          })
+        );
+      });
+
+      expect(result.current.preferences.peekMode).toBe('modal');
+    });
+  });
+
   describe('resetPreferences', () => {
     it('resets peekMode to default "modal"', () => {
       const { result } = renderHook(() => useGamePreferences(), { wrapper });

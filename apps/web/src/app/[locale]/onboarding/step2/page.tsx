@@ -1,26 +1,28 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { OnboardingStepLayout, PeekModeStep } from '../_components';
 
-type PeekMode = GamePreferences['peekMode'];
-
 export default function Step2Page() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
-  const { updatePreferences } = useGamePreferences();
-  const [selectedPeekMode, setSelectedPeekMode] = useState<PeekMode>('modal');
+  const { preferences, updatePreferences } = useGamePreferences();
+
+  const handleSelectMode = useCallback(
+    (mode: typeof preferences.peekMode) => {
+      updatePreferences({ peekMode: mode });
+    },
+    [updatePreferences]
+  );
 
   const handleNext = useCallback(() => {
-    updatePreferences({ peekMode: selectedPeekMode });
     router.push(`/${locale}/onboarding/step3`);
-  }, [updatePreferences, selectedPeekMode, router, locale]);
+  }, [router, locale]);
 
   const handleBack = useCallback(() => {
     router.push(`/${locale}/onboarding/step1`);
@@ -37,7 +39,7 @@ export default function Step2Page() {
       onBack={handleBack}
       onSkip={handleSkip}
     >
-      <PeekModeStep selectedMode={selectedPeekMode} onSelectMode={setSelectedPeekMode} />
+      <PeekModeStep selectedMode={preferences.peekMode} onSelectMode={handleSelectMode} />
     </OnboardingStepLayout>
   );
 }

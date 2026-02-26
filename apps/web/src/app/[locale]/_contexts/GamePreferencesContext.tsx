@@ -160,6 +160,22 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
   }, []);
 
+  // Sync preferences across browser tabs
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === PREFERENCES_STORAGE_KEY && e.newValue) {
+        try {
+          const validated = validatePreferences(JSON.parse(e.newValue));
+          setPreferences((prev) => ({ ...prev, ...validated }));
+        } catch {
+          // Ignore malformed data
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   // Save preferences to localStorage whenever they change
   useEffect(() => {
     if (!isLoaded) return; // Don't save until initial load is complete

@@ -12,6 +12,7 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  mockPreferences = { enabledMoveInputModes: ['button'] };
 });
 
 // Mock next/navigation
@@ -44,9 +45,10 @@ vi.mock('@blindfold-chess/icons', () => ({
 
 // Mock GamePreferencesContext
 const mockUpdatePreferences = vi.fn();
+let mockPreferences: Record<string, unknown> = { enabledMoveInputModes: ['button'] };
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {},
+    preferences: mockPreferences,
     updatePreferences: mockUpdatePreferences,
   }),
 }));
@@ -85,7 +87,7 @@ describe('Step1Page', () => {
     expect(screen.queryByText('back')).not.toBeInTheDocument();
   });
 
-  it('can toggle mode selection (click text -> both button + text selected)', () => {
+  it('can toggle mode selection (click text -> updatePreferences called with both modes)', () => {
     render(<Step1Page />);
 
     // Default: only 'button' is selected
@@ -95,12 +97,13 @@ describe('Step1Page', () => {
     const textOption = screen.getByText('step1.modes.text.label').closest('button')!;
     expect(textOption.className).not.toContain('border-primary');
 
-    // Click text to add it
+    // Click text to add it — should immediately call updatePreferences
     fireEvent.click(textOption);
 
-    // Now both should be selected
-    expect(textOption.className).toContain('border-primary');
-    expect(buttonOption.className).toContain('border-primary');
+    expect(mockUpdatePreferences).toHaveBeenCalledWith({
+      enabledMoveInputModes: ['button', 'text'],
+      moveInputMode: 'button',
+    });
   });
 
   it('cannot deselect the last remaining mode', () => {
@@ -117,15 +120,12 @@ describe('Step1Page', () => {
     expect(buttonOption.className).toContain('border-primary');
   });
 
-  it('clicking Next calls updatePreferences and navigates to step2', () => {
+  it('clicking Next navigates to step2', () => {
     render(<Step1Page />);
 
     fireEvent.click(screen.getByText('next'));
 
-    expect(mockUpdatePreferences).toHaveBeenCalledWith({
-      enabledMoveInputModes: ['button'],
-      moveInputMode: 'button',
-    });
+    expect(mockUpdatePreferences).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step2');
   });
 
@@ -135,5 +135,19 @@ describe('Step1Page', () => {
     fireEvent.click(screen.getByText('skip'));
 
     expect(mockPush).toHaveBeenCalledWith('/en/play');
+  });
+
+  it('initializes with saved preferences from context', () => {
+    mockPreferences = { enabledMoveInputModes: ['text', 'button'] };
+    render(<Step1Page />);
+
+    // Both text and button should be selected
+    const textOption = screen.getByText('step1.modes.text.label').closest('button')!;
+    const buttonOption = screen.getByText('step1.modes.button.label').closest('button')!;
+    const selectOption = screen.getByText('step1.modes.select.label').closest('button')!;
+
+    expect(textOption.className).toContain('border-primary');
+    expect(buttonOption.className).toContain('border-primary');
+    expect(selectOption.className).not.toContain('border-primary');
   });
 });

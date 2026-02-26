@@ -12,6 +12,7 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  mockPreferences = { peekMode: 'modal' };
 });
 
 // Mock next/navigation
@@ -44,9 +45,10 @@ vi.mock('@blindfold-chess/icons', () => ({
 
 // Mock GamePreferencesContext
 const mockUpdatePreferences = vi.fn();
+let mockPreferences: Record<string, unknown> = { peekMode: 'modal' };
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
-    preferences: {},
+    preferences: mockPreferences,
     updatePreferences: mockUpdatePreferences,
   }),
 }));
@@ -97,20 +99,18 @@ describe('Step2Page', () => {
     expect(modalOption.className).toContain('border-primary');
     expect(inlineOption.className).not.toContain('border-primary');
 
-    // Click inline to select it
+    // Click inline — should immediately call updatePreferences
     fireEvent.click(inlineOption);
 
-    // Now inline should be selected, modal should not
-    expect(inlineOption.className).toContain('border-primary');
-    expect(modalOption.className).not.toContain('border-primary');
+    expect(mockUpdatePreferences).toHaveBeenCalledWith({ peekMode: 'inline' });
   });
 
-  it('clicking Next saves peekMode and navigates to step3', () => {
+  it('clicking Next navigates to step3', () => {
     render(<Step2Page />);
 
     fireEvent.click(screen.getByText('next'));
 
-    expect(mockUpdatePreferences).toHaveBeenCalledWith({ peekMode: 'modal' });
+    expect(mockUpdatePreferences).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step3');
   });
 
@@ -128,5 +128,17 @@ describe('Step2Page', () => {
     fireEvent.click(screen.getByText('skip'));
 
     expect(mockPush).toHaveBeenCalledWith('/en/play');
+  });
+
+  it('initializes with saved preferences from context', () => {
+    mockPreferences = { peekMode: 'inline' };
+    render(<Step2Page />);
+
+    // Inline should be selected, modal should not
+    const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
+    const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
+
+    expect(inlineOption.className).toContain('border-primary');
+    expect(modalOption.className).not.toContain('border-primary');
   });
 });

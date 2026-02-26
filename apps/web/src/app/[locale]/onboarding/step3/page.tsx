@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useParams, useRouter } from 'next/navigation';
 
@@ -15,29 +15,11 @@ type PieceColors = GamePreferences['pieceColors'];
 export default function Step3Page() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
-  const { updatePreferences } = useGamePreferences();
-  const [showOwnPieces, setShowOwnPieces] = useState(true);
-  const [showOpponentPieces, setShowOpponentPieces] = useState(true);
-  const [selectedPieceShape, setSelectedPieceShape] = useState<PieceShapeMode>('normal');
-  const [selectedPieceColors, setSelectedPieceColors] = useState<PieceColors>('normal');
+  const { preferences, updatePreferences } = useGamePreferences();
 
   const handleFinish = useCallback(() => {
-    updatePreferences({
-      showOwnPieces,
-      showOpponentPieces,
-      pieceShapeMode: selectedPieceShape,
-      pieceColors: selectedPieceColors,
-    });
     router.push(`/${locale}/play`);
-  }, [
-    updatePreferences,
-    showOwnPieces,
-    showOpponentPieces,
-    selectedPieceShape,
-    selectedPieceColors,
-    router,
-    locale,
-  ]);
+  }, [router, locale]);
 
   const handleBack = useCallback(() => {
     router.push(`/${locale}/onboarding/step2`);
@@ -56,14 +38,16 @@ export default function Step3Page() {
       onSkip={handleSkip}
     >
       <PieceSettingsStep
-        showOwnPieces={showOwnPieces}
-        onChangeShowOwnPieces={setShowOwnPieces}
-        showOpponentPieces={showOpponentPieces}
-        onChangeShowOpponentPieces={setShowOpponentPieces}
-        selectedPieceShape={selectedPieceShape}
-        onSelectPieceShape={setSelectedPieceShape}
-        selectedPieceColors={selectedPieceColors}
-        onSelectPieceColors={setSelectedPieceColors}
+        showOwnPieces={preferences.showOwnPieces}
+        onChangeShowOwnPieces={(checked: boolean) => updatePreferences({ showOwnPieces: checked })}
+        showOpponentPieces={preferences.showOpponentPieces}
+        onChangeShowOpponentPieces={(checked: boolean) =>
+          updatePreferences({ showOpponentPieces: checked })
+        }
+        selectedPieceShape={preferences.pieceShapeMode}
+        onSelectPieceShape={(shape: PieceShapeMode) => updatePreferences({ pieceShapeMode: shape })}
+        selectedPieceColors={preferences.pieceColors}
+        onSelectPieceColors={(colors: PieceColors) => updatePreferences({ pieceColors: colors })}
       />
     </OnboardingStepLayout>
   );
