@@ -320,6 +320,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       startingFen,
       locale,
       perGamePrefs,
+      gameId,
     },
     gameState: {
       gameStatus,

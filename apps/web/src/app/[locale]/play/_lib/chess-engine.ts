@@ -218,72 +218,75 @@ export class ChessEngine {
       throw new Error('Engine is already processing a request');
     }
 
+    this.isProcessing = true;
+
+    // Set position
     try {
-      this.isProcessing = true;
-
-      // Set position
       await this.sendCommand(buildPositionCommand(fen));
-
-      // Get evaluation with depth
-      return new Promise((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          this.pendingCallbacks.delete('evaluation');
-          this.pendingCallbacks.delete('bestmove');
-          reject(new Error('Evaluation timeout'));
-        }, 20000); // Increased to 20 seconds for background tab scenarios
-
-        let latestScore: number | null = null;
-        let latestMate: number | undefined;
-        let bestMoveUci: string | undefined;
-
-        this.pendingCallbacks.set('evaluation', (response) => {
-          const score = parseUciScore(response.data);
-          if (!score) return;
-
-          if (score.kind === 'cp') {
-            latestScore = score.value;
-            latestMate = undefined;
-          } else {
-            latestMate = score.value;
-            latestScore = score.value > 0 ? 10000 : -10000;
-          }
-        });
-
-        // Start evaluation
-        this.engine?.postMessage(buildGoCommand({ depth }));
-
-        // Wait for bestmove to know evaluation is complete
-        this.pendingCallbacks.set('bestmove', (response) => {
-          clearTimeout(timeoutId);
-          this.pendingCallbacks.delete('evaluation');
-          this.pendingCallbacks.delete('bestmove');
-
-          // Extract best move from response
-          if (response.move) {
-            bestMoveUci = response.move;
-          }
-
-          if (latestScore !== null) {
-            // Stockfish returns score from the perspective of the side to move
-            // We need to convert it to always be from white's perspective
-            const isWhiteToMove = fen.split(' ')[1] === 'w';
-            const scoreFromWhitePerspective = isWhiteToMove ? latestScore : -latestScore;
-            const mateFromWhitePerspective =
-              latestMate !== undefined ? (isWhiteToMove ? latestMate : -latestMate) : undefined;
-
-            resolve({
-              score: scoreFromWhitePerspective,
-              mate: mateFromWhitePerspective,
-              bestMove: bestMoveUci,
-            });
-          } else {
-            reject(new Error('No evaluation score received'));
-          }
-        });
-      });
-    } finally {
+    } catch (error) {
       this.isProcessing = false;
+      throw error;
     }
+
+    // Get evaluation with depth
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        this.pendingCallbacks.delete('evaluation');
+        this.pendingCallbacks.delete('bestmove');
+        this.isProcessing = false;
+        reject(new Error('Evaluation timeout'));
+      }, 20000); // Increased to 20 seconds for background tab scenarios
+
+      let latestScore: number | null = null;
+      let latestMate: number | undefined;
+      let bestMoveUci: string | undefined;
+
+      this.pendingCallbacks.set('evaluation', (response) => {
+        const score = parseUciScore(response.data);
+        if (!score) return;
+
+        if (score.kind === 'cp') {
+          latestScore = score.value;
+          latestMate = undefined;
+        } else {
+          latestMate = score.value;
+          latestScore = score.value > 0 ? 10000 : -10000;
+        }
+      });
+
+      // Start evaluation
+      this.engine?.postMessage(buildGoCommand({ depth }));
+
+      // Wait for bestmove to know evaluation is complete
+      this.pendingCallbacks.set('bestmove', (response) => {
+        clearTimeout(timeoutId);
+        this.pendingCallbacks.delete('evaluation');
+        this.pendingCallbacks.delete('bestmove');
+        this.isProcessing = false;
+
+        // Extract best move from response
+        if (response.move) {
+          bestMoveUci = response.move;
+        }
+
+        if (latestScore !== null) {
+          // Stockfish returns score from the perspective of the side to move
+          // We need to convert it to always be from white's perspective
+          const isWhiteToMove = fen.split(' ')[1] === 'w';
+          const scoreFromWhitePerspective = isWhiteToMove ? latestScore : -latestScore;
+          const mateFromWhitePerspective =
+            latestMate !== undefined ? (isWhiteToMove ? latestMate : -latestMate) : undefined;
+
+          resolve({
+            score: scoreFromWhitePerspective,
+            mate: mateFromWhitePerspective,
+            bestMove: bestMoveUci,
+          });
+        } else {
+          reject(new Error('No evaluation score received'));
+        }
+      });
+    });
   }
 
   private convertMovesToUci(moves: AlgebraicNotation[], startingFen?: string): string[] {

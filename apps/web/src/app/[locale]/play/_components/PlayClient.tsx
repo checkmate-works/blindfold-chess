@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -12,7 +13,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
-import { GameOverContent } from './GameOverContent';
 import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
@@ -23,13 +23,14 @@ type Props = {
 
 export function PlayClient({ locale, onAiMoveChange }: Props) {
   const t = useTranslations('play');
+  const router = useRouter();
 
   const { gameConfig, gameState, moveState, moveInput, actions } = useGameSession({
     locale,
     onAiMoveChange,
   });
 
-  const { playerSide, skillLevel, initialGameId, startingFen, perGamePrefs } = gameConfig;
+  const { playerSide, skillLevel, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
@@ -100,6 +101,13 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     },
   });
 
+  // Redirect to result page when game is over
+  useEffect(() => {
+    if (gameStatus !== 'in_progress' && playerResult && gameId) {
+      router.replace(`/${locale}/play/result?gameId=${gameId}`);
+    }
+  }, [gameStatus, playerResult, gameId, locale, router]);
+
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -124,21 +132,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
-              />
-            )}
-
-            {/* Game Over Content */}
-            {gameStatus !== 'in_progress' && playerResult && (
-              <GameOverContent
-                locale={locale}
-                playerResult={playerResult}
-                playerSide={playerSide}
-                skillLevel={skillLevel}
-                moves={moves}
-                formattedPgn={formattedPgn}
-                startingFen={startingFen}
-                initialGameId={initialGameId}
-                onShowBoard={() => setIsBoardVisible(true)}
               />
             )}
           </div>
