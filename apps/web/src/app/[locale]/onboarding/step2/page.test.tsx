@@ -122,12 +122,12 @@ describe('Step2Page', () => {
     expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step1');
   });
 
-  it('clicking Skip navigates to /play', () => {
+  it('clicking Skip navigates to /games/new', () => {
     render(<Step2Page />);
 
     fireEvent.click(screen.getByText('skip'));
 
-    expect(mockPush).toHaveBeenCalledWith('/en/play');
+    expect(mockPush).toHaveBeenCalledWith('/en/games/new');
   });
 
   it('initializes with saved preferences from context', () => {

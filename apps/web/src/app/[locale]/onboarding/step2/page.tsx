@@ -32,7 +32,7 @@ export default function Step2Page() {
   }, [router, locale]);
 
   const handleSkip = useCallback(() => {
-    router.push(`/${locale}/play`);
+    router.push(`/${locale}/games/new`);
   }, [router, locale]);
 
   return (

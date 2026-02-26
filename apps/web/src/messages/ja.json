@@ -228,6 +228,11 @@
   "gettingStarted": {
     "title": "はじめに",
     "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。",
+    "onboardingBanner": {
+      "title": "初めての方へ",
+      "description": "初めてプレイする方は、まず設定をカスタマイズしましょう。",
+      "cta": "設定をカスタマイズ"
+    },
     "whyBlindfoldChess": {
       "title": "なぜ目隠しチェスが必要なのか？",
       "intro": "目隠しチェスは、チェスにおけるビジュアライゼーションスキルを養うための最良の方法です。",
@@ -1539,7 +1544,6 @@
     "skip": "スキップ",
     "back": "戻る",
     "next": "次へ",
-    "finish": "始める",
     "step1": {
       "shortLabel": "入力方法",
       "title": "手の入力方法",
@@ -1611,6 +1615,19 @@
         "normal": "通常の色（白と黒）",
         "white-only": "すべての駒を白で表示",
         "black-only": "すべての駒を黒で表示"
+      }
+    },
+    "step4": {
+      "shortLabel": "開始",
+      "title": "準備が整いました！",
+      "description": "ゲームモードを選んでプレイを始めましょう。",
+      "gameModes": {
+        "standard": "通常の対局",
+        "standardDescription": "通常の初期配置から新しいゲームを始めます",
+        "pgn": "PGNの読み込み",
+        "pgnDescription": "PGN記法を使って特定の局面から続けます",
+        "position": "カスタム局面",
+        "positionDescription": "カスタムの駒配置を設定してそこからプレイします"
       }
     }
   }

@@ -50,7 +50,7 @@ const defaultPreferences: GamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'button',
-  enabledMoveInputModes: ['text', 'select', 'button'],
+  enabledMoveInputModes: ['button'],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   showBoardButtonInGame: true,

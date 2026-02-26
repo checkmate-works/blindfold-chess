@@ -39,7 +39,7 @@ export default function Step1Page() {
   }, [router, locale]);
 
   const handleSkip = useCallback(() => {
-    router.push(`/${locale}/play`);
+    router.push(`/${locale}/games/new`);
   }, [router, locale]);
 
   return (

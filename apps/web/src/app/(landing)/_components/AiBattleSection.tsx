@@ -25,7 +25,7 @@ export function AiBattleSection({ locale, t }: Props) {
         </p>
         <div className="pt-4 flex justify-center">
           <Link
-            href={`/${locale}/games/new`}
+            href={`/${locale}/onboarding`}
             className="inline-flex items-center justify-center rounded-md bg-secondary px-8 py-3 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {t('aiBattle.cta')}

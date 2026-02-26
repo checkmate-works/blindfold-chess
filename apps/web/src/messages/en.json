@@ -227,6 +227,11 @@
   "gettingStarted": {
     "title": "Getting Started",
     "description": "Learn how to get started with blindfold chess training and improve your visualization skills.",
+    "onboardingBanner": {
+      "title": "New Here? Set Up Your Preferences",
+      "description": "Customize your settings before your first game for the best experience.",
+      "cta": "Set Up Your Preferences"
+    },
     "whyBlindfoldChess": {
       "title": "Why Blindfold Chess?",
       "intro": "Blindfold Chess is the best way to develop visualization skills in chess.",
@@ -1538,7 +1543,6 @@
     "skip": "Skip",
     "back": "Back",
     "next": "Next",
-    "finish": "Get Started",
     "step1": {
       "shortLabel": "Input",
       "title": "Move Input Method",
@@ -1610,6 +1614,19 @@
         "normal": "Normal colors (White & Black)",
         "white-only": "Show all pieces as white",
         "black-only": "Show all pieces as black"
+      }
+    },
+    "step4": {
+      "shortLabel": "Start",
+      "title": "You're all set!",
+      "description": "Choose a game mode to start playing.",
+      "gameModes": {
+        "standard": "Standard Game",
+        "standardDescription": "Start a fresh game from the standard opening position",
+        "pgn": "Import PGN",
+        "pgnDescription": "Continue from a specific position using PGN notation",
+        "position": "Custom Position",
+        "positionDescription": "Set up a custom board position and start playing from there"
       }
     }
   }

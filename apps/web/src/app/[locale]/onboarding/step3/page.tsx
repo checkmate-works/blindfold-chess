@@ -17,8 +17,8 @@ export default function Step3Page() {
   const { locale } = useParams<{ locale: string }>();
   const { preferences, updatePreferences } = useGamePreferences();
 
-  const handleFinish = useCallback(() => {
-    router.push(`/${locale}/play`);
+  const handleNext = useCallback(() => {
+    router.push(`/${locale}/onboarding/step4`);
   }, [router, locale]);
 
   const handleBack = useCallback(() => {
@@ -26,14 +26,13 @@ export default function Step3Page() {
   }, [router, locale]);
 
   const handleSkip = useCallback(() => {
-    router.push(`/${locale}/play`);
+    router.push(`/${locale}/games/new`);
   }, [router, locale]);
 
   return (
     <OnboardingStepLayout
       currentStepIndex={2}
-      isLastStep
-      onNext={handleFinish}
+      onNext={handleNext}
       onBack={handleBack}
       onSkip={handleSkip}
     >

@@ -77,14 +77,12 @@ describe('Step3Page', () => {
     expect(step3.className).toContain('text-primary-foreground');
   });
 
-  it('shows Skip, Back, and Finish buttons (isLastStep)', () => {
+  it('shows Skip, Back, and Next buttons', () => {
     render(<Step3Page />);
 
     expect(screen.getByText('skip')).toBeInTheDocument();
     expect(screen.getByText('back')).toBeInTheDocument();
-    expect(screen.getByText('finish')).toBeInTheDocument();
-    // Should not show "next" since it's the last step
-    expect(screen.queryByText('next')).not.toBeInTheDocument();
+    expect(screen.getByText('next')).toBeInTheDocument();
   });
 
   it('checkbox toggles call updatePreferences for visibility', () => {
@@ -173,13 +171,13 @@ describe('Step3Page', () => {
     expect(screen.queryByText('step3.appearance.title')).not.toBeInTheDocument();
   });
 
-  it('clicking Finish navigates to /play', () => {
+  it('clicking Next navigates to step4', () => {
     render(<Step3Page />);
 
-    fireEvent.click(screen.getByText('finish'));
+    fireEvent.click(screen.getByText('next'));
 
     expect(mockUpdatePreferences).not.toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith('/en/play');
+    expect(mockPush).toHaveBeenCalledWith('/en/onboarding/step4');
   });
 
   it('clicking Back navigates to step2', () => {
