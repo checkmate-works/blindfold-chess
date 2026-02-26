@@ -24,12 +24,14 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-// Mock react-icons used by MoveInputStep
+// Mock react-icons used by MoveInputStep and PeekModeStep
 vi.mock('react-icons/fa', () => ({
   FaKeyboard: () => React.createElement('span', { 'data-testid': 'icon-keyboard' }),
   FaList: () => React.createElement('span', { 'data-testid': 'icon-list' }),
   FaThLarge: () => React.createElement('span', { 'data-testid': 'icon-grid' }),
   FaChevronDown: () => React.createElement('span', { 'data-testid': 'icon-chevron-down' }),
+  FaWindowMaximize: () => React.createElement('span', { 'data-testid': 'icon-window-maximize' }),
+  FaEye: () => React.createElement('span', { 'data-testid': 'icon-eye' }),
 }));
 
 // Mock @blindfold-chess/icons used by MoveInputStep
@@ -82,11 +84,12 @@ describe('OnboardingClient', () => {
       expect(screen.getByText('skip')).toBeInTheDocument();
     });
 
-    it('renders finish button on the last step (single step = last step)', () => {
+    it('renders next button on the first step (not last step)', () => {
       renderWithProviders();
 
-      // With only one step, it's both first and last, so it should show "finish"
-      expect(screen.getByText('finish')).toBeInTheDocument();
+      // With two steps, first step should show "next" not "finish"
+      expect(screen.getByText('next')).toBeInTheDocument();
+      expect(screen.queryByText('finish')).not.toBeInTheDocument();
     });
 
     it('does not render back button on the first step', () => {
@@ -201,48 +204,206 @@ describe('OnboardingClient', () => {
     });
   });
 
-  describe('finish button (single step)', () => {
-    it('navigates to /en/play when finish is clicked', () => {
+  describe('step navigation (STEP1 -> STEP2)', () => {
+    it('clicking next on STEP1 advances to STEP2', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      // STEP2 content should appear
+      expect(screen.getByText('step2.title')).toBeInTheDocument();
+      expect(screen.getByText('step2.description')).toBeInTheDocument();
+      // STEP1 content should be gone
+      expect(screen.queryByText('step1.title')).not.toBeInTheDocument();
+    });
+
+    it('shows back button on STEP2', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      expect(screen.getByText('back')).toBeInTheDocument();
+    });
+
+    it('shows finish button on STEP2 (last step)', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      expect(screen.getByText('finish')).toBeInTheDocument();
+      expect(screen.queryByText('next')).not.toBeInTheDocument();
+    });
+
+    it('clicking back on STEP2 returns to STEP1', () => {
+      renderWithProviders();
+
+      // Go to STEP2
+      fireEvent.click(screen.getByText('next'));
+      expect(screen.getByText('step2.title')).toBeInTheDocument();
+
+      // Go back to STEP1
+      fireEvent.click(screen.getByText('back'));
+      expect(screen.getByText('step1.title')).toBeInTheDocument();
+      expect(screen.queryByText('step2.title')).not.toBeInTheDocument();
+    });
+
+    it('does not show back button after returning to STEP1', () => {
+      renderWithProviders();
+
+      // Go to STEP2 and back
+      fireEvent.click(screen.getByText('next'));
+      fireEvent.click(screen.getByText('back'));
+
+      expect(screen.queryByText('back')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('STEP2 peek mode selection', () => {
+    it('displays modal and inline peek mode options on STEP2', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      expect(screen.getByText('step2.modes.modal.label')).toBeInTheDocument();
+      expect(screen.getByText('step2.modes.inline.label')).toBeInTheDocument();
+    });
+
+    it('defaults to modal mode selected on STEP2', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
+      const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
+
+      expect(modalOption.className).toContain('border-primary');
+      expect(inlineOption.className).not.toContain('border-primary');
+    });
+
+    it('allows switching to inline mode on STEP2', () => {
+      renderWithProviders();
+
+      fireEvent.click(screen.getByText('next'));
+
+      const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
+      fireEvent.click(inlineOption);
+
+      expect(inlineOption.className).toContain('border-primary');
+
+      // Modal should no longer be selected (radio behavior, not toggle)
+      const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
+      expect(modalOption.className).not.toContain('border-primary');
+    });
+  });
+
+  describe('finish from STEP2', () => {
+    it('navigates to /en/play when finish is clicked on STEP2', () => {
       renderWithProviders('en');
 
+      fireEvent.click(screen.getByText('next'));
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/en/play');
     });
 
-    it('navigates to /ja/play when finish is clicked (ja locale)', () => {
+    it('navigates to /ja/play when finish is clicked on STEP2 (ja locale)', () => {
       renderWithProviders('ja');
 
+      fireEvent.click(screen.getByText('next'));
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/ja/play');
     });
 
-    it('saves the selected modes to preferences on finish', async () => {
+    it('saves move input modes when advancing from STEP1 to STEP2', async () => {
       renderWithProviders();
 
-      // Select additional "text" mode (button is already selected)
+      // Select additional "text" mode on STEP1
       const textOption = screen.getByText('step1.modes.text.label').closest('button')!;
       fireEvent.click(textOption);
 
-      // Click finish
-      fireEvent.click(screen.getByText('finish'));
+      // Click next to go to STEP2 (this saves STEP1 preferences)
+      fireEvent.click(screen.getByText('next'));
 
-      // Wait for the preference save effect to run
       await vi.waitFor(() => {
         const stored = localStorage.getItem('blindfold-chess-game-preferences');
         expect(stored).toBeTruthy();
         const parsed = JSON.parse(stored!);
         expect(parsed.enabledMoveInputModes).toEqual(['button', 'text']);
-        // moveInputMode should be the first selected mode
         expect(parsed.moveInputMode).toBe('button');
       });
     });
 
-    it('saves only button mode on finish without changes (default)', async () => {
+    it('saves peek mode preference on finish from STEP2', async () => {
       renderWithProviders();
 
-      // Don't change selection, just click finish
+      // Go to STEP2
+      fireEvent.click(screen.getByText('next'));
+
+      // Select inline peek mode
+      const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
+      fireEvent.click(inlineOption);
+
+      // Click finish
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        expect(stored).toBeTruthy();
+        const parsed = JSON.parse(stored!);
+        expect(parsed.peekMode).toBe('inline');
+      });
+    });
+
+    it('saves default modal peek mode on finish without changing selection', async () => {
+      renderWithProviders();
+
+      // Go to STEP2 and finish without changing
+      fireEvent.click(screen.getByText('next'));
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        expect(stored).toBeTruthy();
+        const parsed = JSON.parse(stored!);
+        expect(parsed.peekMode).toBe('modal');
+      });
+    });
+
+    it('saves both STEP1 and STEP2 preferences through full flow', async () => {
+      renderWithProviders();
+
+      // STEP1: select text mode in addition to button
+      const textOption = screen.getByText('step1.modes.text.label').closest('button')!;
+      fireEvent.click(textOption);
+
+      // Go to STEP2
+      fireEvent.click(screen.getByText('next'));
+
+      // STEP2: select inline peek mode
+      const inlineOption = screen.getByText('step2.modes.inline.label').closest('button')!;
+      fireEvent.click(inlineOption);
+
+      // Finish
+      fireEvent.click(screen.getByText('finish'));
+
+      await vi.waitFor(() => {
+        const stored = localStorage.getItem('blindfold-chess-game-preferences');
+        expect(stored).toBeTruthy();
+        const parsed = JSON.parse(stored!);
+        // STEP1 preferences
+        expect(parsed.enabledMoveInputModes).toEqual(['button', 'text']);
+        expect(parsed.moveInputMode).toBe('button');
+        // STEP2 preferences
+        expect(parsed.peekMode).toBe('inline');
+      });
+    });
+
+    it('saves only default preferences through full flow without changes', async () => {
+      renderWithProviders();
+
+      // Go through both steps without changing anything
+      fireEvent.click(screen.getByText('next'));
       fireEvent.click(screen.getByText('finish'));
 
       await vi.waitFor(() => {
@@ -251,12 +412,13 @@ describe('OnboardingClient', () => {
         const parsed = JSON.parse(stored!);
         expect(parsed.enabledMoveInputModes).toEqual(['button']);
         expect(parsed.moveInputMode).toBe('button');
+        expect(parsed.peekMode).toBe('modal');
       });
     });
   });
 
   describe('preferences persistence', () => {
-    it('does not overwrite other preferences when saving enabledMoveInputModes', async () => {
+    it('does not overwrite other preferences when saving through full flow', async () => {
       // Pre-populate with some existing preferences
       localStorage.setItem(
         'blindfold-chess-game-preferences',
@@ -272,7 +434,6 @@ describe('OnboardingClient', () => {
 
       // Wait for initial load
       await vi.waitFor(() => {
-        // Verify it loaded
         expect(localStorage.getItem('blindfold-chess-game-preferences')).toBeTruthy();
       });
 
@@ -280,7 +441,10 @@ describe('OnboardingClient', () => {
       const selectOption = screen.getByText('step1.modes.select.label').closest('button')!;
       fireEvent.click(selectOption);
 
-      // Click finish
+      // Go to STEP2
+      fireEvent.click(screen.getByText('next'));
+
+      // Finish from STEP2
       fireEvent.click(screen.getByText('finish'));
 
       await vi.waitFor(() => {
@@ -289,15 +453,15 @@ describe('OnboardingClient', () => {
         expect(parsed.enabledMoveInputModes).toEqual(['button', 'select']);
         // Other preferences should be preserved
         expect(parsed.showCoordinates).toBe(false);
-        expect(parsed.peekMode).toBe('inline');
       });
     });
   });
 
   describe('locale handling', () => {
-    it('passes locale correctly to navigation on finish', () => {
+    it('passes locale correctly to navigation on finish from STEP2', () => {
       renderWithProviders('fr');
 
+      fireEvent.click(screen.getByText('next'));
       fireEvent.click(screen.getByText('finish'));
 
       expect(mockPush).toHaveBeenCalledWith('/fr/play');
@@ -309,6 +473,15 @@ describe('OnboardingClient', () => {
       fireEvent.click(screen.getByText('skip'));
 
       expect(mockPush).toHaveBeenCalledWith('/de/play');
+    });
+
+    it('passes locale correctly on skip from STEP2', () => {
+      renderWithProviders('ja');
+
+      fireEvent.click(screen.getByText('next'));
+      fireEvent.click(screen.getByText('skip'));
+
+      expect(mockPush).toHaveBeenCalledWith('/ja/play');
     });
   });
 });

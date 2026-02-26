@@ -1565,6 +1565,24 @@
         "multiSelect": "If you select multiple methods, you can switch between them during play.",
         "changeLater": "You can change this later in the settings."
       }
+    },
+    "step2": {
+      "shortLabel": "Peek",
+      "title": "Board Peek Mode",
+      "description": "Choose how the board is displayed when you peek during a game.",
+      "modes": {
+        "modal": {
+          "label": "Modal",
+          "description": "The board appears as a popup dialog. Tap a button to show/hide."
+        },
+        "inline": {
+          "label": "Inline",
+          "description": "The board is embedded above the input area as a collapsible section."
+        }
+      },
+      "preview": {
+        "label": "Preview"
+      }
     }
   }
 }

@@ -9,16 +9,21 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { MoveInputStep } from './MoveInputStep';
+import { PeekModeStep } from './PeekModeStep';
 import { StepIndicator } from './StepIndicator';
 
 type MoveInputMode = GamePreferences['moveInputMode'];
+type PeekMode = GamePreferences['peekMode'];
 
 type StepDefinition = {
   id: string;
   labelKey: string;
 };
 
-const STEPS: StepDefinition[] = [{ id: 'move-input', labelKey: 'step1.shortLabel' }];
+const STEPS: StepDefinition[] = [
+  { id: 'move-input', labelKey: 'step1.shortLabel' },
+  { id: 'peek-mode', labelKey: 'step2.shortLabel' },
+];
 
 type Props = {
   locale: string;
@@ -30,6 +35,7 @@ export function OnboardingClient({ locale }: Props) {
   const { updatePreferences } = useGamePreferences();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [selectedModes, setSelectedModes] = useState<MoveInputMode[]>(['button']);
+  const [selectedPeekMode, setSelectedPeekMode] = useState<PeekMode>('modal');
 
   const handleToggleMode = useCallback((mode: MoveInputMode) => {
     setSelectedModes((prev) => {
@@ -57,8 +63,10 @@ export function OnboardingClient({ locale }: Props) {
         enabledMoveInputModes: selectedModes,
         moveInputMode: selectedModes[0],
       });
+    } else if (step.id === 'peek-mode') {
+      updatePreferences({ peekMode: selectedPeekMode });
     }
-  }, [currentStepIndex, selectedModes, updatePreferences]);
+  }, [currentStepIndex, selectedModes, selectedPeekMode, updatePreferences]);
 
   const handleNext = useCallback(() => {
     saveCurrentStepPreferences();
@@ -86,6 +94,9 @@ export function OnboardingClient({ locale }: Props) {
       <div className="bg-card border border-border rounded-lg p-6">
         {STEPS[currentStepIndex].id === 'move-input' && (
           <MoveInputStep selectedModes={selectedModes} onToggleMode={handleToggleMode} />
+        )}
+        {STEPS[currentStepIndex].id === 'peek-mode' && (
+          <PeekModeStep selectedMode={selectedPeekMode} onSelectMode={setSelectedPeekMode} />
         )}
       </div>
 
