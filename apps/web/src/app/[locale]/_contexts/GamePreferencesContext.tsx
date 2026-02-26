@@ -34,6 +34,8 @@ export type GamePreferences = {
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Board button visibility
   showBoardButtonInGame: boolean; // Show "View Board" button during AI games
+  // Board peek mode
+  peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
   // Advertisements
   adsEnabled: boolean; // Show advertisements
 };
@@ -52,6 +54,7 @@ const defaultPreferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   showBoardButtonInGame: true,
+  peekMode: 'modal',
   adsEnabled: true,
 };
 
@@ -111,6 +114,9 @@ function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   if (typeof p.enableAutoComplete === 'boolean') result.enableAutoComplete = p.enableAutoComplete;
   if (typeof p.showBoardButtonInGame === 'boolean')
     result.showBoardButtonInGame = p.showBoardButtonInGame;
+  if (typeof p.peekMode === 'string' && ['modal', 'inline'].includes(p.peekMode)) {
+    result.peekMode = p.peekMode as GamePreferences['peekMode'];
+  }
   if (typeof p.adsEnabled === 'boolean') result.adsEnabled = p.adsEnabled;
 
   return result;

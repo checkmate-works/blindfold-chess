@@ -123,7 +123,13 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "switchInputMode": "入力モードを切り替え"
+      "switchInputMode": "入力モードを切り替え",
+      "peekMode": "盤面ピークモード",
+      "peekModeDescription": "対局中の盤面表示方式",
+      "peekModes": {
+        "modal": "モーダル",
+        "inline": "インライン"
+      }
     },
     "ads": {
       "title": "広告設定",

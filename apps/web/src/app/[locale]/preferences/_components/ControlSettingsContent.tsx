@@ -40,7 +40,36 @@ export function ControlSettingsContent({ settings, onSettingsChange, compact = f
 
   return (
     <div className={containerClass}>
-      <div className="space-y-4">
+      <div className="space-y-8">
+        {/* Board Peek Mode */}
+        {settings.showBoardButtonInGame && (
+          <div>
+            <h4 className="text-lg font-semibold text-foreground mb-2">{t('controls.peekMode')}</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('controls.peekModeDescription')}
+            </p>
+            <div className="inline-flex rounded-md border border-border overflow-hidden">
+              {(['modal', 'inline'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => onSettingsChange({ peekMode: mode })}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    settings.peekMode === mode
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card text-foreground hover:bg-muted'
+                  } ${mode === 'modal' ? 'border-r border-border' : ''}`}
+                >
+                  {t(`controls.peekModes.${mode}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Divider */}
+        {settings.showBoardButtonInGame && <div className="border-t border-border"></div>}
+
         <div>
           <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.moveInput')}</h4>
           <div className="space-y-2">
