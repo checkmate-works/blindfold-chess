@@ -163,7 +163,10 @@ export function useAutoSave({
           const existingGame = await gameRepository.load(currentGameId);
           if (existingGame) {
             // Update existing game
-            await gameRepository.update(currentGameId, gameData);
+            // Skip lastPlayed update during initial sync save (reopening a game without making a move)
+            await gameRepository.update(currentGameId, gameData, {
+              updateLastPlayed: !isInitialSyncSave.current,
+            });
             savedGameId = currentGameId;
           } else {
             // Game ID provided but doesn't exist - create new game

@@ -5,9 +5,17 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { GameLimitError } from '@/lib/errors';
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
+type UpdateOptions = {
+  updateLastPlayed?: boolean;
+};
+
 interface IGameRepository {
   create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string>;
-  update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void>;
+  update(
+    id: string,
+    game: Omit<Game, 'id' | 'date' | 'lastPlayed'>,
+    options?: UpdateOptions
+  ): Promise<void>;
   load(id: string): Promise<Game | null>;
   loadAll(): Promise<Game[]>;
   loadAllSorted(sortBy: GameSortOption, direction?: SortDirection): Promise<Game[]>;
@@ -53,7 +61,11 @@ export class LocalStorageGameRepository implements IGameRepository {
     }
   }
 
-  async update(id: string, game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<void> {
+  async update(
+    id: string,
+    game: Omit<Game, 'id' | 'date' | 'lastPlayed'>,
+    options?: UpdateOptions
+  ): Promise<void> {
     try {
       // Validate moves before updating (with custom starting FEN if provided)
       this.validateMoves(game.moves, game.startingFen);
@@ -65,8 +77,11 @@ export class LocalStorageGameRepository implements IGameRepository {
         throw new Error(`Game with ID ${id} not found`);
       }
 
-      const now = new Date().toISOString();
-      games[index] = { ...game, id, date: games[index].date, lastPlayed: now };
+      const updateLastPlayed = options?.updateLastPlayed ?? true;
+      const lastPlayed = updateLastPlayed
+        ? new Date().toISOString()
+        : (games[index].lastPlayed ?? games[index].date);
+      games[index] = { ...game, id, date: games[index].date, lastPlayed };
 
       this.saveToStorage(games);
     } catch (error) {
