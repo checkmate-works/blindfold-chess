@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
   // Permanent redirects for renamed routes
   // TODO: Remove this redirect after ~3-6 months (added 2026-02-16).
   //       Once Google Search Console shows no traffic to /game/new, it is safe to remove.
+  //
+  // NOTE ON MISSING LOCALE MIDDLEWARE / REDIRECTS:
+  // We intentionally do NOT globally redirect non-localized paths (e.g. `/learn` -> `/en/learn`)
+  // because the Landing Page (app/(landing)/page.tsx) serves at the root `/` across
+  // all languages without a `/[locale]` prefix. Forcing middleware redirects on `/`
+  // would break this requirement.
+  // As a result, old crawled URLs (like `/practice`) may show up as 404s in Google
+  // Search Console. This is an accepted tradeoff.
   async redirects() {
     return [
       {

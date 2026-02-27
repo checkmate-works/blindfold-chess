@@ -9,6 +9,22 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * Detects the user's preferred locale from the request.
  * Priority: Cookie > Accept-Language header > Default (en)
  *
+ * NOTE ON MIDDLEWARE & ROUTING:
+ * We intentionally do NOT use a global Next.js `middleware.ts` to implement
+ * automatic locale redirects (like forcing `/learn` -> `/en/learn`).
+ *
+ * Why? Because our Landing Page (`app/(landing)/page.tsx`) explicitly
+ * serves at the root `/` URL across all languages without a `/[locale]` prefix.
+ * If we implemented standard `next-intl` middleware, users hitting `/` would
+ * be forced to `/en` or `/ja`, which violates the product requirement of
+ * keeping the landing page at `blindfold-chess.online/`.
+ *
+ * As a result, any old links (like `/practice` or `/learn`) that Googlebot
+ * crawled before the i18n migration will surface as 404s in Search Console
+ * because there is no middleware redirecting them to their `/[locale]` counterparts.
+ * This is an accepted tradeoff. Link updates inside the app ensure normal
+ * users never hit these 404s.
+ *
  * @returns The detected locale ('en' or 'ja')
  */
 export async function getLocaleFromRequest(): Promise<Locale> {
