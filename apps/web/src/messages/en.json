@@ -1529,6 +1529,12 @@
       "cta": "Read All Articles"
     }
   },
+  "AuthStatusDisplay": {
+    "signUp": "Sign Up",
+    "account": "Account",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
   "signIn": {
     "title": "Sign In",
     "description": "Sign in to your Blindfold Chess account",

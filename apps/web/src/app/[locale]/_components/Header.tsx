@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import type { NavigationItem } from '../_lib/types';
+import { AuthStatusDisplay } from './AuthStatusDisplay';
 import { MobileMenu } from './MobileMenu';
 
 type Props = {
@@ -78,8 +79,10 @@ export async function Header({ locale }: Props) {
             {/* Desktop navigation - REMOVED per user request to unify with mobile menu */}
           </div>
 
-          {/* Right side is currently empty. Reserved for future Auth UI */}
-          <div className="flex items-center space-x-4"></div>
+          {/* Right side: Auth status */}
+          <div className="flex items-center space-x-4">
+            <AuthStatusDisplay />
+          </div>
         </div>
       </div>
     </header>

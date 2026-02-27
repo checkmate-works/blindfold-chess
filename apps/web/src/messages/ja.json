@@ -1530,6 +1530,12 @@
       "cta": "記事一覧を読む"
     }
   },
+  "AuthStatusDisplay": {
+    "signUp": "サインアップ",
+    "account": "アカウント",
+    "settings": "設定",
+    "signOut": "サインアウト"
+  },
   "signIn": {
     "title": "サインイン",
     "description": "Blindfold Chess アカウントにサインイン",
