@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { GameStateService } from '@blindfold-chess/features/ai-game';
+import { validateGameMove } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
@@ -52,9 +52,7 @@ export function usePlayerMove({
         }
       }
 
-      const gameStateService = new GameStateService(moves, playerSide, startingFen);
-
-      if (gameStateService.validateMove(move)) {
+      if (validateGameMove(moves, move, startingFen)) {
         lastSubmittedMoveRef.current = { move, timestamp: now };
         markPlayerInteraction();
         pushMove(move);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { GameStateService } from '@blindfold-chess/features/ai-game';
+import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
@@ -49,8 +49,8 @@ export function useGameState({
       return false;
     }
     if (initialMovesFromUrl.length > 0) {
-      const gameStateService = new GameStateService(initialMovesFromUrl, playerSide, startingFen);
-      return !gameStateService.isPlayerTurn() && gameStateService.getGameStatus() === 'in_progress';
+      const gameState = computeGameState(initialMovesFromUrl, playerSide, startingFen);
+      return !gameState.isPlayerTurn && gameState.status === 'in_progress';
     }
     if (startingFen) {
       const fenParts = startingFen.split(' ');
@@ -99,14 +99,14 @@ export function useGameState({
       return;
     }
 
-    const gameStateService = new GameStateService(moves, playerSide, startingFen);
+    const gameState = computeGameState(moves, playerSide, startingFen);
 
-    const newIsPlayerTurn = gameStateService.isPlayerTurn();
-    const newGameStatus = gameStateService.getGameStatus();
+    const newIsPlayerTurn = gameState.isPlayerTurn;
+    const newGameStatus = gameState.status;
 
     setIsPlayerTurn(newIsPlayerTurn);
     setGameStatus(newGameStatus);
-    setPlayerResult(gameStateService.getPlayerResult());
+    setPlayerResult(gameState.playerResult);
 
     if (!newIsPlayerTurn && newGameStatus === 'in_progress') {
       setShouldMakeAiMove(true);
