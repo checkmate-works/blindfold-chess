@@ -14,7 +14,7 @@ type Props = {
 export function PieceSelector({ selectedPieces, onPieceToggle }: Props) {
   const t = useTranslations('practice.legalMoves');
   const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-  const selectedCount = Object.values(selectedPieces).filter(Boolean).length;
+  const selectedCount = pieces.filter((piece) => selectedPieces[piece]).length;
 
   return (
     <div className="flex flex-col items-center">

@@ -36,7 +36,8 @@ export function LegalMovesSetup({
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
+  const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+  const hasSelectedPieces = pieces.some((piece) => selectedPieces[piece]);
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
     { value: 'timed', label: tp('modeTimed') },
@@ -44,10 +45,7 @@ export function LegalMovesSetup({
   ];
 
   const handleStart = () => {
-    const selectedPieceTypes = Object.entries(selectedPieces)
-      .filter(([, selected]) => selected)
-      .map(([piece]) => piece)
-      .join(',');
+    const selectedPieceTypes = pieces.filter((piece) => selectedPieces[piece]).join(',');
 
     if (mode === 'training') {
       router.push(

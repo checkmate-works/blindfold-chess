@@ -40,7 +40,16 @@ export default async function LegalMovesChallengePage({ params, searchParams }: 
 
   // Parse selected pieces from URL
   const defaultPieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-  const selectedPieces: PieceType[] = pieces ? (pieces.split(',') as PieceType[]) : defaultPieces;
+
+  let selectedPieces: PieceType[] = defaultPieces;
+  if (pieces) {
+    const parsedPieces = pieces
+      .split(',')
+      .filter((p): p is PieceType => defaultPieces.includes(p as PieceType));
+    if (parsedPieces.length > 0) {
+      selectedPieces = parsedPieces;
+    }
+  }
 
   return (
     <PracticeSessionPage
