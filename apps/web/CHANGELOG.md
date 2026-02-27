@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.14.0 - 2026-02-27
+
+### Added
+
+- Onboarding flow — step-by-step guide for move input method, board peek mode, and piece display settings
+- Inline board peek mode — view the board directly within the play screen as an alternative to the popup modal
+
 ## 0.13.0 - 2026-02-25
 
 ### Added
