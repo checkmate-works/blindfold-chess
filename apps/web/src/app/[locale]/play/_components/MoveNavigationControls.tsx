@@ -19,37 +19,33 @@ export function MoveNavigationControls({
     <div className="flex justify-center gap-1">
       <button
         onClick={onNavigateToStart}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Go to start"
         disabled={isPreviousDisabled}
-        style={{ fontSize: '24px' }}
       >
         «
       </button>
       <button
         onClick={onNavigatePrevious}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Previous move"
         disabled={isPreviousDisabled}
-        style={{ fontSize: '24px' }}
       >
         ‹
       </button>
       <button
         onClick={onNavigateNext}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Next move"
         disabled={isNextDisabled}
-        style={{ fontSize: '24px' }}
       >
         ›
       </button>
       <button
         onClick={onNavigateToEnd}
-        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono"
+        className="w-12 h-12 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-2xl"
         aria-label="Go to end"
         disabled={isNextDisabled}
-        style={{ fontSize: '24px' }}
       >
         »
       </button>
