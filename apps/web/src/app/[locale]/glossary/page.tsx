@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle, SectionTitle } from '../_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle, SectionTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
@@ -34,19 +34,21 @@ export default async function GlossaryIndexPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
 
-      <div className="space-y-6">
-        <SectionTitle>{t('index.alphabetical')}</SectionTitle>
-        <AlphabeticalIndex locale={locale} />
-      </div>
+      <PagePanel>
+        <div className="space-y-6">
+          <SectionTitle>{t('index.alphabetical')}</SectionTitle>
+          <AlphabeticalIndex locale={locale} />
+        </div>
 
-      <div className="space-y-6">
-        <SectionTitle>{t('index.byCategory')}</SectionTitle>
-        <CategoryIndex locale={locale} />
-      </div>
+        <div className="space-y-6">
+          <SectionTitle>{t('index.byCategory')}</SectionTitle>
+          <CategoryIndex locale={locale} />
+        </div>
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

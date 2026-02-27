@@ -611,7 +611,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         </Button>
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <CardLink
           href="/learn/notation/algebraic-notation"

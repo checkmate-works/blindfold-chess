@@ -8,6 +8,7 @@ import {
   ListLink,
   ListLinkContainer,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -78,30 +79,32 @@ export default async function LearnCategoryPage({ params }: Props) {
 
       <PageDescription>{t('learn.description')}</PageDescription>
 
-      <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 
-      {articles.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">{t('learn.noArticles')}</p>
-      ) : (
-        <ListLinkContainer>
-          {articles.map((article) => (
-            <ListLink
-              key={article.slug}
-              href={`/learn/${category}/${article.slug}`}
-              icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
-              title={article.title}
-              locale={locale}
-            />
-          ))}
-        </ListLinkContainer>
-      )}
+        {articles.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">{t('learn.noArticles')}</p>
+        ) : (
+          <ListLinkContainer>
+            {articles.map((article) => (
+              <ListLink
+                key={article.slug}
+                href={`/learn/${category}/${article.slug}`}
+                icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
+                title={article.title}
+                locale={locale}
+              />
+            ))}
+          </ListLinkContainer>
+        )}
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[{ label: t('navigation.learn'), href: '/learn' }, { label: categoryLabel }]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[{ label: t('navigation.learn'), href: '/learn' }, { label: categoryLabel }]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

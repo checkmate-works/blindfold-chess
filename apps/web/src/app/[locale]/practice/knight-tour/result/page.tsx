@@ -117,20 +117,22 @@ export default function KnightTourResultPage(props: Props) {
 
       {!isTutorial && (
         <div className="max-w-4xl mx-auto">
-          <SectionTitle className="text-xl font-semibold mb-4">
-            {tPractice('relatedLearning')}
-          </SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {relatedLinks.map((link) => (
-              <CardLink
-                key={link.href}
-                href={link.href}
-                icon={link.icon}
-                title={link.title}
-                description={link.description}
-                locale={locale}
-              />
-            ))}
+          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8">
+            <SectionTitle className="text-xl font-semibold mb-4">
+              {tPractice('relatedLearning')}
+            </SectionTitle>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {relatedLinks.map((link) => (
+                <CardLink
+                  key={link.href}
+                  href={link.href}
+                  icon={link.icon}
+                  title={link.title}
+                  description={link.description}
+                  locale={locale}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -95,7 +95,7 @@ export function LegalMovesSetup({
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink

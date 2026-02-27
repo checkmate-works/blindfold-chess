@@ -5,7 +5,7 @@ import { Link } from '@/i18n/routing';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 
-import { Breadcrumb, Divider, PageTitle } from '../_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { FAQClient } from './_components/FAQClient';
@@ -89,11 +89,13 @@ export default async function FAQPage({ params }: Props) {
       <JsonLd data={generateFAQPageSchema(faqSchemaItems)} />
       <PageTitle>{t('title')}</PageTitle>
 
-      <FAQClient items={faqItems} />
+      <PagePanel>
+        <FAQClient items={faqItems} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

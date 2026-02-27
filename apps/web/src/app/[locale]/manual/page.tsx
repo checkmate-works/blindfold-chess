@@ -1,7 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, CardLink, Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  CardLink,
+  Divider,
+  PagePanel,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
@@ -33,24 +40,26 @@ export default async function ManualPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
 
-      <SectionTitle>{t('articlesTitle')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('articlesTitle')}</SectionTitle>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article) => (
-          <CardLink
-            key={article.slug}
-            href={`/manual/${article.slug}`}
-            icon="📖"
-            title={article.title}
-            description={article.excerpt}
-            locale={locale}
-          />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {articles.map((article) => (
+            <CardLink
+              key={article.slug}
+              href={`/manual/${article.slug}`}
+              icon="📖"
+              title={article.title}
+              description={article.excerpt}
+              locale={locale}
+            />
+          ))}
+        </div>
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

@@ -4,7 +4,13 @@ import { notFound } from 'next/navigation';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
-import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  Divider,
+  MarkdownRenderer,
+  PagePanel,
+  PageTitle,
+} from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -67,29 +73,31 @@ export default async function PostPage({ params }: Props) {
         <PageTitle>{post.title}</PageTitle>
       </header>
 
-      {/* Content */}
-      <article className="prose prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={post.content} skipFirstH1={true} />
-      </article>
+      <PagePanel>
+        {/* Content */}
+        <article className="prose prose-slate dark:prose-invert max-w-none">
+          <MarkdownRenderer content={post.content} skipFirstH1={true} />
+        </article>
 
-      {/* Post metadata */}
-      <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
-        <span className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">
-          {categoryLabel}
-        </span>
-        {publishedDate && <time>{publishedDate}</time>}
-      </div>
+        {/* Post metadata */}
+        <div className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
+          <span className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">
+            {categoryLabel}
+          </span>
+          {publishedDate && <time>{publishedDate}</time>}
+        </div>
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[
-          { label: t('pageTitle'), href: '/posts' },
-          { label: categoryLabel, href: `/posts/${category}` },
-          { label: post.title },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('pageTitle'), href: '/posts' },
+            { label: categoryLabel, href: `/posts/${category}` },
+            { label: post.title },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

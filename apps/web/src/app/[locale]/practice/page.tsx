@@ -1,7 +1,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  Divider,
+  PageDescription,
+  PagePanel,
+  PageTitle,
+} from '@/app/[locale]/_components';
 
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
@@ -161,11 +167,13 @@ export default async function PracticePage({ params }: Props) {
 
       <PageDescription>{t('practice.description')}</PageDescription>
 
-      <PracticeTabs tabs={tabs} />
+      <PagePanel>
+        <PracticeTabs tabs={tabs} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

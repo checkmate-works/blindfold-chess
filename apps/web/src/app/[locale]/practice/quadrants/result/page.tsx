@@ -91,17 +91,19 @@ export default function QuadrantAnchorsResultPage(props: Props) {
       />
 
       <div className="max-w-4xl mx-auto">
-        <SectionTitle className="text-xl font-semibold mb-4">
-          {tPractice('relatedLearning')}
-        </SectionTitle>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CardLink
-            href="/learn/coordinates/anchor-squares"
-            icon="⚓"
-            title={t('articles.anchorSquares.title')}
-            description={t('articles.anchorSquares.description')}
-            locale={locale}
-          />
+        <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8">
+          <SectionTitle className="text-xl font-semibold mb-4">
+            {tPractice('relatedLearning')}
+          </SectionTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardLink
+              href="/learn/coordinates/anchor-squares"
+              icon="⚓"
+              title={t('articles.anchorSquares.title')}
+              description={t('articles.anchorSquares.description')}
+              locale={locale}
+            />
+          </div>
         </div>
       </div>
     </PracticeResultPage>
