@@ -44,7 +44,7 @@ export function ContactForm({ locale }: Props) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-            {t('form.name')} <span className="text-red-500">*</span>
+            {t('form.name')} <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
@@ -58,7 +58,7 @@ export function ContactForm({ locale }: Props) {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-            {t('form.email')} <span className="text-red-500">*</span>
+            {t('form.email')} <span className="text-destructive">*</span>
           </label>
           <input
             type="email"
@@ -72,7 +72,7 @@ export function ContactForm({ locale }: Props) {
 
         <div>
           <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
-            {t('form.subject')} <span className="text-red-500">*</span>
+            {t('form.subject')} <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
@@ -86,7 +86,7 @@ export function ContactForm({ locale }: Props) {
 
         <div>
           <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-            {t('form.message')} <span className="text-red-500">*</span>
+            {t('form.message')} <span className="text-destructive">*</span>
           </label>
           <textarea
             id="message"

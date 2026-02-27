@@ -1,13 +1,12 @@
-'use client';
+import { Suspense } from 'react';
 
-import { use, useMemo } from 'react';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
-
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
+
+import { ResultClient } from './ResultClient';
 
 type Props = {
   params: Promise<{
@@ -15,75 +14,22 @@ type Props = {
   }>;
 };
 
-export default function FenResultPage(props: Props) {
-  const params = use(props.params);
-  const { locale } = params;
-  const t = useTranslations('practice.fen');
-  const tPractice = useTranslations('practice');
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'practice' });
 
-  const dataParam = searchParams.get('data');
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'practice/fen/result' }),
+    title: t('${key}.title'),
+  };
+}
 
-  const { score, total, results, detailedStats } = useMemo(() => {
-    if (!dataParam) {
-      return { score: 0, total: 0, results: [], detailedStats: null };
-    }
-    try {
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return parsed;
-    } catch {
-      return { score: 0, total: 0, results: [], detailedStats: null };
-    }
-  }, [dataParam]);
+export default async function FenResultPage(props: Props) {
+  const { locale } = await props.params;
 
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('pageTitle')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/fen' },
-        { label: tPractice('result') },
-      ]}
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => router.push(`/${locale}/practice/fen`)}
-        onExit={() => router.push(`/${locale}/practice/fen`)}
-        locale={locale}
-        labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: searchParams.get('scoreText') || tPractice('score'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('morePractice'),
-          recreationProgress: t('recreationProgress'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-          missing: t('missing'),
-          extra: t('extra'),
-          extraDescription: t('extraDescription'),
-          problemDetails: t('problemDetails'),
-          problem: t('problem'),
-          original: t('original'),
-          yourRecreation: t('yourRecreation'),
-          skipped: t('skipped'),
-          relatedLearning: tPractice('relatedLearning'),
-        }}
-        detailedStats={detailedStats}
-        problemResults={results}
-        relatedModule={{
-          href: '/learn/notation/fen-notation',
-          icon: '📝',
-          title: t('viewArticle'),
-          description: t('articleDescription'),
-        }}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-      />
-    </PracticeResultPage>
+    <Suspense>
+      <ResultClient locale={locale} />
+    </Suspense>
   );
 }

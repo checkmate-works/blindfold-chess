@@ -31,11 +31,7 @@ export function AlgebraicNotationResult({
   return (
     <div className="flex flex-col gap-6">
       {/* Result */}
-      <div
-        className={`text-center ${
-          isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-        }`}
-      >
+      <div className={`text-center ${isCorrect ? 'text-success' : 'text-destructive'}`}>
         <p className="text-lg font-semibold mb-2">{isCorrect ? t('correct') : t('incorrect')}</p>
         <p className="text-sm text-muted-foreground">
           {t('correctAnswerIs')}{' '}

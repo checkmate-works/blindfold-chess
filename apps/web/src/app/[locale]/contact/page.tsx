@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PageDescription } from '../_components/PageDescription';
-import { PageTitle } from '../_components/PageTitle';
+import { PageDescription, PagePanel, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 import type { Locale } from '../_lib/types';
 import { ContactForm } from './_components/ContactForm';
@@ -32,7 +31,9 @@ export default async function ContactPage({ params }: Props) {
 
       <PageDescription>{t('description')}</PageDescription>
 
-      <ContactForm locale={locale} />
+      <PagePanel>
+        <ContactForm locale={locale} />
+      </PagePanel>
     </div>
   );
 }

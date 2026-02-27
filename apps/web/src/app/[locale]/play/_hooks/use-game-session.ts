@@ -9,6 +9,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
@@ -41,12 +42,18 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     initialGameId,
     initialStartingFen,
     initialMovesFromUrl,
+    initialGamePrefs,
     shouldRedirectToError,
     errorDetails,
   } = useGameInitialization(urlParams);
 
   // Skill level state (can be changed during game)
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
+
+  // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
+  const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
+    initialGamePrefs
+  );
 
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
@@ -99,6 +106,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setStartingFen,
   });
 
+  // Set per-game preferences from loaded game data (game resume)
+  useEffect(() => {
+    if (loadedGameData?.gamePreferences) {
+      setPerGamePrefs(loadedGameData.gamePreferences);
+    }
+  }, [loadedGameData]);
+
   // Map board status to game outcome for repository
   const mapGameStatusToOutcome = useCallback(
     (bs: typeof gameStatus, pr: typeof playerResult): GameOutcome => {
@@ -118,6 +132,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     skillLevel,
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
+    gamePreferences: perGamePrefs,
     enabled: !isLoadingFromStorage && !shouldRedirectToError,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
@@ -241,6 +256,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
             skillLevel: newSkillLevel,
             status: savedGame.status,
             startingFen: savedGame.startingFen,
+            gamePreferences: savedGame.gamePreferences,
           });
         }
       }
@@ -303,6 +319,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       initialGameId,
       startingFen,
       locale,
+      perGamePrefs,
+      gameId,
     },
     gameState: {
       gameStatus,

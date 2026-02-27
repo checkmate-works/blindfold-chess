@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { SITE_NAME } from '@/config';
+
 import { generateCanonicalMetadata } from '../_lib/metadata';
 
 type Props = {
@@ -14,7 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'play' }),
-    title: t('title'),
+    title: {
+      default: t('title'),
+      template: `%s | ${t('title')} | ${SITE_NAME}`,
+    },
     description: t('description'),
   };
 }

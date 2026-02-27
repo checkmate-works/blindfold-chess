@@ -60,10 +60,10 @@ export function AlgebraicNotationPlaying({
                 showResult
                   ? selectedAnswer === option
                     ? option === question.correctAnswer
-                      ? 'bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-600 border-2'
-                      : 'bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-600 border-2'
+                      ? 'bg-success/10 border-success border-2'
+                      : 'bg-destructive/10 border-destructive border-2'
                     : option === question.correctAnswer
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 border'
+                      ? 'bg-success/5 border-success/50 border'
                       : 'bg-secondary border-border border'
                   : selectedAnswer === option
                     ? 'bg-primary/10 border-primary border-2'

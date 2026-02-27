@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import 'katex/dist/katex.min.css';
 import ReactMarkdown from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
@@ -103,7 +104,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
               | 'stones';
             return <ChessBoardDemo type={demoType} />;
           }
-          if (!src) return null;
+          if (!src || typeof src !== 'string') return null;
 
           const isSvg = src.endsWith('.svg');
 

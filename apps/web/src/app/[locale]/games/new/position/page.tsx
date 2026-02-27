@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -33,19 +33,21 @@ export default async function PositionGamePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('newGame.positionPageTitle')}</PageTitle>
-      <GameLimitCheck locale={locale}>
-        <Suspense fallback={null}>
-          <PositionGameForm locale={locale} />
-        </Suspense>
-        <Divider />
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('newGame.title'), href: '/games/new' },
-            { label: t('newGame.positionPageTitle') },
-          ]}
-        />
-      </GameLimitCheck>
+      <PagePanel>
+        <GameLimitCheck locale={locale}>
+          <Suspense fallback={null}>
+            <PositionGameForm locale={locale} />
+          </Suspense>
+          <Divider />
+          <Breadcrumb
+            locale={locale}
+            items={[
+              { label: t('newGame.title'), href: '/games/new' },
+              { label: t('newGame.positionPageTitle') },
+            ]}
+          />
+        </GameLimitCheck>
+      </PagePanel>
     </div>
   );
 }

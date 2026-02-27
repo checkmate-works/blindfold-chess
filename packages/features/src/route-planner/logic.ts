@@ -16,31 +16,36 @@ export function coordsToSquare(file: number, rank: number): string {
 
 export { isValidSquare as isValidRoutePlannerSquare };
 
-export function getPossibleMoves(
-  piece: RoutePlannerPieceType,
-  square: string,
-): string[] {
-  const [f, r] = squareToCoords(square);
-  const moves: string[] = [];
+interface RoutePlannerStrategy {
+  getMoves(file: number, rank: number): string[];
+  meetsConstraint(pathLength: number): boolean;
+}
 
-  const addMove = (df: number, dr: number) => {
-    const nf = f + df;
-    const nr = r + dr;
-    const sq = coordsToSquare(nf, nr);
-    if (sq) moves.push(sq);
-  };
+const addMoveIfValid = (f: number, r: number, moves: string[]) => {
+  const sq = coordsToSquare(f, r);
+  if (sq) moves.push(sq);
+};
 
-  const addLine = (df: number, dr: number) => {
+const addLinesIfValid = (
+  f: number,
+  r: number,
+  dirs: number[][],
+  moves: string[],
+) => {
+  dirs.forEach((d) => {
     for (let i = 1; i < 8; i++) {
-      const nf = f + df * i;
-      const nr = r + dr * i;
+      const nf = f + d[0] * i;
+      const nr = r + d[1] * i;
       const sq = coordsToSquare(nf, nr);
       if (sq) moves.push(sq);
       else break;
     }
-  };
+  });
+};
 
-  if (piece === "n") {
+const KnightRouteStrategy: RoutePlannerStrategy = {
+  getMoves(f, r) {
+    const moves: string[] = [];
     const jumps = [
       [1, 2],
       [1, -2],
@@ -51,30 +56,74 @@ export function getPossibleMoves(
       [-2, 1],
       [-2, -1],
     ];
-    jumps.forEach((d) => addMove(d[0], d[1]));
-  }
+    jumps.forEach((d) => addMoveIfValid(f + d[0], r + d[1], moves));
+    return moves;
+  },
+  meetsConstraint(pathLength) {
+    return pathLength >= 3 && pathLength <= 4;
+  },
+};
 
-  if (piece === "b" || piece === "q") {
+const BishopRouteStrategy: RoutePlannerStrategy = {
+  getMoves(f, r) {
+    const moves: string[] = [];
     const dirs = [
       [1, 1],
       [1, -1],
       [-1, 1],
       [-1, -1],
     ];
-    dirs.forEach((d) => addLine(d[0], d[1]));
-  }
+    addLinesIfValid(f, r, dirs, moves);
+    return moves;
+  },
+  meetsConstraint(pathLength) {
+    return pathLength === 3;
+  },
+};
 
-  if (piece === "r" || piece === "q") {
+const RookRouteStrategy: RoutePlannerStrategy = {
+  getMoves(f, r) {
+    const moves: string[] = [];
     const dirs = [
       [1, 0],
       [-1, 0],
       [0, 1],
       [0, -1],
     ];
-    dirs.forEach((d) => addLine(d[0], d[1]));
-  }
+    addLinesIfValid(f, r, dirs, moves);
+    return moves;
+  },
+  meetsConstraint(pathLength) {
+    return pathLength >= 3;
+  },
+};
 
-  return moves;
+const QueenRouteStrategy: RoutePlannerStrategy = {
+  getMoves(f, r) {
+    return [
+      ...BishopRouteStrategy.getMoves(f, r),
+      ...RookRouteStrategy.getMoves(f, r),
+    ];
+  },
+  meetsConstraint(pathLength) {
+    return pathLength >= 3;
+  },
+};
+
+const RouteStrategies: Record<RoutePlannerPieceType, RoutePlannerStrategy> = {
+  n: KnightRouteStrategy,
+  b: BishopRouteStrategy,
+  r: RookRouteStrategy,
+  q: QueenRouteStrategy,
+};
+
+export function getPossibleMoves(
+  piece: RoutePlannerPieceType,
+  square: string,
+): string[] {
+  const [f, r] = squareToCoords(square);
+  const strategy = RouteStrategies[piece];
+  return strategy ? strategy.getMoves(f, r) : [];
 }
 
 export function findShortestPath(
@@ -219,16 +268,6 @@ function meetsPathConstraint(
   piece: RoutePlannerPieceType,
   path: string[],
 ): boolean {
-  switch (piece) {
-    // Rook/Queen: at least 2 moves (must pass through at least one intermediate square)
-    case "r":
-    case "q":
-      return path.length >= 3;
-    // Bishop: exactly 2 moves (path.length === 3)
-    case "b":
-      return path.length === 3;
-    // Knight: 2-3 moves (path.length 3 or 4)
-    case "n":
-      return path.length >= 3 && path.length <= 4;
-  }
+  const strategy = RouteStrategies[piece];
+  return strategy ? strategy.meetsConstraint(path.length) : false;
 }

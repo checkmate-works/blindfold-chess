@@ -1,5 +1,3 @@
-'use client';
-
 import Script from 'next/script';
 
 interface CookieConsentProps {
@@ -33,7 +31,7 @@ export function CookieConsent({ cookieYesId, locale }: CookieConsentProps) {
     <Script
       id="cookieyes"
       src={`https://cdn-cookieyes.com/client_data/${cookieYesId}/script.js`}
-      strategy="beforeInteractive"
+      strategy="afterInteractive"
       type="text/javascript"
       data-locale={locale}
     />

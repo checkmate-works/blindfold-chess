@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.14.0 - 2026-02-27
+
+### Added
+
+- Onboarding flow — step-by-step guide for move input method, board peek mode, and piece display settings
+- Inline board peek mode — view the board directly within the play screen as an alternative to the popup modal
+
+## 0.13.0 - 2026-02-25
+
+### Added
+
+- Selectable move input modes — choose which move input modes (text, select, button) are available in Preferences
+- Per-game settings on setup forms — all game setup forms now include a collapsible "Game Settings" section
+- Show/Hide "View Board" button — new preference to control visibility during AI games
+
+### Changed
+
+- Reorganized Preferences — Board Appearance and Preview moved to "Appearance" tab, "Board" tab renamed to "Game"
+
 ## 0.12.0 - 2026-02-22
 
 ### Added

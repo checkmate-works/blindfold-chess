@@ -6,6 +6,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type SavedGameData = {
   moves: AlgebraicNotation[];
   startingFen?: string;
@@ -13,6 +15,7 @@ type SavedGameData = {
   gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
   shouldMakeAiMove: boolean;
+  gamePreferences?: PerGamePreferences;
 };
 
 type UseGamePersistenceOptions = {
@@ -109,6 +112,7 @@ export function useGamePersistence({
             gameStatus,
             playerResult,
             shouldMakeAiMove,
+            gamePreferences: savedGame.gamePreferences,
           });
         }
 

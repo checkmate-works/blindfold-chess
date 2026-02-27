@@ -1,7 +1,7 @@
 export type ProgressBarSegment = {
   key: string;
   value: number;
-  color: string; // Tailwind class like 'bg-green-600'
+  color: string; // Tailwind class like 'bg-success'
   label?: string; // Legend label
   textColor?: string; // Optional text color, defaults to 'text-white'
 };

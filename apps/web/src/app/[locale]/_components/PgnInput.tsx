@@ -174,12 +174,12 @@ export function PgnInput({
             className={`
               relative w-full ${heightClass} px-4 py-3 border rounded-md bg-transparent font-mono text-base resize-none
               focus:outline-none focus:ring-2 focus:ring-opacity-20 transition-colors
-              ${showError ? 'border-red-500 focus:ring-red-500/20' : 'border-border focus:border-foreground focus:ring-ring'}
+              ${showError ? 'border-destructive focus:ring-destructive/20' : 'border-border focus:border-foreground focus:ring-ring'}
             `}
           />
           {showSuccess && (
             <div className="absolute top-3 right-3">
-              <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
@@ -216,12 +216,12 @@ export function PgnInput({
           <button
             type="button"
             onClick={selectInvalidMove}
-            className="text-sm text-red-600 dark:text-red-400 hover:underline cursor-pointer text-left"
+            className="text-sm text-destructive hover:underline cursor-pointer text-left"
           >
             {getErrorMessage()}
           </button>
         ) : (
-          <p className="text-sm text-red-600 dark:text-red-400">{getErrorMessage()}</p>
+          <p className="text-sm text-destructive">{getErrorMessage()}</p>
         ))}
     </div>
   );

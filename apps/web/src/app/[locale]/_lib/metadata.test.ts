@@ -74,7 +74,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/learn',
         ja: 'https://www.blindfold-chess.online/ja/learn',
-        'x-default': 'https://www.blindfold-chess.online',
+        'x-default': 'https://www.blindfold-chess.online/en/learn',
       });
     });
 
@@ -87,7 +87,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en',
         ja: 'https://www.blindfold-chess.online/ja',
-        'x-default': 'https://www.blindfold-chess.online',
+        'x-default': 'https://www.blindfold-chess.online/en',
       });
     });
 
@@ -100,18 +100,18 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
         ja: 'https://www.blindfold-chess.online/ja/practice/algebraic-notation',
-        'x-default': 'https://www.blindfold-chess.online',
+        'x-default': 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
       });
     });
 
-    it('should set x-default to the root URL without locale or path', () => {
+    it('should set x-default to the default locale (en) version URL', () => {
       const result = generateCanonicalMetadata({
         locale: 'en',
         path: '/practice/knight-tour',
       });
 
       expect(result.alternates?.languages?.['x-default']).toBe(
-        'https://www.blindfold-chess.online'
+        'https://www.blindfold-chess.online/en/practice/knight-tour'
       );
     });
   });

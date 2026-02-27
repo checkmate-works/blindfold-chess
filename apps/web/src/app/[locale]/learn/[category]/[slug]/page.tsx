@@ -10,6 +10,7 @@ import {
   Divider,
   MarkdownRenderer,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -128,86 +129,88 @@ export default async function LearnArticlePage({ params }: Props) {
         {article.metadata.excerpt && <PageDescription>{article.metadata.excerpt}</PageDescription>}
       </header>
 
-      {/* Article content with narrower width for readability */}
-      <article className="prose prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={article.content} skipFirstH1={true} />
-      </article>
+      <PagePanel>
+        {/* Article content with narrower width for readability */}
+        <article className="prose prose-slate dark:prose-invert max-w-none">
+          <MarkdownRenderer content={article.content} skipFirstH1={true} />
+        </article>
 
-      {relatedPracticeModules && (
+        {relatedPracticeModules && (
+          <div className="space-y-4">
+            <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedPracticeModules.map((moduleId) => {
+                const translationKey = getPracticeModuleTranslationKey(moduleId);
+                const icon = getPracticeModuleIcon(moduleId);
+
+                return (
+                  <CardLink
+                    key={moduleId}
+                    href={`/practice/${moduleId}`}
+                    icon={icon}
+                    title={t(`practice.${translationKey}.title`)}
+                    description={t(`practice.${translationKey}.description`)}
+                    locale={locale}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {relatedArticles.length > 0 && (
+          <div className="space-y-4">
+            <SectionTitle>{t('learn.relatedArticles')}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedArticles.map((relatedArticle) => (
+                <CardLink
+                  key={relatedArticle.slug}
+                  href={`/learn/${category}/${relatedArticle.slug}`}
+                  icon={ARTICLE_ICONS[relatedArticle.slug as ArticleSlug] || '📚'}
+                  title={relatedArticle.title}
+                  description={relatedArticle.excerpt}
+                  locale={locale}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
-          <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {relatedPracticeModules.map((moduleId) => {
-              const translationKey = getPracticeModuleTranslationKey(moduleId);
-              const icon = getPracticeModuleIcon(moduleId);
+          <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
+          <div className="space-y-4">
+            {categoryInfos.map((info) => {
+              const style = CATEGORY_STYLES[info.category];
+              // Accessing style.icon directly for icon.
 
               return (
                 <CardLink
-                  key={moduleId}
-                  href={`/practice/${moduleId}`}
-                  icon={icon}
-                  title={t(`practice.${translationKey}.title`)}
-                  description={t(`practice.${translationKey}.description`)}
+                  key={info.category}
+                  href={`/learn/${info.category}`}
+                  icon={style.icon}
+                  title={info.label}
+                  description={t('learn.articleCount', { count: info.count })}
                   locale={locale}
+                  className={
+                    info.category === articleCategory ? 'border-primary ring-1 ring-primary' : ''
+                  }
                 />
               );
             })}
           </div>
         </div>
-      )}
 
-      {relatedArticles.length > 0 && (
-        <div className="space-y-4">
-          <SectionTitle>{t('learn.relatedArticles')}</SectionTitle>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {relatedArticles.map((relatedArticle) => (
-              <CardLink
-                key={relatedArticle.slug}
-                href={`/learn/${category}/${relatedArticle.slug}`}
-                icon={ARTICLE_ICONS[relatedArticle.slug as ArticleSlug] || '📚'}
-                title={relatedArticle.title}
-                description={relatedArticle.excerpt}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+        <Divider />
 
-      <div className="space-y-4">
-        <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
-        <div className="space-y-4">
-          {categoryInfos.map((info) => {
-            const style = CATEGORY_STYLES[info.category];
-            // Accessing style.icon directly for icon.
-
-            return (
-              <CardLink
-                key={info.category}
-                href={`/learn/${info.category}`}
-                icon={style.icon}
-                title={info.label}
-                description={t('learn.articleCount', { count: info.count })}
-                locale={locale}
-                className={
-                  info.category === articleCategory ? 'border-primary ring-1 ring-primary' : ''
-                }
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.learn'), href: '/learn' },
-          { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
-          { label: article.metadata.title },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('navigation.learn'), href: '/learn' },
+            { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
+            { label: article.metadata.title },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

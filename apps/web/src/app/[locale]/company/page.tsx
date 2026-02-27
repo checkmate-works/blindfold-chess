@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PageTitle } from '../_components';
+import { PagePanel, PageTitle } from '../_components';
 import { generateCanonicalMetadata } from '../_lib/metadata';
 
 export async function generateMetadata({
@@ -29,7 +29,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
         <PageTitle>{t('title')}</PageTitle>
       </div>
 
-      <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 space-y-8">
+      <PagePanel>
         {/* Company Information */}
         <section>
           <dl className="space-y-4">
@@ -77,7 +77,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
             </a>
           </p>
         </section>
-      </div>
+      </PagePanel>
     </>
   );
 }

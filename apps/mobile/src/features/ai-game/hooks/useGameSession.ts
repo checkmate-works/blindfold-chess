@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as Haptics from "expo-haptics";
 import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
-import { GameStateService } from "@blindfold-chess/features/ai-game";
+import {
+  computeGameState,
+  validateGameMove,
+} from "@blindfold-chess/features/ai-game";
 
 import type { GameStatus, PlayerResult, SkillLevel } from "../lib/types";
 
@@ -31,14 +34,11 @@ export function useGameSession({
 
   // Update game state after moves change
   useEffect(() => {
-    const gameState = new GameStateService(moves, playerColor);
-    const status = gameState.getGameStatus();
-    const result = gameState.getPlayerResult();
-    const playerTurn = gameState.isPlayerTurn();
+    const gameState = computeGameState(moves, playerColor);
 
-    setGameStatus(status);
-    setPlayerResult(result);
-    setIsPlayerTurn(playerTurn);
+    setGameStatus(gameState.status);
+    setPlayerResult(gameState.playerResult);
+    setIsPlayerTurn(gameState.isPlayerTurn);
   }, [moves, playerColor]);
 
   // Trigger AI move when it's not the player's turn.
@@ -46,9 +46,9 @@ export function useGameSession({
   // where the state-based isPlayerTurn lags behind the latest moves array
   // (causing the AI to move repeatedly in an infinite loop).
   useEffect(() => {
-    const currentGameState = new GameStateService(moves, playerColor);
-    const currentStatus = currentGameState.getGameStatus();
-    const currentIsPlayerTurn = currentGameState.isPlayerTurn();
+    const currentGameState = computeGameState(moves, playerColor);
+    const currentStatus = currentGameState.status;
+    const currentIsPlayerTurn = currentGameState.isPlayerTurn;
 
     if (
       currentIsPlayerTurn ||
@@ -82,9 +82,7 @@ export function useGameSession({
         return false;
       }
 
-      const gameState = new GameStateService(moves, playerColor);
-
-      if (!gameState.validateMove(move)) {
+      if (!validateGameMove(moves, move)) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         setError("Invalid move");
         return false;
@@ -99,8 +97,8 @@ export function useGameSession({
   );
 
   const currentFen = useMemo(() => {
-    const gameState = new GameStateService(moves, playerColor);
-    return gameState.getFen();
+    const gameState = computeGameState(moves, playerColor);
+    return gameState.currentFen;
   }, [moves, playerColor]);
 
   return {

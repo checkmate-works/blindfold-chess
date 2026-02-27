@@ -4,8 +4,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 
-import { PageDescription } from '../../_components/PageDescription';
-import { PageTitle } from '../../_components/PageTitle';
+import { PageDescription, PagePanel, PageTitle } from '../../_components';
 import { generateCanonicalMetadata } from '../../_lib/metadata';
 import type { Locale } from '../../_lib/types';
 
@@ -35,20 +34,22 @@ export default async function ContactSuccessPage({ params }: Props) {
 
       <PageDescription>{t('success.message')}</PageDescription>
 
-      <div className="max-w-2xl mt-8">
-        <Link href={`/${locale}`} className="block">
-          <Button
-            asChild
-            variant="secondary"
-            size="lg"
-            fullWidth
-            shadow={false}
-            className="border-0 hover:bg-secondary/80"
-          >
-            {t('success.backToHome')}
-          </Button>
-        </Link>
-      </div>
+      <PagePanel className="space-y-8 flex justify-center">
+        <div className="w-full max-w-2xl mt-4 sm:mt-8">
+          <Link href={`/${locale}`} className="block">
+            <Button
+              asChild
+              variant="secondary"
+              size="lg"
+              fullWidth
+              shadow={false}
+              className="border-0 hover:bg-secondary/80"
+            >
+              {t('success.backToHome')}
+            </Button>
+          </Link>
+        </div>
+      </PagePanel>
     </div>
   );
 }

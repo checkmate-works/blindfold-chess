@@ -2,25 +2,25 @@
 
 import { useTranslations } from 'next-intl';
 
-import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaTrash } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { CastlingSelector } from './CastlingSelector';
+import { PieceSelector } from './PieceSelector';
+import { PromotionSelector } from './PromotionSelector';
 import { useButtonInputLogic } from './useButtonInputLogic';
 
 type Props = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
+  playerColor?: 'w' | 'b';
 };
 
-type PromotionPiece = 'q' | 'r' | 'b' | 'n';
-
-export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
+export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w' }: Props) {
   const t = useTranslations('ButtonInput');
   const { preferences } = useGamePreferences();
   const { buttonInputPieceLabel } = preferences;
@@ -59,45 +59,17 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
     <div className="flex flex-col gap-3 p-4 bg-card rounded-lg">
       {/* Piece Row */}
       {!castling && (selectedFiles.size === 0 || selectedPiece) && (
-        <div className="flex gap-2 justify-center">
-          {['K', 'Q', 'R', 'B', 'N'].map((piece) => (
-            <button
-              key={piece}
-              onClick={() => handlePieceClick(piece)}
-              aria-label={piece}
-              className={`w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                selectedPiece === piece
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted border-border'
-              }`}
-            >
-              {buttonInputPieceLabel === 'icon' ? (
-                <ChessPiece type={piece.toLowerCase() as PieceSymbol} color="w" size={24} />
-              ) : (
-                piece
-              )}
-            </button>
-          ))}
-        </div>
+        <PieceSelector
+          selectedPiece={selectedPiece}
+          playerColor={playerColor}
+          pieceLabel={buttonInputPieceLabel}
+          onPieceClick={handlePieceClick}
+        />
       )}
 
       {/* Castling Row */}
       {!selectedPiece && selectedFiles.size === 0 && (
-        <div className="flex gap-2 justify-center">
-          {['O-O', 'O-O-O'].map((castle) => (
-            <button
-              key={castle}
-              onClick={() => handleCastlingClick(castle as 'O-O' | 'O-O-O')}
-              className={`px-3 h-9 rounded-md font-bold text-xs transition-colors border ${
-                castling === castle
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted border-border'
-              }`}
-            >
-              {castle}
-            </button>
-          ))}
-        </div>
+        <CastlingSelector castling={castling} onCastlingClick={handleCastlingClick} />
       )}
 
       {/* Takes Checkbox (Piece Mode) - Shown below PieceRow if Piece is selected */}
@@ -171,7 +143,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
                 type="checkbox"
                 checked={isCapture}
                 onChange={() => setIsCapture(!isCapture)}
-                className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
+                className="w-5 h-5 rounded border-border text-primary focus:ring-primary accent-primary"
               />
               <span className="font-mono font-bold text-lg">x</span>
             </label>
@@ -203,7 +175,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
                     type="checkbox"
                     checked={isCapture}
                     onChange={() => setIsCapture(!isCapture)}
-                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
+                    className="w-5 h-5 rounded border-border text-primary focus:ring-primary accent-primary"
                   />
                   <span className="font-mono font-bold text-lg">x</span>
                 </label>
@@ -236,27 +208,10 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
 
           {/* Promotion Selector (Conditional) */}
           {showPromotion && (
-            <div className="flex justify-center w-full animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex gap-1 justify-center w-full">
-                {/* Static Equals Sign */}
-                <div className="flex items-center justify-center w-9 h-9 font-bold text-lg select-none text-muted-foreground">
-                  =
-                </div>
-                {(['q', 'r', 'b', 'n'] as PromotionPiece[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPromotionPiece(p)}
-                    className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border max-w-[3rem] ${
-                      promotionPiece === p
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background hover:bg-muted border-border'
-                    }`}
-                  >
-                    {p.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <PromotionSelector
+              promotionPiece={promotionPiece}
+              onPromotionPieceChange={setPromotionPiece}
+            />
           )}
 
           {/* Modifiers (Check) - Only show when rank is selected (completed move) AND (not promotion mode OR promotion piece selected) */}
@@ -273,7 +228,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false }: Props) {
                   type="checkbox"
                   checked={isCheck}
                   onChange={() => setIsCheck(!isCheck)}
-                  className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary accent-primary"
+                  className="w-5 h-5 rounded border-border text-primary focus:ring-primary accent-primary"
                 />
                 <span className="font-mono font-bold text-lg">+</span>
               </label>

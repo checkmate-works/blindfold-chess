@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { Inter } from 'next/font/google';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
@@ -12,12 +14,17 @@ import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
 import '../globals.css';
 import { Providers } from './_lib/providers';
 
-const siteDescription =
-  'A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.';
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
+  const t = await getTranslations({ locale, namespace: 'metadata' });
   const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+  const siteDescription = t('siteDescription');
 
   return {
     title: SITE_NAME,
@@ -26,6 +33,11 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     alternates: {
       canonical: '/',
+      languages: {
+        en: '/en',
+        ja: '/ja',
+        'x-default': '/',
+      },
     },
     openGraph: {
       title: SITE_NAME,
@@ -62,7 +74,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
-      <body>
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers>{children}</Providers>

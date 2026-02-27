@@ -17,8 +17,10 @@ import { FaEye } from 'react-icons/fa';
 import type { SkillLevel } from '@/lib/types';
 
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
+import { CollapsibleGameSettings } from '@/app/[locale]/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/games/new/_components/ColorSelector';
 import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
 import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
@@ -40,6 +42,20 @@ export function PgnGameForm({ locale }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+
+  // Initialize local per-game settings from global preferences
+  const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
+    showBoardButtonInGame: preferences.showBoardButtonInGame,
+    highlightLastMove: preferences.highlightLastMove,
+    showOwnPieces: preferences.showOwnPieces,
+    showOpponentPieces: preferences.showOpponentPieces,
+    pieceShapeMode: preferences.pieceShapeMode,
+    pieceColors: preferences.pieceColors,
+  });
+
+  const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {
+    setLocalSettings((prev) => ({ ...prev, ...updates }));
+  };
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
@@ -205,6 +221,7 @@ export function PgnGameForm({ locale }: Props) {
     const params = new URLSearchParams({
       color,
       skillLevel: skillLevel.toString(),
+      gamePrefs: JSON.stringify(localSettings),
     });
 
     if (moves && moves.length > 0) {
@@ -254,6 +271,9 @@ export function PgnGameForm({ locale }: Props) {
 
       {/* Skill Level Selection */}
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
+
+      <SectionTitle>{t('gameSettings')}</SectionTitle>
+      <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
         onClick={handleStartGame}

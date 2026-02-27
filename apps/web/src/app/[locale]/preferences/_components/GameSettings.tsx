@@ -28,6 +28,7 @@ export function GameSettings() {
           settings={preferences}
           onSettingsChange={updatePreferences}
           showPreview={true}
+          showBoardAppearance={false}
         />
 
         {/* Reset Button */}

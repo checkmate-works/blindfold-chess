@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { type ReactNode, useEffect, useId } from 'react';
 
 import { Button } from '@/app/_components';
 
@@ -10,6 +10,7 @@ type Props = {
   isOpen: boolean;
   title: string;
   message: string;
+  children?: ReactNode;
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: 'primary' | 'danger' | 'warning';
@@ -22,6 +23,7 @@ export function ConfirmationModal({
   isOpen,
   title,
   message,
+  children,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   confirmVariant = 'primary',
@@ -29,6 +31,9 @@ export function ConfirmationModal({
   onConfirm,
   onCancel,
 }: Props) {
+  const titleId = useId();
+  const messageId = useId();
+
   useScrollLock(isOpen);
 
   // Handle escape key
@@ -64,33 +69,29 @@ export function ConfirmationModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
-        onClick={onCancel}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-black/50" onClick={onCancel} aria-hidden="true" />
 
       {/* Modal */}
       <div
-        className="relative bg-card rounded-md shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative bg-card rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
-        aria-describedby="modal-message"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
       >
         {/* Header */}
         <div className="mb-4">
-          <h2 id="modal-title" className="text-xl font-bold text-foreground">
+          <h2 id={titleId} className="text-xl font-bold text-foreground">
             {title}
           </h2>
         </div>
 
         {/* Content */}
         <div className="mb-6">
-          <p id="modal-message" className="text-muted-foreground leading-relaxed">
+          <p id={messageId} className="text-muted-foreground leading-relaxed">
             {message}
           </p>
+          {children}
         </div>
 
         {/* Actions */}

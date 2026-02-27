@@ -53,18 +53,16 @@ export function ContactConfirm({ formData, locale }: Props) {
   return (
     <div className="max-w-2xl">
       {submitStatus === 'success' && (
-        <div className="mb-6 rounded-md bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800">
-          <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-            {t('success.title')}
-          </h3>
-          <p className="text-green-800 dark:text-green-200">{t('success.message')}</p>
+        <div className="mb-6 rounded-md bg-success/10 p-4 border border-success/30">
+          <h3 className="font-semibold text-success mb-2">{t('success.title')}</h3>
+          <p className="text-success">{t('success.message')}</p>
         </div>
       )}
 
       {submitStatus === 'error' && (
-        <div className="mb-6 rounded-md bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
-          <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">{t('error.title')}</h3>
-          <p className="text-red-800 dark:text-red-200">{t('error.message')}</p>
+        <div className="mb-6 rounded-md bg-destructive/10 p-4 border border-destructive/30">
+          <h3 className="font-semibold text-destructive mb-2">{t('error.title')}</h3>
+          <p className="text-destructive">{t('error.message')}</p>
         </div>
       )}
 

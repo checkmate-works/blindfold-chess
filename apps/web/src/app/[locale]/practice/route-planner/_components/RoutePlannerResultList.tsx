@@ -71,10 +71,10 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
               <div
                 className={`text-sm font-bold ${
                   result.success
-                    ? 'text-green-600'
+                    ? 'text-success'
                     : result.skipped
                       ? 'text-muted-foreground'
-                      : 'text-red-600'
+                      : 'text-destructive'
                 }`}
               >
                 {result.success ? 'OK' : result.skipped ? labels.skipped : 'NG'}
