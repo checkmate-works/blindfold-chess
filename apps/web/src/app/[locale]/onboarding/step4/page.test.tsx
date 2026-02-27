@@ -5,7 +5,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import Step4Page from './page';
+import { Step4Client as Step4Page } from './Step4Client';
 
 expect.extend(matchers);
 
@@ -60,14 +60,14 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
 
 describe('Step4Page', () => {
   it('renders completion message (title and description)', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     expect(screen.getByText('step4.title')).toBeInTheDocument();
     expect(screen.getByText('step4.description')).toBeInTheDocument();
   });
 
   it('renders all 3 game mode links', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     expect(screen.getByText('step4.gameModes.standard')).toBeInTheDocument();
     expect(screen.getByText('step4.gameModes.standardDescription')).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe('Step4Page', () => {
   });
 
   it('game mode links have correct href values', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
@@ -90,7 +90,7 @@ describe('Step4Page', () => {
   });
 
   it('shows step indicator with 4 steps and step 4 active', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     // Steps 1, 2, and 3 should have completed styling (bg-primary/20)
     const step1 = screen.getByText('1');
@@ -110,7 +110,7 @@ describe('Step4Page', () => {
   });
 
   it('shows Back button, no Skip or Next buttons', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     expect(screen.getByText('back')).toBeInTheDocument();
     expect(screen.queryByText('skip')).not.toBeInTheDocument();
@@ -118,7 +118,7 @@ describe('Step4Page', () => {
   });
 
   it('clicking Back navigates to step3', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     fireEvent.click(screen.getByText('back'));
 
@@ -126,7 +126,7 @@ describe('Step4Page', () => {
   });
 
   it('renders chess piece icons for each game mode', () => {
-    render(<Step4Page />);
+    render(<Step4Page locale="en" />);
 
     // The page renders unicode chess pieces as icons
     // ♟ for standard, 📋 for pgn, ♜ for position

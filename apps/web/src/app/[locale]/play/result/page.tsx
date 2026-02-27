@@ -1,17 +1,19 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './_components/ResultClient';
 
-export default function ResultPage() {
-  const params = useParams();
-  const locale = params.locale as Locale;
-  const t = useTranslations('play');
+type Props = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+};
+
+export default async function ResultPage({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'play' });
 
   return (
     <>

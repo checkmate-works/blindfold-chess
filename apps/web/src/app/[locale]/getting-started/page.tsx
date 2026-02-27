@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { ChessBoard } from '@/app/_components';
+import { Button, ChessBoard } from '@/app/_components';
 import {
   FaBrain,
   FaChess,
@@ -89,7 +89,7 @@ export default async function GettingStartedPage({ params }: Props) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-blue-500 text-xl flex justify-center">
+                <div className="text-info text-xl flex justify-center">
                   <FaSignal />
                 </div>
                 <p className="text-sm font-medium text-foreground">
@@ -100,7 +100,7 @@ export default async function GettingStartedPage({ params }: Props) {
                 </p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-green-500 text-xl flex justify-center">
+                <div className="text-success text-xl flex justify-center">
                   <FaUndo />
                 </div>
                 <p className="text-sm font-medium text-foreground">
@@ -111,7 +111,7 @@ export default async function GettingStartedPage({ params }: Props) {
                 </p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-amber-500 text-xl flex justify-center">
+                <div className="text-warning text-xl flex justify-center">
                   <FaLightbulb />
                 </div>
                 <p className="text-sm font-medium text-foreground">
@@ -133,9 +133,9 @@ export default async function GettingStartedPage({ params }: Props) {
                   <FaSlidersH />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {t('onboardingBanner.title')}
-                  </h2>
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {t('onboardingBanner.description')}
                   </p>
@@ -147,11 +147,10 @@ export default async function GettingStartedPage({ params }: Props) {
             </Link>
 
             <div className="flex justify-center pt-2">
-              <Link
-                href={`/${locale}/games/new`}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-              >
-                {t('whatYouCanDo.stockfish.cta')}
+              <Link href={`/${locale}/games/new`}>
+                <Button asChild variant="primary" size="lg">
+                  {t('whatYouCanDo.stockfish.cta')}
+                </Button>
               </Link>
             </div>
 
@@ -165,9 +164,10 @@ export default async function GettingStartedPage({ params }: Props) {
               </div>
               <Link
                 href={`/${locale}/games/new/position?fen=${encodeURIComponent('6k1/8/8/3KQ3/8/8/8/8 w - - 0 1')}`}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
               >
-                {t('whatYouCanDo.stockfish.trySimpleCta')}
+                <Button asChild variant="primary" size="lg">
+                  {t('whatYouCanDo.stockfish.trySimpleCta')}
+                </Button>
               </Link>
             </div>
           </div>
@@ -192,11 +192,10 @@ export default async function GettingStartedPage({ params }: Props) {
             </div>
 
             <div className="flex justify-center pt-2">
-              <Link
-                href={`/${locale}/practice`}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-              >
-                {t('whatYouCanDo.training.cta')}
+              <Link href={`/${locale}/practice`}>
+                <Button asChild variant="primary" size="lg">
+                  {t('whatYouCanDo.training.cta')}
+                </Button>
               </Link>
             </div>
           </div>

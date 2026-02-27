@@ -5,7 +5,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import Step1Page from './page';
+import { Step1Client as Step1Page } from './Step1Client';
 
 expect.extend(matchers);
 
@@ -55,7 +55,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
 
 describe('Step1Page', () => {
   it('renders MoveInputStep content (title, mode options)', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     expect(screen.getByText('step1.title')).toBeInTheDocument();
     expect(screen.getByText('step1.description')).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('Step1Page', () => {
   });
 
   it('shows step indicator with step 1 active', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     // Step 1 should have active styling (bg-primary)
     const step1 = screen.getByText('1');
@@ -80,7 +80,7 @@ describe('Step1Page', () => {
   });
 
   it('shows Skip and Next buttons, no Back button', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     expect(screen.getByText('skip')).toBeInTheDocument();
     expect(screen.getByText('next')).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('Step1Page', () => {
   });
 
   it('can toggle mode selection (click text -> updatePreferences called with both modes)', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     // Default: only 'button' is selected
     const buttonOption = screen.getByText('step1.modes.button.label').closest('button')!;
@@ -107,7 +107,7 @@ describe('Step1Page', () => {
   });
 
   it('cannot deselect the last remaining mode', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     // Default: only 'button' is selected
     const buttonOption = screen.getByText('step1.modes.button.label').closest('button')!;
@@ -121,7 +121,7 @@ describe('Step1Page', () => {
   });
 
   it('clicking Next navigates to step2', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     fireEvent.click(screen.getByText('next'));
 
@@ -130,7 +130,7 @@ describe('Step1Page', () => {
   });
 
   it('clicking Skip navigates to /games/new', () => {
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     fireEvent.click(screen.getByText('skip'));
 
@@ -139,7 +139,7 @@ describe('Step1Page', () => {
 
   it('initializes with saved preferences from context', () => {
     mockPreferences = { enabledMoveInputModes: ['text', 'button'] };
-    render(<Step1Page />);
+    render(<Step1Page locale="en" />);
 
     // Both text and button should be selected
     const textOption = screen.getByText('step1.modes.text.label').closest('button')!;

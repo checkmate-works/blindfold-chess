@@ -72,13 +72,13 @@ export function PositionMemoryProblemResult({
                 {
                   key: 'correct',
                   value: accuracy.correctPieces,
-                  color: 'bg-green-600',
+                  color: 'bg-success',
                   label: t('correct'),
                 },
                 {
                   key: 'incorrect',
                   value: accuracy.incorrectPieces,
-                  color: 'bg-red-600',
+                  color: 'bg-destructive',
                   label: t('incorrect'),
                 },
                 {

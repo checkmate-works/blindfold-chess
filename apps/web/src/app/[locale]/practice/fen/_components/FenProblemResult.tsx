@@ -69,13 +69,13 @@ export function FenProblemResult({
             </p>
             <div className="w-full h-8 bg-muted rounded-lg overflow-hidden flex">
               <div
-                className="bg-green-600 flex items-center justify-center text-white text-sm font-semibold"
+                className="bg-success flex items-center justify-center text-success-foreground text-sm font-semibold"
                 style={{ width: `${(accuracy.correctPieces / accuracy.totalPieces) * 100}%` }}
               >
                 {accuracy.correctPieces > 0 && accuracy.correctPieces}
               </div>
               <div
-                className="bg-red-600 flex items-center justify-center text-white text-sm font-semibold"
+                className="bg-destructive flex items-center justify-center text-destructive-foreground text-sm font-semibold"
                 style={{ width: `${(accuracy.incorrectPieces / accuracy.totalPieces) * 100}%` }}
               >
                 {accuracy.incorrectPieces > 0 && accuracy.incorrectPieces}
@@ -89,13 +89,13 @@ export function FenProblemResult({
             </div>
             <div className="flex justify-between mt-2 text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-600 rounded"></div>
+                <div className="w-3 h-3 bg-success rounded"></div>
                 <span>
                   {t('correct')}: {accuracy.correctPieces}
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-600 rounded"></div>
+                <div className="w-3 h-3 bg-destructive rounded"></div>
                 <span>
                   {t('incorrect')}: {accuracy.incorrectPieces}
                 </span>

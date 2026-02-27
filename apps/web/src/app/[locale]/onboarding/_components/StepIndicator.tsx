@@ -1,5 +1,3 @@
-'use client';
-
 type Step = {
   id: string;
   label: string;

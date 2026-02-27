@@ -1,5 +1,3 @@
-'use client';
-
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 

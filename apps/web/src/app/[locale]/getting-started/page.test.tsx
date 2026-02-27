@@ -71,9 +71,11 @@ vi.mock('react-icons/fa', () => ({
   FaUndo: () => React.createElement('span', { 'data-testid': 'icon-undo' }),
 }));
 
-// Mock ChessBoard component
+// Mock ChessBoard and Button components
 vi.mock('@/app/_components', () => ({
   ChessBoard: () => React.createElement('div', { 'data-testid': 'chess-board' }),
+  Button: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) =>
+    React.createElement('button', props, children),
 }));
 
 // Mock jsonld

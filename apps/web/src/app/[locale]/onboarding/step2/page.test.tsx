@@ -5,7 +5,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import Step2Page from './page';
+import { Step2Client as Step2Page } from './Step2Client';
 
 expect.extend(matchers);
 
@@ -55,7 +55,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
 
 describe('Step2Page', () => {
   it('renders PeekModeStep content (title, mode options)', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     expect(screen.getByText('step2.title')).toBeInTheDocument();
     expect(screen.getByText('step2.description')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('Step2Page', () => {
   });
 
   it('shows step indicator with step 2 active', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     // Step 1 should have completed styling
     const step1 = screen.getByText('1');
@@ -82,7 +82,7 @@ describe('Step2Page', () => {
   });
 
   it('shows Skip, Back, and Next buttons', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     expect(screen.getByText('skip')).toBeInTheDocument();
     expect(screen.getByText('back')).toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('Step2Page', () => {
   });
 
   it('can select different peek mode', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     // Default: 'modal' is selected
     const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
@@ -106,7 +106,7 @@ describe('Step2Page', () => {
   });
 
   it('clicking Next navigates to step3', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     fireEvent.click(screen.getByText('next'));
 
@@ -115,7 +115,7 @@ describe('Step2Page', () => {
   });
 
   it('clicking Back navigates to step1', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     fireEvent.click(screen.getByText('back'));
 
@@ -123,7 +123,7 @@ describe('Step2Page', () => {
   });
 
   it('clicking Skip navigates to /games/new', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     fireEvent.click(screen.getByText('skip'));
 
@@ -132,7 +132,7 @@ describe('Step2Page', () => {
 
   it('initializes with saved preferences from context', () => {
     mockPreferences = { peekMode: 'inline', showBoardButtonInGame: true };
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     // Inline should be selected, modal should not
     const modalOption = screen.getByText('step2.modes.modal.label').closest('button')!;
@@ -143,7 +143,7 @@ describe('Step2Page', () => {
   });
 
   it('shows checkbox and PeekModeStep when showBoardButtonInGame is true', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     expect(screen.getByText('step2.showBoardButton')).toBeInTheDocument();
     expect(screen.getByText('step2.modes.modal.label')).toBeInTheDocument();
@@ -152,7 +152,7 @@ describe('Step2Page', () => {
 
   it('hides PeekModeStep when showBoardButtonInGame is false', () => {
     mockPreferences = { peekMode: 'modal', showBoardButtonInGame: false };
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     expect(screen.getByText('step2.showBoardButton')).toBeInTheDocument();
     expect(screen.queryByText('step2.modes.modal.label')).not.toBeInTheDocument();
@@ -160,7 +160,7 @@ describe('Step2Page', () => {
   });
 
   it('calls updatePreferences when checkbox is toggled', () => {
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
@@ -170,7 +170,7 @@ describe('Step2Page', () => {
 
   it('navigates to step3 when Next is clicked with checkbox unchecked', () => {
     mockPreferences = { peekMode: 'modal', showBoardButtonInGame: false };
-    render(<Step2Page />);
+    render(<Step2Page locale="en" />);
 
     fireEvent.click(screen.getByText('next'));
 

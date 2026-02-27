@@ -5,7 +5,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import Step3Page from './page';
+import { Step3Client as Step3Page } from './Step3Client';
 
 expect.extend(matchers);
 
@@ -55,7 +55,7 @@ vi.mock('@/app/_components', () => ({
 
 describe('Step3Page', () => {
   it('renders PieceSettingsStep content', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     expect(screen.getByText('step3.title')).toBeInTheDocument();
     expect(screen.getByText('step3.description')).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('Step3Page', () => {
   });
 
   it('shows step indicator with step 3 active', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // Steps 1 and 2 should have completed styling
     const step1 = screen.getByText('1');
@@ -78,7 +78,7 @@ describe('Step3Page', () => {
   });
 
   it('shows Skip, Back, and Next buttons', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     expect(screen.getByText('skip')).toBeInTheDocument();
     expect(screen.getByText('back')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('Step3Page', () => {
   });
 
   it('checkbox toggles call updatePreferences for visibility', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // Both checkboxes should be checked by default
     const checkboxes = screen.getAllByRole('checkbox');
@@ -106,7 +106,7 @@ describe('Step3Page', () => {
       pieceShapeMode: 'normal',
       pieceColors: 'normal',
     };
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // Available shape options should be: normal, circles-own
     const shapeRadios = screen
@@ -126,7 +126,7 @@ describe('Step3Page', () => {
       pieceShapeMode: 'normal',
       pieceColors: 'normal',
     };
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // Available shape options should be: normal, circles-opponent
     const shapeRadios = screen
@@ -146,7 +146,7 @@ describe('Step3Page', () => {
       pieceShapeMode: 'circles-all',
       pieceColors: 'normal',
     };
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // circles-all should be selected
     const circlesAllRadio = screen.getByLabelText('step3.shape.circles-all');
@@ -165,14 +165,14 @@ describe('Step3Page', () => {
       pieceShapeMode: 'normal',
       pieceColors: 'normal',
     };
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // Appearance section should be hidden when both are unchecked
     expect(screen.queryByText('step3.appearance.title')).not.toBeInTheDocument();
   });
 
   it('clicking Next navigates to step4', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     fireEvent.click(screen.getByText('next'));
 
@@ -181,7 +181,7 @@ describe('Step3Page', () => {
   });
 
   it('clicking Back navigates to step2', () => {
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     fireEvent.click(screen.getByText('back'));
 
@@ -195,7 +195,7 @@ describe('Step3Page', () => {
       pieceShapeMode: 'circles-opponent',
       pieceColors: 'normal',
     };
-    render(<Step3Page />);
+    render(<Step3Page locale="en" />);
 
     // showOwnPieces should be unchecked, showOpponentPieces should be checked
     const checkboxes = screen.getAllByRole('checkbox');

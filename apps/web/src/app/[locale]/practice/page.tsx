@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { SITE_URL } from '@/config';
+
+import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
+
 import {
   Breadcrumb,
   Divider,
@@ -161,8 +165,16 @@ export default async function PracticePage({ params }: Props) {
     ),
   }));
 
+  const itemListItems = sections.flatMap((section) =>
+    section.practices.map((practice) => ({
+      name: practice.title,
+      url: `${SITE_URL}/${locale}/practice/${practice.id}`,
+    }))
+  );
+
   return (
     <div className="space-y-8">
+      <JsonLd data={generateItemListSchema(itemListItems)} />
       <PageTitle>{t('practice.title')}</PageTitle>
 
       <PageDescription>{t('practice.description')}</PageDescription>

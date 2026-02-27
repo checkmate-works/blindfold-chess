@@ -90,7 +90,7 @@ export function MoveInputPanel({
             showSubmitButton={true}
           />
         )}
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {error && <p className="text-destructive text-sm mt-2">{error}</p>}
       </div>
       {enabledModes.length >= 2 && (
         <div className="flex items-center justify-end">

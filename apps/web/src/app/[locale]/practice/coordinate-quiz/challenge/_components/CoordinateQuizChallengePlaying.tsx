@@ -92,7 +92,7 @@ export function CoordinateQuizChallengePlaying({
             <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
               <button
                 onClick={onTogglePause}
-                className="bg-white/90 hover:bg-white text-gray-900 rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
                 aria-label={tPractice('resume')}
               >
                 <LuPlay size={48} className="fill-current ml-1" />
