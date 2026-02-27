@@ -6,13 +6,11 @@
  *
  * This file is responsible for:
  * 1. Initializing Tailwind CSS v4
- * 2. Importing third-party stylesheets (e.g., KaTeX)
- * 3. Defining the dark mode custom variant for Tailwind v4
- * 4. Bridging CSS custom properties into Tailwind's @theme system
+ * 2. Defining the dark mode custom variant for Tailwind v4
+ * 3. Bridging CSS custom properties into Tailwind's @theme system
  *    so that utility classes like bg-background, text-primary, etc. are generated
  */
 @import 'tailwindcss';
-@import 'katex/dist/katex.min.css';
 
 /* Define dark mode variant for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -33,6 +31,12 @@
   --color-accent-foreground: var(--color-accent-foreground);
   --color-destructive: var(--color-destructive);
   --color-destructive-foreground: var(--color-destructive-foreground);
+  --color-success: var(--color-success);
+  --color-success-foreground: var(--color-success-foreground);
+  --color-warning: var(--color-warning);
+  --color-warning-foreground: var(--color-warning-foreground);
+  --color-info: var(--color-info);
+  --color-info-foreground: var(--color-info-foreground);
   --color-border: var(--color-border);
   --color-input: var(--color-input);
   --color-ring: var(--color-ring);

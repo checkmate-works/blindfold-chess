@@ -237,7 +237,9 @@ export function DiagonalQuizTutorial({ locale }: Props) {
                       {trialResult?.correctDiagonal}
                     </p>
                     <p
-                      className={trialResult?.isDiagonalCorrect ? 'text-green-600' : 'text-red-600'}
+                      className={
+                        trialResult?.isDiagonalCorrect ? 'text-success' : 'text-destructive'
+                      }
                     >
                       <span className="font-medium">{t_quiz('yourAnswer')}:</span>{' '}
                       {trialResult?.userDiagonal}
@@ -253,7 +255,7 @@ export function DiagonalQuizTutorial({ locale }: Props) {
                     </p>
                     <p
                       className={
-                        trialResult?.isAntiDiagonalCorrect ? 'text-green-600' : 'text-red-600'
+                        trialResult?.isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'
                       }
                     >
                       <span className="font-medium">{t_quiz('yourAnswer')}:</span>{' '}

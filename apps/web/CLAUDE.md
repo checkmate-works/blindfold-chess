@@ -21,7 +21,7 @@ This document outlines the technical decisions and implementation guidelines for
 
 ### Styling
 
-- **Tailwind CSS v4** - Latest alpha version, maintain latest updates
+- **Tailwind CSS v4** - Utility-first CSS framework
 - **CSS Variables** - Theme color values are defined in `@blindfold-chess/ui` (`packages/ui/src/theme/`) and injected as CSS custom properties via `generateThemeCSS()` in layout.tsx. `globals.css` bridges these variables into Tailwind's `@theme` system.
 - **No Hardcoded Colors** - Use CSS variable-based utilities instead of direct color classes (e.g., `text-foreground` instead of `text-gray-800`)
 - **Dark Mode Support** - Implement with `next-themes` and CSS variables
@@ -32,7 +32,7 @@ This document outlines the technical decisions and implementation guidelines for
 
 - **@theme Directive** - Use Tailwind v4's `@theme` in `globals.css` to bridge CSS custom properties into Tailwind utility classes
 - **@custom-variant** - Define dark mode variant with `@custom-variant dark`
-- **globals.css** - Tailwind CSS integration layer only (Tailwind init, KaTeX import, dark variant, `@theme` bridge). Does NOT define color values — those live in `@blindfold-chess/ui`.
+- **globals.css** - Tailwind CSS integration layer only (Tailwind init, dark variant, `@theme` bridge). Does NOT define color values — those live in `@blindfold-chess/ui`. Third-party CSS (e.g., KaTeX) is imported at the component level, not here.
 
 ## Internationalization
 
@@ -48,27 +48,10 @@ This document outlines the technical decisions and implementation guidelines for
 
 ### Test File Organization
 
-- **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension
-- **Integration Tests** - Separate directory at `tests/integration/`
-- **E2E Tests** - Separate directory at `tests/e2e/`
-
-### File Structure Examples
-
-```
-src/components/Button/Button.test.tsx    # Component unit test
-src/lib/utils.test.ts                    # Utility unit test
-tests/integration/api/validation.test.ts # Integration test
-tests/e2e/practice-flow.e2e.ts          # E2E test
-```
+- **Unit Tests** - Co-located with source files using `.test.ts` or `.test.tsx` extension (e.g., `src/app/[locale]/play/_lib/move-sorter.test.ts`)
+- **E2E Tests** - Separate directory at `tests/e2e/` using `.spec.ts` extension
 
 ## Code Quality
-
-### Development Tools
-
-- **ESLint** - Automated linting
-- **Prettier** - Code formatting
-- **Husky** - Git hooks for pre-commit checks
-- **lint-staged** - Run linters on staged files
 
 ### Best Practices
 
@@ -82,6 +65,11 @@ tests/e2e/practice-flow.e2e.ts          # E2E test
 - **Parent Directory** - Use relative imports: `import { Bar } from '../Bar'`
 - **Two or More Levels Up** - Use absolute imports with `@` alias: `import { Baz } from '@/app/[locale]/_components/Baz'`
 - **lib Directory** - Always use `@/lib/...` for shared utilities and types
+
+### Barrel File (index.ts) Convention
+
+- **Keep barrel imports** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.
+- **Do NOT split or eliminate barrels for speculative performance reasons** - While barrel files re-exporting `'use client'` components can theoretically hinder tree-shaking, Next.js with Turbopack handles this well in practice. Do not convert barrel imports to individual file imports without concrete evidence (e.g., bundle analysis) showing an actual problem. The readability and maintainability cost of ~45+ file changes outweighs unproven benefits.
 
 ### Import Order Convention
 
@@ -109,8 +97,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PageTitle } from '../../_components/PageTitle';
 
 // ✓ Good - proper import order (automatically enforced by Prettier)
-import React from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { format } from 'date-fns';
@@ -122,12 +108,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { Button } from './Button';
 ```
-
-## File Structure
-
-- **Unopinionated Approach** - Follow Next.js flexibility
-- **No Forced Structure** - Organize based on project needs
-- **Global Styles** - Keep in `src/app/globals.css`
 
 ## Feature Documentation
 
@@ -144,6 +124,4 @@ Avoid documenting information that is self-evident from the code (routes, compon
 
 ## Important Notes
 
-- Always maintain latest package versions unless there's a breaking change
 - Prioritize performance and SEO in all decisions
-- Keep the codebase simple and maintainable

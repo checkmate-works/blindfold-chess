@@ -13,7 +13,8 @@ export type NavigationIconName =
   | 'manual'
   | 'faq'
   | 'glossary'
-  | 'contact';
+  | 'contact'
+  | 'settings';
 
 export interface NavigationItem {
   id: string;

@@ -134,13 +134,13 @@ function Toast({ toast, onClose }: Props) {
   const getStyles = () => {
     switch (toast.type) {
       case 'success':
-        return 'bg-green-600 dark:bg-green-500 text-white';
+        return 'bg-success text-success-foreground';
       case 'error':
-        return 'bg-red-600 dark:bg-red-500 text-white';
+        return 'bg-destructive text-destructive-foreground';
       case 'warning':
-        return 'bg-yellow-500 dark:bg-yellow-400 text-white dark:text-gray-900';
+        return 'bg-warning text-warning-foreground';
       default:
-        return 'bg-gray-800 dark:bg-gray-700 text-white';
+        return 'bg-muted text-foreground';
     }
   };
 

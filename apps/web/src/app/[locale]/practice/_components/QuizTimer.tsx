@@ -34,7 +34,7 @@ export function QuizTimer({
 
   return (
     <div
-      className="relative flex items-center justify-center bg-white dark:bg-gray-800 rounded-full shadow-sm"
+      className="relative flex items-center justify-center bg-card rounded-full shadow-sm"
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="transform -rotate-90 absolute top-0 left-0">
@@ -46,7 +46,7 @@ export function QuizTimer({
           stroke="currentColor"
           strokeWidth={strokeWidth}
           fill="none"
-          className="text-gray-200 dark:text-gray-700"
+          className="text-muted"
         />
         {/* Progress circle */}
         <circle

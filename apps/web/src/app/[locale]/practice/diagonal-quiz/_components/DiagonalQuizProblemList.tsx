@@ -149,13 +149,13 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                   {result.isCorrect ? (
-                    <FaCheck className="w-3 h-3 text-green-600" />
+                    <FaCheck className="w-3 h-3 text-success" />
                   ) : (
-                    <FaTimes className="w-3 h-3 text-red-600" />
+                    <FaTimes className="w-3 h-3 text-destructive" />
                   )}
                   <span
                     className={`text-sm font-medium ${
-                      result.isCorrect ? 'text-green-600' : 'text-red-600'
+                      result.isCorrect ? 'text-success' : 'text-destructive'
                     }`}
                   >
                     {result.isCorrect ? t('correct') : t('incorrect')}
@@ -174,7 +174,9 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
                         {result.correctDiagonal}
                       </p>
                       {result.userDiagonal && (
-                        <p className={result.isDiagonalCorrect ? 'text-green-600' : 'text-red-600'}>
+                        <p
+                          className={result.isDiagonalCorrect ? 'text-success' : 'text-destructive'}
+                        >
                           <span className="font-medium">{t('yourAnswer')}:</span>{' '}
                           {result.userDiagonal}
                         </p>
@@ -191,7 +193,7 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
                       {result.userAntiDiagonal && (
                         <p
                           className={
-                            result.isAntiDiagonalCorrect ? 'text-green-600' : 'text-red-600'
+                            result.isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'
                           }
                         >
                           <span className="font-medium">{t('yourAnswer')}:</span>{' '}

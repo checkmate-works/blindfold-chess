@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { PageDescription } from '../../_components/PageDescription';
-import { PageTitle } from '../../_components/PageTitle';
+import { PageDescription, PagePanel, PageTitle } from '../../_components';
 import { generateCanonicalMetadata } from '../../_lib/metadata';
 import type { Locale } from '../../_lib/types';
 import { ContactConfirm } from '../_components/ContactConfirm';
@@ -48,7 +47,9 @@ export default async function ContactConfirmPage({ params, searchParams }: Props
 
       <PageDescription>{t('confirm.description')}</PageDescription>
 
-      <ContactConfirm formData={formData} locale={locale} />
+      <PagePanel>
+        <ContactConfirm formData={formData} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

@@ -36,7 +36,8 @@ export function LegalMovesSetup({
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
+  const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+  const hasSelectedPieces = pieces.some((piece) => selectedPieces[piece]);
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
     { value: 'timed', label: tp('modeTimed') },
@@ -44,10 +45,7 @@ export function LegalMovesSetup({
   ];
 
   const handleStart = () => {
-    const selectedPieceTypes = Object.entries(selectedPieces)
-      .filter(([, selected]) => selected)
-      .map(([piece]) => piece)
-      .join(',');
+    const selectedPieceTypes = pieces.filter((piece) => selectedPieces[piece]).join(',');
 
     if (mode === 'training') {
       router.push(
@@ -95,7 +93,7 @@ export function LegalMovesSetup({
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink

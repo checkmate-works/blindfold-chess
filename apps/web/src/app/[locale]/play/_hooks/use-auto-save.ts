@@ -9,6 +9,8 @@ import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
@@ -16,6 +18,7 @@ type UseAutoSaveOptions = {
   skillLevel: SkillLevel;
   status: GameOutcome;
   startingFen?: string;
+  gamePreferences?: PerGamePreferences;
   enabled?: boolean;
   saveOnInit?: boolean;
 };
@@ -30,6 +33,7 @@ export function useAutoSave({
   skillLevel,
   status,
   startingFen,
+  gamePreferences,
   enabled = true,
   saveOnInit = false,
 }: UseAutoSaveOptions) {
@@ -76,6 +80,7 @@ export function useAutoSave({
             skillLevel,
             status: currentStatusRef.current,
             startingFen,
+            gamePreferences,
           };
 
           const savedGameId = await gameRepository.create(gameData);
@@ -148,6 +153,7 @@ export function useAutoSave({
           skillLevel,
           status,
           startingFen,
+          gamePreferences,
         };
 
         let savedGameId: string;
@@ -157,7 +163,10 @@ export function useAutoSave({
           const existingGame = await gameRepository.load(currentGameId);
           if (existingGame) {
             // Update existing game
-            await gameRepository.update(currentGameId, gameData);
+            // Skip lastPlayed update during initial sync save (reopening a game without making a move)
+            await gameRepository.update(currentGameId, gameData, {
+              updateLastPlayed: !isInitialSyncSave.current,
+            });
             savedGameId = currentGameId;
           } else {
             // Game ID provided but doesn't exist - create new game
@@ -222,6 +231,7 @@ export function useAutoSave({
       skillLevel,
       status,
       startingFen,
+      gamePreferences,
       saveOnInit,
     ]
   );

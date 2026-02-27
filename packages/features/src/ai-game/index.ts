@@ -6,7 +6,8 @@ export type {
   AiGameResult,
 } from "./types";
 export { DEFAULT_AI_GAME_SETTINGS } from "./types";
-export { GameStateService } from "./game-state-service";
+export type { GameState } from "./game-state-service";
+export { computeGameState, validateGameMove } from "./game-state-service";
 export {
   DEFAULT_TIME_LIMIT,
   getEloForSkillLevel,

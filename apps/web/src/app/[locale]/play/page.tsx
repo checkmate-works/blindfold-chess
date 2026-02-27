@@ -15,29 +15,32 @@
  * 3. Game End: Win/loss/draw result displayed, option to start new game
  *    or proceed to postmortem (game review)
  */
-'use client';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-import { useState } from 'react';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
-import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
-
-import { PageTitle } from '../_components/PageTitle';
 import type { Locale } from '../_lib/types';
-import { PlayClient } from './_components/PlayClient';
+import { PlayPageClient } from './_components/PlayPageClient';
 
-export default function PlayPage() {
-  const params = useParams();
-  const locale = params.locale as Locale;
-  const t = useTranslations('play');
-  const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
+type Props = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+};
 
-  return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{aiMoveDisplay || t('title')}</PageTitle>
-      </div>
-      <PlayClient locale={locale} onAiMoveChange={setAiMoveDisplay} />
-    </>
-  );
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'play' }),
+    title: t('play.title'),
+  };
+}
+
+export default async function PlayPage({ params }: Props) {
+  const { locale } = await params;
+
+  return <PlayPageClient locale={locale} />;
 }

@@ -61,6 +61,107 @@ export function generateBalancedMoveQuestions(
   return questions.sort(() => Math.random() - 0.5);
 }
 
+// Strategy interface for piece move generation
+interface PieceMoveStrategy {
+  generateCandidateMove(
+    fromFile: number,
+    fromRank: number,
+  ): { toFile: number; toRank: number };
+}
+
+// Concrete Strategies
+const BishopMoveStrategy: PieceMoveStrategy = {
+  generateCandidateMove(fromFile, fromRank) {
+    const diagonalOffset = Math.floor(Math.random() * 7) + 1;
+    const direction = Math.floor(Math.random() * 4);
+    switch (direction) {
+      case 0:
+        return {
+          toFile: fromFile + diagonalOffset,
+          toRank: fromRank + diagonalOffset,
+        }; // up-right
+      case 1:
+        return {
+          toFile: fromFile - diagonalOffset,
+          toRank: fromRank + diagonalOffset,
+        }; // up-left
+      case 2:
+        return {
+          toFile: fromFile + diagonalOffset,
+          toRank: fromRank - diagonalOffset,
+        }; // down-right
+      default:
+        return {
+          toFile: fromFile - diagonalOffset,
+          toRank: fromRank - diagonalOffset,
+        }; // down-left
+    }
+  },
+};
+
+const RookMoveStrategy: PieceMoveStrategy = {
+  generateCandidateMove(fromFile, fromRank) {
+    if (Math.random() < 0.5) {
+      return { toFile: Math.floor(Math.random() * 8), toRank: fromRank }; // Horizontal
+    } else {
+      return { toFile: fromFile, toRank: Math.floor(Math.random() * 8) }; // Vertical
+    }
+  },
+};
+
+const KnightMoveStrategy: PieceMoveStrategy = {
+  generateCandidateMove(fromFile, fromRank) {
+    const knightMoves = [
+      [2, 1],
+      [2, -1],
+      [-2, 1],
+      [-2, -1],
+      [1, 2],
+      [1, -2],
+      [-1, 2],
+      [-1, -2],
+    ];
+    const move = knightMoves[Math.floor(Math.random() * knightMoves.length)];
+    return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
+  },
+};
+
+const QueenMoveStrategy: PieceMoveStrategy = {
+  generateCandidateMove(fromFile, fromRank) {
+    if (Math.random() < 0.5) {
+      return BishopMoveStrategy.generateCandidateMove(fromFile, fromRank);
+    } else {
+      return RookMoveStrategy.generateCandidateMove(fromFile, fromRank);
+    }
+  },
+};
+
+const KingMoveStrategy: PieceMoveStrategy = {
+  generateCandidateMove(fromFile, fromRank) {
+    const kingMoves = [
+      [1, 0],
+      [1, 1],
+      [0, 1],
+      [-1, 1],
+      [-1, 0],
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+    ];
+    const move = kingMoves[Math.floor(Math.random() * kingMoves.length)];
+    return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
+  },
+};
+
+// Strategy map
+const PieceStrategies: Record<PieceType, PieceMoveStrategy> = {
+  b: BishopMoveStrategy,
+  n: KnightMoveStrategy,
+  r: RookMoveStrategy,
+  q: QueenMoveStrategy,
+  k: KingMoveStrategy,
+};
+
 // Generate a move question for a specific piece type
 export function generateMoveQuestionForPiece(
   pieceType: PieceType,
@@ -75,117 +176,16 @@ export function generateMoveQuestionForPiece(
 
     let toFile: number;
     let toRank: number;
-    let toSquare: string;
 
     if (preferLegal) {
-      // Generate likely legal moves based on piece type
-      switch (pieceType) {
-        case "b": {
-          // Diagonal moves
-          const diagonalOffset = Math.floor(Math.random() * 7) + 1;
-          const direction = Math.floor(Math.random() * 4);
-          if (direction === 0) {
-            // up-right
-            toFile = fromFile + diagonalOffset;
-            toRank = fromRank + diagonalOffset;
-          } else if (direction === 1) {
-            // up-left
-            toFile = fromFile - diagonalOffset;
-            toRank = fromRank + diagonalOffset;
-          } else if (direction === 2) {
-            // down-right
-            toFile = fromFile + diagonalOffset;
-            toRank = fromRank - diagonalOffset;
-          } else {
-            // down-left
-            toFile = fromFile - diagonalOffset;
-            toRank = fromRank - diagonalOffset;
-          }
-          break;
-        }
-
-        case "r":
-          // Straight moves
-          if (Math.random() < 0.5) {
-            // Horizontal
-            toFile = Math.floor(Math.random() * 8);
-            toRank = fromRank;
-          } else {
-            // Vertical
-            toFile = fromFile;
-            toRank = Math.floor(Math.random() * 8);
-          }
-          break;
-
-        case "n": {
-          // L-shaped moves
-          const knightMoves = [
-            [2, 1],
-            [2, -1],
-            [-2, 1],
-            [-2, -1],
-            [1, 2],
-            [1, -2],
-            [-1, 2],
-            [-1, -2],
-          ];
-          const knightMove =
-            knightMoves[Math.floor(Math.random() * knightMoves.length)];
-          toFile = fromFile + knightMove[0];
-          toRank = fromRank + knightMove[1];
-          break;
-        }
-
-        case "q": {
-          // Any direction
-          if (Math.random() < 0.5) {
-            // Like bishop
-            const queenDiagonalOffset = Math.floor(Math.random() * 7) + 1;
-            const queenDirection = Math.floor(Math.random() * 4);
-            if (queenDirection === 0) {
-              toFile = fromFile + queenDiagonalOffset;
-              toRank = fromRank + queenDiagonalOffset;
-            } else if (queenDirection === 1) {
-              toFile = fromFile - queenDiagonalOffset;
-              toRank = fromRank + queenDiagonalOffset;
-            } else if (queenDirection === 2) {
-              toFile = fromFile + queenDiagonalOffset;
-              toRank = fromRank - queenDiagonalOffset;
-            } else {
-              toFile = fromFile - queenDiagonalOffset;
-              toRank = fromRank - queenDiagonalOffset;
-            }
-          } else {
-            // Like rook
-            if (Math.random() < 0.5) {
-              toFile = Math.floor(Math.random() * 8);
-              toRank = fromRank;
-            } else {
-              toFile = fromFile;
-              toRank = Math.floor(Math.random() * 8);
-            }
-          }
-          break;
-        }
-
-        case "k": {
-          // One square in any direction
-          const kingMoves = [
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            [-1, 1],
-            [-1, 0],
-            [-1, -1],
-            [0, -1],
-            [1, -1],
-          ];
-          const kingMove =
-            kingMoves[Math.floor(Math.random() * kingMoves.length)];
-          toFile = fromFile + kingMove[0];
-          toRank = fromRank + kingMove[1];
-          break;
-        }
+      const strategy = PieceStrategies[pieceType];
+      if (strategy) {
+        const move = strategy.generateCandidateMove(fromFile, fromRank);
+        toFile = move.toFile;
+        toRank = move.toRank;
+      } else {
+        toFile = Math.floor(Math.random() * 8);
+        toRank = Math.floor(Math.random() * 8);
       }
     } else {
       // Generate random moves (likely illegal)
@@ -195,7 +195,7 @@ export function generateMoveQuestionForPiece(
 
     // Check if destination is valid
     if (toFile >= 0 && toFile < 8 && toRank >= 0 && toRank < 8) {
-      toSquare = FILES[toFile] + RANKS[toRank];
+      const toSquare = FILES[toFile] + RANKS[toRank];
 
       // Ensure from and to are different
       if (toSquare !== fromSquare) {

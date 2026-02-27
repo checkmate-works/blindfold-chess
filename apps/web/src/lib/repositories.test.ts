@@ -228,7 +228,7 @@ describe('LocalStorageGameRepository', () => {
       expect(updatedGame?.date).toBe(originalDate);
     });
 
-    it('should update lastPlayed timestamp', async () => {
+    it('should update lastPlayed timestamp by default', async () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
@@ -256,6 +256,160 @@ describe('LocalStorageGameRepository', () => {
       expect(updatedGame!.lastPlayed).toBeDefined();
       expect(updatedGame!.lastPlayed).not.toBe(originalLastPlayed);
       expect(updatedGame!.lastPlayed! > originalLastPlayed).toBe(true);
+    });
+
+    it('should not update lastPlayed when updateLastPlayed is false', async () => {
+      const gameId = await repository.create({
+        moves: [],
+        playerColor: 'white',
+        skillLevel: 5,
+        status: 'in_progress',
+      });
+
+      const originalGame = await repository.load(gameId);
+      const originalLastPlayed = originalGame!.lastPlayed!;
+
+      // Wait a bit to ensure time difference
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      await repository.update(
+        gameId,
+        {
+          moves: [],
+          playerColor: 'white',
+          skillLevel: 5,
+          status: 'in_progress',
+        },
+        { updateLastPlayed: false }
+      );
+
+      const updatedGame = await repository.load(gameId);
+      expect(updatedGame!.lastPlayed).toBe(originalLastPlayed);
+    });
+
+    it('should update lastPlayed when updateLastPlayed is explicitly true', async () => {
+      const gameId = await repository.create({
+        moves: [],
+        playerColor: 'white',
+        skillLevel: 5,
+        status: 'in_progress',
+      });
+
+      const originalGame = await repository.load(gameId);
+      const originalLastPlayed = originalGame!.lastPlayed!;
+
+      // Wait a bit to ensure time difference
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      await repository.update(
+        gameId,
+        {
+          moves: ['e4'],
+          playerColor: 'white',
+          skillLevel: 5,
+          status: 'in_progress',
+        },
+        { updateLastPlayed: true }
+      );
+
+      const updatedGame = await repository.load(gameId);
+      expect(updatedGame!.lastPlayed).not.toBe(originalLastPlayed);
+      expect(updatedGame!.lastPlayed! > originalLastPlayed).toBe(true);
+    });
+
+    it('should preserve lastPlayed with updateLastPlayed false even when moves change', async () => {
+      const gameId = await repository.create({
+        moves: ['e4'],
+        playerColor: 'white',
+        skillLevel: 5,
+        status: 'in_progress',
+      });
+
+      const originalGame = await repository.load(gameId);
+      const originalLastPlayed = originalGame!.lastPlayed!;
+
+      // Wait a bit to ensure time difference
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Update with new moves but updateLastPlayed: false (simulating initial sync save)
+      await repository.update(
+        gameId,
+        {
+          moves: ['e4', 'e5'],
+          playerColor: 'white',
+          skillLevel: 5,
+          status: 'in_progress',
+        },
+        { updateLastPlayed: false }
+      );
+
+      const updatedGame = await repository.load(gameId);
+      expect(updatedGame!.moves).toEqual(['e4', 'e5']);
+      expect(updatedGame!.lastPlayed).toBe(originalLastPlayed);
+    });
+
+    it('should update lastPlayed when options is an empty object', async () => {
+      const gameId = await repository.create({
+        moves: [],
+        playerColor: 'white',
+        skillLevel: 5,
+        status: 'in_progress',
+      });
+
+      const originalGame = await repository.load(gameId);
+      const originalLastPlayed = originalGame!.lastPlayed!;
+
+      // Wait a bit to ensure time difference
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Empty options object: updateLastPlayed is undefined, so it defaults to true
+      await repository.update(
+        gameId,
+        {
+          moves: ['e4'],
+          playerColor: 'white',
+          skillLevel: 5,
+          status: 'in_progress',
+        },
+        {}
+      );
+
+      const updatedGame = await repository.load(gameId);
+      expect(updatedGame!.lastPlayed).not.toBe(originalLastPlayed);
+      expect(updatedGame!.lastPlayed! > originalLastPlayed).toBe(true);
+    });
+
+    it('should fall back to date when updateLastPlayed is false and game has no lastPlayed', async () => {
+      // Manually insert a game record without lastPlayed to simulate legacy data
+      const gameId = crypto.randomUUID();
+      const creationDate = '2024-01-01T00:00:00.000Z';
+      const legacyGame = {
+        id: gameId,
+        date: creationDate,
+        moves: [] as string[],
+        playerColor: 'white',
+        skillLevel: 5,
+        status: 'in_progress',
+        // No lastPlayed field — simulating a legacy record
+      };
+      localStorage.setItem('blindfold_chess_games', JSON.stringify([legacyGame]));
+
+      // Update with updateLastPlayed: false — should fall back to date
+      await repository.update(
+        gameId,
+        {
+          moves: [],
+          playerColor: 'white',
+          skillLevel: 5,
+          status: 'in_progress',
+        },
+        { updateLastPlayed: false }
+      );
+
+      const updatedGame = await repository.load(gameId);
+      // The fallback chain: games[index].lastPlayed ?? games[index].date
+      // Since loadAll() already normalizes lastPlayed from date, the value should be creationDate
+      expect(updatedGame!.lastPlayed).toBe(creationDate);
     });
 
     it('should throw error when game does not exist', async () => {

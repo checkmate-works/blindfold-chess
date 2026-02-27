@@ -1,64 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaRedo, FaTrash } from 'react-icons/fa';
-
-import { fenToLichessUrl } from '@/lib/lichess';
+import { FaRedo } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
-import { DeleteFenConfirmModal } from '@/app/[locale]/practice/_components/DeleteFenConfirmModal';
-import { SegmentedProgressBar } from '@/app/[locale]/practice/_components/SegmentedProgressBar';
 
-type ProblemResult = {
-  fen: string;
-  recreatedFen: string;
-  isBlackToMove: boolean;
-  accuracy: number;
-  correctPieces: number;
-  totalPieces: number;
-  incorrectPieces: number;
-  missingPieces: number;
-  extraPieces: number;
-  originalIndex: number;
-  skipped?: boolean;
-};
+import { PracticeCompleteSummary } from './PracticeCompleteSummary';
+import { ProblemResultList } from './ProblemResultList';
+import type { PracticeCompleteLabels, ProblemResult } from './practice-complete-types';
 
 type Props = {
   score: number;
   total: number;
   onTryAgain: () => void;
   locale: Locale;
-  labels: {
-    practiceComplete: string;
-    score: string;
-    tryAgain: string;
-    morePractice: string;
-    averageTime?: string;
-    recreationProgress?: string;
-    correct?: string;
-    incorrect?: string;
-    missing?: string;
-    extra?: string;
-    extraDescription?: string;
-    problemDetails?: string;
-    problem?: string;
-    original?: string;
-    yourRecreation?: string;
-    deleteFenTitle?: string;
-    deleteFenMessage?: string;
-    deleteFenConfirm?: string;
-    deleteFenCancel?: string;
-    skipped?: string;
-    analyzeOnLichess?: string;
-    relatedLearning?: string;
-  };
+  labels: PracticeCompleteLabels;
   relatedModule?: {
     href: string;
     icon: string;
@@ -67,7 +27,6 @@ type Props = {
     sectionTitle?: string;
   };
   averageTimeText?: string;
-  // Optional detailed breakdown (for position memory practice)
   detailedStats?: {
     correctPieces: number;
     totalPieces: number;
@@ -75,12 +34,8 @@ type Props = {
     missingPieces: number;
     extraPieces: number;
   };
-  // Individual problem results (for position memory practice)
   problemResults?: ProblemResult[];
-  // Whether custom FEN is being used (enables delete functionality)
   isCustomFen?: boolean;
-  // Callback when a FEN is deleted
-  // Callback when a FEN is deleted
   onDeleteFen?: (fen: string) => void;
   onExit?: () => void;
   children?: React.ReactNode;
@@ -107,352 +62,26 @@ export function PracticeComplete({
   otherPracticeLink,
 }: Props) {
   const router = useRouter();
-  const [expandedProblems, setExpandedProblems] = useState<Set<number>>(new Set());
-  const [deleteModalFen, setDeleteModalFen] = useState<string | null>(null);
-  const [deletedFens, setDeletedFens] = useState<Set<string>>(new Set());
-
-  // Filter out deleted problems
-  const visibleProblemResults = problemResults?.filter((result) => !deletedFens.has(result.fen));
-
-  const toggleProblem = (index: number) => {
-    setExpandedProblems((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent, fen: string) => {
-    e.stopPropagation();
-    setDeleteModalFen(fen);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteModalFen && onDeleteFen) {
-      onDeleteFen(deleteModalFen);
-      setDeletedFens((prev) => new Set(prev).add(deleteModalFen));
-    }
-    setDeleteModalFen(null);
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteModalFen(null);
-  };
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
-        {/* Score display - unified with individual problem results */}
-        {detailedStats && labels.recreationProgress ? (
-          // Position memory: show only accuracy with fraction
-          <SectionTitle className="text-2xl font-bold text-center mb-6">
-            {labels.score}
-          </SectionTitle>
-        ) : (
-          // Other practices: show traditional score display
-          <div className="mb-6 text-center">
-            <p className="text-3xl font-bold text-foreground mb-2">
-              {score} / {total}
-            </p>
-            <p className="text-muted-foreground">{labels.score}</p>
-            {averageTimeText && (
-              <p className="text-sm text-muted-foreground mt-2">
-                {labels.averageTime || 'Average Time'}: {averageTimeText}
-              </p>
-            )}
-          </div>
+        <PracticeCompleteSummary
+          score={score}
+          total={total}
+          labels={labels}
+          averageTimeText={averageTimeText}
+          detailedStats={detailedStats}
+        />
+
+        {problemResults && (
+          <ProblemResultList
+            problemResults={problemResults}
+            labels={labels}
+            isCustomFen={isCustomFen}
+            onDeleteFen={onDeleteFen}
+          />
         )}
-
-        {/* Detailed stats with progress bar (for position memory) */}
-        {detailedStats && labels.recreationProgress && (
-          <div className="mb-6">
-            <p className="text-sm font-medium text-muted-foreground mb-2 text-left">
-              {labels.recreationProgress}
-            </p>
-            <SegmentedProgressBar
-              segments={[
-                {
-                  key: 'correct',
-                  value: detailedStats.correctPieces,
-                  color: 'bg-green-600',
-                  label: labels.correct,
-                },
-                {
-                  key: 'incorrect',
-                  value: detailedStats.incorrectPieces,
-                  color: 'bg-red-600',
-                  label: labels.incorrect,
-                },
-                {
-                  key: 'missing',
-                  value: detailedStats.missingPieces,
-                  color: 'bg-muted-foreground/40',
-                  label: labels.missing,
-                },
-              ]}
-              total={detailedStats.totalPieces}
-            />
-
-            {/* Extra pieces section - 控えめに */}
-            {detailedStats.extraPieces > 0 && labels.extra && labels.extraDescription && (
-              <p className="text-xs text-muted-foreground mt-3">
-                {labels.extra}: <span className="font-semibold">+{detailedStats.extraPieces}</span>{' '}
-                ({labels.extraDescription})
-              </p>
-            )}
-
-            {/* Average Time per Question */}
-            {averageTimeText && (
-              <p className="text-sm text-center text-muted-foreground mt-4">
-                {labels.averageTime || 'Average Time'}: {averageTimeText}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Individual problem results (for position memory) */}
-        {visibleProblemResults && visibleProblemResults.length > 0 && labels.problemDetails && (
-          <div className="mb-6">
-            <p className="text-sm font-medium text-muted-foreground mb-2 text-left">
-              {labels.problemDetails}
-            </p>
-            <div className="space-y-2">
-              {visibleProblemResults.map((result) => {
-                const isExpanded = expandedProblems.has(result.originalIndex);
-                return (
-                  <div
-                    key={result.originalIndex}
-                    className="border border-border rounded-lg overflow-hidden"
-                  >
-                    <button
-                      onClick={() => toggleProblem(result.originalIndex)}
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        {isExpanded ? (
-                          <FaChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                        ) : (
-                          <FaChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                        )}
-                        <span className="font-medium whitespace-nowrap">
-                          No.{result.originalIndex + 1}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">{result.fen}</span>
-                      </div>
-                      {result.skipped ? (
-                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                          {labels.skipped}
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-sm flex-shrink-0 ml-2">
-                          {result.accuracy.toFixed(1)}%
-                        </span>
-                      )}
-                    </button>
-                    {isExpanded && !result.skipped && (
-                      <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
-                        {/* Chess boards: Original and Recreation */}
-                        {labels.original && labels.yourRecreation && (
-                          <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
-                                {labels.original}
-                              </p>
-                              <AnimatedChessBoard
-                                initialFen={result.fen}
-                                showCoordinates={false}
-                                flipped={result.isBlackToMove}
-                              />
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
-                                {labels.yourRecreation}
-                              </p>
-                              <AnimatedChessBoard
-                                initialFen={result.recreatedFen}
-                                showCoordinates={false}
-                                flipped={result.isBlackToMove}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Progress bar */}
-                        <div className="w-full h-6 bg-muted rounded overflow-hidden flex mb-2">
-                          <div
-                            className="bg-green-600 flex items-center justify-center text-white text-xs font-semibold"
-                            style={{
-                              width: `${(result.correctPieces / result.totalPieces) * 100}%`,
-                            }}
-                          >
-                            {result.correctPieces > 0 && result.correctPieces}
-                          </div>
-                          <div
-                            className="bg-red-600 flex items-center justify-center text-white text-xs font-semibold"
-                            style={{
-                              width: `${(result.incorrectPieces / result.totalPieces) * 100}%`,
-                            }}
-                          >
-                            {result.incorrectPieces > 0 && result.incorrectPieces}
-                          </div>
-                          <div
-                            className="bg-muted-foreground/40 flex items-center justify-center text-white text-xs font-semibold"
-                            style={{
-                              width: `${(result.missingPieces / result.totalPieces) * 100}%`,
-                            }}
-                          >
-                            {result.missingPieces > 0 && result.missingPieces}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-green-600 rounded"></div>
-                            <span>
-                              {labels.correct}: {result.correctPieces}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-red-600 rounded"></div>
-                            <span>
-                              {labels.incorrect}: {result.incorrectPieces}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-muted-foreground/40 rounded"></div>
-                            <span>
-                              {labels.missing}: {result.missingPieces}
-                            </span>
-                          </div>
-                        </div>
-                        {result.extraPieces > 0 && labels.extra && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {labels.extra}: +{result.extraPieces}
-                          </p>
-                        )}
-
-                        {/* Analyze on Lichess button */}
-                        {labels.analyzeOnLichess && (
-                          <div className="flex justify-center mt-3">
-                            <Button
-                              onClick={() => {
-                                const lichessUrl = fenToLichessUrl(result.fen);
-                                window.open(lichessUrl, '_blank');
-                              }}
-                              variant="secondary"
-                              size="sm"
-                              icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                              className="rounded-lg"
-                            >
-                              {labels.analyzeOnLichess}
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Delete button (only for custom FEN) */}
-                        {isCustomFen && onDeleteFen && (
-                          <div className="flex justify-end mt-3">
-                            <button
-                              onClick={(e) => handleDeleteClick(e, result.fen)}
-                              className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                              title="Delete FEN"
-                            >
-                              <FaTrash className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {/* Skipped problem expanded content */}
-                    {isExpanded && result.skipped && (
-                      <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
-                        {/* Chess boards: Original and Empty Recreation */}
-                        {labels.original && labels.yourRecreation && (
-                          <div className="grid grid-cols-2 gap-3 mb-4">
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
-                                {labels.original}
-                              </p>
-                              <AnimatedChessBoard
-                                initialFen={result.fen}
-                                showCoordinates={false}
-                                flipped={result.isBlackToMove}
-                              />
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-1 text-center">
-                                {labels.yourRecreation}
-                              </p>
-                              <AnimatedChessBoard
-                                initialFen="8/8/8/8/8/8/8/8 w - - 0 1"
-                                showCoordinates={false}
-                                flipped={result.isBlackToMove}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Analyze on Lichess button */}
-                        {labels.analyzeOnLichess && (
-                          <div className="flex justify-center">
-                            <Button
-                              onClick={() => {
-                                const lichessUrl = fenToLichessUrl(result.fen);
-                                window.open(lichessUrl, '_blank');
-                              }}
-                              variant="secondary"
-                              size="sm"
-                              icon={<FaExternalLinkAlt className="w-3 h-3" />}
-                              className="rounded-lg"
-                            >
-                              {labels.analyzeOnLichess}
-                            </Button>
-                          </div>
-                        )}
-
-                        {/* Delete button (only for custom FEN) */}
-                        {isCustomFen && onDeleteFen && (
-                          <div className="flex justify-end mt-3">
-                            <button
-                              onClick={(e) => handleDeleteClick(e, result.fen)}
-                              className="p-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                              title="Delete FEN"
-                            >
-                              <FaTrash className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Delete FEN confirmation modal */}
-        {deleteModalFen &&
-          labels.deleteFenTitle &&
-          labels.deleteFenMessage &&
-          labels.deleteFenConfirm &&
-          labels.deleteFenCancel && (
-            <DeleteFenConfirmModal
-              isOpen={!!deleteModalFen}
-              fen={deleteModalFen}
-              onConfirm={handleDeleteConfirm}
-              onCancel={handleDeleteCancel}
-              labels={{
-                title: labels.deleteFenTitle,
-                message: labels.deleteFenMessage,
-                confirm: labels.deleteFenConfirm,
-                cancel: labels.deleteFenCancel,
-              }}
-            />
-          )}
 
         {/* Custom children (e.g. Route Planner results) */}
         {children}

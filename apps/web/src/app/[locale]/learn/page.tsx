@@ -6,6 +6,7 @@ import {
   CardLink,
   Divider,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -57,31 +58,33 @@ export default async function LearnPage({ params }: Props) {
 
       <PageDescription>{t('learn.description')}</PageDescription>
 
-      <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
 
-      <div className="space-y-4">
-        {categoryInfos.map((info) => {
-          const style = CATEGORY_STYLES[info.category];
-          // Determine description - for now using a generic one or looking up if exists
-          // Since existing code didn't have detailed description per category in utils, we construct it.
-          // Accessing style.icon directly for icon.
+        <div className="space-y-4">
+          {categoryInfos.map((info) => {
+            const style = CATEGORY_STYLES[info.category];
+            // Determine description - for now using a generic one or looking up if exists
+            // Since existing code didn't have detailed description per category in utils, we construct it.
+            // Accessing style.icon directly for icon.
 
-          return (
-            <CardLink
-              key={info.category}
-              href={`/learn/${info.category}`}
-              icon={style.icon}
-              title={info.label}
-              description={t('learn.articleCount', { count: info.count })}
-              locale={locale}
-            />
-          );
-        })}
-      </div>
+            return (
+              <CardLink
+                key={info.category}
+                href={`/learn/${info.category}`}
+                icon={style.icon}
+                title={info.label}
+                description={t('learn.articleCount', { count: info.count })}
+                locale={locale}
+              />
+            );
+          })}
+        </div>
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('navigation.learn') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('navigation.learn') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

@@ -5,111 +5,105 @@ import type { Square } from "../chess-core/types";
 
 import type { GameStatus, PlayerResult } from "./types";
 
-export class GameStateService {
-  private manager: ChessGameManager;
-  private playerSide: Side;
-  private startingFen?: string;
+export interface GameState {
+  status: GameStatus;
+  playerResult: PlayerResult | null;
+  isPlayerTurn: boolean;
+  currentFen: string;
+  isCheck: boolean;
+  isGameOver: boolean;
+  legalMoves: AlgebraicNotation[];
+  currentTurn: Side;
+  lastMoveDetails: { from: Square; to: Square } | null;
+}
 
-  constructor(
-    moves: AlgebraicNotation[] = [],
-    playerSide: Side = "white",
-    startingFen?: string,
-  ) {
-    this.manager = startingFen
-      ? new ChessGameManager(startingFen)
-      : new ChessGameManager();
-    this.playerSide = playerSide;
-    this.startingFen = startingFen;
+/**
+ * Pure function to compute the derived game state from a sequence of moves.
+ */
+export function computeGameState(
+  moves: AlgebraicNotation[] = [],
+  playerSide: Side = "white",
+  startingFen?: string,
+): GameState {
+  const manager = startingFen
+    ? new ChessGameManager(startingFen)
+    : new ChessGameManager();
 
-    for (const move of moves) {
-      try {
-        this.manager.move(move);
-      } catch {
-        break;
-      }
-    }
-  }
-
-  getStartingFen(): string | undefined {
-    return this.startingFen;
-  }
-
-  validateMove(move: AlgebraicNotation): boolean {
+  for (const move of moves) {
     try {
-      const testManager = new ChessGameManager(this.manager.fen());
-      testManager.move(move);
-      return true;
+      manager.move(move);
     } catch {
-      return false;
+      break;
     }
   }
 
-  makeMove(move: AlgebraicNotation): boolean {
+  const currentTurn = manager.turn();
+  const isPlayerTurn =
+    (playerSide === "white" && currentTurn === "w") ||
+    (playerSide === "black" && currentTurn === "b");
+
+  let status: GameStatus = "in_progress";
+  if (manager.isCheckmate()) {
+    status = "checkmate";
+  } else if (manager.isStalemate()) {
+    status = "stalemate";
+  } else if (manager.isDraw()) {
+    status = "draw";
+  }
+
+  let playerResult: PlayerResult | null = null;
+  if (status === "draw" || status === "stalemate") {
+    playerResult = "draw";
+  } else if (status === "checkmate") {
+    playerResult = isPlayerTurn ? "loss" : "win";
+  }
+
+  const history = manager.history({ verbose: true });
+  const lastMoveDetails =
+    history.length > 0
+      ? {
+          from: history[history.length - 1].from,
+          to: history[history.length - 1].to,
+        }
+      : null;
+
+  return {
+    status,
+    playerResult,
+    isPlayerTurn,
+    currentFen: manager.fen(),
+    isCheck: manager.isCheck(),
+    isGameOver: manager.isGameOver(),
+    legalMoves: manager.moves() as AlgebraicNotation[],
+    currentTurn: currentTurn === "w" ? "white" : "black",
+    lastMoveDetails,
+  };
+}
+
+/**
+ * Pure function to validate a candidate move given the previous moves sequence.
+ */
+export function validateGameMove(
+  moves: AlgebraicNotation[],
+  candidateMove: AlgebraicNotation,
+  startingFen?: string,
+): boolean {
+  const manager = startingFen
+    ? new ChessGameManager(startingFen)
+    : new ChessGameManager();
+
+  for (const move of moves) {
     try {
-      this.manager.move(move);
-      return true;
+      manager.move(move);
     } catch {
-      return false;
+      return false; // Invalid base sequence
     }
   }
 
-  isPlayerTurn(): boolean {
-    const currentTurn = this.manager.turn();
-    return (
-      (this.playerSide === "white" && currentTurn === "w") ||
-      (this.playerSide === "black" && currentTurn === "b")
-    );
-  }
-
-  getGameStatus(): GameStatus {
-    if (this.manager.isCheckmate()) {
-      return "checkmate";
-    } else if (this.manager.isStalemate()) {
-      return "stalemate";
-    } else if (this.manager.isDraw()) {
-      return "draw";
-    }
-    return "in_progress";
-  }
-
-  isCheck(): boolean {
-    return this.manager.isCheck();
-  }
-
-  isGameOver(): boolean {
-    return this.manager.isGameOver();
-  }
-
-  getLegalMoves(): AlgebraicNotation[] {
-    return this.manager.moves() as AlgebraicNotation[];
-  }
-
-  getFen(): string {
-    return this.manager.fen();
-  }
-
-  getCurrentTurn(): Side {
-    return this.manager.turn() === "w" ? "white" : "black";
-  }
-
-  getPlayerResult(): PlayerResult | null {
-    const status = this.getGameStatus();
-
-    if (status === "draw" || status === "stalemate") {
-      return "draw";
-    }
-
-    if (status === "checkmate") {
-      return this.isPlayerTurn() ? "loss" : "win";
-    }
-
-    return null;
-  }
-
-  getLastMoveDetails(): { from: Square; to: Square } | null {
-    const history = this.manager.history({ verbose: true });
-    if (history.length === 0) return null;
-    const lastMove = history[history.length - 1];
-    return { from: lastMove.from, to: lastMove.to };
+  try {
+    manager.move(candidateMove);
+    return true;
+  } catch {
+    return false;
   }
 }

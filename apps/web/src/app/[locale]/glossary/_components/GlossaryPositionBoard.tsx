@@ -1,5 +1,3 @@
-'use client';
-
 import { ChessBoard } from '@/app/_components';
 
 type Position = {

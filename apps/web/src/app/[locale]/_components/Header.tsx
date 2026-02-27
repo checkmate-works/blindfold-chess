@@ -2,8 +2,6 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { FaCog } from 'react-icons/fa';
-
 import type { NavigationItem } from '../_lib/types';
 import { MobileMenu } from './MobileMenu';
 
@@ -48,6 +46,7 @@ export async function Header({ locale }: Props) {
       iconName: 'manual',
     },
     { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
+    { id: 'settings', href: `/${locale}/preferences`, label: t('settings'), iconName: 'settings' },
   ];
 
   return (
@@ -68,6 +67,7 @@ export async function Header({ locale }: Props) {
                 width={40}
                 height={40}
                 className="w-10 h-10"
+                priority
               />
               {/* Title - hidden on mobile/tablet, visible on desktop */}
               <span className="hidden lg:block text-xl font-bold text-foreground">
@@ -78,14 +78,8 @@ export async function Header({ locale }: Props) {
             {/* Desktop navigation - REMOVED per user request to unify with mobile menu */}
           </div>
 
-          {/* Right side: Settings icon */}
-          <Link
-            href={`/${locale}/preferences`}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-            aria-label={t('settings')}
-          >
-            <FaCog className="h-5 w-5" />
-          </Link>
+          {/* Right side is currently empty. Reserved for future Auth UI */}
+          <div className="flex items-center space-x-4"></div>
         </div>
       </div>
     </header>

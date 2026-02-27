@@ -6,6 +6,7 @@ import {
   CardLink,
   Divider,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -42,32 +43,34 @@ export default async function PostsPage({ params }: Props) {
 
       <PageDescription>{t('pageDescription')}</PageDescription>
 
-      <SectionTitle>{t('categoriesListTitle')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('categoriesListTitle')}</SectionTitle>
 
-      {categories.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">{t('noCategories')}</p>
-      ) : (
-        <div className="space-y-4">
-          {categories.map((category) => (
-            <CardLink
-              key={category.id}
-              href={`/posts/${category.slug}`}
-              icon={getCategoryIcon(category.slug)}
-              title={t(`categories.${category.slug}` as 'categories.updates' | 'categories.blog')}
-              description={t('categoryDescription', {
-                category: t(
-                  `categories.${category.slug}` as 'categories.updates' | 'categories.blog'
-                ),
-              })}
-              locale={locale}
-            />
-          ))}
-        </div>
-      )}
+        {categories.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">{t('noCategories')}</p>
+        ) : (
+          <div className="space-y-4">
+            {categories.map((category) => (
+              <CardLink
+                key={category.id}
+                href={`/posts/${category.slug}`}
+                icon={getCategoryIcon(category.slug)}
+                title={t(`categories.${category.slug}` as 'categories.updates' | 'categories.blog')}
+                description={t('categoryDescription', {
+                  category: t(
+                    `categories.${category.slug}` as 'categories.updates' | 'categories.blog'
+                  ),
+                })}
+                locale={locale}
+              />
+            ))}
+          </div>
+        )}
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
+        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

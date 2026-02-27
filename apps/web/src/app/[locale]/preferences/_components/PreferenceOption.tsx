@@ -12,6 +12,7 @@ type Props = {
   description?: ReactNode;
   descriptionPosition?: 'right' | 'bottom';
   className?: string;
+  disabled?: boolean;
 };
 
 export function PreferenceOption({
@@ -26,6 +27,7 @@ export function PreferenceOption({
   className = '',
   children,
   variant = 'card',
+  disabled = false,
 }: Props & { children?: ReactNode; variant?: 'card' | 'plain' }) {
   const baseContent = (
     <>
@@ -36,9 +38,10 @@ export function PreferenceOption({
           value={value}
           checked={checked}
           onChange={onChange}
+          disabled={disabled}
           className={`h-4 w-4 text-primary focus:ring-primary border-border ${
             descriptionPosition === 'bottom' ? 'mt-1' : ''
-          }`}
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         />
         <div className="ml-3">
           <span className="text-sm text-foreground font-medium block">{label}</span>
@@ -55,7 +58,7 @@ export function PreferenceOption({
 
   const labelClasses = `flex ${
     descriptionPosition === 'bottom' ? 'items-start' : 'items-center'
-  } justify-between p-3 cursor-pointer transition-colors hover:bg-accent ${
+  } justify-between p-3 ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'} transition-colors ${!disabled ? 'hover:bg-accent' : ''} ${
     variant === 'card' && !children ? 'border border-border rounded-md' : ''
   }`;
 

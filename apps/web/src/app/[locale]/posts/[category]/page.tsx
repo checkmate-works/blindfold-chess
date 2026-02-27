@@ -8,6 +8,7 @@ import {
   ListLink,
   ListLinkContainer,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -57,42 +58,44 @@ export default async function CategoryPostsPage({ params }: Props) {
 
       <PageDescription>{t('categoryDescription', { category: categoryLabel })}</PageDescription>
 
-      <SectionTitle>{t('postsListTitle')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('postsListTitle')}</SectionTitle>
 
-      {posts.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
-      ) : (
-        <ListLinkContainer>
-          {posts.map((post) => {
-            const publishedDate = post.publishedAt
-              ? new Date(post.publishedAt).toLocaleDateString(locale, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })
-              : undefined;
+        {posts.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
+        ) : (
+          <ListLinkContainer>
+            {posts.map((post) => {
+              const publishedDate = post.publishedAt
+                ? new Date(post.publishedAt).toLocaleDateString(locale, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : undefined;
 
-            return (
-              <ListLink
-                key={post.id}
-                href={`/posts/${category}/${post.slug}`}
-                icon={getCategoryIcon(category)}
-                title={post.title}
-                meta={publishedDate}
-                locale={locale}
-                isPinned={post.pinnedAt !== null}
-              />
-            );
-          })}
-        </ListLinkContainer>
-      )}
+              return (
+                <ListLink
+                  key={post.id}
+                  href={`/posts/${category}/${post.slug}`}
+                  icon={getCategoryIcon(category)}
+                  title={post.title}
+                  meta={publishedDate}
+                  locale={locale}
+                  isPinned={post.pinnedAt !== null}
+                />
+              );
+            })}
+          </ListLinkContainer>
+        )}
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[{ label: t('pageTitle'), href: '/posts' }, { label: categoryLabel }]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[{ label: t('pageTitle'), href: '/posts' }, { label: categoryLabel }]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }
