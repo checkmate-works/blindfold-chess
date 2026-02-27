@@ -629,7 +629,7 @@ export function usePostmortemGame({
 
     if (latestEntry.status === 'correct') {
       displayElement = (
-        <span className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
+        <span className="flex items-center justify-center gap-2 text-success">
           <FaCheck className="w-4 h-4" /> {moveNotation}
         </span>
       );
@@ -638,7 +638,7 @@ export function usePostmortemGame({
         ? `${latestEntry.moveNumber}. ${latestEntry.incorrectMove}`
         : `${latestEntry.moveNumber}... ${latestEntry.incorrectMove}`;
       displayElement = (
-        <span className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
+        <span className="flex items-center justify-center gap-2 text-destructive">
           <FaTimes className="w-4 h-4" /> {incorrectNotation}
         </span>
       );

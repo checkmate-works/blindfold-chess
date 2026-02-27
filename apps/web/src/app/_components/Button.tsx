@@ -19,7 +19,7 @@ const variantStyles: Record<Variant, string> = {
   secondary:
     'bg-secondary text-secondary-foreground border border-foreground/20 hover:bg-secondary/90 hover:border-foreground/30',
   outline: 'bg-background text-foreground border border-border hover:bg-muted',
-  destructive: 'bg-red-600 text-white hover:bg-red-700',
+  destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
 };
 
 const sizeStyles: Record<Size, string> = {

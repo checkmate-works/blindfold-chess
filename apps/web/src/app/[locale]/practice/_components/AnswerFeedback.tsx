@@ -22,12 +22,12 @@ export function AnswerFeedback({
   return (
     <div className={`flex justify-center h-8 ${className}`}>
       {isCorrect && (
-        <span className="text-green-500 font-bold animate-in fade-in zoom-in text-lg">
+        <span className="text-success font-bold animate-in fade-in zoom-in text-lg">
           {correctMessage || t('correct')}
         </span>
       )}
       {!isCorrect && (
-        <span className="text-red-500 font-bold animate-in fade-in zoom-in text-lg">
+        <span className="text-destructive font-bold animate-in fade-in zoom-in text-lg">
           {incorrectMessage || t('incorrect')}
         </span>
       )}

@@ -89,7 +89,7 @@ export default async function GettingStartedPage({ params }: Props) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-blue-500 text-xl flex justify-center">
+                <div className="text-info text-xl flex justify-center">
                   <FaSignal />
                 </div>
                 <p className="text-sm font-medium text-foreground">
@@ -100,7 +100,7 @@ export default async function GettingStartedPage({ params }: Props) {
                 </p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-green-500 text-xl flex justify-center">
+                <div className="text-success text-xl flex justify-center">
                   <FaUndo />
                 </div>
                 <p className="text-sm font-medium text-foreground">
@@ -111,7 +111,7 @@ export default async function GettingStartedPage({ params }: Props) {
                 </p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-amber-500 text-xl flex justify-center">
+                <div className="text-warning text-xl flex justify-center">
                   <FaLightbulb />
                 </div>
                 <p className="text-sm font-medium text-foreground">

@@ -192,7 +192,7 @@ export function PostmortemClient({
                 /* Completion Message */
                 <>
                   <div className="py-8 text-center flex flex-col items-center gap-4">
-                    <FaCheck className="w-12 h-12 text-green-500" />
+                    <FaCheck className="w-12 h-12 text-success" />
                     <div className="flex flex-col gap-2">
                       <h3 className="text-xl font-bold">{t('completed')}</h3>
                       <p className="text-muted-foreground">

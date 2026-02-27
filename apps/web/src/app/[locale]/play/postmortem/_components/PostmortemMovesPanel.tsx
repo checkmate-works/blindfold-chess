@@ -143,7 +143,7 @@ export function PostmortemMovesPanel({
                   variant="secondary"
                   icon={
                     isCopied ? (
-                      <FaCheck className="w-3 h-3 text-green-500" />
+                      <FaCheck className="w-3 h-3 text-success" />
                     ) : (
                       <FaCopy className="w-3 h-3" />
                     )
@@ -165,7 +165,7 @@ export function PostmortemMovesPanel({
                   variant="secondary"
                   icon={
                     isFenCopied ? (
-                      <FaCheck className="w-3 h-3 text-green-500" />
+                      <FaCheck className="w-3 h-3 text-success" />
                     ) : (
                       <FaCopy className="w-3 h-3" />
                     )

@@ -208,7 +208,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
                   onClick={handlePlay}
-                  className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-6 shadow-lg transition-all hover:scale-110"
+                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110"
                   aria-label={t('play')}
                 >
                   <FaPlay className="w-12 h-12 ml-1" />

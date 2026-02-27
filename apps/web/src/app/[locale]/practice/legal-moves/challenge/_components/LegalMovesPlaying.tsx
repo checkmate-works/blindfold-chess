@@ -68,7 +68,7 @@ export function LegalMovesPlaying({
         <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40">
           <button
             onClick={onTogglePause}
-            className="bg-white/90 hover:bg-white text-gray-900 rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+            className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
             aria-label={tPractice('resume')}
           >
             <LuPlay size={48} className="fill-current ml-1" />
@@ -112,8 +112,8 @@ export function LegalMovesPlaying({
               className={`text-lg font-bold mb-6 transition-colors duration-200 ${
                 lastAnswer
                   ? lastAnswer.correct
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
+                    ? 'text-success'
+                    : 'text-destructive'
                   : 'text-foreground'
               }`}
             >
@@ -128,7 +128,7 @@ export function LegalMovesPlaying({
             <button
               onClick={() => onAnswer(true)}
               disabled={showResult || countdown !== null || isPaused}
-              className="px-6 py-4 bg-green-100 dark:bg-green-900/20 hover:bg-green-200 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
             >
               <span className="text-2xl">○</span>
               <span>{t('legal')}</span>
@@ -136,7 +136,7 @@ export function LegalMovesPlaying({
             <button
               onClick={() => onAnswer(false)}
               disabled={showResult || countdown !== null || isPaused}
-              className="px-6 py-4 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
             >
               <span className="text-2xl">×</span>
               <span>{t('illegal')}</span>

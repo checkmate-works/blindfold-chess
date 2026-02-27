@@ -273,9 +273,9 @@ export function PositionGameForm({ locale }: Props) {
 
       {/* Validation message */}
       {positionValidation.error && (
-        <p className="text-sm text-red-500">{positionValidation.error}</p>
+        <p className="text-sm text-destructive">{positionValidation.error}</p>
       )}
-      {positionValidation.valid && <p className="text-sm text-green-600">{t('positionValid')}</p>}
+      {positionValidation.valid && <p className="text-sm text-success">{t('positionValid')}</p>}
 
       {/* Skill Level Selection */}
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />

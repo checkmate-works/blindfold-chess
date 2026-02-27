@@ -26,7 +26,7 @@ export function MoveLogEntryItem({ entry, interactive = false, onClick }: Props)
   if (entry.status === 'correct') {
     return (
       <div className={`mb-2 ${interactiveClasses}`} onClick={onClick}>
-        <div className="text-green-600 dark:text-green-400">
+        <div className="text-success">
           {moveNotation} <FaCheck className="inline w-3 h-3" />
         </div>
         {entry.evaluation && (
@@ -54,10 +54,7 @@ export function MoveLogEntryItem({ entry, interactive = false, onClick }: Props)
 
   if (entry.status === 'incorrect') {
     return (
-      <div
-        className={`text-red-600 dark:text-red-400 mb-2 ${interactiveClasses}`}
-        onClick={onClick}
-      >
+      <div className={`text-destructive mb-2 ${interactiveClasses}`} onClick={onClick}>
         {entry.incorrectMove
           ? `${entry.isWhiteMove ? `${entry.moveNumber}. ` : `${entry.moveNumber}... `}${entry.incorrectMove} ${t('logIncorrect')}`
           : `${moveNotation} ${t('logIncorrect')}`}

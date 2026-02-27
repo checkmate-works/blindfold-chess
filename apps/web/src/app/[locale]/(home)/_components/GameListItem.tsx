@@ -45,7 +45,7 @@ export function GameListItem({ game, locale, onDelete }: Props) {
                 e.stopPropagation();
                 onDelete(game.id);
               }}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
               title="Delete game"
             >
               <FaTrash className="w-4 h-4" />

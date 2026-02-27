@@ -5,13 +5,13 @@ import type { GameOutcome } from '@/lib/types';
 export function getStatusStyles(status: GameOutcome): string {
   switch (status) {
     case 'win':
-      return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20';
+      return 'text-success bg-success/10';
     case 'loss':
-      return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20';
+      return 'text-destructive bg-destructive/10';
     case 'draw':
-      return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20';
+      return 'text-warning bg-warning/10';
     default:
-      return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20';
+      return 'text-info bg-info/10';
   }
 }
 

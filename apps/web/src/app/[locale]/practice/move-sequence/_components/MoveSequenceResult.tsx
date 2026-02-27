@@ -43,7 +43,7 @@ export function MoveSequenceResult({
             <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('moveDetails')}</h3>
             <div className="space-y-2">
               {result.results.map((r, index) => {
-                const bgColor = r.isCorrect ? 'bg-green-500/10' : 'bg-yellow-500/10';
+                const bgColor = r.isCorrect ? 'bg-success/10' : 'bg-warning/10';
 
                 return (
                   <div key={index} className={`p-3 rounded ${bgColor}`}>
@@ -53,9 +53,9 @@ export function MoveSequenceResult({
                       </span>
                       <span className="text-xs">
                         {r.isCorrect ? (
-                          <span className="text-green-600 dark:text-green-400">{t('correct')}</span>
+                          <span className="text-success">{t('correct')}</span>
                         ) : (
-                          <span className="text-yellow-600 dark:text-yellow-400">
+                          <span className="text-warning">
                             {t('attempts', { count: r.attempts })}
                           </span>
                         )}
@@ -63,7 +63,7 @@ export function MoveSequenceResult({
                     </div>
                     {r.wrongAttempts && r.wrongAttempts.length > 0 && (
                       <div className="mt-2 text-xs text-muted-foreground">
-                        <span className="text-red-500 dark:text-red-400">
+                        <span className="text-destructive">
                           {t('wrongAttempts')}: {r.wrongAttempts.join(', ')}
                         </span>
                       </div>

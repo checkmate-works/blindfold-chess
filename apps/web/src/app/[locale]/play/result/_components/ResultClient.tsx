@@ -187,19 +187,19 @@ function ResultContent({ game, gameId, locale }: ResultContentProps) {
               <div className="py-8 text-center flex flex-col items-center gap-4">
                 {playerResult === 'win' && (
                   <>
-                    <FaCheck className="w-12 h-12 text-green-500" />
+                    <FaCheck className="w-12 h-12 text-success" />
                     <h3 className="text-xl font-bold">{t('youWin')}</h3>
                   </>
                 )}
                 {playerResult === 'loss' && (
                   <>
-                    <FaTimes className="w-12 h-12 text-red-500" />
+                    <FaTimes className="w-12 h-12 text-destructive" />
                     <h3 className="text-xl font-bold">{t('youLose')}</h3>
                   </>
                 )}
                 {playerResult === 'draw' && (
                   <>
-                    <FaMinus className="w-12 h-12 text-yellow-500" />
+                    <FaMinus className="w-12 h-12 text-warning" />
                     <h3 className="text-xl font-bold">{t('draw')}</h3>
                   </>
                 )}

@@ -17,15 +17,15 @@ export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[keyof typeof ARTICLE_C
 export const CATEGORY_STYLES = {
   notation: {
     icon: '📝',
-    className: 'text-amber-600 bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400',
+    className: 'text-warning bg-warning/10',
   },
   coordinates: {
     icon: '🎯',
-    className: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400',
+    className: 'text-info bg-info/10',
   },
   moves: {
     icon: '♟️',
-    className: 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400',
+    className: 'text-success bg-success/10',
   },
   memory: {
     icon: '🧠',

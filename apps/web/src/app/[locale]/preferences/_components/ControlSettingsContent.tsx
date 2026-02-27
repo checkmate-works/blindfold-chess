@@ -124,7 +124,7 @@ export function ControlSettingsContent({ settings, onSettingsChange, compact = f
                         value="icon"
                         checked={settings.buttonInputPieceLabel === 'icon'}
                         onChange={() => onSettingsChange({ buttonInputPieceLabel: 'icon' })}
-                        className="rounded-full border-gray-300 text-primary focus:ring-primary"
+                        className="rounded-full border-border text-primary focus:ring-primary"
                       />
                       <span className="text-sm">{t('controls.icon')}</span>
                     </label>
@@ -135,7 +135,7 @@ export function ControlSettingsContent({ settings, onSettingsChange, compact = f
                         value="text"
                         checked={settings.buttonInputPieceLabel === 'text'}
                         onChange={() => onSettingsChange({ buttonInputPieceLabel: 'text' })}
-                        className="rounded-full border-gray-300 text-primary focus:ring-primary"
+                        className="rounded-full border-border text-primary focus:ring-primary"
                       />
                       <span className="text-sm">{t('controls.text')}</span>
                     </label>
