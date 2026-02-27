@@ -15,84 +15,24 @@
  *    - Auto-opponent mode: Only enter your own moves
  * 3. Completion: Summary of accuracy, option to review specific positions
  */
-'use client';
+import { Suspense } from 'react';
 
-import { type ReactElement, useState } from 'react';
-
-import { useTranslations } from 'next-intl';
-import { useParams, useSearchParams } from 'next/navigation';
-
-import { Divider } from '@/app/[locale]/_components/Divider';
-import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ClientBreadcrumb } from '../_components/ClientBreadcrumb';
-import { PostmortemClient } from './_components/PostmortemClient';
+import { PostmortemPageClient } from './_components/PostmortemPageClient';
 
-export default function PostmortemPage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const locale = params.locale as Locale;
-  const t = useTranslations('postmortem');
-  const tPlay = useTranslations('play');
-  const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<ReactElement | null>(null);
+type Props = {
+  params: Promise<{
+    locale: Locale;
+  }>;
+};
 
-  // Get PGN from URL parameters
-  const pgn = searchParams.get('pgn');
-  const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
-  const autoOpponent = searchParams.get('autoOpponent') === 'true';
-  const offset = parseInt(searchParams.get('offset') || '0', 10);
-  const gameId = searchParams.get('gameId');
-  const skillLevel = searchParams.get('skillLevel');
-  const moves = searchParams.get('moves');
-  const startingFen = searchParams.get('fen') || undefined;
-
-  // Build the play page URL with original game parameters
-  const getPlayPageUrl = () => {
-    const params = new URLSearchParams();
-    params.set('color', playerColor);
-
-    if (gameId) {
-      params.set('gameId', gameId);
-    }
-    if (skillLevel) {
-      params.set('skillLevel', skillLevel);
-    }
-    if (moves) {
-      params.set('moves', moves);
-    }
-    if (startingFen) {
-      params.set('fen', startingFen);
-    }
-
-    return `/play?${params.toString()}`;
-  };
-
-  if (!pgn) {
-    return (
-      <div className="text-center">
-        <PageTitle>{t('title')}</PageTitle>
-        <p className="text-muted-foreground mt-4">No game data provided.</p>
-      </div>
-    );
-  }
+export default async function PostmortemPage({ params }: Props) {
+  const { locale } = await params;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
-      <PostmortemClient
-        pgn={pgn}
-        playerColor={playerColor}
-        autoOpponent={autoOpponent}
-        initialOffset={offset}
-        startingFen={startingFen}
-        onSelectedMoveChange={setSelectedMoveDisplay}
-      />
-      <Divider />
-      <ClientBreadcrumb
-        items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
-        locale={locale}
-      />
-    </div>
+    <Suspense>
+      <PostmortemPageClient locale={locale} />
+    </Suspense>
   );
 }
