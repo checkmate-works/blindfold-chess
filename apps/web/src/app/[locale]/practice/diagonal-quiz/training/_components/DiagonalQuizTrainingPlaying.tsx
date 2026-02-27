@@ -6,12 +6,13 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay, Button } from '@/app/_components';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
-import { FaBackspace } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
+import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
+import { DiagonalInputField } from '../../_components/DiagonalInputField';
 import type { ActiveField } from '../../_components/useDiagonalInput';
 import { useDiagonalInput } from '../../_components/useDiagonalInput';
 
@@ -29,9 +30,6 @@ type Props = {
   incorrectCount: number;
   onEndTraining: () => void;
 };
-
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 export function DiagonalQuizTrainingPlaying({
   currentSquare,
@@ -138,137 +136,33 @@ export function DiagonalQuizTrainingPlaying({
 
           {/* Diagonal Input Display Fields */}
           <div className="space-y-3 mb-6">
-            {/* Diagonal field */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1 text-left">
-                {t('diagonalLabel')}
-                {singleDiagonal && (
-                  <span className="ml-1 text-xs text-muted-foreground/70">
-                    ({t('singleSquare')})
-                  </span>
-                )}
-              </label>
-              {singleDiagonal ? (
-                <button
-                  type="button"
-                  onClick={() => handleFieldClick('diagonal')}
-                  disabled={isDisabled}
-                  className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                    activeField === 'diagonal' && !isDisabled
-                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                      : isDiagonalComplete
-                        ? 'border-border bg-muted/50 text-foreground'
-                        : 'border-border bg-background text-muted-foreground'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {diagonalStartText || (
-                    <span className="text-muted-foreground/50">{t('singleSquarePlaceholder')}</span>
-                  )}
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleFieldClick('diagonal')}
-                    disabled={isDisabled}
-                    className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                      activeField === 'diagonal' && !isDisabled && isInputtingStart
-                        ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                        : diagonalStartText
-                          ? 'border-border bg-muted/50 text-foreground'
-                          : 'border-border bg-background text-muted-foreground'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {diagonalStartText || (
-                      <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
-                    )}
-                  </button>
-                  <span className="text-lg font-mono text-muted-foreground">-</span>
-                  <button
-                    type="button"
-                    onClick={() => handleFieldClick('diagonal')}
-                    disabled={isDisabled}
-                    className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                      activeField === 'diagonal' && !isDisabled && isInputtingEnd
-                        ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                        : diagonalEndText
-                          ? 'border-border bg-muted/50 text-foreground'
-                          : 'border-border bg-background text-muted-foreground'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {diagonalEndText || (
-                      <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+            <DiagonalInputField
+              label={t('diagonalLabel')}
+              isSingleSquare={singleDiagonal}
+              activeField={activeField}
+              fieldType="diagonal"
+              startText={diagonalStartText}
+              endText={diagonalEndText}
+              isComplete={isDiagonalComplete}
+              isDisabled={isDisabled}
+              isInputtingStart={isInputtingStart}
+              isInputtingEnd={isInputtingEnd}
+              onFieldClick={handleFieldClick}
+            />
 
-            {/* Anti-diagonal field */}
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1 text-left">
-                {t('antiDiagonalLabel')}
-                {singleAntiDiagonal && (
-                  <span className="ml-1 text-xs text-muted-foreground/70">
-                    ({t('singleSquare')})
-                  </span>
-                )}
-              </label>
-              {singleAntiDiagonal ? (
-                <button
-                  type="button"
-                  onClick={() => handleFieldClick('antiDiagonal')}
-                  disabled={isDisabled}
-                  className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                    activeField === 'antiDiagonal' && !isDisabled
-                      ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                      : isAntiDiagonalComplete
-                        ? 'border-border bg-muted/50 text-foreground'
-                        : 'border-border bg-background text-muted-foreground'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {antiDiagonalStartText || (
-                    <span className="text-muted-foreground/50">{t('singleSquarePlaceholder')}</span>
-                  )}
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleFieldClick('antiDiagonal')}
-                    disabled={isDisabled}
-                    className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                      activeField === 'antiDiagonal' && !isDisabled && isInputtingStart
-                        ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                        : antiDiagonalStartText
-                          ? 'border-border bg-muted/50 text-foreground'
-                          : 'border-border bg-background text-muted-foreground'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {antiDiagonalStartText || (
-                      <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
-                    )}
-                  </button>
-                  <span className="text-lg font-mono text-muted-foreground">-</span>
-                  <button
-                    type="button"
-                    onClick={() => handleFieldClick('antiDiagonal')}
-                    disabled={isDisabled}
-                    className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
-                      activeField === 'antiDiagonal' && !isDisabled && isInputtingEnd
-                        ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
-                        : antiDiagonalEndText
-                          ? 'border-border bg-muted/50 text-foreground'
-                          : 'border-border bg-background text-muted-foreground'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {antiDiagonalEndText || (
-                      <span className="text-muted-foreground/50">{t('squarePlaceholder')}</span>
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
+            <DiagonalInputField
+              label={t('antiDiagonalLabel')}
+              isSingleSquare={singleAntiDiagonal}
+              activeField={activeField}
+              fieldType="antiDiagonal"
+              startText={antiDiagonalStartText}
+              endText={antiDiagonalEndText}
+              isComplete={isAntiDiagonalComplete}
+              isDisabled={isDisabled}
+              isInputtingStart={isInputtingStart}
+              isInputtingEnd={isInputtingEnd}
+              onFieldClick={handleFieldClick}
+            />
           </div>
 
           {/* Step indicator */}
@@ -279,62 +173,15 @@ export function DiagonalQuizTrainingPlaying({
           )}
 
           {/* Button Input Area */}
-          <div className="flex flex-col gap-2">
-            {/* File buttons */}
-            <div className="flex gap-1 justify-center w-full">
-              {FILES.map((file) => (
-                <button
-                  key={file}
-                  onClick={() => handleFilePress(file)}
-                  disabled={isDisabled || !expectingFile}
-                  className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border ${
-                    expectingFile && !isDisabled
-                      ? 'bg-background hover:bg-muted border-border text-foreground'
-                      : 'bg-background border-border opacity-30 cursor-not-allowed text-muted-foreground'
-                  }`}
-                >
-                  {file}
-                </button>
-              ))}
-            </div>
-
-            {/* Rank buttons */}
-            <div className="flex gap-1 justify-center w-full">
-              {RANKS.map((rank) => (
-                <button
-                  key={rank}
-                  onClick={() => handleRankPress(rank)}
-                  disabled={isDisabled || !expectingRank}
-                  className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border ${
-                    expectingRank && !isDisabled
-                      ? 'bg-background hover:bg-muted border-border text-foreground'
-                      : 'bg-background border-border opacity-30 cursor-not-allowed text-muted-foreground'
-                  }`}
-                >
-                  {rank}
-                </button>
-              ))}
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex gap-2 mt-1">
-              <button
-                onClick={handleBackspace}
-                disabled={isDisabled}
-                className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
-                title={t('backspace')}
-              >
-                <FaBackspace className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleClear}
-                disabled={isDisabled}
-                className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                {t('clear')}
-              </button>
-            </div>
-          </div>
+          <ChessCoordinateKeypad
+            expectingFile={expectingFile}
+            expectingRank={expectingRank}
+            isDisabled={isDisabled}
+            onFilePress={handleFilePress}
+            onRankPress={handleRankPress}
+            onBackspace={handleBackspace}
+            onClear={handleClear}
+          />
         </div>
       </div>
 

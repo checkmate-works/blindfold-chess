@@ -1,7 +1,5 @@
 import { type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -11,7 +9,10 @@ import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
 
 import type { EvaluationFilters, MoveLogEntry } from '../_lib';
-import { clearEvaluationCache, getPositionEvaluation } from '../_lib';
+import { clearEvaluationCache } from '../_lib';
+import { usePostmortemActions } from './use-postmortem-actions';
+import { usePostmortemFilters } from './use-postmortem-filters';
+import { usePostmortemNavigation } from './use-postmortem-navigation';
 
 type Props = {
   pgn: string;
@@ -89,9 +90,7 @@ export function usePostmortemGame({
   startingFen,
   onSelectedMoveChange,
 }: Props): PostmortemGameReturn {
-  const t = useTranslations('postmortem');
-
-  // State that lives in the hook
+  // State that lives in the main hook
   const [originalMoves, setOriginalMoves] = useState<AlgebraicNotation[]>([]);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(initialOffset);
   const [userMoves, setUserMoves] = useState<AlgebraicNotation[]>([]);
@@ -100,22 +99,6 @@ export function usePostmortemGame({
   const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
   const [showEvaluation, setShowEvaluation] = useState(false);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
-  const [dontKnowCount, setDontKnowCount] = useState(0);
-  const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
-  const [filters, setFilters] = useState<EvaluationFilters>({
-    player: { own: true, opponent: true },
-    evaluation: {
-      best: true,
-      good: true,
-      inaccuracy: true,
-      mistake: true,
-      blunder: true,
-    },
-  });
-  const [currentPosition, setCurrentPosition] = useState(-1);
-  const [displayFen, setDisplayFen] = useState<string | null>(null);
 
   // Pre-compute starting position info from FEN
   const startsAsBlack = useMemo(
@@ -159,80 +142,21 @@ export function usePostmortemGame({
     return replayMoves(originalMoves as string[], startingFen);
   }, [originalMoves, startingFen]);
 
+  // Hooks: Navigation
+  const navigation = usePostmortemNavigation({
+    originalMovesLength: originalMoves.length,
+    gamePositions,
+  });
+  const { currentPosition, selectedMoveIndex, displayFen, navigateToPosition, navigateToStart } =
+    navigation;
+
   // Get current FEN for board display
   const getCurrentFen = useCallback(() => {
     if (selectedMoveIndex !== null) {
-      return gamePositions[selectedMoveIndex + 1]?.fen ?? gamePositions[0].fen;
+      return gamePositions[selectedMoveIndex + 1]?.fen ?? gamePositions[0]?.fen;
     }
-    return gamePositions[userMoves.length]?.fen ?? gamePositions[0].fen;
+    return gamePositions[userMoves.length]?.fen ?? gamePositions[0]?.fen;
   }, [userMoves.length, gamePositions, selectedMoveIndex]);
-
-  // Navigation functions
-  const navigateToPosition = useCallback(
-    (position: number) => {
-      if (position === -1 || position >= originalMoves.length) {
-        setCurrentPosition(-1);
-        setDisplayFen(null);
-        setSelectedMoveIndex(null);
-        return;
-      }
-
-      const posData = gamePositions[position + 1];
-      if (posData) {
-        setCurrentPosition(position);
-        setDisplayFen(posData.fen);
-        setSelectedMoveIndex(position);
-      } else {
-        setCurrentPosition(-1);
-        setDisplayFen(null);
-        setSelectedMoveIndex(null);
-      }
-    },
-    [originalMoves.length, gamePositions]
-  );
-
-  const navigateToStart = useCallback(() => {
-    setDisplayFen(gamePositions[0].fen);
-    setCurrentPosition(-2);
-    setSelectedMoveIndex(null);
-  }, [gamePositions]);
-
-  const navigateToEnd = useCallback(() => {
-    setCurrentPosition(-1);
-    setDisplayFen(null);
-    setSelectedMoveIndex(null);
-  }, []);
-
-  const navigatePrevious = useCallback(() => {
-    if (currentPosition === -2) {
-      return;
-    }
-
-    if (currentPosition === -1) {
-      if (originalMoves.length > 0) {
-        navigateToPosition(originalMoves.length - 2);
-      }
-    } else if (currentPosition === 0) {
-      navigateToStart();
-    } else {
-      navigateToPosition(currentPosition - 1);
-    }
-  }, [currentPosition, originalMoves.length, navigateToPosition, navigateToStart]);
-
-  const navigateNext = useCallback(() => {
-    if (currentPosition === -2) {
-      if (originalMoves.length > 0) {
-        navigateToPosition(0);
-      }
-    } else if (currentPosition === -1) {
-      return;
-    } else {
-      const newPosition = currentPosition + 1;
-      if (newPosition < originalMoves.length) {
-        navigateToPosition(newPosition);
-      }
-    }
-  }, [currentPosition, originalMoves.length, navigateToPosition]);
 
   // Check if current move is player's turn
   const isPlayerTurn = useMemo(() => {
@@ -258,333 +182,57 @@ export function usePostmortemGame({
     }
   }, [currentMoveIndex, originalMoves.length]);
 
-  // Auto-fill opponent's move if needed
-  useEffect(() => {
-    if (
-      autoOpponent &&
-      !isPlayerTurn &&
-      currentMoveIndex < originalMoves.length &&
-      !isCompleted &&
-      !isEvaluating
-    ) {
-      const autoFillMove = async () => {
-        setIsEvaluating(true);
-        const opponentMove = originalMoves[currentMoveIndex];
-        const moveNumber = startsAsBlack
-          ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-          : startMoveNumber + Math.floor(currentMoveIndex / 2);
-        const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
-        const newIndex = currentMoveIndex + 1;
-
-        setUserMoves((prev) => [...prev, opponentMove]);
-        setCurrentMoveIndex(newIndex);
-
-        const previousEval =
-          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
-            ? {
-                score: moveLog[moveLog.length - 1].evaluation!.score,
-                mate: moveLog[moveLog.length - 1].evaluation!.mate,
-                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
-              }
-            : undefined;
-
-        const evaluation = showEvaluation
-          ? await getPositionEvaluation(
-              gamePositions[currentMoveIndex].fen,
-              gamePositions[currentMoveIndex + 1].fen,
-              currentMoveIndex,
-              t,
-              previousEval
-            )
-          : undefined;
-
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            moveNumber,
-            isWhiteMove,
-            move: opponentMove,
-            status: 'auto',
-            evaluation,
-          },
-        ]);
-
-        if (newIndex >= originalMoves.length) {
-          setIsCompleted(true);
-        }
-
-        setIsEvaluating(false);
-      };
-
-      autoFillMove();
-    }
-  }, [
-    autoOpponent,
-    isPlayerTurn,
-    currentMoveIndex,
-    originalMoves,
-    isCompleted,
+  // Hooks: Actions
+  const {
     isEvaluating,
-    showEvaluation,
-    t,
-    moveLog,
-    gamePositions,
-  ]);
-
-  // Handle move submission
-  const handleSubmitMove = useCallback(
-    async (move: AlgebraicNotation) => {
-      if (isEvaluating) return;
-
-      const expectedMove = originalMoves[currentMoveIndex];
-      const moveNumber = startsAsBlack
-        ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-        : startMoveNumber + Math.floor(currentMoveIndex / 2);
-      const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
-
-      if (move === expectedMove) {
-        setIsEvaluating(true);
-
-        const newIndex = currentMoveIndex + 1;
-        setUserMoves((prev) => [...prev, move]);
-        setCurrentMoveIndex(newIndex);
-        setMoveInputValue('');
-
-        const previousEval =
-          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
-            ? {
-                score: moveLog[moveLog.length - 1].evaluation!.score,
-                mate: moveLog[moveLog.length - 1].evaluation!.mate,
-                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
-              }
-            : undefined;
-
-        const evaluation = showEvaluation
-          ? await getPositionEvaluation(
-              gamePositions[currentMoveIndex].fen,
-              gamePositions[currentMoveIndex + 1].fen,
-              currentMoveIndex,
-              t,
-              previousEval
-            )
-          : undefined;
-
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            moveNumber,
-            isWhiteMove,
-            move,
-            status: 'correct',
-            evaluation,
-          },
-        ]);
-
-        if (newIndex >= originalMoves.length) {
-          setIsCompleted(true);
-        }
-
-        setIsEvaluating(false);
-      } else {
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            moveNumber,
-            isWhiteMove,
-            move: expectedMove,
-            status: 'incorrect',
-            incorrectMove: move,
-          },
-        ]);
-      }
-    },
-    [
-      currentMoveIndex,
-      originalMoves,
-      showEvaluation,
-      isEvaluating,
-      t,
-      moveLog,
-      gamePositions,
-      startsAsBlack,
-      startMoveNumber,
-    ]
-  );
-
-  // Handle "I don't know" button
-  const handleDontKnow = useCallback(async () => {
-    if (isEvaluating) return;
-
-    setIsEvaluating(true);
-    setDontKnowCount((prev) => prev + 1);
-
-    const correctMove = originalMoves[currentMoveIndex];
-    const moveNumber = startsAsBlack
-      ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-      : startMoveNumber + Math.floor(currentMoveIndex / 2);
-    const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
-    const newIndex = currentMoveIndex + 1;
-
-    setUserMoves((prev) => [...prev, correctMove]);
-    setCurrentMoveIndex(newIndex);
-    setMoveInputValue('');
-
-    const evaluation = showEvaluation
-      ? await getPositionEvaluation(
-          gamePositions[currentMoveIndex].fen,
-          gamePositions[currentMoveIndex + 1].fen,
-          currentMoveIndex,
-          t,
-          undefined
-        )
-      : undefined;
-
-    setMoveLog((prev) => [
-      ...prev,
-      {
-        moveNumber,
-        isWhiteMove,
-        move: correctMove,
-        status: 'auto',
-        evaluation,
-      },
-    ]);
-
-    if (newIndex >= originalMoves.length) {
-      setIsCompleted(true);
-    }
-
-    setIsEvaluating(false);
-  }, [
-    currentMoveIndex,
-    originalMoves,
-    showEvaluation,
-    isEvaluating,
-    t,
-    gamePositions,
-    startsAsBlack,
-    startMoveNumber,
-  ]);
-
-  // Handle "Analyze All" button
-  const handleAnalyzeAll = useCallback(async () => {
-    if (isEvaluating) return;
-
-    setIsEvaluating(true);
-    setIsAnalyzingAll(true);
-
-    const remainingMoves = originalMoves.slice(currentMoveIndex);
-    const newMoves = [...userMoves, ...remainingMoves];
-    setUserMoves(newMoves);
-
-    const newLogEntries: MoveLogEntry[] = [];
-    let previousEval =
-      moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
-        ? {
-            score: moveLog[moveLog.length - 1].evaluation!.score,
-            mate: moveLog[moveLog.length - 1].evaluation!.mate,
-            bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
-          }
-        : undefined;
-
-    for (let i = currentMoveIndex; i < originalMoves.length; i++) {
-      const move = originalMoves[i];
-      const moveNumber = startsAsBlack
-        ? startMoveNumber + Math.floor((i + 1) / 2)
-        : startMoveNumber + Math.floor(i / 2);
-      const isWhiteMove = startsAsBlack ? i % 2 === 1 : i % 2 === 0;
-
-      const evaluation = showEvaluation
-        ? await getPositionEvaluation(
-            gamePositions[i].fen,
-            gamePositions[i + 1].fen,
-            i,
-            t,
-            previousEval
-          )
-        : undefined;
-
-      if (evaluation) {
-        previousEval = {
-          score: evaluation.score,
-          mate: evaluation.mate,
-          bestMove: evaluation.nextBestMove,
-        };
-      }
-
-      newLogEntries.push({
-        moveNumber,
-        isWhiteMove,
-        move,
-        status: 'auto',
-        evaluation,
-      });
-    }
-
-    setMoveLog((prev) => [...prev, ...newLogEntries]);
-    setCurrentMoveIndex(originalMoves.length);
-    setIsCompleted(true);
-    setIsEvaluating(false);
-    setIsAnalyzingAll(false);
-  }, [
-    currentMoveIndex,
+    isAnalyzingAll,
+    dontKnowCount,
+    handleSubmitMove: rawHandleSubmit,
+    handleDontKnow: rawHandleDontKnow,
+    handleAnalyzeAll,
+  } = usePostmortemActions({
     originalMoves,
     userMoves,
+    currentMoveIndex,
     moveLog,
-    showEvaluation,
-    isEvaluating,
-    t,
     gamePositions,
     startsAsBlack,
     startMoveNumber,
-  ]);
+    showEvaluation,
+    isPlayerTurn,
+    autoOpponent,
+    isCompleted,
+    setUserMoves,
+    setCurrentMoveIndex,
+    setMoveLog,
+    setIsCompleted,
+  });
+
+  const handleSubmitMove = useCallback(
+    async (move: AlgebraicNotation) => rawHandleSubmit(move, setMoveInputValue),
+    [rawHandleSubmit]
+  );
+
+  const handleDontKnow = useCallback(
+    async () => rawHandleDontKnow(setMoveInputValue),
+    [rawHandleDontKnow]
+  );
+
+  // Hooks: Filters
+  const {
+    filters: filterValue,
+    setFilters,
+    filteredEntries,
+    handleResetFilters,
+  } = usePostmortemFilters({
+    moveLog,
+    playerColor,
+  });
 
   // Check if any move has evaluation
   const hasAnyEvaluation = useMemo(() => {
     return moveLog.some((entry) => entry.evaluation !== undefined);
   }, [moveLog]);
-
-  // Filter move log based on selected filters
-  const filteredEntries = useMemo(() => {
-    return moveLog.filter((entry) => {
-      const isOwnMove =
-        (playerColor === 'white' && entry.isWhiteMove) ||
-        (playerColor === 'black' && !entry.isWhiteMove);
-      if (isOwnMove && !filters.player.own) return false;
-      if (!isOwnMove && !filters.player.opponent) return false;
-
-      const hasAnyEvaluationFilterDisabled = !Object.values(filters.evaluation).every((v) => v);
-
-      if (entry.status !== 'incorrect') {
-        if (entry.evaluation) {
-          const loss = entry.evaluation.loss;
-          if (loss <= 20 && !filters.evaluation.best) return false;
-          if (loss > 20 && loss <= 50 && !filters.evaluation.good) return false;
-          if (loss > 50 && loss <= 100 && !filters.evaluation.inaccuracy) return false;
-          if (loss > 100 && loss <= 300 && !filters.evaluation.mistake) return false;
-          if (loss > 300 && !filters.evaluation.blunder) return false;
-        } else if (hasAnyEvaluationFilterDisabled) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [moveLog, filters, playerColor]);
-
-  // Handle filter reset
-  const handleResetFilters = useCallback(() => {
-    setFilters({
-      player: { own: true, opponent: true },
-      evaluation: {
-        best: true,
-        good: true,
-        inaccuracy: true,
-        mistake: true,
-        blunder: true,
-      },
-    });
-  }, []);
 
   // Handle move log click
   const handleMoveClick = useCallback(
@@ -691,11 +339,11 @@ export function usePostmortemGame({
     onSelectedMoveChange(displayElement);
   }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange]);
 
-  const currentFen = getCurrentFen();
+  const currentFen = getCurrentFen() || gamePositions[0]?.fen;
   const totalMoves = originalMoves.length;
   const progress = currentMoveIndex;
 
-  // Format moves for display (bug fix: changed from useCallback to useMemo)
+  // Format moves for display
   const formattedPgn = useMemo((): FormattedPgnMove[] => {
     if (userMoves.length === 0) return [];
 
@@ -806,17 +454,10 @@ export function usePostmortemGame({
       isPlayerTurn,
     },
     navigation: {
-      currentPosition,
-      selectedMoveIndex,
-      setSelectedMoveIndex,
-      navigateToPosition,
-      navigateToStart,
-      navigateToEnd,
-      navigatePrevious,
-      navigateNext,
+      ...navigation,
     },
     filters: {
-      value: filters,
+      value: filterValue,
       setValue: setFilters,
       reset: handleResetFilters,
     },
