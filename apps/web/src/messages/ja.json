@@ -32,6 +32,10 @@
     "contact": {
       "title": "お問い合わせ",
       "description": "Blindfold Chessに関するお問い合わせフォーム"
+    },
+    "onboarding": {
+      "title": "初期設定",
+      "description": "初めてのゲームの前に設定をカスタマイズしましょう"
     }
   },
   "Header": {
@@ -123,7 +127,13 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "switchInputMode": "入力モードを切り替え"
+      "switchInputMode": "入力モードを切り替え",
+      "peekMode": "盤面ピークモード",
+      "peekModeDescription": "対局中の盤面表示方式",
+      "peekModes": {
+        "modal": "モーダル",
+        "inline": "インライン"
+      }
     },
     "ads": {
       "title": "広告設定",
@@ -218,6 +228,11 @@
   "gettingStarted": {
     "title": "はじめに",
     "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。",
+    "onboardingBanner": {
+      "title": "初めての方へ",
+      "description": "初めてプレイする方は、まず設定をカスタマイズしましょう。",
+      "cta": "設定をカスタマイズ"
+    },
     "whyBlindfoldChess": {
       "title": "なぜ目隠しチェスが必要なのか？",
       "intro": "目隠しチェスは、チェスにおけるビジュアライゼーションスキルを養うための最良の方法です。",
@@ -1304,7 +1319,8 @@
     "levelWithNumber": "レベル {level}",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
     "previewBoard": "ボードをプレビュー",
-    "gameSettings": "ゲーム設定",
+    "gameSettings": "詳細設定",
+    "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
@@ -1521,6 +1537,98 @@
     "categories": {
       "updates": "更新情報",
       "blog": "ブログ"
+    }
+  },
+  "onboarding": {
+    "title": "初期設定",
+    "skip": "スキップ",
+    "back": "戻る",
+    "next": "次へ",
+    "step1": {
+      "shortLabel": "入力方法",
+      "title": "手の入力方法",
+      "description": "対局中にどの方法で手を入力するかを選択してください。",
+      "modes": {
+        "text": {
+          "label": "テキスト入力",
+          "description": "代数記法で手を入力します（例: e4, Nf3）。経験者向けです。"
+        },
+        "select": {
+          "label": "リストから選択",
+          "description": "利用可能な合法手のリストから選択します。記法の知識は不要です。"
+        },
+        "button": {
+          "label": "ボタン入力",
+          "description": "駒とマスのボタンをタップして手を入力します。すべてのレベルに適したバランスの良い入力方法です。"
+        }
+      },
+      "preview": {
+        "label": "プレビュー",
+        "textPlaceholder": "例: e4, Nf3, O-O",
+        "selectPlaceholder": "手を選択..."
+      },
+      "hint": {
+        "multiSelect": "複数選択した場合はプレイ中に切り替えができます",
+        "changeLater": "あとで設定画面から変更できます"
+      }
+    },
+    "step2": {
+      "shortLabel": "ピーク",
+      "title": "盤面ピークモード",
+      "description": "視覚補助として盤面を覗き見する機能を有効にすることができます。",
+      "showBoardButton": "AI対局中に「ボードを表示」ボタンを表示する",
+      "modes": {
+        "modal": {
+          "label": "モーダル",
+          "description": "盤面がポップアップダイアログとして表示されます。ボタンをタップして表示/非表示を切り替えます。"
+        },
+        "inline": {
+          "label": "インライン",
+          "description": "入力エリアの上に折りたたみ式のセクションとして盤面が埋め込まれます。"
+        }
+      },
+      "preview": {
+        "label": "プレビュー"
+      }
+    },
+    "step3": {
+      "shortLabel": "駒",
+      "title": "駒の設定",
+      "description": "盤上の駒の表示方法をカスタマイズします。",
+      "visibility": {
+        "title": "駒の表示",
+        "showOwnPieces": "自分の駒を表示",
+        "showOpponentPieces": "相手の駒を表示"
+      },
+      "appearance": {
+        "title": "駒の外観"
+      },
+      "shape": {
+        "title": "駒の形状",
+        "normal": "通常の駒",
+        "circles-all": "すべての駒をストーンで表示",
+        "circles-own": "自分の駒をストーンで表示",
+        "circles-opponent": "相手の駒をストーンで表示"
+      },
+      "color": {
+        "title": "駒の色",
+        "normal": "通常の色（白と黒）",
+        "white-only": "すべての駒を白で表示",
+        "black-only": "すべての駒を黒で表示"
+      }
+    },
+    "step4": {
+      "shortLabel": "開始",
+      "title": "準備が整いました！",
+      "description": "ゲームモードを選んでプレイを始めましょう。",
+      "gameModes": {
+        "standard": "通常の対局",
+        "standardDescription": "通常の初期配置から新しいゲームを始めます",
+        "pgn": "PGNの読み込み",
+        "pgnDescription": "PGN記法を使って特定の局面から続けます",
+        "position": "カスタム局面",
+        "positionDescription": "カスタムの駒配置を設定してそこからプレイします"
+      }
     }
   }
 }

@@ -13,6 +13,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
+import { InlineBoardView } from './InlineBoardView';
 import { MovesPanel } from './MovesPanel';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
@@ -132,6 +133,26 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
+                inlineBoardView={
+                  preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
+                    <InlineBoardView
+                      fen={displayFen || currentFen}
+                      playerSide={playerSide}
+                      lastMove={
+                        preferences.highlightLastMove && currentPosition === -1 ? lastMove : null
+                      }
+                      preferences={preferences}
+                      movesLength={moves.length}
+                      currentPosition={currentPosition}
+                      formattedPgn={formattedPgn}
+                      onNavigateToStart={navigateToStart}
+                      onNavigatePrevious={navigatePrevious}
+                      onNavigateNext={navigateNext}
+                      onNavigateToEnd={navigateToEnd}
+                      onNavigateToPosition={navigateToPosition}
+                    />
+                  ) : undefined
+                }
               />
             )}
           </div>

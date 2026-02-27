@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
@@ -27,6 +29,7 @@ type Props = {
   onShowBoard: () => void;
   onShowSkillLevelSettings: () => void;
   playerColor?: 'w' | 'b';
+  inlineBoardView?: ReactNode;
 };
 
 export function GameInProgressPanel({
@@ -45,10 +48,16 @@ export function GameInProgressPanel({
   onShowBoard,
   onShowSkillLevelSettings,
   playerColor,
+  inlineBoardView,
 }: Props) {
   const t = useTranslations('play');
+  const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
+
   return (
     <div className="flex flex-col gap-6">
+      {/* Inline Board View (accordion) */}
+      {inlineBoardView}
+
       {/* Move Input */}
       {isPlayerTurn ? (
         <MoveInputPanel
@@ -79,7 +88,7 @@ export function GameInProgressPanel({
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">
-        {preferences.showBoardButtonInGame && (
+        {showModalPeekButton && (
           <button
             onClick={onShowBoard}
             className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"

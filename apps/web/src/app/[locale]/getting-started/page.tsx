@@ -12,6 +12,7 @@ import {
   FaLightbulb,
   FaRoute,
   FaSignal,
+  FaSlidersH,
   FaUndo,
 } from 'react-icons/fa';
 
@@ -119,6 +120,27 @@ export default async function GettingStartedPage({ params }: Props) {
               </p>
             </div>
           </div>
+
+          {/* Onboarding Banner */}
+          <Link
+            href={`/${locale}/onboarding`}
+            className="block rounded-lg border border-primary/20 bg-primary/5 p-5 transition-colors hover:bg-primary/10"
+          >
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 text-xl text-primary">
+                <FaSlidersH />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-foreground">
+                  {t('onboardingBanner.title')}
+                </h2>
+                <p className="text-sm text-muted-foreground">{t('onboardingBanner.description')}</p>
+                <span className="inline-flex items-center text-sm font-medium text-primary">
+                  {t('onboardingBanner.cta')} &rarr;
+                </span>
+              </div>
+            </div>
+          </Link>
 
           <div className="flex justify-center pt-2">
             <Link

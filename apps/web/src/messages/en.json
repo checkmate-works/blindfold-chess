@@ -32,6 +32,10 @@
     "contact": {
       "title": "Contact Us",
       "description": "Contact form for Blindfold Chess inquiries"
+    },
+    "onboarding": {
+      "title": "Setup",
+      "description": "Set up your preferences before starting your first game"
     }
   },
   "Header": {
@@ -122,7 +126,13 @@
       "buttonLabelStyle": "Button Label Style",
       "text": "Text",
       "icon": "Icon",
-      "enableAutoComplete": "Enable auto-complete"
+      "enableAutoComplete": "Enable auto-complete",
+      "peekMode": "Board Peek Mode",
+      "peekModeDescription": "How the board is displayed when peeking during a game",
+      "peekModes": {
+        "modal": "Modal",
+        "inline": "Inline"
+      }
     },
     "ads": {
       "title": "Advertisement Settings",
@@ -217,6 +227,11 @@
   "gettingStarted": {
     "title": "Getting Started",
     "description": "Learn how to get started with blindfold chess training and improve your visualization skills.",
+    "onboardingBanner": {
+      "title": "New Here? Set Up Your Preferences",
+      "description": "Customize your settings before your first game for the best experience.",
+      "cta": "Set Up Your Preferences"
+    },
     "whyBlindfoldChess": {
       "title": "Why Blindfold Chess?",
       "intro": "Blindfold Chess is the best way to develop visualization skills in chess.",
@@ -1303,7 +1318,8 @@
     "levelWithNumber": "Level {level}",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
     "previewBoard": "Preview Board",
-    "gameSettings": "Game Settings",
+    "gameSettings": "Advanced Settings",
+    "showBoardButtonInGame": "Show 'View Board' button during AI games",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -1520,6 +1536,98 @@
     "categories": {
       "updates": "Updates",
       "blog": "Blog"
+    }
+  },
+  "onboarding": {
+    "title": "Setup",
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "step1": {
+      "shortLabel": "Input",
+      "title": "Move Input Method",
+      "description": "Choose how you want to enter your moves during a game.",
+      "modes": {
+        "text": {
+          "label": "Text Input",
+          "description": "Type moves using algebraic notation (e.g., e4, Nf3). Best for experienced players."
+        },
+        "select": {
+          "label": "Select from List",
+          "description": "Choose from a list of available legal moves. Easy to use, no notation knowledge needed."
+        },
+        "button": {
+          "label": "Button Input",
+          "description": "Enter moves by tapping piece and square buttons. A balanced option for all skill levels."
+        }
+      },
+      "preview": {
+        "label": "Preview",
+        "textPlaceholder": "e.g., e4, Nf3, O-O",
+        "selectPlaceholder": "Select a move..."
+      },
+      "hint": {
+        "multiSelect": "If you select multiple methods, you can switch between them during play.",
+        "changeLater": "You can change this later in the settings."
+      }
+    },
+    "step2": {
+      "shortLabel": "Peek",
+      "title": "Board Peek Mode",
+      "description": "You can enable a peek feature to glance at the board as a visual aid.",
+      "showBoardButton": "Show 'View Board' button during AI games",
+      "modes": {
+        "modal": {
+          "label": "Modal",
+          "description": "The board appears as a popup dialog. Tap a button to show/hide."
+        },
+        "inline": {
+          "label": "Inline",
+          "description": "The board is embedded above the input area as a collapsible section."
+        }
+      },
+      "preview": {
+        "label": "Preview"
+      }
+    },
+    "step3": {
+      "shortLabel": "Pieces",
+      "title": "Piece Settings",
+      "description": "Customize how pieces are displayed on the board.",
+      "visibility": {
+        "title": "Piece Visibility",
+        "showOwnPieces": "Show own pieces",
+        "showOpponentPieces": "Show opponent pieces"
+      },
+      "appearance": {
+        "title": "Piece Appearance"
+      },
+      "shape": {
+        "title": "Piece Shape",
+        "normal": "Normal pieces",
+        "circles-all": "Show all pieces as stones",
+        "circles-own": "Show own pieces as stones",
+        "circles-opponent": "Show opponent pieces as stones"
+      },
+      "color": {
+        "title": "Piece Color",
+        "normal": "Normal colors (White & Black)",
+        "white-only": "Show all pieces as white",
+        "black-only": "Show all pieces as black"
+      }
+    },
+    "step4": {
+      "shortLabel": "Start",
+      "title": "You're all set!",
+      "description": "Choose a game mode to start playing.",
+      "gameModes": {
+        "standard": "Standard Game",
+        "standardDescription": "Start a fresh game from the standard opening position",
+        "pgn": "Import PGN",
+        "pgnDescription": "Continue from a specific position using PGN notation",
+        "position": "Custom Position",
+        "positionDescription": "Set up a custom board position and start playing from there"
+      }
     }
   }
 }
