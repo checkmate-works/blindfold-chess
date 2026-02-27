@@ -1540,6 +1540,7 @@
   },
   "onboarding": {
     "title": "Setup",
+    "pageTitle": "Onboarding Step {step}",
     "skip": "Skip",
     "back": "Back",
     "next": "Next",

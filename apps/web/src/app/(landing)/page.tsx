@@ -1,8 +1,15 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+
+import { SITE_NAME } from '@/config';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 
 import { AiBattleSection, Footer, HeroSection, LearnSection, TrainingSection } from './_components';
+
+export const metadata: Metadata = {
+  title: SITE_NAME,
+};
 
 export default async function RootPage() {
   const locale = await getLocaleFromRequest();

@@ -1541,6 +1541,7 @@
   },
   "onboarding": {
     "title": "初期設定",
+    "pageTitle": "オンボーディング Step {step}",
     "skip": "スキップ",
     "back": "戻る",
     "next": "次へ",

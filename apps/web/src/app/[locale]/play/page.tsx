@@ -15,6 +15,11 @@
  * 3. Game End: Win/loss/draw result displayed, option to start new game
  *    or proceed to postmortem (game review)
  */
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+
 import type { Locale } from '../_lib/types';
 import { PlayPageClient } from './_components/PlayPageClient';
 
@@ -23,6 +28,16 @@ type Props = {
     locale: Locale;
   }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
+
+  return {
+    ...generateCanonicalMetadata({ locale, path: 'play' }),
+    title: t('play.title'),
+  };
+}
 
 export default async function PlayPage({ params }: Props) {
   const { locale } = await params;
