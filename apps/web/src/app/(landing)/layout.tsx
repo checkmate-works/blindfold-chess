@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
@@ -19,12 +20,11 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-const siteDescription =
-  'A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.';
-
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
+  const t = await getTranslations({ locale, namespace: 'metadata' });
   const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+  const siteDescription = t('siteDescription');
 
   return {
     title: SITE_NAME,

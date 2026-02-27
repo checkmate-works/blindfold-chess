@@ -133,9 +133,9 @@ export default async function GettingStartedPage({ params }: Props) {
                   <FaSlidersH />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {t('onboardingBanner.title')}
-                  </h2>
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {t('onboardingBanner.description')}
                   </p>
