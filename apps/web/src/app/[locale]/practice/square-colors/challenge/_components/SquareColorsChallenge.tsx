@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
 import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
+import { saveSquareColorsResult } from '@/app/[locale]/practice/square-colors/_actions/save-result';
 import {
   generateSquareSequence,
   getSquareColor,
@@ -24,6 +26,7 @@ const BATCH_SIZE = 100;
 
 export default function SquareColorsChallenge({ locale, initialTimeLimit }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
   const { preferences } = useGamePreferences();
 
   // Batch-based question generation via ref
@@ -84,20 +87,42 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
     [currentSquare, handleAnswer]
   );
 
-  // Redirect on finish
+  // Save result and redirect on finish
+  const savedRef = useRef(false);
   useEffect(() => {
-    if (isFinished) {
-      const total = correctCount + incorrectCount;
+    if (!isFinished || savedRef.current) return;
+    savedRef.current = true;
 
-      const params = new URLSearchParams({
-        score: correctCount.toString(),
-        total: total.toString(),
-        time: totalTime.toString(),
-        timeLimit: initialTimeLimit.toString(),
-      });
-      router.push(`/${locale}/practice/square-colors/result?${params.toString()}`);
+    const total = correctCount + incorrectCount;
+    const params = new URLSearchParams({
+      score: correctCount.toString(),
+      total: total.toString(),
+      time: totalTime.toString(),
+      timeLimit: initialTimeLimit.toString(),
+    });
+    const resultUrl = `/${locale}/practice/square-colors/result?${params.toString()}`;
+
+    if (user && total > 0) {
+      const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+      saveSquareColorsResult({
+        correctAnswers: correctCount,
+        totalQuestions: total,
+        incorrectAnswers: incorrectCount,
+        accuracy,
+        timeTaken: totalTime,
+        averageTime: totalTime / total,
+        timeLimit: initialTimeLimit,
+      })
+        .catch(() => {
+          // Silently ignore save failures - result display is unaffected
+        })
+        .finally(() => {
+          router.push(resultUrl);
+        });
+    } else {
+      router.push(resultUrl);
     }
-  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, initialTimeLimit]);
+  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, initialTimeLimit, user]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;
