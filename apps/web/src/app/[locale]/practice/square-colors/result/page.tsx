@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/result' }),
-    title: t('${key}.title'),
+    title: t('squareColors.title'),
   };
 }
 
