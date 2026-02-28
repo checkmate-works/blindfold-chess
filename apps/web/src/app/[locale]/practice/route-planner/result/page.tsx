@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/route-planner/result' }),
-    title: t('${key}.title'),
+    title: t('routePlanner.title'),
   };
 }
 
