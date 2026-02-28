@@ -13,24 +13,15 @@ import {
   getAvailableMenuTypes,
   getPracticeSessions,
 } from '../_actions/get-practice-sessions';
+import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
 import { StatsCard } from './StatsCard';
-import { ThroughputChart } from './ThroughputChart';
 
 // 期間選択は意図的に固定期間のみ提供している。
 // 理由: (1) 古いデータは練習の成長指標として参考にならない
 // (2) 定期的なデータクリーンアップを想定しており、長期間のデータ保持を前提としない
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
-
-function computeThroughput(result: Record<string, unknown>): number | null {
-  const correctAnswers = result.correctAnswers;
-  const durationMs = result.durationMs;
-  if (typeof correctAnswers !== 'number' || typeof durationMs !== 'number' || durationMs === 0) {
-    return null;
-  }
-  return (correctAnswers / durationMs) * 60000;
-}
 
 function formatDate(date: Date | null, locale: string): string {
   if (!date) return '-';
@@ -64,29 +55,38 @@ function getComparisonLabel(period: DatePeriod, t: ReturnType<typeof useTranslat
   }
 }
 
-function computeStats(sessions: PracticeSessionRow[]) {
-  const sessionsWithThroughput = sessions
-    .map((s) => ({
-      ...s,
-      throughput: computeThroughput(s.result),
-    }))
-    .filter((s): s is typeof s & { throughput: number } => s.throughput !== null);
+/** 完走判定: incorrectAnswers < mistakeAllowance（3ミスに達せず時間切れで終了したセッション） */
+function isCompletedSession(session: PracticeSessionRow): boolean {
+  const mistakeAllowance = session.settings.mistakeAllowance;
+  const incorrectAnswers = session.result.incorrectAnswers;
+  if (typeof mistakeAllowance !== 'number' || typeof incorrectAnswers !== 'number') return false;
+  return incorrectAnswers < mistakeAllowance;
+}
 
-  const bestThroughput =
-    sessionsWithThroughput.length > 0
-      ? Math.max(...sessionsWithThroughput.map((s) => s.throughput))
+function computeStats(sessions: PracticeSessionRow[]) {
+  const scores = sessions
+    .map((s) => {
+      const correctAnswers = s.result.correctAnswers;
+      return typeof correctAnswers === 'number' ? correctAnswers : null;
+    })
+    .filter((v): v is number => v !== null);
+
+  const bestScore = scores.length > 0 ? Math.max(...scores) : null;
+
+  const completedScores = sessions
+    .filter(isCompletedSession)
+    .map((s) => {
+      const correctAnswers = s.result.correctAnswers;
+      return typeof correctAnswers === 'number' ? correctAnswers : null;
+    })
+    .filter((v): v is number => v !== null);
+
+  const avgCompletionScore =
+    completedScores.length > 0
+      ? completedScores.reduce((sum, v) => sum + v, 0) / completedScores.length
       : null;
 
-  const accuracyValues = sessions
-    .map((s) => {
-      const acc = s.result.accuracy;
-      return typeof acc === 'number' ? acc : null;
-    })
-    .filter((a): a is number => a !== null);
-
-  const bestAccuracy = accuracyValues.length > 0 ? Math.max(...accuracyValues) : null;
-
-  return { bestThroughput, bestAccuracy, totalSessions: sessions.length };
+  return { bestScore, avgCompletionScore, totalSessions: sessions.length };
 }
 
 function computePercentChange(current: number | null, previous: number | null): number | null {
@@ -97,7 +97,7 @@ function computePercentChange(current: number | null, previous: number | null): 
 type DailyAggregation = {
   date: string;
   dateKey: string;
-  avgThroughput: number;
+  avgScore: number;
 };
 
 function aggregateByDay(sessions: PracticeSessionRow[], locale: string): DailyAggregation[] {
@@ -105,18 +105,18 @@ function aggregateByDay(sessions: PracticeSessionRow[], locale: string): DailyAg
 
   for (const s of sessions) {
     if (!s.startedAt) continue;
-    const tp = computeThroughput(s.result);
-    if (tp === null) continue;
+    const correctAnswers = s.result.correctAnswers;
+    if (typeof correctAnswers !== 'number') continue;
 
     const d = new Date(s.startedAt);
     const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const existing = dailyMap.get(dateKey);
     if (existing) {
-      existing.total += tp;
+      existing.total += correctAnswers;
       existing.count += 1;
     } else {
       dailyMap.set(dateKey, {
-        total: tp,
+        total: correctAnswers,
         count: 1,
         dateLabel: formatShortDate(s.startedAt, locale),
       });
@@ -128,7 +128,7 @@ function aggregateByDay(sessions: PracticeSessionRow[], locale: string): DailyAg
     .map(([dateKey, { total, count, dateLabel }]) => ({
       date: dateLabel,
       dateKey,
-      avgThroughput: Math.round((total / count) * 10) / 10,
+      avgScore: Math.round((total / count) * 10) / 10,
     }));
 }
 
@@ -255,38 +255,33 @@ export function Dashboard({ locale }: { locale: string }) {
   const prevByDayIndex = new Map<number, number>();
   for (const pd of previousDaily) {
     const idx = getDayIndex(pd.dateKey, prevPeriodStart);
-    prevByDayIndex.set(idx, pd.avgThroughput);
+    prevByDayIndex.set(idx, pd.avgScore);
   }
 
   const chartData = currentDaily.map((cd) => {
     const dayIdx = getDayIndex(cd.dateKey, currentPeriodStart);
-    const prevTp = prevByDayIndex.get(dayIdx) ?? null;
+    const prevScore = prevByDayIndex.get(dayIdx) ?? null;
     return {
       date: cd.date,
-      throughput: cd.avgThroughput,
-      previousThroughput: prevTp,
+      score: cd.avgScore,
+      previousScore: prevScore,
     };
   });
 
   // TODO: ページネーション対応
   const tableRows = allSessions.slice(0, 20).map((s) => {
-    const tp = computeThroughput(s.result);
-    const accuracy = typeof s.result.accuracy === 'number' ? s.result.accuracy : null;
     const correctAnswers =
       typeof s.result.correctAnswers === 'number' ? s.result.correctAnswers : null;
-    const totalQuestions =
-      typeof s.result.totalQuestions === 'number' ? s.result.totalQuestions : null;
+    const incorrectAnswers =
+      typeof s.result.incorrectAnswers === 'number' ? s.result.incorrectAnswers : null;
+    const mistakeAllowance =
+      typeof s.settings.mistakeAllowance === 'number' ? s.settings.mistakeAllowance : null;
 
     return {
       date: formatDate(s.startedAt, locale),
-      accuracy: accuracy !== null ? `${Math.round(accuracy)}%` : '-',
-      correctAnswers:
-        correctAnswers !== null && totalQuestions !== null
-          ? `${correctAnswers} / ${totalQuestions}`
-          : correctAnswers !== null
-            ? `${correctAnswers}`
-            : '-',
-      throughput: tp !== null ? tp.toFixed(1) : '-',
+      correctAnswers: correctAnswers !== null ? `${correctAnswers}` : '-',
+      incorrectAnswers,
+      mistakeAllowance,
     };
   });
 
@@ -326,21 +321,17 @@ export function Dashboard({ locale }: { locale: string }) {
           ))}
         </select>
 
-        <div className="flex rounded-lg border border-border overflow-hidden">
+        <select
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value as DatePeriod)}
+          className="w-full sm:w-48 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        >
           {DATE_PERIODS.map((period) => (
-            <button
-              key={period}
-              onClick={() => setSelectedPeriod(period)}
-              className={`px-3 py-2 text-sm transition-colors ${
-                selectedPeriod === period
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-card text-foreground hover:bg-accent'
-              }`}
-            >
+            <option key={period} value={period}>
               {t(`periods.${period}`)}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       {isLoading ? (
@@ -351,35 +342,28 @@ export function Dashboard({ locale }: { locale: string }) {
         <>
           <div>
             <SectionTitle>{t('records')}</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               <StatsCard
-                label={t('bestThroughput')}
-                value={
-                  currentStats.bestThroughput !== null
-                    ? currentStats.bestThroughput.toFixed(1)
-                    : '-'
-                }
-                sub={t('throughputUnit')}
+                label={t('bestScore')}
+                value={currentStats.bestScore !== null ? currentStats.bestScore.toString() : '-'}
                 comparison={{
-                  percentChange: computePercentChange(
-                    currentStats.bestThroughput,
-                    prevStats.bestThroughput
-                  ),
+                  percentChange: computePercentChange(currentStats.bestScore, prevStats.bestScore),
                   absoluteChange: null,
                   label: comparisonLabel,
                 }}
               />
               <StatsCard
-                label={t('bestAccuracy')}
+                label={t('avgScore')}
                 value={
-                  currentStats.bestAccuracy !== null && currentStats.bestAccuracy >= 0
-                    ? `${Math.round(currentStats.bestAccuracy)}%`
+                  currentStats.avgCompletionScore !== null
+                    ? currentStats.avgCompletionScore.toFixed(1)
                     : '-'
                 }
+                tooltip={t('avgScoreTooltip')}
                 comparison={{
                   percentChange: computePercentChange(
-                    currentStats.bestAccuracy,
-                    prevStats.bestAccuracy
+                    currentStats.avgCompletionScore,
+                    prevStats.avgCompletionScore
                   ),
                   absoluteChange: null,
                   label: comparisonLabel,
@@ -400,13 +384,13 @@ export function Dashboard({ locale }: { locale: string }) {
             </div>
           </div>
 
-          <div>
-            <SectionTitle>{t('throughputTrend')}</SectionTitle>
+          <div className="min-w-0">
+            <SectionTitle>{t('scoreTrend')}</SectionTitle>
             <div className="mt-4">
-              <ThroughputChart
+              <ScoreChart
                 data={chartData}
                 emptyMessage={t('noData')}
-                yAxisLabel={t('throughputUnit')}
+                yAxisLabel={t('scoreUnit')}
                 currentLabel={t(`periods.${selectedPeriod}`)}
                 previousLabel={t(`periods.${getPreviousPeriodLabel(selectedPeriod)}`)}
               />
@@ -421,9 +405,8 @@ export function Dashboard({ locale }: { locale: string }) {
                 emptyMessage={t('noData')}
                 headers={{
                   date: t('tableDate'),
-                  accuracy: t('tableAccuracy'),
                   correctAnswers: t('tableCorrectAnswers'),
-                  throughput: t('tableThroughput'),
+                  incorrectAnswers: t('tableIncorrectAnswers'),
                 }}
               />
             </div>

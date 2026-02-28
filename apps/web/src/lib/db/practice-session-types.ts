@@ -35,7 +35,7 @@ export type PracticeMenuType = (typeof PRACTICE_MENU_TYPES)[number];
 // Shared base shapes (mirroring packages/features/src/common/types.ts)
 // ---------------------------------------------------------------------------
 
-type PracticeMode = 'timed' | 'training';
+type PracticeMode = 'timed' | 'training' | 'rush';
 
 type BaseTimedSettings = {
   timeLimit: number;
@@ -69,7 +69,10 @@ export type LegalMovesSettings = BaseTimedSettings & {
   selectedPieces: string[];
 };
 
-export type SquareColorsSettings = BaseTimedSettings;
+export type SquareColorsSettings = {
+  timeLimit: number;
+  mistakeAllowance: number;
+};
 
 export type BoardSymmetrySettings = BaseTimedSettings;
 
@@ -125,8 +128,10 @@ export type LegalMovesResult = BaseQuizResult & {
   incorrectAnswers: number;
 };
 
-export type SquareColorsResult = BaseQuizResult & {
+export type SquareColorsResult = {
+  correctAnswers: number;
   incorrectAnswers: number;
+  timeTaken: number;
 };
 
 export type BoardSymmetryResult = BaseQuizResult & {

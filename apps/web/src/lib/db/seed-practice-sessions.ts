@@ -42,14 +42,12 @@ async function seed() {
       const baseThroughput = 12 + dayProgress * 10; // 12 -> 22
       const throughput = baseThroughput + randomBetween(-3, 3);
 
-      const durationMs = randomInt(30000, 60000);
-      const durationSec = durationMs / 1000;
+      const durationSec = randomInt(30, 60);
       const totalQuestions = Math.round((throughput * durationSec) / 60);
       const accuracy = randomBetween(70, 100);
       const correctAnswers = Math.round(totalQuestions * (accuracy / 100));
       const incorrectAnswers = totalQuestions - correctAnswers;
       const timeTaken = durationSec;
-      const averageTime = totalQuestions > 0 ? timeTaken / totalQuestions : 0;
 
       rows.push({
         userId: USER_ID,
@@ -57,16 +55,12 @@ async function seed() {
         startedAt: date,
         settings: {
           timeLimit: durationSec,
-          mode: 'timed' as const,
+          mistakeAllowance: 3,
         },
         result: {
           correctAnswers,
-          totalQuestions,
-          accuracy: Math.round(accuracy * 10) / 10,
-          timeTaken: Math.round(timeTaken * 10) / 10,
-          averageTime: Math.round(averageTime * 100) / 100,
-          durationMs,
           incorrectAnswers,
+          timeTaken: Math.round(timeTaken * 10) / 10,
         },
       });
     }

@@ -11,12 +11,11 @@ type Props = {
 };
 
 type SquareColorsLocalSettings = {
-  timeLimit: number;
   mode: PracticeMode;
 };
 
 const STORAGE_KEY = 'squareColors_settings';
-const DEFAULTS: SquareColorsLocalSettings = { timeLimit: 60, mode: 'timed' };
+const DEFAULTS: SquareColorsLocalSettings = { mode: 'training' };
 
 export default function SquareColors({ locale }: Props) {
   const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
@@ -24,8 +23,6 @@ export default function SquareColors({ locale }: Props) {
   return (
     <SquareColorsSetup
       locale={locale}
-      timeLimit={settings.timeLimit}
-      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
       mode={settings.mode}
       onModeChange={(mode) => updateSettings({ mode })}
     />

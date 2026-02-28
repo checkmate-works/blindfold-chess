@@ -7,12 +7,9 @@ import { createClient } from '@/lib/supabase/server';
 
 type SaveSquareColorsResultInput = {
   correctAnswers: number;
-  totalQuestions: number;
   incorrectAnswers: number;
-  accuracy: number;
   timeTaken: number;
-  averageTime: number;
-  timeLimit: number;
+  mistakeAllowance: number;
 };
 
 export type SaveResultResponse = {
@@ -34,18 +31,14 @@ export async function saveSquareColorsResult(
     }
 
     const settings: SquareColorsSettings = {
-      timeLimit: input.timeLimit,
-      mode: 'timed',
+      timeLimit: 60,
+      mistakeAllowance: input.mistakeAllowance,
     };
 
     const result: SquareColorsResult = {
       correctAnswers: input.correctAnswers,
-      totalQuestions: input.totalQuestions,
       incorrectAnswers: input.incorrectAnswers,
-      accuracy: input.accuracy,
       timeTaken: input.timeTaken,
-      averageTime: input.averageTime,
-      durationMs: Math.round(input.timeTaken * 1000),
     };
 
     const [inserted] = await db

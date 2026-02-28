@@ -12,9 +12,6 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-  searchParams: Promise<{
-    timeLimit?: string;
-  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -28,14 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SquareColorsChallengePage({ params, searchParams }: Props) {
+export default async function SquareColorsChallengePage({ params }: Props) {
   const { locale } = await params;
-  const { timeLimit } = await searchParams;
   const t = await getTranslations({ locale });
-
-  // Default to 60 seconds if timeLimit is missing or 0
-  const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-  const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
 
   return (
     <PracticeSessionPage
@@ -47,7 +39,7 @@ export default async function SquareColorsChallengePage({ params, searchParams }
         { label: t('practice.squareColors.session') },
       ]}
     >
-      <SquareColorsChallenge locale={locale} initialTimeLimit={timeLimitValue} />
+      <SquareColorsChallenge locale={locale} />
     </PracticeSessionPage>
   );
 }

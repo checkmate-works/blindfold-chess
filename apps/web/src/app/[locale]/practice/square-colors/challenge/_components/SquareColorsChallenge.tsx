@@ -19,12 +19,13 @@ import { SquareColorsPlaying } from './SquareColorsPlaying';
 
 type Props = {
   locale: Locale;
-  initialTimeLimit: number;
 };
 
 const BATCH_SIZE = 100;
+const MAX_MISTAKES = 3;
+const TIME_LIMIT = 60;
 
-export default function SquareColorsChallenge({ locale, initialTimeLimit }: Props) {
+export default function SquareColorsChallenge({ locale }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const { preferences } = useGamePreferences();
@@ -60,8 +61,9 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
     handleAnswer,
     togglePause,
   } = useTimedSession<string>({
-    timeLimit: initialTimeLimit,
+    timeLimit: TIME_LIMIT,
     generateQuestion,
+    mistakeAllowance: MAX_MISTAKES,
   });
 
   // Scroll to challenge element after mount
@@ -98,20 +100,15 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
       score: correctCount.toString(),
       total: total.toString(),
       time: totalTime.toString(),
-      timeLimit: initialTimeLimit.toString(),
     });
     const resultUrl = `/${locale}/practice/square-colors/result?${params.toString()}`;
 
     if (user && total > 0) {
-      const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
       saveSquareColorsResult({
         correctAnswers: correctCount,
-        totalQuestions: total,
         incorrectAnswers: incorrectCount,
-        accuracy,
         timeTaken: totalTime,
-        averageTime: totalTime / total,
-        timeLimit: initialTimeLimit,
+        mistakeAllowance: MAX_MISTAKES,
       })
         .catch(() => {
           // Silently ignore save failures - result display is unaffected
@@ -122,7 +119,7 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
     } else {
       router.push(resultUrl);
     }
-  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, initialTimeLimit, user]);
+  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, user]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;
@@ -137,7 +134,7 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
       <SquareColorsPlaying
         currentSquare={currentSquare}
         timeRemaining={timeRemaining}
-        timeLimit={initialTimeLimit}
+        timeLimit={TIME_LIMIT}
         showResult={showFeedback}
         lastAnswer={
           lastAnswerCorrect !== null ? { correct: lastAnswerCorrect, square: currentSquare } : null
@@ -149,6 +146,8 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        remainingLives={MAX_MISTAKES - incorrectCount}
+        maxLives={MAX_MISTAKES}
       />
     </div>
   );

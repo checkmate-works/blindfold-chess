@@ -13,8 +13,8 @@ import {
 
 type DataPoint = {
   date: string;
-  throughput: number | null;
-  previousThroughput: number | null;
+  score: number | null;
+  previousScore: number | null;
 };
 
 type Props = {
@@ -25,13 +25,7 @@ type Props = {
   previousLabel: string;
 };
 
-export function ThroughputChart({
-  data,
-  emptyMessage,
-  yAxisLabel,
-  currentLabel,
-  previousLabel,
-}: Props) {
+export function ScoreChart({ data, emptyMessage, yAxisLabel, currentLabel, previousLabel }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
@@ -40,11 +34,11 @@ export function ThroughputChart({
     );
   }
 
-  const hasPreviousData = data.some((d) => d.previousThroughput !== null);
+  const hasPreviousData = data.some((d) => d.previousScore !== null);
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={250} minHeight={200}>
+      <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
         <XAxis
           dataKey="date"
@@ -72,14 +66,14 @@ export function ThroughputChart({
           formatter={(value: number | string | (string | number)[] | undefined, name?: string) => {
             if (value === undefined || value === null) return ['-', name ?? ''];
             const num = typeof value === 'number' ? value : Number(value);
-            const label = name === 'previousThroughput' ? previousLabel : currentLabel;
+            const label = name === 'previousScore' ? previousLabel : currentLabel;
             return [num.toFixed(1), label];
           }}
         />
         {hasPreviousData && <Legend />}
         <Line
           type="monotone"
-          dataKey="throughput"
+          dataKey="score"
           name={currentLabel}
           stroke="var(--color-primary)"
           strokeWidth={2}
@@ -90,7 +84,7 @@ export function ThroughputChart({
         {hasPreviousData && (
           <Line
             type="monotone"
-            dataKey="previousThroughput"
+            dataKey="previousScore"
             name={previousLabel}
             stroke="var(--color-muted-foreground)"
             strokeWidth={1.5}

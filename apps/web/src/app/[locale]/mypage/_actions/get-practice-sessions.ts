@@ -12,6 +12,7 @@ export type PracticeSessionRow = {
   id: string;
   menuType: string;
   startedAt: Date | null;
+  settings: Record<string, unknown>;
   result: Record<string, unknown>;
 };
 
@@ -135,6 +136,7 @@ export async function getPracticeSessions(
         id: practiceSessions.id,
         menuType: practiceSessions.menuType,
         startedAt: practiceSessions.startedAt,
+        settings: practiceSessions.settings,
         result: practiceSessions.result,
       })
       .from(practiceSessions)
@@ -145,6 +147,7 @@ export async function getPracticeSessions(
       id: row.id,
       menuType: row.menuType,
       startedAt: row.startedAt,
+      settings: row.settings as Record<string, unknown>,
       result: row.result as Record<string, unknown>,
     }));
 
@@ -162,6 +165,7 @@ export async function getPracticeSessions(
         id: practiceSessions.id,
         menuType: practiceSessions.menuType,
         startedAt: practiceSessions.startedAt,
+        settings: practiceSessions.settings,
         result: practiceSessions.result,
       })
       .from(practiceSessions)
@@ -172,6 +176,7 @@ export async function getPracticeSessions(
       id: row.id,
       menuType: row.menuType,
       startedAt: row.startedAt,
+      settings: row.settings as Record<string, unknown>,
       result: row.result as Record<string, unknown>,
     }));
 
