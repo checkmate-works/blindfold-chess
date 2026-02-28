@@ -40,6 +40,10 @@
     "onboarding": {
       "title": "初期設定",
       "description": "初めてのゲームの前に設定をカスタマイズしましょう"
+    },
+    "mypage": {
+      "title": "マイページ",
+      "description": "アカウント情報やアクティビティを確認できます"
     }
   },
   "Header": {
@@ -1533,6 +1537,7 @@
   "AuthStatusDisplay": {
     "signUp": "サインアップ",
     "account": "アカウント",
+    "mypage": "マイページ",
     "settings": "設定",
     "signOut": "サインアウト"
   },
@@ -1647,6 +1652,48 @@
         "position": "カスタム局面",
         "positionDescription": "カスタムの駒配置を設定してそこからプレイします"
       }
+    }
+  },
+  "Mypage": {
+    "title": "マイページ",
+    "signInRequired": "マイページを表示するにはサインインしてください。",
+    "records": "レコード",
+    "bestThroughput": "最高スループット",
+    "bestAccuracy": "最高正答率",
+    "totalSessions": "総セッション数",
+    "throughputUnit": "正答数/分",
+    "throughputTrend": "スループット推移",
+    "sessionHistory": "セッション履歴",
+    "noData": "まだ記録がありません。",
+    "tableDate": "日時",
+    "tableAccuracy": "正答率",
+    "tableCorrectAnswers": "正答数",
+    "tableThroughput": "スループット",
+    "periods": {
+      "thisWeek": "今週",
+      "lastWeek": "先週",
+      "thisMonth": "今月",
+      "lastMonth": "先月",
+      "twoWeeksAgo": "2週間前",
+      "twoMonthsAgo": "2ヶ月前"
+    },
+    "vsLastWeek": "先週比",
+    "vs2WeeksAgo": "2週間前比",
+    "vsLastMonth": "先月比",
+    "vs2MonthsAgo": "2ヶ月前比",
+    "menuTypes": {
+      "coordinate_quiz": "座標クイズ",
+      "legal_moves": "合法手",
+      "square_colors": "マス目の色",
+      "board_symmetry": "盤面対称",
+      "route_planner": "ルートプランナー",
+      "diagonal_quiz": "斜線クイズ",
+      "position_memory": "ポジションメモリー",
+      "knight_tour": "ナイトツアー",
+      "move_sequence": "約束組手",
+      "algebraic_notation": "代数記法",
+      "fen": "FEN再構成",
+      "quadrant_anchors": "象限アンカー"
     }
   }
 }

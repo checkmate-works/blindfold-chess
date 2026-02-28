@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { FaRegUser } from 'react-icons/fa';
-import { FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
 import { useAuth } from '../_contexts/AuthContext';
 
@@ -49,6 +49,14 @@ export function AuthStatusDisplay() {
         {isOpen && (
           <div className="fixed top-16 right-0 w-48 border-l border-b border-border bg-card shadow-lg">
             <div className="py-1">
+              <Link
+                href={`/${locale}/mypage`}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <FiUser className="h-4 w-4" />
+                {t('mypage')}
+              </Link>
               <Link
                 href={`/${locale}/preferences`}
                 className="flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
