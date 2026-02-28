@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { useAuth } from '../../_contexts/AuthContext';
 import { Dashboard } from './Dashboard';
+import { DashboardSkeleton } from './DashboardSkeleton';
 
 export function MypageContent() {
   const { user, isLoading } = useAuth();
@@ -13,7 +14,7 @@ export function MypageContent() {
   const tSignIn = useTranslations('signIn');
 
   if (isLoading) {
-    return null;
+    return <DashboardSkeleton />;
   }
 
   if (!user) {

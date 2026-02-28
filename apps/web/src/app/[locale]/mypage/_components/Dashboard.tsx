@@ -13,6 +13,7 @@ import {
   getAvailableMenuTypes,
   getPracticeSessions,
 } from '../_actions/get-practice-sessions';
+import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
 import { StatsCard } from './StatsCard';
@@ -198,19 +199,20 @@ export function Dashboard({ locale }: { locale: string }) {
   const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
   const [isLoading, setIsLoading] = useState(true);
-  const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[]>([]);
+  const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
 
   // Fetch all menu types once on mount to populate dropdown
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const types = await getAvailableMenuTypes();
-      if (!cancelled && types.length > 0) {
+      if (!cancelled) {
         setAvailableMenuTypes(types);
-        setSelectedMenu(types[0]);
-      }
-      if (!cancelled && types.length === 0) {
-        setIsLoading(false);
+        if (types.length > 0) {
+          setSelectedMenu(types[0]);
+        } else {
+          setIsLoading(false);
+        }
       }
     })();
     return () => {
@@ -220,10 +222,7 @@ export function Dashboard({ locale }: { locale: string }) {
 
   // Fetch sessions when menu or period changes
   useEffect(() => {
-    if (!selectedMenu) {
-      setIsLoading(false);
-      return;
-    }
+    if (!selectedMenu) return;
 
     let cancelled = false;
     (async () => {
@@ -285,17 +284,8 @@ export function Dashboard({ locale }: { locale: string }) {
     };
   });
 
-  const menuOptions = availableMenuTypes.map((type) => ({
-    value: type,
-    label: t(`menuTypes.${type}`),
-  }));
-
-  if (isLoading && availableMenuTypes.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+  if (availableMenuTypes === null || (isLoading && availableMenuTypes.length === 0)) {
+    return <DashboardSkeleton />;
   }
 
   if (availableMenuTypes.length === 0) {
@@ -305,6 +295,11 @@ export function Dashboard({ locale }: { locale: string }) {
       </div>
     );
   }
+
+  const menuOptions = availableMenuTypes.map((type) => ({
+    value: type,
+    label: t(`menuTypes.${type}`),
+  }));
 
   return (
     <div className="space-y-6">
@@ -335,9 +330,7 @@ export function Dashboard({ locale }: { locale: string }) {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
+        <DashboardContentSkeleton />
       ) : (
         <>
           <div>
