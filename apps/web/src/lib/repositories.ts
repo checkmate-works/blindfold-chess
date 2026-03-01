@@ -130,14 +130,11 @@ export class LocalStorageGameRepository implements IGameRepository {
       }
 
       // Validate and filter valid games, and ensure lastPlayed field exists
-      this.cachedGames = parsed
-        .filter(this.isValidGame)
-        .map((game) => ({
-          ...game,
-          // If lastPlayed doesn't exist, use date as fallback
-          lastPlayed: game.lastPlayed || game.date,
-        }))
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      this.cachedGames = parsed.filter(this.isValidGame).map((game) => ({
+        ...game,
+        // If lastPlayed doesn't exist, use date as fallback
+        lastPlayed: game.lastPlayed || game.date,
+      }));
 
       return this.cachedGames;
     } catch (error) {

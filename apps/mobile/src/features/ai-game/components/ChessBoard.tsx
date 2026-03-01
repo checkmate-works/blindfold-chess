@@ -6,6 +6,9 @@ import {
 } from "@blindfold-chess/features/chess-core";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType, PieceColor } from "@blindfold-chess/icons";
+// Board colors are dark/light mode-independent constants, so they are imported
+// directly rather than via ThemeContext. If dynamic board theme switching is
+// added in the future, this should be changed to use ThemeContext instead.
 import { chessColors, spacing, fontSize } from "../../../theme";
 
 type ChessBoardProps = {

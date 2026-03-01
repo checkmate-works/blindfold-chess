@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
@@ -149,15 +149,19 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     errorDetails,
   });
 
+  // Keep moves in a ref for callbacks that don't need to re-create on every move change
+  const movesRef = useRef(moves);
+  movesRef.current = moves;
+
   // AI move orchestration
   const handleAiMoveSuccess = useCallback(
     (move: AlgebraicNotation) => {
       pushMove(move);
-      const newMoves = [...moves, move];
+      const newMoves = [...movesRef.current, move];
       const gameState = computeGameState(newMoves, playerSide, startingFen);
       setLastMove(gameState.lastMoveDetails);
     },
-    [pushMove, moves, playerSide, startingFen, setLastMove]
+    [pushMove, playerSide, startingFen, setLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {

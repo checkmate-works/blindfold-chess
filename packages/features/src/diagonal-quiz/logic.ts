@@ -15,6 +15,33 @@ function squareFromIndices(f: number, r: number): string {
 }
 
 /**
+ * Compute the start position and length of both diagonals for a square.
+ *
+ * Diagonal (a1-h8 direction): file - rank = constant.
+ * Anti-diagonal (h1-a8 direction): file + rank = constant.
+ */
+function computeDiagonalParams(f: number, r: number) {
+  const diag = f - r;
+  const diagStartF = diag >= 0 ? diag : 0;
+  const diagStartR = diag >= 0 ? 0 : -diag;
+  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
+
+  const antiDiag = f + r;
+  const antiStartF = antiDiag <= 7 ? antiDiag : 7;
+  const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
+  const antiLength = Math.min(antiStartF, 7 - antiStartR);
+
+  return {
+    diagStartF,
+    diagStartR,
+    diagLength,
+    antiStartF,
+    antiStartR,
+    antiLength,
+  };
+}
+
+/**
  * Compute both diagonals for a given square.
  *
  * Diagonal (NE-SW, a1-h8 direction):
@@ -32,18 +59,15 @@ export function getDiagonals(square: string): DiagonalPair {
 
   const f = fileIndex(square[0]);
   const r = rankIndex(square[1]);
+  const {
+    diagStartF,
+    diagStartR,
+    diagLength,
+    antiStartF,
+    antiStartR,
+    antiLength,
+  } = computeDiagonalParams(f, r);
 
-  // Diagonal (a1-h8 direction): file - rank = constant
-  const diag = f - r;
-  let diagStartF: number, diagStartR: number;
-  if (diag >= 0) {
-    diagStartF = diag;
-    diagStartR = 0;
-  } else {
-    diagStartF = 0;
-    diagStartR = -diag;
-  }
-  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
   const diagEndF = diagStartF + diagLength;
   const diagEndR = diagStartR + diagLength;
 
@@ -54,17 +78,6 @@ export function getDiagonals(square: string): DiagonalPair {
       ? diagStart
       : `${diagStart}-${diagEnd}`;
 
-  // Anti-diagonal (h1-a8 direction): file + rank = constant
-  const antiDiag = f + r;
-  let antiStartF: number, antiStartR: number;
-  if (antiDiag <= 7) {
-    antiStartF = antiDiag;
-    antiStartR = 0;
-  } else {
-    antiStartF = 7;
-    antiStartR = antiDiag - 7;
-  }
-  const antiLength = Math.min(antiStartF, 7 - antiStartR);
   const antiEndF = antiStartF - antiLength;
   const antiEndR = antiStartR + antiLength;
 
@@ -129,23 +142,21 @@ export function getDiagonalSquares(square: string): {
 } {
   const f = fileIndex(square[0]);
   const r = rankIndex(square[1]);
+  const {
+    diagStartF,
+    diagStartR,
+    diagLength,
+    antiStartF,
+    antiStartR,
+    antiLength,
+  } = computeDiagonalParams(f, r);
 
-  // Diagonal (a1-h8 direction): file - rank = constant
   const diagonal: string[] = [];
-  const diag = f - r;
-  const diagStartF = diag >= 0 ? diag : 0;
-  const diagStartR = diag >= 0 ? 0 : -diag;
-  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
   for (let i = 0; i <= diagLength; i++) {
     diagonal.push(squareFromIndices(diagStartF + i, diagStartR + i));
   }
 
-  // Anti-diagonal (h1-a8 direction): file + rank = constant
   const antiDiagonal: string[] = [];
-  const antiDiag = f + r;
-  const antiStartF = antiDiag <= 7 ? antiDiag : 7;
-  const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
-  const antiLength = Math.min(antiStartF, 7 - antiStartR);
   for (let i = 0; i <= antiLength; i++) {
     antiDiagonal.push(squareFromIndices(antiStartF - i, antiStartR + i));
   }
@@ -163,20 +174,12 @@ export function getCornerInfo(square: string): {
 } {
   const f = fileIndex(square[0]);
   const r = rankIndex(square[1]);
+  const { diagLength, antiLength } = computeDiagonalParams(f, r);
 
-  const diag = f - r;
-  const diagStartF = diag >= 0 ? diag : 0;
-  const diagStartR = diag >= 0 ? 0 : -diag;
-  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
-  const singleDiagonal = diagLength === 0;
-
-  const antiDiag = f + r;
-  const antiStartF = antiDiag <= 7 ? antiDiag : 7;
-  const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
-  const antiLength = Math.min(antiStartF, 7 - antiStartR);
-  const singleAntiDiagonal = antiLength === 0;
-
-  return { singleDiagonal, singleAntiDiagonal };
+  return {
+    singleDiagonal: diagLength === 0,
+    singleAntiDiagonal: antiLength === 0,
+  };
 }
 
 export { generateRandomSquare, generateSquareSequence } from "../common";

@@ -63,10 +63,6 @@ export function useQuizTimer({
     setIsRunning(false);
   }, [duration]);
 
-  const stop = useCallback(() => {
-    setIsRunning(false);
-  }, []);
-
   // Progress from 0 to 1
   const progress = 1 - timeRemaining / duration;
 
@@ -78,6 +74,5 @@ export function useQuizTimer({
     start,
     pause,
     reset,
-    stop,
   };
 }

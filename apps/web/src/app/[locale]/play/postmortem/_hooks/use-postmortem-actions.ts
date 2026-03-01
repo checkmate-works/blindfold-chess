@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -47,6 +47,10 @@ export function usePostmortemActions({
   const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
 
+  // Keep moveLog in a ref to avoid it triggering re-renders in dependency arrays
+  const moveLogRef = useRef(moveLog);
+  moveLogRef.current = moveLog;
+
   // Auto-fill opponent's move if needed
   useEffect(() => {
     if (
@@ -68,12 +72,13 @@ export function usePostmortemActions({
         setUserMoves((prev) => [...prev, opponentMove]);
         setCurrentMoveIndex(newIndex);
 
+        const currentLog = moveLogRef.current;
         const previousEval =
-          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+          currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
             ? {
-                score: moveLog[moveLog.length - 1].evaluation!.score,
-                mate: moveLog[moveLog.length - 1].evaluation!.mate,
-                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
+                score: currentLog[currentLog.length - 1].evaluation!.score,
+                mate: currentLog[currentLog.length - 1].evaluation!.mate,
+                bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
               }
             : undefined;
 
@@ -116,7 +121,6 @@ export function usePostmortemActions({
     isEvaluating,
     showEvaluation,
     t,
-    moveLog,
     gamePositions,
     startsAsBlack,
     startMoveNumber,
@@ -148,12 +152,13 @@ export function usePostmortemActions({
         setCurrentMoveIndex(newIndex);
         setMoveInputValue('');
 
+        const currentLog = moveLogRef.current;
         const previousEval =
-          moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+          currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
             ? {
-                score: moveLog[moveLog.length - 1].evaluation!.score,
-                mate: moveLog[moveLog.length - 1].evaluation!.mate,
-                bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
+                score: currentLog[currentLog.length - 1].evaluation!.score,
+                mate: currentLog[currentLog.length - 1].evaluation!.mate,
+                bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
               }
             : undefined;
 
@@ -202,7 +207,6 @@ export function usePostmortemActions({
       showEvaluation,
       isEvaluating,
       t,
-      moveLog,
       gamePositions,
       startsAsBlack,
       startMoveNumber,
@@ -287,12 +291,13 @@ export function usePostmortemActions({
     setUserMoves(newMoves);
 
     const newLogEntries: MoveLogEntry[] = [];
+    const currentLog = moveLogRef.current;
     let previousEval =
-      moveLog.length > 0 && moveLog[moveLog.length - 1].evaluation
+      currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
         ? {
-            score: moveLog[moveLog.length - 1].evaluation!.score,
-            mate: moveLog[moveLog.length - 1].evaluation!.mate,
-            bestMove: moveLog[moveLog.length - 1].evaluation!.nextBestMove,
+            score: currentLog[currentLog.length - 1].evaluation!.score,
+            mate: currentLog[currentLog.length - 1].evaluation!.mate,
+            bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
           }
         : undefined;
 
@@ -339,7 +344,6 @@ export function usePostmortemActions({
     currentMoveIndex,
     originalMoves,
     userMoves,
-    moveLog,
     showEvaluation,
     isEvaluating,
     t,

@@ -135,10 +135,11 @@ export function findShortestPath(
 
   const parent = new Map<string, string>();
   const queue: string[] = [start];
+  let head = 0;
   parent.set(start, "");
 
-  while (queue.length > 0) {
-    const current = queue.shift()!;
+  while (head < queue.length) {
+    const current = queue[head++];
 
     if (current === end) {
       // Reconstruct path from parent map
