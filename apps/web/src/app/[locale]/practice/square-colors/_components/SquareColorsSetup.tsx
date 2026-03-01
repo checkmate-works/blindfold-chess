@@ -68,7 +68,7 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
         </Button>
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/square-colors"

@@ -33,7 +33,7 @@ export function AlgebraicNotationSetup() {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/notation/algebraic-notation"
