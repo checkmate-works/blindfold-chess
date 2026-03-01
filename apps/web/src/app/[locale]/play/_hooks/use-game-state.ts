@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
-import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 type LoadedGameData = {
@@ -84,10 +83,11 @@ export function useGameState({
   // Initialize on mount with initial moves
   useEffect(() => {
     if (!isInitialized && initialMovesFromUrl.length > 0) {
-      setLastMove(getLastMoveDetails(initialMovesFromUrl as string[], startingFen));
+      const gameState = computeGameState(initialMovesFromUrl, playerSide, startingFen);
+      setLastMove(gameState.lastMoveDetails);
       setIsInitialized(true);
     }
-  }, [isInitialized, initialMovesFromUrl, startingFen]);
+  }, [isInitialized, initialMovesFromUrl, startingFen, playerSide]);
 
   // Update game state whenever moves change
   useEffect(() => {

@@ -51,6 +51,12 @@ export function useAutoSave({
   const isInitialSyncSave = useRef(false);
   const previousPathname = useRef(pathname);
   const hasInitialSaveExecuted = useRef(false);
+  const playerColorRef = useRef(playerColor);
+  const skillLevelRef = useRef(skillLevel);
+  const startingFenRef = useRef(startingFen);
+  const gamePreferencesRef = useRef(gamePreferences);
+  const saveOnInitRef = useRef(saveOnInit);
+  const enabledRef = useRef(enabled);
 
   // State for save status indicator
   const [isSaving, setIsSaving] = useState(false);
@@ -63,7 +69,24 @@ export function useAutoSave({
     }
     currentMovesRef.current = moves;
     currentStatusRef.current = status;
-  }, [gameId, moves, status, currentGameId]);
+    playerColorRef.current = playerColor;
+    skillLevelRef.current = skillLevel;
+    startingFenRef.current = startingFen;
+    gamePreferencesRef.current = gamePreferences;
+    saveOnInitRef.current = saveOnInit;
+    enabledRef.current = enabled;
+  }, [
+    gameId,
+    moves,
+    status,
+    currentGameId,
+    playerColor,
+    skillLevel,
+    startingFen,
+    gamePreferences,
+    saveOnInit,
+    enabled,
+  ]);
 
   // Initial save when component mounts if saveOnInit is true
   useEffect(() => {
@@ -76,11 +99,11 @@ export function useAutoSave({
         try {
           const gameData = {
             moves: currentMovesRef.current,
-            playerColor,
-            skillLevel,
+            playerColor: playerColorRef.current,
+            skillLevel: skillLevelRef.current,
             status: currentStatusRef.current,
-            startingFen,
-            gamePreferences,
+            startingFen: startingFenRef.current,
+            gamePreferences: gamePreferencesRef.current,
           };
 
           const savedGameId = await gameRepository.create(gameData);
@@ -104,8 +127,8 @@ export function useAutoSave({
                 'blindfold_chess_pending_game',
                 JSON.stringify({
                   moves: currentMovesRef.current,
-                  playerColor,
-                  skillLevel,
+                  playerColor: playerColorRef.current,
+                  skillLevel: skillLevelRef.current,
                   status: currentStatusRef.current,
                 })
               );
@@ -127,15 +150,17 @@ export function useAutoSave({
   // Save game function
   const saveGame = useCallback(
     async (showNotification = false) => {
-      if (!enabled) return;
+      if (!enabledRef.current) return;
 
       // Skip if initial save is pending for a new game
-      if (saveOnInit && !currentGameId && !hasInitialSaveExecuted.current) {
+      if (saveOnInitRef.current && !currentGameId && !hasInitialSaveExecuted.current) {
         return;
       }
 
       // Don't save if the game is already finished and we're just viewing it
-      const isGameFinished = status === 'win' || status === 'loss' || status === 'draw';
+      const currentStatus = currentStatusRef.current;
+      const isGameFinished =
+        currentStatus === 'win' || currentStatus === 'loss' || currentStatus === 'draw';
       const wasGameFinished =
         lastSavedStatus.current === 'win' ||
         lastSavedStatus.current === 'loss' ||
@@ -147,13 +172,14 @@ export function useAutoSave({
       setIsSaving(true);
 
       try {
+        const currentMoves = currentMovesRef.current;
         const gameData = {
-          moves,
-          playerColor,
-          skillLevel,
-          status,
-          startingFen,
-          gamePreferences,
+          moves: currentMoves,
+          playerColor: playerColorRef.current,
+          skillLevel: skillLevelRef.current,
+          status: currentStatus,
+          startingFen: startingFenRef.current,
+          gamePreferences: gamePreferencesRef.current,
         };
 
         let savedGameId: string;
@@ -179,8 +205,8 @@ export function useAutoSave({
           setCurrentGameId(savedGameId);
         }
 
-        lastSavedMovesLength.current = moves.length;
-        lastSavedStatus.current = status;
+        lastSavedMovesLength.current = currentMoves.length;
+        lastSavedStatus.current = currentStatus;
         hasPendingChanges.current = false;
         if (isInitialSyncSave.current) {
           isInitialSyncSave.current = false;
@@ -208,10 +234,10 @@ export function useAutoSave({
           sessionStorage.setItem(
             'blindfold_chess_pending_game',
             JSON.stringify({
-              moves,
-              playerColor,
-              skillLevel,
-              status,
+              moves: currentMovesRef.current,
+              playerColor: playerColorRef.current,
+              skillLevel: skillLevelRef.current,
+              status: currentStatusRef.current,
             })
           );
           sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
@@ -222,18 +248,7 @@ export function useAutoSave({
         }
       }
     },
-    [
-      currentGameId,
-      enabled,
-      gameRepository,
-      moves,
-      playerColor,
-      skillLevel,
-      status,
-      startingFen,
-      gamePreferences,
-      saveOnInit,
-    ]
+    [currentGameId, gameRepository]
   );
 
   const prevEnabled = useRef(enabled);
@@ -270,7 +285,7 @@ export function useAutoSave({
     prevEnabled.current = enabled;
 
     // Skip if initial save is pending for a new game
-    if (saveOnInit && !currentGameId && !hasInitialSaveExecuted.current) {
+    if (saveOnInitRef.current && !currentGameId && !hasInitialSaveExecuted.current) {
       return;
     }
 
@@ -299,7 +314,7 @@ export function useAutoSave({
       // Save immediately to ensure both player and AI moves are saved
       saveGame(false); // Don't show notification on auto-save
     }
-  }, [moves.length, status, saveGame, saveOnInit, currentGameId, enabled]);
+  }, [moves.length, status, saveGame, currentGameId, enabled]);
 
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {
@@ -354,7 +369,7 @@ export function useAutoSave({
   // Auto-save on page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (hasPlayerInteracted.current && moves.length > 0) {
+      if (hasPlayerInteracted.current && currentMovesRef.current.length > 0) {
         // Note: Can't show toast during unload, but save the game
         saveGame(false);
       }
@@ -362,7 +377,7 @@ export function useAutoSave({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [saveGame, moves.length]);
+  }, [saveGame]);
 
   // Detect pathname changes (navigation)
   useEffect(() => {

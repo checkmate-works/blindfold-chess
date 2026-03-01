@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme, touchTarget } from "../../../theme";
 import type { Square, AnswerFeedback } from "../lib/types";
@@ -12,7 +13,7 @@ type ChessBoardSquareProps = {
   size: number;
 };
 
-export function ChessBoardSquare({
+export const ChessBoardSquare = memo(function ChessBoardSquare({
   square,
   onPress,
   isTarget,
@@ -52,7 +53,7 @@ export function ChessBoardSquare({
       ]}
     />
   );
-}
+});
 
 const styles = StyleSheet.create({
   square: {
