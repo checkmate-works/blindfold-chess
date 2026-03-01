@@ -4,6 +4,7 @@ import { Chess, DEFAULT_POSITION } from "chess.js";
 import { getTurnFromFen, validateFen } from "./fen";
 import { validateMoveSequence } from "./moves";
 import type { MoveResult } from "./types";
+import { toMoveResult } from "./types";
 
 /**
  * A single move pair in structured PGN representation.
@@ -152,18 +153,7 @@ export function getPgnHistory(
     const chess = new Chess();
     chess.loadPgn(pgn);
     if (options?.verbose) {
-      return chess.history({ verbose: true }).map((m) => ({
-        san: m.san,
-        from: m.from,
-        to: m.to,
-        color: m.color,
-        piece: m.piece,
-        captured: m.captured,
-        promotion: m.promotion,
-        flags: m.flags,
-        before: m.before,
-        after: m.after,
-      }));
+      return chess.history({ verbose: true }).map(toMoveResult);
     }
     return chess.history();
   } catch {

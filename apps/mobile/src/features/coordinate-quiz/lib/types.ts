@@ -14,5 +14,5 @@ export type {
   AnswerFeedback,
 } from "@blindfold-chess/features/coordinate-quiz";
 
-// Re-export Square from chess.js for consumers that imported it from here
-export type { Square } from "chess.js";
+// Re-export Square for consumers that imported it from here
+export type { Square } from "@blindfold-chess/types";

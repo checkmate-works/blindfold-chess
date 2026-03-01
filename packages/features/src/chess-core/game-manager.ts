@@ -2,6 +2,7 @@ import type { Color, PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
 import type { BoardPiece, MoveResult } from "./types";
+import { toMoveResult } from "./types";
 
 export class ChessGameManager {
   private chess: Chess;
@@ -11,19 +12,7 @@ export class ChessGameManager {
   }
 
   move(move: string): MoveResult {
-    const result = this.chess.move(move);
-    return {
-      san: result.san,
-      from: result.from,
-      to: result.to,
-      color: result.color,
-      piece: result.piece,
-      captured: result.captured,
-      promotion: result.promotion,
-      flags: result.flags,
-      before: result.before,
-      after: result.after,
-    };
+    return toMoveResult(this.chess.move(move));
   }
 
   undo(): void {
@@ -43,18 +32,7 @@ export class ChessGameManager {
   moves(options: { verbose: false }): string[];
   moves(options?: { verbose?: boolean }): string[] | MoveResult[] {
     if (options?.verbose) {
-      return this.chess.moves({ verbose: true }).map((m) => ({
-        san: m.san,
-        from: m.from,
-        to: m.to,
-        color: m.color,
-        piece: m.piece,
-        captured: m.captured,
-        promotion: m.promotion,
-        flags: m.flags,
-        before: m.before,
-        after: m.after,
-      }));
+      return this.chess.moves({ verbose: true }).map(toMoveResult);
     }
     return this.chess.moves();
   }
@@ -95,19 +73,7 @@ export class ChessGameManager {
   history(options: { verbose: true }): MoveResult[];
   history(options?: { verbose?: boolean }): string[] | MoveResult[] {
     if (options?.verbose) {
-      const moves = this.chess.history({ verbose: true });
-      return moves.map((m) => ({
-        san: m.san,
-        from: m.from,
-        to: m.to,
-        color: m.color,
-        piece: m.piece,
-        captured: m.captured,
-        promotion: m.promotion,
-        flags: m.flags,
-        before: m.before,
-        after: m.after,
-      }));
+      return this.chess.history({ verbose: true }).map(toMoveResult);
     }
     return this.chess.history();
   }
