@@ -27,6 +27,21 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
 ```
 
+### Authentication (Required for Sign-In Feature)
+
+Used by Supabase Auth for Google Sign-In. Without these variables, the authentication feature is disabled and the app runs normally without sign-in capability.
+
+```bash
+# Supabase project URL and anonymous key
+# Vercel Marketplace: Automatically set by Supabase integration (same as database)
+# Local development: Copy from Supabase Dashboard → Project Settings → API,
+#                    or run `vercel env pull .env.local`
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+For authentication setup instructions, see [authentication-setup.md](authentication-setup.md).
+
 ### Google Analytics (Optional)
 
 The application supports Google Analytics 4 for usage tracking. To enable it:

@@ -33,9 +33,17 @@
       "title": "Contact Us",
       "description": "Contact form for Blindfold Chess inquiries"
     },
+    "signIn": {
+      "title": "Sign In",
+      "description": "Sign in to your Blindfold Chess account"
+    },
     "onboarding": {
       "title": "Setup",
       "description": "Set up your preferences before starting your first game"
+    },
+    "mypage": {
+      "title": "My Page",
+      "description": "View your account information and activity"
     }
   },
   "Header": {
@@ -328,9 +336,10 @@
     "averageTime": "Average Time",
     "undo": "Undo",
     "resume": "Resume",
-    "modeTimed": "Timed",
+    "modeTimed": "Challenge",
     "modeTraining": "Training",
     "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
+    "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
     "endTraining": "End",
     "trainingEnded": "Training ended",
@@ -1525,6 +1534,20 @@
       "cta": "Read All Articles"
     }
   },
+  "AuthStatusDisplay": {
+    "signUp": "Sign Up",
+    "account": "Account",
+    "mypage": "My Page",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
+  "signIn": {
+    "title": "Sign In",
+    "description": "Sign in to your Blindfold Chess account",
+    "signInWithGoogle": "Sign in with Google",
+    "signingIn": "Signing in...",
+    "authError": "Sign-in failed. Please try again."
+  },
   "posts": {
     "pageTitle": "Posts",
     "pageDescription": "News, updates, and articles about Blindfold Chess",
@@ -1629,6 +1652,48 @@
         "position": "Custom Position",
         "positionDescription": "Set up a custom board position and start playing from there"
       }
+    }
+  },
+  "Mypage": {
+    "title": "My Page",
+    "signInRequired": "Please sign in to view your page.",
+    "records": "Records",
+    "bestScore": "Best Score",
+    "avgScore": "Avg. Score",
+    "avgScoreTooltip": "Average score of sessions that lasted the full 60 seconds.",
+    "totalSessions": "Total Sessions",
+    "scoreUnit": "Avg. Score",
+    "scoreTrend": "Score Trend",
+    "sessionHistory": "Session History",
+    "noData": "No records yet.",
+    "tableDate": "Date",
+    "tableCorrectAnswers": "Correct",
+    "tableIncorrectAnswers": "Incorrect",
+    "periods": {
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "thisMonth": "This Month",
+      "lastMonth": "Last Month",
+      "twoWeeksAgo": "2 Weeks Ago",
+      "twoMonthsAgo": "2 Months Ago"
+    },
+    "vsLastWeek": "vs last week",
+    "vs2WeeksAgo": "vs 2 weeks ago",
+    "vsLastMonth": "vs last month",
+    "vs2MonthsAgo": "vs 2 months ago",
+    "menuTypes": {
+      "coordinate_quiz": "Coordinate Quiz",
+      "legal_moves": "Legal Moves",
+      "square_colors": "Square Colors",
+      "board_symmetry": "Board Symmetry",
+      "route_planner": "Route Planner",
+      "diagonal_quiz": "Diagonal Quiz",
+      "position_memory": "Position Memory",
+      "knight_tour": "Knight's Tour",
+      "move_sequence": "Yakusoku Kumite",
+      "algebraic_notation": "Algebraic Notation",
+      "fen": "FEN Reconstruction",
+      "quadrant_anchors": "Quadrant Anchors"
     }
   }
 }

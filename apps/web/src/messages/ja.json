@@ -33,9 +33,17 @@
       "title": "お問い合わせ",
       "description": "Blindfold Chessに関するお問い合わせフォーム"
     },
+    "signIn": {
+      "title": "サインイン",
+      "description": "Blindfold Chess アカウントにサインイン"
+    },
     "onboarding": {
       "title": "初期設定",
       "description": "初めてのゲームの前に設定をカスタマイズしましょう"
+    },
+    "mypage": {
+      "title": "マイページ",
+      "description": "アカウント情報やアクティビティを確認できます"
     }
   },
   "Header": {
@@ -329,9 +337,10 @@
     "averageTime": "平均時間",
     "undo": "戻る",
     "resume": "再開",
-    "modeTimed": "タイム制",
+    "modeTimed": "チャレンジ",
     "modeTraining": "トレーニング",
     "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
+    "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
@@ -1526,6 +1535,20 @@
       "cta": "記事一覧を読む"
     }
   },
+  "AuthStatusDisplay": {
+    "signUp": "サインアップ",
+    "account": "アカウント",
+    "mypage": "マイページ",
+    "settings": "設定",
+    "signOut": "サインアウト"
+  },
+  "signIn": {
+    "title": "サインイン",
+    "description": "Blindfold Chess アカウントにサインイン",
+    "signInWithGoogle": "Google でサインイン",
+    "signingIn": "サインイン中...",
+    "authError": "サインインに失敗しました。もう一度お試しください。"
+  },
   "posts": {
     "pageTitle": "投稿",
     "pageDescription": "Blindfold Chessのニュース、更新情報、記事",
@@ -1630,6 +1653,48 @@
         "position": "カスタム局面",
         "positionDescription": "カスタムの駒配置を設定してそこからプレイします"
       }
+    }
+  },
+  "Mypage": {
+    "title": "マイページ",
+    "signInRequired": "マイページを表示するにはサインインしてください。",
+    "records": "レコード",
+    "bestScore": "最高スコア",
+    "avgScore": "平均スコア",
+    "avgScoreTooltip": "制限時間を最後まで使い切ったセッションの平均スコアです。",
+    "totalSessions": "総セッション数",
+    "scoreUnit": "平均スコア",
+    "scoreTrend": "スコア推移",
+    "sessionHistory": "セッション履歴",
+    "noData": "まだ記録がありません。",
+    "tableDate": "日時",
+    "tableCorrectAnswers": "正答数",
+    "tableIncorrectAnswers": "ミス数",
+    "periods": {
+      "thisWeek": "今週",
+      "lastWeek": "先週",
+      "thisMonth": "今月",
+      "lastMonth": "先月",
+      "twoWeeksAgo": "2週間前",
+      "twoMonthsAgo": "2ヶ月前"
+    },
+    "vsLastWeek": "先週比",
+    "vs2WeeksAgo": "2週間前比",
+    "vsLastMonth": "先月比",
+    "vs2MonthsAgo": "2ヶ月前比",
+    "menuTypes": {
+      "coordinate_quiz": "座標クイズ",
+      "legal_moves": "合法手",
+      "square_colors": "マス目の色",
+      "board_symmetry": "盤面対称",
+      "route_planner": "ルートプランナー",
+      "diagonal_quiz": "斜線クイズ",
+      "position_memory": "ポジションメモリー",
+      "knight_tour": "ナイトツアー",
+      "move_sequence": "約束組手",
+      "algebraic_notation": "代数記法",
+      "fen": "FEN再構成",
+      "quadrant_anchors": "象限アンカー"
     }
   }
 }

@@ -3,7 +3,9 @@ import type { NextRequest } from 'next/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-export function proxy(request: NextRequest) {
+import { updateSession } from '@/lib/supabase/middleware';
+
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Extract the first segment (potential locale)
@@ -18,8 +20,8 @@ export function proxy(request: NextRequest) {
     );
 
     // Return 404 for any path that starts with something other than valid locales
-    // (excluding root path)
-    if (isInvalidLocale && pathname !== '/') {
+    // (excluding root path and auth callback)
+    if (isInvalidLocale && pathname !== '/' && !pathname.startsWith('/auth/')) {
       return new NextResponse(null, { status: 404 });
     }
   }
@@ -29,8 +31,8 @@ export function proxy(request: NextRequest) {
     (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
   );
 
-  // Redirect if locale is missing (but not for landing page)
-  if (pathnameIsMissingLocale && pathname !== '/') {
+  // Redirect if locale is missing (but not for landing page or auth routes)
+  if (pathnameIsMissingLocale && pathname !== '/' && !pathname.startsWith('/auth/')) {
     // Get the preferred locale from Accept-Language header or default to 'en'
     const acceptLanguage = request.headers.get('accept-language');
     const preferredLocale = acceptLanguage?.includes('ja') ? 'ja' : 'en';
@@ -38,6 +40,9 @@ export function proxy(request: NextRequest) {
     // Redirect to the same pathname with locale prefix
     return NextResponse.redirect(new URL(`/${preferredLocale}${pathname}`, request.url));
   }
+
+  // Refresh Supabase auth session
+  return await updateSession(request);
 }
 
 export const config = {

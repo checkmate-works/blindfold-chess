@@ -29,6 +29,20 @@
       "when": 1770810390514,
       "tag": "0003_spotty_norrin_radd",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772238967571,
+      "tag": "0004_slow_black_tarantula",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772265600000,
+      "tag": "0005_truncate_practice_sessions",
+      "breakpoints": true
     }
   ]
 }

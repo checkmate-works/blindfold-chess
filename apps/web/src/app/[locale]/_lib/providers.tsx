@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { ThemeProvider } from 'next-themes';
 
 import { ToastContainer } from '../_components/ToastContainer';
+import { AuthProvider } from '../_contexts/AuthContext';
 import { GamePreferencesProvider } from '../_contexts/GamePreferencesContext';
 import { ToastProvider } from '../_contexts/ToastContext';
 
@@ -19,12 +20,14 @@ export function Providers({ children, locale, messages }: Props) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <GamePreferencesProvider>
-          <ToastProvider>
-            {children}
-            <ToastContainer />
-          </ToastProvider>
-        </GamePreferencesProvider>
+        <AuthProvider>
+          <GamePreferencesProvider>
+            <ToastProvider>
+              {children}
+              <ToastContainer />
+            </ToastProvider>
+          </GamePreferencesProvider>
+        </AuthProvider>
       </ThemeProvider>
     </NextIntlClientProvider>
   );

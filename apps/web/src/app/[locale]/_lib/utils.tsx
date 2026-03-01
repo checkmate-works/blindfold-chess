@@ -1,5 +1,6 @@
 import {
   FaBook,
+  FaCog,
   FaDumbbell,
   FaEnvelope,
   FaGraduationCap,
@@ -31,5 +32,7 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaList className="h-5 w-5" />;
     case 'contact':
       return <FaEnvelope className="h-5 w-5" />;
+    case 'settings':
+      return <FaCog className="h-5 w-5" />;
   }
 };

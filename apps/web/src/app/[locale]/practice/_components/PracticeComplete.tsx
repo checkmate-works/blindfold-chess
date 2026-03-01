@@ -123,8 +123,8 @@ export function PracticeComplete({
 
       {/* Related learning module */}
       {relatedModule && (
-        <div className="mt-12">
-          <SectionTitle className="text-xl font-semibold mb-4">
+        <div className="mt-12 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
+          <SectionTitle>
             {relatedModule.sectionTitle || labels.relatedLearning || 'Related Learning'}
           </SectionTitle>
           <CardLink

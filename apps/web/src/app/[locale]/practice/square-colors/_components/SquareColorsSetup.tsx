@@ -9,25 +9,16 @@ import { FaPlay } from 'react-icons/fa';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
-import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
 import type { PracticeMode } from '../_lib/types';
 
 type Props = {
   locale: Locale;
-  timeLimit: number;
-  onTimeLimitChange: (value: number) => void;
   mode: PracticeMode;
   onModeChange: (mode: PracticeMode) => void;
 };
 
-export function SquareColorsSetup({
-  locale,
-  timeLimit,
-  onTimeLimitChange,
-  mode,
-  onModeChange,
-}: Props) {
+export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
   const t = useTranslations('practice.squareColors');
   const tp = useTranslations('practice');
   const router = useRouter();
@@ -36,15 +27,13 @@ export function SquareColorsSetup({
     if (mode === 'training') {
       router.push(`/${locale}/practice/square-colors/training#square-colors-training-session`);
     } else {
-      router.push(
-        `/${locale}/practice/square-colors/challenge?timeLimit=${timeLimit}#square-colors-challenge`
-      );
+      router.push(`/${locale}/practice/square-colors/challenge#square-colors-challenge`);
     }
   };
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'timed', label: tp('modeTimed') },
     { value: 'training', label: tp('modeTraining') },
+    { value: 'timed', label: tp('modeTimed') },
   ];
 
   return (
@@ -56,22 +45,15 @@ export function SquareColorsSetup({
           <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
         </div>
 
-        {mode === 'timed' && (
-          <div className="mb-6">
-            <TimeSlider
-              timeLimit={timeLimit}
-              onTimeLimitChange={onTimeLimitChange}
-              labels={{
-                timeLimit: t('timeLimit'),
-                seconds: t('seconds'),
-              }}
-            />
-          </div>
-        )}
-
         {mode === 'training' && (
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+          </div>
+        )}
+
+        {mode === 'timed' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('challengeDescription')}</p>
           </div>
         )}
 
@@ -86,7 +68,7 @@ export function SquareColorsSetup({
         </Button>
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/square-colors"

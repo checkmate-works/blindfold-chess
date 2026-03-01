@@ -15,7 +15,7 @@ type Props = {
   breadcrumbItems: BreadcrumbItem[];
   /** The main content rendered between PageTitle and Divider. */
   children: React.ReactNode;
-  /** Optional className override for the outer container div. Defaults to "container py-8 max-w-4xl mx-auto space-y-8". */
+  /** Optional className override for the outer container div. Defaults to "space-y-8". */
   containerClassName?: string;
   /** Optional className for the Divider. */
   dividerClassName?: string;
@@ -35,7 +35,7 @@ export function PracticeResultPage({
   title,
   breadcrumbItems,
   children,
-  containerClassName = 'container py-8 max-w-4xl mx-auto space-y-8',
+  containerClassName = 'space-y-8',
   dividerClassName,
 }: Props) {
   return (

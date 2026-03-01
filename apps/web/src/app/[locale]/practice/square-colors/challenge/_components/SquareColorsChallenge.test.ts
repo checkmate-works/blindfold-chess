@@ -145,19 +145,33 @@ describe('SquareColorsChallenge timed mode logic', () => {
     it('builds correct result URL params', () => {
       const stats = { correct: 50, incorrect: 10, totalTime: 60, averageTime: 1 };
       const total = 60;
-      const timeLimit = 60;
 
       const params = new URLSearchParams({
         score: stats.correct.toString(),
         total: total.toString(),
         time: stats.totalTime.toString(),
-        timeLimit: timeLimit.toString(),
       });
 
       expect(params.get('score')).toBe('50');
       expect(params.get('total')).toBe('60');
       expect(params.get('time')).toBe('60');
-      expect(params.get('timeLimit')).toBe('60');
+    });
+
+    it('builds result URL params without mistakeAllowance', () => {
+      const correctCount = 25;
+      const incorrectCount = 3;
+      const totalTime = 45;
+      const total = correctCount + incorrectCount;
+
+      const params = new URLSearchParams({
+        score: correctCount.toString(),
+        total: total.toString(),
+        time: totalTime.toString(),
+      });
+
+      expect(params.get('score')).toBe('25');
+      expect(params.get('total')).toBe('28');
+      expect(params.get('time')).toBe('45');
     });
 
     it('redirects when game is finished', () => {
@@ -170,41 +184,25 @@ describe('SquareColorsChallenge timed mode logic', () => {
       expect(isFinished).toBe(false);
     });
   });
-});
 
-describe('timeLimit parameter parsing', () => {
-  it('parses valid timeLimit', () => {
-    const timeLimit = '90';
-    const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-    const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
-    expect(timeLimitValue).toBe(90);
-  });
+  describe('rush mode - remaining lives calculation', () => {
+    it('calculates remaining lives correctly', () => {
+      const MAX_MISTAKES = 3;
+      const incorrectCount = 0;
+      expect(MAX_MISTAKES - incorrectCount).toBe(3);
+    });
 
-  it('defaults to 60 when timeLimit is missing', () => {
-    const timeLimit: string | undefined = undefined;
-    const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-    const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
-    expect(timeLimitValue).toBe(60);
-  });
+    it('decreases remaining lives with each mistake', () => {
+      const MAX_MISTAKES = 3;
+      expect(MAX_MISTAKES - 1).toBe(2);
+      expect(MAX_MISTAKES - 2).toBe(1);
+      expect(MAX_MISTAKES - 3).toBe(0);
+    });
 
-  it('defaults to 60 when timeLimit is 0', () => {
-    const timeLimit = '0';
-    const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-    const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
-    expect(timeLimitValue).toBe(60);
-  });
-
-  it('defaults to 60 when timeLimit is negative', () => {
-    const timeLimit = '-10';
-    const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-    const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
-    expect(timeLimitValue).toBe(60);
-  });
-
-  it('defaults to 60 when timeLimit is not a number', () => {
-    const timeLimit = 'abc';
-    const parsedTimeLimit = timeLimit ? parseInt(timeLimit, 10) : 0;
-    const timeLimitValue = parsedTimeLimit > 0 ? parsedTimeLimit : 60;
-    expect(timeLimitValue).toBe(60);
+    it('remaining lives reaches 0 when mistake allowance is reached', () => {
+      const MAX_MISTAKES = 3;
+      const incorrectCount = MAX_MISTAKES;
+      expect(MAX_MISTAKES - incorrectCount).toBe(0);
+    });
   });
 });

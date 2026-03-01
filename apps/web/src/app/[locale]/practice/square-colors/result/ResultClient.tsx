@@ -29,9 +29,6 @@ export function ResultClient({ locale }: Props) {
   const time = parseFloat(searchParams.get('time') || '0');
   const score = parseInt(searchParams.get('score') || '0', 10);
   const total = parseInt(searchParams.get('total') || '0', 10);
-  const timeLimitParam = parseInt(searchParams.get('timeLimit') || '0', 10);
-  // Default to 60 seconds if missing or 0
-  const timeLimit = timeLimitParam > 0 ? timeLimitParam : 60;
   const correct = score;
   const incorrect = total - score;
 
@@ -71,7 +68,7 @@ export function ResultClient({ locale }: Props) {
 
   // Define related module
   const relatedModule = {
-    href: '/learn/board-visualization/square-colors',
+    href: '/learn/coordinates/square-colors',
     icon: '🎨',
     title: t('viewArticle'),
     description: t('articleDescription'),
@@ -91,15 +88,14 @@ export function ResultClient({ locale }: Props) {
         { label: t('title'), href: '/practice/square-colors' },
         { label: tPractice('result') },
       ]}
-      containerClassName="container py-8"
-      dividerClassName="my-8"
+      containerClassName="space-y-8"
     >
       <PracticeComplete
         score={score}
         total={total}
-        onTryAgain={() =>
-          router.push(`/${locale}/practice/square-colors/challenge?timeLimit=${timeLimit}`)
-        }
+        onTryAgain={() => {
+          router.push(`/${locale}/practice/square-colors/challenge`);
+        }}
         onExit={() => router.push(`/${locale}/practice/square-colors`)}
         locale={locale}
         labels={labels}

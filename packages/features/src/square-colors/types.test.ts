@@ -35,6 +35,11 @@ describe("SquareColorsSettings types", () => {
       const mode: PracticeMode = "training";
       expect(mode).toBe("training");
     });
+
+    it('accepts "rush" as a valid mode', () => {
+      const mode: PracticeMode = "rush";
+      expect(mode).toBe("rush");
+    });
   });
 
   describe("SquareColorsSettings type", () => {

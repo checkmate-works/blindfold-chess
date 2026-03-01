@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
 import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
+import { saveSquareColorsResult } from '@/app/[locale]/practice/square-colors/_actions/save-result';
 import {
   generateSquareSequence,
   getSquareColor,
@@ -17,13 +19,15 @@ import { SquareColorsPlaying } from './SquareColorsPlaying';
 
 type Props = {
   locale: Locale;
-  initialTimeLimit: number;
 };
 
 const BATCH_SIZE = 100;
+const MAX_MISTAKES = 3;
+const TIME_LIMIT = 60;
 
-export default function SquareColorsChallenge({ locale, initialTimeLimit }: Props) {
+export default function SquareColorsChallenge({ locale }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
   const { preferences } = useGamePreferences();
 
   // Batch-based question generation via ref
@@ -57,8 +61,9 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
     handleAnswer,
     togglePause,
   } = useTimedSession<string>({
-    timeLimit: initialTimeLimit,
+    timeLimit: TIME_LIMIT,
     generateQuestion,
+    mistakeAllowance: MAX_MISTAKES,
   });
 
   // Scroll to challenge element after mount
@@ -84,20 +89,37 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
     [currentSquare, handleAnswer]
   );
 
-  // Redirect on finish
+  // Save result and redirect on finish
+  const savedRef = useRef(false);
   useEffect(() => {
-    if (isFinished) {
-      const total = correctCount + incorrectCount;
+    if (!isFinished || savedRef.current) return;
+    savedRef.current = true;
 
-      const params = new URLSearchParams({
-        score: correctCount.toString(),
-        total: total.toString(),
-        time: totalTime.toString(),
-        timeLimit: initialTimeLimit.toString(),
-      });
-      router.push(`/${locale}/practice/square-colors/result?${params.toString()}`);
+    const total = correctCount + incorrectCount;
+    const params = new URLSearchParams({
+      score: correctCount.toString(),
+      total: total.toString(),
+      time: totalTime.toString(),
+    });
+    const resultUrl = `/${locale}/practice/square-colors/result?${params.toString()}`;
+
+    if (user && total > 0) {
+      saveSquareColorsResult({
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        timeTaken: totalTime,
+        mistakeAllowance: MAX_MISTAKES,
+      })
+        .catch(() => {
+          // Silently ignore save failures - result display is unaffected
+        })
+        .finally(() => {
+          router.push(resultUrl);
+        });
+    } else {
+      router.push(resultUrl);
     }
-  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, initialTimeLimit]);
+  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, user]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;
@@ -112,7 +134,7 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
       <SquareColorsPlaying
         currentSquare={currentSquare}
         timeRemaining={timeRemaining}
-        timeLimit={initialTimeLimit}
+        timeLimit={TIME_LIMIT}
         showResult={showFeedback}
         lastAnswer={
           lastAnswerCorrect !== null ? { correct: lastAnswerCorrect, square: currentSquare } : null
@@ -124,6 +146,8 @@ export default function SquareColorsChallenge({ locale, initialTimeLimit }: Prop
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        remainingLives={MAX_MISTAKES - incorrectCount}
+        maxLives={MAX_MISTAKES}
       />
     </div>
   );

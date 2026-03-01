@@ -112,10 +112,8 @@ export function ResultClient({ locale }: Props) {
 
       {!isTutorial && (
         <div className="max-w-4xl mx-auto">
-          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8">
-            <SectionTitle className="text-xl font-semibold mb-4">
-              {tPractice('relatedLearning')}
-            </SectionTitle>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6 mt-8 space-y-3">
+            <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {relatedLinks.map((link) => (
                 <CardLink

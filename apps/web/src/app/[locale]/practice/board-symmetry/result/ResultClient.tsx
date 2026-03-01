@@ -73,7 +73,7 @@ export function ResultClient({ locale }: Props) {
 
   // Define related module
   const relatedModule = {
-    href: '/learn/coordinates/symmetry',
+    href: '/learn/coordinates/board-symmetry',
     icon: '↔️',
     title: t('viewArticle'),
     description: t('articleDescription'),
@@ -92,8 +92,7 @@ export function ResultClient({ locale }: Props) {
         { label: t('title'), href: '/practice/board-symmetry' },
         { label: tPractice('result') },
       ]}
-      containerClassName="container py-8"
-      dividerClassName="my-8"
+      containerClassName="space-y-8"
     >
       <PracticeComplete
         score={score}

@@ -1,4 +1,4 @@
-export type PracticeMode = "timed" | "training";
+export type PracticeMode = "timed" | "training" | "rush";
 
 export type BasePracticeSettings = {
   timeLimit: number;

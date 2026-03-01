@@ -50,9 +50,9 @@ describe("BasePracticeSettings", () => {
   );
 
   it.each(allDefaults)(
-    '$name default has mode "timed" or "training"',
+    '$name default has mode "timed", "training", or "rush"',
     ({ settings }) => {
-      expect(["timed", "training"]).toContain(settings.mode);
+      expect(["timed", "training", "rush"]).toContain(settings.mode);
     },
   );
 
@@ -76,6 +76,11 @@ describe("PracticeMode", () => {
   it('accepts "training" as a valid mode', () => {
     const mode: PracticeMode = "training";
     expect(mode).toBe("training");
+  });
+
+  it('accepts "rush" as a valid mode', () => {
+    const mode: PracticeMode = "rush";
+    expect(mode).toBe("rush");
   });
 });
 

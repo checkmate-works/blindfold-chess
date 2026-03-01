@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import type { BoardTheme } from '@/lib/boardThemes';
@@ -26,6 +27,8 @@ type Props = {
   incorrectCount: number;
   isPaused: boolean;
   onTogglePause: () => void;
+  remainingLives: number;
+  maxLives: number;
 };
 
 export function SquareColorsPlaying({
@@ -41,6 +44,8 @@ export function SquareColorsPlaying({
   incorrectCount,
   isPaused,
   onTogglePause,
+  remainingLives,
+  maxLives,
 }: Props) {
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
@@ -49,9 +54,22 @@ export function SquareColorsPlaying({
   return (
     <div className="max-w-md mx-auto">
       <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
-        {/* Header and Timer */}
+        {/* Header: Lives and Timer */}
         <div className="mb-6">
-          <div className="flex justify-end mt-2">
+          <div className="flex justify-between items-center mt-2">
+            {/* Lives */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: maxLives }, (_, i) => (
+                <span key={i} className="text-destructive">
+                  {i < remainingLives ? (
+                    <FaHeart className="w-5 h-5" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 opacity-30" />
+                  )}
+                </span>
+              ))}
+            </div>
+            {/* Timer */}
             <div className="flex items-center gap-2">
               <button
                 onClick={onTogglePause}

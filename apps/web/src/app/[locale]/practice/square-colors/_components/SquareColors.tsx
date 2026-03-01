@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/use-persistent-settings';
 
 import type { PracticeMode } from '../_lib/types';
 import { SquareColorsSetup } from './SquareColorsSetup';
@@ -10,24 +11,8 @@ type Props = {
   locale: Locale;
 };
 
-type SquareColorsLocalSettings = {
-  timeLimit: number;
-  mode: PracticeMode;
-};
-
-const STORAGE_KEY = 'squareColors_settings';
-const DEFAULTS: SquareColorsLocalSettings = { timeLimit: 60, mode: 'timed' };
-
 export default function SquareColors({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const [mode, setMode] = useState<PracticeMode>('training');
 
-  return (
-    <SquareColorsSetup
-      locale={locale}
-      timeLimit={settings.timeLimit}
-      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
-      mode={settings.mode}
-      onModeChange={(mode) => updateSettings({ mode })}
-    />
-  );
+  return <SquareColorsSetup locale={locale} mode={mode} onModeChange={setMode} />;
 }

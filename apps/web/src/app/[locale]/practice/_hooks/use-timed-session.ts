@@ -9,6 +9,7 @@ export type UseTimedSessionConfig<TQuestion> = {
   timeLimit: number;
   generateQuestion: () => TQuestion;
   feedbackDuration?: number | ((correct: boolean) => number);
+  mistakeAllowance?: number;
 };
 
 export type UseTimedSessionReturn<TQuestion> = {
@@ -34,7 +35,12 @@ const DEFAULT_FEEDBACK_DURATION = 500;
 export function useTimedSession<TQuestion>(
   config: UseTimedSessionConfig<TQuestion>
 ): UseTimedSessionReturn<TQuestion> {
-  const { timeLimit, generateQuestion, feedbackDuration = DEFAULT_FEEDBACK_DURATION } = config;
+  const {
+    timeLimit,
+    generateQuestion,
+    feedbackDuration = DEFAULT_FEEDBACK_DURATION,
+    mistakeAllowance,
+  } = config;
 
   // Use refs to always access the latest callbacks inside setTimeout
   const generateQuestionRef = useRef(generateQuestion);
@@ -98,6 +104,8 @@ export function useTimedSession<TQuestion>(
       setLastAnswerCorrect(correct);
       setShowFeedback(true);
 
+      const newIncorrectCount = correct ? incorrectCount : incorrectCount + 1;
+
       if (correct) {
         setCorrectCount((prev) => prev + 1);
       } else {
@@ -109,6 +117,16 @@ export function useTimedSession<TQuestion>(
           ? feedbackDurationRef.current(correct)
           : feedbackDurationRef.current;
 
+      // Check if max mistakes reached after this answer
+      if (mistakeAllowance !== undefined && newIncorrectCount >= mistakeAllowance) {
+        feedbackTimeoutRef.current = setTimeout(() => {
+          isFinishedRef.current = true;
+          setIsFinished(true);
+          setShowFeedback(false);
+        }, duration);
+        return;
+      }
+
       feedbackTimeoutRef.current = setTimeout(() => {
         if (isFinishedRef.current) return;
         setCurrentQuestion(generateQuestionRef.current());
@@ -116,7 +134,7 @@ export function useTimedSession<TQuestion>(
         setLastAnswerCorrect(null);
       }, duration);
     },
-    [isFinished, countdown, showFeedback, isPaused]
+    [isFinished, countdown, showFeedback, isPaused, incorrectCount, mistakeAllowance]
   );
 
   const timeRemaining = Math.max(0, timeLimit - timeElapsed);

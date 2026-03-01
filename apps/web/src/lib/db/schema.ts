@@ -1,4 +1,14 @@
-import { integer, pgTable, text, timestamp, unique, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const categories = pgTable('categories', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -85,6 +95,24 @@ export const glossaryTermRelations = pgTable(
   (table) => [unique('uq_term_relation').on(table.termId, table.relatedTermId)]
 );
 
+// Practice sessions
+export const practiceSessions = pgTable(
+  'practice_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    menuType: text('menu_type').notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow(),
+    settings: jsonb('settings').default({}),
+    result: jsonb('result').notNull(),
+  },
+  (table) => [
+    index('idx_practice_sessions_user').on(table.userId),
+    index('idx_practice_sessions_menu').on(table.userId, table.menuType),
+    index('idx_practice_sessions_recent').on(table.userId, table.startedAt),
+  ]
+);
+
 // Type exports for use in application code
 export type Category = typeof categories.$inferSelect;
 export type NewCategory = typeof categories.$inferInsert;
@@ -100,3 +128,5 @@ export type GlossaryTermPosition = typeof glossaryTermPositions.$inferSelect;
 export type NewGlossaryTermPosition = typeof glossaryTermPositions.$inferInsert;
 export type GlossaryTermRelation = typeof glossaryTermRelations.$inferSelect;
 export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
+export type PracticeSession = typeof practiceSessions.$inferSelect;
+export type NewPracticeSession = typeof practiceSessions.$inferInsert;
