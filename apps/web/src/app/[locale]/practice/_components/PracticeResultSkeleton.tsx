@@ -4,7 +4,7 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 
 export function PracticeResultSkeleton() {
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <div className="bg-card rounded-xl shadow-sm border border-border p-8">
         {/* Score display placeholder */}
         <div className="mb-6 text-center flex flex-col items-center">

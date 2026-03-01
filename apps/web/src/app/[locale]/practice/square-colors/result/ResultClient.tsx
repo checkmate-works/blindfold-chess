@@ -88,8 +88,7 @@ export function ResultClient({ locale }: Props) {
         { label: t('title'), href: '/practice/square-colors' },
         { label: tPractice('result') },
       ]}
-      containerClassName="container py-8"
-      dividerClassName="my-8"
+      containerClassName="space-y-8"
     >
       <PracticeComplete
         score={score}
