@@ -68,7 +68,7 @@ export function ResultClient({ locale }: Props) {
 
   // Define related module
   const relatedModule = {
-    href: '/learn/board-visualization/square-colors',
+    href: '/learn/coordinates/square-colors',
     icon: '🎨',
     title: t('viewArticle'),
     description: t('articleDescription'),

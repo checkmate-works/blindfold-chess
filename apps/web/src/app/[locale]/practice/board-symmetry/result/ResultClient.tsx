@@ -73,7 +73,7 @@ export function ResultClient({ locale }: Props) {
 
   // Define related module
   const relatedModule = {
-    href: '/learn/coordinates/symmetry',
+    href: '/learn/coordinates/board-symmetry',
     icon: '↔️',
     title: t('viewArticle'),
     description: t('articleDescription'),

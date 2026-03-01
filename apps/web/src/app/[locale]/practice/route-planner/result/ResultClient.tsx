@@ -63,19 +63,19 @@ export function ResultClient({ locale }: Props) {
 
   const relatedLinks = [
     {
-      href: '/learn/moves/bishop',
+      href: '/learn/moves/bishop-movement',
       icon: '♝',
       title: tPractice('legalMoves.articles.bishop.title'),
       description: tPractice('legalMoves.articles.bishop.description'),
     },
     {
-      href: '/learn/moves/knight',
+      href: '/learn/moves/knight-movement',
       icon: '♞',
       title: tPractice('legalMoves.articles.knight.title'),
       description: tPractice('legalMoves.articles.knight.description'),
     },
     {
-      href: '/learn/moves/rook',
+      href: '/learn/moves/rook-movement',
       icon: '♜',
       title: tPractice('legalMoves.articles.rook.title'),
       description: tPractice('legalMoves.articles.rook.description'),
@@ -133,10 +133,8 @@ export function ResultClient({ locale }: Props) {
 
       {!isTutorial && (
         <div className="max-w-4xl mx-auto">
-          <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8">
-            <SectionTitle className="text-xl font-semibold mb-4">
-              {tPractice('relatedLearning')}
-            </SectionTitle>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6 mt-8 space-y-3">
+            <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {relatedLinks.map((link) => (
                 <CardLink
