@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { ChessBoardSquare } from "./ChessBoardSquare";
 import { coordinatesToSquare } from "../lib/utils";
@@ -27,8 +28,15 @@ export function ChessBoard({
   const boardSize = Math.min(maxBoardSize, 400);
   const squareSize = boardSize / 8;
 
+  const handleSquarePress = useCallback(
+    (square: Square) => {
+      onSquarePress(square);
+    },
+    [onSquarePress],
+  );
+
   // Generate board rows
-  const renderBoard = () => {
+  const boardRows = useMemo(() => {
     const rows = [];
 
     for (let rank = 0; rank < 8; rank++) {
@@ -42,7 +50,7 @@ export function ChessBoard({
           <ChessBoardSquare
             key={square}
             square={square}
-            onPress={onSquarePress}
+            onPress={handleSquarePress}
             isTarget={isTarget}
             feedback={feedback}
             disabled={disabled}
@@ -59,7 +67,14 @@ export function ChessBoard({
     }
 
     return rows;
-  };
+  }, [
+    orientation,
+    targetSquare,
+    feedback,
+    disabled,
+    squareSize,
+    handleSquarePress,
+  ]);
 
   return (
     <View
@@ -68,7 +83,7 @@ export function ChessBoard({
         { width: boardSize, height: boardSize, borderColor: colors.foreground },
       ]}
     >
-      <View style={styles.board}>{renderBoard()}</View>
+      <View style={styles.board}>{boardRows}</View>
     </View>
   );
 }

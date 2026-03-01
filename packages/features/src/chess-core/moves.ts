@@ -1,7 +1,8 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { Chess } from "chess.js";
 
-import type { MoveResult, Square } from "./types";
+import type { MoveResult, PieceSymbol, Square } from "./types";
+import { toMoveResult } from "./types";
 
 export function validateMoveSequence(
   fen: string,
@@ -44,18 +45,7 @@ export function executeMove(
 
     return {
       fen: chess.fen(),
-      moveResult: {
-        san: result.san,
-        from: result.from,
-        to: result.to,
-        color: result.color,
-        piece: result.piece,
-        captured: result.captured,
-        promotion: result.promotion,
-        flags: result.flags,
-        before: result.before,
-        after: result.after,
-      },
+      moveResult: toMoveResult(result),
     };
   } catch {
     return null;
@@ -77,18 +67,7 @@ export function getLegalMoves(
 ): string[] | MoveResult[] {
   const chess = new Chess(fen);
   if (options?.verbose) {
-    return chess.moves({ verbose: true }).map((m) => ({
-      san: m.san,
-      from: m.from,
-      to: m.to,
-      color: m.color,
-      piece: m.piece,
-      captured: m.captured,
-      promotion: m.promotion,
-      flags: m.flags,
-      before: m.before,
-      after: m.after,
-    }));
+    return chess.moves({ verbose: true }).map(toMoveResult);
   }
   return chess.moves();
 }
@@ -191,4 +170,23 @@ export function getPlayerMovesFromSequence(
   }
 
   return playerMoves;
+}
+
+/**
+ * Check if a move is legal for a single white piece placed on an otherwise empty board.
+ */
+export function isLegalPieceMove(
+  from: string,
+  to: string,
+  pieceType: string,
+): boolean {
+  const chess = new Chess();
+  chess.clear();
+  chess.put({ type: pieceType as PieceSymbol, color: "w" }, from as Square);
+  try {
+    const move = chess.move({ from: from as Square, to: to as Square });
+    return move !== null;
+  } catch {
+    return false;
+  }
 }

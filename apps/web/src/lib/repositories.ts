@@ -25,9 +25,17 @@ interface IGameRepository {
 
 /**
  * LocalStorage implementation of the game repository
+ *
+ * Uses an in-memory cache to avoid repeated JSON parsing, validation,
+ * and sorting on every method call. The cache is invalidated and
+ * rebuilt only when data is first loaded or after a write operation
+ * updates both localStorage and the cache simultaneously.
+ *
+ * Single-tab assumption: no cross-tab synchronization is performed.
  */
 export class LocalStorageGameRepository implements IGameRepository {
   private readonly storageKey = 'blindfold_chess_games';
+  private cachedGames: Game[] | null = null;
 
   async create(game: Omit<Game, 'id' | 'date' | 'lastPlayed'>): Promise<string> {
     try {
@@ -44,8 +52,10 @@ export class LocalStorageGameRepository implements IGameRepository {
       const gameId = crypto.randomUUID();
       const now = new Date().toISOString();
 
-      games.push({ ...game, id: gameId, date: now, lastPlayed: now });
+      const newGame: Game = { ...game, id: gameId, date: now, lastPlayed: now };
+      games.push(newGame);
       this.saveToStorage(games);
+      this.cachedGames = games;
 
       return gameId;
     } catch (error) {
@@ -84,6 +94,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       games[index] = { ...game, id, date: games[index].date, lastPlayed };
 
       this.saveToStorage(games);
+      this.cachedGames = games;
     } catch (error) {
       console.error('Failed to update game:', error);
       throw error;
@@ -101,31 +112,44 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   async loadAll(): Promise<Game[]> {
+    if (this.cachedGames !== null) {
+      return this.cachedGames;
+    }
+
     try {
       const data = localStorage.getItem(this.storageKey);
-      if (!data) return [];
+      if (!data) {
+        this.cachedGames = [];
+        return this.cachedGames;
+      }
 
       const parsed = JSON.parse(data);
-      if (!Array.isArray(parsed)) return [];
+      if (!Array.isArray(parsed)) {
+        this.cachedGames = [];
+        return this.cachedGames;
+      }
 
       // Validate and filter valid games, and ensure lastPlayed field exists
-      return parsed
-        .filter(this.isValidGame)
-        .map((game) => ({
-          ...game,
-          // If lastPlayed doesn't exist, use date as fallback
-          lastPlayed: game.lastPlayed || game.date,
-        }))
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      this.cachedGames = parsed.filter(this.isValidGame).map((game) => ({
+        ...game,
+        // If lastPlayed doesn't exist, use date as fallback
+        lastPlayed: game.lastPlayed || game.date,
+      }));
+
+      return this.cachedGames;
     } catch (error) {
       console.error('Failed to load games from localStorage:', error);
-      return [];
+      this.cachedGames = [];
+      return this.cachedGames;
     }
   }
 
   async loadAllSorted(sortBy: GameSortOption, direction: SortDirection = 'desc'): Promise<Game[]> {
     try {
       const games = await this.loadAll();
+
+      // Return a sorted copy so we don't mutate the cached array
+      const sortedGames = [...games];
 
       const sortFunction = (a: Game, b: Game) => {
         let aValue: string;
@@ -145,7 +169,7 @@ export class LocalStorageGameRepository implements IGameRepository {
         return direction === 'desc' ? bTime - aTime : aTime - bTime;
       };
 
-      return games.sort(sortFunction);
+      return sortedGames.sort(sortFunction);
     } catch (error) {
       console.error('Failed to load sorted games:', error);
       return [];
@@ -157,6 +181,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       const games = await this.loadAll();
       const filteredGames = games.filter((game) => game.id !== id);
       this.saveToStorage(filteredGames);
+      this.cachedGames = filteredGames;
     } catch (error) {
       console.error('Failed to delete game:', error);
       throw new Error('Failed to delete game');

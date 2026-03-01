@@ -1,6 +1,14 @@
 'use client';
 
-import React, { ReactNode, createContext, useCallback, useContext, useState } from 'react';
+import React, {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -20,6 +28,18 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const timerIdsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Clean up all timers on unmount
+  useEffect(() => {
+    const timerIds = timerIdsRef.current;
+    return () => {
+      for (const timerId of timerIds.values()) {
+        clearTimeout(timerId);
+      }
+      timerIds.clear();
+    };
+  }, []);
 
   const showToast = useCallback((message: string, type: ToastType = 'info') => {
     const id = Date.now().toString();
@@ -31,12 +51,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     });
 
     // Auto-hide after 3 seconds
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
+      timerIdsRef.current.delete(id);
     }, 3000);
+    timerIdsRef.current.set(id, timerId);
   }, []);
 
   const hideToast = useCallback((id: string) => {
+    const timerId = timerIdsRef.current.get(id);
+    if (timerId) {
+      clearTimeout(timerId);
+      timerIdsRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 

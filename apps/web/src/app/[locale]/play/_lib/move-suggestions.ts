@@ -38,6 +38,24 @@ export function generateMoveSuggestions(input: string): AlgebraicNotation[] {
   return [];
 }
 
+// Pre-compiled patterns for complete move detection
+const INCOMPLETE_PAWN_PROMOTION = /^[a-h][18]$/;
+const INCOMPLETE_PAWN_CAPTURE_PROMOTION = /^[a-h]x[a-h][18]$/;
+const COMPLETE_MOVE_PATTERNS = [
+  /^[a-h][2-7](\+|#)?$/, // Pawn moves (not to promotion rank): e4, e4+, e4#
+  /^[a-h]x[a-h][2-7](\+|#)?$/, // Pawn captures (not to promotion rank): exd5, exd5+
+  /^[a-h][1-8]=[QRBN](\+|#)?$/, // Pawn promotion: e8=Q, e8=Q+
+  /^[a-h]x[a-h][1-8]=[QRBN](\+|#)?$/, // Pawn capture promotion: exd8=Q
+  /^[KQRBN][a-h][1-8](\+|#)?$/, // Piece moves: Nf3, Qd4+
+  /^[KQRBN]x[a-h][1-8](\+|#)?$/, // Piece captures: Nxe5, Qxd4#
+  /^[KQRBN][a-h][a-h][1-8](\+|#)?$/, // Disambiguated by file: Nbd2, Rad1+
+  /^[KQRBN][1-8][a-h][1-8](\+|#)?$/, // Disambiguated by rank: N1d2, R1a1#
+  /^[KQRBN][a-h][1-8][a-h][1-8](\+|#)?$/, // Fully disambiguated: Nb1d2
+  /^[KQRBN][a-h]x[a-h][1-8](\+|#)?$/, // Disambiguated captures: Nbxd2
+  /^[KQRBN][1-8]x[a-h][1-8](\+|#)?$/, // Nfxe5, R1xd1
+  /^[KQRBN][a-h][1-8]x[a-h][1-8](\+|#)?$/, // Nb1xe5
+];
+
 /**
  * Check if input looks like a complete move
  */
@@ -47,27 +65,11 @@ function isCompleteMove(input: string): boolean {
 
   // Special case: pawn moves to promotion rank without promotion piece
   // These are incomplete and need suggestions
-  if (/^[a-h][18]$/.test(input) || /^[a-h]x[a-h][18]$/.test(input)) {
+  if (INCOMPLETE_PAWN_PROMOTION.test(input) || INCOMPLETE_PAWN_CAPTURE_PROMOTION.test(input)) {
     return false;
   }
 
-  // Basic patterns that suggest complete moves
-  const completePatterns = [
-    /^[a-h][2-7](\+|#)?$/, // Pawn moves (not to promotion rank): e4, e4+, e4#
-    /^[a-h]x[a-h][2-7](\+|#)?$/, // Pawn captures (not to promotion rank): exd5, exd5+
-    /^[a-h][1-8]=[QRBN](\+|#)?$/, // Pawn promotion: e8=Q, e8=Q+
-    /^[a-h]x[a-h][1-8]=[QRBN](\+|#)?$/, // Pawn capture promotion: exd8=Q
-    /^[KQRBN][a-h][1-8](\+|#)?$/, // Piece moves: Nf3, Qd4+
-    /^[KQRBN]x[a-h][1-8](\+|#)?$/, // Piece captures: Nxe5, Qxd4#
-    /^[KQRBN][a-h][a-h][1-8](\+|#)?$/, // Disambiguated by file: Nbd2, Rad1+
-    /^[KQRBN][1-8][a-h][1-8](\+|#)?$/, // Disambiguated by rank: N1d2, R1a1#
-    /^[KQRBN][a-h][1-8][a-h][1-8](\+|#)?$/, // Fully disambiguated: Nb1d2
-    /^[KQRBN][a-h]x[a-h][1-8](\+|#)?$/, // Disambiguated captures: Nbxd2
-    /^[KQRBN][1-8]x[a-h][1-8](\+|#)?$/, // Nfxe5, R1xd1
-    /^[KQRBN][a-h][1-8]x[a-h][1-8](\+|#)?$/, // Nb1xe5
-  ];
-
-  return completePatterns.some((pattern) => pattern.test(input));
+  return COMPLETE_MOVE_PATTERNS.some((pattern) => pattern.test(input));
 }
 
 /**

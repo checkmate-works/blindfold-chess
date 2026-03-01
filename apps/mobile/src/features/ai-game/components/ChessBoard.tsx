@@ -1,16 +1,15 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
-import { Chess } from "chess.js";
-import type { Color, PieceSymbol, Square } from "chess.js";
+import {
+  fenToBoard,
+  type BoardPiece,
+} from "@blindfold-chess/features/chess-core";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType, PieceColor } from "@blindfold-chess/icons";
+// Board colors are dark/light mode-independent constants, so they are imported
+// directly rather than via ThemeContext. If dynamic board theme switching is
+// added in the future, this should be changed to use ThemeContext instead.
 import { chessColors, spacing, fontSize } from "../../../theme";
-
-type BoardPiece = {
-  square: Square;
-  type: PieceSymbol;
-  color: Color;
-} | null;
 
 type ChessBoardProps = {
   fen: string;
@@ -33,8 +32,7 @@ export function ChessBoard({
 
   const board = useMemo(() => {
     try {
-      const chess = new Chess(fen);
-      return chess.board();
+      return fenToBoard(fen);
     } catch {
       return Array(8)
         .fill(null)

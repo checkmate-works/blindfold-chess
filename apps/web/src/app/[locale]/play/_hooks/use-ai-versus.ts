@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+import { getFenAfterMoves, getStartingFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { SkillLevel } from '@/lib/types';
@@ -39,17 +40,9 @@ export function useAiVersus(skillLevel: SkillLevel) {
       // getBestMove() calls ensureInitialized() internally,
       // so no need to poll isReady here
 
-      // Create a fresh chess instance to calculate current position
-      const { Chess } = await import('chess.js');
-      // Initialize with custom FEN or standard starting position
-      const chess = startingFen ? new Chess(startingFen) : new Chess();
-
-      // Replay all moves to get current position
-      for (const move of moves) {
-        chess.move(move);
-      }
-
-      const fen = chess.fen();
+      // Calculate current position FEN via chess-core
+      const initialFen = startingFen ?? getStartingFen();
+      const fen = getFenAfterMoves(initialFen, moves);
       // For custom starting positions, we need to pass the moves relative to that position
       const uciMove = await engine.getBestMove(fen, moves, 1000, startingFen);
       const aiMove = engine.convertUciToAlgebraic(uciMove, fen);

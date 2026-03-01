@@ -17,6 +17,8 @@ export type {
   Square,
 } from "./types";
 
+export { toMoveResult } from "./types";
+
 export {
   validateFen,
   fenToBoard,
@@ -34,6 +36,7 @@ export {
   getLastMoveDetails,
   replayMoves,
   getPlayerMovesFromSequence,
+  isLegalPieceMove,
 } from "./moves";
 
 export type {

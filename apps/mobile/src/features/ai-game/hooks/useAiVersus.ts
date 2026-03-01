@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
-import { Chess } from "chess.js";
+import {
+  getFenAfterMoves,
+  getStartingFen,
+} from "@blindfold-chess/features/chess-core";
 
 import { useStockfishEngine } from "../engine";
 import type { SkillLevel } from "../lib/types";
@@ -47,11 +50,8 @@ export function useAiVersus(skillLevel: SkillLevel) {
         await ensureSkillLevel();
 
         // Calculate current FEN
-        const chess = startingFen ? new Chess(startingFen) : new Chess();
-        for (const move of moves) {
-          chess.move(move);
-        }
-        const fen = chess.fen();
+        const initialFen = startingFen ?? getStartingFen();
+        const fen = getFenAfterMoves(initialFen, moves);
 
         const result = await engine.getBestMove(fen, moves, 1000, startingFen);
         return result.algebraicMove;

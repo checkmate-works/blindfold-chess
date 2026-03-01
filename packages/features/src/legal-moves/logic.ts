@@ -1,7 +1,4 @@
-import type { Square } from "@blindfold-chess/types";
-// TODO: Replace direct chess.js import with chess-core module to align with
-// the project's design principle of isolating chess.js behind a single API.
-import { Chess } from "chess.js";
+import { isLegalPieceMove } from "../chess-core";
 
 import { FILES, RANKS } from "../common";
 
@@ -12,22 +9,8 @@ export function isLegalMove(
   from: string,
   to: string,
   pieceType: PieceType,
-  chessInstance?: Chess,
 ): boolean {
-  // Reuse provided chess instance or create a new one
-  const chess = chessInstance ?? new Chess();
-  chess.clear();
-
-  // Place a white piece at the from square
-  chess.put({ type: pieceType, color: "w" }, from as Square);
-
-  // Try to make the move
-  try {
-    const move = chess.move({ from: from as Square, to: to as Square });
-    return move !== null;
-  } catch {
-    return false;
-  }
+  return isLegalPieceMove(from, to, pieceType);
 }
 
 // Get a mix of legal and illegal moves for better distribution
@@ -38,7 +21,6 @@ export function generateBalancedMoveQuestions(
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
   let legalCount = 0;
-  const chess = new Chess();
 
   while (questions.length < count) {
     const piece =
@@ -46,12 +28,11 @@ export function generateBalancedMoveQuestions(
     const question = generateMoveQuestionForPiece(
       piece,
       legalCount < targetLegalCount,
-      chess,
     );
 
     if (question) {
       questions.push(question);
-      if (isLegalMove(question.from, question.to, question.piece, chess)) {
+      if (isLegalMove(question.from, question.to, question.piece)) {
         legalCount++;
       }
     }
@@ -166,7 +147,6 @@ const PieceStrategies: Record<PieceType, PieceMoveStrategy> = {
 export function generateMoveQuestionForPiece(
   pieceType: PieceType,
   preferLegal: boolean,
-  chessInstance?: Chess,
 ): MoveQuestion | null {
   // Try multiple times to generate a suitable question
   for (let attempts = 0; attempts < 50; attempts++) {
@@ -199,12 +179,7 @@ export function generateMoveQuestionForPiece(
 
       // Ensure from and to are different
       if (toSquare !== fromSquare) {
-        const isLegal = isLegalMove(
-          fromSquare,
-          toSquare,
-          pieceType,
-          chessInstance,
-        );
+        const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
 
         // Return if we got what we wanted
         if ((preferLegal && isLegal) || (!preferLegal && !isLegal)) {
