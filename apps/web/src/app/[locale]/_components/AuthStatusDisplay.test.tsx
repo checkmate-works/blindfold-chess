@@ -39,6 +39,7 @@ describe('AuthStatusDisplay', () => {
     });
   });
 
+  // TODO: Restore sign-in link tests when authentication is publicly launched
   describe('when not signed in', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
@@ -48,26 +49,9 @@ describe('AuthStatusDisplay', () => {
       });
     });
 
-    it('should display the sign-up link', () => {
-      render(<AuthStatusDisplay />);
-      expect(screen.getByText('signUp')).toBeInTheDocument();
-    });
-
-    it('should link to the sign-in page with the correct locale', () => {
-      render(<AuthStatusDisplay />);
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/en/sign-in');
-    });
-
-    it('should have correct href for ja locale', () => {
-      mockLocale = 'ja';
-      render(<AuthStatusDisplay />);
-      expect(screen.getByRole('link')).toHaveAttribute('href', '/ja/sign-in');
-    });
-
-    it('should not display the account icon button', () => {
-      render(<AuthStatusDisplay />);
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    it('should return null when not signed in', () => {
+      const { container } = render(<AuthStatusDisplay />);
+      expect(container.innerHTML).toBe('');
     });
   });
 

@@ -83,12 +83,6 @@ export function AuthStatusDisplay() {
     );
   }
 
-  return (
-    <Link
-      href={`/${locale}/sign-in`}
-      className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-    >
-      {t('signUp')}
-    </Link>
-  );
+  // TODO: Restore sign-in link when authentication is publicly launched
+  return null;
 }
