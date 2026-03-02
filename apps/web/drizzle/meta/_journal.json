@@ -43,6 +43,13 @@
       "when": 1772265600000,
       "tag": "0005_truncate_practice_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772448259386,
+      "tag": "0006_flashy_tigra",
+      "breakpoints": true
     }
   ]
 }

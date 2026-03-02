@@ -2,6 +2,7 @@ import {
   index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -130,3 +131,21 @@ export type GlossaryTermRelation = typeof glossaryTermRelations.$inferSelect;
 export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
 export type PracticeSession = typeof practiceSessions.$inferSelect;
 export type NewPracticeSession = typeof practiceSessions.$inferInsert;
+
+// App role enum
+export const appRoleEnum = pgEnum('app_role', ['admin', 'user']);
+
+// User roles table
+export const userRoles = pgTable(
+  'user_roles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users
+    role: appRoleEnum('role').notNull().default('user'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_user_role').on(table.userId, table.role)]
+);
+
+export type UserRole = typeof userRoles.$inferSelect;
+export type NewUserRole = typeof userRoles.$inferInsert;
