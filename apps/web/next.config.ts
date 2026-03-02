@@ -3,6 +3,16 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 import { withSentryConfig } from '@sentry/nextjs';
 
+const cspDirectives = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co",
+  "frame-ancestors 'none'",
+];
+
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
@@ -60,11 +70,23 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            value: '0',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: cspDirectives.join('; '),
           },
         ],
       },

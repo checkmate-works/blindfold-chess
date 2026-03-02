@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GoogleSignInButton } from './GoogleSignInButton';
 

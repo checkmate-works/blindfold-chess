@@ -1,8 +1,12 @@
 'use server';
 
+import { headers } from 'next/headers';
+
 import { Resend } from 'resend';
 
 import { type ContactFormData, contactFormSchema } from './contact-schema';
+import { escapeHtml } from './escape-html';
+import { checkRateLimit } from './rate-limiter';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,6 +17,17 @@ export type ContactFormState = {
 
 export async function submitContactForm(data: ContactFormData): Promise<ContactFormState> {
   try {
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+
+    const { allowed } = checkRateLimit(ip);
+    if (!allowed) {
+      return {
+        success: false,
+        error: 'Too many requests. Please try again later.',
+      };
+    }
+
     // Validate form data
     const validatedData = contactFormSchema.parse(data);
 
@@ -24,11 +39,11 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactF
       replyTo: validatedData.email,
       html: `
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${validatedData.name}</p>
-        <p><strong>Email:</strong> ${validatedData.email}</p>
-        <p><strong>Subject:</strong> ${validatedData.subject}</p>
+        <p><strong>Name:</strong> ${escapeHtml(validatedData.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(validatedData.email)}</p>
+        <p><strong>Subject:</strong> ${escapeHtml(validatedData.subject)}</p>
         <h3>Message:</h3>
-        <p>${validatedData.message.replace(/\n/g, '<br>')}</p>
+        <p>${escapeHtml(validatedData.message).replace(/\n/g, '<br>')}</p>
       `,
     });
 
