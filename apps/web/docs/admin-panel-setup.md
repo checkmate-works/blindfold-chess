@@ -49,21 +49,15 @@ The `user_roles` table is included in the Drizzle schema. Apply it using:
 ```bash
 # Local development
 pnpm db:push
-
-# Production (via CI/CD or manually)
-pnpm db:run-migrate
 ```
 
-`db:push` compares the current schema with the database and applies only the differences (idempotent). `db:run-migrate` runs Drizzle migration files sequentially.
+`db:push` compares the current schema with the database and applies only the differences (idempotent).
+
+For production (Supabase), no manual migration is needed — the `prebuild` script automatically runs `pnpm db:run-migrate` during deployment.
 
 ### 3. Apply Custom Access Token Hook
 
-The hook function is in `drizzle/custom_access_token_hook.sql`. It is applied differently depending on the environment:
-
-| Method                    | When to Use                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| `pnpm db:run-migrate`     | Production — automatically detects Supabase and applies the hook after migrations |
-| `pnpm db:setup-auth-hook` | Manually apply to a Supabase database                                             |
+The hook function is in `drizzle/custom_access_token_hook.sql`. For production (Supabase), this is also handled automatically — `pnpm db:run-migrate` detects the Supabase environment and applies the hook after migrations during deployment. If you need to apply it manually, use `pnpm db:setup-auth-hook`.
 
 > **Note**: The hook SQL requires Supabase-managed roles (`supabase_auth_admin`, `authenticated`, `anon`) and will intentionally fail on local PostgreSQL. This is expected — the hook is only meaningful in a Supabase environment.
 
