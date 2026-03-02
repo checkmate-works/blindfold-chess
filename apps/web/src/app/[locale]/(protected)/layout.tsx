@@ -16,7 +16,7 @@ export default async function ProtectedLayout({
 
   if (!user) {
     const { locale } = await params;
-    redirect(`/${locale}/sign-in`);
+    redirect(`/${locale}/sign-in?toast=sign_in_required`);
   }
 
   return <>{children}</>;
