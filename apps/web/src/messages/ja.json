@@ -1702,5 +1702,19 @@
     "alreadyLoggedIn": "すでにログインしています",
     "logoutSuccess": "ログアウトしました",
     "signInRequired": "ログインしてください"
+  },
+  "Admin": {
+    "title": "Admin",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "totalUsers": "Total Users",
+    "roleAssignments": "Role Assignments",
+    "usersTable": {
+      "email": "Email",
+      "role": "Role",
+      "createdAt": "Created At",
+      "noUsersFound": "No users found",
+      "defaultRole": "user"
+    }
   }
 }

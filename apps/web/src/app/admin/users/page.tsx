@@ -1,8 +1,11 @@
+import { getTranslations } from 'next-intl/server';
+
 import { db, userRoles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export default async function AdminUsersPage() {
   const adminClient = createAdminClient();
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   const { data: usersData } = await adminClient.auth.admin.listUsers({
     page: 1,
@@ -16,14 +19,14 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Users</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('users')}</h1>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left px-4 py-3 font-medium">Email</th>
-              <th className="text-left px-4 py-3 font-medium">Role</th>
-              <th className="text-left px-4 py-3 font-medium">Created At</th>
+              <th className="text-left px-4 py-3 font-medium">{t('usersTable.email')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('usersTable.role')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('usersTable.createdAt')}</th>
             </tr>
           </thead>
           <tbody>
@@ -38,7 +41,7 @@ export default async function AdminUsersPage() {
                         : 'bg-secondary text-foreground'
                     }`}
                   >
-                    {roleMap.get(user.id) ?? 'user'}
+                    {roleMap.get(user.id) ?? t('usersTable.defaultRole')}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
@@ -49,7 +52,7 @@ export default async function AdminUsersPage() {
             {users.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
-                  No users found
+                  {t('usersTable.noUsersFound')}
                 </td>
               </tr>
             )}

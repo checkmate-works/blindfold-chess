@@ -1701,5 +1701,19 @@
     "alreadyLoggedIn": "Already logged in",
     "logoutSuccess": "Signed out",
     "signInRequired": "Please sign in to continue"
+  },
+  "Admin": {
+    "title": "Admin",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "totalUsers": "Total Users",
+    "roleAssignments": "Role Assignments",
+    "usersTable": {
+      "email": "Email",
+      "role": "Role",
+      "createdAt": "Created At",
+      "noUsersFound": "No users found",
+      "defaultRole": "user"
+    }
   }
 }
