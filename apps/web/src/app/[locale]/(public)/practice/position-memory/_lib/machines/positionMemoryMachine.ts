@@ -1,12 +1,7 @@
 import { assign, setup } from 'xstate';
 
 import type { PositionData } from '../types';
-
-import type {
-  PositionMemoryContext,
-  PositionMemoryEvent,
-  PositionMemoryInput,
-} from './types';
+import type { PositionMemoryContext, PositionMemoryEvent, PositionMemoryInput } from './types';
 
 const EMPTY_POSITION = '8/8/8/8/8/8/8/8 w - - 0 1';
 
@@ -35,7 +30,10 @@ export const positionMemoryMachine = setup({
     saveResult: assign({
       currentAccuracy: (_, params: { accuracy: PositionMemoryContext['currentAccuracy'] }) =>
         params.accuracy,
-      problemResults: ({ context }, params: { accuracy: PositionMemoryContext['currentAccuracy'] }) => {
+      problemResults: (
+        { context },
+        params: { accuracy: PositionMemoryContext['currentAccuracy'] }
+      ) => {
         const newResults = new Map(context.problemResults);
         if (params.accuracy) {
           newResults.set(context.currentProblemIndex, params.accuracy);

@@ -1,8 +1,7 @@
-import { createActor } from 'xstate';
 import { describe, expect, it } from 'vitest';
+import { createActor } from 'xstate';
 
 import type { PositionAccuracy, PositionData } from '../types';
-
 import { positionMemoryMachine } from './positionMemoryMachine';
 import type { PositionMemoryInput } from './types';
 
