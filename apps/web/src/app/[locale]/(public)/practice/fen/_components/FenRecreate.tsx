@@ -10,9 +10,9 @@ import { FaSyncAlt } from 'react-icons/fa';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
-import type { PositionData } from '@/app/[locale]/practice/_lib/types';
+import { EditableChessBoard } from '@/app/[locale]/(public)/practice/_components/EditableChessBoard';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 
 type Props = {
   originalPosition: PositionData;

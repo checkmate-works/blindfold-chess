@@ -5,9 +5,9 @@ import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_components/PreferenceOption';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PreferenceOption } from '@/app/[locale]/preferences/_components/PreferenceOption';
 
 import { OnboardingStepLayout, PeekModeStep } from '../_components';
 

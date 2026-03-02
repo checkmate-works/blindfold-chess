@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import type { Game } from '@/lib/types';
 
-import { GameList } from '@/app/[locale]/games/_components';
+import { GameList } from '@/app/[locale]/(public)/games/_components';
 
 import { ReplaceActions } from './ReplaceActions';
 

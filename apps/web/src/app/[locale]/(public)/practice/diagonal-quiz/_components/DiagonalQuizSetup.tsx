@@ -7,10 +7,10 @@ import { Button } from '@/app/_components';
 import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
+import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
+import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
-import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
 import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
 

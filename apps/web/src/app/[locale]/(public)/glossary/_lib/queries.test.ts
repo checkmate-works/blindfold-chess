@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
-import type { ChessTerm } from '../../_lib/types';
+import type { ChessTerm } from '@/app/[locale]/_lib/types';
+
 import {
   getCategoryCounts,
   getGlossaryTerms,

@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
+import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
-import { calculateAccuracy } from '@/app/[locale]/practice/_lib/accuracy';
-import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { getFenPositions } from '../_data/positions';

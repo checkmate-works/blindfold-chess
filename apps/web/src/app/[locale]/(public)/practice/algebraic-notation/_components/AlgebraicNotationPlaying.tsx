@@ -3,8 +3,8 @@
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import type { Question } from '../_lib/types';
 

@@ -9,10 +9,10 @@ import { LuPause, LuPlay } from 'react-icons/lu';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
-import { SquareColorAnswerButtons } from '@/app/[locale]/practice/square-colors/_components/SquareColorAnswerButtons';
-import { SquareColorQuestionDisplay } from '@/app/[locale]/practice/square-colors/_components/SquareColorQuestionDisplay';
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { SquareColorAnswerButtons } from '@/app/[locale]/(public)/practice/square-colors/_components/SquareColorAnswerButtons';
+import { SquareColorQuestionDisplay } from '@/app/[locale]/(public)/practice/square-colors/_components/SquareColorQuestionDisplay';
 
 type Props = {
   currentSquare: string;

@@ -10,11 +10,11 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
+import { ProblemCountSlider } from '@/app/[locale]/(public)/practice/_components/ProblemCountSlider';
+import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { ProblemCountSlider } from '@/app/[locale]/practice/_components/ProblemCountSlider';
-import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
 import { PIECES } from '../_lib/utils';
 import { STORAGE_KEY } from './RoutePlanner';

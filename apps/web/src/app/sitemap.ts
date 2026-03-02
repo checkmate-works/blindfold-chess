@@ -2,11 +2,11 @@ import { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
-import { getCategoryCounts, getUniqueLetters } from './[locale]/glossary/_lib/queries';
-import { ARTICLE_CATEGORIES } from './[locale]/learn/_lib/types';
-import { getAllArticles } from './[locale]/learn/_lib/utils';
-import { getAllManualArticles } from './[locale]/manual/_lib/utils';
-import { getCategories, getPublishedPosts } from './[locale]/posts/_lib/queries';
+import { getCategoryCounts, getUniqueLetters } from './[locale]/(public)/glossary/_lib/queries';
+import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
+import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
+import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
+import { getCategories, getPublishedPosts } from './[locale]/(public)/posts/_lib/queries';
 
 // Remove trailing slash from BASE_URL if present to avoid double slashes
 const BASE_URL = SITE_URL.replace(/\/$/, '');

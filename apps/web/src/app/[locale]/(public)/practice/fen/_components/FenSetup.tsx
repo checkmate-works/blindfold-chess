@@ -8,11 +8,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { validateFEN } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { validateFEN } from '@/app/[locale]/practice/_lib/accuracy';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';

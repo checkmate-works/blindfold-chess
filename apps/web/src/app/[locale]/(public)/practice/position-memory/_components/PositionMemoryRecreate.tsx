@@ -9,8 +9,8 @@ import { Button } from '@/app/_components';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
+import { EditableChessBoard } from '@/app/[locale]/(public)/practice/_components/EditableChessBoard';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 
 import type { PositionData } from '../_lib/types';
 

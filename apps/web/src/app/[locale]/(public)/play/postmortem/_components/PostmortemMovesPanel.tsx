@@ -10,8 +10,8 @@ import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
-import { MoveNavigationControls } from '@/app/[locale]/play/_components/MoveNavigationControls';
-import { formatPgnToText } from '@/app/[locale]/play/_lib/pgn-parser';
+import { MoveNavigationControls } from '@/app/[locale]/(public)/play/_components/MoveNavigationControls';
+import { formatPgnToText } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];

@@ -1,7 +1,7 @@
 'use client';
 
+import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/use-persistent-settings';
 
 import type { PieceType, PracticeMode } from '../_lib/types';
 import { LegalMovesSetup } from './LegalMovesSetup';

@@ -8,10 +8,10 @@ import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
-import { PieceCoordinateInput } from '@/app/[locale]/practice/_components/PieceCoordinateInput';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
-import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useCoordinateInput } from '../_hooks/use-coordinate-input';

@@ -1,6 +1,6 @@
 import { SUPPORTED_LOCALES } from '@/config';
 
-import type { GlossaryCategory } from '@/app/[locale]/glossary/_lib/types';
+import type { GlossaryCategory } from '@/app/[locale]/(public)/glossary/_lib/types';
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 

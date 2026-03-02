@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { BoardOverlay, Button } from '@/app/_components';
 import type { Square } from '@blindfold-chess/types';
 
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 
 import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
 import type { CoordinateQuestion } from '../../_lib/types';

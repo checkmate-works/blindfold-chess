@@ -9,10 +9,10 @@ import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
 
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { validateFEN } from '@/app/[locale]/practice/_lib/accuracy';
+import { validateFEN } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';

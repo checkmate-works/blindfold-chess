@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PageTitle } from '../_components/PageTitle';
-import { generateCanonicalMetadata } from '../_lib/metadata';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+
 import { PreferencesTabs } from './_components/PreferencesTabs';
 
 type Props = {

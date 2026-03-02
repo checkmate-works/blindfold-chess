@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
+import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 
 import type { PieceType } from '../_lib/types';
 import { PieceSelector } from './PieceSelector';

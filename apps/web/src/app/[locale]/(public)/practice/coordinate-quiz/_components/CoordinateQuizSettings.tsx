@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { BoardOrientationSelector } from '@/app/[locale]/practice/_components/BoardOrientationSelector';
-import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
+import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
+import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 
 import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
 import { FEEDBACK_SPEEDS } from '../_lib/types';

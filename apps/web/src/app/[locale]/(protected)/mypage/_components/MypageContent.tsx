@@ -3,7 +3,8 @@
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 
-import { useAuth } from '../../_contexts/AuthContext';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+
 import { Dashboard } from './Dashboard';
 import { DashboardSkeleton } from './DashboardSkeleton';
 

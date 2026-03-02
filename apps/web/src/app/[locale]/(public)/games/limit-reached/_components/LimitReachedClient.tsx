@@ -11,10 +11,10 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, GameOutcome, SkillLevel } from '@/lib/types';
 
+import { GameSelector } from '@/app/[locale]/(public)/games/_components';
 import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { GameSelector } from '@/app/[locale]/games/_components';
 
 import { GameSelectorSkeleton } from '../../bulk-delete/_components/GameSelectorSkeleton';
 import { ReplaceActions } from './ReplaceActions';

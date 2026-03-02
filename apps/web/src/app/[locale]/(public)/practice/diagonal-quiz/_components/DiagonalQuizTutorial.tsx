@@ -9,10 +9,10 @@ import { Button } from '@/app/_components';
 import { getDiagonals } from '@blindfold-chess/features/diagonal-quiz';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
-import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
 
 import { DiagonalQuizPlaying } from '../challenge/_components/DiagonalQuizPlaying';
 import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';

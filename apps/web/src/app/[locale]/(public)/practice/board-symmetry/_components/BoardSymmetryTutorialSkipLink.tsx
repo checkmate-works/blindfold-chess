@@ -1,7 +1,7 @@
 'use client';
 
+import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/practice/_components/TutorialSkipLink';
 
 export const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = 'boardSymmetryTutorialSkipped';
 

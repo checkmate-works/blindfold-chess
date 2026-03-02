@@ -16,16 +16,16 @@ import { FaEye } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
+import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
+import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
+import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
+import { BoardViewModal } from '@/app/[locale]/(public)/play/_components/BoardViewModal';
+import { useMoveNavigation } from '@/app/[locale]/(public)/play/_hooks/use-move-navigation';
+import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
 import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { CollapsibleGameSettings } from '@/app/[locale]/games/new/_components/CollapsibleGameSettings';
-import { ColorSelector } from '@/app/[locale]/games/new/_components/ColorSelector';
-import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
-import { BoardViewModal } from '@/app/[locale]/play/_components/BoardViewModal';
-import { useMoveNavigation } from '@/app/[locale]/play/_hooks/use-move-navigation';
-import { parsePgnWithFen, validatePgn } from '@/app/[locale]/play/_lib/pgn-parser';
 
 type Props = {
   locale: Locale;

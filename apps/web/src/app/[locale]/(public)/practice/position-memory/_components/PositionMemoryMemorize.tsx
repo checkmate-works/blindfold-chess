@@ -5,9 +5,9 @@ import { BoardOverlay, Button } from '@/app/_components';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 
 import type { PositionData } from '../_lib/types';
 

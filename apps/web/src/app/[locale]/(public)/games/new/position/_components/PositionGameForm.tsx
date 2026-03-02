@@ -11,22 +11,22 @@ import { FaChevronDown, FaSyncAlt } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
+import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
+import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
+import {
+  type CastlingRights,
+  PositionSettings,
+} from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
+import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
+import { buildFenFromParts } from '@/app/[locale]/(public)/games/new/_lib/build-fen-from-parts';
+import { getCastlingAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-castling-availability';
+import { getEnPassantAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-en-passant-availability';
+import { validatePosition } from '@/app/[locale]/(public)/games/new/_lib/validate-position';
+import { EditableChessBoard } from '@/app/[locale]/(public)/practice/_components/EditableChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { CollapsibleGameSettings } from '@/app/[locale]/games/new/_components/CollapsibleGameSettings';
-import { ColorSelector } from '@/app/[locale]/games/new/_components/ColorSelector';
-import {
-  type CastlingRights,
-  PositionSettings,
-} from '@/app/[locale]/games/new/_components/PositionSettings';
-import { SkillLevelSelector } from '@/app/[locale]/games/new/_components/SkillLevelSelector';
-import { buildFenFromParts } from '@/app/[locale]/games/new/_lib/build-fen-from-parts';
-import { getCastlingAvailability } from '@/app/[locale]/games/new/_lib/get-castling-availability';
-import { getEnPassantAvailability } from '@/app/[locale]/games/new/_lib/get-en-passant-availability';
-import { validatePosition } from '@/app/[locale]/games/new/_lib/validate-position';
-import { EditableChessBoard } from '@/app/[locale]/practice/_components/EditableChessBoard';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 

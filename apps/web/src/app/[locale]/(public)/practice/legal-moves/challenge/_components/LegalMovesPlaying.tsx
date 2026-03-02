@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { BoardOverlay } from '@/app/_components';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 
 import { pieceDisplayMap } from '../../_data/constants';
 import type { MoveQuestion } from '../../_lib/types';

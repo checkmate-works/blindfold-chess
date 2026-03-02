@@ -12,10 +12,10 @@ import {
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
 
 import { DiagonalQuizTrainingPlaying } from './DiagonalQuizTrainingPlaying';
 

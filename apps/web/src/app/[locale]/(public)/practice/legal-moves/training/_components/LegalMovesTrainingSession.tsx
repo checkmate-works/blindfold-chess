@@ -5,10 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
 
 import type { MoveQuestion, PieceType } from '../../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';

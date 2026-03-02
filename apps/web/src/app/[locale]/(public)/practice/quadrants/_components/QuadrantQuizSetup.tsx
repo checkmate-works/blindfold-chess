@@ -7,11 +7,11 @@ import { Button } from '@/app/_components';
 import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
+import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
+import { ProblemCountSlider } from '@/app/[locale]/(public)/practice/_components/ProblemCountSlider';
+import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { BetaNotice, CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { BoardOrientationSelector } from '@/app/[locale]/practice/_components/BoardOrientationSelector';
-import { ProblemCountSlider } from '@/app/[locale]/practice/_components/ProblemCountSlider';
-import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
 type BoardOrientation = 'white' | 'black' | 'random';
 

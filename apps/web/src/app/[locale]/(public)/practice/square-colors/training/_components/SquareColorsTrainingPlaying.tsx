@@ -8,7 +8,7 @@ import { BoardOverlay } from '@/app/_components';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 
 import { SquareColorAnswerButtons } from '../../_components/SquareColorAnswerButtons';
 import { SquareColorQuestionDisplay } from '../../_components/SquareColorQuestionDisplay';

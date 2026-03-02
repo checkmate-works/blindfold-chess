@@ -9,10 +9,10 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
+import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { TimeSlider } from '@/app/[locale]/practice/_components/TimeSlider';
 
 import { BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY } from './BoardSymmetryTutorialSkipLink';
 

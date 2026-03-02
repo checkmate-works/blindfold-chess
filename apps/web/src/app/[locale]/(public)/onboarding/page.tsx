@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { generateCanonicalMetadata } from '../_lib/metadata';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 /**
  * Onboarding (オンボーディング)

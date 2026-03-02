@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
-import { PieceCoordinateInput } from '@/app/[locale]/practice/_components/PieceCoordinateInput';
+import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 
 import { KnightTourPlayingLayout } from './KnightTourPlayingLayout';
 

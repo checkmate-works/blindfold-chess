@@ -5,13 +5,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
-import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import QuadrantBoard, { QuadrantId } from './QuadrantBoard';
 

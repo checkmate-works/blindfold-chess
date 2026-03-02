@@ -4,9 +4,9 @@ import { useEffect, useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { BoardPreview } from '@/app/[locale]/(public)/preferences/_components/BoardPreview';
+import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_components/PreferenceOption';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { BoardPreview } from '@/app/[locale]/preferences/_components/BoardPreview';
-import { PreferenceOption } from '@/app/[locale]/preferences/_components/PreferenceOption';
 
 const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 

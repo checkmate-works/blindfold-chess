@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PageDescription, PagePanel, PageTitle } from '../_components';
-import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Locale } from '../_lib/types';
+import { PageDescription, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { ContactForm } from './_components/ContactForm';
 
 type Props = {

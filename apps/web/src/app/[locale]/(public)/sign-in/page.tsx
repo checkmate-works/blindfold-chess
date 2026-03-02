@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { PageTitle } from '../_components/PageTitle';
-import { generateCanonicalMetadata } from '../_lib/metadata';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+
 import { AuthErrorMessage } from './_components/AuthErrorMessage';
 import { GoogleSignInButton } from './_components/GoogleSignInButton';
 

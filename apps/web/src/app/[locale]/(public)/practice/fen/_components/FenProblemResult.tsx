@@ -9,10 +9,10 @@ import { Button } from '@/app/_components';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
-import { ChessBoardWithOverlay } from '@/app/[locale]/practice/_components/ChessBoardWithOverlay';
-import { calculateSquareDifferences } from '@/app/[locale]/practice/_lib/accuracy';
-import type { PositionAccuracy, PositionData } from '@/app/[locale]/practice/_lib/types';
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/_components/ChessBoardWithOverlay';
+import { calculateSquareDifferences } from '@/app/[locale]/(public)/practice/_lib/accuracy';
+import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 
 type Props = {
   accuracy: PositionAccuracy;

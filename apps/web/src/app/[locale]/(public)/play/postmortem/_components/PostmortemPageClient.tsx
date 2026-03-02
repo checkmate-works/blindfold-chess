@@ -5,10 +5,10 @@ import { type ReactElement, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { ClientBreadcrumb } from '@/app/[locale]/(public)/play/_components/ClientBreadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { ClientBreadcrumb } from '@/app/[locale]/play/_components/ClientBreadcrumb';
 
 import { PostmortemClient } from './PostmortemClient';
 

@@ -8,10 +8,10 @@ import { useRouter } from 'next/navigation';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game } from '@/lib/types';
 
+import { GameSelector } from '@/app/[locale]/(public)/games/_components';
 import { Divider, PageDescription, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { GameSelector } from '@/app/[locale]/games/_components';
 
 import { BulkDeleteActions } from './BulkDeleteActions';
 import { GameSelectorSkeleton } from './GameSelectorSkeleton';

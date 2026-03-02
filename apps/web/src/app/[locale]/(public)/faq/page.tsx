@@ -5,9 +5,10 @@ import { Link } from '@/i18n/routing';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle } from '../_components';
-import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Locale } from '../_lib/types';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 import { FAQClient } from './_components/FAQClient';
 import type { FAQItem } from './_lib/types';
 

@@ -6,8 +6,8 @@ import { BoardOverlay } from '@/app/_components';
 import type { Square } from '@blindfold-chess/types';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 
 import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
 import type { CoordinateQuestion } from '../../_lib/types';

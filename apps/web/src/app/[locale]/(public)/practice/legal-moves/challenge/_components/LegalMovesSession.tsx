@@ -5,9 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
 
 import type { MoveQuestion, PieceType } from '../../_lib/types';
 import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';

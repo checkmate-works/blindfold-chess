@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
 
 import type { Question } from '../_lib/types';
 import { AlgebraicNotationPlaying } from './AlgebraicNotationPlaying';

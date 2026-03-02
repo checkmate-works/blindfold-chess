@@ -11,9 +11,9 @@ import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 import { fenToLichessUrl } from '@/lib/lichess';
 
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
-import { ChessBoardWithOverlay } from '@/app/[locale]/practice/_components/ChessBoardWithOverlay';
-import { SegmentedProgressBar } from '@/app/[locale]/practice/_components/SegmentedProgressBar';
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/_components/ChessBoardWithOverlay';
+import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 
 import type { PositionAccuracy, PositionData } from '../_lib/types';
 import { calculateSquareDifferences } from '../_lib/utils';

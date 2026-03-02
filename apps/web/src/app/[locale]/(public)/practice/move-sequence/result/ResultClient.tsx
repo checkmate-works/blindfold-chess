@@ -5,9 +5,9 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import { MoveSequenceResult } from '../_components/MoveSequenceResult';
 import { encodeMoveSequenceToBase64 } from '../_lib/share';

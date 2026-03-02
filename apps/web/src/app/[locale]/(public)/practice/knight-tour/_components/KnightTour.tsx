@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 
 import {
   getAvailableKnightMoves,

@@ -7,10 +7,10 @@ import { useTranslations } from 'next-intl';
 
 import { FaChevronDown } from 'react-icons/fa';
 
+import { GameSettingsContent } from '@/app/[locale]/(public)/preferences/_components/GameSettingsContent';
+import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_components/PreferenceOption';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { GameSettingsContent } from '@/app/[locale]/preferences/_components/GameSettingsContent';
-import { PreferenceOption } from '@/app/[locale]/preferences/_components/PreferenceOption';
 
 type Props = {
   settings: PerGamePreferences;

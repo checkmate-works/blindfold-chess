@@ -7,9 +7,9 @@ import { useTranslations } from 'next-intl';
 import { BoardOverlay, Button } from '@/app/_components';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 
+import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';

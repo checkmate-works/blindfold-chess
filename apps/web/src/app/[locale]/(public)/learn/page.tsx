@@ -10,9 +10,9 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Locale } from '../_lib/types';
 import { CATEGORY_STYLES } from './_lib/types';
 import { getAvailableCategories, getCategoryCounts } from './_lib/utils';
 

@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle, SectionTitle } from '../_components';
-import { generateCanonicalMetadata } from '../_lib/metadata';
-import type { Locale } from '../_lib/types';
+import {
+  Breadcrumb,
+  Divider,
+  PagePanel,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   params: Promise<{ locale: Locale }>;

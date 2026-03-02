@@ -5,10 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { useCountdown } from '@/app/[locale]/practice/_hooks/use-countdown';
 
 import { PracticeResultSkeleton } from '../../../_components/PracticeResultSkeleton';
 import { generateSquareSequence, getSquareColor } from '../../_lib/utils';

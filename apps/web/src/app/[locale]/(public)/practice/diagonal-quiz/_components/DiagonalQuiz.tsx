@@ -2,8 +2,8 @@
 
 import type { PracticeMode } from '@blindfold-chess/features/common';
 
+import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { usePersistentSettings } from '@/app/[locale]/practice/_hooks/use-persistent-settings';
 
 import { DiagonalQuizPageContent } from './DiagonalQuizPageContent';
 

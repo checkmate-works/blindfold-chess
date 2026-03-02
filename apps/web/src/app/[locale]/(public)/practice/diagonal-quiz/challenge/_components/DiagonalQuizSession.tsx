@@ -11,9 +11,9 @@ import {
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
 
 import type { QuestionResult } from '../../_components/DiagonalQuizProblemList';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';

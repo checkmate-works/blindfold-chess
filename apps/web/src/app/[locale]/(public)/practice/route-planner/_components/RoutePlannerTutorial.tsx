@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
+import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { AnimatedChessBoard } from '@/app/[locale]/practice/_components/AnimatedChessBoard';
 
 import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
 

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PagePanel, PageTitle } from '../_components';
-import { generateCanonicalMetadata } from '../_lib/metadata';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 export async function generateMetadata({
   params,

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { FaUndo } from 'react-icons/fa';
 
-import { ProgressBar } from '@/app/[locale]/practice/_components/ProgressBar';
+import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 
 type Props = {
   currentSquare: string;

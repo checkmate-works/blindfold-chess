@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { PageTitle } from '../_components/PageTitle';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 
 type Props = {
   params: Promise<{ locale: string }>;

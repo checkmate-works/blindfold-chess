@@ -19,8 +19,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { Locale } from '../_lib/types';
 import { PlayPageClient } from './_components/PlayPageClient';
 
 type Props = {

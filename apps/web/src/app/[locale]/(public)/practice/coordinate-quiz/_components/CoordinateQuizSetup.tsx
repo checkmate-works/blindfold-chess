@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { SegmentedControl } from '@/app/[locale]/practice/_components/SegmentedControl';
 
 import type { BoardOrientation, FeedbackSpeed, PracticeMode } from '../_lib/types';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';

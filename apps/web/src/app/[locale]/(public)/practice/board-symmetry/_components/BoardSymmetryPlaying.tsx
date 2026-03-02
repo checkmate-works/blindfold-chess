@@ -6,10 +6,10 @@ import { BoardOverlay } from '@/app/_components';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features/board-symmetry';
 

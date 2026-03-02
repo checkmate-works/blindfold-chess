@@ -4,16 +4,16 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeResultSkeleton } from '@/app/[locale]/practice/_components/PracticeResultSkeleton';
-import { useTimedSession } from '@/app/[locale]/practice/_hooks/use-timed-session';
-import { saveSquareColorsResult } from '@/app/[locale]/practice/square-colors/_actions/save-result';
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
+import { saveSquareColorsResult } from '@/app/[locale]/(public)/practice/square-colors/_actions/save-result';
 import {
   generateSquareSequence,
   getSquareColor,
-} from '@/app/[locale]/practice/square-colors/_lib/utils';
+} from '@/app/[locale]/(public)/practice/square-colors/_lib/utils';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SquareColorsPlaying } from './SquareColorsPlaying';
 

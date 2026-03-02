@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
+import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeSessionPage } from '@/app/[locale]/practice/_components/PracticeSessionPage';
 
 import { PIECES } from '../_lib/utils';
 import type { PieceType } from '../_lib/utils';

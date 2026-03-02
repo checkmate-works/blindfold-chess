@@ -1,4 +1,5 @@
-import { PagePanel } from '../_components';
+import { PagePanel } from '@/app/[locale]/_components';
+
 import { DashboardSkeleton } from './_components/DashboardSkeleton';
 
 export default function Loading() {

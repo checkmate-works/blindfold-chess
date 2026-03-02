@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
+import { ControlSettingsContent } from '@/app/[locale]/(public)/preferences/_components/ControlSettingsContent';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { ControlSettingsContent } from '@/app/[locale]/preferences/_components/ControlSettingsContent';
 
 type Props = {
   isOpen: boolean;

@@ -5,11 +5,11 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
+import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { PracticeComplete } from '@/app/[locale]/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/practice/_components/PracticeResultPage';
 
 import {
   type RoutePlannerResult,

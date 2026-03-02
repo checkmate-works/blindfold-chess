@@ -6,32 +6,32 @@ import { MANUAL_ARTICLE_SLUGS } from './types';
 // Article registry - maps slugs to their metadata modules
 const articleRegistry: Record<string, LocaleLoaders> = {
   [MANUAL_ARTICLE_SLUGS.ABOUT_THIS_WEBSITE]: {
-    en: () => import('@/app/[locale]/manual/_data/about-this-website/metadata.en'),
-    ja: () => import('@/app/[locale]/manual/_data/about-this-website/metadata.ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/about-this-website/metadata.en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/about-this-website/metadata.ja'),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
-    en: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/metadata.en'),
-    ja: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/metadata.ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/changing-piece-appearance/metadata.en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/changing-piece-appearance/metadata.ja'),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
-    en: () => import('@/app/[locale]/manual/_data/data-handling-caution/metadata.en'),
-    ja: () => import('@/app/[locale]/manual/_data/data-handling-caution/metadata.ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/data-handling-caution/metadata.en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/data-handling-caution/metadata.ja'),
   },
 };
 
 // Content registry - maps slugs to their content modules
 const contentRegistry: Record<string, ContentLoaders> = {
   [MANUAL_ARTICLE_SLUGS.ABOUT_THIS_WEBSITE]: {
-    en: () => import('@/app/[locale]/manual/_data/about-this-website/en'),
-    ja: () => import('@/app/[locale]/manual/_data/about-this-website/ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/about-this-website/en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/about-this-website/ja'),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
-    en: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/en'),
-    ja: () => import('@/app/[locale]/manual/_data/changing-piece-appearance/ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/changing-piece-appearance/en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/changing-piece-appearance/ja'),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
-    en: () => import('@/app/[locale]/manual/_data/data-handling-caution/en'),
-    ja: () => import('@/app/[locale]/manual/_data/data-handling-caution/ja'),
+    en: () => import('@/app/[locale]/(public)/manual/_data/data-handling-caution/en'),
+    ja: () => import('@/app/[locale]/(public)/manual/_data/data-handling-caution/ja'),
   },
 };
 

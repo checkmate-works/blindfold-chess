@@ -8,8 +8,8 @@ import { ChessBoard } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye } from 'react-icons/fa';
 
+import type { FormattedPgnMove } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { FormattedPgnMove } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
 

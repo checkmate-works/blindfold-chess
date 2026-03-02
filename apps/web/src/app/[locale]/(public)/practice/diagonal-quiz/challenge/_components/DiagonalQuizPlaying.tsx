@@ -8,10 +8,10 @@ import { BoardOverlay } from '@/app/_components';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
+import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { AnswerFeedback } from '@/app/[locale]/practice/_components/AnswerFeedback';
-import { QuizTimer } from '@/app/[locale]/practice/_components/QuizTimer';
-import { ScoreCounter } from '@/app/[locale]/practice/_components/ScoreCounter';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';

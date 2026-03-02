@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
-import { SectionTitle } from '../../_components';
+import { SectionTitle } from '@/app/[locale]/_components';
+
 import {
   type DatePeriod,
   type PracticeSessionRow,

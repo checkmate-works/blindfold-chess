@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { SITE_NAME } from '@/config';
 
-import { generateCanonicalMetadata } from '../_lib/metadata';
+import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 type Props = {
   children: React.ReactNode;

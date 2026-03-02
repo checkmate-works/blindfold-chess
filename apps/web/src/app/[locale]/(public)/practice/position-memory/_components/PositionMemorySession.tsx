@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation';
 
 import { useMachine } from '@xstate/react';
 
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
-import { QuitConfirmModal } from '@/app/[locale]/practice/_components/QuitConfirmModal';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';

@@ -7,9 +7,9 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 
+import type { FormattedPgnMove } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
-import type { FormattedPgnMove } from '@/app/[locale]/play/_lib/pgn-parser';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
 

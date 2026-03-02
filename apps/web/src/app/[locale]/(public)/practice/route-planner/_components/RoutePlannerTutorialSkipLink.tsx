@@ -1,6 +1,6 @@
 'use client';
 
-import { TutorialSkipLink } from '@/app/[locale]/practice/_components/TutorialSkipLink';
+import { TutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 
 export const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = 'routePlannerTutorialSkipped';
 
