@@ -190,6 +190,61 @@ describe('proxy', () => {
     });
   });
 
+  describe('admin path authentication', () => {
+    it('should return 404 for unauthenticated users accessing /admin', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
+
+      const request = createRequest('/admin');
+      const result = await proxy(request);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('should return 404 for unauthenticated users accessing /admin/users', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
+
+      const request = createRequest('/admin/users');
+      const result = await proxy(request);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('should return 404 for unauthenticated users accessing /Admin (case-insensitive)', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
+
+      const request = createRequest('/Admin');
+      const result = await proxy(request);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('should return 404 for unauthenticated users accessing /ADMIN/users (case-insensitive)', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
+
+      const request = createRequest('/ADMIN/users');
+      const result = await proxy(request);
+
+      expect(result.status).toBe(404);
+    });
+
+    it('should pass through for authenticated users accessing /admin', async () => {
+      const mockResponse = NextResponse.next();
+      mockUpdateSession.mockResolvedValue({
+        response: mockResponse,
+        user: { id: 'user-123', email: 'admin@example.com' },
+      });
+
+      const request = createRequest('/admin');
+      const result = await proxy(request);
+
+      expect(result).toBe(mockResponse);
+    });
+  });
+
   describe('session refresh', () => {
     it('should always call updateSession for non-blocked paths', async () => {
       const mockResponse = NextResponse.next();
