@@ -1698,6 +1698,7 @@
   },
   "toast": {
     "loginSuccess": "Logged in",
-    "alreadyLoggedIn": "Already logged in"
+    "alreadyLoggedIn": "Already logged in",
+    "logoutSuccess": "Signed out"
   }
 }

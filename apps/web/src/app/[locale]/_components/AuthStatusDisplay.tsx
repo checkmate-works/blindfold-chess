@@ -9,11 +9,14 @@ import { FaRegUser } from 'react-icons/fa';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
 import { useAuth } from '../_contexts/AuthContext';
+import { useToast } from '../_contexts/ToastContext';
 
 export function AuthStatusDisplay() {
   const { user, isLoading, signOut } = useAuth();
   const locale = useLocale();
   const t = useTranslations('AuthStatusDisplay');
+  const tToast = useTranslations('toast');
+  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -68,9 +71,10 @@ export function AuthStatusDisplay() {
               <button
                 type="button"
                 className="flex w-full items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-accent transition-colors"
-                onClick={() => {
+                onClick={async () => {
                   setIsOpen(false);
-                  signOut();
+                  await signOut();
+                  showToast(tToast('logoutSuccess'), 'success');
                 }}
               >
                 <FiLogOut className="h-4 w-4" />

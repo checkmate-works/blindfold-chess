@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthStatusDisplay } from './AuthStatusDisplay';
@@ -11,6 +11,12 @@ const mockUseAuth = vi.fn();
 
 vi.mock('../_contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
+}));
+
+const mockShowToast = vi.fn();
+
+vi.mock('../_contexts/ToastContext', () => ({
+  useToast: () => ({ showToast: mockShowToast }),
 }));
 
 let mockLocale = 'en';
@@ -59,7 +65,8 @@ describe('AuthStatusDisplay', () => {
     let mockSignOut: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
-      mockSignOut = vi.fn();
+      mockSignOut = vi.fn().mockResolvedValue(undefined);
+      mockShowToast.mockClear();
       mockUseAuth.mockReturnValue({
         user: { id: 'user-1', email: 'test@example.com' },
         isLoading: false,
@@ -105,10 +112,13 @@ describe('AuthStatusDisplay', () => {
         expect(signOutButton).toBeInTheDocument();
       });
 
-      it('should call signOut when the sign-out button is clicked', () => {
+      it('should call signOut and show toast when the sign-out button is clicked', async () => {
         const signOutButton = screen.getByText('signOut').closest('button')!;
         fireEvent.click(signOutButton);
         expect(mockSignOut).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+          expect(mockShowToast).toHaveBeenCalledWith('logoutSuccess', 'success');
+        });
       });
 
       it('should close the dropdown when clicking outside', () => {

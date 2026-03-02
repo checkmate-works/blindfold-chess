@@ -1699,6 +1699,7 @@
   },
   "toast": {
     "loginSuccess": "ログインしました",
-    "alreadyLoggedIn": "すでにログインしています"
+    "alreadyLoggedIn": "すでにログインしています",
+    "logoutSuccess": "ログアウトしました"
   }
 }
