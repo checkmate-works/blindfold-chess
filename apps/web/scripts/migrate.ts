@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import postgres from 'postgres';
 
 // Use the same env var priority as drizzle.config.ts
@@ -17,10 +19,32 @@ if (!connectionString) {
 const client = postgres(connectionString, { prepare: false, max: 1 });
 const db = drizzle(client);
 
+async function isSupabaseEnvironment(): Promise<boolean> {
+  const result = await client`SELECT 1 FROM pg_roles WHERE rolname = 'supabase_auth_admin'`;
+  return result.length > 0;
+}
+
+async function runAuthHook() {
+  const hookSql = readFileSync(
+    join(import.meta.dirname, '..', 'drizzle', 'custom_access_token_hook.sql'),
+    'utf-8'
+  );
+  await client.unsafe(hookSql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
   console.log('Migrations complete!');
+
+  if (await isSupabaseEnvironment()) {
+    console.log('Supabase environment detected. Applying custom access token hook...');
+    await runAuthHook();
+    console.log('Auth hook applied!');
+  } else {
+    console.log('Local environment detected. Skipping auth hook (Supabase-only).');
+  }
+
   await client.end();
 }
 

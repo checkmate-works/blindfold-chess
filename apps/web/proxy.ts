@@ -13,12 +13,12 @@ const BLOCKED_PATHS = [
   '/.git',
   '/phpinfo',
   '/phpmyadmin',
-  '/admin',
   '/administrator',
 ];
 
 const AUTH_REQUIRED_PATHS = ['/mypage'];
 const SIGN_IN_PATH = '/sign-in';
+const ADMIN_PATH = '/admin';
 
 function isBlockedPath(pathname: string): boolean {
   return BLOCKED_PATHS.some(
@@ -31,6 +31,11 @@ function isAuthRequiredPath(pathname: string): boolean {
     const pattern = new RegExp(`^/[^/]+${path}(/.*)?$`);
     return pattern.test(pathname);
   });
+}
+
+function isAdminPath(pathname: string): boolean {
+  const lower = pathname.toLowerCase();
+  return lower === ADMIN_PATH || lower.startsWith(ADMIN_PATH + '/');
 }
 
 function isSignInPath(pathname: string): boolean {
@@ -46,6 +51,11 @@ export async function proxy(request: NextRequest) {
   }
 
   const { response, user } = await updateSession(request);
+
+  // Return 404 for unauthenticated admin access to hide admin panel existence
+  if (isAdminPath(pathname) && !user) {
+    return new NextResponse(null, { status: 404 });
+  }
 
   // Redirect unauthenticated users away from auth-required pages
   if (isAuthRequiredPath(pathname) && !user) {

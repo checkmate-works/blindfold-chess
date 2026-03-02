@@ -6,7 +6,10 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
-import { getPgnSuggestion, validatePgnWithDetails } from '@/app/[locale]/play/_lib/pgn-parser';
+import {
+  getPgnSuggestion,
+  validatePgnWithDetails,
+} from '@/app/[locale]/(public)/play/_lib/pgn-parser';
 
 type Props = {
   value: string;

@@ -13,6 +13,7 @@ import { useToast } from '../_contexts/ToastContext';
 const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }> = {
   login_success: { messageKey: 'loginSuccess', type: 'success' },
   already_logged_in: { messageKey: 'alreadyLoggedIn', type: 'info' },
+  sign_in_required: { messageKey: 'signInRequired', type: 'info' },
 };
 
 export function ToastContainer() {
