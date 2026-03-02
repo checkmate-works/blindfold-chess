@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 
 import { NextIntlClientProvider } from 'next-intl';
 import { ThemeProvider } from 'next-themes';
@@ -24,7 +24,9 @@ export function Providers({ children, locale, messages }: Props) {
           <GamePreferencesProvider>
             <ToastProvider>
               {children}
-              <ToastContainer />
+              <Suspense>
+                <ToastContainer />
+              </Suspense>
             </ToastProvider>
           </GamePreferencesProvider>
         </AuthProvider>

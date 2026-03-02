@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { updateSession } from '@/lib/supabase/middleware';
+import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
   '/wp-admin',
@@ -18,6 +18,7 @@ const BLOCKED_PATHS = [
 ];
 
 const AUTH_REQUIRED_PATHS = ['/mypage'];
+const SIGN_IN_PATH = '/sign-in';
 
 function isBlockedPath(pathname: string): boolean {
   return BLOCKED_PATHS.some(
@@ -32,45 +33,35 @@ function isAuthRequiredPath(pathname: string): boolean {
   });
 }
 
-export async function middleware(request: NextRequest) {
+function isSignInPath(pathname: string): boolean {
+  const pattern = new RegExp(`^/[^/]+${SIGN_IN_PATH}(/.*)?$`);
+  return pattern.test(pathname);
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isBlockedPath(pathname)) {
     return NextResponse.json(null, { status: 404 });
   }
 
-  if (isAuthRequiredPath(pathname)) {
-    const supabaseResponse = await updateSession(request);
+  const { response, user } = await updateSession(request);
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseAnonKey) {
-      const { createServerClient } = await import('@supabase/ssr');
-      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll() {},
-        },
-      });
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        const locale = pathname.split('/')[1] || 'en';
-        const signInUrl = new URL(`/${locale}/sign-in`, request.url);
-        return NextResponse.redirect(signInUrl);
-      }
-    }
-
-    return supabaseResponse;
+  // Redirect unauthenticated users away from auth-required pages
+  if (isAuthRequiredPath(pathname) && !user) {
+    const locale = pathname.split('/')[1] || 'en';
+    const signInUrl = new URL(`/${locale}/sign-in`, request.url);
+    return NextResponse.redirect(signInUrl);
   }
 
-  return updateSession(request);
+  // Redirect authenticated users away from the sign-in page
+  if (isSignInPath(pathname) && user) {
+    const locale = pathname.split('/')[1] || 'en';
+    const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
+    return NextResponse.redirect(mypageUrl);
+  }
+
+  return response;
 }
 
 export const config = {

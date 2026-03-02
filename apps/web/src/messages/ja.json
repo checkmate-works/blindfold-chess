@@ -1696,5 +1696,9 @@
       "fen": "FEN再構成",
       "quadrant_anchors": "象限アンカー"
     }
+  },
+  "toast": {
+    "loginSuccess": "ログインしました",
+    "alreadyLoggedIn": "すでにログインしています"
   }
 }

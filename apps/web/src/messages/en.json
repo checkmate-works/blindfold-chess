@@ -1695,5 +1695,9 @@
       "fen": "FEN Reconstruction",
       "quadrant_anchors": "Quadrant Anchors"
     }
+  },
+  "toast": {
+    "loginSuccess": "Logged in",
+    "alreadyLoggedIn": "Already logged in"
   }
 }

@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
+
+import { createClient } from '@/lib/supabase/server';
 
 import { PageTitle } from '../_components/PageTitle';
 import { generateCanonicalMetadata } from '../_lib/metadata';
@@ -31,6 +34,16 @@ export default async function SignInPage({ params, searchParams }: Props) {
   }
 
   const { locale } = await params;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect(`/${locale}/mypage?toast=already_logged_in`);
+  }
+
   const { error } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'signIn' });
 

@@ -3,20 +3,44 @@
 import { useEffect, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import type { ToastType } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useToast } from '../_contexts/ToastContext';
 
+const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }> = {
+  login_success: { messageKey: 'loginSuccess', type: 'success' },
+  already_logged_in: { messageKey: 'alreadyLoggedIn', type: 'info' },
+};
+
 export function ToastContainer() {
   const { toasts, hideToast, showToast } = useToast();
   const t = useTranslations('home');
+  const tToast = useTranslations('toast');
   const params = useParams();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const locale = params.locale as Locale;
   const processingToastRef = useRef(false);
+
+  // Handle toast query parameter (from server-side redirects)
+  useEffect(() => {
+    const toastParam = searchParams.get('toast');
+    if (!toastParam) return;
+
+    const config = TOAST_PARAM_CONFIG[toastParam];
+    if (!config) return;
+
+    showToast(tToast(config.messageKey), config.type);
+
+    // Clean up the toast query parameter from the URL without adding a history entry
+    const url = new URL(window.location.href);
+    url.searchParams.delete('toast');
+    router.replace(url.pathname + url.search, { scroll: false });
+  }, [searchParams, showToast, tToast, router]);
 
   // Handle global notifications that need to be shown across page transitions
   useEffect(() => {
