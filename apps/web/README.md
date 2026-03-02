@@ -72,6 +72,12 @@ User authentication via Supabase Auth with Google Sign-In (Apple Sign-In planned
 
 See [docs/authentication-setup.md](docs/authentication-setup.md) for setup instructions.
 
+## Admin Panel
+
+Internal admin dashboard at `/admin` with Role-Based Access Control (RBAC). Requires Supabase Auth, a `user_roles` database table, and a Custom Access Token Hook.
+
+See [docs/admin-panel-setup.md](docs/admin-panel-setup.md) for setup instructions.
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:
@@ -81,6 +87,8 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 - `pnpm db:seed` - Seed initial data (categories)
 - `pnpm db:generate` - Generate migrations from schema changes
 - `pnpm db:migrate` - Run pending migrations
+- `pnpm db:run-migrate` - Run migrations + auth hook (auto-detects Supabase)
+- `pnpm db:setup-auth-hook` - Apply Custom Access Token Hook SQL (Supabase only)
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
 - `pnpm test:run` - Run unit tests once (CI mode)
 - `pnpm test:e2e` - Run E2E tests in headless mode (auto-starts dev server)
