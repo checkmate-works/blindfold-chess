@@ -1661,7 +1661,6 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "signInRequired": "マイページを表示するにはサインインしてください。",
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",

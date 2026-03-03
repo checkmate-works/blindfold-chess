@@ -4,19 +4,18 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { FaRegUser } from 'react-icons/fa';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
 import { useAuth } from '../_contexts/AuthContext';
-import { useToast } from '../_contexts/ToastContext';
 
 export function AuthStatusDisplay() {
   const { user, isLoading, signOut } = useAuth();
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations('AuthStatusDisplay');
-  const tToast = useTranslations('toast');
-  const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -74,7 +73,7 @@ export function AuthStatusDisplay() {
                 onClick={async () => {
                   setIsOpen(false);
                   await signOut();
-                  showToast(tToast('logoutSuccess'), 'success');
+                  router.push(`/${locale}?toast=logout_success`);
                 }}
               >
                 <FiLogOut className="h-4 w-4" />

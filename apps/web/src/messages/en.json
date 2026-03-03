@@ -1660,7 +1660,6 @@
   },
   "Mypage": {
     "title": "My Page",
-    "signInRequired": "Please sign in to view your page.",
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
