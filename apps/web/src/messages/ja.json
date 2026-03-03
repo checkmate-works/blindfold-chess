@@ -1661,6 +1661,7 @@
   },
   "Mypage": {
     "title": "マイページ",
+    "practiceLink": "練習記録",
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",

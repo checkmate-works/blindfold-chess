@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+
+import { MypageContent } from './_components/MypageContent';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -14,14 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.mypage' });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage' }),
     title: t('title'),
     description: t('description'),
     robots: { index: false, follow: false },
   };
 }
 
-export default async function MypagePage({ params }: Props) {
+export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Mypage' });
 
@@ -29,15 +28,7 @@ export default async function MypagePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        <nav>
-          <ul>
-            <li>
-              <Link href={`/${locale}/mypage/practice`} className="text-primary hover:underline">
-                {t('practiceLink')}
-              </Link>
-            </li>
-          </ul>
-        </nav>
+        <MypageContent />
       </PagePanel>
     </div>
   );

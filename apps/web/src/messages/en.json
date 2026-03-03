@@ -1660,6 +1660,7 @@
   },
   "Mypage": {
     "title": "My Page",
+    "practiceLink": "Practice Records",
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
