@@ -44,6 +44,10 @@
     "mypage": {
       "title": "マイページ",
       "description": "アカウント情報やアクティビティを確認できます"
+    },
+    "setupUsername": {
+      "title": "アカウント登録",
+      "description": "Blindfold Chess のアカウントを作成します"
     }
   },
   "Header": {
@@ -1702,6 +1706,33 @@
     "alreadyLoggedIn": "すでにログインしています",
     "logoutSuccess": "ログアウトしました",
     "signInRequired": "ログインしてください"
+  },
+  "setupUsername": {
+    "title": "アカウント登録",
+    "description": "アカウント名を決めてください。",
+    "usernameLabel": "ユーザー名",
+    "usernameDescription": "プロフィールURL やメンションに使われる固有の ID です。",
+    "usernamePlaceholder": "例: chess_player1",
+    "usernameHint": "2〜20文字。英小文字、数字、アンダースコアのみ使用できます。先頭は英小文字にしてください。",
+    "displayNameLabel": "表示名",
+    "displayNameDescription": "ランキングやプロフィール画面に表示される名前です。",
+    "displayNameCanChange": "あとから変更できます。",
+    "displayNamePlaceholder": "例: チェス太郎",
+    "cannotChange": "ユーザー名は一度確定するとあとで変更できません。",
+    "inappropriateWarning": "ユーザー名は無難なものにしてください。不適切なユーザー名はアカウント閉鎖の対象となります。",
+    "agreeToTermsPrefix": "",
+    "termsLink": "利用規約",
+    "agreeToTermsSuffix": "に同意する",
+    "submit": "登録",
+    "submitting": "登録中...",
+    "validation": {
+      "tooShort": "ユーザー名は2文字以上で入力してください。",
+      "tooLong": "ユーザー名は20文字以下で入力してください。",
+      "invalidFormat": "ユーザー名は英小文字で始まり、英小文字または数字で終わる必要があります。使用できるのは英小文字、数字、連続しないアンダースコアのみです。",
+      "taken": "このユーザー名は既に使われています。",
+      "alreadySet": "ユーザー名は既に設定済みです。",
+      "error": "エラーが発生しました。もう一度お試しください。"
+    }
   },
   "Admin": {
     "title": "Admin",

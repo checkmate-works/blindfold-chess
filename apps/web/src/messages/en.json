@@ -44,6 +44,10 @@
     "mypage": {
       "title": "My Page",
       "description": "View your account information and activity"
+    },
+    "setupUsername": {
+      "title": "Create Your Account",
+      "description": "Create your Blindfold Chess account"
     }
   },
   "Header": {
@@ -1701,6 +1705,33 @@
     "alreadyLoggedIn": "Already logged in",
     "logoutSuccess": "Signed out",
     "signInRequired": "Please sign in to continue"
+  },
+  "setupUsername": {
+    "title": "Create Your Account",
+    "description": "Choose a username for your account.",
+    "usernameLabel": "Username",
+    "usernameDescription": "A unique ID used in your profile URL and mentions.",
+    "usernamePlaceholder": "e.g., chess_player1",
+    "usernameHint": "2-20 characters. Lowercase letters, numbers, and underscores only. Must start with a letter.",
+    "displayNameLabel": "Display name",
+    "displayNameDescription": "Shown on rankings and your profile.",
+    "displayNameCanChange": "You can change this later.",
+    "displayNamePlaceholder": "e.g., John Chess",
+    "cannotChange": "Your username cannot be changed once set.",
+    "inappropriateWarning": "Please keep your username appropriate. Accounts with inappropriate usernames may be closed.",
+    "agreeToTermsPrefix": "I agree to the ",
+    "termsLink": "Terms of Service",
+    "agreeToTermsSuffix": "",
+    "submit": "Register",
+    "submitting": "Registering...",
+    "validation": {
+      "tooShort": "Username must be at least 2 characters.",
+      "tooLong": "Username must be at most 20 characters.",
+      "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
+      "taken": "This username is already taken.",
+      "alreadySet": "Username has already been set.",
+      "error": "An error occurred. Please try again."
+    }
   },
   "Admin": {
     "title": "Admin",
