@@ -132,6 +132,26 @@ export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
 export type PracticeSession = typeof practiceSessions.$inferSelect;
 export type NewPracticeSession = typeof practiceSessions.$inferInsert;
 
+// Profiles
+export const profiles = pgTable('profiles', {
+  id: uuid('id').primaryKey(), // references auth.users(id) — FK defined in custom SQL
+  username: varchar('username', { length: 255 }).unique().notNull(),
+  displayName: varchar('display_name', { length: 255 }).notNull(),
+  avatarUrl: varchar('avatar_url', { length: 1024 }),
+  bio: text('bio'),
+  country: varchar('country', { length: 2 }),
+  flair: varchar('flair', { length: 50 }),
+  fideId: varchar('fide_id', { length: 50 }),
+  chesscomUsername: varchar('chesscom_username', { length: 255 }),
+  lichessUsername: varchar('lichess_username', { length: 255 }),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type Profile = typeof profiles.$inferSelect;
+export type NewProfile = typeof profiles.$inferInsert;
+
 // App role enum
 export const appRoleEnum = pgEnum('app_role', ['admin', 'user']);
 

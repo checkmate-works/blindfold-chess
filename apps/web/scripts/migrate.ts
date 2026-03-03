@@ -32,6 +32,14 @@ async function runAuthHook() {
   await client.unsafe(hookSql);
 }
 
+async function runProfilesSetup() {
+  const profilesSql = readFileSync(
+    join(import.meta.dirname, '..', 'drizzle', 'profiles_setup.sql'),
+    'utf-8'
+  );
+  await client.unsafe(profilesSql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -41,8 +49,12 @@ async function main() {
     console.log('Supabase environment detected. Applying custom access token hook...');
     await runAuthHook();
     console.log('Auth hook applied!');
+
+    console.log('Applying profiles setup...');
+    await runProfilesSetup();
+    console.log('Profiles setup applied!');
   } else {
-    console.log('Local environment detected. Skipping auth hook (Supabase-only).');
+    console.log('Local environment detected. Skipping Supabase-only setup.');
   }
 
   await client.end();
