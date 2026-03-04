@@ -54,6 +54,16 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Rewrites: map /@/username to /profile/username (@ is reserved by Next.js for parallel routes)
+  async rewrites() {
+    return [
+      {
+        source: '/:locale/@/:username',
+        destination: '/:locale/profile/:username',
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [

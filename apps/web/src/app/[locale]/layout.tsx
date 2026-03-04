@@ -116,6 +116,7 @@ export default async function Layout({
     'company',
     'landing',
     'posts',
+    'publicProfile',
   ];
 
   const messages = Object.fromEntries(

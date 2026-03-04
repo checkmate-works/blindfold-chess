@@ -1787,5 +1787,11 @@
       "noUsersFound": "No users found",
       "defaultRole": "user"
     }
+  },
+  "publicProfile": {
+    "title": "{displayName}'s Profile",
+    "defaultDescription": "{displayName}'s profile on Blindfold Chess",
+    "chessAccounts": "Chess Accounts",
+    "bio": "About"
   }
 }

@@ -1788,5 +1788,11 @@
       "noUsersFound": "No users found",
       "defaultRole": "user"
     }
+  },
+  "publicProfile": {
+    "title": "{displayName}のプロフィール",
+    "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
+    "chessAccounts": "チェスアカウント",
+    "bio": "自己紹介"
   }
 }
