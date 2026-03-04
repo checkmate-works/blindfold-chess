@@ -1,15 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { Button, ChessBoard } from '@/app/_components';
-import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { useMovePlayback } from '../_hooks/use-move-playback';
 import type { MoveSequenceData } from '../_lib/types';
 
 type Props = {
@@ -23,126 +23,38 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
   const t = useTranslations('practice.moveSequence');
   const { preferences } = useGamePreferences();
 
-  const [currentFen, setCurrentFen] = useState(data.fen);
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const chessRef = useRef<ChessGameManager | null>(null);
-
-  // Initialize chess instance
-  useEffect(() => {
-    chessRef.current = new ChessGameManager(data.fen);
-  }, [data.fen]);
-
-  // Play moves one by one (optionally from a specific index for replay)
-  const playNextMove = useCallback(
-    (fromIndex?: number) => {
-      if (!chessRef.current) return;
-
-      const nextIndex = fromIndex !== undefined ? fromIndex : currentMoveIndex + 1;
-
-      if (nextIndex >= data.moves.length) {
-        // All moves played
-        setIsPlaying(false);
-        setHasPlayed(true);
-        setSelectedMoveIndex(data.moves.length - 1);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        return;
-      }
-
-      const move = data.moves[nextIndex];
-      try {
-        const result = chessRef.current.move(move);
-        if (result) {
-          setCurrentFen(chessRef.current.fen());
-          setCurrentMoveIndex(nextIndex);
-          setLastMove({ from: result.from, to: result.to });
-        }
-      } catch (error) {
-        console.error('Error playing move:', error);
-        setIsPlaying(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      }
+  const {
+    currentFen,
+    currentMoveIndex,
+    isPlaying,
+    hasPlayed,
+    lastMove,
+    play: handlePlayCore,
+    jumpToMove: jumpToMoveCore,
+  } = useMovePlayback({
+    initialFen: data.fen,
+    moves: data.moves,
+    intervalMs: MOVE_INTERVAL,
+    autoPlayDelayMs: 500,
+    onPlaybackComplete: () => {
+      setSelectedMoveIndex(data.moves.length - 1);
     },
-    [currentMoveIndex, data.moves]
-  );
+  });
 
   // Handle play button click
   const handlePlay = () => {
-    if (isPlaying) return;
-
-    // Reset to initial position
-    chessRef.current = new ChessGameManager(data.fen);
-    setCurrentFen(data.fen);
-    setCurrentMoveIndex(-1);
-    setLastMove(null);
-    setIsPlaying(true);
     setSelectedMoveIndex(null);
-
-    // Play first move immediately (pass 0 explicitly for replay)
-    setTimeout(() => {
-      playNextMove(0);
-    }, 500);
+    handlePlayCore();
   };
 
   // Jump to a specific move position
   const jumpToMove = (targetIndex: number) => {
     if (isPlaying) return;
-
-    // Reset chess instance and replay moves up to target
-    const manager = new ChessGameManager(data.fen);
-    let lastMoveResult: { from: string; to: string } | null = null;
-
-    for (let i = 0; i <= targetIndex; i++) {
-      try {
-        const result = manager.move(data.moves[i]);
-        lastMoveResult = { from: result.from, to: result.to };
-      } catch (error) {
-        console.error('Error replaying move:', error);
-        return;
-      }
-    }
-
-    chessRef.current = manager;
-    setCurrentFen(manager.fen());
-    setCurrentMoveIndex(targetIndex);
+    jumpToMoveCore(targetIndex);
     setSelectedMoveIndex(targetIndex);
-    setLastMove(lastMoveResult);
-    setHasPlayed(true);
   };
-
-  // Continue playing moves at interval
-  useEffect(() => {
-    if (isPlaying && currentMoveIndex >= 0) {
-      intervalRef.current = setTimeout(playNextMove, MOVE_INTERVAL);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isPlaying, currentMoveIndex, playNextMove]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-      }
-    };
-  }, []);
 
   const flipped = data.playerColor === 'b';
 
