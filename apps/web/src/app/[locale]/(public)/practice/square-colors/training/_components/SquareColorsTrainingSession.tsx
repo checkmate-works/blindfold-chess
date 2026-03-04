@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/_hooks/use-batch-training-session';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -26,68 +27,29 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   const { showToast } = useToast();
   const tp = useTranslations('practice');
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [squares, setSquares] = useState<string[]>([]);
-  const [answers, setAnswers] = useState<boolean[]>([]);
-  const [showResult, setShowResult] = useState<boolean>(false);
-  const [lastAnswer, setLastAnswer] = useState<{ correct: boolean; square: string } | null>(null);
-  const hasStarted = useRef(false);
-
   const { countdown } = useCountdown();
-  const [hasMounted, setHasMounted] = useState(false);
 
-  // Auto-start the game on mount
-  useEffect(() => {
-    if (hasStarted.current) return;
-    hasStarted.current = true;
-    setHasMounted(true);
+  const {
+    currentQuestion: currentSquare,
+    hasQuestions,
+    showResult,
+    lastAnswer,
+    correctCount,
+    incorrectCount,
+    handleAnswer,
+  } = useBatchTrainingSession<string, 'light' | 'dark'>({
+    batchSize: BATCH_SIZE,
+    generateBatch: () => generateSquareSequence(BATCH_SIZE),
+    checkAnswer: (square, selectedColor) => selectedColor === getSquareColor(square),
+    scrollTargetId: 'square-colors-training-session',
+    feedbackDelayMs: 500,
+  });
 
-    const newSquares = generateSquareSequence(BATCH_SIZE);
-    setSquares(newSquares);
-  }, []);
-
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (hasMounted) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('square-colors-training-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [hasMounted]);
-
-  // Regenerate squares when running low
-  useEffect(() => {
-    if (squares.length > 0 && currentIndex >= squares.length - 10) {
-      const newBatch = generateSquareSequence(BATCH_SIZE);
-      setSquares((prev) => [...prev, ...newBatch]);
-    }
-  }, [currentIndex, squares.length]);
-
-  const handleAnswer = useCallback(
+  const onAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {
-      if (countdown !== null || showResult) return;
-
-      const currentSquare = squares[currentIndex];
-      const correctColor = getSquareColor(currentSquare);
-      const isCorrect = selectedColor === correctColor;
-
-      // Record answer
-      setAnswers((prev) => [...prev, isCorrect]);
-      setLastAnswer({ correct: isCorrect, square: currentSquare });
-      setShowResult(true);
-
-      // Move to next question
-      setTimeout(() => {
-        setShowResult(false);
-        setLastAnswer(null);
-        setCurrentIndex((prev) => prev + 1);
-      }, 500);
+      handleAnswer(selectedColor, countdown !== null);
     },
-    [currentIndex, squares, countdown, showResult]
+    [handleAnswer, countdown]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -96,21 +58,23 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   }, [showToast, tp, router, locale]);
 
   // Show loading state while squares are being generated
-  if (squares.length === 0) {
+  if (!hasQuestions || !currentSquare) {
     return <PracticeResultSkeleton />;
   }
 
   return (
     <div id="square-colors-training-session" className="min-h-screen">
       <SquareColorsTrainingPlaying
-        currentSquare={squares[currentIndex]}
+        currentSquare={currentSquare}
         showResult={showResult}
-        lastAnswer={lastAnswer}
-        onAnswer={handleAnswer}
+        lastAnswer={
+          lastAnswer ? { correct: lastAnswer.correct, square: lastAnswer.question } : null
+        }
+        onAnswer={onAnswer}
         boardTheme={preferences.boardTheme}
         countdown={countdown}
-        correctCount={answers.filter((a) => a).length}
-        incorrectCount={answers.filter((a) => !a).length}
+        correctCount={correctCount}
+        incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}
       />
     </div>

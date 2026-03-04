@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/_hooks/use-batch-training-session';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -29,72 +30,31 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [questions, setQuestions] = useState<MoveQuestion[]>([]);
-  const [answers, setAnswers] = useState<boolean[]>([]);
-  const [showResult, setShowResult] = useState<boolean>(false);
-  const [lastAnswer, setLastAnswer] = useState<{
-    correct: boolean;
-    userAnswer: boolean;
-    isLegal: boolean;
-  } | null>(null);
-  const hasStarted = useRef(false);
-
   const { countdown } = useCountdown();
-  const [hasMounted, setHasMounted] = useState(false);
 
-  // Auto-start the game on mount
-  useEffect(() => {
-    if (hasStarted.current) return;
-    hasStarted.current = true;
-    setHasMounted(true);
+  const {
+    currentQuestion,
+    hasQuestions,
+    showResult,
+    lastAnswer,
+    correctCount,
+    incorrectCount,
+    handleAnswer,
+  } = useBatchTrainingSession<MoveQuestion, { userAnswer: boolean; isLegal: boolean }>({
+    batchSize: BATCH_SIZE,
+    generateBatch: () => generateBalancedMoveQuestions(BATCH_SIZE, selectedPieces),
+    checkAnswer: (question, { userAnswer, isLegal }) => userAnswer === isLegal,
+    scrollTargetId: 'legal-moves-training-session',
+    feedbackDelayMs: 500,
+  });
 
-    const newQuestions = generateBalancedMoveQuestions(BATCH_SIZE, selectedPieces);
-    setQuestions(newQuestions);
-  }, [selectedPieces]);
-
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (!hasMounted) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('legal-moves-training-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [hasMounted]);
-
-  // Regenerate questions when running low
-  useEffect(() => {
-    if (questions.length > 0 && currentIndex >= questions.length - 10) {
-      const newBatch = generateBalancedMoveQuestions(BATCH_SIZE, selectedPieces);
-      setQuestions((prev) => [...prev, ...newBatch]);
-    }
-  }, [currentIndex, questions.length, selectedPieces]);
-
-  const handleAnswer = useCallback(
+  const onAnswer = useCallback(
     (userAnswer: boolean) => {
-      if (countdown !== null || showResult) return;
-
-      const currentQuestion = questions[currentIndex];
+      if (!currentQuestion) return;
       const isLegal = isLegalMove(currentQuestion.from, currentQuestion.to, currentQuestion.piece);
-      const isCorrect = userAnswer === isLegal;
-
-      // Record answer
-      setAnswers((prev) => [...prev, isCorrect]);
-      setLastAnswer({ correct: isCorrect, userAnswer, isLegal });
-      setShowResult(true);
-
-      // Move to next question
-      setTimeout(() => {
-        setShowResult(false);
-        setLastAnswer(null);
-        setCurrentIndex((prev) => prev + 1);
-      }, 500);
+      handleAnswer({ userAnswer, isLegal }, countdown !== null);
     },
-    [currentIndex, questions, countdown, showResult]
+    [handleAnswer, countdown, currentQuestion]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -103,21 +63,29 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
   }, [showToast, tp, router, locale]);
 
   // Show loading state while questions are being generated
-  if (questions.length === 0) {
+  if (!hasQuestions || !currentQuestion) {
     return <PracticeResultSkeleton />;
   }
 
   return (
     <div id="legal-moves-training-session" className="min-h-screen">
       <LegalMovesTrainingPlaying
-        currentQuestion={questions[currentIndex]}
+        currentQuestion={currentQuestion}
         showResult={showResult}
-        lastAnswer={lastAnswer}
-        onAnswer={handleAnswer}
+        lastAnswer={
+          lastAnswer
+            ? {
+                correct: lastAnswer.correct,
+                userAnswer: lastAnswer.userAnswerData.userAnswer,
+                isLegal: lastAnswer.userAnswerData.isLegal,
+              }
+            : null
+        }
+        onAnswer={onAnswer}
         getQuestion={getQuestion}
         countdown={countdown}
-        correctCount={answers.filter((a) => a).length}
-        incorrectCount={answers.filter((a) => !a).length}
+        correctCount={correctCount}
+        incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}
       />
     </div>
