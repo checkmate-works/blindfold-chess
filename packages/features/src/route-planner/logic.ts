@@ -21,31 +21,27 @@ interface RoutePlannerStrategy {
   meetsConstraint(pathLength: number): boolean;
 }
 
-const addMoveIfValid = (f: number, r: number, moves: string[]) => {
+const getValidMove = (f: number, r: number): string[] => {
   const sq = coordsToSquare(f, r);
-  if (sq) moves.push(sq);
+  return sq ? [sq] : [];
 };
 
-const addLinesIfValid = (
-  f: number,
-  r: number,
-  dirs: number[][],
-  moves: string[],
-) => {
-  dirs.forEach((d) => {
+const getValidLines = (f: number, r: number, dirs: number[][]): string[] => {
+  return dirs.flatMap((d) => {
+    const lineMoves: string[] = [];
     for (let i = 1; i < 8; i++) {
       const nf = f + d[0] * i;
       const nr = r + d[1] * i;
       const sq = coordsToSquare(nf, nr);
-      if (sq) moves.push(sq);
+      if (sq) lineMoves.push(sq);
       else break;
     }
+    return lineMoves;
   });
 };
 
 const KnightRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const moves: string[] = [];
     const jumps = [
       [1, 2],
       [1, -2],
@@ -56,8 +52,7 @@ const KnightRouteStrategy: RoutePlannerStrategy = {
       [-2, 1],
       [-2, -1],
     ];
-    jumps.forEach((d) => addMoveIfValid(f + d[0], r + d[1], moves));
-    return moves;
+    return jumps.flatMap((d) => getValidMove(f + d[0], r + d[1]));
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3 && pathLength <= 4;
@@ -66,15 +61,13 @@ const KnightRouteStrategy: RoutePlannerStrategy = {
 
 const BishopRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const moves: string[] = [];
     const dirs = [
       [1, 1],
       [1, -1],
       [-1, 1],
       [-1, -1],
     ];
-    addLinesIfValid(f, r, dirs, moves);
-    return moves;
+    return getValidLines(f, r, dirs);
   },
   meetsConstraint(pathLength) {
     return pathLength === 3;
@@ -83,15 +76,13 @@ const BishopRouteStrategy: RoutePlannerStrategy = {
 
 const RookRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const moves: string[] = [];
     const dirs = [
       [1, 0],
       [-1, 0],
       [0, 1],
       [0, -1],
     ];
-    addLinesIfValid(f, r, dirs, moves);
-    return moves;
+    return getValidLines(f, r, dirs);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3;

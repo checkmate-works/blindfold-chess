@@ -93,7 +93,7 @@ export function useGameSession({
       setError(null);
       return true;
     },
-    [isPlayerTurn, gameStatus, isAiLoading, moves, playerColor],
+    [isPlayerTurn, gameStatus, isAiLoading, moves],
   );
 
   const currentFen = useMemo(() => {

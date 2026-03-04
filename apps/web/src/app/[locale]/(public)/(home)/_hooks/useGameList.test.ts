@@ -182,7 +182,9 @@ describe('useGameList', () => {
       });
 
       // Resolve the load
-      resolveLoad(mockGames);
+      await waitFor(() => {
+        resolveLoad(mockGames);
+      });
       await reloadPromise;
 
       // Should no longer be loading
