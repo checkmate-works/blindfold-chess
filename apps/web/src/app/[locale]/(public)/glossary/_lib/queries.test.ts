@@ -65,6 +65,24 @@ function mockChain(rows: unknown[]) {
   return chain;
 }
 
+function setupMockQueries(
+  termRows: unknown[],
+  aliasRows: unknown[] = [],
+  positionRows: unknown[] = []
+) {
+  const chain1 = mockChain(termRows);
+  const chain2 = mockChain(aliasRows);
+  const chain3 = mockChain(positionRows);
+
+  let callCount = 0;
+  mockDb.select.mockImplementation((() => {
+    callCount++;
+    if (callCount === 1) return chain1;
+    if (callCount === 2) return chain2;
+    return chain3;
+  }) as unknown as typeof mockDb.select);
+}
+
 describe('queries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -96,17 +114,7 @@ describe('queries', () => {
         { termId: 'id-1', alias: '#' },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain(aliasRows);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, aliasRows, []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -145,17 +153,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -187,17 +185,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('fr');
 
@@ -218,17 +206,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -249,17 +227,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getTermsByLetter('c', 'ja');
 
@@ -307,17 +275,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getTermsByCategory('tactics', 'ja');
 
@@ -428,17 +386,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -458,17 +406,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -509,17 +447,7 @@ describe('queries', () => {
         { termId: 'id-2', alias: 'Kt' },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain(aliasRows);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, aliasRows, []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -552,17 +480,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain(aliasRows);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, aliasRows, positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -588,17 +506,7 @@ describe('queries', () => {
         },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain([]);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], []);
 
       const result = await getGlossaryTerms('ja');
 
@@ -625,17 +533,7 @@ describe('queries', () => {
         { termId: 'id-1', fen: 'fen-step-2', sortOrder: 2, caption: null },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -668,17 +566,7 @@ describe('queries', () => {
         { termId: 'id-1', fen: 'fen-without-caption', sortOrder: 2, caption: null },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -712,17 +600,7 @@ describe('queries', () => {
         { termId: 'id-2', fen: 'skewer-fen-2', sortOrder: 2, caption: null },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -749,17 +627,7 @@ describe('queries', () => {
 
       const positionRows = [{ termId: 'id-1', fen: 'battery-fen', sortOrder: null, caption: null }];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -786,17 +654,7 @@ describe('queries', () => {
         { termId: 'id-1', fen: 'fork-fen', sortOrder: 1, caption: 'Fork position' },
       ];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getTermsByLetter('f', 'ja');
 
@@ -821,17 +679,7 @@ describe('queries', () => {
 
       const positionRows = [{ termId: 'id-1', fen: 'pin-fen', sortOrder: 1, caption: null }];
 
-      const chain1 = mockChain(termRows);
-      const chain2 = mockChain([]);
-      const chain3 = mockChain(positionRows);
-
-      let callCount = 0;
-      mockDb.select.mockImplementation((() => {
-        callCount++;
-        if (callCount === 1) return chain1;
-        if (callCount === 2) return chain2;
-        return chain3;
-      }) as unknown as typeof mockDb.select);
+      setupMockQueries(termRows, [], positionRows);
 
       const result = await getTermsByCategory('tactics', 'ja');
 
