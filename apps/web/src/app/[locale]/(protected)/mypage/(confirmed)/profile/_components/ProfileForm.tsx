@@ -25,18 +25,18 @@ export function ProfileForm({ locale, profile }: Props) {
   const [fideId, setFideId] = useState(profile.fideId ?? '');
   const [chesscomUsername, setChesscomUsername] = useState(profile.chesscomUsername ?? '');
   const [lichessUsername, setLichessUsername] = useState(profile.lichessUsername ?? '');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; field?: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validate = (): string | null => {
+  const validate = (): { message: string; field?: string } | null => {
     if (!displayName.trim()) {
-      return t('displayNameRequired');
+      return { message: t('displayNameRequired'), field: 'displayName' };
     }
     if (bio.length > 500) {
-      return t('bioMaxLength');
+      return { message: t('bioMaxLength'), field: 'bio' };
     }
     if (country && !/^[A-Za-z]{2}$/.test(country)) {
-      return t('countryInvalid');
+      return { message: t('countryInvalid'), field: 'country' };
     }
     return null;
   };
@@ -72,16 +72,19 @@ export function ProfileForm({ locale, profile }: Props) {
         const data = await res.json();
         switch (data.error) {
           case 'display_name_required':
-            setError(t('displayNameRequired'));
+            setError({ message: t('displayNameRequired'), field: 'displayName' });
+            break;
+          case 'display_name_inappropriate':
+            setError({ message: t('displayNameInappropriate'), field: 'displayName' });
             break;
           case 'bio_too_long':
-            setError(t('bioMaxLength'));
+            setError({ message: t('bioMaxLength'), field: 'bio' });
             break;
           case 'invalid_country':
-            setError(t('countryInvalid'));
+            setError({ message: t('countryInvalid'), field: 'country' });
             break;
           default:
-            setError(t('error'));
+            setError({ message: t('error') });
         }
         setIsSubmitting(false);
         return;
@@ -89,7 +92,7 @@ export function ProfileForm({ locale, profile }: Props) {
 
       router.push(`/${locale}/mypage?toast=profile_updated`);
     } catch {
-      setError(t('error'));
+      setError({ message: t('error') });
       setIsSubmitting(false);
     }
   };
@@ -105,6 +108,8 @@ export function ProfileForm({ locale, profile }: Props) {
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">{t('identity')}</h2>
 
+        {/* Display name does not require uniqueness (same approach as X/Instagram).
+           Username serves as the unique identifier. */}
         <div>
           <label htmlFor="displayName" className={labelClassName}>
             {t('displayNameLabel')} <span className="text-destructive">*</span>
@@ -114,10 +119,14 @@ export function ProfileForm({ locale, profile }: Props) {
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            maxLength={255}
+            maxLength={50}
             autoComplete="off"
             className={inputClassName}
           />
+          {error?.field === 'displayName' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
+          <p className="mt-2 text-xs text-muted-foreground">{t('displayNameMaxLength')}</p>
         </div>
 
         <div>
@@ -134,6 +143,9 @@ export function ProfileForm({ locale, profile }: Props) {
             style={{ resize: 'vertical' }}
             className={inputClassName}
           />
+          {error?.field === 'bio' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
         </div>
 
         <div>
@@ -147,6 +159,9 @@ export function ProfileForm({ locale, profile }: Props) {
             clearLabel={t('countryClear')}
             noResults={t('noCountryResults')}
           />
+          {error?.field === 'country' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
         </div>
 
         <div>
@@ -213,7 +228,7 @@ export function ProfileForm({ locale, profile }: Props) {
         </div>
       </section>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && !error.field && <p className="text-sm text-destructive">{error.message}</p>}
 
       <button
         type="submit"

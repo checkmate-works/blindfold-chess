@@ -1723,6 +1723,7 @@
     "displayNameLabel": "表示名",
     "displayNameDescription": "ランキングやプロフィール画面に表示される名前です。",
     "displayNameCanChange": "あとから変更できます。",
+    "displayNameMaxLength": "最大50文字です。",
     "displayNamePlaceholder": "例: チェス太郎",
     "cannotChange": "ユーザー名は一度確定するとあとで変更できません。",
     "inappropriateWarning": "ユーザー名は無難なものにしてください。不適切なユーザー名はアカウント閉鎖の対象となります。",
@@ -1737,7 +1738,8 @@
       "invalidFormat": "ユーザー名は英小文字で始まり、英小文字または数字で終わる必要があります。使用できるのは英小文字、数字、連続しないアンダースコアのみです。",
       "taken": "このユーザー名は既に使われています。",
       "alreadySet": "ユーザー名は既に設定済みです。",
-      "error": "エラーが発生しました。もう一度お試しください。"
+      "error": "エラーが発生しました。もう一度お試しください。",
+      "usernameInappropriate": "このユーザー名は使用できません。"
     }
   },
   "profile": {
@@ -1749,6 +1751,7 @@
     "usernameReadOnly": "ユーザー名は変更できません。",
     "displayNameLabel": "表示名",
     "displayNameRequired": "表示名は必須です。",
+    "displayNameMaxLength": "最大50文字です。",
     "bioLabel": "自己紹介文",
     "bioPlaceholder": "自己紹介を入力してください...",
     "bioMaxLength": "自己紹介は500文字以内で入力してください。",
@@ -1767,6 +1770,7 @@
     "chesscomUsernamePlaceholder": "Chess.com のユーザー名",
     "lichessUsernameLabel": "Lichess ユーザー名",
     "lichessUsernamePlaceholder": "Lichess のユーザー名",
+    "displayNameInappropriate": "この表示名は使用できません。",
     "submit": "保存",
     "submitting": "保存中...",
     "error": "エラーが発生しました。もう一度お試しください。"

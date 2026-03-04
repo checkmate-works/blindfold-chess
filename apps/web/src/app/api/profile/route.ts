@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
+import { isLameName } from '@/lib/lame-name';
 import { createClient } from '@/lib/supabase/server';
 
 export async function PUT(request: Request) {
@@ -30,12 +31,17 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 
+  // Display name does not require uniqueness (same approach as X/Instagram).
+  // Username serves as the unique identifier.
   const displayName = body.displayName?.trim();
   if (!displayName) {
     return NextResponse.json({ error: 'display_name_required' }, { status: 400 });
   }
-  if (displayName.length > 255) {
+  if (displayName.length > 50) {
     return NextResponse.json({ error: 'display_name_too_long' }, { status: 400 });
+  }
+  if (isLameName(displayName)) {
+    return NextResponse.json({ error: 'display_name_inappropriate' }, { status: 400 });
   }
 
   const bio = body.bio?.trim() || null;

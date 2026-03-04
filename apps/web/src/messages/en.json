@@ -1722,6 +1722,7 @@
     "displayNameLabel": "Display name",
     "displayNameDescription": "Shown on rankings and your profile.",
     "displayNameCanChange": "You can change this later.",
+    "displayNameMaxLength": "50 characters max.",
     "displayNamePlaceholder": "e.g., John Chess",
     "cannotChange": "Your username cannot be changed once set.",
     "inappropriateWarning": "Please keep your username appropriate. Accounts with inappropriate usernames may be closed.",
@@ -1736,7 +1737,8 @@
       "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
       "taken": "This username is already taken.",
       "alreadySet": "Username has already been set.",
-      "error": "An error occurred. Please try again."
+      "error": "An error occurred. Please try again.",
+      "usernameInappropriate": "This username is not allowed."
     }
   },
   "profile": {
@@ -1748,6 +1750,7 @@
     "usernameReadOnly": "Username cannot be changed.",
     "displayNameLabel": "Display Name",
     "displayNameRequired": "Display name is required.",
+    "displayNameMaxLength": "50 characters max.",
     "bioLabel": "Bio",
     "bioPlaceholder": "Tell us about yourself...",
     "bioMaxLength": "Bio must be 500 characters or less.",
@@ -1766,6 +1769,7 @@
     "chesscomUsernamePlaceholder": "Your Chess.com username",
     "lichessUsernameLabel": "Lichess Username",
     "lichessUsernamePlaceholder": "Your Lichess username",
+    "displayNameInappropriate": "This display name is not allowed.",
     "submit": "Save",
     "submitting": "Saving...",
     "error": "An error occurred. Please try again."

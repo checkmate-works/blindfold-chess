@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
+import { isLameName } from '@/lib/lame-name';
 import { createClient } from '@/lib/supabase/server';
 import { validateUsername } from '@/lib/username';
 
@@ -44,6 +45,14 @@ export async function POST(request: Request) {
   const validationError = validateUsername(username);
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
+  }
+
+  if (isLameName(username)) {
+    return NextResponse.json({ error: 'username_inappropriate' }, { status: 400 });
+  }
+
+  if (isLameName(displayName)) {
+    return NextResponse.json({ error: 'display_name_inappropriate' }, { status: 400 });
   }
 
   // Check if profile already exists (prevent double creation)

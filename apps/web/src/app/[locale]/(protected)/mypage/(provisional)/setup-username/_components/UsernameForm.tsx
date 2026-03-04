@@ -33,6 +33,10 @@ export function UsernameForm({ locale }: Props) {
           return t('validation.taken');
         case 'username_already_set':
           return t('validation.alreadySet');
+        case 'username_inappropriate':
+          return t('validation.usernameInappropriate');
+        case 'display_name_inappropriate':
+          return t('validation.usernameInappropriate');
         default:
           return t('validation.error');
       }
@@ -121,12 +125,13 @@ export function UsernameForm({ locale }: Props) {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder={t('displayNamePlaceholder')}
-          maxLength={255}
+          maxLength={50}
           autoComplete="off"
           className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
         />
         <ul className="mt-2 list-disc list-inside">
           <li className="text-xs text-muted-foreground">{t('displayNameCanChange')}</li>
+          <li className="text-xs text-muted-foreground">{t('displayNameMaxLength')}</li>
         </ul>
       </div>
 
