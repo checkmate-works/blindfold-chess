@@ -35,8 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   return {
-    title: t('title', { displayName: profile.displayName }),
-    description: profile.bio || t('defaultDescription', { displayName: profile.displayName }),
+    title: t('title', { displayName: profile.displayName ?? username }),
+    description:
+      profile.bio || t('defaultDescription', { displayName: profile.displayName ?? username }),
     alternates: {
       canonical: `/${locale}/@/${username}`,
     },

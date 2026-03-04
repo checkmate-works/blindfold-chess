@@ -18,7 +18,7 @@ type Props = {
 export function ProfileForm({ locale, profile }: Props) {
   const t = useTranslations('profile');
   const router = useRouter();
-  const [displayName, setDisplayName] = useState(profile.displayName);
+  const [displayName, setDisplayName] = useState(profile.displayName ?? '');
   const [bio, setBio] = useState(profile.bio ?? '');
   const [country, setCountry] = useState(profile.country ?? '');
   const [flair, setFlair] = useState(profile.flair ?? '');

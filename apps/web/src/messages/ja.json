@@ -52,6 +52,10 @@
     "profile": {
       "title": "プロフィール編集",
       "description": "Blindfold Chess のプロフィールを編集します"
+    },
+    "deleteAccount": {
+      "title": "退会",
+      "description": "Blindfold Chess のアカウントを削除します"
     }
   },
   "Header": {
@@ -1667,6 +1671,7 @@
     "title": "マイページ",
     "practiceLink": "練習記録",
     "profileLink": "プロフィール編集",
+    "deleteAccountLink": "退会",
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",
@@ -1705,6 +1710,17 @@
       "fen": "FEN再構成",
       "quadrant_anchors": "象限アンカー"
     }
+  },
+  "deleteAccount": {
+    "title": "退会",
+    "warning": "この操作は取り消すことができません。表示名、自己紹介、国、チェスアカウントなどの個人情報はすべて削除されます。ユーザー名は再利用防止のため保持されます。",
+    "confirmButton": "アカウントを削除する",
+    "confirmTitle": "本当に退会しますか？",
+    "confirmMessage": "アカウントが完全に削除され、すべての個人情報が消去されます。この操作は取り消せません。",
+    "confirmOk": "はい、退会します",
+    "confirmCancel": "キャンセル",
+    "deleting": "アカウントを削除中...",
+    "error": "アカウントの削除中にエラーが発生しました。もう一度お試しください。"
   },
   "toast": {
     "loginSuccess": "ログインしました",

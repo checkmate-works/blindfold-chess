@@ -52,6 +52,10 @@
     "profile": {
       "title": "Edit Profile",
       "description": "Edit your Blindfold Chess profile"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Delete your Blindfold Chess account"
     }
   },
   "Header": {
@@ -1666,6 +1670,7 @@
     "title": "My Page",
     "practiceLink": "Practice Records",
     "profileLink": "Edit Profile",
+    "deleteAccountLink": "Delete Account",
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
@@ -1704,6 +1709,17 @@
       "fen": "FEN Reconstruction",
       "quadrant_anchors": "Quadrant Anchors"
     }
+  },
+  "deleteAccount": {
+    "title": "Delete Account",
+    "warning": "This action is permanent and cannot be undone. All your personal data (display name, bio, country, chess accounts, etc.) will be erased. Your username will be retained to prevent reuse.",
+    "confirmButton": "Delete My Account",
+    "confirmTitle": "Are you absolutely sure?",
+    "confirmMessage": "This will permanently delete your account and erase all personal data. This action cannot be undone.",
+    "confirmOk": "Yes, delete my account",
+    "confirmCancel": "Cancel",
+    "deleting": "Deleting account...",
+    "error": "An error occurred while deleting your account. Please try again."
   },
   "toast": {
     "loginSuccess": "Logged in",

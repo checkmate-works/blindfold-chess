@@ -136,7 +136,7 @@ export type NewPracticeSession = typeof practiceSessions.$inferInsert;
 export const profiles = pgTable('profiles', {
   id: uuid('id').primaryKey(), // references auth.users(id) — FK defined in custom SQL
   username: varchar('username', { length: 255 }).unique().notNull(),
-  displayName: varchar('display_name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
   avatarUrl: varchar('avatar_url', { length: 1024 }),
   bio: text('bio'),
   country: varchar('country', { length: 2 }),

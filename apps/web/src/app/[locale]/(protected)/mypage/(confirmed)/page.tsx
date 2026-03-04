@@ -41,6 +41,14 @@ export default async function MypagePage({ params }: Props) {
                 {t('profileLink')}
               </Link>
             </li>
+            <li>
+              <Link
+                href={`/${locale}/mypage/delete-account`}
+                className="text-destructive hover:underline"
+              >
+                {t('deleteAccountLink')}
+              </Link>
+            </li>
           </ul>
         </nav>
       </PagePanel>
