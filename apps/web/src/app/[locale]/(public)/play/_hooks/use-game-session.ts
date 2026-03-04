@@ -153,15 +153,23 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const movesRef = useRef(moves);
   movesRef.current = moves;
 
+  // Internal helper to reduce duplicated state updates
+  const recomputeGameState = useCallback(
+    (newMoves: AlgebraicNotation[]) => {
+      const gameState = computeGameState(newMoves, playerSide, startingFen);
+      setLastMove(gameState.lastMoveDetails);
+    },
+    [playerSide, startingFen, setLastMove]
+  );
+
   // AI move orchestration
   const handleAiMoveSuccess = useCallback(
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...movesRef.current, move];
-      const gameState = computeGameState(newMoves, playerSide, startingFen);
-      setLastMove(gameState.lastMoveDetails);
+      recomputeGameState(newMoves);
     },
-    [pushMove, playerSide, startingFen, setLastMove]
+    [pushMove, recomputeGameState]
   );
 
   const handleAiMoveError = useCallback(() => {
@@ -205,10 +213,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     markPlayerInteraction();
     removeMoves(2);
     setError(null);
-    const newMoves = moves.slice(0, -2);
-    const gameState = computeGameState(newMoves as AlgebraicNotation[], playerSide, startingFen);
-    setLastMove(gameState.lastMoveDetails);
-  }, [markPlayerInteraction, removeMoves, moves, playerSide, startingFen, setLastMove]);
+    const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
+    recomputeGameState(newMoves);
+  }, [markPlayerInteraction, removeMoves, moves, recomputeGameState]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -218,11 +225,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       if (movesToRemove > 0) {
         removeMoves(movesToRemove);
       }
-      const newMoves = moves.slice(0, position + 1);
-      const gameState = computeGameState(newMoves as AlgebraicNotation[], playerSide, startingFen);
-      setLastMove(gameState.lastMoveDetails);
+      const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
+      recomputeGameState(newMoves);
     },
-    [markPlayerInteraction, moves, removeMoves, playerSide, startingFen, setLastMove]
+    [markPlayerInteraction, moves, removeMoves, recomputeGameState]
   );
 
   // Handle new game from position

@@ -26,9 +26,10 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
     replace: vi.fn(),
     prefetch: vi.fn(),
     back: vi.fn(),
@@ -39,6 +40,7 @@ describe('AuthStatusDisplay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocale = 'en';
+    mockPush.mockClear();
   });
 
   describe('when loading', () => {
@@ -121,12 +123,13 @@ describe('AuthStatusDisplay', () => {
         expect(signOutButton).toBeInTheDocument();
       });
 
-      it('should call signOut and show toast when the sign-out button is clicked', async () => {
+      it('should call signOut and redirect when the sign-out button is clicked', async () => {
         const signOutButton = screen.getByText('signOut').closest('button')!;
         fireEvent.click(signOutButton);
         expect(mockSignOut).toHaveBeenCalledTimes(1);
+
         await waitFor(() => {
-          expect(mockShowToast).toHaveBeenCalledWith('logoutSuccess', 'success');
+          expect(mockPush).toHaveBeenCalledWith('/en?toast=logout_success');
         });
       });
 
