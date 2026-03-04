@@ -31,7 +31,7 @@ export type EvaluationFilters = {
 
 // Helper function to get evaluation text based on evaluation loss
 // loss is the absolute difference from the previous position (always positive)
-export function getEvaluationText(t: (key: string) => string, loss: number): string {
+function getEvaluationText(t: (key: string) => string, loss: number): string {
   if (loss <= 20) return t('evalBest');
   if (loss <= 50) return t('evalGood');
   if (loss <= 100) return t('evalInaccuracy');

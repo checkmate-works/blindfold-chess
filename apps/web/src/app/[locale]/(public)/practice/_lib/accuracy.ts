@@ -6,7 +6,7 @@ import type { PositionAccuracy, ScoreDetail, SquareDiff } from './types';
 /**
  * Convert FEN piece placement to 64-element board array
  */
-export function fenToBoard(fenPieces: string): string[] {
+function fenToBoard(fenPieces: string): string[] {
   const board: string[] = new Array(64).fill('');
   let squareIndex = 0;
 
@@ -29,44 +29,9 @@ export function fenToBoard(fenPieces: string): string[] {
 }
 
 /**
- * Convert 64-element board array back to FEN piece placement
- */
-export function boardToFen(board: string[]): string {
-  let fen = '';
-  let emptyCount = 0;
-
-  for (let i = 0; i < 64; i++) {
-    if (i > 0 && i % 8 === 0) {
-      if (emptyCount > 0) {
-        fen += emptyCount;
-        emptyCount = 0;
-      }
-      fen += '/';
-    }
-
-    const piece = board[i];
-    if (piece === '') {
-      emptyCount++;
-    } else {
-      if (emptyCount > 0) {
-        fen += emptyCount;
-        emptyCount = 0;
-      }
-      fen += piece;
-    }
-  }
-
-  if (emptyCount > 0) {
-    fen += emptyCount;
-  }
-
-  return fen;
-}
-
-/**
  * Convert square index to algebraic notation
  */
-export function indexToSquare(index: number): string {
+function indexToSquare(index: number): string {
   const file = String.fromCharCode(97 + (index % 8)); // a-h
   const rank = 8 - Math.floor(index / 8); // 8-1
   return file + rank;
@@ -75,7 +40,7 @@ export function indexToSquare(index: number): string {
 /**
  * Get piece description from piece names mapping
  */
-export function getPieceDescription(piece: string, pieceNames: Record<string, string>): string {
+function getPieceDescription(piece: string, pieceNames: Record<string, string>): string {
   return pieceNames[piece] || piece;
 }
 

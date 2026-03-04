@@ -37,7 +37,6 @@
     "@blindfold-chess/types": "workspace:*"
   },
   "devDependencies": {
-    "@blindfold-chess/eslint-config": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-native": "^0.73.0",
     "eslint": "^9.39.1",
