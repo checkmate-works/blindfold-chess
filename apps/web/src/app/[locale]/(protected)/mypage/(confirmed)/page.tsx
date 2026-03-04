@@ -36,6 +36,11 @@ export default async function MypagePage({ params }: Props) {
                 {t('practiceLink')}
               </Link>
             </li>
+            <li>
+              <Link href={`/${locale}/mypage/profile`} className="text-primary hover:underline">
+                {t('profileLink')}
+              </Link>
+            </li>
           </ul>
         </nav>
       </PagePanel>

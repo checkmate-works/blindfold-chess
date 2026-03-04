@@ -1,0 +1,83 @@
+import { NextResponse } from 'next/server';
+
+import { eq } from 'drizzle-orm';
+
+import { db, profiles } from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
+
+export async function PUT(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  let body: {
+    displayName?: string;
+    bio?: string;
+    country?: string;
+    flair?: string;
+    fideId?: string;
+    chesscomUsername?: string;
+    lichessUsername?: string;
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+  }
+
+  const displayName = body.displayName?.trim();
+  if (!displayName) {
+    return NextResponse.json({ error: 'display_name_required' }, { status: 400 });
+  }
+  if (displayName.length > 255) {
+    return NextResponse.json({ error: 'display_name_too_long' }, { status: 400 });
+  }
+
+  const bio = body.bio?.trim() || null;
+  if (bio && bio.length > 500) {
+    return NextResponse.json({ error: 'bio_too_long' }, { status: 400 });
+  }
+
+  const country = body.country?.trim().toUpperCase() || null;
+  if (country && !/^[A-Z]{2}$/.test(country)) {
+    return NextResponse.json({ error: 'invalid_country' }, { status: 400 });
+  }
+
+  const flair = body.flair?.trim() || null;
+  if (flair && flair.length > 50) {
+    return NextResponse.json({ error: 'flair_too_long' }, { status: 400 });
+  }
+  const fideId = body.fideId?.trim() || null;
+  if (fideId && fideId.length > 50) {
+    return NextResponse.json({ error: 'fide_id_too_long' }, { status: 400 });
+  }
+  const chesscomUsername = body.chesscomUsername?.trim() || null;
+  if (chesscomUsername && chesscomUsername.length > 255) {
+    return NextResponse.json({ error: 'chesscom_username_too_long' }, { status: 400 });
+  }
+  const lichessUsername = body.lichessUsername?.trim() || null;
+  if (lichessUsername && lichessUsername.length > 255) {
+    return NextResponse.json({ error: 'lichess_username_too_long' }, { status: 400 });
+  }
+
+  await db
+    .update(profiles)
+    .set({
+      displayName,
+      bio,
+      country,
+      flair,
+      fideId,
+      chesscomUsername,
+      lichessUsername,
+      updatedAt: new Date(),
+    })
+    .where(eq(profiles.id, user.id));
+
+  return NextResponse.json({ success: true });
+}

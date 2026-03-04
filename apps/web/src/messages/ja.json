@@ -48,6 +48,10 @@
     "setupUsername": {
       "title": "アカウント登録",
       "description": "Blindfold Chess のアカウントを作成します"
+    },
+    "profile": {
+      "title": "プロフィール編集",
+      "description": "Blindfold Chess のプロフィールを編集します"
     }
   },
   "Header": {
@@ -1662,6 +1666,7 @@
   "Mypage": {
     "title": "マイページ",
     "practiceLink": "練習記録",
+    "profileLink": "プロフィール編集",
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",
@@ -1705,7 +1710,8 @@
     "loginSuccess": "ログインしました",
     "alreadyLoggedIn": "すでにログインしています",
     "logoutSuccess": "ログアウトしました",
-    "signInRequired": "ログインしてください"
+    "signInRequired": "ログインしてください",
+    "profileUpdated": "プロフィールを更新しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -1733,6 +1739,37 @@
       "alreadySet": "ユーザー名は既に設定済みです。",
       "error": "エラーが発生しました。もう一度お試しください。"
     }
+  },
+  "profile": {
+    "title": "プロフィール編集",
+    "identity": "基本情報",
+    "about": "自己紹介",
+    "chessAccounts": "チェスアカウント",
+    "usernameLabel": "ユーザー名",
+    "usernameReadOnly": "ユーザー名は変更できません。",
+    "displayNameLabel": "表示名",
+    "displayNameRequired": "表示名は必須です。",
+    "bioLabel": "自己紹介文",
+    "bioPlaceholder": "自己紹介を入力してください...",
+    "bioMaxLength": "自己紹介は500文字以内で入力してください。",
+    "countryLabel": "国",
+    "countryPlaceholder": "国を選択",
+    "countrySearch": "国名で検索...",
+    "countryClear": "国をクリア",
+    "noCountryResults": "該当する国がありません",
+    "countryInvalid": "国コードは ISO 3166-1 alpha-2 の2文字で入力してください。",
+    "flairLabel": "称号",
+    "flairPlaceholder": "絵文字を選択",
+    "flairClear": "称号をクリア",
+    "fideIdLabel": "FIDE ID",
+    "fideIdPlaceholder": "例: 12345678",
+    "chesscomUsernameLabel": "Chess.com ユーザー名",
+    "chesscomUsernamePlaceholder": "Chess.com のユーザー名",
+    "lichessUsernameLabel": "Lichess ユーザー名",
+    "lichessUsernamePlaceholder": "Lichess のユーザー名",
+    "submit": "保存",
+    "submitting": "保存中...",
+    "error": "エラーが発生しました。もう一度お試しください。"
   },
   "Admin": {
     "title": "Admin",

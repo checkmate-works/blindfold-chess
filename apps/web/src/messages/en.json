@@ -48,6 +48,10 @@
     "setupUsername": {
       "title": "Create Your Account",
       "description": "Create your Blindfold Chess account"
+    },
+    "profile": {
+      "title": "Edit Profile",
+      "description": "Edit your Blindfold Chess profile"
     }
   },
   "Header": {
@@ -1661,6 +1665,7 @@
   "Mypage": {
     "title": "My Page",
     "practiceLink": "Practice Records",
+    "profileLink": "Edit Profile",
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
@@ -1704,7 +1709,8 @@
     "loginSuccess": "Logged in",
     "alreadyLoggedIn": "Already logged in",
     "logoutSuccess": "Signed out",
-    "signInRequired": "Please sign in to continue"
+    "signInRequired": "Please sign in to continue",
+    "profileUpdated": "Profile updated"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -1732,6 +1738,37 @@
       "alreadySet": "Username has already been set.",
       "error": "An error occurred. Please try again."
     }
+  },
+  "profile": {
+    "title": "Edit Profile",
+    "identity": "Identity",
+    "about": "About",
+    "chessAccounts": "Chess Accounts",
+    "usernameLabel": "Username",
+    "usernameReadOnly": "Username cannot be changed.",
+    "displayNameLabel": "Display Name",
+    "displayNameRequired": "Display name is required.",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "bioMaxLength": "Bio must be 500 characters or less.",
+    "countryLabel": "Country",
+    "countryPlaceholder": "Select a country",
+    "countrySearch": "Search countries...",
+    "countryClear": "Clear country",
+    "noCountryResults": "No countries found",
+    "countryInvalid": "Country must be a 2-letter code (ISO 3166-1 alpha-2).",
+    "flairLabel": "Flair",
+    "flairPlaceholder": "Choose an emoji",
+    "flairClear": "Clear flair",
+    "fideIdLabel": "FIDE ID",
+    "fideIdPlaceholder": "e.g., 12345678",
+    "chesscomUsernameLabel": "Chess.com Username",
+    "chesscomUsernamePlaceholder": "Your Chess.com username",
+    "lichessUsernameLabel": "Lichess Username",
+    "lichessUsernamePlaceholder": "Your Lichess username",
+    "submit": "Save",
+    "submitting": "Saving...",
+    "error": "An error occurred. Please try again."
   },
   "Admin": {
     "title": "Admin",
