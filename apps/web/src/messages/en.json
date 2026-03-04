@@ -44,6 +44,18 @@
     "mypage": {
       "title": "My Page",
       "description": "View your account information and activity"
+    },
+    "setupUsername": {
+      "title": "Create Your Account",
+      "description": "Create your Blindfold Chess account"
+    },
+    "profile": {
+      "title": "Edit Profile",
+      "description": "Edit your Blindfold Chess profile"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Delete your Blindfold Chess account"
     }
   },
   "Header": {
@@ -1656,7 +1668,9 @@
   },
   "Mypage": {
     "title": "My Page",
-    "signInRequired": "Please sign in to view your page.",
+    "practiceLink": "Practice Records",
+    "profileLink": "Edit Profile",
+    "deleteAccountLink": "Delete Account",
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
@@ -1696,11 +1710,85 @@
       "quadrant_anchors": "Quadrant Anchors"
     }
   },
+  "deleteAccount": {
+    "title": "Delete Account",
+    "warning": "This action is permanent and cannot be undone. All your personal data (display name, bio, country, chess accounts, etc.) will be erased. Your username will be retained to prevent reuse.",
+    "confirmButton": "Delete My Account",
+    "confirmTitle": "Are you absolutely sure?",
+    "confirmMessage": "This will permanently delete your account and erase all personal data. This action cannot be undone.",
+    "confirmOk": "Yes, delete my account",
+    "confirmCancel": "Cancel",
+    "deleting": "Deleting account...",
+    "error": "An error occurred while deleting your account. Please try again."
+  },
   "toast": {
     "loginSuccess": "Logged in",
     "alreadyLoggedIn": "Already logged in",
     "logoutSuccess": "Signed out",
-    "signInRequired": "Please sign in to continue"
+    "signInRequired": "Please sign in to continue",
+    "profileUpdated": "Profile updated"
+  },
+  "setupUsername": {
+    "title": "Create Your Account",
+    "description": "Choose a username for your account.",
+    "usernameLabel": "Username",
+    "usernameDescription": "A unique ID used in your profile URL and mentions.",
+    "usernamePlaceholder": "e.g., chess_player1",
+    "usernameHint": "2-20 characters. Lowercase letters, numbers, and underscores only. Must start with a letter.",
+    "displayNameLabel": "Display name",
+    "displayNameDescription": "Shown on rankings and your profile.",
+    "displayNameCanChange": "You can change this later.",
+    "displayNameMaxLength": "50 characters max.",
+    "displayNamePlaceholder": "e.g., John Chess",
+    "cannotChange": "Your username cannot be changed once set.",
+    "inappropriateWarning": "Please keep your username appropriate. Accounts with inappropriate usernames may be closed.",
+    "agreeToTermsPrefix": "I agree to the ",
+    "termsLink": "Terms of Service",
+    "agreeToTermsSuffix": "",
+    "submit": "Register",
+    "submitting": "Registering...",
+    "validation": {
+      "tooShort": "Username must be at least 2 characters.",
+      "tooLong": "Username must be at most 20 characters.",
+      "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
+      "taken": "This username is already taken.",
+      "alreadySet": "Username has already been set.",
+      "error": "An error occurred. Please try again.",
+      "usernameInappropriate": "This username is not allowed."
+    }
+  },
+  "profile": {
+    "title": "Edit Profile",
+    "identity": "Identity",
+    "about": "About",
+    "chessAccounts": "Chess Accounts",
+    "usernameLabel": "Username",
+    "usernameReadOnly": "Username cannot be changed.",
+    "displayNameLabel": "Display Name",
+    "displayNameRequired": "Display name is required.",
+    "displayNameMaxLength": "50 characters max.",
+    "bioLabel": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "bioMaxLength": "Bio must be 500 characters or less.",
+    "countryLabel": "Country",
+    "countryPlaceholder": "Select a country",
+    "countrySearch": "Search countries...",
+    "countryClear": "Clear country",
+    "noCountryResults": "No countries found",
+    "countryInvalid": "Country must be a 2-letter code (ISO 3166-1 alpha-2).",
+    "flairLabel": "Flair",
+    "flairPlaceholder": "Choose an emoji",
+    "flairClear": "Clear flair",
+    "fideIdLabel": "FIDE ID",
+    "fideIdPlaceholder": "e.g., 12345678",
+    "chesscomUsernameLabel": "Chess.com Username",
+    "chesscomUsernamePlaceholder": "Your Chess.com username",
+    "lichessUsernameLabel": "Lichess Username",
+    "lichessUsernamePlaceholder": "Your Lichess username",
+    "displayNameInappropriate": "This display name is not allowed.",
+    "submit": "Save",
+    "submitting": "Saving...",
+    "error": "An error occurred. Please try again."
   },
   "Admin": {
     "title": "Admin",
@@ -1715,5 +1803,11 @@
       "noUsersFound": "No users found",
       "defaultRole": "user"
     }
+  },
+  "publicProfile": {
+    "title": "{displayName}'s Profile",
+    "defaultDescription": "{displayName}'s profile on Blindfold Chess",
+    "chessAccounts": "Chess Accounts",
+    "bio": "About"
   }
 }

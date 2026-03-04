@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-
-import { MypageContent } from './_components/MypageContent';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -30,7 +29,28 @@ export default async function MypagePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        <MypageContent />
+        <nav>
+          <ul>
+            <li>
+              <Link href={`/${locale}/mypage/practice`} className="text-primary hover:underline">
+                {t('practiceLink')}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/mypage/profile`} className="text-primary hover:underline">
+                {t('profileLink')}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/${locale}/mypage/delete-account`}
+                className="text-destructive hover:underline"
+              >
+                {t('deleteAccountLink')}
+              </Link>
+            </li>
+          </ul>
+        </nav>
       </PagePanel>
     </div>
   );

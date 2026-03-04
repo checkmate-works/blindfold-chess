@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GET } from './route';
 
+const mockUserId = 'test-user-id-12345678';
+
 const mockExchangeCodeForSession = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -21,18 +23,50 @@ vi.mock('@/lib/locale', () => ({
   getLocaleFromRequest: () => mockGetLocaleFromRequest(),
 }));
 
+const mockDbSelect = vi.fn();
+
+vi.mock('@/lib/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => mockDbSelect(),
+        }),
+      }),
+    }),
+  },
+  profiles: {
+    username: 'username',
+    displayName: 'display_name',
+    id: 'id',
+  },
+}));
+
 const mockRedirect = vi.spyOn(NextResponse, 'redirect');
+
+function mockSuccessfulExchange(userId = mockUserId) {
+  return {
+    error: null,
+    data: {
+      session: {
+        user: { id: userId },
+      },
+    },
+  };
+}
 
 describe('Auth callback route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: falls back to DEFAULT_LOCALE = 'en'
     mockGetLocaleFromRequest.mockResolvedValue('en');
+    // Default: user has a profile
+    mockDbSelect.mockResolvedValue([{ username: 'alice' }]);
   });
 
   describe('successful code exchange', () => {
     it('should redirect to /en/mypage with toast param when no next parameter is provided', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request('http://localhost:3000/auth/callback?code=test-code');
       await GET(request);
@@ -45,7 +79,7 @@ describe('Auth callback route', () => {
 
     it('should redirect to /ja/mypage with toast param when locale cookie is ja', async () => {
       mockGetLocaleFromRequest.mockResolvedValue('ja');
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request('http://localhost:3000/auth/callback?code=test-code');
       await GET(request);
@@ -56,7 +90,7 @@ describe('Auth callback route', () => {
     });
 
     it('should redirect to the next parameter path with toast param on success', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=/en/play'
@@ -71,7 +105,7 @@ describe('Auth callback route', () => {
 
   describe('open redirect protection', () => {
     it('should redirect to default when next parameter is an absolute URL', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=https://evil.com'
@@ -84,7 +118,7 @@ describe('Auth callback route', () => {
     });
 
     it('should redirect to default when next parameter uses protocol-relative URL (//)', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=//evil.com'
@@ -97,7 +131,7 @@ describe('Auth callback route', () => {
     });
 
     it('should allow paths that start with a single slash', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=/ja/settings'
@@ -107,6 +141,31 @@ describe('Auth callback route', () => {
       const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
       expect(redirectUrl.pathname).toBe('/ja/settings');
       expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+    });
+  });
+
+  describe('new user without profile', () => {
+    it('should redirect to setup-username when no profile exists', async () => {
+      mockDbSelect.mockResolvedValue([]);
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
+      await GET(request);
+
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage/setup-username');
+    });
+
+    it('should redirect to setup-username with correct locale', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockDbSelect.mockResolvedValue([]);
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
+      await GET(request);
+
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/ja/mypage/setup-username');
     });
   });
 
@@ -158,7 +217,7 @@ describe('Auth callback route', () => {
   describe('locale detection', () => {
     it('should use locale returned by getLocaleFromRequest', async () => {
       mockGetLocaleFromRequest.mockResolvedValue('en');
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request('http://localhost:3000/auth/callback?code=test-code');
       await GET(request);
@@ -181,7 +240,7 @@ describe('Auth callback route', () => {
     });
 
     it('should include toast=login_success as the only extra param on default success redirect', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request('http://localhost:3000/auth/callback?code=test-code');
       await GET(request);
@@ -193,7 +252,7 @@ describe('Auth callback route', () => {
     });
 
     it('should preserve only toast param when next has no query string', async () => {
-      mockExchangeCodeForSession.mockResolvedValue({ error: null });
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=/ja/mypage'
