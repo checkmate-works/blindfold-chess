@@ -1,17 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button, ChessBoard } from '@/app/_components';
-import { ChessGameManager } from '@blindfold-chess/features/chess-core';
 import { FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useMovePlayback } from '../_hooks/use-move-playback';
 import { encodeMoveSequenceToBase64 } from '../_lib/share';
 
 type Props = {
@@ -30,89 +28,19 @@ export function MoveSequenceTutorial({ locale }: Props) {
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
-  const [currentFen, setCurrentFen] = useState(TUTORIAL_FEN);
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasPlayed, setHasPlayed] = useState(false);
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
-
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const chessRef = useRef<ChessGameManager | null>(null);
-
-  useEffect(() => {
-    chessRef.current = new ChessGameManager(TUTORIAL_FEN);
-  }, []);
-
-  const playNextMove = useCallback(
-    (fromIndex?: number) => {
-      if (!chessRef.current) return;
-
-      const nextIndex = fromIndex !== undefined ? fromIndex : currentMoveIndex + 1;
-
-      if (nextIndex >= TUTORIAL_MOVES.length) {
-        setIsPlaying(false);
-        setHasPlayed(true);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        return;
-      }
-
-      const move = TUTORIAL_MOVES[nextIndex];
-      try {
-        const result = chessRef.current.move(move);
-        if (result) {
-          setCurrentFen(chessRef.current.fen());
-          setCurrentMoveIndex(nextIndex);
-          setLastMove({ from: result.from, to: result.to });
-        }
-      } catch (error) {
-        console.error('Error playing move:', error);
-        setIsPlaying(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      }
-    },
-    [currentMoveIndex]
-  );
-
-  const handlePlay = () => {
-    if (isPlaying) return;
-
-    chessRef.current = new ChessGameManager(TUTORIAL_FEN);
-    setCurrentFen(TUTORIAL_FEN);
-    setCurrentMoveIndex(-1);
-    setLastMove(null);
-    setIsPlaying(true);
-
-    setTimeout(() => {
-      playNextMove(0);
-    }, 500);
-  };
-
-  useEffect(() => {
-    if (isPlaying && currentMoveIndex >= 0) {
-      intervalRef.current = setTimeout(playNextMove, MOVE_INTERVAL);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isPlaying, currentMoveIndex, playNextMove]);
-
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
-      }
-    };
-  }, []);
+  const {
+    currentFen,
+    currentMoveIndex,
+    isPlaying,
+    hasPlayed,
+    lastMove,
+    play: handlePlay,
+  } = useMovePlayback({
+    initialFen: TUTORIAL_FEN,
+    moves: TUTORIAL_MOVES,
+    intervalMs: MOVE_INTERVAL,
+    autoPlayDelayMs: 500,
+  });
 
   const handleStart = () => {
     const params = new URLSearchParams();
