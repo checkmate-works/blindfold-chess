@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { dirname, join } from 'path';
 import postgres from 'postgres';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Use the same env var priority as drizzle.config.ts
 const connectionString =
@@ -26,17 +29,14 @@ async function isSupabaseEnvironment(): Promise<boolean> {
 
 async function runAuthHook() {
   const hookSql = readFileSync(
-    join(import.meta.dirname, '..', 'drizzle', 'custom_access_token_hook.sql'),
+    join(__dirname, '..', 'drizzle', 'custom_access_token_hook.sql'),
     'utf-8'
   );
   await client.unsafe(hookSql);
 }
 
 async function runProfilesSetup() {
-  const profilesSql = readFileSync(
-    join(import.meta.dirname, '..', 'drizzle', 'profiles_setup.sql'),
-    'utf-8'
-  );
+  const profilesSql = readFileSync(join(__dirname, '..', 'drizzle', 'profiles_setup.sql'), 'utf-8');
   await client.unsafe(profilesSql);
 }
 
