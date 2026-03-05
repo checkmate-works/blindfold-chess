@@ -1,5 +1,9 @@
 import { FILES, RANKS } from "./constants";
 
+export function isLightSquare(fileIndex: number, rankIndex: number): boolean {
+  return (fileIndex + rankIndex) % 2 === 0;
+}
+
 export function isValidSquare(square: string): boolean {
   return /^[a-h][1-8]$/.test(square);
 }

@@ -1,1 +1,1 @@
-export { FILES, RANKS } from "@blindfold-chess/types";
+export { FILES, RANKS, DISPLAY_RANKS } from "@blindfold-chess/types";

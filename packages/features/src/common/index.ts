@@ -1,4 +1,4 @@
-export { FILES, RANKS } from "./constants";
+export { FILES, RANKS, DISPLAY_RANKS } from "./constants";
 export type {
   BasePracticeResult,
   BasePracticeSettings,
@@ -13,6 +13,7 @@ export {
   isCountdownActive,
 } from "./countdown";
 export {
+  isLightSquare,
   isValidSquare,
   computeSquareColor,
   generateRandomSquare,
