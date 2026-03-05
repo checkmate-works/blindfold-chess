@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useMachine } from '@xstate/react';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/_hooks/use-piece-accuracy';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,14 +53,7 @@ export function PositionMemorySession({
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
   const { preferences } = useGamePreferences();
-
-  // Helper function to get score description
-  const getScoreDescription = useCallback(
-    (type: 'correct' | 'wrongPiece' | 'missing' | 'extra', params: Record<string, string>) => {
-      return t(`scoreDescriptions.${type}`, params);
-    },
-    [t]
-  );
+  const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
   const [hasMounted, setHasMounted] = useState(false);
@@ -237,31 +231,6 @@ export function PositionMemorySession({
   const handleSubmit = useCallback(() => {
     if (!originalPosition) return;
 
-    // Create pieceNames object for calculateAccuracy
-    const pieceNames: Record<string, string> = {
-      K: t('pieceNames.K'),
-      Q: t('pieceNames.Q'),
-      R: t('pieceNames.R'),
-      B: t('pieceNames.B'),
-      N: t('pieceNames.N'),
-      P: t('pieceNames.P'),
-      k: t('pieceNames.k'),
-      q: t('pieceNames.q'),
-      r: t('pieceNames.r'),
-      b: t('pieceNames.b'),
-      n: t('pieceNames.n'),
-      p: t('pieceNames.p'),
-    };
-
-    // Create descriptions object for calculateAccuracy
-    const accuracyDescriptions = {
-      correct: (piece: string, square: string) => getScoreDescription('correct', { piece, square }),
-      wrongPiece: (square: string, expected: string, actual: string) =>
-        getScoreDescription('wrongPiece', { square, expected, actual }),
-      missing: (piece: string, square: string) => getScoreDescription('missing', { piece, square }),
-      extra: (piece: string, square: string) => getScoreDescription('extra', { piece, square }),
-    };
-
     const accuracy = calculateAccuracy(
       originalPosition.fen,
       recreatedPosition,
@@ -270,7 +239,7 @@ export function PositionMemorySession({
     );
 
     send({ type: 'SUBMIT', accuracy });
-  }, [originalPosition, recreatedPosition, t, getScoreDescription, send]);
+  }, [originalPosition, recreatedPosition, pieceNames, accuracyDescriptions, send]);
 
   const handleSkip = useCallback(() => {
     send({ type: 'SKIP' });

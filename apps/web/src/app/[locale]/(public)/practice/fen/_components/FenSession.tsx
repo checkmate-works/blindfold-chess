@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/_hooks/use-piece-accuracy';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
@@ -49,14 +50,7 @@ export function FenSession({
   const t = useTranslations('practice.fen');
 
   const { preferences } = useGamePreferences();
-
-  // Helper function to get score description
-  const getScoreDescription = useCallback(
-    (type: 'correct' | 'wrongPiece' | 'missing' | 'extra', params: Record<string, string>) => {
-      return t(`scoreDescriptions.${type}`, params);
-    },
-    [t]
-  );
+  const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
   const [hasMounted, setHasMounted] = useState(false);
@@ -130,31 +124,6 @@ export function FenSession({
   const handleSubmit = useCallback(() => {
     if (!originalPosition) return;
 
-    // Create pieceNames object for calculateAccuracy
-    const pieceNames: Record<string, string> = {
-      K: t('pieceNames.K'),
-      Q: t('pieceNames.Q'),
-      R: t('pieceNames.R'),
-      B: t('pieceNames.B'),
-      N: t('pieceNames.N'),
-      P: t('pieceNames.P'),
-      k: t('pieceNames.k'),
-      q: t('pieceNames.q'),
-      r: t('pieceNames.r'),
-      b: t('pieceNames.b'),
-      n: t('pieceNames.n'),
-      p: t('pieceNames.p'),
-    };
-
-    // Create descriptions object for calculateAccuracy
-    const accuracyDescriptions = {
-      correct: (piece: string, square: string) => getScoreDescription('correct', { piece, square }),
-      wrongPiece: (square: string, expected: string, actual: string) =>
-        getScoreDescription('wrongPiece', { square, expected, actual }),
-      missing: (piece: string, square: string) => getScoreDescription('missing', { piece, square }),
-      extra: (piece: string, square: string) => getScoreDescription('extra', { piece, square }),
-    };
-
     const accuracy = calculateAccuracy(
       originalPosition.fen,
       recreatedPosition,
@@ -167,7 +136,7 @@ export function FenSession({
     setRecreatedPositions((prev) => new Map(prev).set(currentProblemIndex, recreatedPosition));
 
     setPhase('problem-result');
-  }, [originalPosition, recreatedPosition, currentProblemIndex, t, getScoreDescription]);
+  }, [originalPosition, recreatedPosition, currentProblemIndex, pieceNames, accuracyDescriptions]);
 
   const handleSkip = useCallback(() => {
     setSkippedProblems((prev) => new Set(prev).add(currentProblemIndex));
