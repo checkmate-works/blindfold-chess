@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -8,14 +8,15 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { useCopyToClipboard } from '@/app/[locale]/(public)/practice/_hooks/use-copy-to-clipboard';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
+import { usePositionMemorySettings } from '../_hooks/use-position-memory-settings';
 import { encodeFensToBase64, generateShareUrl, validateFEN } from '../_lib/utils';
 import { PositionMemorySettings } from './PositionMemorySettings';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
@@ -41,91 +42,16 @@ export function PositionMemorySetup({
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
-  // Default values (used for SSR and initial render)
-  const defaultSettings = {
-    timeLimit: 30,
-    problemCount: 5,
-    shuffleProblems: false,
-    useCustomFen: false,
-    customFenInput: '',
-  };
-
-  // URL params override defaults
-  const urlSettings = urlFens
-    ? {
-        timeLimit: urlTimeLimit ?? defaultSettings.timeLimit,
-        problemCount: defaultSettings.problemCount,
-        shuffleProblems: urlShuffle ?? defaultSettings.shuffleProblems,
-        useCustomFen: true,
-        customFenInput: urlFens.join('\n'),
-      }
-    : null;
-
-  // Game settings - initialize with defaults or URL params
-  const initialValues = urlSettings ?? defaultSettings;
-  const [timeLimit, setTimeLimit] = useState(initialValues.timeLimit);
-  const [problemCount, setProblemCount] = useState(initialValues.problemCount);
-  const [shuffleProblems, setShuffleProblems] = useState(initialValues.shuffleProblems);
-  const [useCustomFen, setUseCustomFen] = useState(initialValues.useCustomFen);
-  const [customFenInput, setCustomFenInput] = useState(initialValues.customFenInput);
-  const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
-  const [hasLoadedSettings, setHasLoadedSettings] = useState(!!urlFens);
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error' | 'too_long'>('idle');
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-
-  // Load settings from localStorage on mount (client-side only)
-  useEffect(() => {
-    // Skip if we already have URL params
-    if (urlFens) {
-      return;
-    }
-
-    const savedSettings = localStorage.getItem('positionMemorySettings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setTimeLimit(settings.timeLimit ?? defaultSettings.timeLimit);
-        setProblemCount(settings.problemCount ?? defaultSettings.problemCount);
-        setShuffleProblems(settings.shuffleProblems ?? defaultSettings.shuffleProblems);
-        setUseCustomFen(settings.useCustomFen ?? defaultSettings.useCustomFen);
-        setCustomFenInput(settings.customFenInput ?? defaultSettings.customFenInput);
-      } catch (error) {
-        console.error('Failed to load position memory settings:', error);
-      }
-    }
-    setHasLoadedSettings(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Save settings to localStorage whenever they change
-  useEffect(() => {
-    // Don't save if settings haven't been loaded yet
-    if (!hasLoadedSettings) {
-      return;
-    }
-
-    // Don't save if loaded from URL params
-    if (urlFens) {
-      return;
-    }
-
-    const settings = {
-      timeLimit,
-      problemCount,
-      shuffleProblems,
-      useCustomFen,
-      customFenInput,
-    };
-    localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-  }, [
-    timeLimit,
-    problemCount,
-    shuffleProblems,
-    useCustomFen,
-    customFenInput,
-    hasLoadedSettings,
+  const { settings, updateSettings, saveSettings, clearSettings } = usePositionMemorySettings({
     urlFens,
-  ]);
+    urlTimeLimit,
+    urlShuffle,
+  });
+
+  const { timeLimit, problemCount, shuffleProblems, useCustomFen, customFenInput } = settings;
+
+  const [customFenError, setCustomFenError] = useState<string | null>(urlError || null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // Validate custom FEN when input changes
   useEffect(() => {
@@ -163,9 +89,9 @@ export function PositionMemorySetup({
     }
   }, [customFenInput, useCustomFen, t]);
 
-  const handleCopyShareLink = () => {
+  const generateUrl = useCallback(() => {
     if (!useCustomFen || !customFenInput.trim()) {
-      return;
+      return null;
     }
 
     const fens = customFenInput
@@ -173,28 +99,13 @@ export function PositionMemorySetup({
       .split('\n')
       .filter((line: string) => line.trim());
 
-    const { url, isTooLong } = generateShareUrl(locale, fens, timeLimit, shuffleProblems);
+    return generateShareUrl(locale, fens, timeLimit, shuffleProblems);
+  }, [useCustomFen, customFenInput, locale, timeLimit, shuffleProblems]);
 
-    if (isTooLong) {
-      setCopyStatus('too_long');
-      setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        setCopyStatus('success');
-        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
-      })
-      .catch(() => {
-        setCopyStatus('error');
-        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
-      });
-  };
+  const { copyStatus, copy: handleCopyShareLink } = useCopyToClipboard(generateUrl);
 
   const handleResetConfirm = () => {
-    localStorage.removeItem('positionMemorySettings');
+    clearSettings();
     localStorage.removeItem(TUTORIAL_SKIPPED_KEY);
     setIsResetConfirmOpen(false);
     router.push(`/${locale}/practice/position-memory/tutorial`);
@@ -233,16 +144,7 @@ export function PositionMemorySetup({
     }
 
     // Save current settings to localStorage on start (skip if loaded from share link)
-    if (!urlFens) {
-      const settings = {
-        timeLimit,
-        problemCount,
-        shuffleProblems,
-        useCustomFen,
-        customFenInput,
-      };
-      localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-    }
+    saveSettings();
 
     // Navigate to session page
     router.push(
@@ -262,11 +164,11 @@ export function PositionMemorySetup({
           customFenError={customFenError}
           copyStatus={copyStatus}
           boardTheme={preferences.boardTheme}
-          onTimeLimitChange={setTimeLimit}
-          onProblemCountChange={setProblemCount}
-          onShuffleChange={setShuffleProblems}
-          onUseCustomFenChange={setUseCustomFen}
-          onCustomFenInputChange={setCustomFenInput}
+          onTimeLimitChange={(v) => updateSettings({ timeLimit: v })}
+          onProblemCountChange={(v) => updateSettings({ problemCount: v })}
+          onShuffleChange={(v) => updateSettings({ shuffleProblems: v })}
+          onUseCustomFenChange={(v) => updateSettings({ useCustomFen: v })}
+          onCustomFenInputChange={(v) => updateSettings({ customFenInput: v })}
           onCopyShareLink={handleCopyShareLink}
         />
 
