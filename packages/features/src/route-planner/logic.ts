@@ -3,6 +3,7 @@ import {
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,
+  generateRandomSquare,
 } from "../common";
 
 import type { RoutePlannerPieceType, RoutePlannerProblem } from "./types";
@@ -203,12 +204,6 @@ export function isSameColor(sq1: string, sq2: string): boolean {
   return (f1 + r1) % 2 === (f2 + r2) % 2;
 }
 
-function getRandomSquare(): string {
-  const f = Math.floor(Math.random() * 8);
-  const r = Math.floor(Math.random() * 8);
-  return coordsToSquare(f, r);
-}
-
 /**
  * Generate a route-planner problem with per-piece difficulty constraints.
  *
@@ -235,18 +230,18 @@ export function generateProblem(
 
   do {
     piece = pool[Math.floor(Math.random() * pool.length)];
-    start = getRandomSquare();
-    end = getRandomSquare();
+    start = generateRandomSquare();
+    end = generateRandomSquare();
 
     // Ensure start !== end
     while (start === end) {
-      end = getRandomSquare();
+      end = generateRandomSquare();
     }
 
     // Bishop: start and end must be on the same color
     if (piece === "b") {
       while (!isSameColor(start, end) || start === end) {
-        end = getRandomSquare();
+        end = generateRandomSquare();
       }
     }
 

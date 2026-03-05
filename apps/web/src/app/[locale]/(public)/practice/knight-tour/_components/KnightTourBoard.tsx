@@ -21,6 +21,12 @@ type Props = {
 
 const RANKS = DISPLAY_RANKS;
 
+const getSquareName = (fileIndex: number, rankIndex: number) => {
+  const file = FILES[fileIndex];
+  const rank = RANKS[rankIndex];
+  return `${file}${rank}`;
+};
+
 export function KnightTourBoard({
   currentSquare,
   visitedSquares,
@@ -32,12 +38,6 @@ export function KnightTourBoard({
   flipped = false,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
-
-  const getSquareName = (fileIndex: number, rankIndex: number) => {
-    const file = FILES[fileIndex];
-    const rank = RANKS[rankIndex];
-    return `${file}${rank}`;
-  };
 
   const displayFiles = useMemo(() => (flipped ? [...FILES].reverse() : FILES), [flipped]);
   const displayRanks = useMemo(() => (flipped ? [...RANKS].reverse() : RANKS), [flipped]);

@@ -1,10 +1,12 @@
 /**
  * Utility functions for Knight's Tour puzzle
  */
-
-// All squares on the board
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
+import {
+  fileRankToSquare,
+  isValidSquare,
+  squareToFileIndex,
+  squareToRankIndex,
+} from '@blindfold-chess/features/common';
 
 // Knight move offsets (L-shaped: 2 squares in one direction, 1 in perpendicular)
 const KNIGHT_MOVES = [
@@ -19,40 +21,20 @@ const KNIGHT_MOVES = [
 ];
 
 /**
- * Parse a square notation (e.g., 'e4') into file and rank indices
- */
-export function parseSquare(square: string): { fileIndex: number; rankIndex: number } | null {
-  if (square.length !== 2) return null;
-  const file = square[0].toLowerCase();
-  const rank = square[1];
-  const fileIndex = FILES.indexOf(file);
-  const rankIndex = RANKS.indexOf(rank);
-  if (fileIndex === -1 || rankIndex === -1) return null;
-  return { fileIndex, rankIndex };
-}
-
-/**
- * Convert file and rank indices to square notation
- */
-export function toSquare(fileIndex: number, rankIndex: number): string | null {
-  if (fileIndex < 0 || fileIndex > 7 || rankIndex < 0 || rankIndex > 7) return null;
-  return `${FILES[fileIndex]}${RANKS[rankIndex]}`;
-}
-
-/**
  * Get all legal knight moves from a given square
  */
 export function getKnightMoves(square: string): string[] {
-  const parsed = parseSquare(square);
-  if (!parsed) return [];
+  if (!isValidSquare(square)) return [];
+
+  const fileIndex = squareToFileIndex(square);
+  const rankIndex = squareToRankIndex(square);
 
   const moves: string[] = [];
   for (const offset of KNIGHT_MOVES) {
-    const newFile = parsed.fileIndex + offset.file;
-    const newRank = parsed.rankIndex + offset.rank;
-    const targetSquare = toSquare(newFile, newRank);
-    if (targetSquare) {
-      moves.push(targetSquare);
+    const newFile = fileIndex + offset.file;
+    const newRank = rankIndex + offset.rank;
+    if (newFile >= 0 && newFile <= 7 && newRank >= 0 && newRank <= 7) {
+      moves.push(fileRankToSquare(newFile, newRank));
     }
   }
   return moves;
@@ -79,26 +61,9 @@ export function isValidKnightMove(from: string, to: string): boolean {
 }
 
 /**
- * Get all 64 squares
- */
-export function getAllSquares(): string[] {
-  const squares: string[] = [];
-  for (const rank of RANKS) {
-    for (const file of FILES) {
-      squares.push(`${file}${rank}`);
-    }
-  }
-  return squares;
-}
-
-/**
  * Get a random square
  */
-export function getRandomSquare(): string {
-  const file = FILES[Math.floor(Math.random() * 8)];
-  const rank = RANKS[Math.floor(Math.random() * 8)];
-  return `${file}${rank}`;
-}
+export { generateRandomSquare as getRandomSquare } from '@blindfold-chess/features/common';
 
 /**
  * Apply Warnsdorff's rule to sort moves by accessibility
