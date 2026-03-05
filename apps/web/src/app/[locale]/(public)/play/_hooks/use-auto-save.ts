@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { usePathname } from 'next/navigation';
-
 import { notifyGameListUpdated } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
@@ -10,6 +8,22 @@ import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+import { handleGameLimitError } from '../_lib';
+import { useAutoSaveEvents } from './use-auto-save-events';
+import { useInitialSave } from './use-initial-save';
+
+/**
+ * Refs that track the latest game data values for use in async callbacks.
+ */
+export type GameDataRefs = {
+  moves: React.RefObject<AlgebraicNotation[]>;
+  status: React.RefObject<GameOutcome>;
+  playerColor: React.RefObject<Side>;
+  skillLevel: React.RefObject<SkillLevel>;
+  startingFen: React.RefObject<string | undefined>;
+  gamePreferences: React.RefObject<PerGamePreferences | undefined>;
+};
 
 type UseAutoSaveOptions = {
   gameId?: string;
@@ -38,23 +52,26 @@ export function useAutoSave({
   saveOnInit = false,
 }: UseAutoSaveOptions) {
   const gameRepository = useMemo(() => new LocalStorageGameRepository(), []);
-  const pathname = usePathname();
 
   const [currentGameId, setCurrentGameId] = useState<string | undefined>(gameId);
+
+  // Game data refs — track the latest values for use in async callbacks
+  const gameDataRefs: GameDataRefs = {
+    moves: useRef(moves),
+    status: useRef(status),
+    playerColor: useRef(playerColor),
+    skillLevel: useRef(skillLevel),
+    startingFen: useRef(startingFen),
+    gamePreferences: useRef(gamePreferences),
+  };
+
+  // Save state refs — track save progress and session state
   const lastSavedMovesLength = useRef(moves.length);
   const lastSavedStatus = useRef(status);
   const hasPlayerInteracted = useRef(false);
-  const currentMovesRef = useRef(moves);
-  const currentStatusRef = useRef(status);
   const hasPendingChanges = useRef(false);
   const hasSavedInSession = useRef(false);
   const isInitialSyncSave = useRef(false);
-  const previousPathname = useRef(pathname);
-  const hasInitialSaveExecuted = useRef(false);
-  const playerColorRef = useRef(playerColor);
-  const skillLevelRef = useRef(skillLevel);
-  const startingFenRef = useRef(startingFen);
-  const gamePreferencesRef = useRef(gamePreferences);
   const saveOnInitRef = useRef(saveOnInit);
   const enabledRef = useRef(enabled);
 
@@ -67,12 +84,12 @@ export function useAutoSave({
     if (gameId && gameId !== currentGameId) {
       setCurrentGameId(gameId);
     }
-    currentMovesRef.current = moves;
-    currentStatusRef.current = status;
-    playerColorRef.current = playerColor;
-    skillLevelRef.current = skillLevel;
-    startingFenRef.current = startingFen;
-    gamePreferencesRef.current = gamePreferences;
+    gameDataRefs.moves.current = moves;
+    gameDataRefs.status.current = status;
+    gameDataRefs.playerColor.current = playerColor;
+    gameDataRefs.skillLevel.current = skillLevel;
+    gameDataRefs.startingFen.current = startingFen;
+    gameDataRefs.gamePreferences.current = gamePreferences;
     saveOnInitRef.current = saveOnInit;
     enabledRef.current = enabled;
   }, [
@@ -88,64 +105,16 @@ export function useAutoSave({
     enabled,
   ]);
 
-  // Initial save when component mounts if saveOnInit is true
-  useEffect(() => {
-    if (saveOnInit && enabled && !currentGameId && !hasInitialSaveExecuted.current) {
-      // For new games (including PGN imports), save immediately
-      // This ensures the game is saved even if player navigates away without making a move
-      const performInitialSave = async () => {
-        hasInitialSaveExecuted.current = true; // Mark as executed to prevent duplicates
-
-        try {
-          const gameData = {
-            moves: currentMovesRef.current,
-            playerColor: playerColorRef.current,
-            skillLevel: skillLevelRef.current,
-            status: currentStatusRef.current,
-            startingFen: startingFenRef.current,
-            gamePreferences: gamePreferencesRef.current,
-          };
-
-          const savedGameId = await gameRepository.create(gameData);
-          setCurrentGameId(savedGameId);
-
-          lastSavedMovesLength.current = currentMovesRef.current.length;
-          lastSavedStatus.current = currentStatusRef.current;
-          hasSavedInSession.current = true;
-
-          notifyGameListUpdated();
-        } catch (error) {
-          if (error instanceof GameLimitError) {
-            // Game limit reached - store pending game data for later
-            console.warn('Game limit reached, cannot save game:', error.message);
-            // If new game with no moves (direct access to /play), redirect to new game page limit error
-            // Otherwise redirect to rescue page
-            if (currentMovesRef.current.length === 0) {
-              window.dispatchEvent(new Event('blindfold-chess:game-limit-start-error'));
-            } else {
-              sessionStorage.setItem(
-                'blindfold_chess_pending_game',
-                JSON.stringify({
-                  moves: currentMovesRef.current,
-                  playerColor: playerColorRef.current,
-                  skillLevel: skillLevelRef.current,
-                  status: currentStatusRef.current,
-                })
-              );
-              sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
-              // Dispatch event for immediate redirect
-              window.dispatchEvent(new Event('blindfold-chess:game-limit-reached'));
-            }
-          } else {
-            console.error('Failed to save initial game state:', error);
-          }
-          hasInitialSaveExecuted.current = false; // Reset flag on error
-        }
-      };
-
-      performInitialSave();
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Initial save for new games
+  const { hasInitialSaveExecuted } = useInitialSave({
+    saveOnInit,
+    enabled,
+    currentGameId,
+    gameRepository,
+    gameDataRefs,
+    saveStateRefs: { lastSavedMovesLength, lastSavedStatus, hasSavedInSession },
+    setCurrentGameId,
+  });
 
   // Save game function
   const saveGame = useCallback(
@@ -158,7 +127,7 @@ export function useAutoSave({
       }
 
       // Don't save if the game is already finished and we're just viewing it
-      const currentStatus = currentStatusRef.current;
+      const currentStatus = gameDataRefs.status.current;
       const isGameFinished =
         currentStatus === 'win' || currentStatus === 'loss' || currentStatus === 'draw';
       const wasGameFinished =
@@ -172,14 +141,14 @@ export function useAutoSave({
       setIsSaving(true);
 
       try {
-        const currentMoves = currentMovesRef.current;
+        const currentMoves = gameDataRefs.moves.current;
         const gameData = {
           moves: currentMoves,
-          playerColor: playerColorRef.current,
-          skillLevel: skillLevelRef.current,
+          playerColor: gameDataRefs.playerColor.current,
+          skillLevel: gameDataRefs.skillLevel.current,
           status: currentStatus,
-          startingFen: startingFenRef.current,
-          gamePreferences: gamePreferencesRef.current,
+          startingFen: gameDataRefs.startingFen.current,
+          gamePreferences: gameDataRefs.gamePreferences.current,
         };
 
         let savedGameId: string;
@@ -229,26 +198,18 @@ export function useAutoSave({
       } catch (error) {
         setIsSaving(false);
         if (error instanceof GameLimitError) {
-          // Game limit reached - store pending game data for later
-          console.warn('Game limit reached, cannot save game:', error.message);
-          sessionStorage.setItem(
-            'blindfold_chess_pending_game',
-            JSON.stringify({
-              moves: currentMovesRef.current,
-              playerColor: playerColorRef.current,
-              skillLevel: skillLevelRef.current,
-              status: currentStatusRef.current,
-            })
-          );
-          sessionStorage.setItem('blindfold_chess_game_limit_reached', 'true');
-          // Dispatch event for immediate redirect
-          window.dispatchEvent(new Event('blindfold-chess:game-limit-reached'));
+          handleGameLimitError(error, {
+            moves: gameDataRefs.moves.current,
+            playerColor: gameDataRefs.playerColor.current,
+            skillLevel: gameDataRefs.skillLevel.current,
+            status: gameDataRefs.status.current,
+          });
         } else {
           console.error('Failed to auto-save game:', error);
         }
       }
     },
-    [currentGameId, gameRepository]
+    [currentGameId, gameRepository] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const prevEnabled = useRef(enabled);
@@ -316,89 +277,15 @@ export function useAutoSave({
     }
   }, [moves.length, status, saveGame, currentGameId, enabled]);
 
-  // Auto-save on page visibility change and show notification when navigating away
-  useEffect(() => {
-    const isGameFinished =
-      currentStatusRef.current === 'win' ||
-      currentStatusRef.current === 'loss' ||
-      currentStatusRef.current === 'draw';
-
-    const handleVisibilityChange = async () => {
-      if (document.hidden && currentMovesRef.current.length > 0 && !isGameFinished) {
-        // Save if there are pending changes
-        if (hasPendingChanges.current) {
-          await saveGame(false);
-        }
-
-        // Set flag to indicate game was saved (only if no game limit error occurred)
-        const hasGameLimitError = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-        if (
-          (hasSavedInSession.current || hasPendingChanges.current) &&
-          hasGameLimitError !== 'true'
-        ) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Save with notification when component unmounts (navigating to different page)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-
-      // Show notification when navigating away if we've saved in this session
-      if (currentMovesRef.current.length > 0 && !isGameFinished) {
-        // Save if there are pending changes (synchronous during unmount)
-        if (hasPendingChanges.current) {
-          saveGame(false);
-        }
-
-        // Set flag to indicate game was saved (only if no game limit error occurred)
-        const hasGameLimitError = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-        if (
-          (hasSavedInSession.current || hasPendingChanges.current) &&
-          hasGameLimitError !== 'true'
-        ) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
-        }
-      }
-    };
-  }, [saveGame]);
-
-  // Auto-save on page unload
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (hasPlayerInteracted.current && currentMovesRef.current.length > 0) {
-        // Note: Can't show toast during unload, but save the game
-        saveGame(false);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [saveGame]);
-
-  // Detect pathname changes (navigation)
-  useEffect(() => {
-    const isGameFinished =
-      currentStatusRef.current === 'win' ||
-      currentStatusRef.current === 'loss' ||
-      currentStatusRef.current === 'draw';
-
-    if (pathname !== previousPathname.current && previousPathname.current) {
-      // Navigation is happening
-      if (
-        currentMovesRef.current.length > 0 &&
-        (hasSavedInSession.current || hasPendingChanges.current) &&
-        !isGameFinished
-      ) {
-        sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
-      }
-    }
-
-    previousPathname.current = pathname;
-  }, [pathname]);
+  // Event listener management (visibilitychange, beforeunload, pathname change)
+  useAutoSaveEvents({
+    saveGame,
+    currentMovesRef: gameDataRefs.moves,
+    currentStatusRef: gameDataRefs.status as React.RefObject<string>,
+    hasPlayerInteracted,
+    hasPendingChanges,
+    hasSavedInSession,
+  });
 
   // Manual save function
   const manualSave = useCallback(() => {
