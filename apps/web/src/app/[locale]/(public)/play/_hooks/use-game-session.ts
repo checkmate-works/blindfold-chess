@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameOutcome, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -125,7 +124,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   );
 
   // Auto-save hook
-  const { markPlayerInteraction, gameId } = useAutoSave({
+  const { markPlayerInteraction, updateSkillLevel, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -259,21 +258,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       router.replace(`?${params.toString()}`, { scroll: false });
 
       if (gameId) {
-        const gameRepository = new LocalStorageGameRepository();
-        const savedGame = await gameRepository.load(gameId);
-        if (savedGame) {
-          await gameRepository.update(gameId, {
-            moves: savedGame.moves,
-            playerColor: savedGame.playerColor,
-            skillLevel: newSkillLevel,
-            status: savedGame.status,
-            startingFen: savedGame.startingFen,
-            gamePreferences: savedGame.gamePreferences,
-          });
-        }
+        await updateSkillLevel(newSkillLevel);
       }
     },
-    [markPlayerInteraction, searchParams, router, gameId]
+    [markPlayerInteraction, searchParams, router, gameId, updateSkillLevel]
   );
 
   // Current FEN and formatted PGN are memoized values from useNotation

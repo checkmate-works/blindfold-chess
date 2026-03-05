@@ -297,9 +297,19 @@ export function useAutoSave({
     hasPlayerInteracted.current = true;
   }, []);
 
+  // Update a specific game field immediately and trigger a save
+  const updateSkillLevel = useCallback(
+    async (newSkillLevel: SkillLevel) => {
+      gameDataRefs.skillLevel.current = newSkillLevel;
+      return saveGame(false);
+    },
+    [saveGame] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   return {
     saveGame: manualSave,
     markPlayerInteraction,
+    updateSkillLevel,
     gameId: currentGameId,
     isSaving,
     lastSavedAt,
