@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 
-import { ChessPiece, Square } from '@/app/_components';
-import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import { BoardLayout, ChessPiece } from '@/app/_components';
+import type { SquareRenderInfo } from '@/app/_components';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -19,14 +19,6 @@ type Props = {
   flipped?: boolean;
 };
 
-const RANKS = DISPLAY_RANKS;
-
-const getSquareName = (fileIndex: number, rankIndex: number) => {
-  const file = FILES[fileIndex];
-  const rank = RANKS[rankIndex];
-  return `${file}${rank}`;
-};
-
 export function KnightTourBoard({
   currentSquare,
   visitedSquares,
@@ -39,83 +31,69 @@ export function KnightTourBoard({
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
 
-  const displayFiles = useMemo(() => (flipped ? [...FILES].reverse() : FILES), [flipped]);
-  const displayRanks = useMemo(() => (flipped ? [...RANKS].reverse() : RANKS), [flipped]);
-
-  const renderSquareContent = (square: string) => {
-    // Show knight on current square
-    if (square === currentSquare) {
-      return (
-        <div className="w-[80%] h-[80%] flex items-center justify-center">
-          <ChessPiece type="n" color="w" size={45} />
-        </div>
-      );
-    }
-
-    // Show marker on visited squares
-    const moveNumber = visitedSquares.get(square);
-    if (moveNumber !== undefined) {
-      if (showMoveNumbers) {
-        // Show move number (for result screen)
+  const renderSquare = useCallback(
+    ({ square }: SquareRenderInfo) => {
+      // Show knight on current square
+      if (square === currentSquare) {
         return (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-xs sm:text-sm font-bold text-white bg-black/50 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md">
-              {moveNumber}
-            </span>
+          <div className="w-[80%] h-[80%] flex items-center justify-center">
+            <ChessPiece type="n" color="w" size={45} />
           </div>
         );
       }
-      // Show X mark (during play)
-      return (
-        <div className="w-full h-full flex items-center justify-center">
-          <svg
-            className="w-5 h-5 sm:w-6 sm:h-6 text-foreground/50"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-          >
-            <path d="M6 6L18 18M6 18L18 6" />
-          </svg>
-        </div>
-      );
-    }
 
-    return null;
-  };
+      // Show marker on visited squares
+      const moveNumber = visitedSquares.get(square);
+      if (moveNumber !== undefined) {
+        if (showMoveNumbers) {
+          // Show move number (for result screen)
+          return (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-xs sm:text-sm font-bold text-white bg-black/50 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md">
+                {moveNumber}
+              </span>
+            </div>
+          );
+        }
+        // Show X mark (during play)
+        return (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg
+              className="w-5 h-5 sm:w-6 sm:h-6 text-foreground/50"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            >
+              <path d="M6 6L18 18M6 18L18 6" />
+            </svg>
+          </div>
+        );
+      }
+
+      return null;
+    },
+    [currentSquare, visitedSquares, showMoveNumbers]
+  );
+
+  const squareProps = useCallback(
+    ({ square }: SquareRenderInfo) => {
+      const isAvailable = availableMoves.includes(square);
+      return {
+        onClick: isAvailable && onSquareClick ? () => onSquareClick(square) : undefined,
+      };
+    },
+    [availableMoves, onSquareClick]
+  );
 
   return (
-    <div className="w-full">
-      <div className="relative w-full aspect-square border border-border rounded-md shadow-lg overflow-hidden">
-        {displayRanks.map((rank, rankIndex) => (
-          <div key={rank} className="flex h-[12.5%]">
-            {displayFiles.map((file, fileIndex) => {
-              const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-              const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
-              const square = getSquareName(actualFileIndex, actualRankIndex);
-              const isLight = isLightSquare(actualFileIndex, actualRankIndex);
-              const isAvailable = availableMoves.includes(square);
-
-              return (
-                <Square
-                  key={file}
-                  file={file}
-                  rank={rank}
-                  isLight={isLight}
-                  showCoordinates={showCoordinates}
-                  showRankCoordinate={fileIndex === 0}
-                  showFileCoordinate={rankIndex === 7}
-                  onClick={isAvailable && onSquareClick ? () => onSquareClick(square) : undefined}
-                  themeColors={themeColors}
-                >
-                  {renderSquareContent(square)}
-                </Square>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
+    <BoardLayout
+      flipped={flipped}
+      showCoordinates={showCoordinates}
+      themeColors={themeColors}
+      renderSquare={renderSquare}
+      squareProps={squareProps}
+    />
   );
 }

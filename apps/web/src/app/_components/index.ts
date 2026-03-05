@@ -1,5 +1,7 @@
 export { Button } from './Button';
 export * from './BoardOverlay';
+export { BoardLayout } from './chess/BoardLayout';
+export type { SquareRenderInfo } from './chess/BoardLayout';
 export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';
 export { InfoModal } from './InfoModal';

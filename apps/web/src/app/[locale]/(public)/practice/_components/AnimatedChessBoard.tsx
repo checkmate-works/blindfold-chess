@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
-import { BoardOverlay, ChessPiece, Square } from '@/app/_components';
+import { BoardLayout, BoardOverlay, ChessPiece } from '@/app/_components';
+import type { SquareRenderInfo } from '@/app/_components';
 import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
-import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -126,56 +126,31 @@ export function AnimatedChessBoard({
 
   const pieces = useMemo(() => parseFenToPieces(currentFen), [currentFen]);
 
-  const files = FILES;
-  const ranks = DISPLAY_RANKS;
+  const renderSquare = useCallback(
+    ({ square }: SquareRenderInfo) => {
+      const piece = pieces.find((p) => p.square === square);
+      if (!piece || piece.square === hiddenSquare) return null;
 
-  const renderPiece = (piece: { type: PieceSymbol; color: Color; square: string }) => {
-    if (piece.square === hiddenSquare) return null;
-
-    return (
-      <div className="w-[80%] h-[80%] flex items-center justify-center">
-        <ChessPiece type={piece.type} color={piece.color} size={45} />
-      </div>
-    );
-  };
-
-  const getPieceAtSquare = (file: string, rank: string) => {
-    const square = file + rank;
-    return pieces.find((piece) => piece.square === square);
-  };
+      return (
+        <div className="w-[80%] h-[80%] flex items-center justify-center">
+          <ChessPiece type={piece.type} color={piece.color} size={45} />
+        </div>
+      );
+    },
+    [pieces, hiddenSquare]
+  );
 
   return (
     <div className={`flex flex-col items-center w-full ${className}`}>
       <div className="w-full">
         <div className="relative" ref={boardRef}>
           {/* Chess board */}
-          <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden shadow-lg">
-            {(flipped ? [...ranks].reverse() : ranks).map((rank, rankIndex) => (
-              <div key={rank} className="flex h-[12.5%]">
-                {(flipped ? [...files].reverse() : files).map((file, fileIndex) => {
-                  const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-                  const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
-                  const isLight = isLightSquare(actualFileIndex, actualRankIndex);
-                  const piece = getPieceAtSquare(file, rank);
-
-                  return (
-                    <Square
-                      key={file}
-                      file={file}
-                      rank={rank}
-                      isLight={isLight}
-                      showCoordinates={showCoordinates}
-                      showRankCoordinate={fileIndex === 0}
-                      showFileCoordinate={rankIndex === ranks.length - 1}
-                      themeColors={themeColors}
-                    >
-                      {piece && renderPiece(piece)}
-                    </Square>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+          <BoardLayout
+            flipped={flipped}
+            showCoordinates={showCoordinates}
+            themeColors={themeColors}
+            renderSquare={renderSquare}
+          />
 
           {/* Play button overlay */}
           <BoardOverlay isVisible={showPlayButton && !isAnimating && !!move}>

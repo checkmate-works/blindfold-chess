@@ -2,16 +2,18 @@
 
 import { memo, useCallback, useMemo } from 'react';
 
-import { ChessPiece, Square } from '@/app/_components';
+import { ChessPiece } from '@/app/_components';
 import type { BoardPiece } from '@blindfold-chess/features/chess-core';
 import { fenToBoard } from '@blindfold-chess/features/chess-core';
-import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 import type { EvaluationMark } from '@/lib/evaluation';
 import { getEvaluationIcon } from '@/lib/evaluation';
+
+import type { SquareRenderInfo } from './BoardLayout';
+import { BoardLayout } from './BoardLayout';
 
 type Props = {
   fen: string;
@@ -29,13 +31,6 @@ type Props = {
   rounded?: boolean;
   evaluationMark?: EvaluationMark | null;
   className?: string;
-};
-
-const files = FILES;
-const ranks = DISPLAY_RANKS;
-
-const getSquareName = (fileIndex: number, rankIndex: number) => {
-  return `${files[fileIndex]}${ranks[rankIndex]}`;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -141,79 +136,46 @@ export const ChessBoard = memo(function ChessBoard({
     [onSquareClick]
   );
 
-  const isLastMoveSquare = (square: string) => {
-    return lastMove && (lastMove.from === square || lastMove.to === square);
-  };
+  const renderSquare = useCallback(
+    ({ fileIndex, rankIndex }: SquareRenderInfo) => {
+      const piece = board[rankIndex][fileIndex];
+      return renderPiece(piece);
+    },
+    [board, renderPiece]
+  );
 
-  const isHighlighted = (square: string) => {
-    return highlightedSquares.includes(square);
-  };
+  const squareProps = useCallback(
+    ({ square }: SquareRenderInfo) => {
+      const isLastMove = lastMove && (lastMove.from === square || lastMove.to === square);
+      const isHighlight = highlightedSquares.includes(square);
 
-  const displayBoard = useMemo(() => {
-    if (flipped) {
-      // Flip both board and indices for black's perspective
-      return board
-        .slice()
-        .reverse()
-        .map((row) => row.slice().reverse());
-    }
-    return board;
-  }, [board, flipped]);
+      const showEvalMark = evaluationMark && evaluationMark.square === square;
+      const evalBadge = showEvalMark
+        ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
+        : undefined;
 
-  const displayFiles = flipped ? files.slice().reverse() : files;
-  const displayRanks = flipped ? ranks.slice().reverse() : ranks;
+      return {
+        dataSquare: onSquareClick ? square : undefined,
+        highlightType: (isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none') as
+          | 'none'
+          | 'last-move'
+          | 'selectable',
+        badge: evalBadge,
+      };
+    },
+    [lastMove, highlightedSquares, evaluationMark, onSquareClick]
+  );
 
   return (
-    <div className={`w-full ${className}`}>
-      <div
-        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
-        onClick={onSquareClick ? handleBoardClick : undefined}
-      >
-        {displayBoard.map((row, rankIndex) => (
-          <div key={rankIndex} className="flex h-[12.5%]">
-            {row.map((piece, fileIndex) => {
-              const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
-              const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-              const square = getSquareName(actualFileIndex, actualRankIndex);
-              const isLight = isLightSquare(actualFileIndex, actualRankIndex);
-              const isLastMove = isLastMoveSquare(square);
-              const isHighlight = isHighlighted(square);
-
-              // Check if this square should show evaluation mark
-              const showEvalMark = evaluationMark && evaluationMark.square === square;
-              const evalBadge = showEvalMark
-                ? getEvaluationIcon(evaluationMark.loss, evaluationMark.isMate)
-                : undefined;
-
-              // NOTE: Inside ChessBoard, Square's React.memo has limited effect because
-              // children (renderPiece result) is a new JSX reference each render.
-              // The primary optimization here is event delegation (eliminating 64 onClick closures).
-              // Square's memo is more effective for external consumers (KnightTourBoard, EditableChessBoard, etc.).
-              return (
-                <Square
-                  key={fileIndex}
-                  file={displayFiles[fileIndex]}
-                  rank={displayRanks[rankIndex]}
-                  isLight={isLight}
-                  showCoordinates={showCoordinates}
-                  // NOTE: Rank/file labels are always shown on the left and bottom edges of
-                  // the visual board, matching Chess.com's convention. Lichess instead pins
-                  // labels to the a-file and 1st-rank squares regardless of orientation.
-                  // Consider adopting the Lichess style if feedback warrants it.
-                  showRankCoordinate={fileIndex === 0}
-                  showFileCoordinate={rankIndex === 7}
-                  dataSquare={onSquareClick ? square : undefined}
-                  highlightType={isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none'}
-                  themeColors={themeColors}
-                  badge={evalBadge}
-                >
-                  {renderPiece(piece)}
-                </Square>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
+    <BoardLayout
+      flipped={flipped}
+      showCoordinates={showCoordinates}
+      themeColors={themeColors}
+      renderSquare={renderSquare}
+      squareProps={squareProps}
+      onBoardClick={onSquareClick ? handleBoardClick : undefined}
+      rounded={rounded}
+      className={className}
+    />
   );
 });
