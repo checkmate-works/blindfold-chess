@@ -34,3 +34,14 @@ export type PracticeMenuType = (typeof PRACTICE_MENU_TYPES)[number];
 // ---------------------------------------------------------------------------
 // Shared base shapes (mirroring packages/features/src/common/types.ts)
 // ---------------------------------------------------------------------------
+
+export type SquareColorsSettings = {
+  timeLimit: number;
+  mistakeAllowance: number | null;
+};
+
+export type SquareColorsResult = {
+  correctAnswers: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+};
