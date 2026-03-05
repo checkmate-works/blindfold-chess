@@ -8,6 +8,7 @@ import { FaInfoCircle, FaLink } from 'react-icons/fa';
 
 import { PgnInput } from '@/app/[locale]/_components';
 import { Modal } from '@/app/[locale]/_components/Modal';
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { generateShareUrl } from '../_lib/share';
@@ -46,7 +47,7 @@ export function CustomMoveSequenceInput({
 
     if (isTooLong) {
       setCopyStatus('too_long');
-      setTimeout(() => setCopyStatus('idle'), 3000);
+      setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       return;
     }
 
@@ -54,11 +55,11 @@ export function CustomMoveSequenceInput({
       .writeText(url)
       .then(() => {
         setCopyStatus('success');
-        setTimeout(() => setCopyStatus('idle'), 3000);
+        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       })
       .catch(() => {
         setCopyStatus('error');
-        setTimeout(() => setCopyStatus('idle'), 3000);
+        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       });
   };
 

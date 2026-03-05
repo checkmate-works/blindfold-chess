@@ -10,6 +10,7 @@ import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -176,7 +177,7 @@ export function PositionMemorySetup({
 
     if (isTooLong) {
       setCopyStatus('too_long');
-      setTimeout(() => setCopyStatus('idle'), 3000);
+      setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       return;
     }
 
@@ -184,11 +185,11 @@ export function PositionMemorySetup({
       .writeText(url)
       .then(() => {
         setCopyStatus('success');
-        setTimeout(() => setCopyStatus('idle'), 3000);
+        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       })
       .catch(() => {
         setCopyStatus('error');
-        setTimeout(() => setCopyStatus('idle'), 3000);
+        setTimeout(() => setCopyStatus('idle'), UI_TIMEOUTS.COPY_SUCCESS_DURATION);
       });
   };
 

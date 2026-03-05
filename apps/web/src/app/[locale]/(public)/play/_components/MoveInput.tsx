@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+
 import { useMoveSuggestions } from '../_hooks';
 
 // --- SuggestionInput Component ---
@@ -63,7 +65,7 @@ export function SuggestionInput({
 
   const handleBlur = () => {
     // Small delay to allow clicking suggestions
-    setTimeout(() => setIsFocused(false), 150);
+    setTimeout(() => setIsFocused(false), UI_TIMEOUTS.MENU_BLUR_DURATION);
   };
 
   const handleSuggestionClick = (suggestion: string) => {

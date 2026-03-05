@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import type { ToastType } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -154,7 +155,7 @@ type Props = {
 
 function Toast({ toast, onClose }: Props) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
+    const timer = setTimeout(onClose, UI_TIMEOUTS.TOAST_DURATION);
     return () => clearTimeout(timer);
   }, [onClose]);
 

@@ -12,6 +12,7 @@ import { fenToLichessUrl } from '@/lib/lichess';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/play/_components/MoveNavigationControls';
 import { formatPgnToText } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 type Props = {
   formattedPgn: FormattedPgnMove[];
@@ -153,7 +154,7 @@ export function PostmortemMovesPanel({
 
                     navigator.clipboard.writeText(pgnText).then(() => {
                       setIsCopied(true);
-                      setTimeout(() => setIsCopied(false), 2000);
+                      setTimeout(() => setIsCopied(false), UI_TIMEOUTS.PGN_COPY_DURATION);
                     });
                   }}
                 >
@@ -175,7 +176,7 @@ export function PostmortemMovesPanel({
 
                     navigator.clipboard.writeText(fenToCopy).then(() => {
                       setIsFenCopied(true);
-                      setTimeout(() => setIsFenCopied(false), 2000);
+                      setTimeout(() => setIsFenCopied(false), UI_TIMEOUTS.FEN_COPY_DURATION);
                     });
                   }}
                 >

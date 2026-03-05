@@ -16,6 +16,8 @@ import {
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
+import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
+
 import { formatPgnToText } from '../_lib';
 import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 import { MoveNavigationControls } from './MoveNavigationControls';
@@ -73,7 +75,7 @@ export function MovesPanel({
     const pgnText = formatPgnToText(formattedPgn, startingFen);
     navigator.clipboard.writeText(pgnText).then(() => {
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      setTimeout(() => setIsCopied(false), UI_TIMEOUTS.PGN_COPY_DURATION);
     });
   };
 
@@ -90,7 +92,7 @@ export function MovesPanel({
 
     navigator.clipboard.writeText(fenToCopy).then(() => {
       setIsFenCopied(true);
-      setTimeout(() => setIsFenCopied(false), 2000);
+      setTimeout(() => setIsFenCopied(false), UI_TIMEOUTS.FEN_COPY_DURATION);
     });
   };
 
