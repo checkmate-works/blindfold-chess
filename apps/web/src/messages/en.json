@@ -1571,7 +1571,8 @@
     "categories": {
       "updates": "Updates",
       "blog": "Blog"
-    }
+    },
+    "morePosts": "More posts"
   },
   "onboarding": {
     "title": "Setup",

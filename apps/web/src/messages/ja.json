@@ -1572,7 +1572,8 @@
     "categories": {
       "updates": "更新情報",
       "blog": "ブログ"
-    }
+    },
+    "morePosts": "その他の記事"
   },
   "onboarding": {
     "title": "初期設定",
