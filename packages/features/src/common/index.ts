@@ -13,6 +13,9 @@ export {
   isCountdownActive,
 } from "./countdown";
 export {
+  squareToFileIndex,
+  squareToRankIndex,
+  fileRankToSquare,
   isLightSquare,
   isValidSquare,
   computeSquareColor,

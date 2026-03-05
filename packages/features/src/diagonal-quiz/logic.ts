@@ -1,18 +1,11 @@
-import { isValidSquare } from "../common";
+import {
+  isValidSquare,
+  squareToFileIndex,
+  squareToRankIndex,
+  fileRankToSquare,
+} from "../common";
 
 import type { DiagonalPair } from "./types";
-
-function fileIndex(file: string): number {
-  return file.charCodeAt(0) - "a".charCodeAt(0);
-}
-
-function rankIndex(rank: string): number {
-  return parseInt(rank, 10) - 1;
-}
-
-function squareFromIndices(f: number, r: number): string {
-  return String.fromCharCode("a".charCodeAt(0) + f) + (r + 1);
-}
 
 /**
  * Compute the start position and length of both diagonals for a square.
@@ -57,8 +50,8 @@ export function getDiagonals(square: string): DiagonalPair {
     throw new Error(`Invalid square: ${square}`);
   }
 
-  const f = fileIndex(square[0]);
-  const r = rankIndex(square[1]);
+  const f = squareToFileIndex(square);
+  const r = squareToRankIndex(square);
   const {
     diagStartF,
     diagStartR,
@@ -71,8 +64,8 @@ export function getDiagonals(square: string): DiagonalPair {
   const diagEndF = diagStartF + diagLength;
   const diagEndR = diagStartR + diagLength;
 
-  const diagStart = squareFromIndices(diagStartF, diagStartR);
-  const diagEnd = squareFromIndices(diagEndF, diagEndR);
+  const diagStart = fileRankToSquare(diagStartF, diagStartR);
+  const diagEnd = fileRankToSquare(diagEndF, diagEndR);
   const diagonal =
     diagStartF === diagEndF && diagStartR === diagEndR
       ? diagStart
@@ -82,8 +75,8 @@ export function getDiagonals(square: string): DiagonalPair {
   const antiEndR = antiStartR + antiLength;
 
   // For anti-diagonal, left-to-right means lower file first
-  const antiLeft = squareFromIndices(antiEndF, antiEndR);
-  const antiRight = squareFromIndices(antiStartF, antiStartR);
+  const antiLeft = fileRankToSquare(antiEndF, antiEndR);
+  const antiRight = fileRankToSquare(antiStartF, antiStartR);
   const antiDiagonal =
     antiEndF === antiStartF && antiEndR === antiStartR
       ? antiLeft
@@ -140,8 +133,8 @@ export function getDiagonalSquares(square: string): {
   diagonal: string[];
   antiDiagonal: string[];
 } {
-  const f = fileIndex(square[0]);
-  const r = rankIndex(square[1]);
+  const f = squareToFileIndex(square);
+  const r = squareToRankIndex(square);
   const {
     diagStartF,
     diagStartR,
@@ -153,12 +146,12 @@ export function getDiagonalSquares(square: string): {
 
   const diagonal: string[] = [];
   for (let i = 0; i <= diagLength; i++) {
-    diagonal.push(squareFromIndices(diagStartF + i, diagStartR + i));
+    diagonal.push(fileRankToSquare(diagStartF + i, diagStartR + i));
   }
 
   const antiDiagonal: string[] = [];
   for (let i = 0; i <= antiLength; i++) {
-    antiDiagonal.push(squareFromIndices(antiStartF - i, antiStartR + i));
+    antiDiagonal.push(fileRankToSquare(antiStartF - i, antiStartR + i));
   }
 
   return { diagonal, antiDiagonal };
@@ -172,8 +165,8 @@ export function getCornerInfo(square: string): {
   singleDiagonal: boolean;
   singleAntiDiagonal: boolean;
 } {
-  const f = fileIndex(square[0]);
-  const r = rankIndex(square[1]);
+  const f = squareToFileIndex(square);
+  const r = squareToRankIndex(square);
   const { diagLength, antiLength } = computeDiagonalParams(f, r);
 
   return {

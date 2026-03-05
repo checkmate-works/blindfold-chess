@@ -1,5 +1,10 @@
 import type { Square } from "@blindfold-chess/types";
 
+import {
+  squareToFileIndex,
+  squareToRankIndex,
+  fileRankToSquare,
+} from "../common";
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
 
@@ -53,8 +58,8 @@ export function squareToCoordinates(
   square: Square,
   orientation: "white" | "black",
 ): { file: number; rank: number } {
-  const file = square.charCodeAt(0) - "a".charCodeAt(0); // 0-7
-  const rank = parseInt(square[1]) - 1; // 0-7
+  const file = squareToFileIndex(square);
+  const rank = squareToRankIndex(square);
 
   if (orientation === "white") {
     return { file, rank: 7 - rank }; // Flip rank for white perspective
@@ -82,10 +87,7 @@ export function coordinatesToSquare(
     actualRank = rank;
   }
 
-  const fileChar = String.fromCharCode("a".charCodeAt(0) + actualFile);
-  const rankChar = (actualRank + 1).toString();
-
-  return `${fileChar}${rankChar}` as Square;
+  return fileRankToSquare(actualFile, actualRank) as Square;
 }
 
 /**

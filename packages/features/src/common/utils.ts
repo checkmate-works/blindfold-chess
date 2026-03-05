@@ -1,5 +1,20 @@
 import { FILES, RANKS } from "./constants";
 
+/** Extract 0-based file index (a=0, h=7) from algebraic square name */
+export function squareToFileIndex(square: string): number {
+  return square.charCodeAt(0) - "a".charCodeAt(0);
+}
+
+/** Extract 0-based rank index (1=0, 8=7) from algebraic square name */
+export function squareToRankIndex(square: string): number {
+  return parseInt(square[1], 10) - 1;
+}
+
+/** Build algebraic square name from 0-based indices */
+export function fileRankToSquare(fileIndex: number, rankIndex: number): string {
+  return String.fromCharCode("a".charCodeAt(0) + fileIndex) + (rankIndex + 1);
+}
+
 export function isLightSquare(fileIndex: number, rankIndex: number): boolean {
   return (fileIndex + rankIndex) % 2 === 0;
 }
@@ -9,8 +24,8 @@ export function isValidSquare(square: string): boolean {
 }
 
 export function computeSquareColor(square: string): "light" | "dark" {
-  const file = square.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
-  const rank = parseInt(square[1]) - 1; // 1=0, 2=1, ..., 8=7
+  const file = squareToFileIndex(square);
+  const rank = squareToRankIndex(square);
   return (file + rank) % 2 === 0 ? "dark" : "light";
 }
 

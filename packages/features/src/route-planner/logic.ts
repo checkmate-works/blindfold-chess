@@ -1,17 +1,20 @@
-import { FILES, RANKS, isValidSquare } from "../common";
+import {
+  isValidSquare,
+  squareToFileIndex,
+  squareToRankIndex,
+  fileRankToSquare,
+} from "../common";
 
 import type { RoutePlannerPieceType, RoutePlannerProblem } from "./types";
 import { ROUTE_PLANNER_PIECES } from "./types";
 
 export function squareToCoords(square: string): [number, number] {
-  const file = FILES.indexOf(square[0] as (typeof FILES)[number]);
-  const rank = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
-  return [file, rank];
+  return [squareToFileIndex(square), squareToRankIndex(square)];
 }
 
 export function coordsToSquare(file: number, rank: number): string {
   if (file < 0 || file > 7 || rank < 0 || rank > 7) return "";
-  return `${FILES[file]}${RANKS[rank]}`;
+  return fileRankToSquare(file, rank);
 }
 
 export { isValidSquare as isValidRoutePlannerSquare };
