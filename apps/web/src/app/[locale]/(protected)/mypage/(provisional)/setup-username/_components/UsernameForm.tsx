@@ -5,6 +5,8 @@ import { FormEvent, useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@/app/_components';
+
 import { validateUsername } from '@/lib/username';
 
 type Props = {
@@ -156,13 +158,17 @@ export function UsernameForm({ locale }: Props) {
         </span>
       </label>
 
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        shadow={false}
         disabled={isSubmitting || username.trim().length === 0 || !agreedToTerms}
-        className="w-full px-6 py-3 bg-accent text-accent-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+        loading={isSubmitting}
       >
         {isSubmitting ? t('submitting') : t('submit')}
-      </button>
+      </Button>
     </form>
   );
 }

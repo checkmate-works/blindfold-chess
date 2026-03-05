@@ -9,7 +9,7 @@ import { SiChessdotcom, SiLichess } from 'react-icons/si';
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles } from '@/lib/db';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -69,75 +69,86 @@ export default async function PublicProfilePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
+  const isEmptyProfile = !profile.bio && !hasChessAccounts;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>
-        {profile.displayName}
-        {profile.flair && <span className="ml-2">{profile.flair}</span>}
-        {profile.country && <span className="ml-2">{countryCodeToFlag(profile.country)}</span>}
-      </PageTitle>
+    <PagePanel>
+      <div className="space-y-8">
+        {/* Profile Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {profile.displayName}
+              {profile.flair && <span className="ml-2">{profile.flair}</span>}
+              {profile.country && (
+                <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
+              )}
+            </h1>
+            <p className="text-muted-foreground mt-1">@{profile.username}</p>
+          </div>
 
-      <PagePanel>
-        <div className="space-y-6">
-          {profile.bio && (
+          {hasChessAccounts && (
+            <div className="flex items-center gap-4">
+              {profile.fideId && (
+                <a
+                  href={`https://ratings.fide.com/profile/${profile.fideId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="FIDE profile"
+                  title="FIDE"
+                  className="opacity-70 transition-opacity hover:opacity-100"
+                >
+                  <Image
+                    src="/images/fide-favicon.ico"
+                    alt="FIDE"
+                    width={24}
+                    height={24}
+                    unoptimized
+                  />
+                </a>
+              )}
+              {profile.chesscomUsername && (
+                <a
+                  href={`https://www.chess.com/member/${profile.chesscomUsername}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Chess.com profile"
+                  title="Chess.com"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <SiChessdotcom size={24} />
+                </a>
+              )}
+              {profile.lichessUsername && (
+                <a
+                  href={`https://lichess.org/@/${profile.lichessUsername}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Lichess profile"
+                  title="Lichess"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <SiLichess size={24} />
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Profile Content */}
+        {isEmptyProfile ? (
+          <div className="p-8 border-border border-2 border-dashed rounded-lg text-center">
+            <p className="text-muted-foreground">{t('emptyProfile')}</p>
+          </div>
+        ) : profile.bio ? (
+          <div className="space-y-6">
             <div className="space-y-3">
               <SectionTitle>{t('bio')}</SectionTitle>
               <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
             </div>
-          )}
-
-          {hasChessAccounts && (
-            <div className="space-y-3">
-              <SectionTitle>{t('chessAccounts')}</SectionTitle>
-              <div className="flex items-center gap-4">
-                {profile.fideId && (
-                  <a
-                    href={`https://ratings.fide.com/profile/${profile.fideId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="FIDE profile"
-                    title="FIDE"
-                    className="opacity-70 transition-opacity hover:opacity-100"
-                  >
-                    <Image
-                      src="/images/fide-favicon.ico"
-                      alt="FIDE"
-                      width={20}
-                      height={20}
-                      unoptimized
-                    />
-                  </a>
-                )}
-                {profile.chesscomUsername && (
-                  <a
-                    href={`https://www.chess.com/member/${profile.chesscomUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Chess.com profile"
-                    title="Chess.com"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <SiChessdotcom size={20} />
-                  </a>
-                )}
-                {profile.lichessUsername && (
-                  <a
-                    href={`https://lichess.org/@/${profile.lichessUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Lichess profile"
-                    title="Lichess"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <SiLichess size={20} />
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </PagePanel>
-    </div>
+          </div>
+        ) : null}
+      </div>
+    </PagePanel>
   );
 }
