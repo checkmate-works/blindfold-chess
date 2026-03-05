@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import type { Square } from '@blindfold-chess/types';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -37,7 +38,6 @@ export default function CoordinateQuizChallenge({
   // Module-specific state
   const [lastClickedSquare, setLastClickedSquare] = useState<Square | null>(null);
   const recentSquaresRef = useRef<Square[]>([]);
-  const hasScrolled = useRef(false);
 
   const generateQuestion = useCallback((): CoordinateQuestion => {
     const question = generateSingleQuestion(boardOrientation, recentSquaresRef.current);
@@ -66,16 +66,7 @@ export default function CoordinateQuizChallenge({
     feedbackDuration,
   });
 
-  // Scroll to quiz-session element after first question is rendered
-  useEffect(() => {
-    if (!currentQuestion || hasScrolled.current) return;
-    hasScrolled.current = true;
-
-    const element = document.getElementById('quiz-session');
-    if (element) {
-      element.scrollIntoView({ behavior: 'instant', block: 'start' });
-    }
-  }, [currentQuestion]);
+  useScrollToElement('quiz-session', !!currentQuestion);
 
   // Clear lastClickedSquare when question changes (feedback ended)
   useEffect(() => {

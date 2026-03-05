@@ -9,6 +9,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -101,14 +102,7 @@ export default function QuadrantPlaying({
     }
   }, [nextProblem, round, currentSquare]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      const element = document.getElementById('quadrant-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, []);
+  useScrollToElement('quadrant-session');
 
   const handleQuadrantClick = (id: QuadrantId) => {
     if (feedbackState.correct) return;

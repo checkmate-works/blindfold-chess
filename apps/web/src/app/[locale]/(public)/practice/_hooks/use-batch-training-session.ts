@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useScrollToElement } from './use-scroll-to-element';
+
 type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
   batchSize?: number;
   generateBatch: (size: number) => TQuestion[];
@@ -39,17 +41,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  // Scroll to element after mount
-  useEffect(() => {
-    if (!hasMounted || !scrollTargetId) return;
-
-    setTimeout(() => {
-      const element = document.getElementById(scrollTargetId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [hasMounted, scrollTargetId]);
+  useScrollToElement(scrollTargetId ?? '', hasMounted && !!scrollTargetId);
 
   // Regenerate questions when running low
   useEffect(() => {

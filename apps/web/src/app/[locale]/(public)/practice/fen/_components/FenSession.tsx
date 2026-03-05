@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -109,18 +110,7 @@ export function FenSession({
     }
   }, [hasMounted, problemCount, shuffle, customFen, fens]);
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (!hasMounted) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('fen-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [hasMounted]);
+  useScrollToElement('fen-session', hasMounted);
 
   // Game state
   const [phase, setPhase] = useState<GamePhase>('recreate');

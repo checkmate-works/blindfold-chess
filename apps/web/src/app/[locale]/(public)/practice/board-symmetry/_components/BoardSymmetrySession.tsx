@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
+import { useScrollToElement } from '../../_hooks/use-scroll-to-element';
 import { useTimedSession } from '../../_hooks/use-timed-session';
 import { BoardSymmetryPlaying } from './BoardSymmetryPlaying';
 
@@ -25,7 +26,6 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const hasMounted = useRef(false);
 
   const generateQuestion = useCallback((): BoardSymmetryProblem => {
     return generateProblem();
@@ -49,18 +49,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
   });
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (hasMounted.current) return;
-    hasMounted.current = true;
-
-    setTimeout(() => {
-      const element = document.getElementById('board-symmetry-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, []);
+  useScrollToElement('board-symmetry-session');
 
   // Clear module-specific state when feedback ends (next problem loaded)
   useEffect(() => {

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useMachine } from '@xstate/react';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -99,18 +100,7 @@ export function PositionMemorySession({
   // Countdown state
   const [countdown, setCountdown] = useState<number | null>(3);
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (!hasMounted) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('position-memory-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [hasMounted]);
+  useScrollToElement('position-memory-session', hasMounted);
 
   // Countdown effect
   useEffect(() => {

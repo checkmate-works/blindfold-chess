@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
@@ -46,18 +47,7 @@ export function MoveSequenceSession({
   const [result, setResult] = useState<MoveSequenceSessionResult | null>(null);
   const [parseError, setParseError] = useState<string | null>(error);
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (!data) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('move-sequence-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, [data]);
+  useScrollToElement('move-sequence-session', !!data);
 
   // Parse FEN and PGN on mount
   useEffect(() => {

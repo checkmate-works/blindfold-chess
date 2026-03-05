@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -44,16 +45,7 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
     }
   };
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('algebraic-notation-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, []);
+  useScrollToElement('algebraic-notation-session');
 
   return (
     <div id="algebraic-notation-session" className="min-h-screen space-y-4">

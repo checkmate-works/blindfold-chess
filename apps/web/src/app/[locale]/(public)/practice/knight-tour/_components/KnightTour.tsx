@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 
 import {
   getAvailableKnightMoves,
@@ -77,7 +78,6 @@ export default function KnightTour({
   const [visitedSquares, setVisitedSquares] = useState<Map<string, number>>(new Map());
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
   const [showQuitModal, setShowQuitModal] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
 
   const router = useRouter();
 
@@ -116,19 +116,7 @@ export default function KnightTour({
     router,
   ]);
 
-  // Scroll to session element after playing starts
-  useEffect(() => {
-    if (gameState !== 'playing' || hasScrolled) return;
-
-    // Tiny delay to ensure DOM is ready
-    setTimeout(() => {
-      const element = document.getElementById('knight-tour-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-        setHasScrolled(true);
-      }
-    }, 100);
-  }, [gameState, hasScrolled]);
+  useScrollToElement('knight-tour-session', gameState === 'playing');
 
   // Save settings when they change (only if not autoStart mode)
   useEffect(() => {

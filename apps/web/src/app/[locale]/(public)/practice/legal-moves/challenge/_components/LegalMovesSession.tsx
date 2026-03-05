@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -28,7 +29,6 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   // Batch-based question generation
   const questionsRef = useRef<MoveQuestion[]>([]);
   const indexRef = useRef(0);
-  const hasMounted = useRef(false);
 
   // Module-specific feedback state
   const [lastAnswer, setLastAnswer] = useState<{
@@ -70,18 +70,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     generateQuestion,
   });
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (hasMounted.current) return;
-    hasMounted.current = true;
-
-    setTimeout(() => {
-      const element = document.getElementById('legal-moves-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, []);
+  useScrollToElement('legal-moves-session');
 
   // Clear module-specific feedback state when hook feedback ends
   useEffect(() => {

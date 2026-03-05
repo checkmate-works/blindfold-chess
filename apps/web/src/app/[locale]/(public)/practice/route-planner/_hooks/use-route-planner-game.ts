@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import {
@@ -91,16 +92,9 @@ export function useRoutePlannerGame({
     if (!problem && gameState === 'playing') {
       startNewProblem();
     }
-
-    const timer = setTimeout(() => {
-      const element = document.getElementById('route-planner-session');
-      if (element && (mode === 'standard' || mode === 'training')) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-
-    return () => clearTimeout(timer);
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useScrollToElement('route-planner-session', mode === 'standard' || mode === 'training');
 
   const addMove = useCallback(
     (square: string) => {

@@ -9,6 +9,7 @@ import type { Square } from '@blindfold-chess/types';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -47,7 +48,6 @@ export default function CoordinateQuizTrainingSession({
   const { countdown } = useCountdown();
 
   const hasStarted = useRef(false);
-  const hasScrolled = useRef(false);
 
   // Auto-start the game on mount
   useEffect(() => {
@@ -59,16 +59,7 @@ export default function CoordinateQuizTrainingSession({
     setRecentSquares([firstQuestion.targetSquare]);
   }, [boardOrientation]);
 
-  // Scroll to training session element after first question is rendered
-  useEffect(() => {
-    if (!currentQuestion || hasScrolled.current) return;
-    hasScrolled.current = true;
-
-    const element = document.getElementById('coordinate-quiz-training-session');
-    if (element) {
-      element.scrollIntoView({ behavior: 'instant', block: 'start' });
-    }
-  }, [currentQuestion]);
+  useScrollToElement('coordinate-quiz-training-session', !!currentQuestion);
 
   const handleSquareClick = useCallback(
     (square: Square) => {

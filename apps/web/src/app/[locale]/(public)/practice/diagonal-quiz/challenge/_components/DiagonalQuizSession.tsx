@@ -12,6 +12,7 @@ import {
 } from '@blindfold-chess/features/diagonal-quiz';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,7 +32,6 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   // Batch-based question generation
   const squaresRef = useRef<string[]>([]);
   const indexRef = useRef(0);
-  const hasMounted = useRef(false);
 
   // Module-specific state
   const [questionResults, setQuestionResults] = useState<QuestionResult[]>([]);
@@ -71,18 +71,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
   });
 
-  // Scroll to session element after mount
-  useEffect(() => {
-    if (hasMounted.current) return;
-    hasMounted.current = true;
-
-    setTimeout(() => {
-      const element = document.getElementById('diagonal-quiz-session');
-      if (element) {
-        element.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
-    }, 100);
-  }, []);
+  useScrollToElement('diagonal-quiz-session');
 
   // Clear module-specific feedback state when hook feedback ends
   useEffect(() => {
