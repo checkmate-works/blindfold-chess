@@ -18,6 +18,8 @@ import {
 import { useMoveInput } from "../hooks/useMoveInput";
 import type { AlgebraicNotation } from "@blindfold-chess/types";
 import { ChessPiece } from "./ChessPiece";
+import { ToggleButton } from "./ToggleButton";
+import { CheckboxPill } from "./CheckboxPill";
 
 const PIECES = ["K", "Q", "R", "B", "N"] as const;
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
@@ -397,117 +399,6 @@ export function ButtonInput({ fen, onSubmit, disabled }: ButtonInputProps) {
   );
 }
 
-type ToggleButtonProps = {
-  label: string;
-  isSelected: boolean;
-  onPress: () => void;
-  disabled?: boolean;
-  colors: ReturnType<typeof useTheme>["colors"];
-  wide?: boolean;
-  small?: boolean;
-};
-
-function ToggleButton({
-  label,
-  isSelected,
-  onPress,
-  disabled,
-  colors,
-  wide,
-  small,
-}: ToggleButtonProps) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled}
-      style={[
-        styles.toggleButton,
-        small && styles.toggleButtonSmall,
-        wide && styles.toggleButtonWide,
-        {
-          backgroundColor: isSelected ? colors.primary : colors.card,
-          borderColor: isSelected ? colors.primary : colors.border,
-          opacity: disabled ? 0.5 : 1,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.toggleText,
-          small && styles.toggleTextSmall,
-          {
-            color: isSelected ? colors.primaryForeground : colors.foreground,
-            fontWeight: isSelected ? fontWeight.bold : fontWeight.normal,
-          },
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-type CheckboxPillProps = {
-  label: string;
-  isChecked: boolean;
-  onPress: () => void;
-  disabled?: boolean;
-  colors: ReturnType<typeof useTheme>["colors"];
-};
-
-function CheckboxPill({
-  label,
-  isChecked,
-  onPress,
-  disabled,
-  colors,
-}: CheckboxPillProps) {
-  return (
-    <View style={styles.checkboxPillRow}>
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled}
-        style={[
-          styles.checkboxPill,
-          {
-            backgroundColor: isChecked ? colors.primary + "1A" : "transparent",
-            borderColor: isChecked ? colors.primary : "transparent",
-            opacity: disabled ? 0.5 : 1,
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.checkbox,
-            {
-              borderColor: isChecked ? colors.primary : colors.border,
-              backgroundColor: isChecked ? colors.primary : "transparent",
-            },
-          ]}
-        >
-          {isChecked && (
-            <Text
-              style={[styles.checkmark, { color: colors.primaryForeground }]}
-            >
-              {"\u2713"}
-            </Text>
-          )}
-        </View>
-        <Text
-          style={[
-            styles.checkboxPillLabel,
-            {
-              color: isChecked ? colors.primary : colors.foreground,
-            },
-          ]}
-        >
-          {label}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: {
     gap: spacing.sm,
@@ -527,21 +418,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  toggleButtonSmall: {
-    minWidth: 36,
-    minHeight: 36,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
-  toggleButtonWide: {
-    paddingHorizontal: spacing.lg,
-  },
-  toggleText: {
-    fontSize: fontSize.md,
-  },
-  toggleTextSmall: {
-    fontSize: fontSize.sm,
   },
   disambiguationToggle: {
     paddingHorizontal: spacing.md,
@@ -574,37 +450,6 @@ const styles = StyleSheet.create({
   equalsSignText: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
-  },
-  checkboxPillRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  checkboxPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkmark: {
-    fontSize: 14,
-    fontWeight: fontWeight.bold,
-    lineHeight: 18,
-  },
-  checkboxPillLabel: {
-    fontFamily: "monospace",
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.lg,
   },
   actionRow: {
     flexDirection: "row",
