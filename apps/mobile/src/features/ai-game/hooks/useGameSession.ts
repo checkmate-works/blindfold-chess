@@ -6,7 +6,7 @@ import {
   validateGameMove,
 } from "@blindfold-chess/features/ai-game";
 
-import type { GameStatus, PlayerResult, SkillLevel } from "../lib/types";
+import type { SkillLevel } from "../lib/types";
 
 type UseGameSessionProps = {
   playerColor: Side;
@@ -25,34 +25,33 @@ export function useGameSession({
   isAiLoading,
 }: UseGameSessionProps) {
   const [moves, setMoves] = useState<AlgebraicNotation[]>([]);
-  const [gameStatus, setGameStatus] = useState<GameStatus>("in_progress");
-  const [playerResult, setPlayerResult] = useState<PlayerResult | null>(null);
-  const [isPlayerTurn, setIsPlayerTurn] = useState(playerColor === "white");
   const [error, setError] = useState<string | null>(null);
   const [isAiThinking, setIsAiThinking] = useState(false);
   const isAiMoveInProgressRef = useRef(false);
 
-  // Update game state after moves change
-  useEffect(() => {
-    const gameState = computeGameState(moves, playerColor);
+  // Derive game state synchronously whenever moves change
+  const gameState = useMemo(
+    () => computeGameState(moves, playerColor),
+    [moves, playerColor],
+  );
 
-    setGameStatus(gameState.status);
-    setPlayerResult(gameState.playerResult);
-    setIsPlayerTurn(gameState.isPlayerTurn);
-  }, [moves, playerColor]);
+  const {
+    status: gameStatus,
+    playerResult,
+    isPlayerTurn,
+    currentFen,
+  } = gameState;
 
   // Trigger AI move when it's not the player's turn.
   // We compute isPlayerTurn synchronously from moves to avoid a race condition
   // where the state-based isPlayerTurn lags behind the latest moves array
   // (causing the AI to move repeatedly in an infinite loop).
+  // We use the memoized gameState directly here since effects run after render,
+  // preventing lag between strictly managed state and generic derivations.
   useEffect(() => {
-    const currentGameState = computeGameState(moves, playerColor);
-    const currentStatus = currentGameState.status;
-    const currentIsPlayerTurn = currentGameState.isPlayerTurn;
-
     if (
-      currentIsPlayerTurn ||
-      currentStatus !== "in_progress" ||
+      isPlayerTurn ||
+      gameStatus !== "in_progress" ||
       isAiMoveInProgressRef.current
     ) {
       return;
@@ -74,7 +73,7 @@ export function useGameSession({
         isAiMoveInProgressRef.current = false;
         setIsAiThinking(false);
       });
-  }, [moves, playerColor, getAiMove]);
+  }, [moves, playerColor, getAiMove, isPlayerTurn, gameStatus]);
 
   const submitMove = useCallback(
     (move: AlgebraicNotation) => {
@@ -95,11 +94,6 @@ export function useGameSession({
     },
     [isPlayerTurn, gameStatus, isAiLoading, moves],
   );
-
-  const currentFen = useMemo(() => {
-    const gameState = computeGameState(moves, playerColor);
-    return gameState.currentFen;
-  }, [moves, playerColor]);
 
   return {
     moves,

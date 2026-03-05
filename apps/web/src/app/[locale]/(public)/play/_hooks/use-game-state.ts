@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 type LoadedGameData = {
@@ -83,11 +85,15 @@ export function useGameState({
   // Initialize on mount with initial moves
   useEffect(() => {
     if (!isInitialized && initialMovesFromUrl.length > 0) {
-      const gameState = computeGameState(initialMovesFromUrl, playerSide, startingFen);
-      setLastMove(gameState.lastMoveDetails);
+      setLastMove(getLastMoveDetails(initialMovesFromUrl as string[], startingFen));
       setIsInitialized(true);
     }
-  }, [isInitialized, initialMovesFromUrl, startingFen, playerSide]);
+  }, [isInitialized, initialMovesFromUrl, startingFen]);
+
+  const derivedGameState = useMemo(
+    () => computeGameState(moves, playerSide, startingFen),
+    [moves, playerSide, startingFen]
+  );
 
   // Update game state whenever moves change
   useEffect(() => {
@@ -99,21 +105,22 @@ export function useGameState({
       return;
     }
 
-    const gameState = computeGameState(moves, playerSide, startingFen);
-
-    const newIsPlayerTurn = gameState.isPlayerTurn;
-    const newGameStatus = gameState.status;
+    const {
+      isPlayerTurn: newIsPlayerTurn,
+      status: newGameStatus,
+      playerResult: newPlayerResult,
+    } = derivedGameState;
 
     setIsPlayerTurn(newIsPlayerTurn);
     setGameStatus(newGameStatus);
-    setPlayerResult(gameState.playerResult);
+    setPlayerResult(newPlayerResult);
 
     if (!newIsPlayerTurn && newGameStatus === 'in_progress') {
       setShouldMakeAiMove(true);
     } else {
       setShouldMakeAiMove(false);
     }
-  }, [moves, playerSide, savedGameStatus, startingFen, isLoadingFromStorage]);
+  }, [derivedGameState, savedGameStatus, isLoadingFromStorage]);
 
   return {
     gameStatus,

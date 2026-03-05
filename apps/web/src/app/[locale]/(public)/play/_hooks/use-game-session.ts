@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
-import { computeGameState } from '@blindfold-chess/features/ai-game';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
@@ -156,10 +156,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Internal helper to reduce duplicated state updates
   const recomputeGameState = useCallback(
     (newMoves: AlgebraicNotation[]) => {
-      const gameState = computeGameState(newMoves, playerSide, startingFen);
-      setLastMove(gameState.lastMoveDetails);
+      setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
-    [playerSide, startingFen, setLastMove]
+    [startingFen, setLastMove]
   );
 
   // AI move orchestration
