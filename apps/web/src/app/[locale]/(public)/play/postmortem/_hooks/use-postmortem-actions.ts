@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveLogEntry } from '../_lib';
-import { getPositionEvaluation } from '../_lib';
+import { buildPreviousEval, computeMoveNumber, getPositionEvaluation } from '../_lib';
 
 type Props = {
   originalMoves: AlgebraicNotation[];
@@ -51,6 +51,62 @@ export function usePostmortemActions({
   const moveLogRef = useRef(moveLog);
   moveLogRef.current = moveLog;
 
+  /**
+   * Shared logic for processing a correct / auto-filled move:
+   * state update + optional evaluation fetch + log entry + completion check.
+   */
+  const processCorrectMove = useCallback(
+    async (
+      move: AlgebraicNotation,
+      index: number,
+      status: 'correct' | 'auto',
+      previousEval: { score: number; mate?: number; bestMove?: string } | undefined
+    ) => {
+      const { moveNumber, isWhiteMove } = computeMoveNumber(index, startsAsBlack, startMoveNumber);
+      const newIndex = index + 1;
+
+      setUserMoves((prev) => [...prev, move]);
+      setCurrentMoveIndex(newIndex);
+
+      const evaluation = showEvaluation
+        ? await getPositionEvaluation(
+            gamePositions[index].fen,
+            gamePositions[index + 1].fen,
+            index,
+            t,
+            previousEval
+          )
+        : undefined;
+
+      setMoveLog((prev) => [
+        ...prev,
+        {
+          moveNumber,
+          isWhiteMove,
+          move,
+          status,
+          evaluation,
+        },
+      ]);
+
+      if (newIndex >= originalMoves.length) {
+        setIsCompleted(true);
+      }
+    },
+    [
+      startsAsBlack,
+      startMoveNumber,
+      showEvaluation,
+      t,
+      gamePositions,
+      originalMoves.length,
+      setUserMoves,
+      setCurrentMoveIndex,
+      setMoveLog,
+      setIsCompleted,
+    ]
+  );
+
   // Auto-fill opponent's move if needed
   useEffect(() => {
     if (
@@ -63,50 +119,8 @@ export function usePostmortemActions({
       const autoFillMove = async () => {
         setIsEvaluating(true);
         const opponentMove = originalMoves[currentMoveIndex];
-        const moveNumber = startsAsBlack
-          ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-          : startMoveNumber + Math.floor(currentMoveIndex / 2);
-        const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
-        const newIndex = currentMoveIndex + 1;
-
-        setUserMoves((prev) => [...prev, opponentMove]);
-        setCurrentMoveIndex(newIndex);
-
-        const currentLog = moveLogRef.current;
-        const previousEval =
-          currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
-            ? {
-                score: currentLog[currentLog.length - 1].evaluation!.score,
-                mate: currentLog[currentLog.length - 1].evaluation!.mate,
-                bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
-              }
-            : undefined;
-
-        const evaluation = showEvaluation
-          ? await getPositionEvaluation(
-              gamePositions[currentMoveIndex].fen,
-              gamePositions[currentMoveIndex + 1].fen,
-              currentMoveIndex,
-              t,
-              previousEval
-            )
-          : undefined;
-
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            moveNumber,
-            isWhiteMove,
-            move: opponentMove,
-            status: 'auto',
-            evaluation,
-          },
-        ]);
-
-        if (newIndex >= originalMoves.length) {
-          setIsCompleted(true);
-        }
-
+        const previousEval = buildPreviousEval(moveLogRef.current);
+        await processCorrectMove(opponentMove, currentMoveIndex, 'auto', previousEval);
         setIsEvaluating(false);
       };
 
@@ -119,15 +133,7 @@ export function usePostmortemActions({
     originalMoves,
     isCompleted,
     isEvaluating,
-    showEvaluation,
-    t,
-    gamePositions,
-    startsAsBlack,
-    startMoveNumber,
-    setUserMoves,
-    setCurrentMoveIndex,
-    setMoveLog,
-    setIsCompleted,
+    processCorrectMove,
   ]);
 
   // Handle move submission
@@ -139,56 +145,19 @@ export function usePostmortemActions({
       if (isEvaluating) return;
 
       const expectedMove = originalMoves[currentMoveIndex];
-      const moveNumber = startsAsBlack
-        ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-        : startMoveNumber + Math.floor(currentMoveIndex / 2);
-      const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
 
       if (move === expectedMove) {
         setIsEvaluating(true);
-
-        const newIndex = currentMoveIndex + 1;
-        setUserMoves((prev) => [...prev, move]);
-        setCurrentMoveIndex(newIndex);
         setMoveInputValue('');
-
-        const currentLog = moveLogRef.current;
-        const previousEval =
-          currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
-            ? {
-                score: currentLog[currentLog.length - 1].evaluation!.score,
-                mate: currentLog[currentLog.length - 1].evaluation!.mate,
-                bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
-              }
-            : undefined;
-
-        const evaluation = showEvaluation
-          ? await getPositionEvaluation(
-              gamePositions[currentMoveIndex].fen,
-              gamePositions[currentMoveIndex + 1].fen,
-              currentMoveIndex,
-              t,
-              previousEval
-            )
-          : undefined;
-
-        setMoveLog((prev) => [
-          ...prev,
-          {
-            moveNumber,
-            isWhiteMove,
-            move,
-            status: 'correct',
-            evaluation,
-          },
-        ]);
-
-        if (newIndex >= originalMoves.length) {
-          setIsCompleted(true);
-        }
-
+        const previousEval = buildPreviousEval(moveLogRef.current);
+        await processCorrectMove(move, currentMoveIndex, 'correct', previousEval);
         setIsEvaluating(false);
       } else {
+        const { moveNumber, isWhiteMove } = computeMoveNumber(
+          currentMoveIndex,
+          startsAsBlack,
+          startMoveNumber
+        );
         setMoveLog((prev) => [
           ...prev,
           {
@@ -204,16 +173,11 @@ export function usePostmortemActions({
     [
       currentMoveIndex,
       originalMoves,
-      showEvaluation,
       isEvaluating,
-      t,
-      gamePositions,
       startsAsBlack,
       startMoveNumber,
-      setUserMoves,
-      setCurrentMoveIndex,
+      processCorrectMove,
       setMoveLog,
-      setIsCompleted,
     ]
   );
 
@@ -224,59 +188,13 @@ export function usePostmortemActions({
 
       setIsEvaluating(true);
       setDontKnowCount((prev) => prev + 1);
-
-      const correctMove = originalMoves[currentMoveIndex];
-      const moveNumber = startsAsBlack
-        ? startMoveNumber + Math.floor((currentMoveIndex + 1) / 2)
-        : startMoveNumber + Math.floor(currentMoveIndex / 2);
-      const isWhiteMove = startsAsBlack ? currentMoveIndex % 2 === 1 : currentMoveIndex % 2 === 0;
-      const newIndex = currentMoveIndex + 1;
-
-      setUserMoves((prev) => [...prev, correctMove]);
-      setCurrentMoveIndex(newIndex);
       setMoveInputValue('');
 
-      const evaluation = showEvaluation
-        ? await getPositionEvaluation(
-            gamePositions[currentMoveIndex].fen,
-            gamePositions[currentMoveIndex + 1].fen,
-            currentMoveIndex,
-            t,
-            undefined
-          )
-        : undefined;
-
-      setMoveLog((prev) => [
-        ...prev,
-        {
-          moveNumber,
-          isWhiteMove,
-          move: correctMove,
-          status: 'auto',
-          evaluation,
-        },
-      ]);
-
-      if (newIndex >= originalMoves.length) {
-        setIsCompleted(true);
-      }
-
+      const correctMove = originalMoves[currentMoveIndex];
+      await processCorrectMove(correctMove, currentMoveIndex, 'auto', undefined);
       setIsEvaluating(false);
     },
-    [
-      currentMoveIndex,
-      originalMoves,
-      showEvaluation,
-      isEvaluating,
-      t,
-      gamePositions,
-      startsAsBlack,
-      startMoveNumber,
-      setUserMoves,
-      setCurrentMoveIndex,
-      setMoveLog,
-      setIsCompleted,
-    ]
+    [currentMoveIndex, originalMoves, isEvaluating, processCorrectMove]
   );
 
   // Handle "Analyze All" button
@@ -291,22 +209,11 @@ export function usePostmortemActions({
     setUserMoves(newMoves);
 
     const newLogEntries: MoveLogEntry[] = [];
-    const currentLog = moveLogRef.current;
-    let previousEval =
-      currentLog.length > 0 && currentLog[currentLog.length - 1].evaluation
-        ? {
-            score: currentLog[currentLog.length - 1].evaluation!.score,
-            mate: currentLog[currentLog.length - 1].evaluation!.mate,
-            bestMove: currentLog[currentLog.length - 1].evaluation!.nextBestMove,
-          }
-        : undefined;
+    let previousEval = buildPreviousEval(moveLogRef.current);
 
     for (let i = currentMoveIndex; i < originalMoves.length; i++) {
       const move = originalMoves[i];
-      const moveNumber = startsAsBlack
-        ? startMoveNumber + Math.floor((i + 1) / 2)
-        : startMoveNumber + Math.floor(i / 2);
-      const isWhiteMove = startsAsBlack ? i % 2 === 1 : i % 2 === 0;
+      const { moveNumber, isWhiteMove } = computeMoveNumber(i, startsAsBlack, startMoveNumber);
 
       const evaluation = showEvaluation
         ? await getPositionEvaluation(

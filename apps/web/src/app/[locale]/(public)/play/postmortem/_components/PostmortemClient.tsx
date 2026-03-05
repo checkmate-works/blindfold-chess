@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactElement, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -12,6 +12,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import type { SelectedMoveDisplay } from '../_hooks';
 import { usePostmortemGame } from '../_hooks';
 import { EvaluationInfoModal } from './EvaluationInfoModal';
 import { MoveFilterModal } from './MoveFilterModal';
@@ -24,7 +25,7 @@ type Props = {
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
-  onSelectedMoveChange?: (moveDisplay: ReactElement | null) => void;
+  onSelectedMoveChange?: (moveDisplay: SelectedMoveDisplay | null) => void;
 };
 
 export function PostmortemClient({

@@ -1,18 +1,30 @@
-import { type ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaCheck, FaTimes } from 'react-icons/fa';
 
 import type { EvaluationMark } from '@/lib/evaluation';
-import { getEvaluationIcon } from '@/lib/evaluation';
 
 import type { EvaluationFilters, MoveLogEntry } from '../_lib';
-import { clearEvaluationCache } from '../_lib';
+import { clearEvaluationCache, formatMovesToPgn, getCurrentEvaluationMark } from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
 import { usePostmortemFilters } from './use-postmortem-filters';
 import { usePostmortemNavigation } from './use-postmortem-navigation';
+
+/**
+ * Data describing the selected move for display.
+ * The consuming component is responsible for rendering this into JSX.
+ */
+export type SelectedMoveDisplay =
+  | { type: 'correct'; moveNotation: string }
+  | { type: 'incorrect'; moveNotation: string }
+  | { type: 'auto'; moveNotation: string }
+  | {
+      type: 'navigated';
+      moveNotation: string;
+      evaluation?: { loss: number; isMate: boolean };
+    };
 
 type Props = {
   pgn: string;
@@ -20,7 +32,7 @@ type Props = {
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
-  onSelectedMoveChange?: (moveDisplay: ReactElement | null) => void;
+  onSelectedMoveChange?: (moveDisplay: SelectedMoveDisplay | null) => void;
 };
 
 type PostmortemGameReturn = {
@@ -259,6 +271,15 @@ export function usePostmortemGame({
     [moveLog, navigateToPosition, navigateToStart]
   );
 
+  // Helper to format a move notation string
+  const formatMoveNotation = useCallback(
+    (entry: MoveLogEntry): string =>
+      entry.isWhiteMove
+        ? `${entry.moveNumber}. ${entry.move}`
+        : `${entry.moveNumber}... ${entry.move}`,
+    []
+  );
+
   // Update parent with latest move result during play
   useEffect(() => {
     if (!onSelectedMoveChange) return;
@@ -269,33 +290,27 @@ export function usePostmortemGame({
     }
 
     const latestEntry = moveLog[moveLog.length - 1];
-    const moveNotation = latestEntry.isWhiteMove
-      ? `${latestEntry.moveNumber}. ${latestEntry.move}`
-      : `${latestEntry.moveNumber}... ${latestEntry.move}`;
-
-    let displayElement: ReactElement;
 
     if (latestEntry.status === 'correct') {
-      displayElement = (
-        <span className="flex items-center justify-center gap-2 text-success">
-          <FaCheck className="w-4 h-4" /> {moveNotation}
-        </span>
-      );
+      onSelectedMoveChange({
+        type: 'correct',
+        moveNotation: formatMoveNotation(latestEntry),
+      });
     } else if (latestEntry.status === 'incorrect') {
       const incorrectNotation = latestEntry.isWhiteMove
         ? `${latestEntry.moveNumber}. ${latestEntry.incorrectMove}`
         : `${latestEntry.moveNumber}... ${latestEntry.incorrectMove}`;
-      displayElement = (
-        <span className="flex items-center justify-center gap-2 text-destructive">
-          <FaTimes className="w-4 h-4" /> {incorrectNotation}
-        </span>
-      );
+      onSelectedMoveChange({
+        type: 'incorrect',
+        moveNotation: incorrectNotation,
+      });
     } else {
-      displayElement = <span className="text-muted-foreground">{moveNotation}</span>;
+      onSelectedMoveChange({
+        type: 'auto',
+        moveNotation: formatMoveNotation(latestEntry),
+      });
     }
-
-    onSelectedMoveChange(displayElement);
-  }, [moveLog, isCompleted, onSelectedMoveChange]);
+  }, [moveLog, isCompleted, onSelectedMoveChange, formatMoveNotation]);
 
   // Update parent component with selected move display (post-completion navigation)
   useEffect(() => {
@@ -324,62 +339,24 @@ export function usePostmortemGame({
       return;
     }
 
-    const moveNotation = entry.isWhiteMove
-      ? `${entry.moveNumber}. ${entry.move}`
-      : `${entry.moveNumber}... ${entry.move}`;
-
-    const displayElement = (
-      <span className="flex items-center gap-2">
-        {moveNotation}
-        {entry.evaluation &&
-          getEvaluationIcon(entry.evaluation.loss, entry.evaluation.mate !== undefined, 'sm')}
-      </span>
-    );
-
-    onSelectedMoveChange(displayElement);
-  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange]);
+    onSelectedMoveChange({
+      type: 'navigated',
+      moveNotation: formatMoveNotation(entry),
+      evaluation: entry.evaluation
+        ? { loss: entry.evaluation.loss, isMate: entry.evaluation.mate !== undefined }
+        : undefined,
+    });
+  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange, formatMoveNotation]);
 
   const currentFen = getCurrentFen() || gamePositions[0]?.fen;
   const totalMoves = originalMoves.length;
   const progress = currentMoveIndex;
 
   // Format moves for display
-  const formattedPgn = useMemo((): FormattedPgnMove[] => {
-    if (userMoves.length === 0) return [];
-
-    const formatted: FormattedPgnMove[] = [];
-
-    if (startsAsBlack) {
-      formatted.push({
-        moveNumber: startMoveNumber,
-        blackMove: userMoves[0],
-        blackMoveIndex: 0,
-      });
-      for (let i = 1; i < userMoves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
-        formatted.push({
-          moveNumber,
-          whiteMove: userMoves[i],
-          whiteMoveIndex: i,
-          blackMove: userMoves[i + 1],
-          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
-        });
-      }
-    } else {
-      for (let i = 0; i < userMoves.length; i += 2) {
-        const moveNumber = startMoveNumber + Math.floor(i / 2);
-        formatted.push({
-          moveNumber,
-          whiteMove: userMoves[i],
-          whiteMoveIndex: i,
-          blackMove: userMoves[i + 1],
-          blackMoveIndex: userMoves[i + 1] !== undefined ? i + 1 : undefined,
-        });
-      }
-    }
-
-    return formatted;
-  }, [userMoves, startsAsBlack, startMoveNumber]);
+  const formattedPgn = useMemo(
+    () => formatMovesToPgn(userMoves, startsAsBlack, startMoveNumber),
+    [userMoves, startsAsBlack, startMoveNumber]
+  );
 
   // Calculate last move for highlighting based on current position
   const currentLastMove = useMemo(() => {
@@ -393,30 +370,10 @@ export function usePostmortemGame({
   }, [currentPosition, userMoves.length, gamePositions]);
 
   // Calculate evaluation mark for the current position
-  const currentEvaluationMark = useMemo((): EvaluationMark | null => {
-    if (!currentLastMove) return null;
-
-    const moveIndex =
-      currentPosition === -1 ? userMoves.length - 1 : currentPosition === -2 ? -1 : currentPosition;
-
-    if (moveIndex < 0) return null;
-
-    let actualMoveCount = 0;
-    for (const entry of moveLog) {
-      if (entry.status !== 'incorrect') {
-        if (actualMoveCount === moveIndex && entry.evaluation) {
-          return {
-            square: currentLastMove.to,
-            loss: entry.evaluation.loss,
-            isMate: entry.evaluation.mate !== undefined,
-          };
-        }
-        actualMoveCount++;
-      }
-    }
-
-    return null;
-  }, [currentPosition, userMoves.length, currentLastMove, moveLog]);
+  const currentEvaluationMark = useMemo(
+    () => getCurrentEvaluationMark(currentPosition, userMoves.length, currentLastMove, moveLog),
+    [currentPosition, userMoves.length, currentLastMove, moveLog]
+  );
 
   return {
     gameProgress: {

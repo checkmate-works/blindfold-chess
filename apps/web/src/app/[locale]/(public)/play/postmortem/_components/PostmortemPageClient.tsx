@@ -1,26 +1,58 @@
 'use client';
 
-import { type ReactElement, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+
+import { FaCheck, FaTimes } from 'react-icons/fa';
+
+import { getEvaluationIcon } from '@/lib/evaluation';
 
 import { ClientBreadcrumb } from '@/app/[locale]/(public)/play/_components/ClientBreadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import type { SelectedMoveDisplay } from '../_hooks';
 import { PostmortemClient } from './PostmortemClient';
 
 type Props = {
   locale: Locale;
 };
 
+function SelectedMoveElement({ display }: { display: SelectedMoveDisplay }) {
+  switch (display.type) {
+    case 'correct':
+      return (
+        <span className="flex items-center justify-center gap-2 text-success">
+          <FaCheck className="w-4 h-4" /> {display.moveNotation}
+        </span>
+      );
+    case 'incorrect':
+      return (
+        <span className="flex items-center justify-center gap-2 text-destructive">
+          <FaTimes className="w-4 h-4" /> {display.moveNotation}
+        </span>
+      );
+    case 'auto':
+      return <span className="text-muted-foreground">{display.moveNotation}</span>;
+    case 'navigated':
+      return (
+        <span className="flex items-center gap-2">
+          {display.moveNotation}
+          {display.evaluation &&
+            getEvaluationIcon(display.evaluation.loss, display.evaluation.isMate, 'sm')}
+        </span>
+      );
+  }
+}
+
 export function PostmortemPageClient({ locale }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
   const tPlay = useTranslations('play');
-  const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<ReactElement | null>(null);
+  const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<SelectedMoveDisplay | null>(null);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
@@ -64,7 +96,9 @@ export function PostmortemPageClient({ locale }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{selectedMoveDisplay || t('title')}</PageTitle>
+      <PageTitle>
+        {selectedMoveDisplay ? <SelectedMoveElement display={selectedMoveDisplay} /> : t('title')}
+      </PageTitle>
       <PostmortemClient
         pgn={pgn}
         playerColor={playerColor}
