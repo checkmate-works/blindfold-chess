@@ -55,7 +55,7 @@ export function BoardLayout({
   return (
     <div className={`w-full ${className}`}>
       <div
-        className={`relative w-full aspect-square border border-border overflow-hidden shadow-lg ${rounded ? 'rounded-md' : ''}`}
+        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
         onClick={onBoardClick}
       >
         {displayRanks.map((rank, rankIndex) => (
