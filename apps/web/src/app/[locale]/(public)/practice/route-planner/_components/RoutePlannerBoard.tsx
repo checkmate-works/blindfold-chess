@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { RoutePlannerPieceType } from '@blindfold-chess/features/route-planner';
 
 import type { BoardTheme } from '@/lib/boardThemes';
@@ -19,8 +20,7 @@ type Props = {
   highlightedSquare?: string | null;
 };
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
+const RANKS = DISPLAY_RANKS;
 
 export function RoutePlannerBoard({
   startSquare,
@@ -33,10 +33,6 @@ export function RoutePlannerBoard({
   highlightedSquare,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
-
-  const isLightSquare = (fileIndex: number, rankIndex: number) => {
-    return (fileIndex + rankIndex) % 2 === 0;
-  };
 
   const getSquareName = (fileIndex: number, rankIndex: number) => {
     const file = FILES[fileIndex];

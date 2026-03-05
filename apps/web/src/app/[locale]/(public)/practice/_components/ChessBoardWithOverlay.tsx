@@ -1,5 +1,7 @@
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -16,29 +18,6 @@ type Props = {
 
 type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
 
-// Helper function to convert FEN to board array
-function fenToBoard(fen: string): PieceType[] {
-  const pieces = fen.split(' ')[0]; // Get piece placement part
-  const board: PieceType[] = new Array(64).fill('');
-  let squareIndex = 0;
-
-  for (const char of pieces) {
-    if (char === '/') {
-      continue; // Skip rank separator
-    } else if (/\d/.test(char)) {
-      // Empty squares
-      const emptySquares = parseInt(char);
-      squareIndex += emptySquares;
-    } else {
-      // Piece
-      board[squareIndex] = char as PieceType;
-      squareIndex++;
-    }
-  }
-
-  return board;
-}
-
 export function ChessBoardWithOverlay({
   fen,
   flipped = false,
@@ -46,20 +25,14 @@ export function ChessBoardWithOverlay({
   boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
-  const board = fenToBoard(fen);
+  const board = fenToBoardFlat(fen) as PieceType[];
   const themeColors = getBoardThemeColors(boardTheme);
-
-  const isLightSquare = (squareIndex: number) => {
-    const rank = Math.floor(squareIndex / 8);
-    const file = squareIndex % 8;
-    return (rank + file) % 2 === 0;
-  };
+  const displayFiles = flipped ? [...FILES].reverse() : [...FILES];
+  const displayRanks = flipped ? [...DISPLAY_RANKS].reverse() : [...DISPLAY_RANKS];
 
   const getFileRank = (squareIndex: number) => {
-    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-    const file = files[squareIndex % 8];
-    const rank = ranks[Math.floor(squareIndex / 8)];
+    const file = FILES[squareIndex % 8];
+    const rank = DISPLAY_RANKS[Math.floor(squareIndex / 8)];
     return { file, rank };
   };
 
@@ -104,19 +77,11 @@ export function ChessBoardWithOverlay({
             // Handle board flipping for black side
             const displayIndex = flipped ? 63 - squareIndex : squareIndex;
             const displayPiece = board[displayIndex];
-            const isLight = isLightSquare(squareIndex);
+            const isLight = isLightSquare(squareIndex % 8, Math.floor(squareIndex / 8));
 
             // Grid position for coordinate display
             const gridFile = squareIndex % 8;
             const gridRank = Math.floor(squareIndex / 8);
-
-            // Files and ranks arrays (same as ChessBoard)
-            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
-            // Display files/ranks (reversed when flipped, like ChessBoard)
-            const displayFiles = flipped ? [...files].reverse() : files;
-            const displayRanks = flipped ? [...ranks].reverse() : ranks;
 
             // Get file/rank for this grid position
             const file = displayFiles[gridFile];

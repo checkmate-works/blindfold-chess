@@ -5,6 +5,7 @@ import { useMemo, useRef } from 'react';
 import { BoardOverlay, ChessPiece, Square } from '@/app/_components';
 import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -125,8 +126,8 @@ export function AnimatedChessBoard({
 
   const pieces = useMemo(() => parseFenToPieces(currentFen), [currentFen]);
 
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+  const files = FILES;
+  const ranks = DISPLAY_RANKS;
 
   const renderPiece = (piece: { type: PieceSymbol; color: Color; square: string }) => {
     if (piece.square === hiddenSquare) return null;
@@ -141,10 +142,6 @@ export function AnimatedChessBoard({
   const getPieceAtSquare = (file: string, rank: string) => {
     const square = file + rank;
     return pieces.find((piece) => piece.square === square);
-  };
-
-  const isLightSquare = (fileIndex: number, rankIndex: number) => {
-    return (fileIndex + rankIndex) % 2 === 0;
   };
 
   return (

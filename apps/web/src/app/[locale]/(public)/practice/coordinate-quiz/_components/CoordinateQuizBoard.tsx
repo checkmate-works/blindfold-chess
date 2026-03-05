@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { Square } from '@blindfold-chess/types';
 
 import { getBoardThemeColors } from '@/lib/boardThemes';
@@ -23,19 +24,9 @@ export function CoordinateQuizBoard({
 }: Props) {
   const { preferences } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
-  const files =
-    orientation === 'white'
-      ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-      : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+  const files = orientation === 'white' ? FILES : [...FILES].reverse();
 
-  const ranks =
-    orientation === 'white'
-      ? ['8', '7', '6', '5', '4', '3', '2', '1']
-      : ['1', '2', '3', '4', '5', '6', '7', '8'];
-
-  const isLightSquare = (fileIndex: number, rankIndex: number) => {
-    return (fileIndex + rankIndex) % 2 === 0;
-  };
+  const ranks = orientation === 'white' ? DISPLAY_RANKS : [...DISPLAY_RANKS].reverse();
 
   const getHighlightColor = (highlight: 'correct' | 'incorrect' | 'target') => {
     switch (highlight) {

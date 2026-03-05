@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -18,8 +19,7 @@ type Props = {
   flipped?: boolean;
 };
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
+const RANKS = DISPLAY_RANKS;
 
 export function KnightTourBoard({
   currentSquare,
@@ -32,10 +32,6 @@ export function KnightTourBoard({
   flipped = false,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
-
-  const isLightSquare = (fileIndex: number, rankIndex: number) => {
-    return (fileIndex + rankIndex) % 2 === 0;
-  };
 
   const getSquareName = (fileIndex: number, rankIndex: number) => {
     const file = FILES[fileIndex];

@@ -5,6 +5,7 @@ import { memo, useCallback, useMemo } from 'react';
 import { ChessPiece, Square } from '@/app/_components';
 import type { BoardPiece } from '@blindfold-chess/features/chess-core';
 import { fenToBoard } from '@blindfold-chess/features/chess-core';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { Side } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
@@ -30,12 +31,8 @@ type Props = {
   className?: string;
 };
 
-const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
-const isLightSquare = (file: number, rank: number) => {
-  return (file + rank) % 2 === 0;
-};
+const files = FILES;
+const ranks = DISPLAY_RANKS;
 
 const getSquareName = (fileIndex: number, rankIndex: number) => {
   return `${files[fileIndex]}${ranks[rankIndex]}`;

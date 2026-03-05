@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -31,29 +33,6 @@ type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q'
 
 const WHITE_PIECES: PieceType[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
 const BLACK_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n', 'p'];
-
-// Helper function to convert FEN to board array
-function fenToBoard(fen: string): PieceType[] {
-  const pieces = fen.split(' ')[0]; // Get piece placement part
-  const board: PieceType[] = new Array(64).fill('');
-  let squareIndex = 0;
-
-  for (const char of pieces) {
-    if (char === '/') {
-      continue; // Skip rank separator
-    } else if (/\d/.test(char)) {
-      // Empty squares
-      const emptySquares = parseInt(char);
-      squareIndex += emptySquares;
-    } else {
-      // Piece
-      board[squareIndex] = char as PieceType;
-      squareIndex++;
-    }
-  }
-
-  return board;
-}
 
 // Helper function to convert board array to FEN
 function boardToFen(
@@ -116,12 +95,12 @@ export function EditableChessBoard({
   boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
-  const [board, setBoard] = useState<PieceType[]>(() => fenToBoard(fen));
+  const [board, setBoard] = useState<PieceType[]>(() => fenToBoardFlat(fen) as PieceType[]);
   const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
   const themeColors = getBoardThemeColors(boardTheme);
 
   useEffect(() => {
-    setBoard(fenToBoard(fen));
+    setBoard(fenToBoardFlat(fen) as PieceType[]);
   }, [fen]);
 
   const handleSquareClick = (squareIndex: number) => {
@@ -153,12 +132,6 @@ export function EditableChessBoard({
     onFenChange(newFen);
   };
 
-  const isLightSquare = (squareIndex: number) => {
-    const rank = Math.floor(squareIndex / 8);
-    const file = squareIndex % 8;
-    return (rank + file) % 2 === 0;
-  };
-
   const renderPiece = (piece: PieceType) => {
     if (!piece) return null;
 
@@ -181,6 +154,9 @@ export function EditableChessBoard({
   const bottomPalette = flipped
     ? { pieces: BLACK_PIECES, label: labels.blackPieces }
     : { pieces: WHITE_PIECES, label: labels.whitePieces };
+
+  const displayFiles = flipped ? [...FILES].reverse() : [...FILES];
+  const displayRanks = flipped ? [...DISPLAY_RANKS].reverse() : [...DISPLAY_RANKS];
 
   const renderPalette = (pieces: PieceType[], title: string) => (
     <div className="flex flex-col items-center gap-2">
@@ -236,19 +212,11 @@ export function EditableChessBoard({
               // Handle board flipping for black side
               const displayIndex = flipped ? 63 - squareIndex : squareIndex;
               const displayPiece = board[displayIndex];
-              const isLight = isLightSquare(squareIndex);
+              const isLight = isLightSquare(squareIndex % 8, Math.floor(squareIndex / 8));
 
               // Grid position for coordinate display
               const gridFile = squareIndex % 8;
               const gridRank = Math.floor(squareIndex / 8);
-
-              // Files and ranks arrays (same as ChessBoard)
-              const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-              const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
-              // Display files/ranks (reversed when flipped, like ChessBoard)
-              const displayFiles = flipped ? [...files].reverse() : files;
-              const displayRanks = flipped ? [...ranks].reverse() : ranks;
 
               // Get file/rank for this grid position
               const file = displayFiles[gridFile];

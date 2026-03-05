@@ -1,32 +1,9 @@
 /**
  * Shared accuracy calculation utilities for position-based practice modules
  */
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+
 import type { PositionAccuracy, ScoreDetail, SquareDiff } from './types';
-
-/**
- * Convert FEN piece placement to 64-element board array
- */
-function fenToBoard(fenPieces: string): string[] {
-  const board: string[] = new Array(64).fill('');
-  let squareIndex = 0;
-
-  for (const char of fenPieces) {
-    if (char === '/') {
-      // Skip rank separator
-      continue;
-    } else if (/\d/.test(char)) {
-      // Empty squares
-      const emptySquares = parseInt(char);
-      squareIndex += emptySquares;
-    } else {
-      // Piece
-      board[squareIndex] = char;
-      squareIndex++;
-    }
-  }
-
-  return board;
-}
 
 /**
  * Convert square index to algebraic notation
@@ -93,13 +70,8 @@ export function calculateAccuracy(
     extra: (piece: string, square: string) => string;
   }
 ): PositionAccuracy {
-  // Extract piece placement part from FEN (before first space)
-  const originalPieces = originalFen.split(' ')[0];
-  const recreatedPieces = recreatedFen.split(' ')[0];
-
-  // Convert FEN board representation to array of squares
-  const originalBoard = fenToBoard(originalPieces);
-  const recreatedBoard = fenToBoard(recreatedPieces);
+  const originalBoard = fenToBoardFlat(originalFen);
+  const recreatedBoard = fenToBoardFlat(recreatedFen);
 
   let correctPieces = 0;
   let totalPieces = 0;
@@ -189,11 +161,8 @@ export function calculateSquareDifferences(
   originalFen: string,
   recreatedFen: string
 ): SquareDiff[] {
-  const originalPieces = originalFen.split(' ')[0];
-  const recreatedPieces = recreatedFen.split(' ')[0];
-
-  const originalBoard = fenToBoard(originalPieces);
-  const recreatedBoard = fenToBoard(recreatedPieces);
+  const originalBoard = fenToBoardFlat(originalFen);
+  const recreatedBoard = fenToBoardFlat(recreatedFen);
 
   const differences: SquareDiff[] = [];
 

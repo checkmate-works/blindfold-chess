@@ -4,6 +4,11 @@ import {
   fenToBoard,
   type BoardPiece,
 } from "@blindfold-chess/features/chess-core";
+import {
+  DISPLAY_RANKS,
+  FILES,
+  isLightSquare,
+} from "@blindfold-chess/features/common";
 import { ChessPieceIcon } from "@blindfold-chess/icons";
 import type { PieceType, PieceColor } from "@blindfold-chess/icons";
 // Board colors are dark/light mode-independent constants, so they are imported
@@ -17,8 +22,7 @@ type ChessBoardProps = {
   showCoordinates?: boolean;
 };
 
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const RANKS = ["8", "7", "6", "5", "4", "3", "2", "1"];
+const RANKS = DISPLAY_RANKS;
 
 export function ChessBoard({
   fen,
@@ -53,12 +57,6 @@ export function ChessBoard({
   const displayFiles = flipped ? FILES.slice().reverse() : FILES;
   const displayRanks = flipped ? RANKS.slice().reverse() : RANKS;
 
-  const isLightSquare = (fileIndex: number, rankIndex: number) => {
-    const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-    const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
-    return (actualFileIndex + actualRankIndex) % 2 === 0;
-  };
-
   const pieceSize = squareSize * 0.8;
 
   return (
@@ -66,7 +64,9 @@ export function ChessBoard({
       {displayBoard.map((row, rankIndex) => (
         <View key={rankIndex} style={styles.row}>
           {row.map((piece, fileIndex) => {
-            const light = isLightSquare(fileIndex, rankIndex);
+            const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
+            const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
+            const light = isLightSquare(actualFileIndex, actualRankIndex);
             return (
               <View
                 key={fileIndex}
