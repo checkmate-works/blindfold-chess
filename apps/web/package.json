@@ -18,7 +18,7 @@
     "db:run-migrate": "tsx scripts/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:setup-auth-hook": "psql $POSTGRES_URL -f drizzle/custom_access_token_hook.sql",
+    "db:setup-auth-hook": "psql $POSTGRES_URL -f drizzle/supabase/custom_access_token_hook.sql",
     "db:seed": "tsx src/lib/db/seed.ts",
     "capture-screenshots": "tsx scripts/capture-screenshots.ts"
   },

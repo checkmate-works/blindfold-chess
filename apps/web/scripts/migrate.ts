@@ -29,15 +29,26 @@ async function isSupabaseEnvironment(): Promise<boolean> {
 
 async function runAuthHook() {
   const hookSql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'custom_access_token_hook.sql'),
+    join(__dirname, '..', 'drizzle', 'supabase', 'custom_access_token_hook.sql'),
     'utf-8'
   );
   await client.unsafe(hookSql);
 }
 
 async function runProfilesSetup() {
-  const profilesSql = readFileSync(join(__dirname, '..', 'drizzle', 'profiles_setup.sql'), 'utf-8');
+  const profilesSql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'profiles_setup.sql'),
+    'utf-8'
+  );
   await client.unsafe(profilesSql);
+}
+
+async function runRlsPolicies() {
+  const rlsSql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'rls_policies.sql'),
+    'utf-8'
+  );
+  await client.unsafe(rlsSql);
 }
 
 async function main() {
@@ -49,6 +60,10 @@ async function main() {
     console.log('Supabase environment detected. Applying custom access token hook...');
     await runAuthHook();
     console.log('Auth hook applied!');
+
+    console.log('Applying RLS policies...');
+    await runRlsPolicies();
+    console.log('RLS policies applied!');
 
     console.log('Applying profiles setup...');
     await runProfilesSetup();

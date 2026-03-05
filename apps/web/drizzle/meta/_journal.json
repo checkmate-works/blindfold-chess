@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1769209470699,
-      "tag": "0000_powerful_puppet_master",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1770410120405,
-      "tag": "0001_wooden_wild_child",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1770760125480,
-      "tag": "0002_colossal_skullbuster",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1770810390514,
-      "tag": "0003_spotty_norrin_radd",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1772238967571,
-      "tag": "0004_slow_black_tarantula",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772265600000,
-      "tag": "0005_truncate_practice_sessions",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1772448259386,
-      "tag": "0006_flashy_tigra",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1772535644414,
-      "tag": "0007_gorgeous_may_parker",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1772609672744,
-      "tag": "0008_numerous_shatterstar",
+      "when": 1772753495871,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]
