@@ -22,6 +22,7 @@ export { toMoveResult } from "./types";
 export {
   validateFen,
   fenToBoard,
+  fenToBoardFlat,
   getTurnFromFen,
   getFenAfterMoves,
   getStartingFen,
