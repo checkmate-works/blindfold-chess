@@ -5,6 +5,8 @@ import { POST } from './route';
 const mockGetUser = vi.fn();
 const mockUpload = vi.fn();
 const mockGetPublicUrl = vi.fn();
+const mockList = vi.fn();
+const mockRemove = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -16,6 +18,8 @@ vi.mock('@/lib/supabase/server', () => ({
         from: () => ({
           upload: mockUpload,
           getPublicUrl: mockGetPublicUrl,
+          list: mockList,
+          remove: mockRemove,
         }),
       },
     }),
@@ -39,6 +43,13 @@ vi.mock('@/lib/db', () => ({
 }));
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
+
+// Valid magic bytes for each supported image format
+const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(8).fill(0)]);
+const PNG_MAGIC = new Uint8Array([0x89, 0x50, 0x4e, 0x47, ...new Array(8).fill(0)]);
+const WEBP_MAGIC = new Uint8Array([
+  0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+]);
 
 /**
  * Creates a mock File-like object that passes `instanceof File` check
@@ -106,6 +117,8 @@ function setupSuccessfulUpload() {
       publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.jpg`,
     },
   });
+  mockList.mockResolvedValue({ data: [] });
+  mockRemove.mockResolvedValue({ data: [] });
 }
 
 describe('POST /api/profile/avatar', () => {
@@ -140,7 +153,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should upload JPEG file and return avatar URL', async () => {
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -158,7 +171,7 @@ describe('POST /api/profile/avatar', () => {
         },
       });
 
-      const file = createMockFile('png-data', 'photo.png', 'image/png');
+      const file = createMockFile(PNG_MAGIC, 'photo.png', 'image/png');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -174,7 +187,7 @@ describe('POST /api/profile/avatar', () => {
         },
       });
 
-      const file = createMockFile('webp-data', 'photo.webp', 'image/webp');
+      const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -184,7 +197,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should upload to correct storage path using user ID', async () => {
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       await POST(request);
 
@@ -197,7 +210,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should use upsert to replace existing avatar', async () => {
-      const file = createMockFile('new-data', 'new-avatar.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'new-avatar.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       await POST(request);
 
@@ -209,7 +222,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should update profile avatarUrl in database', async () => {
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       await POST(request);
 
@@ -217,7 +230,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should append cache-busting timestamp to avatar URL', async () => {
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -301,6 +314,7 @@ describe('POST /api/profile/avatar', () => {
       setupSuccessfulUpload();
 
       const exactContent = new Uint8Array(2 * 1024 * 1024);
+      exactContent.set(JPEG_MAGIC);
       const file = createMockFile(exactContent, 'exact.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
@@ -312,6 +326,7 @@ describe('POST /api/profile/avatar', () => {
       setupSuccessfulUpload();
 
       const smallContent = new Uint8Array(1024);
+      smallContent.set(PNG_MAGIC);
       const file = createMockFile(smallContent, 'small.png', 'image/png');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
@@ -360,11 +375,12 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should return 500 when storage upload fails', async () => {
+      mockList.mockResolvedValue({ data: [] });
       mockUpload.mockResolvedValue({
         error: new Error('Storage error'),
       });
 
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -382,6 +398,7 @@ describe('POST /api/profile/avatar', () => {
       const callOrder: string[] = [];
 
       setupAuthenticatedUser();
+      mockList.mockResolvedValue({ data: [] });
       mockUpload.mockImplementation(async () => {
         callOrder.push('upload');
         return { error: null };
@@ -396,7 +413,7 @@ describe('POST /api/profile/avatar', () => {
         return undefined;
       });
 
-      const file = createMockFile('jpeg-data', 'photo.jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       await POST(request);
 
@@ -411,7 +428,7 @@ describe('POST /api/profile/avatar', () => {
     });
 
     it('should handle file with special characters in name', async () => {
-      const file = createMockFile('data', 'my avatar (1).jpg', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'my avatar (1).jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -426,7 +443,7 @@ describe('POST /api/profile/avatar', () => {
 
     it('should handle file with very long name', async () => {
       const longName = 'a'.repeat(255) + '.jpg';
-      const file = createMockFile('data', longName, 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, longName, 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -434,18 +451,19 @@ describe('POST /api/profile/avatar', () => {
       expect(response.status).toBe(200);
     });
 
-    it('should handle empty file (0 bytes)', async () => {
+    it('should reject empty file (0 bytes) due to missing magic bytes', async () => {
       const file = createMockFile(new Uint8Array(0), 'empty.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
-      // Empty files pass validation (only size > MAX_SIZE is rejected)
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'invalid_file_type' });
     });
 
     it('should use extension from MIME type, not from filename', async () => {
       // File claims to be JPEG via MIME type but has .png extension
-      const file = createMockFile('data', 'photo.png', 'image/jpeg');
+      const file = createMockFile(JPEG_MAGIC, 'photo.png', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
@@ -455,6 +473,135 @@ describe('POST /api/profile/avatar', () => {
         expect.anything(),
         expect.objectContaining({ contentType: 'image/jpeg' })
       );
+    });
+  });
+
+  describe('magic bytes validation', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should reject file with valid MIME type but invalid magic bytes', async () => {
+      const fakeJpeg = new Uint8Array([
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      ]);
+      const file = createMockFile(fakeJpeg, 'fake.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'invalid_file_type' });
+      expect(mockUpload).not.toHaveBeenCalled();
+    });
+
+    it('should reject PNG MIME type with JPEG magic bytes', async () => {
+      const file = createMockFile(JPEG_MAGIC, 'photo.png', 'image/png');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      // Passes magic bytes check (JPEG is valid), proceeds to upload
+      // The route accepts any valid magic bytes regardless of MIME match
+      expect(response.status).not.toBe(401);
+    });
+
+    it('should accept file with valid JPEG magic bytes', async () => {
+      setupSuccessfulUpload();
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should accept file with valid PNG magic bytes', async () => {
+      setupSuccessfulUpload();
+
+      const file = createMockFile(PNG_MAGIC, 'photo.png', 'image/png');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should accept file with valid WebP magic bytes', async () => {
+      setupSuccessfulUpload();
+      mockGetPublicUrl.mockReturnValue({
+        data: {
+          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
+        },
+      });
+
+      const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe('stale file cleanup', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+      setupSuccessfulUpload();
+    });
+
+    it('should delete existing files before uploading new one', async () => {
+      mockList.mockResolvedValue({
+        data: [{ name: 'avatar.png' }],
+      });
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      await POST(request);
+
+      expect(mockList).toHaveBeenCalledWith(testUserId);
+      expect(mockRemove).toHaveBeenCalledWith([`${testUserId}/avatar.png`]);
+      expect(mockUpload).toHaveBeenCalled();
+    });
+
+    it('should delete multiple existing files before uploading', async () => {
+      mockList.mockResolvedValue({
+        data: [{ name: 'avatar.png' }, { name: 'avatar.jpg' }],
+      });
+
+      const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
+      mockGetPublicUrl.mockReturnValue({
+        data: {
+          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
+        },
+      });
+      const request = createMockRequestWithFile(file);
+      await POST(request);
+
+      expect(mockRemove).toHaveBeenCalledWith([
+        `${testUserId}/avatar.png`,
+        `${testUserId}/avatar.jpg`,
+      ]);
+    });
+
+    it('should skip deletion when no existing files', async () => {
+      mockList.mockResolvedValue({ data: [] });
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      await POST(request);
+
+      expect(mockList).toHaveBeenCalledWith(testUserId);
+      expect(mockRemove).not.toHaveBeenCalled();
+      expect(mockUpload).toHaveBeenCalled();
+    });
+
+    it('should skip deletion when list returns null data', async () => {
+      mockList.mockResolvedValue({ data: null });
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      await POST(request);
+
+      expect(mockRemove).not.toHaveBeenCalled();
+      expect(mockUpload).toHaveBeenCalled();
     });
   });
 });

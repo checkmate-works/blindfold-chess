@@ -49,6 +49,21 @@ export async function POST(request: Request) {
 
   const buffer = await file.arrayBuffer();
 
+  const header = new Uint8Array(buffer.slice(0, 12));
+  const isJPEG = header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+  const isPNG =
+    header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47;
+  const isWebP =
+    header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
+  if (!isJPEG && !isPNG && !isWebP) {
+    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
+  }
+
+  const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
+  if (existingFiles?.length) {
+    await supabase.storage.from('avatars').remove(existingFiles.map((f) => `${user.id}/${f.name}`));
+  }
+
   const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, buffer, {
     contentType: file.type,
     upsert: true,
