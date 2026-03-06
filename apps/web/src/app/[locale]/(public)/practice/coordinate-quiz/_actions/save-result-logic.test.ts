@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CoordinateQuizSettings } from '@/lib/db/practice-session-types';
 
-import { buildCoordinateQuizData } from './save-result';
+import { buildCoordinateQuizData } from './save-result-logic';
 
 /**
  * Tests for the settings/result construction logic

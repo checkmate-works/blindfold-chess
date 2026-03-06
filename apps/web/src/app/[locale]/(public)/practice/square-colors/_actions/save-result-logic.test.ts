@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSquareColorsData } from './save-result';
+import { buildSquareColorsData } from './save-result-logic';
 
 /**
  * Tests for the settings/result construction logic
