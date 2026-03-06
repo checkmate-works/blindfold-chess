@@ -63,7 +63,6 @@ export function PieceSettingsStep({
     enableAutoComplete: true,
     showBoardButtonInGame: true,
     peekMode: 'modal',
-    adsEnabled: true,
   };
 
   const hasPiecesVisible = showOwnPieces || showOpponentPieces;
