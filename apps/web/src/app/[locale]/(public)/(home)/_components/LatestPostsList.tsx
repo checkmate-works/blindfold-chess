@@ -26,7 +26,7 @@ export async function LatestPostsList({ locale, title }: Props) {
   const displayPosts = hasMore ? posts.slice(0, LATEST_POSTS_DISPLAY_COUNT) : posts;
 
   return (
-    <div className="space-y-4">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
       <SectionTitle>{title}</SectionTitle>
       <ListLinkContainer>
         {displayPosts.map((post) => {

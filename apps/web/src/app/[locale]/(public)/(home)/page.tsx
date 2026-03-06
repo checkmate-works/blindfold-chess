@@ -67,13 +67,11 @@ export default async function HomePage({ params }: Props) {
 
       <GameListClient locale={locale} />
 
-      <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
-        <ErrorBoundary>
-          <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
-            <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
-          </Suspense>
-        </ErrorBoundary>
-      </div>
+      <ErrorBoundary>
+        <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
+          <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

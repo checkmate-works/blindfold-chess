@@ -4,7 +4,7 @@ type Props = {
 
 export function LatestPostsSkeleton({ title }: Props) {
   return (
-    <div className="space-y-3">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-3">
       <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       <ul className="bg-card border border-border rounded-md overflow-hidden">
         {[1, 2, 3].map((i) => (
