@@ -78,6 +78,12 @@ Internal admin dashboard at `/admin` with Role-Based Access Control (RBAC). Requ
 
 See [docs/admin-panel-setup.md](docs/admin-panel-setup.md) for setup instructions.
 
+## Avatar Storage
+
+Profile avatar image upload using Supabase Storage. Requires a storage bucket with RLS policies.
+
+See [docs/avatar-storage-setup.md](docs/avatar-storage-setup.md) for setup instructions.
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:

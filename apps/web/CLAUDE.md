@@ -124,7 +124,7 @@ Avoid documenting information that is self-evident from the code (routes, compon
 
 ## Database Migration
 
-- **Always use `pnpm db:run-migrate`** — This runs `scripts/migrate.ts`, which executes Drizzle migrations and then applies Supabase-specific SQL (RLS policies, auth hook, profiles setup) in production environments.
+- **Always use `pnpm db:run-migrate`** — This runs `scripts/migrate.ts`, which executes Drizzle migrations and then applies Supabase-specific SQL (RLS policies, auth hook, profiles setup, storage avatars) in production environments.
 - **Do NOT use `drizzle-kit push`** — `push` bypasses migration tracking (`drizzle.__drizzle_migrations`) and directly syncs the schema to the DB. This causes the migration journal and actual DB state to diverge, leading to errors on subsequent `migrate` runs.
 - **Schema changes workflow**: Edit `src/lib/db/schema.ts` → run `pnpm db:generate` → run `pnpm db:run-migrate`
 - **Migration file structure**:
