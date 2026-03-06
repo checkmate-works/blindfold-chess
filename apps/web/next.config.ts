@@ -7,7 +7,7 @@ const cspDirectives = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: *.supabase.co",
   "font-src 'self'",
   "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co",
   "frame-ancestors 'none'",

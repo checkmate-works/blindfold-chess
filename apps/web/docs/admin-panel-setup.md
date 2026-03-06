@@ -47,13 +47,10 @@ Get the value from Supabase Dashboard > **Project Settings** > **API Keys** > `s
 The `user_roles` table is included in the Drizzle schema. Apply it using:
 
 ```bash
-# Local development
-pnpm db:push
+pnpm db:run-migrate
 ```
 
-`db:push` compares the current schema with the database and applies only the differences (idempotent).
-
-For production (Supabase), no manual migration is needed — the `prebuild` script automatically runs `pnpm db:run-migrate` during deployment.
+This runs Drizzle migrations and, in Supabase environments, also applies Supabase-specific SQL (RLS policies, auth hook, profiles setup, storage avatars). For production (Supabase), no manual step is needed — the `prebuild` script automatically runs `pnpm db:run-migrate` during deployment.
 
 ### 3. Apply Custom Access Token Hook
 
@@ -109,18 +106,17 @@ Navigate to `/admin`. You should see the admin dashboard.
 For local development, only steps 1, 2, and 5 are required:
 
 1. Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local`
-2. `pnpm db:push` to create the `user_roles` table locally
+2. `pnpm db:run-migrate` to apply migrations and create the `user_roles` table locally
 3. Insert your admin role into the local database
 
 Steps 3-4 (hook setup) are Supabase-only. The admin panel's authorization works without the hook because `admin/layout.tsx` queries the `user_roles` table directly via Drizzle.
 
 ## Available Scripts
 
-| Script                    | Description                                        |
-| ------------------------- | -------------------------------------------------- |
-| `pnpm db:push`            | Apply schema changes to database (idempotent)      |
-| `pnpm db:run-migrate`     | Run migrations + auth hook (auto-detects Supabase) |
-| `pnpm db:setup-auth-hook` | Manually apply auth hook SQL (Supabase only)       |
+| Script                    | Description                                           |
+| ------------------------- | ----------------------------------------------------- |
+| `pnpm db:run-migrate`     | Run migrations + Supabase SQL (auto-detects Supabase) |
+| `pnpm db:setup-auth-hook` | Manually apply auth hook SQL (Supabase only)          |
 
 ## Security Notes
 

@@ -37,7 +37,7 @@ The Posts feature requires a PostgreSQL database. For local development, use Doc
 docker compose up -d
 
 # Apply database schema
-pnpm db:push
+pnpm db:run-migrate
 
 # Seed initial data (categories)
 pnpm db:seed
@@ -78,16 +78,20 @@ Internal admin dashboard at `/admin` with Role-Based Access Control (RBAC). Requ
 
 See [docs/admin-panel-setup.md](docs/admin-panel-setup.md) for setup instructions.
 
+## Avatar Storage
+
+Profile avatar image upload using Supabase Storage. Requires a storage bucket with RLS policies.
+
+See [docs/avatar-storage-setup.md](docs/avatar-storage-setup.md) for setup instructions.
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:
 
 - `pnpm run copy-stockfish` - Copy Stockfish AI engine files to public directory (required before first run)
-- `pnpm db:push` - Push schema changes to database
 - `pnpm db:seed` - Seed initial data (categories)
 - `pnpm db:generate` - Generate migrations from schema changes
-- `pnpm db:migrate` - Run pending migrations
-- `pnpm db:run-migrate` - Run migrations + auth hook (auto-detects Supabase)
+- `pnpm db:run-migrate` - Run migrations + Supabase SQL (auto-detects Supabase)
 - `pnpm db:setup-auth-hook` - Apply Custom Access Token Hook SQL (Supabase only)
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
 - `pnpm test:run` - Run unit tests once (CI mode)

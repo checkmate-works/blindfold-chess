@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Profile } from '@/lib/db';
 
+import { AvatarUpload } from './AvatarUpload';
 import { CountrySelect } from './CountrySelect';
 import { FlairPicker } from './FlairPicker';
 
@@ -104,6 +105,16 @@ export function ProfileForm({ locale, profile }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* Avatar */}
+      <section className="flex justify-center">
+        <AvatarUpload
+          currentAvatarUrl={profile.avatarUrl}
+          onUploaded={() => {
+            // Avatar is saved independently; no additional form state needed
+          }}
+        />
+      </section>
+
       {/* Identity Section */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">{t('identity')}</h2>
