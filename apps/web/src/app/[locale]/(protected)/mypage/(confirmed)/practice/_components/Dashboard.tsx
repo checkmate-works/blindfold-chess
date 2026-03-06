@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
@@ -11,23 +9,9 @@ import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
-import {
-  type DatePeriod,
-  type PracticeSessionRow,
-  getAvailableMenuTypes,
-  getPracticeSessions,
-} from '../_actions/get-practice-sessions';
-import {
-  aggregateByDay,
-  computePercentChange,
-  computeStats,
-  formatDate,
-  getComparisonLabel,
-  getDayIndex,
-  getPeriodStart,
-  getPreviousPeriodLabel,
-  getPreviousPeriodStart,
-} from '../_lib/dashboard-utils';
+import type { DatePeriod } from '../_actions/get-practice-sessions';
+import { PIECE_TYPES, useDashboardData } from '../_hooks/use-dashboard-data';
+import { getComparisonLabel, getPreviousPeriodLabel } from '../_lib/dashboard-utils';
 import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
@@ -38,152 +22,29 @@ import { StatsCard } from './StatsCard';
 // (2) 定期的なデータクリーンアップを想定しており、長期間のデータ保持を前提としない
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
-const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
 export function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('Mypage');
-  const [allSessions, setAllSessions] = useState<PracticeSessionRow[]>([]);
-  const [previousSessions, setPreviousSessions] = useState<PracticeSessionRow[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
-  const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
-  const [pieceFilter, setPieceFilter] = useState<Record<string, boolean>>({
-    k: true,
-    q: true,
-    r: true,
-    b: true,
-    n: true,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
-
-  // Fetch all menu types once on mount to populate dropdown
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const types = await getAvailableMenuTypes();
-      if (!cancelled) {
-        setAvailableMenuTypes(types);
-        if (types.length > 0) {
-          setSelectedMenu(types[0]);
-        } else {
-          setIsLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Reset filters when menu changes
-  useEffect(() => {
-    setBoardOrientationFilter('all');
-    setPieceFilter({ k: true, q: true, r: true, b: true, n: true });
-  }, [selectedMenu]);
-
-  // Fetch sessions when menu or period changes
-  useEffect(() => {
-    if (!selectedMenu) return;
-
-    let cancelled = false;
-    (async () => {
-      setIsLoading(true);
-      const response = await getPracticeSessions(selectedMenu, selectedPeriod);
-      if (!cancelled && response.success) {
-        setAllSessions(response.sessions);
-        setPreviousSessions(response.previousSessions);
-      }
-      if (!cancelled) setIsLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedMenu, selectedPeriod]);
-
-  const handlePieceToggle = (piece: string) => {
-    setPieceFilter((prev) => ({ ...prev, [piece]: !prev[piece] }));
-  };
-
-  const orientationFilteredSessions =
-    boardOrientationFilter === 'all'
-      ? allSessions
-      : allSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
-
-  const activePieces = PIECE_TYPES.filter((p) => pieceFilter[p]).sort();
-  const allPiecesSelected = activePieces.length === PIECE_TYPES.length;
-
-  const filteredSessions = allPiecesSelected
-    ? orientationFilteredSessions
-    : orientationFilteredSessions.filter((s) => {
-        const pieces = s.settings.selectedPieces;
-        if (!Array.isArray(pieces)) return false;
-        const sorted = [...pieces].sort();
-        return (
-          sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i])
-        );
-      });
-
-  const orientationFilteredPreviousSessions =
-    boardOrientationFilter === 'all'
-      ? previousSessions
-      : previousSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
-
-  const filteredPreviousSessions = allPiecesSelected
-    ? orientationFilteredPreviousSessions
-    : orientationFilteredPreviousSessions.filter((s) => {
-        const pieces = s.settings.selectedPieces;
-        if (!Array.isArray(pieces)) return false;
-        const sorted = [...pieces].sort();
-        return (
-          sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i])
-        );
-      });
-
-  const currentStats = computeStats(filteredSessions);
-  const prevStats = computeStats(filteredPreviousSessions);
+  const {
+    selectedMenu,
+    setSelectedMenu,
+    selectedPeriod,
+    setSelectedPeriod,
+    boardOrientationFilter,
+    setBoardOrientationFilter,
+    pieceFilter,
+    handlePieceToggle,
+    isLoading,
+    availableMenuTypes,
+    currentStats,
+    bestScoreComparison,
+    avgScoreComparison,
+    totalSessionsChange,
+    chartData,
+    tableRows,
+  } = useDashboardData(locale);
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
-
-  const currentDaily = aggregateByDay(filteredSessions, locale);
-  const previousDaily = aggregateByDay(filteredPreviousSessions, locale);
-
-  // Build chart data: map previous period onto current period's X axis
-  const currentPeriodStart = getPeriodStart(selectedPeriod);
-  const prevPeriodStart = getPreviousPeriodStart(selectedPeriod);
-
-  const prevByDayIndex = new Map<number, number>();
-  for (const pd of previousDaily) {
-    const idx = getDayIndex(pd.dateKey, prevPeriodStart);
-    prevByDayIndex.set(idx, pd.avgScore);
-  }
-
-  const chartData = currentDaily.map((cd) => {
-    const dayIdx = getDayIndex(cd.dateKey, currentPeriodStart);
-    const prevScore = prevByDayIndex.get(dayIdx) ?? null;
-    return {
-      date: cd.date,
-      score: cd.avgScore,
-      previousScore: prevScore,
-    };
-  });
-
-  // TODO: ページネーション対応
-  const tableRows = filteredSessions.slice(0, 20).map((s) => {
-    const correctAnswers =
-      typeof s.result.correctAnswers === 'number' ? s.result.correctAnswers : null;
-    const incorrectAnswers =
-      typeof s.result.incorrectAnswers === 'number' ? s.result.incorrectAnswers : null;
-    const mistakeAllowance =
-      typeof s.settings.mistakeAllowance === 'number' ? s.settings.mistakeAllowance : null;
-
-    return {
-      date: formatDate(s.startedAt, locale),
-      correctAnswers: correctAnswers !== null ? `${correctAnswers}` : '-',
-      incorrectAnswers,
-      mistakeAllowance,
-    };
-  });
 
   if (availableMenuTypes === null || (isLoading && availableMenuTypes.length === 0)) {
     return <DashboardSkeleton />;
@@ -285,7 +146,7 @@ export function Dashboard({ locale }: { locale: string }) {
                 label={t('bestScore')}
                 value={currentStats.bestScore !== null ? currentStats.bestScore.toString() : '-'}
                 comparison={{
-                  percentChange: computePercentChange(currentStats.bestScore, prevStats.bestScore),
+                  percentChange: bestScoreComparison,
                   absoluteChange: null,
                   label: comparisonLabel,
                 }}
@@ -299,10 +160,7 @@ export function Dashboard({ locale }: { locale: string }) {
                 }
                 tooltip={t('avgScoreTooltip')}
                 comparison={{
-                  percentChange: computePercentChange(
-                    currentStats.avgCompletionScore,
-                    prevStats.avgCompletionScore
-                  ),
+                  percentChange: avgScoreComparison,
                   absoluteChange: null,
                   label: comparisonLabel,
                 }}
@@ -312,10 +170,7 @@ export function Dashboard({ locale }: { locale: string }) {
                 value={currentStats.totalSessions.toString()}
                 comparison={{
                   percentChange: null,
-                  absoluteChange:
-                    prevStats.totalSessions > 0
-                      ? currentStats.totalSessions - prevStats.totalSessions
-                      : null,
+                  absoluteChange: totalSessionsChange,
                   label: comparisonLabel,
                 }}
               />

@@ -1,9 +1,10 @@
 'use server';
 
-import { db } from '@/lib/db';
 import type { SquareColorsResult, SquareColorsSettings } from '@/lib/db/practice-session-types';
-import { practiceSessions } from '@/lib/db/schema';
-import { createClient } from '@/lib/supabase/server';
+
+import { savePracticeResult } from '../../_actions/save-practice-result';
+
+export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
 type SaveSquareColorsResultInput = {
   correctAnswers: number;
@@ -12,48 +13,26 @@ type SaveSquareColorsResultInput = {
   mistakeAllowance: number;
 };
 
-export type SaveResultResponse = {
-  success: boolean;
-  id?: string;
-};
+export function buildSquareColorsData(input: SaveSquareColorsResultInput): {
+  menuType: 'square_colors';
+  settings: SquareColorsSettings;
+  result: SquareColorsResult;
+} {
+  const settings: SquareColorsSettings = {
+    timeLimit: 60,
+    mistakeAllowance: input.mistakeAllowance,
+  };
 
-export async function saveSquareColorsResult(
-  input: SaveSquareColorsResultInput
-): Promise<SaveResultResponse> {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const result: SquareColorsResult = {
+    correctAnswers: input.correctAnswers,
+    incorrectAnswers: input.incorrectAnswers,
+    timeTaken: input.timeTaken,
+  };
 
-    if (!user) {
-      return { success: false };
-    }
+  return { menuType: 'square_colors', settings, result };
+}
 
-    const settings: SquareColorsSettings = {
-      timeLimit: 60,
-      mistakeAllowance: input.mistakeAllowance,
-    };
-
-    const result: SquareColorsResult = {
-      correctAnswers: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    };
-
-    const [inserted] = await db
-      .insert(practiceSessions)
-      .values({
-        userId: user.id,
-        menuType: 'square_colors',
-        settings,
-        result,
-      })
-      .returning({ id: practiceSessions.id });
-
-    return { success: true, id: inserted.id };
-  } catch (error) {
-    console.error('Failed to save square-colors result:', error);
-    return { success: false };
-  }
+export async function saveSquareColorsResult(input: SaveSquareColorsResultInput) {
+  const { menuType, settings, result } = buildSquareColorsData(input);
+  return savePracticeResult(menuType, settings, result);
 }

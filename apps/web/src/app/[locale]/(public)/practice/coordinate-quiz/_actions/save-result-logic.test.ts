@@ -1,50 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CoordinateQuizResult, CoordinateQuizSettings } from '@/lib/db/practice-session-types';
+import type { CoordinateQuizSettings } from '@/lib/db/practice-session-types';
+
+import { buildCoordinateQuizData } from './save-result';
 
 /**
  * Tests for the settings/result construction logic
  * in save-result.ts without requiring DB or Supabase dependencies.
  *
- * This mirrors the logic from saveCoordinateQuizResult() to verify:
+ * Uses the exported buildCoordinateQuizData() to verify:
  * - settings contains timeLimit, boardOrientation, and mistakeAllowance
  * - result contains only correctAnswers, incorrectAnswers, timeTaken
  * - menuType is always 'coordinate_quiz'
  */
 
-type SaveCoordinateQuizResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
-  timeLimit: number;
-  boardOrientation: string;
-  mistakeAllowance: number;
-};
-
-function buildSettingsAndResult(input: SaveCoordinateQuizResultInput): {
-  menuType: 'coordinate_quiz';
-  settings: CoordinateQuizSettings;
-  result: CoordinateQuizResult;
-} {
-  const settings: CoordinateQuizSettings = {
-    timeLimit: input.timeLimit,
-    boardOrientation: input.boardOrientation,
-    mistakeAllowance: input.mistakeAllowance,
-  };
-
-  const result: CoordinateQuizResult = {
-    correctAnswers: input.correctAnswers,
-    incorrectAnswers: input.incorrectAnswers,
-    timeTaken: input.timeTaken,
-  };
-
-  return { menuType: 'coordinate_quiz', settings, result };
-}
-
 describe('save-result settings and result construction', () => {
   describe('menuType', () => {
     it('is always coordinate_quiz', () => {
-      const { menuType } = buildSettingsAndResult({
+      const { menuType } = buildCoordinateQuizData({
         correctAnswers: 20,
         incorrectAnswers: 3,
         timeTaken: 55,
@@ -59,7 +32,7 @@ describe('save-result settings and result construction', () => {
 
   describe('settings construction', () => {
     it('stores timeLimit from input', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildCoordinateQuizData({
         correctAnswers: 20,
         incorrectAnswers: 2,
         timeTaken: 55,
@@ -72,7 +45,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('stores boardOrientation in settings', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildCoordinateQuizData({
         correctAnswers: 15,
         incorrectAnswers: 1,
         timeTaken: 30,
@@ -85,7 +58,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('stores random boardOrientation', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildCoordinateQuizData({
         correctAnswers: 10,
         incorrectAnswers: 0,
         timeTaken: 20,
@@ -98,7 +71,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('stores mistakeAllowance in settings', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildCoordinateQuizData({
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
@@ -130,7 +103,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('contains only expected keys', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildCoordinateQuizData({
         correctAnswers: 20,
         incorrectAnswers: 2,
         timeTaken: 55,
@@ -149,7 +122,7 @@ describe('save-result settings and result construction', () => {
 
   describe('result construction', () => {
     it('stores only correctAnswers, incorrectAnswers, and timeTaken', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildCoordinateQuizData({
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
@@ -164,7 +137,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('does not include settings fields in result', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildCoordinateQuizData({
         correctAnswers: 50,
         incorrectAnswers: 10,
         timeTaken: 60,
@@ -181,7 +154,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('contains only expected keys', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildCoordinateQuizData({
         correctAnswers: 20,
         incorrectAnswers: 2,
         timeTaken: 55,
@@ -200,7 +173,7 @@ describe('save-result settings and result construction', () => {
 
   describe('result field consistency', () => {
     it('preserves all input fields correctly', () => {
-      const input: SaveCoordinateQuizResultInput = {
+      const input = {
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
@@ -209,7 +182,7 @@ describe('save-result settings and result construction', () => {
         mistakeAllowance: 3,
       };
 
-      const { settings, result } = buildSettingsAndResult(input);
+      const { settings, result } = buildCoordinateQuizData(input);
 
       expect(settings.timeLimit).toBe(90);
       expect(settings.boardOrientation).toBe('white');
@@ -220,7 +193,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('does not leak timeLimit or boardOrientation into result', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildCoordinateQuizData({
         correctAnswers: 10,
         incorrectAnswers: 2,
         timeTaken: 30,
@@ -235,7 +208,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('handles zero answers correctly', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildCoordinateQuizData({
         correctAnswers: 0,
         incorrectAnswers: 0,
         timeTaken: 3,

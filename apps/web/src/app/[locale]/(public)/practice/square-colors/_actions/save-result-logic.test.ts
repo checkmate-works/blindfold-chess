@@ -1,45 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SquareColorsResult, SquareColorsSettings } from '@/lib/db/practice-session-types';
+import { buildSquareColorsData } from './save-result';
 
 /**
  * Tests for the settings/result construction logic
  * in save-result.ts without requiring DB or Supabase dependencies.
  *
- * This mirrors the logic from saveSquareColorsResult() to verify:
+ * Uses the exported buildSquareColorsData() to verify:
  * - settings contains timeLimit and mistakeAllowance
  * - result contains only correctAnswers, incorrectAnswers, timeTaken
  */
 
-type SaveSquareColorsResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
-  mistakeAllowance: number;
-};
-
-function buildSettingsAndResult(input: SaveSquareColorsResultInput): {
-  settings: SquareColorsSettings;
-  result: SquareColorsResult;
-} {
-  const settings: SquareColorsSettings = {
-    timeLimit: 60,
-    mistakeAllowance: input.mistakeAllowance,
-  };
-
-  const result: SquareColorsResult = {
-    correctAnswers: input.correctAnswers,
-    incorrectAnswers: input.incorrectAnswers,
-    timeTaken: input.timeTaken,
-  };
-
-  return { settings, result };
-}
-
 describe('save-result settings and result construction', () => {
   describe('settings construction', () => {
     it('stores mistakeAllowance in settings', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildSquareColorsData({
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
@@ -51,7 +26,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('stores mistakeAllowance=1 in settings', () => {
-      const { settings } = buildSettingsAndResult({
+      const { settings } = buildSquareColorsData({
         correctAnswers: 10,
         incorrectAnswers: 1,
         timeTaken: 15,
@@ -64,7 +39,7 @@ describe('save-result settings and result construction', () => {
 
   describe('result construction', () => {
     it('stores only correctAnswers, incorrectAnswers, and timeTaken', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildSquareColorsData({
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
@@ -77,7 +52,7 @@ describe('save-result settings and result construction', () => {
     });
 
     it('does not include derived fields', () => {
-      const { result } = buildSettingsAndResult({
+      const { result } = buildSquareColorsData({
         correctAnswers: 50,
         incorrectAnswers: 10,
         timeTaken: 60,
@@ -94,14 +69,14 @@ describe('save-result settings and result construction', () => {
 
   describe('result field consistency', () => {
     it('preserves all input fields correctly', () => {
-      const input: SaveSquareColorsResultInput = {
+      const input = {
         correctAnswers: 25,
         incorrectAnswers: 3,
         timeTaken: 45,
         mistakeAllowance: 3,
       };
 
-      const { settings, result } = buildSettingsAndResult(input);
+      const { settings, result } = buildSquareColorsData(input);
 
       expect(settings.timeLimit).toBe(60);
       expect(settings.mistakeAllowance).toBe(3);

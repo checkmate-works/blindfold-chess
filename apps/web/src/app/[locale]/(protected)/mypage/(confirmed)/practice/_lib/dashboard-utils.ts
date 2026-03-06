@@ -1,13 +1,16 @@
 import { useTranslations } from 'next-intl';
 
-import type { DatePeriod, PracticeSessionRow } from '../_actions/get-practice-sessions';
+import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
+import { getSessionScoreFields } from '@/lib/db/practice-session-types';
+
+import type { DatePeriod } from './period-utils';
+import { getPeriodRange, getPreviousPeriodRange } from './period-utils';
 
 /** 完走判定: incorrectAnswers < mistakeAllowance（3ミスに達せず時間切れで終了したセッション） */
 export function isCompletedSession(session: PracticeSessionRow): boolean {
-  const mistakeAllowance = session.settings.mistakeAllowance;
-  const incorrectAnswers = session.result.incorrectAnswers;
-  if (typeof mistakeAllowance !== 'number' || typeof incorrectAnswers !== 'number') return false;
-  return incorrectAnswers < mistakeAllowance;
+  const fields = getSessionScoreFields(session);
+  if (!fields || fields.mistakeAllowance === null) return false;
+  return fields.incorrectAnswers < fields.mistakeAllowance;
 }
 
 export function formatDate(date: Date | null, locale: string): string {
@@ -61,8 +64,8 @@ export function getPreviousPeriodLabel(period: DatePeriod): string {
 export function computeStats(sessions: PracticeSessionRow[]) {
   const scores = sessions
     .map((s) => {
-      const correctAnswers = s.result.correctAnswers;
-      return typeof correctAnswers === 'number' ? correctAnswers : null;
+      const fields = getSessionScoreFields(s);
+      return fields ? fields.correctAnswers : null;
     })
     .filter((v): v is number => v !== null);
 
@@ -71,8 +74,8 @@ export function computeStats(sessions: PracticeSessionRow[]) {
   const completedScores = sessions
     .filter(isCompletedSession)
     .map((s) => {
-      const correctAnswers = s.result.correctAnswers;
-      return typeof correctAnswers === 'number' ? correctAnswers : null;
+      const fields = getSessionScoreFields(s);
+      return fields ? fields.correctAnswers : null;
     })
     .filter((v): v is number => v !== null);
 
@@ -103,18 +106,18 @@ export function aggregateByDay(sessions: PracticeSessionRow[], locale: string): 
 
   for (const s of sessions) {
     if (!s.startedAt) continue;
-    const correctAnswers = s.result.correctAnswers;
-    if (typeof correctAnswers !== 'number') continue;
+    const fields = getSessionScoreFields(s);
+    if (!fields) continue;
 
     const d = new Date(s.startedAt);
     const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const existing = dailyMap.get(dateKey);
     if (existing) {
-      existing.total += correctAnswers;
+      existing.total += fields.correctAnswers;
       existing.count += 1;
     } else {
       dailyMap.set(dateKey, {
-        total: correctAnswers,
+        total: fields.correctAnswers,
         count: 1,
         dateLabel: formatShortDate(s.startedAt, locale),
       });
@@ -136,55 +139,10 @@ export function getDayIndex(dateKey: string, periodStart: Date): number {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-function getMondayOfWeek(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = day === 0 ? 6 : day - 1;
-  d.setDate(d.getDate() - diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 export function getPeriodStart(period: DatePeriod): Date {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  switch (period) {
-    case 'thisWeek':
-      return getMondayOfWeek(today);
-    case 'lastWeek': {
-      const thisMonday = getMondayOfWeek(today);
-      const lastMonday = new Date(thisMonday);
-      lastMonday.setDate(lastMonday.getDate() - 7);
-      return lastMonday;
-    }
-    case 'thisMonth':
-      return new Date(today.getFullYear(), today.getMonth(), 1);
-    case 'lastMonth':
-      return new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  }
+  return getPeriodRange(period).start;
 }
 
 export function getPreviousPeriodStart(period: DatePeriod): Date {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  switch (period) {
-    case 'thisWeek': {
-      const thisMonday = getMondayOfWeek(today);
-      const lastMonday = new Date(thisMonday);
-      lastMonday.setDate(lastMonday.getDate() - 7);
-      return lastMonday;
-    }
-    case 'lastWeek': {
-      const thisMonday = getMondayOfWeek(today);
-      const twoWeeksAgo = new Date(thisMonday);
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-      return twoWeeksAgo;
-    }
-    case 'thisMonth':
-      return new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    case 'lastMonth':
-      return new Date(today.getFullYear(), today.getMonth() - 2, 1);
-  }
+  return getPreviousPeriodRange(period).start;
 }
