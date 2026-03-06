@@ -28,31 +28,54 @@ const DEFAULT_PIECE_FILTER: Record<string, boolean> = {
   n: true,
 };
 
-function applyFilters(
-  sessions: PracticeSessionRow[],
-  boardOrientationFilter: string,
-  activePieces: string[],
-  allPiecesSelected: boolean
-): PracticeSessionRow[] {
-  const orientationFiltered =
-    boardOrientationFilter === 'all'
-      ? sessions
-      : sessions.filter((s) => {
-          if (isTypedSession(s) && s.menuType === 'coordinate_quiz') {
-            return s.settings.boardOrientation === boardOrientationFilter;
-          }
-          return true;
-        });
+type FilterContext = {
+  boardOrientationFilter: string;
+  activePieces: string[];
+  allPiecesSelected: boolean;
+};
 
-  if (allPiecesSelected) return orientationFiltered;
+type SessionFilter = (session: PracticeSessionRow, ctx: FilterContext) => boolean;
 
-  return orientationFiltered.filter((s) => {
-    if (isTypedSession(s) && s.menuType === 'legal_moves') {
-      const sorted = [...s.settings.selectedPieces].sort();
-      return sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i]);
+/** Menu types that support the board orientation filter UI. */
+export const ORIENTATION_FILTER_MENUS = new Set<PracticeMenuType>(['coordinate_quiz']);
+
+/** Menu types that support the piece selection filter UI. */
+export const PIECE_FILTER_MENUS = new Set<PracticeMenuType>(['legal_moves']);
+
+/**
+ * Data-driven filter definitions per menu type.
+ * To add filtering for a new menu type, add an entry here and expose the
+ * corresponding UI controls in Dashboard.tsx.
+ */
+const MENU_FILTERS: Partial<Record<PracticeMenuType, SessionFilter>> = {
+  coordinate_quiz: (s, ctx) => {
+    if (ctx.boardOrientationFilter === 'all') return true;
+    if (isTypedSession(s) && s.menuType === 'coordinate_quiz') {
+      return s.settings.boardOrientation === ctx.boardOrientationFilter;
     }
     return true;
-  });
+  },
+  legal_moves: (s, ctx) => {
+    if (ctx.allPiecesSelected) return true;
+    if (isTypedSession(s) && s.menuType === 'legal_moves') {
+      const sorted = [...s.settings.selectedPieces].sort();
+      return (
+        sorted.length === ctx.activePieces.length &&
+        sorted.every((p, i) => p === ctx.activePieces[i])
+      );
+    }
+    return true;
+  },
+};
+
+function applyFilters(
+  sessions: PracticeSessionRow[],
+  selectedMenu: PracticeMenuType | null,
+  ctx: FilterContext
+): PracticeSessionRow[] {
+  const filter = selectedMenu ? MENU_FILTERS[selectedMenu] : undefined;
+  if (!filter) return sessions;
+  return sessions.filter((s) => filter(s, ctx));
 }
 
 export type TableRow = {
@@ -132,15 +155,19 @@ export function useDashboardData(locale: string) {
   );
   const allPiecesSelected = activePieces.length === PIECE_TYPES.length;
 
+  const filterCtx = useMemo<FilterContext>(
+    () => ({ boardOrientationFilter, activePieces: [...activePieces], allPiecesSelected }),
+    [boardOrientationFilter, activePieces, allPiecesSelected]
+  );
+
   const filteredSessions = useMemo(
-    () => applyFilters(allSessions, boardOrientationFilter, [...activePieces], allPiecesSelected),
-    [allSessions, boardOrientationFilter, activePieces, allPiecesSelected]
+    () => applyFilters(allSessions, selectedMenu, filterCtx),
+    [allSessions, selectedMenu, filterCtx]
   );
 
   const filteredPreviousSessions = useMemo(
-    () =>
-      applyFilters(previousSessions, boardOrientationFilter, [...activePieces], allPiecesSelected),
-    [previousSessions, boardOrientationFilter, activePieces, allPiecesSelected]
+    () => applyFilters(previousSessions, selectedMenu, filterCtx),
+    [previousSessions, selectedMenu, filterCtx]
   );
 
   const currentStats = useMemo(() => computeStats(filteredSessions), [filteredSessions]);

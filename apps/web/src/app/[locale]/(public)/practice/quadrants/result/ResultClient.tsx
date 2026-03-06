@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -75,10 +76,8 @@ export function ResultClient({ locale }: Props) {
         onExit={() => router.push(`/${locale}/practice/quadrants`)}
         locale={locale}
         labels={{
-          practiceComplete: tPractice('practiceComplete'),
+          ...getCommonPracticeCompleteLabels(tPractice),
           score: tPractice('correctAnswers'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('changeSettings'),
         }}
         otherPracticeLink={{
           href: `/${locale}/practice`,

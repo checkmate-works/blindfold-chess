@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizProblemList } from '../_components/DiagonalQuizProblemList';
@@ -85,12 +86,8 @@ export function ResultClient({ locale }: Props) {
         onExit={() => router.push(`/${locale}/practice/diagonal-quiz`)}
         locale={locale}
         labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: tPractice('score'),
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('changeSettings'),
+          ...getCommonPracticeCompleteLabels(tPractice),
           averageTime: tPractice('averageTime'),
-          relatedLearning: tPractice('relatedLearning'),
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         relatedModule={{

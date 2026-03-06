@@ -29,8 +29,6 @@ type Props = {
   averageTimeText?: string;
   scoreStats?: ScoreStats;
   problemResults?: ProblemResult[];
-  isCustomFen?: boolean;
-  onDeleteFen?: (fen: string) => void;
   onExit?: () => void;
   children?: React.ReactNode;
   otherPracticeLink?: {
@@ -49,8 +47,6 @@ export function PracticeComplete({
   averageTimeText,
   scoreStats,
   problemResults,
-  isCustomFen,
-  onDeleteFen,
   onExit,
   children,
   otherPracticeLink,
@@ -68,14 +64,7 @@ export function PracticeComplete({
           scoreStats={scoreStats}
         />
 
-        {problemResults && (
-          <ProblemResultList
-            problemResults={problemResults}
-            labels={labels}
-            isCustomFen={isCustomFen}
-            onDeleteFen={onDeleteFen}
-          />
-        )}
+        {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 
         {/* Custom children (e.g. Route Planner results) */}
         {children}

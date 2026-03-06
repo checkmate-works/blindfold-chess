@@ -5,6 +5,7 @@ import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -33,18 +34,12 @@ export function ResultClient({ locale }: Props) {
 
   // Prepare labels
   const labels = {
-    practiceComplete: tPractice('practiceComplete'),
+    ...getCommonPracticeCompleteLabels(tPractice),
     score: t('accuracy'), // Reuse existing "Accuracy" label which maps to "正解率" in JA
     recreationProgress: t('accuracy'),
     averageTime: t('averageTime'),
-
-    // For the bar graph labels:
     correct: t('correct'),
     incorrect: t('incorrect'),
-
-    tryAgain: tPractice('tryAgain'),
-    morePractice: tPractice('changeSettings'),
-    relatedLearning: tPractice('relatedLearning'),
   };
 
   // Define related module

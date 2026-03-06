@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -99,11 +100,14 @@ export function ResultClient({ locale }: Props) {
         onExit={() => router.push(`/${locale}/practice/route-planner`)}
         locale={locale}
         labels={{
-          practiceComplete: isTutorial ? t('tutorial.complete') : tPractice('practiceComplete'),
-          score: tPractice('score'),
-          tryAgain: isTutorial ? t('tutorial.restart') : tPractice('tryAgain'),
-          morePractice: isTutorial ? t('tutorial.finish') : tPractice('morePractice'),
-          relatedLearning: tPractice('relatedLearning'),
+          ...getCommonPracticeCompleteLabels(tPractice),
+          ...(isTutorial
+            ? {
+                practiceComplete: t('tutorial.complete'),
+                tryAgain: t('tutorial.restart'),
+                morePractice: t('tutorial.finish'),
+              }
+            : { morePractice: tPractice('morePractice') }),
         }}
         otherPracticeLink={{
           href: `/${locale}/practice`,

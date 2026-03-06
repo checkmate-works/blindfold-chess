@@ -10,7 +10,12 @@ import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import type { DatePeriod } from '../_actions/get-practice-sessions';
-import { PIECE_TYPES, useDashboardData } from '../_hooks/use-dashboard-data';
+import {
+  ORIENTATION_FILTER_MENUS,
+  PIECE_FILTER_MENUS,
+  PIECE_TYPES,
+  useDashboardData,
+} from '../_hooks/use-dashboard-data';
 import { getComparisonLabel, getPreviousPeriodLabel } from '../_lib/dashboard-utils';
 import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';
@@ -91,7 +96,7 @@ export function Dashboard({ locale }: { locale: string }) {
         </select>
       </div>
 
-      {selectedMenu === 'coordinate_quiz' && (
+      {selectedMenu && ORIENTATION_FILTER_MENUS.has(selectedMenu) && (
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             {t('filters.boardOrientation')}
@@ -110,7 +115,7 @@ export function Dashboard({ locale }: { locale: string }) {
         </div>
       )}
 
-      {selectedMenu === 'legal_moves' && (
+      {selectedMenu && PIECE_FILTER_MENUS.has(selectedMenu) && (
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             {t('filters.selectedPiece')}

@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -50,9 +51,8 @@ export function ResultClient({ locale }: Props) {
         onExit={() => router.push(`/${locale}/practice/fen`)}
         locale={locale}
         labels={{
-          practiceComplete: tPractice('practiceComplete'),
+          ...getCommonPracticeCompleteLabels(tPractice),
           score: searchParams.get('scoreText') || tPractice('score'),
-          tryAgain: tPractice('tryAgain'),
           morePractice: tPractice('morePractice'),
           recreationProgress: t('recreationProgress'),
           correct: t('correct'),
@@ -65,7 +65,6 @@ export function ResultClient({ locale }: Props) {
           original: t('original'),
           yourRecreation: t('yourRecreation'),
           skipped: t('skipped'),
-          relatedLearning: tPractice('relatedLearning'),
         }}
         scoreStats={detailedStats}
         problemResults={results}

@@ -7,6 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { ProblemResultList } from '@/app/[locale]/(public)/practice/_components/ProblemResultList';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -101,6 +103,27 @@ export function ResultClient({ locale }: Props) {
 
   const retryUrl = `/${locale}/practice/position-memory/session?${retryParams.toString()}#position-memory-session`;
 
+  const labels = {
+    ...getCommonPracticeCompleteLabels(tPractice),
+    score: `${t('accuracy')}: ${score.toFixed(1)}% (${detailedStats?.correctPieces ?? 0}/${detailedStats?.totalPieces ?? 0})`,
+    recreationProgress: t('recreationProgress'),
+    correct: t('correct'),
+    incorrect: t('incorrect'),
+    missing: t('missing'),
+    extra: t('extra'),
+    extraDescription: t('extraDescription'),
+    problemDetails: t('problemDetails'),
+    problem: t('problem'),
+    original: t('original'),
+    yourRecreation: t('yourRecreation'),
+    deleteFenTitle: t('deleteFenTitle'),
+    deleteFenMessage: t('deleteFenMessage'),
+    deleteFenConfirm: t('deleteFenConfirm'),
+    deleteFenCancel: t('deleteFenCancel'),
+    skipped: t('skipped'),
+    analyzeOnLichess: t('analyzeOnLichess'),
+  };
+
   const handleDeleteFen = useCallback(
     (fenToDelete: string) => {
       try {
@@ -142,40 +165,24 @@ export function ResultClient({ locale }: Props) {
       <PracticeComplete
         score={score}
         total={total}
+        // Full page reload to reset session state in PositionMemorySession (dynamically imported)
         onTryAgain={() => (window.location.href = retryUrl)}
         onExit={() => router.push(`/${locale}/practice/position-memory`)}
         locale={locale}
-        labels={{
-          practiceComplete: tPractice('practiceComplete'),
-          score: `${t('accuracy')}: ${score.toFixed(1)}% (${detailedStats?.correctPieces ?? 0}/${detailedStats?.totalPieces ?? 0})`,
-          tryAgain: tPractice('tryAgain'),
-          morePractice: tPractice('changeSettings'),
-          recreationProgress: t('recreationProgress'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-          missing: t('missing'),
-          extra: t('extra'),
-          extraDescription: t('extraDescription'),
-          problemDetails: t('problemDetails'),
-          problem: t('problem'),
-          original: t('original'),
-          yourRecreation: t('yourRecreation'),
-          deleteFenTitle: t('deleteFenTitle'),
-          deleteFenMessage: t('deleteFenMessage'),
-          deleteFenConfirm: t('deleteFenConfirm'),
-          deleteFenCancel: t('deleteFenCancel'),
-          skipped: t('skipped'),
-          analyzeOnLichess: t('analyzeOnLichess'),
-        }}
+        labels={labels}
         scoreStats={detailedStats}
-        problemResults={problemResults}
-        isCustomFen={isCustomFen}
-        onDeleteFen={handleDeleteFen}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
-      />
+      >
+        <ProblemResultList
+          problemResults={problemResults}
+          labels={labels}
+          isCustomFen={isCustomFen}
+          onDeleteFen={handleDeleteFen}
+        />
+      </PracticeComplete>
     </PracticeResultPage>
   );
 }
