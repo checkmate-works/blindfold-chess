@@ -36,8 +36,6 @@ export type GamePreferences = {
   showBoardButtonInGame: boolean; // Show "View Board" button during AI games
   // Board peek mode
   peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
-  // Advertisements
-  adsEnabled: boolean; // Show advertisements
 };
 
 // Default preferences
@@ -55,7 +53,6 @@ const defaultPreferences: GamePreferences = {
   enableAutoComplete: true,
   showBoardButtonInGame: true,
   peekMode: 'modal',
-  adsEnabled: true,
 };
 
 // Validate and sanitize parsed preferences from localStorage.
@@ -117,7 +114,6 @@ function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   if (typeof p.peekMode === 'string' && ['modal', 'inline'].includes(p.peekMode)) {
     result.peekMode = p.peekMode as GamePreferences['peekMode'];
   }
-  if (typeof p.adsEnabled === 'boolean') result.adsEnabled = p.adsEnabled;
 
   return result;
 }

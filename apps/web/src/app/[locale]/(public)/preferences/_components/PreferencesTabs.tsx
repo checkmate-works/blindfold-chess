@@ -3,9 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { isAdsSystemEnabled } from '@/lib/ads/config';
-
-import { AdSettings } from './AdSettings';
 import { AppearanceSettings } from './AppearanceSettings';
 import { ControlSettings } from './ControlSettings';
 import { GameSettings } from './GameSettings';
@@ -19,7 +16,6 @@ export function PreferencesTabs({ locale }: Props) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const t = useTranslations('Preferences');
-  const adsSystemEnabled = isAdsSystemEnabled();
 
   // Use URL parameter directly, fallback to 'game'
   const activeTab = tabParam || 'game';
@@ -34,8 +30,6 @@ export function PreferencesTabs({ locale }: Props) {
     { id: 'game', label: t('tabs.board') },
     { id: 'controls', label: t('tabs.controls') },
     { id: 'appearance', label: t('tabs.appearance') },
-    // システムレベルで広告が有効な場合のみ広告タブを表示
-    ...(adsSystemEnabled ? [{ id: 'ads', label: t('tabs.ads') }] : []),
   ];
 
   return (
@@ -64,7 +58,6 @@ export function PreferencesTabs({ locale }: Props) {
         {activeTab === 'game' && <GameSettings />}
         {activeTab === 'controls' && <ControlSettings />}
         {activeTab === 'appearance' && <AppearanceSettings />}
-        {activeTab === 'ads' && adsSystemEnabled && <AdSettings />}
       </div>
     </div>
   );

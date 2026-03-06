@@ -21,7 +21,7 @@ import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 
-import { AdContainer } from '@/app/[locale]/_components/Ad';
+import { Ad } from '@/app/[locale]/_components/Ad';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -46,7 +46,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Common' });
   const tPosts = await getTranslations({ locale, namespace: 'posts' });
 
   return (
@@ -56,12 +55,14 @@ export default async function HomePage({ params }: Props) {
         <NewGameButton locale={locale} />
       </div>
 
-      {/* テスト用広告 */}
-      <div className="text-center">
-        <AdContainer
-          href="https://example.com"
-          text={`${t('sponsoredLink')} - ${t('testAd')}`}
-          className="text-sm text-muted-foreground underline hover:text-foreground"
+      {/* Buy me a Coffee Banner */}
+      <div className="flex justify-center w-full py-2">
+        <Ad
+          href="https://buymeacoffee.com/fujillc"
+          text="Buy me a Coffee"
+          imageUrl="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=fujillc&button_colour=8bbdf2&font_colour=ffffff&font_family=Cookie&outline_colour=ffffff&coffee_colour=FFDD00"
+          imageAlt="Buy me a Coffee"
+          className="inline-block transition-opacity hover:opacity-90 grayscale-0 hover:grayscale-0 opacity-90 transition-all duration-300"
         />
       </div>
 

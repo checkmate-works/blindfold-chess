@@ -1,12 +1,11 @@
 # Cookie Consent Banner Setup Guide
 
-This guide explains how to set up the CookieYes cookie consent banner for GDPR/CCPA compliance and Google AdSense approval.
+This guide explains how to set up the CookieYes cookie consent banner for GDPR/CCPA compliance.
 
 ## Why is this required?
 
 - **GDPR Compliance**: Required by law for EU/UK users
 - **CCPA Compliance**: Required for California users
-- **Google AdSense**: Google requires a certified CMP for AdSense approval
 - **Google Consent Mode v2**: Automatically integrated with CookieYes
 
 ## What is CookieYes?
@@ -43,12 +42,12 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 1. **Select Cookie Categories**:
    - ✅ Necessary (Always enabled)
    - ✅ Analytics (Google Analytics)
-   - ✅ Advertisement (Google AdSense)
+   - ⬜ Advertisement (if you run third party ads)
    - ⬜ Functional (if you add features like video embeds)
 
 2. **Cookie Scanner** (Automatic):
    - CookieYes will automatically scan your website
-   - It will detect Google Analytics and AdSense cookies
+   - It will detect Google Analytics and other cookies
    - Review and approve the detected cookies
 
 3. **Customize Banner Design** (Optional):
@@ -59,14 +58,14 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
 4. **Configure Google Consent Mode v2**:
    - Go to "Settings" → "Integrations" → "Google Consent Mode"
    - Enable "Google Consent Mode v2"
-   - Select "Advanced Implementation" (recommended for AdSense)
+   - Select "Advanced Implementation"
    - This allows Google to use cookieless pings for conversion modeling
 
 5. **Set Up Geolocation Targeting** (Optional):
    - Go to "Settings" → "Geolocation"
    - Enable "Show banner only in specific regions"
    - Select: EEA, UK, California, Brazil (LGPD), etc.
-   - Or keep default: "Show to all visitors" (recommended for AdSense approval)
+   - Or keep default: "Show to all visitors"
 
 ### 4. Get Your CookieYes ID
 
@@ -125,23 +124,12 @@ CookieYes is a Google-certified Consent Management Platform (CMP) that:
    - Verify the banner appears and functions correctly
    - Test from different regions (use VPN if needed)
 
-### 7. Verify AdSense Compatibility
+### 7. Privacy Policy
 
-1. **Check CookieYes Dashboard**:
-   - Go to "Reports" → "Consent Analytics"
-   - Verify that visitors are seeing and interacting with the banner
-   - Check consent rates (should be above 50% for optimal ad revenue)
-
-2. **Google AdSense Verification**:
-   - During AdSense review, Google's crawler will detect the CMP
-   - The banner should appear automatically during review
-   - CookieYes is Google-certified, so it meets all requirements
-
-3. **Privacy Policy** (Important):
-   - Update your Privacy Policy to mention cookie usage
-   - CookieYes provides a cookie policy generator
-   - Go to "Settings" → "Cookie Policy" → "Generate Policy"
-   - Add the policy to your website's footer
+- Update your Privacy Policy to mention cookie usage
+- CookieYes provides a cookie policy generator
+- Go to "Settings" → "Cookie Policy" → "Generate Policy"
+- Add the policy to your website's footer
 
 ## Troubleshooting
 

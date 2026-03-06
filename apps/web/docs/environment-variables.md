@@ -55,9 +55,9 @@ The application supports Google Analytics 4 for usage tracking. To enable it:
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-### Cookie Consent Banner (Required for EU/US users and AdSense)
+### Cookie Consent Banner (Required for EU/US users)
 
-The application uses CookieYes, a Google-certified Consent Management Platform (CMP) for GDPR/CCPA compliance. This is **required** for Google AdSense approval.
+The application uses CookieYes, a Consent Management Platform (CMP) for GDPR/CCPA compliance.
 
 ```bash
 # CookieYes ID from dashboard
