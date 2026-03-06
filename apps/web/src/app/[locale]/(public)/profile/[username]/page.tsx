@@ -51,6 +51,7 @@ export default async function PublicProfilePage({ params }: Props) {
     .select({
       username: profiles.username,
       displayName: profiles.displayName,
+      avatarUrl: profiles.avatarUrl,
       bio: profiles.bio,
       country: profiles.country,
       flair: profiles.flair,
@@ -76,15 +77,42 @@ export default async function PublicProfilePage({ params }: Props) {
       <div className="space-y-8">
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {profile.displayName}
-              {profile.flair && <span className="ml-2">{profile.flair}</span>}
-              {profile.country && (
-                <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
-              )}
-            </h1>
-            <p className="text-muted-foreground mt-1">@{profile.username}</p>
+          <div className="flex items-center gap-4">
+            {profile.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt={profile.displayName ?? profile.username}
+                width={64}
+                height={64}
+                className="rounded-full object-cover h-16 w-16"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="h-8 w-8"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {profile.displayName}
+                {profile.flair && <span className="ml-2">{profile.flair}</span>}
+                {profile.country && (
+                  <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
+                )}
+              </h1>
+              <p className="text-muted-foreground mt-1">@{profile.username}</p>
+            </div>
           </div>
 
           {hasChessAccounts && (

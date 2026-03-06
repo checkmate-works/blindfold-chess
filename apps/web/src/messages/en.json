@@ -1803,6 +1803,12 @@
     "lichessUsernameLabel": "Lichess Username",
     "lichessUsernamePlaceholder": "Your Lichess username",
     "displayNameInappropriate": "This display name is not allowed.",
+    "avatarAlt": "Profile picture",
+    "avatarUploadLabel": "Upload profile picture",
+    "avatarHint": "JPEG, PNG, or WebP (max 2MB)",
+    "avatarInvalidType": "Please select a JPEG, PNG, or WebP image.",
+    "avatarTooLarge": "Image must be 2MB or less.",
+    "avatarUploadFailed": "Failed to upload image. Please try again.",
     "submit": "Save",
     "submitting": "Saving...",
     "error": "An error occurred. Please try again."

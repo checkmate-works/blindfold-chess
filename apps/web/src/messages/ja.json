@@ -1804,6 +1804,12 @@
     "lichessUsernameLabel": "Lichess ユーザー名",
     "lichessUsernamePlaceholder": "Lichess のユーザー名",
     "displayNameInappropriate": "この表示名は使用できません。",
+    "avatarAlt": "プロフィール画像",
+    "avatarUploadLabel": "プロフィール画像をアップロード",
+    "avatarHint": "JPEG、PNG、WebP（最大2MB）",
+    "avatarInvalidType": "JPEG、PNG、またはWebP画像を選択してください。",
+    "avatarTooLarge": "画像は2MB以下にしてください。",
+    "avatarUploadFailed": "画像のアップロードに失敗しました。もう一度お試しください。",
     "submit": "保存",
     "submitting": "保存中...",
     "error": "エラーが発生しました。もう一度お試しください。"
