@@ -67,7 +67,7 @@ export function ResultClient({ locale }: Props) {
           skipped: t('skipped'),
           relatedLearning: tPractice('relatedLearning'),
         }}
-        detailedStats={detailedStats}
+        scoreStats={detailedStats}
         problemResults={results}
         relatedModule={{
           href: '/learn/notation/fen-notation',

@@ -11,7 +11,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
 import { ProblemResultList } from './ProblemResultList';
-import type { PracticeCompleteLabels, ProblemResult } from './practice-complete-types';
+import type { PracticeCompleteLabels, ProblemResult, ScoreStats } from './practice-complete-types';
 
 type Props = {
   score: number;
@@ -27,13 +27,7 @@ type Props = {
     sectionTitle?: string;
   };
   averageTimeText?: string;
-  detailedStats?: {
-    correctPieces: number;
-    totalPieces: number;
-    incorrectPieces: number;
-    missingPieces: number;
-    extraPieces: number;
-  };
+  scoreStats?: ScoreStats;
   problemResults?: ProblemResult[];
   isCustomFen?: boolean;
   onDeleteFen?: (fen: string) => void;
@@ -53,7 +47,7 @@ export function PracticeComplete({
   labels,
   relatedModule,
   averageTimeText,
-  detailedStats,
+  scoreStats,
   problemResults,
   isCustomFen,
   onDeleteFen,
@@ -71,7 +65,7 @@ export function PracticeComplete({
           total={total}
           labels={labels}
           averageTimeText={averageTimeText}
-          detailedStats={detailedStats}
+          scoreStats={scoreStats}
         />
 
         {problemResults && (

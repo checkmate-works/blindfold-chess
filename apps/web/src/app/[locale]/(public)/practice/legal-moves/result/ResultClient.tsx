@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -38,17 +36,6 @@ export function ResultClient({ locale }: Props) {
 
   const retryUrl = `/${locale}/practice/legal-moves/challenge?${retryParams.toString()}`;
 
-  const detailedStats = useMemo(
-    () => ({
-      correctPieces: score,
-      totalPieces: total,
-      incorrectPieces: total - score,
-      missingPieces: 0,
-      extraPieces: 0,
-    }),
-    [score, total]
-  );
-
   return (
     <PracticeResultPage
       locale={locale}
@@ -79,7 +66,7 @@ export function ResultClient({ locale }: Props) {
           relatedLearning: tPractice('relatedLearning'),
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
-        detailedStats={detailedStats}
+        scoreStats={{ correct: score, incorrect: total - score, total }}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),

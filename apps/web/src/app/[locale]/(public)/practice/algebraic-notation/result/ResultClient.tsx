@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -21,17 +19,6 @@ export function ResultClient({ locale }: Props) {
 
   const score = parseInt(searchParams.get('score') || '0', 10);
   const total = parseInt(searchParams.get('total') || '0', 10);
-
-  const detailedStats = useMemo(
-    () => ({
-      correctPieces: score,
-      totalPieces: total,
-      incorrectPieces: total - score,
-      missingPieces: 0,
-      extraPieces: 0,
-    }),
-    [score, total]
-  );
 
   return (
     <PracticeResultPage
@@ -61,7 +48,7 @@ export function ResultClient({ locale }: Props) {
           incorrect: tPractice('incorrect'),
           relatedLearning: tPractice('relatedLearning'),
         }}
-        detailedStats={detailedStats}
+        scoreStats={{ correct: score, incorrect: total - score, total }}
         relatedModule={{
           href: '/learn/notation/algebraic-notation',
           icon: '🔤',

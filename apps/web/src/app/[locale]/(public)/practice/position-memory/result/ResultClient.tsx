@@ -167,7 +167,7 @@ export function ResultClient({ locale }: Props) {
           skipped: t('skipped'),
           analyzeOnLichess: t('analyzeOnLichess'),
         }}
-        detailedStats={detailedStats}
+        scoreStats={detailedStats}
         problemResults={problemResults}
         isCustomFen={isCustomFen}
         onDeleteFen={handleDeleteFen}

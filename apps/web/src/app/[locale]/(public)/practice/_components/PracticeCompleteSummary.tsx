@@ -1,20 +1,15 @@
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { SegmentedProgressBar } from './SegmentedProgressBar';
-import type { PracticeCompleteLabels } from './practice-complete-types';
+import type { PracticeCompleteLabels, ScoreStats } from './practice-complete-types';
+import { isDetailedPieceStats } from './practice-complete-types';
 
 type Props = {
   score: number;
   total: number;
   labels: PracticeCompleteLabels;
   averageTimeText?: string;
-  detailedStats?: {
-    correctPieces: number;
-    totalPieces: number;
-    incorrectPieces: number;
-    missingPieces: number;
-    extraPieces: number;
-  };
+  scoreStats?: ScoreStats;
 };
 
 export function PracticeCompleteSummary({
@@ -22,12 +17,12 @@ export function PracticeCompleteSummary({
   total,
   labels,
   averageTimeText,
-  detailedStats,
+  scoreStats,
 }: Props) {
   return (
     <>
       {/* Score display */}
-      {detailedStats && labels.recreationProgress ? (
+      {scoreStats && labels.recreationProgress ? (
         <SectionTitle className="text-2xl font-bold text-center mb-6">{labels.score}</SectionTitle>
       ) : (
         <div className="mb-6 text-center">
@@ -43,41 +38,63 @@ export function PracticeCompleteSummary({
         </div>
       )}
 
-      {/* Detailed stats with progress bar (for position memory) */}
-      {detailedStats && labels.recreationProgress && (
+      {/* Score stats with progress bar */}
+      {scoreStats && labels.recreationProgress && (
         <div className="mb-6">
           <p className="text-sm font-medium text-muted-foreground mb-2 text-left">
             {labels.recreationProgress}
           </p>
-          <SegmentedProgressBar
-            segments={[
-              {
-                key: 'correct',
-                value: detailedStats.correctPieces,
-                color: 'bg-success',
-                label: labels.correct,
-              },
-              {
-                key: 'incorrect',
-                value: detailedStats.incorrectPieces,
-                color: 'bg-destructive',
-                label: labels.incorrect,
-              },
-              {
-                key: 'missing',
-                value: detailedStats.missingPieces,
-                color: 'bg-muted-foreground/40',
-                label: labels.missing,
-              },
-            ]}
-            total={detailedStats.totalPieces}
-          />
+          {isDetailedPieceStats(scoreStats) ? (
+            <>
+              <SegmentedProgressBar
+                segments={[
+                  {
+                    key: 'correct',
+                    value: scoreStats.correctPieces,
+                    color: 'bg-success',
+                    label: labels.correct,
+                  },
+                  {
+                    key: 'incorrect',
+                    value: scoreStats.incorrectPieces,
+                    color: 'bg-destructive',
+                    label: labels.incorrect,
+                  },
+                  {
+                    key: 'missing',
+                    value: scoreStats.missingPieces,
+                    color: 'bg-muted-foreground/40',
+                    label: labels.missing,
+                  },
+                ]}
+                total={scoreStats.totalPieces}
+              />
 
-          {detailedStats.extraPieces > 0 && labels.extra && labels.extraDescription && (
-            <p className="text-xs text-muted-foreground mt-3">
-              {labels.extra}: <span className="font-semibold">+{detailedStats.extraPieces}</span> (
-              {labels.extraDescription})
-            </p>
+              {scoreStats.extraPieces > 0 && labels.extra && labels.extraDescription && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  {labels.extra}: <span className="font-semibold">+{scoreStats.extraPieces}</span> (
+                  {labels.extraDescription})
+                </p>
+              )}
+            </>
+          ) : (
+            <SegmentedProgressBar
+              segments={[
+                {
+                  key: 'correct',
+                  value: scoreStats.correct,
+                  color: 'bg-success',
+                  label: labels.correct,
+                },
+                {
+                  key: 'incorrect',
+                  value: scoreStats.incorrect,
+                  color: 'bg-destructive',
+                  label: labels.incorrect,
+                },
+              ]}
+              total={scoreStats.total}
+            />
           )}
 
           {averageTimeText && (
