@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export { Textarea } from './Textarea';
 export * from './BoardOverlay';
 export { BoardLayout } from './chess/BoardLayout';
 export type { SquareRenderInfo } from './chess/BoardLayout';
