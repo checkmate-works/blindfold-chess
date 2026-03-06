@@ -1809,6 +1809,7 @@
     "avatarInvalidType": "Please select a JPEG, PNG, or WebP image.",
     "avatarTooLarge": "Image must be 2MB or less.",
     "avatarUploadFailed": "Failed to upload image. Please try again.",
+    "avatarUploaded": "Profile picture updated",
     "submit": "Save",
     "submitting": "Saving...",
     "error": "An error occurred. Please try again."

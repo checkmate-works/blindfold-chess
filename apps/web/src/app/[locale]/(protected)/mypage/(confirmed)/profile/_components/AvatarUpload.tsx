@@ -5,6 +5,8 @@ import { ChangeEvent, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
 type Props = {
   currentAvatarUrl: string | null;
   onUploaded: (url: string) => void;
@@ -15,6 +17,7 @@ const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
 export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
   const t = useTranslations('profile');
+  const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl);
   const [isUploading, setIsUploading] = useState(false);
@@ -74,6 +77,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
       const { avatarUrl } = await res.json();
       setPreviewUrl(avatarUrl);
       onUploaded(avatarUrl);
+      showToast(t('avatarUploaded'), 'success');
     } catch {
       setError(t('avatarUploadFailed'));
       setPreviewUrl(currentAvatarUrl);

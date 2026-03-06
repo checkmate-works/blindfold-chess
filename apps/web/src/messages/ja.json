@@ -1810,6 +1810,7 @@
     "avatarInvalidType": "JPEG、PNG、またはWebP画像を選択してください。",
     "avatarTooLarge": "画像は2MB以下にしてください。",
     "avatarUploadFailed": "画像のアップロードに失敗しました。もう一度お試しください。",
+    "avatarUploaded": "プロフィール画像を更新しました",
     "submit": "保存",
     "submitting": "保存中...",
     "error": "エラーが発生しました。もう一度お試しください。"
