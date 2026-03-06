@@ -45,3 +45,15 @@ export type SquareColorsResult = {
   incorrectAnswers: number;
   timeTaken: number;
 };
+
+export type CoordinateQuizSettings = {
+  timeLimit: number;
+  boardOrientation: string;
+  mistakeAllowance: number | null;
+};
+
+export type CoordinateQuizResult = {
+  correctAnswers: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+};

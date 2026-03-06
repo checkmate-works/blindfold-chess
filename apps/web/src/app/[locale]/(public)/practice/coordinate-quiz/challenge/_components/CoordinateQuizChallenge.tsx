@@ -9,6 +9,8 @@ import type { Square } from '@blindfold-chess/types';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
+import { saveCoordinateQuizResult } from '@/app/[locale]/(public)/practice/coordinate-quiz/_actions/save-result';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
@@ -23,6 +25,8 @@ type Props = {
   initialFeedbackSpeed: string;
 };
 
+const MAX_MISTAKES = 3;
+
 export default function CoordinateQuizChallenge({
   locale,
   initialTimeLimit,
@@ -30,6 +34,7 @@ export default function CoordinateQuizChallenge({
   initialFeedbackSpeed,
 }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const boardOrientation = initialBoardOrientation as BoardOrientation;
   const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
@@ -64,6 +69,7 @@ export default function CoordinateQuizChallenge({
     timeLimit: initialTimeLimit,
     generateQuestion,
     feedbackDuration,
+    mistakeAllowance: MAX_MISTAKES,
   });
 
   useScrollToElement('quiz-session', !!currentQuestion);
@@ -86,22 +92,44 @@ export default function CoordinateQuizChallenge({
     [isFinished, currentQuestion, showFeedback, countdown, isPaused, handleAnswer]
   );
 
-  // Redirect on finish
+  // Save result and redirect on finish
+  const savedRef = useRef(false);
   useEffect(() => {
-    if (isFinished) {
-      const params = new URLSearchParams();
-      params.set('score', correctCount.toString());
-      params.set('total', totalCount.toString());
-      params.set('time', totalTime.toString());
-      params.set('timeLimit', initialTimeLimit.toString());
-      params.set('orientation', boardOrientation);
-      params.set('speed', feedbackSpeed);
+    if (!isFinished || savedRef.current) return;
+    savedRef.current = true;
 
-      router.push(`/${locale}/practice/coordinate-quiz/result?${params.toString()}`);
+    const params = new URLSearchParams({
+      score: correctCount.toString(),
+      total: totalCount.toString(),
+      time: totalTime.toString(),
+      timeLimit: initialTimeLimit.toString(),
+      orientation: boardOrientation,
+      speed: feedbackSpeed,
+    });
+    const resultUrl = `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
+
+    if (user && totalCount > 0) {
+      saveCoordinateQuizResult({
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        timeTaken: totalTime,
+        timeLimit: initialTimeLimit,
+        boardOrientation,
+        mistakeAllowance: MAX_MISTAKES,
+      })
+        .catch(() => {
+          // Silently ignore save failures - result display is unaffected
+        })
+        .finally(() => {
+          router.push(resultUrl);
+        });
+    } else {
+      router.push(resultUrl);
     }
   }, [
     isFinished,
     correctCount,
+    incorrectCount,
     totalCount,
     locale,
     router,
@@ -109,6 +137,7 @@ export default function CoordinateQuizChallenge({
     initialTimeLimit,
     boardOrientation,
     feedbackSpeed,
+    user,
   ]);
 
   if (isFinished) {
@@ -135,6 +164,8 @@ export default function CoordinateQuizChallenge({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        remainingLives={MAX_MISTAKES - incorrectCount}
+        maxLives={MAX_MISTAKES}
       />
     </div>
   );

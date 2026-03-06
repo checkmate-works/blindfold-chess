@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import type { Square } from '@blindfold-chess/types';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
@@ -26,6 +27,8 @@ type Props = {
   countdown: number | null;
   isPaused?: boolean;
   onTogglePause?: () => void;
+  remainingLives: number;
+  maxLives: number;
 };
 
 export function CoordinateQuizChallengePlaying({
@@ -42,6 +45,8 @@ export function CoordinateQuizChallengePlaying({
   countdown,
   isPaused = false,
   onTogglePause,
+  remainingLives,
+  maxLives,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
@@ -50,6 +55,19 @@ export function CoordinateQuizChallengePlaying({
       <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
           <div className="mb-4 relative flex items-center justify-center min-h-[50px]">
+            {/* Lives - left side */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {Array.from({ length: maxLives }, (_, i) => (
+                <span key={i} className="text-destructive">
+                  {i < remainingLives ? (
+                    <FaHeart className="w-5 h-5" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 opacity-30" />
+                  )}
+                </span>
+              ))}
+            </div>
+            {/* Orientation indicator - center */}
             <div className="flex items-center gap-2">
               <div
                 className={`w-5 h-5 rounded-full border-2 ${

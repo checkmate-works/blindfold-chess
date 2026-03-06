@@ -22,7 +22,7 @@ const DEFAULTS: CoordinateQuizLocalSettings = {
   timeLimit: 60,
   boardOrientation: 'white',
   feedbackSpeed: 'normal',
-  mode: 'timed',
+  mode: 'training',
 };
 
 export default function CoordinateQuiz({ locale }: Props) {

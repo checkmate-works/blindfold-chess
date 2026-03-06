@@ -53,8 +53,8 @@ export function CoordinateQuizSetup({
   };
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'timed', label: tp('modeTimed') },
     { value: 'training', label: tp('modeTraining') },
+    { value: 'timed', label: tp('modeTimed') },
   ];
 
   return (
@@ -72,6 +72,12 @@ export function CoordinateQuizSetup({
           </div>
         )}
 
+        {mode === 'timed' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('challengeDescription')}</p>
+          </div>
+        )}
+
         <CoordinateQuizSettings
           timeLimit={timeLimit}
           boardOrientation={boardOrientation}
@@ -79,7 +85,7 @@ export function CoordinateQuizSetup({
           onTimeLimitChange={onTimeLimitChange}
           onBoardOrientationChange={onBoardOrientationChange}
           onFeedbackSpeedChange={onFeedbackSpeedChange}
-          showTimeSlider={mode === 'timed'}
+          showTimeSlider={false}
         />
 
         <Button
