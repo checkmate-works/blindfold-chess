@@ -56,6 +56,26 @@
     "deleteAccount": {
       "title": "Delete Account",
       "description": "Delete your Blindfold Chess account"
+    },
+    "topics": {
+      "title": "Topics",
+      "description": "Discuss and share insights about chess squares, positions, and strategies"
+    },
+    "topicsSquares": {
+      "title": "Square Topics",
+      "description": "Browse discussions about individual chess squares"
+    },
+    "topicsSquare": {
+      "title": "Square {square}",
+      "description": "Discussions and insights about the {square} square in chess"
+    },
+    "topicsSquareNewPost": {
+      "title": "New Post - {square}",
+      "description": "Create a new post about the {square} square"
+    },
+    "topicsSquarePost": {
+      "title": "Post about {square}",
+      "description": "A discussion post about the {square} square in chess"
     }
   },
   "Header": {
@@ -1834,5 +1854,41 @@
     "chessAccounts": "Chess Accounts",
     "bio": "About",
     "emptyProfile": "This user hasn't added any profile information yet."
+  },
+  "topics": {
+    "title": "Topics",
+    "description": "Discuss and share insights about chess squares, positions, and strategies",
+    "categories": {
+      "squares": {
+        "title": "Squares",
+        "description": "Discussion about individual chess squares"
+      }
+    },
+    "squares": {
+      "title": "Squares",
+      "description": "Select a square to view and share discussions",
+      "postCount": "{count, plural, one {# post} other {# posts}}",
+      "noPosts": "No posts yet. Be the first to share your thoughts!",
+      "newPost": "New Post",
+      "backToSquares": "Back to Squares",
+      "backToTopics": "Back to Topics",
+      "postedBy": "by {author}",
+      "postedAt": "Posted {date}",
+      "readMore": "Read more",
+      "postDetail": {
+        "backToSquare": "Back to {square}"
+      },
+      "newPostForm": {
+        "title": "New Post about {square}",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Share your thoughts about this square...",
+        "submit": "Post",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to create a post"
+      }
+    }
   }
 }
