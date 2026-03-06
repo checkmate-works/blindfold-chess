@@ -42,6 +42,7 @@ export function Dashboard({ locale }: { locale: string }) {
   const [previousSessions, setPreviousSessions] = useState<PracticeSessionRow[]>([]);
   const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
+  const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
 
@@ -64,6 +65,11 @@ export function Dashboard({ locale }: { locale: string }) {
     };
   }, []);
 
+  // Reset board orientation filter when menu changes
+  useEffect(() => {
+    setBoardOrientationFilter('all');
+  }, [selectedMenu]);
+
   // Fetch sessions when menu or period changes
   useEffect(() => {
     if (!selectedMenu) return;
@@ -83,13 +89,23 @@ export function Dashboard({ locale }: { locale: string }) {
     };
   }, [selectedMenu, selectedPeriod]);
 
-  const currentStats = computeStats(allSessions);
-  const prevStats = computeStats(previousSessions);
+  const filteredSessions =
+    boardOrientationFilter === 'all'
+      ? allSessions
+      : allSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
+
+  const filteredPreviousSessions =
+    boardOrientationFilter === 'all'
+      ? previousSessions
+      : previousSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
+
+  const currentStats = computeStats(filteredSessions);
+  const prevStats = computeStats(filteredPreviousSessions);
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
 
-  const currentDaily = aggregateByDay(allSessions, locale);
-  const previousDaily = aggregateByDay(previousSessions, locale);
+  const currentDaily = aggregateByDay(filteredSessions, locale);
+  const previousDaily = aggregateByDay(filteredPreviousSessions, locale);
 
   // Build chart data: map previous period onto current period's X axis
   const currentPeriodStart = getPeriodStart(selectedPeriod);
@@ -112,7 +128,7 @@ export function Dashboard({ locale }: { locale: string }) {
   });
 
   // TODO: ページネーション対応
-  const tableRows = allSessions.slice(0, 20).map((s) => {
+  const tableRows = filteredSessions.slice(0, 20).map((s) => {
     const correctAnswers =
       typeof s.result.correctAnswers === 'number' ? s.result.correctAnswers : null;
     const incorrectAnswers =
@@ -172,6 +188,25 @@ export function Dashboard({ locale }: { locale: string }) {
           ))}
         </select>
       </div>
+
+      {selectedMenu === 'coordinate_quiz' && (
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+            {t('filters.boardOrientation')}
+          </label>
+          <select
+            value={boardOrientationFilter}
+            onChange={(e) => setBoardOrientationFilter(e.target.value)}
+            className="w-full sm:w-48 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            {['all', 'white', 'black', 'random'].map((opt) => (
+              <option key={opt} value={opt}>
+                {t(`filters.${opt}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {isLoading ? (
         <DashboardContentSkeleton />

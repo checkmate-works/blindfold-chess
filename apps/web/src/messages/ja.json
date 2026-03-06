@@ -1698,6 +1698,13 @@
     "vs2WeeksAgo": "2週間前比",
     "vsLastMonth": "先月比",
     "vs2MonthsAgo": "2ヶ月前比",
+    "filters": {
+      "boardOrientation": "ボード方向",
+      "all": "すべて",
+      "white": "白",
+      "black": "黒",
+      "random": "ランダム"
+    },
     "menuTypes": {
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",

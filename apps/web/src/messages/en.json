@@ -1697,6 +1697,13 @@
     "vs2WeeksAgo": "vs 2 weeks ago",
     "vsLastMonth": "vs last month",
     "vs2MonthsAgo": "vs 2 months ago",
+    "filters": {
+      "boardOrientation": "Board Orientation",
+      "all": "All",
+      "white": "White",
+      "black": "Black",
+      "random": "Random"
+    },
     "menuTypes": {
       "coordinate_quiz": "Coordinate Quiz",
       "legal_moves": "Legal Moves",
