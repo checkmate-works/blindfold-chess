@@ -6,30 +6,26 @@
 -- It requires Supabase-managed roles (supabase_auth_admin, authenticated, anon)
 -- and auth.uid() — it will fail on local PostgreSQL. This is intentional.
 --
--- All statements are idempotent (safe to run multiple times).
+-- All statements are convergent-idempotent (safe to run multiple times).
+-- Re-running will recreate policies and triggers to match the expected
+-- definitions, correcting any configuration drift.
 
 -- =============================================================================
 -- practice_sessions
 -- =============================================================================
 ALTER TABLE "practice_sessions" ENABLE ROW LEVEL SECURITY;
 
-DO $$ BEGIN
-  CREATE POLICY "practice_sessions_select" ON "practice_sessions"
-    FOR SELECT USING (auth.uid() = user_id);
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP POLICY IF EXISTS "practice_sessions_select" ON "practice_sessions";
+CREATE POLICY "practice_sessions_select" ON "practice_sessions"
+  FOR SELECT USING (auth.uid() = user_id);
 
-DO $$ BEGIN
-  CREATE POLICY "practice_sessions_insert" ON "practice_sessions"
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP POLICY IF EXISTS "practice_sessions_insert" ON "practice_sessions";
+CREATE POLICY "practice_sessions_insert" ON "practice_sessions"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DO $$ BEGIN
-  CREATE POLICY "practice_sessions_delete" ON "practice_sessions"
-    FOR DELETE USING (auth.uid() = user_id);
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP POLICY IF EXISTS "practice_sessions_delete" ON "practice_sessions";
+CREATE POLICY "practice_sessions_delete" ON "practice_sessions"
+  FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
 -- user_roles
@@ -41,17 +37,13 @@ ALTER TABLE "user_roles" ENABLE ROW LEVEL SECURITY;
 -- =============================================================================
 ALTER TABLE "profiles" ENABLE ROW LEVEL SECURITY;
 
-DO $$ BEGIN
-  CREATE POLICY "profiles_select_policy" ON "profiles"
-    FOR SELECT USING (deleted_at IS NULL);
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP POLICY IF EXISTS "profiles_select_policy" ON "profiles";
+CREATE POLICY "profiles_select_policy" ON "profiles"
+  FOR SELECT USING (deleted_at IS NULL);
 
-DO $$ BEGIN
-  CREATE POLICY "profiles_update_policy" ON "profiles"
-    FOR UPDATE USING (auth.uid() = id);
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP POLICY IF EXISTS "profiles_update_policy" ON "profiles";
+CREATE POLICY "profiles_update_policy" ON "profiles"
+  FOR UPDATE USING (auth.uid() = id);
 
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -61,10 +53,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DO $$ BEGIN
-  CREATE TRIGGER profiles_updated_at
-    BEFORE UPDATE ON "profiles"
-    FOR EACH ROW
-    EXECUTE FUNCTION public.update_updated_at_column();
-EXCEPTION WHEN duplicate_object THEN null;
-END $$;
+DROP TRIGGER IF EXISTS profiles_updated_at ON "profiles";
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON "profiles"
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
