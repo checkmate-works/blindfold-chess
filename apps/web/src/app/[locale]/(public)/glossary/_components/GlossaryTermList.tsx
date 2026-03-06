@@ -21,6 +21,14 @@ type Props = {
 export async function GlossaryTermList({ terms, locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
+  if (terms.length === 0) {
+    return (
+      <div className="py-8 text-center text-muted-foreground">
+        <p>{t('noTerms')}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {terms.map((term) => (

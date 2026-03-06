@@ -6,6 +6,7 @@ import {
   Breadcrumb,
   Divider,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -58,32 +59,29 @@ export default async function GlossaryCategoryPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start gap-4">
-        <span className="text-4xl">{categoryStyle.icon}</span>
-        <div>
-          <PageTitle>{t(`categories.${category}`)}</PageTitle>
-          <PageDescription>
-            {t('categoryPage.count', { count: filteredTerms.length })}
-          </PageDescription>
-        </div>
-      </div>
+      <PageTitle className="flex justify-center items-center gap-3">
+        <span className="text-4xl text-muted-foreground">{categoryStyle.icon}</span>
+        <span>{t(`categories.${category}`)}</span>
+      </PageTitle>
 
-      <SectionTitle>{t('categoryPage.termsTitle')}</SectionTitle>
+      <PageDescription>{t('categoryPage.count', { count: filteredTerms.length })}</PageDescription>
 
-      <GlossaryTermList terms={filteredTerms} locale={locale} />
+      <PagePanel>
+        <SectionTitle>{t('categoryPage.termsTitle')}</SectionTitle>
 
-      <Divider />
+        <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      <SectionTitle>{t('categoryPage.categoriesTitle')}</SectionTitle>
+        <SectionTitle>{t('categoryPage.categoriesTitle')}</SectionTitle>
 
-      <CategoryIndex locale={locale} currentCategory={category} />
+        <CategoryIndex locale={locale} currentCategory={category} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

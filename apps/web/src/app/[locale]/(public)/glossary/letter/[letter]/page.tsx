@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 import {
   Breadcrumb,
   Divider,
   PageDescription,
+  PagePanel,
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
@@ -14,7 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
-import { getTermsByLetter, getUniqueLetters } from '../../_lib/queries';
+import { getTermsByLetter } from '../../_lib/queries';
 
 type Props = {
   params: Promise<{
@@ -25,7 +25,7 @@ type Props = {
 
 // Queries the database at build time — requires a running DB connection for `next build`.
 export async function generateStaticParams() {
-  const letters = await getUniqueLetters();
+  const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
   return letters.map((letter) => ({ letter: letter.toLowerCase() }));
 }
 
@@ -48,32 +48,28 @@ export default async function GlossaryLetterPage({ params }: Props) {
 
   const filteredTerms = await getTermsByLetter(letter, locale);
 
-  if (filteredTerms.length === 0) {
-    notFound();
-  }
-
   return (
     <div className="space-y-8">
       <PageTitle>{t('letterPage.title', { letter: upperLetter })}</PageTitle>
 
       <PageDescription>{t('letterPage.count', { count: filteredTerms.length })}</PageDescription>
 
-      <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>
 
-      <GlossaryTermList terms={filteredTerms} locale={locale} />
+        <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-      <Divider />
+        <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
 
-      <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
+        <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
 
-      <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
+        <Divider />
 
-      <Divider />
-
-      <Breadcrumb
-        items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

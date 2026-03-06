@@ -3,7 +3,7 @@
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import { getLetterCounts, getUniqueLetters } from '../_lib/queries';
+import { getLetterCounts } from '../_lib/queries';
 
 type Props = {
   currentLetter?: string;
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export async function AlphabeticalIndex({ currentLetter, locale }: Props) {
-  const alphabet = await getUniqueLetters();
+  const alphabet = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
   const letterCounts = await getLetterCounts();
 
   return (

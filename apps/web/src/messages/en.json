@@ -214,7 +214,8 @@
     },
     "aliases": "Also known as",
     "relatedTerms": "Related terms",
-    "alphabeticalIndexTitle": "Alphabetical"
+    "alphabeticalIndexTitle": "Alphabetical",
+    "noTerms": "No terms have been registered yet."
   },
   "pgnInput": {
     "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",

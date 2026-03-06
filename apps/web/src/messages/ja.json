@@ -215,7 +215,8 @@
     },
     "aliases": "別名",
     "relatedTerms": "関連用語",
-    "alphabeticalIndexTitle": "アルファベット順"
+    "alphabeticalIndexTitle": "アルファベット順",
+    "noTerms": "まだ用語が登録されていません"
   },
   "pgnInput": {
     "placeholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
