@@ -40,8 +40,8 @@ export function LegalMovesSetup({
   const hasSelectedPieces = pieces.some((piece) => selectedPieces[piece]);
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'timed', label: tp('modeTimed') },
     { value: 'training', label: tp('modeTraining') },
+    { value: 'timed', label: tp('modeTimed') },
   ];
 
   const handleStart = () => {
@@ -53,7 +53,7 @@ export function LegalMovesSetup({
       );
     } else {
       router.push(
-        `/${locale}/practice/legal-moves/challenge?timeLimit=${timeLimit}&pieces=${selectedPieceTypes}#legal-moves-session`
+        `/${locale}/practice/legal-moves/challenge?timeLimit=60&pieces=${selectedPieceTypes}#legal-moves-session`
       );
     }
   };
@@ -67,19 +67,25 @@ export function LegalMovesSetup({
           <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
         </div>
 
+        {mode === 'training' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+          </div>
+        )}
+
+        {mode === 'timed' && (
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground">{tp('challengeDescription')}</p>
+          </div>
+        )}
+
         <LegalMovesSettings
           timeLimit={timeLimit}
           selectedPieces={selectedPieces}
           onTimeLimitChange={onTimeLimitChange}
           onPieceToggle={onPieceToggle}
-          showTimeSlider={mode === 'timed'}
+          showTimeSlider={false}
         />
-
-        {mode === 'training' && (
-          <div className="mt-6 mb-6">
-            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-          </div>
-        )}
 
         <Button
           onClick={handleStart}

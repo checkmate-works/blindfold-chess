@@ -47,7 +47,7 @@ export function CoordinateQuizSetup({
       );
     } else {
       router.push(
-        `/${locale}/practice/coordinate-quiz/challenge?timeLimit=${timeLimit}&boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#quiz-session`
+        `/${locale}/practice/coordinate-quiz/challenge?timeLimit=60&boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#quiz-session`
       );
     }
   };

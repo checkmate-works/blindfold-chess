@@ -1702,7 +1702,15 @@
       "all": "All",
       "white": "White",
       "black": "Black",
-      "random": "Random"
+      "random": "Random",
+      "selectedPiece": "Piece",
+      "pieces": {
+        "k": "King",
+        "q": "Queen",
+        "r": "Rook",
+        "b": "Bishop",
+        "n": "Knight"
+      }
     },
     "menuTypes": {
       "coordinate_quiz": "Coordinate Quiz",

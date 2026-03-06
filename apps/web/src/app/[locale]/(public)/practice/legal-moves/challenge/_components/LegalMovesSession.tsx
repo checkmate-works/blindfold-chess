@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
+import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/legal-moves/_actions/save-result';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { MoveQuestion, PieceType } from '../../_lib/types';
@@ -20,8 +22,11 @@ type Props = {
   selectedPieces: PieceType[];
 };
 
+const MAX_MISTAKES = 3;
+
 export default function LegalMovesSession({ locale, initialTimeLimit, selectedPieces }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
   const t = useTranslations('practice.legalMoves');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
@@ -65,9 +70,11 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     isPaused,
     handleAnswer: hookHandleAnswer,
     togglePause,
+    totalCount,
   } = useTimedSession<MoveQuestion>({
     timeLimit: initialTimeLimit,
     generateQuestion,
+    mistakeAllowance: MAX_MISTAKES,
   });
 
   useScrollToElement('legal-moves-session');
@@ -92,29 +99,52 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     [currentQuestion, hookHandleAnswer]
   );
 
-  // Redirect on finish
+  // Save result and redirect on finish
+  const savedRef = useRef(false);
   useEffect(() => {
-    if (isFinished) {
-      const total = correctCount + incorrectCount;
+    if (!isFinished || savedRef.current) return;
+    savedRef.current = true;
 
-      const params = new URLSearchParams();
-      params.set('score', correctCount.toString());
-      params.set('total', total.toString());
-      params.set('time', totalTime.toString());
-      params.set('timeLimit', initialTimeLimit.toString());
-      params.set('pieces', selectedPieces.join(','));
+    const total = correctCount + incorrectCount;
 
-      router.push(`/${locale}/practice/legal-moves/result?${params.toString()}`);
+    const params = new URLSearchParams();
+    params.set('score', correctCount.toString());
+    params.set('total', total.toString());
+    params.set('time', totalTime.toString());
+    params.set('timeLimit', initialTimeLimit.toString());
+    params.set('pieces', selectedPieces.join(','));
+
+    const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
+
+    if (user && totalCount > 0) {
+      saveLegalMovesResult({
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        timeTaken: totalTime,
+        timeLimit: initialTimeLimit,
+        selectedPieces,
+        mistakeAllowance: MAX_MISTAKES,
+      })
+        .catch(() => {
+          // Silently ignore save failures - result display is unaffected
+        })
+        .finally(() => {
+          router.push(resultUrl);
+        });
+    } else {
+      router.push(resultUrl);
     }
   }, [
     isFinished,
     correctCount,
     incorrectCount,
+    totalCount,
     locale,
     router,
     initialTimeLimit,
     selectedPieces,
     totalTime,
+    user,
   ]);
 
   if (isFinished) {
@@ -147,6 +177,8 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        remainingLives={MAX_MISTAKES - incorrectCount}
+        maxLives={MAX_MISTAKES}
       />
     </div>
   );

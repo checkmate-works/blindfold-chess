@@ -26,7 +26,7 @@ const DEFAULTS: LegalMovesLocalSettings = {
     b: true,
     n: true,
   },
-  mode: 'timed',
+  mode: 'training',
 };
 
 export function LegalMoves({ locale }: Props) {

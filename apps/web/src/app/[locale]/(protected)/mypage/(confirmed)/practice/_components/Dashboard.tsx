@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import type { PieceSymbol } from '@blindfold-chess/features/chess-core';
+
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -35,6 +38,7 @@ import { StatsCard } from './StatsCard';
 // (2) 定期的なデータクリーンアップを想定しており、長期間のデータ保持を前提としない
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
+const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
 export function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('Mypage');
@@ -43,6 +47,13 @@ export function Dashboard({ locale }: { locale: string }) {
   const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
   const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
+  const [pieceFilter, setPieceFilter] = useState<Record<string, boolean>>({
+    k: true,
+    q: true,
+    r: true,
+    b: true,
+    n: true,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
 
@@ -65,9 +76,10 @@ export function Dashboard({ locale }: { locale: string }) {
     };
   }, []);
 
-  // Reset board orientation filter when menu changes
+  // Reset filters when menu changes
   useEffect(() => {
     setBoardOrientationFilter('all');
+    setPieceFilter({ k: true, q: true, r: true, b: true, n: true });
   }, [selectedMenu]);
 
   // Fetch sessions when menu or period changes
@@ -89,15 +101,44 @@ export function Dashboard({ locale }: { locale: string }) {
     };
   }, [selectedMenu, selectedPeriod]);
 
-  const filteredSessions =
+  const handlePieceToggle = (piece: string) => {
+    setPieceFilter((prev) => ({ ...prev, [piece]: !prev[piece] }));
+  };
+
+  const orientationFilteredSessions =
     boardOrientationFilter === 'all'
       ? allSessions
       : allSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
 
-  const filteredPreviousSessions =
+  const activePieces = PIECE_TYPES.filter((p) => pieceFilter[p]).sort();
+  const allPiecesSelected = activePieces.length === PIECE_TYPES.length;
+
+  const filteredSessions = allPiecesSelected
+    ? orientationFilteredSessions
+    : orientationFilteredSessions.filter((s) => {
+        const pieces = s.settings.selectedPieces;
+        if (!Array.isArray(pieces)) return false;
+        const sorted = [...pieces].sort();
+        return (
+          sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i])
+        );
+      });
+
+  const orientationFilteredPreviousSessions =
     boardOrientationFilter === 'all'
       ? previousSessions
       : previousSessions.filter((s) => s.settings.boardOrientation === boardOrientationFilter);
+
+  const filteredPreviousSessions = allPiecesSelected
+    ? orientationFilteredPreviousSessions
+    : orientationFilteredPreviousSessions.filter((s) => {
+        const pieces = s.settings.selectedPieces;
+        if (!Array.isArray(pieces)) return false;
+        const sorted = [...pieces].sort();
+        return (
+          sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i])
+        );
+      });
 
   const currentStats = computeStats(filteredSessions);
   const prevStats = computeStats(filteredPreviousSessions);
@@ -205,6 +246,31 @@ export function Dashboard({ locale }: { locale: string }) {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {selectedMenu === 'legal_moves' && (
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+            {t('filters.selectedPiece')}
+          </label>
+          <div className="flex gap-2">
+            {PIECE_TYPES.map((piece) => (
+              <button
+                key={piece}
+                onClick={() => handlePieceToggle(piece)}
+                className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
+                  pieceFilter[piece]
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted border-border'
+                }`}
+                aria-label={t(`filters.pieces.${piece}`)}
+                title={t(`filters.pieces.${piece}`)}
+              >
+                <ChessPiece type={piece as PieceSymbol} color="w" size={28} />
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
@@ -29,6 +30,8 @@ type Props = {
   incorrectCount: number;
   isPaused?: boolean;
   onTogglePause?: () => void;
+  remainingLives: number;
+  maxLives: number;
 };
 
 export function LegalMovesPlaying({
@@ -45,6 +48,8 @@ export function LegalMovesPlaying({
   incorrectCount,
   isPaused = false,
   onTogglePause,
+  remainingLives,
+  maxLives,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tPractice = useTranslations('practice');
@@ -80,8 +85,21 @@ export function LegalMovesPlaying({
             isPaused || countdown !== null ? 'blur-md grayscale opacity-50 pointer-events-none' : ''
           }`}
         >
-          {/* Timer and Pause Button */}
-          <div className="mb-8 flex justify-end">
+          {/* Timer, Lives and Pause Button */}
+          <div className="mb-8 flex items-center justify-between">
+            {/* Lives - left side */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: maxLives }, (_, i) => (
+                <span key={i} className="text-destructive">
+                  {i < remainingLives ? (
+                    <FaHeart className="w-5 h-5" />
+                  ) : (
+                    <FaRegHeart className="w-5 h-5 opacity-30" />
+                  )}
+                </span>
+              ))}
+            </div>
+            {/* Timer and Pause - right side */}
             <div className="flex items-center gap-2">
               {onTogglePause && (
                 <button

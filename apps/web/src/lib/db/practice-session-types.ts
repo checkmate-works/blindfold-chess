@@ -57,3 +57,15 @@ export type CoordinateQuizResult = {
   incorrectAnswers: number;
   timeTaken: number;
 };
+
+export type LegalMovesSettings = {
+  timeLimit: number;
+  selectedPieces: string[];
+  mistakeAllowance: number | null;
+};
+
+export type LegalMovesResult = {
+  correctAnswers: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+};
