@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
-import {
-  getPgnSuggestion,
-  validatePgnWithDetails,
-} from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { getPgnSuggestion } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+
+import { useDebouncedInput } from '../_hooks/useDebouncedInput';
+import { useIsMobile } from '../_hooks/useIsMobile';
+import { usePgnValidation } from '../_hooks/usePgnValidation';
 
 type Props = {
   value: string;
@@ -36,86 +37,20 @@ export function PgnInput({
   showValidation = true,
 }: Props) {
   const t = useTranslations('pgnInput');
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isPasteRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-    };
-    checkMobile();
-  }, []);
+  const isMobile = useIsMobile();
+  const { debouncedValue, handlePaste } = useDebouncedInput({ value, delay: DEBOUNCE_DELAY });
+  const { showSuccess, showError, invalidMove, errorMessage } = usePgnValidation({
+    debouncedValue,
+    showValidation,
+  });
 
   // Calculate suggestion from value
   const suggestion = useMemo(() => getPgnSuggestion(value), [value]);
 
-  // Update debounced value when value changes
-  useEffect(() => {
-    // If this was a paste operation, update immediately
-    if (isPasteRef.current) {
-      setDebouncedValue(value);
-      isPasteRef.current = false;
-      return;
-    }
-
-    // Otherwise, debounce the update
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      setDebouncedValue(value);
-    }, DEBOUNCE_DELAY);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [value]);
-
-  const validationResult =
-    showValidation && debouncedValue.trim() ? validatePgnWithDetails(debouncedValue) : null;
-  const showSuccess = showValidation && validationResult?.isValid && debouncedValue.trim();
-  const showError = showValidation && validationResult && !validationResult.isValid;
-
-  // Extract invalid move from error message
-  const getInvalidMove = (): string | null => {
-    if (!validationResult?.error) {
-      return null;
-    }
-
-    // Parse "Invalid move in PGN: xyz" pattern (older chess.js)
-    const moveErrorMatch = validationResult.error.match(/Invalid move in PGN: (.+)/);
-    if (moveErrorMatch) {
-      return moveErrorMatch[1];
-    }
-
-    // Parse 'Expected ... but "X" found.' pattern (newer chess.js PGN parser)
-    const parserErrorMatch = validationResult.error.match(/but "(.+)" found/);
-    if (parserErrorMatch) {
-      return parserErrorMatch[1];
-    }
-
-    return null;
-  };
-
-  // Get translated error message
-  const getErrorMessage = (): string => {
-    const invalidMove = getInvalidMove();
-    if (invalidMove) {
-      return t('invalidMove', { move: invalidMove });
-    }
-    return t('invalidPgn');
-  };
-
   // Select invalid move in textarea
   const selectInvalidMove = () => {
-    const invalidMove = getInvalidMove();
     if (!invalidMove || !textareaRef.current) return;
 
     const text = value;
@@ -124,10 +59,6 @@ export function PgnInput({
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(index, index + invalidMove.length);
     }
-  };
-
-  const handlePaste = () => {
-    isPasteRef.current = true;
   };
 
   const applySuggestion = () => {
@@ -215,16 +146,17 @@ export function PgnInput({
       )}
 
       {showError &&
-        (getInvalidMove() ? (
+        errorMessage &&
+        (invalidMove ? (
           <button
             type="button"
             onClick={selectInvalidMove}
             className="text-sm text-destructive hover:underline cursor-pointer text-left"
           >
-            {getErrorMessage()}
+            {errorMessage}
           </button>
         ) : (
-          <p className="text-sm text-destructive">{getErrorMessage()}</p>
+          <p className="text-sm text-destructive">{errorMessage}</p>
         ))}
     </div>
   );
