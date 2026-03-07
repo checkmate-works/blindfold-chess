@@ -5,16 +5,17 @@ import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
 
-import type { PostWithReplyMeta } from '../../_lib/queries';
-import { formatRelativeTime } from '../../_lib/relative-time';
+import type { PostWithReplyMeta } from '../_lib/queries';
+import { formatRelativeTime } from '../_lib/relative-time';
 
 type Props = {
   post: PostWithReplyMeta;
   locale: string;
   square: string;
+  showSquareBadge?: boolean;
 };
 
-export function PostCard({ post, locale, square }: Props) {
+export function PostCard({ post, locale, square, showSquareBadge = false }: Props) {
   const t = useTranslations('topics.squares');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview =
@@ -45,6 +46,11 @@ export function PostCard({ post, locale, square }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <span className="font-medium text-foreground">{displayName}</span>
+            {showSquareBadge && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
+                {square}
+              </span>
+            )}
             <span>·</span>
             <time dateTime={post.createdAt.toISOString()}>
               {post.createdAt.toLocaleDateString(locale, {

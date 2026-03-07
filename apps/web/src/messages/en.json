@@ -1891,6 +1891,8 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post"
       },
+      "recentPosts": "Recent Posts",
+      "noRecentPosts": "No posts yet.",
       "replyCount": "{count, plural, one {# reply} other {# replies}}",
       "newReply": "New Reply {time}",
       "justNow": "just now",

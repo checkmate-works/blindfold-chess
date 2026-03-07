@@ -52,7 +52,7 @@ export const Square = memo(function Square({
   dataSquare,
 }: Props) {
   // Use default colors if themeColors not provided
-  const defaultColors = {
+  const defaultColors: TailwindThemeClasses = {
     light: 'bg-stone-200 dark:bg-stone-300',
     dark: 'bg-stone-600 dark:bg-stone-700',
     lightCoordinates: 'text-stone-700 dark:text-stone-800',

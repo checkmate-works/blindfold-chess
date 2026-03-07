@@ -3,26 +3,6 @@ import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 import { db, profiles, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost } from '@/lib/db';
 
-/**
- * Get post counts per square for the board overview
- */
-export async function getSquarePostCounts(): Promise<Record<string, number>> {
-  const results = await db
-    .select({
-      topicKey: topicPosts.topicKey,
-      count: count(),
-    })
-    .from(topicPosts)
-    .where(and(eq(topicPosts.topicType, 'square'), isNull(topicPosts.parentId)))
-    .groupBy(topicPosts.topicKey);
-
-  const counts: Record<string, number> = {};
-  for (const row of results) {
-    counts[row.topicKey] = row.count;
-  }
-  return counts;
-}
-
 export type TopicPostWithAuthor = TopicPost & {
   author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl'> | null;
 };
@@ -110,12 +90,10 @@ export type PostWithReplyMeta = TopicPostWithAuthor & {
 };
 
 /**
- * Get top-level posts for a square with reply metadata (count, latest reply, replier avatars).
+ * Attach reply metadata (count, latest reply, replier avatars) to posts.
  * Uses two batch queries to avoid N+1.
  */
-export async function getPostsWithReplyMeta(square: string): Promise<PostWithReplyMeta[]> {
-  const posts = await getPostsForSquare(square);
-
+async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithReplyMeta[]> {
   if (posts.length === 0) {
     return [];
   }
@@ -185,6 +163,41 @@ export async function getPostsWithReplyMeta(square: string): Promise<PostWithRep
       },
     };
   });
+}
+
+/**
+ * Get top-level posts for a square with reply metadata.
+ */
+export async function getPostsWithReplyMeta(square: string): Promise<PostWithReplyMeta[]> {
+  const posts = await getPostsForSquare(square);
+  return attachReplyMeta(posts);
+}
+
+/**
+ * Get the most recent top-level posts across all squares with reply metadata.
+ */
+export async function getRecentPostsAcrossSquares(limit = 5): Promise<PostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(and(eq(topicPosts.topicType, 'square'), isNull(topicPosts.parentId)))
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachReplyMeta(posts);
 }
 
 /**

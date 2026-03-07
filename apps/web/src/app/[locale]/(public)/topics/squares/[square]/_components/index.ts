@@ -1,2 +1,2 @@
-export { PostCard } from './PostCard';
+export { PostCard } from '../../_components/PostCard';
 export { SquareHighlightBoard } from './SquareHighlightBoard';

@@ -7,12 +7,13 @@ import {
   PageDescription,
   PagePanel,
   PageTitle,
+  SectionTitle,
 } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SquareBoard } from './_components';
-import { getSquarePostCounts } from './_lib/queries';
+import { PostCard, SquareBoard } from './_components';
+import { getRecentPostsAcrossSquares } from './_lib/queries';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -32,8 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SquaresPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'topics' });
-
-  const postCounts = await getSquarePostCounts();
+  const recentPosts = await getRecentPostsAcrossSquares();
 
   return (
     <div className="space-y-8">
@@ -42,7 +42,25 @@ export default async function SquaresPage({ params }: Props) {
       <PageDescription>{t('squares.description')}</PageDescription>
 
       <PagePanel>
-        <SquareBoard locale={locale} postCounts={postCounts} />
+        <SquareBoard locale={locale} />
+
+        <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
+
+        {recentPosts.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">{t('squares.noRecentPosts')}</p>
+        ) : (
+          <div className="space-y-3">
+            {recentPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                locale={locale}
+                square={post.topicKey}
+                showSquareBadge
+              />
+            ))}
+          </div>
+        )}
 
         <Divider />
 
