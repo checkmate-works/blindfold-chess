@@ -57,6 +57,10 @@
       "title": "Delete Account",
       "description": "Delete your Blindfold Chess account"
     },
+    "mypageLikes": {
+      "title": "Liked Posts",
+      "description": "View posts you have liked"
+    },
     "topics": {
       "title": "Topics",
       "description": "Discuss and share insights about chess squares, positions, and strategies"
@@ -1691,6 +1695,7 @@
   "Mypage": {
     "title": "My Page",
     "practiceLink": "Practice Records",
+    "likesLink": "Liked Posts",
     "profileLink": "Edit Profile",
     "deleteAccountLink": "Delete Account",
     "records": "Records",
@@ -1747,6 +1752,11 @@
       "quadrant_anchors": "Quadrant Anchors"
     }
   },
+  "MypageLikes": {
+    "title": "Liked Posts",
+    "breadcrumbMypage": "My Page",
+    "empty": "No liked posts yet."
+  },
   "deleteAccount": {
     "title": "Delete Account",
     "warning": "This action is permanent and cannot be undone. All your personal data (display name, bio, country, chess accounts, etc.) will be erased. Your username will be retained to prevent reuse.",
@@ -1756,7 +1766,8 @@
     "confirmOk": "Yes, delete my account",
     "confirmCancel": "Cancel",
     "deleting": "Deleting account...",
-    "error": "An error occurred while deleting your account. Please try again."
+    "error": "An error occurred while deleting your account. Please try again.",
+    "breadcrumbMypage": "My Page"
   },
   "toast": {
     "loginSuccess": "Logged in",
@@ -1832,7 +1843,8 @@
     "avatarUploaded": "Profile picture updated",
     "submit": "Save",
     "submitting": "Saving...",
-    "error": "An error occurred. Please try again."
+    "error": "An error occurred. Please try again.",
+    "breadcrumbMypage": "My Page"
   },
   "Admin": {
     "title": "Admin",

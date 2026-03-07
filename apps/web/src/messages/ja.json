@@ -57,6 +57,10 @@
       "title": "退会",
       "description": "Blindfold Chess のアカウントを削除します"
     },
+    "mypageLikes": {
+      "title": "いいねした投稿",
+      "description": "いいねした投稿の一覧を表示します"
+    },
     "topics": {
       "title": "トピック",
       "description": "チェスのマス目やポジション、戦略について議論・共有しましょう"
@@ -1692,6 +1696,7 @@
   "Mypage": {
     "title": "マイページ",
     "practiceLink": "練習記録",
+    "likesLink": "いいねした投稿",
     "profileLink": "プロフィール編集",
     "deleteAccountLink": "退会",
     "records": "レコード",
@@ -1748,6 +1753,11 @@
       "quadrant_anchors": "象限アンカー"
     }
   },
+  "MypageLikes": {
+    "title": "いいねした投稿",
+    "breadcrumbMypage": "マイページ",
+    "empty": "いいねした投稿はまだありません。"
+  },
   "deleteAccount": {
     "title": "退会",
     "warning": "この操作は取り消すことができません。表示名、自己紹介、国、チェスアカウントなどの個人情報はすべて削除されます。ユーザー名は再利用防止のため保持されます。",
@@ -1757,7 +1767,8 @@
     "confirmOk": "はい、退会します",
     "confirmCancel": "キャンセル",
     "deleting": "アカウントを削除中...",
-    "error": "アカウントの削除中にエラーが発生しました。もう一度お試しください。"
+    "error": "アカウントの削除中にエラーが発生しました。もう一度お試しください。",
+    "breadcrumbMypage": "マイページ"
   },
   "toast": {
     "loginSuccess": "ログインしました",
@@ -1833,7 +1844,8 @@
     "avatarUploaded": "プロフィール画像を更新しました",
     "submit": "保存",
     "submitting": "保存中...",
-    "error": "エラーが発生しました。もう一度お試しください。"
+    "error": "エラーが発生しました。もう一度お試しください。",
+    "breadcrumbMypage": "マイページ"
   },
   "Admin": {
     "title": "Admin",

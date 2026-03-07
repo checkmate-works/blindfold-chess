@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 type Props = {
@@ -37,6 +37,11 @@ export default async function MypagePage({ params }: Props) {
               </Link>
             </li>
             <li>
+              <Link href={`/${locale}/mypage/likes`} className="text-primary hover:underline">
+                {t('likesLink')}
+              </Link>
+            </li>
+            <li>
               <Link href={`/${locale}/mypage/profile`} className="text-primary hover:underline">
                 {t('profileLink')}
               </Link>
@@ -51,6 +56,10 @@ export default async function MypagePage({ params }: Props) {
             </li>
           </ul>
         </nav>
+
+        <Divider />
+
+        <Breadcrumb locale={locale} items={[{ label: t('title') }]} />
       </PagePanel>
     </div>
   );

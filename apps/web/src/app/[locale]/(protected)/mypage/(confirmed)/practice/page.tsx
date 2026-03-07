@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { MypageContent } from './_components/MypageContent';
 
@@ -29,6 +29,13 @@ export default async function PracticePage({ params }: Props) {
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
         <MypageContent />
+
+        <Divider />
+
+        <Breadcrumb
+          locale={locale}
+          items={[{ label: t('title'), href: '/mypage' }, { label: t('practiceLink') }]}
+        />
       </PagePanel>
     </div>
   );
