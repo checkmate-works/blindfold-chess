@@ -1866,6 +1866,8 @@
     "chessAccounts": "Chess Accounts",
     "bio": "About",
     "emptyProfile": "This user hasn't added any profile information yet.",
+    "followers": "Followers",
+    "followingCount": "Following",
     "follow": "Follow",
     "following": "Following",
     "unfollow": "Unfollow"

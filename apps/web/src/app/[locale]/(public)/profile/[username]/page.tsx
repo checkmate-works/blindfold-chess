@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
@@ -88,6 +88,21 @@ export default async function PublicProfilePage({ params }: Props) {
     initialFollowing = !!existingFollow;
   }
 
+  const [followerResult] = await db
+    .select({ count: count() })
+    .from(follows)
+    .where(eq(follows.followingId, profile.id));
+  const followerCount = followerResult.count;
+
+  let followingCount = 0;
+  if (isOwnProfile) {
+    const [followingResult] = await db
+      .select({ count: count() })
+      .from(follows)
+      .where(eq(follows.followerId, profile.id));
+    followingCount = followingResult.count;
+  }
+
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
@@ -133,6 +148,17 @@ export default async function PublicProfilePage({ params }: Props) {
                 )}
               </h1>
               <p className="text-muted-foreground mt-1">@{profile.username}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isOwnProfile && (
+                  <>
+                    <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                    {t('followingCount')}
+                    <span className="mx-2" />
+                  </>
+                )}
+                <span className="font-semibold text-foreground">{followerCount}</span>{' '}
+                {t('followers')}
+              </p>
             </div>
           </div>
 
