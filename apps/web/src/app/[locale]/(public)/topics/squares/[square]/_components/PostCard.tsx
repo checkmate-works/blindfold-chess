@@ -1,22 +1,29 @@
-import Image from 'next/image';
-import Link from 'next/link';
+'use client';
 
-import type { TopicPostWithAuthor } from '../../_lib/queries';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+
+import { Link } from '@/i18n/routing';
+
+import type { PostWithReplyMeta } from '../../_lib/queries';
+import { formatRelativeTime } from '../../_lib/relative-time';
 
 type Props = {
-  post: TopicPostWithAuthor;
+  post: PostWithReplyMeta;
   locale: string;
   square: string;
 };
 
 export function PostCard({ post, locale, square }: Props) {
+  const t = useTranslations('topics.squares');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview =
     post.content.length > 200 ? post.content.slice(0, 200) + '...' : post.content;
 
   return (
     <Link
-      href={`/${locale}/topics/squares/${square}/posts/${post.id}`}
+      href={`/topics/squares/${square}/posts/${post.id}`}
+      locale={locale}
       className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
     >
       <div className="flex items-start gap-3">
@@ -52,6 +59,44 @@ export function PostCard({ post, locale, square }: Props) {
           </p>
         </div>
       </div>
+
+      {post.replyMeta.replyCount > 0 && (
+        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
+          <div className="flex -space-x-2">
+            {post.replyMeta.repliers.map((replier, i) =>
+              replier.avatarUrl ? (
+                <Image
+                  key={i}
+                  src={replier.avatarUrl}
+                  alt={replier.displayName}
+                  width={24}
+                  height={24}
+                  className="rounded-full border-2 border-card"
+                />
+              ) : (
+                <div
+                  key={i}
+                  className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
+                >
+                  <span className="text-[10px] text-muted-foreground">
+                    {replier.displayName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {t('replyCount', { count: post.replyMeta.replyCount })}
+          </span>
+          {post.replyMeta.latestReplyAt && (
+            <span className="text-xs text-muted-foreground ml-auto">
+              {t('newReply', {
+                time: formatRelativeTime(post.replyMeta.latestReplyAt, locale, t('justNow')),
+              })}
+            </span>
+          )}
+        </div>
+      )}
     </Link>
   );
 }

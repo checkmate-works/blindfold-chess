@@ -15,7 +15,7 @@ import {
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getPostsForSquare } from '../_lib/queries';
+import { getPostsWithReplyMeta } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
@@ -47,7 +47,7 @@ export default async function SquarePostsPage({ params }: Props) {
   }
 
   const t = await getTranslations({ locale, namespace: 'topics' });
-  const posts = await getPostsForSquare(square);
+  const posts = await getPostsWithReplyMeta(square);
 
   return (
     <div className="space-y-8">

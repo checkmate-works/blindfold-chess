@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
-import { getRepliesByPostId } from './queries';
+import { getPostsWithReplyMeta, getRepliesByPostId } from './queries';
 
 vi.mock('@/lib/db', () => {
   const mockDb = {
@@ -37,7 +37,16 @@ const mockDb = vi.mocked(db);
  */
 function mockChain(rows: unknown[]) {
   const chain: Record<string, unknown> = {};
-  const methods = ['select', 'from', 'leftJoin', 'where', 'orderBy', 'groupBy', 'limit'];
+  const methods = [
+    'select',
+    'from',
+    'leftJoin',
+    'innerJoin',
+    'where',
+    'orderBy',
+    'groupBy',
+    'limit',
+  ];
   for (const m of methods) {
     chain[m] = vi.fn().mockReturnValue(chain);
   }
@@ -206,5 +215,269 @@ describe('getRepliesByPostId', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].author).toBeNull();
+  });
+});
+
+describe('getPostsWithReplyMeta', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  /**
+   * Helper: configure sequential db.select calls for getPostsWithReplyMeta.
+   * Call 1: getPostsForSquare (posts)
+   * Call 2: replyStats (counts + latestReplyAt)
+   * Call 3: repliesWithAvatars (avatar rows)
+   */
+  function setupMocks(postRows: unknown[], statsRows: unknown[], avatarRows: unknown[]) {
+    const postsChain = mockChain(postRows);
+    const statsChain = mockChain(statsRows);
+    const avatarsChain = mockChain(avatarRows);
+
+    mockDb.select
+      .mockReturnValueOnce(postsChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(statsChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(avatarsChain as unknown as ReturnType<typeof mockDb.select>);
+  }
+
+  const postRow = (id: string) => ({
+    post: {
+      id,
+      userId: 'user-1',
+      topicType: 'square',
+      topicKey: 'e4',
+      parentId: null,
+      content: `Post ${id}`,
+      createdAt: new Date('2025-01-01T00:00:00Z'),
+    },
+    author: {
+      username: 'alice',
+      displayName: 'Alice',
+      avatarUrl: 'https://example.com/alice.png',
+    },
+  });
+
+  it('should return empty array when no posts exist', async () => {
+    const chain = mockChain([]);
+    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty replyMeta for posts with no replies', async () => {
+    setupMocks([postRow(testPostId)], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].replyMeta).toEqual({
+      replyCount: 0,
+      latestReplyAt: null,
+      repliers: [],
+    });
+  });
+
+  it('should return correct reply count', async () => {
+    const statsRows = [
+      { parentId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
+    ];
+
+    setupMocks([postRow(testPostId)], statsRows, []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].replyMeta.replyCount).toBe(5);
+  });
+
+  it('should return correct latestReplyAt', async () => {
+    const latestDate = new Date('2025-02-15T10:30:00Z');
+    const statsRows = [{ parentId: testPostId, replyCount: 3, latestReplyAt: latestDate }];
+
+    setupMocks([postRow(testPostId)], statsRows, []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].replyMeta.latestReplyAt).toEqual(latestDate);
+  });
+
+  it('should return up to 3 unique repliers', async () => {
+    const statsRows = [
+      { parentId: testPostId, replyCount: 4, latestReplyAt: new Date('2025-01-04T00:00:00Z') },
+    ];
+    const avatarRows = [
+      {
+        parentId: testPostId,
+        userId: 'user-a',
+        avatarUrl: 'https://example.com/a.png',
+        displayName: 'A',
+        username: 'a',
+        createdAt: new Date('2025-01-04T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-b',
+        avatarUrl: 'https://example.com/b.png',
+        displayName: 'B',
+        username: 'b',
+        createdAt: new Date('2025-01-03T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-c',
+        avatarUrl: 'https://example.com/c.png',
+        displayName: 'C',
+        username: 'c',
+        createdAt: new Date('2025-01-02T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-d',
+        avatarUrl: 'https://example.com/d.png',
+        displayName: 'D',
+        username: 'd',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+    ];
+
+    setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].replyMeta.repliers).toHaveLength(3);
+    expect(result[0].replyMeta.repliers).toEqual([
+      { avatarUrl: 'https://example.com/a.png', displayName: 'A' },
+      { avatarUrl: 'https://example.com/b.png', displayName: 'B' },
+      { avatarUrl: 'https://example.com/c.png', displayName: 'C' },
+    ]);
+  });
+
+  it('should deduplicate repliers from the same user replying multiple times', async () => {
+    const statsRows = [
+      { parentId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+    ];
+    const avatarRows = [
+      {
+        parentId: testPostId,
+        userId: 'user-alice',
+        avatarUrl: 'https://example.com/alice.png',
+        displayName: 'Alice',
+        username: 'alice',
+        createdAt: new Date('2025-01-03T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-alice',
+        avatarUrl: 'https://example.com/alice.png',
+        displayName: 'Alice',
+        username: 'alice',
+        createdAt: new Date('2025-01-02T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-bob',
+        avatarUrl: 'https://example.com/bob.png',
+        displayName: 'Bob',
+        username: 'bob',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+    ];
+
+    setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].replyMeta.repliers).toEqual([
+      { avatarUrl: 'https://example.com/alice.png', displayName: 'Alice' },
+      { avatarUrl: 'https://example.com/bob.png', displayName: 'Bob' },
+    ]);
+  });
+
+  it('should include repliers with no avatar URL (with displayName)', async () => {
+    const statsRows = [
+      { parentId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-02T00:00:00Z') },
+    ];
+    const avatarRows = [
+      {
+        parentId: testPostId,
+        userId: 'user-no-avatar',
+        avatarUrl: null,
+        displayName: 'NoAvatar',
+        username: 'noavatar',
+        createdAt: new Date('2025-01-02T00:00:00Z'),
+      },
+      {
+        parentId: testPostId,
+        userId: 'user-bob',
+        avatarUrl: 'https://example.com/bob.png',
+        displayName: 'Bob',
+        username: 'bob',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+    ];
+
+    setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].replyMeta.repliers).toEqual([
+      { avatarUrl: null, displayName: 'NoAvatar' },
+      { avatarUrl: 'https://example.com/bob.png', displayName: 'Bob' },
+    ]);
+  });
+
+  it('should handle multiple posts with different reply metadata', async () => {
+    const postRows = [postRow(testPostId), postRow(otherPostId)];
+    const statsRows = [
+      { parentId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+      { parentId: otherPostId, replyCount: 1, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+    ];
+    const avatarRows = [
+      {
+        parentId: testPostId,
+        userId: 'user-a',
+        avatarUrl: 'https://example.com/a.png',
+        displayName: 'A',
+        username: 'a',
+        createdAt: new Date('2025-01-05T00:00:00Z'),
+      },
+      {
+        parentId: otherPostId,
+        userId: 'user-b',
+        avatarUrl: 'https://example.com/b.png',
+        displayName: 'B',
+        username: 'b',
+        createdAt: new Date('2025-01-03T00:00:00Z'),
+      },
+    ];
+
+    setupMocks(postRows, statsRows, avatarRows);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(2);
+    expect(result[0].replyMeta.replyCount).toBe(2);
+    expect(result[0].replyMeta.repliers).toEqual([
+      { avatarUrl: 'https://example.com/a.png', displayName: 'A' },
+    ]);
+    expect(result[1].replyMeta.replyCount).toBe(1);
+    expect(result[1].replyMeta.repliers).toEqual([
+      { avatarUrl: 'https://example.com/b.png', displayName: 'B' },
+    ]);
+  });
+
+  it('should preserve post and author data alongside replyMeta', async () => {
+    setupMocks([postRow(testPostId)], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result[0].id).toBe(testPostId);
+    expect(result[0].content).toBe(`Post ${testPostId}`);
+    expect(result[0].author).toEqual({
+      username: 'alice',
+      displayName: 'Alice',
+      avatarUrl: 'https://example.com/alice.png',
+    });
   });
 });

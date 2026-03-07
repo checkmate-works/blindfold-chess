@@ -1892,6 +1892,9 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です"
       },
+      "replyCount": "{count}件の返信",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "replies": {
         "title": "返信",
         "count": "{count}件の返信",

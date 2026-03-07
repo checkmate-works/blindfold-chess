@@ -1891,6 +1891,9 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post"
       },
+      "replyCount": "{count, plural, one {# reply} other {# replies}}",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "replies": {
         "title": "Replies",
         "count": "{count, plural, one {# reply} other {# replies}}",
