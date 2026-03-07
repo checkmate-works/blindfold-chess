@@ -43,7 +43,7 @@ export function LikeButton({ postId, locale, square, initialLikeCount, initialLi
       onClick={handleClick}
       disabled={isPending}
       aria-label={optimistic.liked ? t('unlike') : t('like')}
-      className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+      className="flex items-center gap-1 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
     >
       {optimistic.liked ? (
         <AiFillHeart className="w-4 h-4 text-red-500" />
