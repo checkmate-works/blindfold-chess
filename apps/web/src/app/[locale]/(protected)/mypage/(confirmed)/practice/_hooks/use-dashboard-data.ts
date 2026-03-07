@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PracticeMenuType, PracticeSessionRow } from '@/lib/db/practice-session-types';
 import { getSessionScoreFields, isTypedSession } from '@/lib/db/practice-session-types';
@@ -17,21 +17,17 @@ import {
   getPeriodStart,
   getPreviousPeriodStart,
 } from '../_lib/dashboard-utils';
+import {
+  DEFAULT_PIECE_FILTER,
+  PIECE_TYPES,
+  derivePieceFilterFromSessions,
+} from '../_lib/derive-piece-filter';
 
-export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
-
-const DEFAULT_PIECE_FILTER: Record<string, boolean> = {
-  k: true,
-  q: true,
-  r: true,
-  b: true,
-  n: true,
-};
+export { PIECE_TYPES } from '../_lib/derive-piece-filter';
 
 type FilterContext = {
   boardOrientationFilter: string;
   activePieces: string[];
-  allPiecesSelected: boolean;
 };
 
 type SessionFilter = (session: PracticeSessionRow, ctx: FilterContext) => boolean;
@@ -56,7 +52,6 @@ const MENU_FILTERS: Partial<Record<PracticeMenuType, SessionFilter>> = {
     return true;
   },
   legal_moves: (s, ctx) => {
-    if (ctx.allPiecesSelected) return true;
     if (isTypedSession(s) && s.menuType === 'legal_moves') {
       const sorted = [...s.settings.selectedPieces].sort();
       return (
@@ -120,10 +115,15 @@ export function useDashboardData(locale: string) {
     };
   }, []);
 
+  // Track whether piece filter should be derived from session data on next fetch.
+  // Set to true when menu changes; consumed (set to false) after derivation.
+  const shouldDerivePieceFilter = useRef(true);
+
   // Reset filters when menu changes
   useEffect(() => {
     setBoardOrientationFilter('all');
     setPieceFilter(DEFAULT_PIECE_FILTER);
+    shouldDerivePieceFilter.current = true;
   }, [selectedMenu]);
 
   // Fetch sessions when menu or period changes
@@ -137,6 +137,13 @@ export function useDashboardData(locale: string) {
       if (!cancelled && response.success) {
         setAllSessions(response.sessions);
         setPreviousSessions(response.previousSessions);
+
+        // Derive piece filter from session data only on initial load for the menu.
+        // Subsequent period changes preserve the user's manual filter adjustments.
+        if (selectedMenu === 'legal_moves' && shouldDerivePieceFilter.current) {
+          setPieceFilter(derivePieceFilterFromSessions(response.sessions));
+          shouldDerivePieceFilter.current = false;
+        }
       }
       if (!cancelled) setIsLoading(false);
     })();
@@ -153,11 +160,9 @@ export function useDashboardData(locale: string) {
     () => PIECE_TYPES.filter((p) => pieceFilter[p]).sort(),
     [pieceFilter]
   );
-  const allPiecesSelected = activePieces.length === PIECE_TYPES.length;
-
   const filterCtx = useMemo<FilterContext>(
-    () => ({ boardOrientationFilter, activePieces: [...activePieces], allPiecesSelected }),
-    [boardOrientationFilter, activePieces, allPiecesSelected]
+    () => ({ boardOrientationFilter, activePieces: [...activePieces] }),
+    [boardOrientationFilter, activePieces]
   );
 
   const filteredSessions = useMemo(
