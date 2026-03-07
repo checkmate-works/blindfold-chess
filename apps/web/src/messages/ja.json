@@ -1892,6 +1892,9 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です"
       },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "likeCount": "{count}件のいいね",
       "recentPosts": "新着の投稿",
       "noRecentPosts": "まだ投稿がありません。",
       "replyCount": "{count}件の返信",

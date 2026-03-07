@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
+import { createClient } from '@/lib/supabase/server';
+
 import {
   Breadcrumb,
   Divider,
@@ -47,7 +49,11 @@ export default async function SquarePostsPage({ params }: Props) {
   }
 
   const t = await getTranslations({ locale, namespace: 'topics' });
-  const posts = await getPostsWithReplyMeta(square);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const posts = await getPostsWithReplyMeta(square, user?.id);
 
   return (
     <div className="space-y-8">

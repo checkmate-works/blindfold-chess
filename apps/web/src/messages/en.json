@@ -1891,6 +1891,9 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post"
       },
+      "like": "Like",
+      "unlike": "Unlike",
+      "likeCount": "{count, plural, one {# like} other {# likes}}",
       "recentPosts": "Recent Posts",
       "noRecentPosts": "No posts yet.",
       "replyCount": "{count, plural, one {# reply} other {# replies}}",
