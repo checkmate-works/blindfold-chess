@@ -1865,7 +1865,10 @@
     "defaultDescription": "{displayName}'s profile on Blindfold Chess",
     "chessAccounts": "Chess Accounts",
     "bio": "About",
-    "emptyProfile": "This user hasn't added any profile information yet."
+    "emptyProfile": "This user hasn't added any profile information yet.",
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow"
   },
   "topics": {
     "title": "Topics",

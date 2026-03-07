@@ -1866,7 +1866,10 @@
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
-    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。"
+    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。",
+    "follow": "フォローする",
+    "following": "フォロー中",
+    "unfollow": "フォロー解除"
   },
   "topics": {
     "title": "トピック",

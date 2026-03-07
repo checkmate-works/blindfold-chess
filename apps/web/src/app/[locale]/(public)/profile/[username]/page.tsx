@@ -7,10 +7,13 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
-import { db, profiles } from '@/lib/db';
+import { db, follows, profiles } from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
 
 import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { FollowButton } from './_components/FollowButton';
 
 type Props = {
   params: Promise<{ locale: Locale; username: string }>;
@@ -49,6 +52,7 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const [profile] = await db
     .select({
+      id: profiles.id,
       username: profiles.username,
       displayName: profiles.displayName,
       avatarUrl: profiles.avatarUrl,
@@ -65,6 +69,23 @@ export default async function PublicProfilePage({ params }: Props) {
 
   if (!profile) {
     notFound();
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isOwnProfile = user?.id === profile.id;
+
+  let initialFollowing = false;
+  if (user && !isOwnProfile) {
+    const [existingFollow] = await db
+      .select({ id: follows.id })
+      .from(follows)
+      .where(and(eq(follows.followerId, user.id), eq(follows.followingId, profile.id)))
+      .limit(1);
+    initialFollowing = !!existingFollow;
   }
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
@@ -115,52 +136,62 @@ export default async function PublicProfilePage({ params }: Props) {
             </div>
           </div>
 
-          {hasChessAccounts && (
-            <div className="flex items-center gap-4">
-              {profile.fideId && (
-                <a
-                  href={`https://ratings.fide.com/profile/${profile.fideId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="FIDE profile"
-                  title="FIDE"
-                  className="opacity-70 transition-opacity hover:opacity-100"
-                >
-                  <Image
-                    src="/images/fide-favicon.ico"
-                    alt="FIDE"
-                    width={24}
-                    height={24}
-                    unoptimized
-                  />
-                </a>
-              )}
-              {profile.chesscomUsername && (
-                <a
-                  href={`https://www.chess.com/member/${profile.chesscomUsername}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Chess.com profile"
-                  title="Chess.com"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <SiChessdotcom size={24} />
-                </a>
-              )}
-              {profile.lichessUsername && (
-                <a
-                  href={`https://lichess.org/@/${profile.lichessUsername}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Lichess profile"
-                  title="Lichess"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <SiLichess size={24} />
-                </a>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {!isOwnProfile && (
+              <FollowButton
+                targetUsername={profile.username}
+                locale={locale}
+                initialFollowing={initialFollowing}
+                isAuthenticated={!!user}
+              />
+            )}
+            {hasChessAccounts && (
+              <>
+                {profile.fideId && (
+                  <a
+                    href={`https://ratings.fide.com/profile/${profile.fideId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="FIDE profile"
+                    title="FIDE"
+                    className="opacity-70 transition-opacity hover:opacity-100"
+                  >
+                    <Image
+                      src="/images/fide-favicon.ico"
+                      alt="FIDE"
+                      width={24}
+                      height={24}
+                      unoptimized
+                    />
+                  </a>
+                )}
+                {profile.chesscomUsername && (
+                  <a
+                    href={`https://www.chess.com/member/${profile.chesscomUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Chess.com profile"
+                    title="Chess.com"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <SiChessdotcom size={24} />
+                  </a>
+                )}
+                {profile.lichessUsername && (
+                  <a
+                    href={`https://lichess.org/@/${profile.lichessUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Lichess profile"
+                    title="Lichess"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <SiLichess size={24} />
+                  </a>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Profile Content */}
