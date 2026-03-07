@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
@@ -11,7 +10,7 @@ import { Breadcrumb, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { LikeButton } from '../../../_components';
+import { LikeButton, UserAvatar } from '../../../_components';
 import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
@@ -68,6 +67,7 @@ export default async function PostDetailPage({ params }: Props) {
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
+  const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
   return (
     <div className="space-y-8">
@@ -91,37 +91,25 @@ export default async function PostDetailPage({ params }: Props) {
         </div>
 
         <div className="space-y-6">
-          <div className="flex items-start gap-3">
-            {post.author?.avatarUrl ? (
-              <Image
-                src={post.author.avatarUrl}
-                alt={displayName}
-                width={40}
-                height={40}
-                className="rounded-full flex-shrink-0"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                <span className="text-sm text-muted-foreground">
-                  {displayName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div>
-              <span className="font-medium text-foreground">{displayName}</span>
-              <div className="text-sm text-muted-foreground">
-                <time dateTime={post.createdAt.toISOString()}>
-                  {post.createdAt.toLocaleDateString(locale, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
-              </div>
+          <UserAvatar
+            profileHref={profileHref}
+            avatarUrl={post.author?.avatarUrl}
+            displayName={displayName}
+            locale={locale}
+            size="md"
+          >
+            <div className="text-sm text-muted-foreground">
+              <time dateTime={post.createdAt.toISOString()}>
+                {post.createdAt.toLocaleDateString(locale, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </time>
             </div>
-          </div>
+          </UserAvatar>
 
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
             {post.content}
