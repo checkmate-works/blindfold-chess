@@ -75,3 +75,37 @@ CREATE POLICY "topic_post_likes_insert" ON "topic_post_likes"
 DROP POLICY IF EXISTS "topic_post_likes_delete" ON "topic_post_likes";
 CREATE POLICY "topic_post_likes_delete" ON "topic_post_likes"
   FOR DELETE USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- follows
+-- =============================================================================
+ALTER TABLE "follows" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "follows_select" ON "follows";
+CREATE POLICY "follows_select" ON "follows"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "follows_insert" ON "follows";
+CREATE POLICY "follows_insert" ON "follows"
+  FOR INSERT WITH CHECK (auth.uid() = follower_id);
+
+DROP POLICY IF EXISTS "follows_delete" ON "follows";
+CREATE POLICY "follows_delete" ON "follows"
+  FOR DELETE USING (auth.uid() = follower_id);
+
+-- =============================================================================
+-- blocks
+-- =============================================================================
+ALTER TABLE "blocks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "blocks_select" ON "blocks";
+CREATE POLICY "blocks_select" ON "blocks"
+  FOR SELECT USING (auth.uid() = blocker_id);
+
+DROP POLICY IF EXISTS "blocks_insert" ON "blocks";
+CREATE POLICY "blocks_insert" ON "blocks"
+  FOR INSERT WITH CHECK (auth.uid() = blocker_id);
+
+DROP POLICY IF EXISTS "blocks_delete" ON "blocks";
+CREATE POLICY "blocks_delete" ON "blocks"
+  FOR DELETE USING (auth.uid() = blocker_id);

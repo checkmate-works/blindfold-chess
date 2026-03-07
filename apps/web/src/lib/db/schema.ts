@@ -270,3 +270,41 @@ export const topicPostLikes = pgTable(
 
 export type TopicPostLike = typeof topicPostLikes.$inferSelect;
 export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
+
+// Follows
+export const follows = pgTable(
+  'follows',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    followerId: uuid('follower_id').notNull(), // references auth.users — FK defined in custom SQL
+    followingId: uuid('following_id').notNull(), // references auth.users — FK defined in custom SQL
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique('uq_follow').on(table.followerId, table.followingId),
+    index('idx_follows_follower').on(table.followerId),
+    index('idx_follows_following').on(table.followingId),
+  ]
+);
+
+export type Follow = typeof follows.$inferSelect;
+export type NewFollow = typeof follows.$inferInsert;
+
+// Blocks
+export const blocks = pgTable(
+  'blocks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    blockerId: uuid('blocker_id').notNull(), // references auth.users — FK defined in custom SQL
+    blockedId: uuid('blocked_id').notNull(), // references auth.users — FK defined in custom SQL
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique('uq_block').on(table.blockerId, table.blockedId),
+    index('idx_blocks_blocker').on(table.blockerId),
+    index('idx_blocks_blocked').on(table.blockedId),
+  ]
+);
+
+export type Block = typeof blocks.$inferSelect;
+export type NewBlock = typeof blocks.$inferInsert;
