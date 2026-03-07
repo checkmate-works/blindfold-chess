@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
+import { notFound } from 'next/navigation';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
@@ -97,6 +99,12 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Ensure that the incoming `locale` is valid
+  if (!(routing.locales as readonly string[]).includes(locale)) {
+    notFound();
+  }
+
   const allMessages = await getMessages({ locale });
 
   // Namespaces used only by Server Components (via getTranslations()), not by
