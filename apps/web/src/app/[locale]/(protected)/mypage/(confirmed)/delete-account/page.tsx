@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 import { DeleteAccountButton } from './_components';
@@ -34,6 +34,13 @@ export default async function DeleteAccountPage({ params }: Props) {
           <p className="text-sm text-muted-foreground">{t('warning')}</p>
           <DeleteAccountButton locale={locale} />
         </div>
+
+        <Divider />
+
+        <Breadcrumb
+          locale={locale}
+          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+        />
       </PagePanel>
     </div>
   );

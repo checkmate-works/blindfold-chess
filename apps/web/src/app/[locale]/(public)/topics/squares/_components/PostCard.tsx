@@ -7,6 +7,7 @@ import { Link } from '@/i18n/routing';
 
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
+import { LikeButton } from './LikeButton';
 
 type Props = {
   post: PostWithReplyMeta;
@@ -63,6 +64,16 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
           <p className="text-sm text-foreground whitespace-pre-wrap break-words">
             {contentPreview}
           </p>
+
+          <div className="mt-2">
+            <LikeButton
+              postId={post.id}
+              locale={locale}
+              square={square}
+              initialLikeCount={post.likeMeta.likeCount}
+              initialLikedByMe={post.likeMeta.likedByMe}
+            />
+          </div>
         </div>
       </div>
 

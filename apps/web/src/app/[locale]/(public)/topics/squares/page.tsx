@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { createClient } from '@/lib/supabase/server';
+
 import {
   Breadcrumb,
   Divider,
@@ -33,7 +35,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SquaresPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'topics' });
-  const recentPosts = await getRecentPostsAcrossSquares();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const recentPosts = await getRecentPostsAcrossSquares(5, user?.id);
 
   return (
     <div className="space-y-8">

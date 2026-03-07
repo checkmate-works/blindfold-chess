@@ -1,16 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
 
-import { eq } from 'drizzle-orm';
-
-import { db, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components';
+import { getLikedPostsByUser } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
 import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-
-import { ProfileForm } from './_components';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -18,40 +13,45 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.profile' });
+  const t = await getTranslations({ locale, namespace: 'metadata.mypageLikes' });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/profile' }),
     title: t('title'),
     description: t('description'),
     robots: { index: false, follow: false },
   };
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function LikesPage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'profile' });
+  const t = await getTranslations({ locale, namespace: 'MypageLikes' });
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect(`/${locale}/sign-in`);
-  }
-
-  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
-
-  if (!profile) {
-    redirect(`/${locale}/mypage/setup-username`);
-  }
+  const posts = await getLikedPostsByUser(user!.id);
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        <ProfileForm locale={locale} profile={profile} />
+        {posts.length === 0 ? (
+          <p className="text-muted-foreground">{t('empty')}</p>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                locale={locale}
+                square={post.topicKey}
+                showSquareBadge
+              />
+            ))}
+          </div>
+        )}
 
         <Divider />
 

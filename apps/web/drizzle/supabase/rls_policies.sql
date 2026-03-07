@@ -58,3 +58,20 @@ CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON "profiles"
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
+
+-- =============================================================================
+-- topic_post_likes
+-- =============================================================================
+ALTER TABLE "topic_post_likes" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "topic_post_likes_select" ON "topic_post_likes";
+CREATE POLICY "topic_post_likes_select" ON "topic_post_likes"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "topic_post_likes_insert" ON "topic_post_likes";
+CREATE POLICY "topic_post_likes_insert" ON "topic_post_likes"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "topic_post_likes_delete" ON "topic_post_likes";
+CREATE POLICY "topic_post_likes_delete" ON "topic_post_likes"
+  FOR DELETE USING (auth.uid() = user_id);

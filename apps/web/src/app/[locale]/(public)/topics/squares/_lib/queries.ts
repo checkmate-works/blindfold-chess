@@ -1,6 +1,6 @@
 import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
-import { db, profiles, topicPosts } from '@/lib/db';
+import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost } from '@/lib/db';
 
 export type TopicPostWithAuthor = TopicPost & {
@@ -85,15 +85,24 @@ export type ReplyMeta = {
   repliers: Replier[];
 };
 
+export type LikeMeta = {
+  likeCount: number;
+  likedByMe: boolean;
+};
+
 export type PostWithReplyMeta = TopicPostWithAuthor & {
   replyMeta: ReplyMeta;
+  likeMeta: LikeMeta;
 };
 
 /**
- * Attach reply metadata (count, latest reply, replier avatars) to posts.
- * Uses two batch queries to avoid N+1.
+ * Attach post metadata (reply counts, replier avatars, like counts) to posts.
+ * Uses batch queries to avoid N+1.
  */
-async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithReplyMeta[]> {
+async function attachPostMeta(
+  posts: TopicPostWithAuthor[],
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
   if (posts.length === 0) {
     return [];
   }
@@ -126,6 +135,28 @@ async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithRe
     .where(inArray(topicPosts.parentId, postIds))
     .orderBy(desc(topicPosts.createdAt));
 
+  // Batch query 3: like counts per post
+  const likeCounts = await db
+    .select({
+      postId: topicPostLikes.postId,
+      likeCount: count(),
+    })
+    .from(topicPostLikes)
+    .where(inArray(topicPostLikes.postId, postIds))
+    .groupBy(topicPostLikes.postId);
+
+  // Batch query 4: which posts the current user has liked
+  let userLikedPostIds = new Set<string>();
+  if (currentUserId) {
+    const userLikes = await db
+      .select({ postId: topicPostLikes.postId })
+      .from(topicPostLikes)
+      .where(
+        and(eq(topicPostLikes.userId, currentUserId), inArray(topicPostLikes.postId, postIds))
+      );
+    userLikedPostIds = new Set(userLikes.map((l) => l.postId));
+  }
+
   // Build lookup maps
   const statsMap = new Map(
     replyStats.map((r) => [
@@ -133,6 +164,8 @@ async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithRe
       { replyCount: r.replyCount, latestReplyAt: r.latestReplyAt },
     ])
   );
+
+  const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.likeCount]));
 
   // Collect up to 3 unique repliers per post (most recent, deduplicated by userId)
   const repliersMap = new Map<string, Replier[]>();
@@ -161,6 +194,10 @@ async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithRe
         latestReplyAt: stats?.latestReplyAt ?? null,
         repliers: repliersMap.get(post.id) ?? [],
       },
+      likeMeta: {
+        likeCount: likeCountMap.get(post.id) ?? 0,
+        likedByMe: userLikedPostIds.has(post.id),
+      },
     };
   });
 }
@@ -168,15 +205,21 @@ async function attachReplyMeta(posts: TopicPostWithAuthor[]): Promise<PostWithRe
 /**
  * Get top-level posts for a square with reply metadata.
  */
-export async function getPostsWithReplyMeta(square: string): Promise<PostWithReplyMeta[]> {
+export async function getPostsWithReplyMeta(
+  square: string,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
   const posts = await getPostsForSquare(square);
-  return attachReplyMeta(posts);
+  return attachPostMeta(posts, currentUserId);
 }
 
 /**
  * Get the most recent top-level posts across all squares with reply metadata.
  */
-export async function getRecentPostsAcrossSquares(limit = 5): Promise<PostWithReplyMeta[]> {
+export async function getRecentPostsAcrossSquares(
+  limit = 5,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
   const results = await db
     .select({
       post: topicPosts,
@@ -197,13 +240,80 @@ export async function getRecentPostsAcrossSquares(limit = 5): Promise<PostWithRe
     author: r.author,
   }));
 
-  return attachReplyMeta(posts);
+  return attachPostMeta(posts, currentUserId);
 }
 
 /**
- * Get replies for a specific post
+ * Get like metadata for a single post.
  */
-export async function getRepliesByPostId(postId: string): Promise<TopicPostWithAuthor[]> {
+export async function getLikeMetaForPost(
+  postId: string,
+  currentUserId?: string
+): Promise<LikeMeta> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPostLikes)
+    .where(eq(topicPostLikes.postId, postId));
+
+  let likedByMe = false;
+  if (currentUserId) {
+    const userLike = await db
+      .select({ id: topicPostLikes.id })
+      .from(topicPostLikes)
+      .where(and(eq(topicPostLikes.userId, currentUserId), eq(topicPostLikes.postId, postId)))
+      .limit(1);
+    likedByMe = userLike.length > 0;
+  }
+
+  return {
+    likeCount: result.count,
+    likedByMe,
+  };
+}
+
+/**
+ * Get posts liked by a specific user, ordered by like date (newest first).
+ * Returns posts with reply/like metadata and the topicKey for each post.
+ */
+export async function getLikedPostsByUser(
+  userId: string
+): Promise<(PostWithReplyMeta & { topicKey: string })[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+      likedAt: topicPostLikes.createdAt,
+    })
+    .from(topicPostLikes)
+    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(eq(topicPostLikes.userId, userId))
+    .orderBy(desc(topicPostLikes.createdAt));
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  const postsWithMeta = await attachPostMeta(posts, userId);
+
+  return postsWithMeta.map((p) => ({
+    ...p,
+    topicKey: p.topicKey,
+  }));
+}
+
+/**
+ * Get replies for a specific post with like metadata
+ */
+export async function getRepliesByPostId(
+  postId: string,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
   const results = await db
     .select({
       post: topicPosts,
@@ -218,8 +328,10 @@ export async function getRepliesByPostId(postId: string): Promise<TopicPostWithA
     .where(eq(topicPosts.parentId, postId))
     .orderBy(desc(topicPosts.createdAt));
 
-  return results.map((r) => ({
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
     ...r.post,
     author: r.author,
   }));
+
+  return attachPostMeta(posts, currentUserId);
 }

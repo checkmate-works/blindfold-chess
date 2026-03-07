@@ -1,13 +1,17 @@
+'use client';
+
 import Image from 'next/image';
 
-import type { TopicPostWithAuthor } from '../../../../_lib/queries';
+import { LikeButton } from '../../../../_components';
+import type { PostWithReplyMeta } from '../../../../_lib/queries';
 
 type Props = {
-  replies: TopicPostWithAuthor[];
+  replies: PostWithReplyMeta[];
   locale: string;
+  square: string;
 };
 
-export function ReplyList({ replies, locale }: Props) {
+export function ReplyList({ replies, locale, square }: Props) {
   return (
     <div className="space-y-4">
       {replies.map((reply) => {
@@ -49,6 +53,13 @@ export function ReplyList({ replies, locale }: Props) {
             <div className="text-foreground whitespace-pre-wrap break-words text-sm leading-relaxed">
               {reply.content}
             </div>
+            <LikeButton
+              postId={reply.id}
+              locale={locale}
+              square={square}
+              initialLikeCount={reply.likeMeta.likeCount}
+              initialLikedByMe={reply.likeMeta.likedByMe}
+            />
           </div>
         );
       })}

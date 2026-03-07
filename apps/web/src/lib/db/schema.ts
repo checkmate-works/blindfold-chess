@@ -249,3 +249,24 @@ export const topicPosts = pgTable(
 
 export type TopicPost = typeof topicPosts.$inferSelect;
 export type NewTopicPost = typeof topicPosts.$inferInsert;
+
+// Topic Post Likes
+export const topicPostLikes = pgTable(
+  'topic_post_likes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    unique('uq_topic_post_like').on(table.userId, table.postId),
+    index('idx_topic_post_likes_post').on(table.postId),
+    index('idx_topic_post_likes_user').on(table.userId),
+  ]
+);
+
+export type TopicPostLike = typeof topicPostLikes.$inferSelect;
+export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;

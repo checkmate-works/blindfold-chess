@@ -11,7 +11,8 @@ import { Breadcrumb, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getPostById, getRepliesByPostId } from '../../../_lib/queries';
+import { LikeButton } from '../../../_components';
+import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
 import { ReplyForm, ReplyList } from './_components';
@@ -56,10 +57,14 @@ export default async function PostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [replies, supabase] = await Promise.all([getRepliesByPostId(postId), createClient()]);
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const [replies, likeMeta] = await Promise.all([
+    getRepliesByPostId(postId, user?.id),
+    getLikeMetaForPost(postId, user?.id),
+  ]);
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -121,6 +126,14 @@ export default async function PostDetailPage({ params }: Props) {
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
             {post.content}
           </div>
+
+          <LikeButton
+            postId={post.id}
+            locale={locale}
+            square={square}
+            initialLikeCount={likeMeta.likeCount}
+            initialLikedByMe={likeMeta.likedByMe}
+          />
         </div>
 
         <div className="space-y-4">
@@ -129,7 +142,7 @@ export default async function PostDetailPage({ params }: Props) {
           </SectionTitle>
 
           {replies.length > 0 ? (
-            <ReplyList replies={replies} locale={locale} />
+            <ReplyList replies={replies} locale={locale} square={square} />
           ) : (
             <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
           )}
