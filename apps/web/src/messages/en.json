@@ -1877,7 +1877,8 @@
       "postedAt": "Posted {date}",
       "readMore": "Read more",
       "postDetail": {
-        "backToSquare": "Back to {square}"
+        "backToSquare": "Back to {square}",
+        "authorView": "{author}'s thoughts on {square}"
       },
       "newPostForm": {
         "title": "New Post about {square}",

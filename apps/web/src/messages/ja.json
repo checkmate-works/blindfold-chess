@@ -1878,7 +1878,8 @@
       "postedAt": "{date}に投稿",
       "readMore": "続きを読む",
       "postDetail": {
-        "backToSquare": "{square}に戻る"
+        "backToSquare": "{square}に戻る",
+        "authorView": "{author}の{square}に対する見解"
       },
       "newPostForm": {
         "title": "{square}について投稿",
