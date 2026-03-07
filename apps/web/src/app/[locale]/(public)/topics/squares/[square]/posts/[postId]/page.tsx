@@ -5,19 +5,16 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { createClient } from '@/lib/supabase/server';
+
+import { Breadcrumb, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getPostById } from '../../../_lib/queries';
+import { getPostById, getRepliesByPostId } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
+import { ReplyForm, ReplyList } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale; square: string; postId: string }>;
@@ -58,6 +55,11 @@ export default async function PostDetailPage({ params }: Props) {
   if (!post) {
     notFound();
   }
+
+  const [replies, supabase] = await Promise.all([getRepliesByPostId(postId), createClient()]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -121,7 +123,31 @@ export default async function PostDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <Divider />
+        <div className="space-y-4">
+          <SectionTitle>
+            {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
+          </SectionTitle>
+
+          {replies.length > 0 ? (
+            <ReplyList replies={replies} locale={locale} />
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
+          )}
+        </div>
+
+        {user ? (
+          <ReplyForm locale={locale} square={square} postId={postId} />
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            <Link
+              href="/sign-in"
+              locale={locale}
+              className="text-foreground underline hover:text-muted-foreground transition-colors"
+            >
+              {t('squares.replies.loginToReply')}
+            </Link>
+          </p>
+        )}
 
         <Breadcrumb
           items={[

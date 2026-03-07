@@ -93,3 +93,27 @@ export async function getPostById(
     author: results[0].author,
   };
 }
+
+/**
+ * Get replies for a specific post
+ */
+export async function getRepliesByPostId(postId: string): Promise<TopicPostWithAuthor[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(eq(topicPosts.parentId, postId))
+    .orderBy(desc(topicPosts.createdAt));
+
+  return results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+}

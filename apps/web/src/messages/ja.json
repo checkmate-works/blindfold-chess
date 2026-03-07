@@ -1891,6 +1891,20 @@
         "contentTooLong": "内容は5000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です"
+      },
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信がありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "あなたの考えを共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する"
       }
     }
   }
