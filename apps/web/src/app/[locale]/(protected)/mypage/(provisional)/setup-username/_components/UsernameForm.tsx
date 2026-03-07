@@ -5,7 +5,7 @@ import { FormEvent, useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { Button, TextInput } from '@/app/_components';
 
 import { validateUsername } from '@/lib/username';
 
@@ -97,16 +97,14 @@ export function UsernameForm({ locale }: Props) {
           {t('usernameLabel')} <span className="text-destructive">*</span>
         </label>
         <p className="text-xs text-muted-foreground mb-2">{t('usernameDescription')}</p>
-        <input
+        <TextInput
           id="username"
-          type="text"
           value={username}
           onChange={(e) => handleUsernameChange(e.target.value)}
           placeholder={t('usernamePlaceholder')}
           maxLength={20}
           autoFocus
           autoComplete="off"
-          className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
         />
         {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
         <ul className="mt-2 list-disc list-inside space-y-0.5">
@@ -121,15 +119,13 @@ export function UsernameForm({ locale }: Props) {
           {t('displayNameLabel')}
         </label>
         <p className="text-xs text-muted-foreground mb-2">{t('displayNameDescription')}</p>
-        <input
+        <TextInput
           id="displayName"
-          type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder={t('displayNamePlaceholder')}
           maxLength={50}
           autoComplete="off"
-          className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
         />
         <ul className="mt-2 list-disc list-inside">
           <li className="text-xs text-muted-foreground">{t('displayNameCanChange')}</li>

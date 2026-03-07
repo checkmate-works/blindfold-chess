@@ -1,0 +1,1 @@
+export { SquareBoard } from './SquareBoard';

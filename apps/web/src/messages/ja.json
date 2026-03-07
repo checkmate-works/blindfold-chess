@@ -56,6 +56,26 @@
     "deleteAccount": {
       "title": "退会",
       "description": "Blindfold Chess のアカウントを削除します"
+    },
+    "topics": {
+      "title": "トピック",
+      "description": "チェスのマス目やポジション、戦略について議論・共有しましょう"
+    },
+    "topicsSquares": {
+      "title": "マス目トピック",
+      "description": "個々のチェスのマス目についての議論を閲覧"
+    },
+    "topicsSquare": {
+      "title": "マス目 {square}",
+      "description": "チェスの{square}マスに関する議論と考察"
+    },
+    "topicsSquareNewPost": {
+      "title": "新規投稿 - {square}",
+      "description": "{square}マスについて新しい投稿を作成"
+    },
+    "topicsSquarePost": {
+      "title": "{square}についての投稿",
+      "description": "チェスの{square}マスに関する議論の投稿"
     }
   },
   "Header": {
@@ -1835,5 +1855,60 @@
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
     "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。"
+  },
+  "topics": {
+    "title": "トピック",
+    "description": "チェスのマス目やポジション、戦略について議論・共有しましょう",
+    "categories": {
+      "squares": {
+        "title": "マス目",
+        "description": "個々のチェスのマス目についての議論"
+      }
+    },
+    "squares": {
+      "title": "マス目",
+      "description": "マス目を選んで議論を閲覧・共有しましょう",
+      "pageTitle": "みんなが考えるマスの特徴や印象",
+      "postCount": "{count}件の投稿",
+      "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
+      "newPost": "新規投稿",
+      "backToSquares": "マス目一覧に戻る",
+      "backToTopics": "トピックに戻る",
+      "postedBy": "{author}",
+      "postedAt": "{date}に投稿",
+      "readMore": "続きを読む",
+      "postDetail": {
+        "backToSquare": "{square}に戻る",
+        "authorView": "{author}の{square}に対する見解"
+      },
+      "newPostForm": {
+        "title": "{square}について投稿",
+        "contentLabel": "内容",
+        "contentPlaceholder": "このマス目について思うことを共有しましょう...",
+        "submit": "投稿する",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "投稿するにはサインインが必要です"
+      },
+      "replyCount": "{count}件の返信",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信がありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "あなたの考えを共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する"
+      }
+    }
   }
 }

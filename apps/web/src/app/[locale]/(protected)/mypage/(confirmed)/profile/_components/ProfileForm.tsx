@@ -5,6 +5,8 @@ import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { TextInput, Textarea } from '@/app/_components';
+
 import type { Profile } from '@/lib/db';
 
 import { AvatarUpload } from './AvatarUpload';
@@ -98,9 +100,6 @@ export function ProfileForm({ locale, profile }: Props) {
     }
   };
 
-  const inputClassName =
-    'w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent';
-
   const labelClassName = 'block text-sm font-medium text-foreground mb-1';
 
   return (
@@ -125,14 +124,12 @@ export function ProfileForm({ locale, profile }: Props) {
           <label htmlFor="displayName" className={labelClassName}>
             {t('displayNameLabel')} <span className="text-destructive">*</span>
           </label>
-          <input
+          <TextInput
             id="displayName"
-            type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             maxLength={50}
             autoComplete="off"
-            className={inputClassName}
           />
           {error?.field === 'displayName' && (
             <p className="mt-2 text-sm text-destructive">{error.message}</p>
@@ -144,15 +141,13 @@ export function ProfileForm({ locale, profile }: Props) {
           <label htmlFor="bio" className={labelClassName}>
             {t('bioLabel')}
           </label>
-          <textarea
+          <Textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder={t('bioPlaceholder')}
             maxLength={500}
             rows={4}
-            style={{ resize: 'vertical' }}
-            className={inputClassName}
           />
           {error?.field === 'bio' && (
             <p className="mt-2 text-sm text-destructive">{error.message}</p>
@@ -194,15 +189,13 @@ export function ProfileForm({ locale, profile }: Props) {
           <label htmlFor="fideId" className={labelClassName}>
             {t('fideIdLabel')}
           </label>
-          <input
+          <TextInput
             id="fideId"
-            type="text"
             value={fideId}
             onChange={(e) => setFideId(e.target.value)}
             placeholder={t('fideIdPlaceholder')}
             maxLength={50}
             autoComplete="off"
-            className={inputClassName}
           />
         </div>
 
@@ -210,15 +203,13 @@ export function ProfileForm({ locale, profile }: Props) {
           <label htmlFor="chesscomUsername" className={labelClassName}>
             {t('chesscomUsernameLabel')}
           </label>
-          <input
+          <TextInput
             id="chesscomUsername"
-            type="text"
             value={chesscomUsername}
             onChange={(e) => setChesscomUsername(e.target.value)}
             placeholder={t('chesscomUsernamePlaceholder')}
             maxLength={255}
             autoComplete="off"
-            className={inputClassName}
           />
         </div>
 
@@ -226,15 +217,13 @@ export function ProfileForm({ locale, profile }: Props) {
           <label htmlFor="lichessUsername" className={labelClassName}>
             {t('lichessUsernameLabel')}
           </label>
-          <input
+          <TextInput
             id="lichessUsername"
-            type="text"
             value={lichessUsername}
             onChange={(e) => setLichessUsername(e.target.value)}
             placeholder={t('lichessUsernamePlaceholder')}
             maxLength={255}
             autoComplete="off"
-            className={inputClassName}
           />
         </div>
       </section>
