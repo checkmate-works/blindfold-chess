@@ -109,3 +109,30 @@ CREATE POLICY "blocks_insert" ON "blocks"
 DROP POLICY IF EXISTS "blocks_delete" ON "blocks";
 CREATE POLICY "blocks_delete" ON "blocks"
   FOR DELETE USING (auth.uid() = blocker_id);
+
+-- =============================================================================
+-- moderation_actions
+-- =============================================================================
+ALTER TABLE "moderation_actions" ENABLE ROW LEVEL SECURITY;
+
+-- Only admins can read moderation actions (check user_roles)
+DROP POLICY IF EXISTS "moderation_actions_select" ON "moderation_actions";
+CREATE POLICY "moderation_actions_select" ON "moderation_actions"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_roles.user_id = auth.uid()
+      AND user_roles.role = 'admin'
+    )
+  );
+
+-- Only admins can insert moderation actions
+DROP POLICY IF EXISTS "moderation_actions_insert" ON "moderation_actions";
+CREATE POLICY "moderation_actions_insert" ON "moderation_actions"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_roles.user_id = auth.uid()
+      AND user_roles.role = 'admin'
+    )
+  );

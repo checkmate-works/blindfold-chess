@@ -144,6 +144,7 @@ export const profiles = pgTable('profiles', {
   fideId: varchar('fide_id', { length: 50 }),
   chesscomUsername: varchar('chesscom_username', { length: 255 }),
   lichessUsername: varchar('lichess_username', { length: 255 }),
+  bannedAt: timestamp('banned_at', { withTimezone: true }),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -308,3 +309,72 @@ export const blocks = pgTable(
 
 export type Block = typeof blocks.$inferSelect;
 export type NewBlock = typeof blocks.$inferInsert;
+
+/**
+ * Moderation Actions — immutable audit log for admin moderation operations.
+ *
+ * @design Event log with materialized state (not pure Event Sourcing)
+ *
+ * The moderation system uses a dual-source pattern (Discourse, GitLab, Mastodon, Lichess):
+ * - `profiles.bannedAt` provides O(1) status checks — every Server Action calls
+ *   `isUserBanned()`, so deriving state by replaying events would be prohibitively expensive.
+ * - `moderation_actions` stores the full audit trail with context (who, what, why, when).
+ * Corrections are recorded as new events (e.g., `unban` after `ban`), never as row updates.
+ *
+ * @design Polymorphic target_type + target_id (GitLab/Mastodon pattern)
+ *
+ * Consistent with `topicPosts.topicType + topicKey`. A single table handles all moderation
+ * targets (users, posts, etc.) without schema changes when new target types are added.
+ * - `targetType`: the category of the target (e.g., 'user', 'topic_post')
+ * - `targetId`: the UUID of the target entity
+ *
+ * @design action is varchar, not pgEnum
+ *
+ * New action types ('ban', 'unban', 'delete_post', 'warn', etc.) will be added
+ * incrementally. Using varchar avoids requiring an ALTER TYPE migration for each new action.
+ *
+ * @design metadata (JSONB) for flexible context
+ *
+ * Stores action-specific data (deleted content, previous values, etc.). Replaces
+ * dedicated `previous_value`/`new_value` columns, providing extensibility without
+ * schema changes.
+ *
+ * @design No updated_at — audit logs are immutable
+ *
+ * Records are append-only. Corrections or reversals are expressed as new events.
+ * No UPDATE or DELETE RLS policies are defined.
+ *
+ * @design ip_address for forensic analysis (Discourse/GitLab pattern)
+ *
+ * Captures the admin's IP at action time for security auditing. varchar(45) supports
+ * the longest possible IPv6 representation.
+ *
+ * @design FKs managed in custom SQL
+ *
+ * `actorId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`. This is because `auth.users` lives in a
+ * separate Supabase-managed schema that Drizzle does not control.
+ */
+export const moderationActions = pgTable(
+  'moderation_actions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    actorId: uuid('actor_id').notNull(), // references auth.users — FK defined in custom SQL
+    action: varchar('action', { length: 50 }).notNull(),
+    targetType: varchar('target_type', { length: 50 }).notNull(),
+    targetId: uuid('target_id').notNull(),
+    reason: text('reason'),
+    metadata: jsonb('metadata').default({}),
+    ipAddress: varchar('ip_address', { length: 45 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_moderation_actions_actor').on(table.actorId),
+    index('idx_moderation_actions_target').on(table.targetType, table.targetId),
+    index('idx_moderation_actions_action').on(table.action),
+    index('idx_moderation_actions_created').on(table.createdAt),
+  ]
+);
+
+export type ModerationAction = typeof moderationActions.$inferSelect;
+export type NewModerationAction = typeof moderationActions.$inferInsert;

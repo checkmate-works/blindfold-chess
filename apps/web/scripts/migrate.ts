@@ -67,6 +67,14 @@ async function runFollowsBlocksSetup() {
   await client.unsafe(sql);
 }
 
+async function runModerationActionsSetup() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'moderation_actions_setup.sql'),
+    'utf-8'
+  );
+  await client.unsafe(sql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -92,6 +100,10 @@ async function main() {
     console.log('Applying follows & blocks setup...');
     await runFollowsBlocksSetup();
     console.log('Follows & blocks setup applied!');
+
+    console.log('Applying moderation actions setup...');
+    await runModerationActionsSetup();
+    console.log('Moderation actions setup applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }
