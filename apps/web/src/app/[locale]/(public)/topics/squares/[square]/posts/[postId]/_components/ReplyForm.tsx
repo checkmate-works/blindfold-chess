@@ -21,7 +21,14 @@ export function ReplyForm({ locale, square, postId }: Props) {
 
   const errorMessage = state.error
     ? t.has(state.error)
-      ? t(state.error as 'contentRequired' | 'contentTooLong' | 'error' | 'signInRequired')
+      ? t(
+          state.error as
+            | 'contentRequired'
+            | 'contentTooLong'
+            | 'error'
+            | 'signInRequired'
+            | 'rateLimited'
+        )
       : t('error')
     : null;
 

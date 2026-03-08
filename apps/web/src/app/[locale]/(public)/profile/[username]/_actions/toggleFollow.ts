@@ -6,6 +6,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { isUserBanned } from '@/lib/ban';
 import { db, follows, profiles } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 import { validateUsername } from '@/lib/username';
 
@@ -30,6 +31,11 @@ export async function toggleFollow(
 
   if (await isUserBanned(user.id)) {
     return { error: 'banned' };
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.toggleFollow);
+  if ('error' in rateLimitResult) {
+    return { error: rateLimitResult.error };
   }
 
   // Look up the target user's profile by username

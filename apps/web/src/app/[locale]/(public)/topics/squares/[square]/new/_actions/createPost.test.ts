@@ -28,6 +28,13 @@ vi.mock('@/lib/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  RATE_LIMITS: {
+    createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
+  },
+}));
+
 const mockRedirect = vi.fn();
 vi.mock('next/navigation', () => ({
   redirect: (...args: unknown[]) => {

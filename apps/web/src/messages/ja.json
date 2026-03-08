@@ -2020,7 +2020,8 @@
         "contentRequired": "内容を入力してください",
         "contentTooLong": "内容は5000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
-        "signInRequired": "投稿するにはサインインが必要です"
+        "signInRequired": "投稿するにはサインインが必要です",
+        "rateLimited": "投稿が多すぎます。しばらくしてからもう一度お試しください。"
       },
       "like": "いいね",
       "unlike": "いいね解除",
@@ -2042,7 +2043,8 @@
         "contentTooLong": "内容は5000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
-        "loginToReply": "サインインして返信する"
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。"
       },
       "deletePost": {
         "button": "削除",

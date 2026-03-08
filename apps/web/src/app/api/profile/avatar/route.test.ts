@@ -30,6 +30,13 @@ vi.mock('@/lib/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  RATE_LIMITS: {
+    uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
+  },
+}));
+
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/lib/db', () => ({

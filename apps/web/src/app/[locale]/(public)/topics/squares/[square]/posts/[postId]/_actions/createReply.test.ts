@@ -28,6 +28,13 @@ vi.mock('@/lib/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  RATE_LIMITS: {
+    createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },
+  },
+}));
+
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));

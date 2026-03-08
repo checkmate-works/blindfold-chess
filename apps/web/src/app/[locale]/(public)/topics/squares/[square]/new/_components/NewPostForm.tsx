@@ -20,7 +20,14 @@ export function NewPostForm({ locale, square }: Props) {
 
   const errorMessage = state.error
     ? t.has(state.error)
-      ? t(state.error as 'contentRequired' | 'contentTooLong' | 'error' | 'signInRequired')
+      ? t(
+          state.error as
+            | 'contentRequired'
+            | 'contentTooLong'
+            | 'error'
+            | 'signInRequired'
+            | 'rateLimited'
+        )
       : t('error')
     : null;
 

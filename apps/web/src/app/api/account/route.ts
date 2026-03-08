@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -19,6 +20,11 @@ export async function DELETE() {
 
   if (await isUserBanned(user.id)) {
     return NextResponse.json({ error: 'banned' }, { status: 403 });
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.deleteAccount);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   // Soft-delete the auth user first via admin client.

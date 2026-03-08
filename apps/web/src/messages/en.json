@@ -2019,7 +2019,8 @@
         "contentRequired": "Please enter some content",
         "contentTooLong": "Content must be 5000 characters or less",
         "error": "An error occurred. Please try again.",
-        "signInRequired": "Please sign in to create a post"
+        "signInRequired": "Please sign in to create a post",
+        "rateLimited": "Too many posts. Please try again later."
       },
       "like": "Like",
       "unlike": "Unlike",
@@ -2041,7 +2042,8 @@
         "contentTooLong": "Content must be 5000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
-        "loginToReply": "Sign in to reply"
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later."
       },
       "deletePost": {
         "button": "Delete",

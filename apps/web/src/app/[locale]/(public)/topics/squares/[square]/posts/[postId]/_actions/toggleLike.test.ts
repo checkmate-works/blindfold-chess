@@ -21,6 +21,13 @@ vi.mock('@/lib/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  RATE_LIMITS: {
+    toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },
+  },
+}));
+
 vi.mock('@/lib/db', () => ({
   db: {
     insert: () => ({

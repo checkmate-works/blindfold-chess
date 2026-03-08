@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -27,6 +28,11 @@ export async function POST(request: Request) {
 
   if (await isUserBanned(user.id)) {
     return NextResponse.json({ error: 'banned' }, { status: 403 });
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.uploadAvatar);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   let formData: FormData;

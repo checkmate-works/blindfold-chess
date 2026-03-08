@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
 import { isLameName } from '@/lib/lame-name';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 export async function PUT(request: Request) {
@@ -19,6 +20,11 @@ export async function PUT(request: Request) {
 
   if (await isUserBanned(user.id)) {
     return NextResponse.json({ error: 'banned' }, { status: 403 });
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.updateProfile);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   let body: {

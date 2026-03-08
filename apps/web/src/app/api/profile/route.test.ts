@@ -19,6 +19,13 @@ vi.mock('@/lib/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
+  RATE_LIMITS: {
+    updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
+  },
+}));
+
 vi.mock('@/lib/db', () => ({
   db: {
     update: () => ({

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import { isValidSquare } from '../../../_lib/squares';
@@ -35,6 +36,11 @@ export async function createPost(
 
   if (await isUserBanned(user.id)) {
     return { error: 'banned' };
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.createPost);
+  if ('error' in rateLimitResult) {
+    return { error: rateLimitResult.error };
   }
 
   const content = formData.get('content');

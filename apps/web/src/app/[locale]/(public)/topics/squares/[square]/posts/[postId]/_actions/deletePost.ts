@@ -6,6 +6,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 type DeletePostResult = { success: true } | { error: string };
@@ -22,6 +23,11 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
 
   if (await isUserBanned(user.id)) {
     return { error: 'banned' };
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.deletePost);
+  if ('error' in rateLimitResult) {
+    return { error: rateLimitResult.error };
   }
 
   const [post] = await db

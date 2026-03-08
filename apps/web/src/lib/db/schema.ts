@@ -379,3 +379,36 @@ export const moderationActions = pgTable(
 
 export type ModerationAction = typeof moderationActions.$inferSelect;
 export type NewModerationAction = typeof moderationActions.$inferInsert;
+
+/**
+ * Rate Limit Events — fixed-window counter for user action throttling.
+ *
+ * @description
+ * Records each rate-limited action performed by a user. The `checkRateLimit` function
+ * counts events within a time window to decide whether to allow or reject new actions.
+ *
+ * @design PostgreSQL-based, not Redis (see Issue #18)
+ *
+ * This project already uses PostgreSQL (Supabase) and has no Redis dependency.
+ * Adding Redis solely for rate limiting would increase infrastructure complexity
+ * disproportionately to the traffic level of this application. PostgreSQL with
+ * proper indexing handles the expected load well.
+ *
+ * @design No cleanup mechanism (YAGNI)
+ *
+ * Old events are not automatically deleted. A cleanup job (e.g., pg_cron) can be
+ * added later if the table grows to a problematic size.
+ */
+export const rateLimitEvents = pgTable(
+  'rate_limit_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    action: varchar('action', { length: 50 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_rate_limit_events_lookup').on(table.userId, table.action, table.createdAt)]
+);
+
+export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
+export type NewRateLimitEvent = typeof rateLimitEvents.$inferInsert;
