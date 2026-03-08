@@ -129,7 +129,7 @@ export default async function AdminUsersPage() {
                     <div className="flex items-center gap-2">
                       {profile && (
                         <Link
-                          href={`/admin/users/${user.id}/posts`}
+                          href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
                           className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
                         >
                           {t('usersTable.viewPosts')}

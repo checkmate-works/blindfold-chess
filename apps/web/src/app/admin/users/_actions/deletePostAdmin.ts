@@ -81,6 +81,7 @@ export async function deletePostAdmin(
   });
 
   revalidatePath('/admin/users');
+  revalidatePath('/admin/topic_posts');
 
   return { success: true };
 }
