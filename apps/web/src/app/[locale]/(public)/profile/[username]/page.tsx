@@ -11,6 +11,8 @@ import { countryCodeToFlag } from '@/lib/countries';
 import { db, follows, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components/PostCard';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
 import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -115,7 +117,8 @@ export default async function PublicProfilePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
-  const isEmptyProfile = !profile.bio && !hasChessAccounts;
+
+  const posts = await getPostsByUserId(profile.id, user?.id);
 
   return (
     <PagePanel>
@@ -249,22 +252,41 @@ export default async function PublicProfilePage({ params }: Props) {
           </div>
         )}
 
-        {/* Divider */}
-        <hr className="border-border" />
+        {/* Bio */}
+        {profile.bio && (
+          <div className="space-y-3">
+            <SectionTitle>{t('bio')}</SectionTitle>
+            <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
+          </div>
+        )}
 
-        {/* Profile Content */}
-        {isEmptyProfile ? (
-          <div className="p-8 border-border border-2 border-dashed rounded-lg text-center">
-            <p className="text-muted-foreground">{t('emptyProfile')}</p>
+        {/* Topics Tab */}
+        <div>
+          <div className="border-b border-border">
+            <nav className="flex">
+              <button className="px-4 py-2 text-sm font-bold text-foreground border-b-2 border-foreground">
+                {t('topicsTab')}{' '}
+                <span className="text-muted-foreground font-normal">{posts.length}</span>
+              </button>
+            </nav>
           </div>
-        ) : profile.bio ? (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <SectionTitle>{t('bio')}</SectionTitle>
-              <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
-            </div>
+
+          <div className="mt-4 space-y-3">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  locale={locale}
+                  square={post.topicKey}
+                  showSquareBadge
+                />
+              ))
+            ) : (
+              <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
+            )}
           </div>
-        ) : null}
+        </div>
       </div>
     </PagePanel>
   );

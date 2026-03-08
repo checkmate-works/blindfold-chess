@@ -1887,7 +1887,9 @@
     "followersPageTitle": "Followers",
     "noFollowers": "No followers yet.",
     "followsYou": "Follows you",
-    "editProfile": "Edit profile"
+    "editProfile": "Edit profile",
+    "topicsTab": "Topics",
+    "noTopicPosts": "No posts yet."
   },
   "topics": {
     "title": "Topics",

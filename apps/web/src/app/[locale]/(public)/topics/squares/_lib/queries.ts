@@ -308,6 +308,47 @@ export async function getLikedPostsByUser(
 }
 
 /**
+ * Get top-level posts by a specific user, ordered by creation date (newest first).
+ * Returns posts with reply/like metadata and the topicKey for each post.
+ */
+export async function getPostsByUserId(
+  userId: string,
+  currentUserId?: string
+): Promise<(PostWithReplyMeta & { topicKey: string })[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.userId, userId),
+        eq(topicPosts.topicType, 'square'),
+        isNull(topicPosts.parentId)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt));
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  return postsWithMeta.map((p) => ({
+    ...p,
+    topicKey: p.topicKey,
+  }));
+}
+
+/**
  * Get replies for a specific post with like metadata
  */
 export async function getRepliesByPostId(
