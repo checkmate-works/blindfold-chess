@@ -1765,7 +1765,11 @@
   "MypageFollowing": {
     "title": "フォロー中",
     "empty": "まだ誰もフォローしていません。",
-    "breadcrumbMypage": "マイページ"
+    "breadcrumbMypage": "マイページ",
+    "unfollow": "フォロー解除",
+    "unfollowConfirmTitle": "フォロー解除",
+    "unfollowConfirmMessage": "{name} のフォローを解除しますか？",
+    "cancel": "キャンセル"
   },
   "deleteAccount": {
     "title": "退会",

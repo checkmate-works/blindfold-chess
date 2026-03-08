@@ -6,7 +6,9 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { db, follows, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle, UserCard } from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+
+import { FollowingList } from './_components/FollowingList';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -47,21 +49,7 @@ export default async function FollowingPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        {followingList.length === 0 ? (
-          <p className="text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {followingList.map((followedUser) => (
-              <UserCard
-                key={followedUser.id}
-                username={followedUser.username}
-                displayName={followedUser.displayName}
-                avatarUrl={followedUser.avatarUrl}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
+        <FollowingList initialList={followingList} locale={locale} />
 
         <Divider />
 

@@ -1764,7 +1764,11 @@
   "MypageFollowing": {
     "title": "Following",
     "empty": "You're not following anyone yet.",
-    "breadcrumbMypage": "My Page"
+    "breadcrumbMypage": "My Page",
+    "unfollow": "Unfollow",
+    "unfollowConfirmTitle": "Unfollow User",
+    "unfollowConfirmMessage": "Are you sure you want to unfollow {name}?",
+    "cancel": "Cancel"
   },
   "deleteAccount": {
     "title": "Delete Account",
