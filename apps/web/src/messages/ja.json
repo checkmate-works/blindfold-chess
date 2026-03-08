@@ -1886,7 +1886,8 @@
     "following": "フォロー中",
     "unfollow": "フォロー解除",
     "followersPageTitle": "フォロワー",
-    "noFollowers": "まだフォロワーがいません。"
+    "noFollowers": "まだフォロワーがいません。",
+    "followsYou": "フォローされています"
   },
   "topics": {
     "title": "トピック",

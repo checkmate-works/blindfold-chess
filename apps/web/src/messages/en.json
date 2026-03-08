@@ -1885,7 +1885,8 @@
     "following": "Following",
     "unfollow": "Unfollow",
     "followersPageTitle": "Followers",
-    "noFollowers": "No followers yet."
+    "noFollowers": "No followers yet.",
+    "followsYou": "Follows you"
   },
   "topics": {
     "title": "Topics",

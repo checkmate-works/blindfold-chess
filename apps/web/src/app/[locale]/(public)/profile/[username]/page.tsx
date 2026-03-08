@@ -80,6 +80,7 @@ export default async function PublicProfilePage({ params }: Props) {
   const isOwnProfile = user?.id === profile.id;
 
   let initialFollowing = false;
+  let followedByProfile = false;
   if (user && !isOwnProfile) {
     const [existingFollow] = await db
       .select({ id: follows.id })
@@ -87,6 +88,13 @@ export default async function PublicProfilePage({ params }: Props) {
       .where(and(eq(follows.followerId, user.id), eq(follows.followingId, profile.id)))
       .limit(1);
     initialFollowing = !!existingFollow;
+
+    const [reverseFollow] = await db
+      .select({ id: follows.id })
+      .from(follows)
+      .where(and(eq(follows.followerId, profile.id), eq(follows.followingId, user.id)))
+      .limit(1);
+    followedByProfile = !!reverseFollow;
   }
 
   const [followerResult] = await db
@@ -169,12 +177,19 @@ export default async function PublicProfilePage({ params }: Props) {
 
           <div className="flex items-center gap-4">
             {!isOwnProfile && (
-              <FollowButton
-                targetUsername={profile.username}
-                locale={locale}
-                initialFollowing={initialFollowing}
-                isAuthenticated={!!user}
-              />
+              <>
+                {followedByProfile && (
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    {t('followsYou')}
+                  </span>
+                )}
+                <FollowButton
+                  targetUsername={profile.username}
+                  locale={locale}
+                  initialFollowing={initialFollowing}
+                  isAuthenticated={!!user}
+                />
+              </>
             )}
             {hasChessAccounts && (
               <>
