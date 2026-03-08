@@ -54,6 +54,7 @@ export function BanButton({ userId }: { userId: string }) {
               ref={reasonRef}
               className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground resize-none"
               rows={3}
+              maxLength={1000}
               placeholder="Enter reason for banning this user..."
             />
 

@@ -1875,6 +1875,7 @@
     "title": "Admin",
     "dashboard": "Dashboard",
     "users": "Users",
+    "auditLog": "Audit Log",
     "totalUsers": "Total Users",
     "roleAssignments": "Role Assignments",
     "usersTable": {
@@ -1888,6 +1889,20 @@
       "banned": "Banned",
       "active": "Active",
       "anonymous": "Anonymous"
+    },
+    "auditLogTable": {
+      "action": "Action",
+      "target": "Target",
+      "actor": "Actor",
+      "reason": "Reason",
+      "ipAddress": "IP Address",
+      "timestamp": "Timestamp",
+      "noLogsFound": "No audit logs found",
+      "filterByAction": "Filter by action",
+      "filterByUser": "Filter by user",
+      "allActions": "All Actions",
+      "previousPage": "Previous",
+      "nextPage": "Next"
     }
   },
   "publicProfile": {

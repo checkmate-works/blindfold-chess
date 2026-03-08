@@ -43,6 +43,10 @@ export async function banUser(targetUserId: string, reason: string): Promise<Ban
     return { error: 'reasonRequired' };
   }
 
+  if (trimmedReason.length > 1000) {
+    return { error: 'reasonTooLong' };
+  }
+
   // 1. Ban at Supabase Auth level first (external API, can't be in DB transaction)
   const adminClient = createAdminClient();
   const { error } = await adminClient.auth.admin.updateUserById(targetUserId, {
