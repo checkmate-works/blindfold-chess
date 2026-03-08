@@ -11,6 +11,8 @@ import { countryCodeToFlag } from '@/lib/countries';
 import { db, follows, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components/PostCard';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
 import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -115,68 +117,60 @@ export default async function PublicProfilePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
-  const isEmptyProfile = !profile.bio && !hasChessAccounts;
+
+  const posts = await getPostsByUserId(profile.id, user?.id);
 
   return (
     <PagePanel>
-      <div className="space-y-8">
-        {/* Profile Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {profile.avatarUrl ? (
-              <Image
-                src={profile.avatarUrl}
-                alt={profile.displayName ?? profile.username}
-                width={64}
-                height={64}
-                className="rounded-full object-cover h-16 w-16"
-                unoptimized
+      <div className="space-y-6">
+        {/* Avatar */}
+        {profile.avatarUrl ? (
+          <Image
+            src={profile.avatarUrl}
+            alt={profile.displayName ?? profile.username}
+            width={96}
+            height={96}
+            className="rounded-full object-cover h-24 w-24"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-12 w-12"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                clipRule="evenodd"
               />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-8 w-8"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            )}
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                {profile.displayName}
-                {profile.flair && <span className="ml-2">{profile.flair}</span>}
-                {profile.country && (
-                  <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
-                )}
-              </h1>
-              <p className="text-muted-foreground mt-1">@{profile.username}</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isOwnProfile && (
-                  <>
-                    <Link href="/mypage/following" className="hover:underline">
-                      <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-                      {t('followingCount')}
-                    </Link>
-                    <span className="mx-2" />
-                  </>
-                )}
-                <Link href={`/@/${username}/followers`} className="hover:underline">
-                  <span className="font-semibold text-foreground">{followerCount}</span>{' '}
-                  {t('followers')}
-                </Link>
-              </p>
-            </div>
+            </svg>
           </div>
+        )}
 
-          <div className="flex items-center gap-4">
-            {!isOwnProfile && (
+        {/* Display Name + Action Button Row */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {profile.displayName}
+              {profile.flair && <span className="ml-2">{profile.flair}</span>}
+              {profile.country && (
+                <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
+              )}
+            </h1>
+            <p className="text-muted-foreground mt-1">@{profile.username}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isOwnProfile ? (
+              <Link
+                href="/mypage/profile"
+                className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                {t('editProfile')}
+              </Link>
+            ) : (
               <>
                 {followedByProfile && (
                   <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -191,68 +185,108 @@ export default async function PublicProfilePage({ params }: Props) {
                 />
               </>
             )}
-            {hasChessAccounts && (
-              <>
-                {profile.fideId && (
-                  <a
-                    href={`https://ratings.fide.com/profile/${profile.fideId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="FIDE profile"
-                    title="FIDE"
-                    className="opacity-70 transition-opacity hover:opacity-100"
-                  >
-                    <Image
-                      src="/images/fide-favicon.ico"
-                      alt="FIDE"
-                      width={24}
-                      height={24}
-                      unoptimized
-                    />
-                  </a>
-                )}
-                {profile.chesscomUsername && (
-                  <a
-                    href={`https://www.chess.com/member/${profile.chesscomUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Chess.com profile"
-                    title="Chess.com"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <SiChessdotcom size={24} />
-                  </a>
-                )}
-                {profile.lichessUsername && (
-                  <a
-                    href={`https://lichess.org/@/${profile.lichessUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Lichess profile"
-                    title="Lichess"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <SiLichess size={24} />
-                  </a>
-                )}
-              </>
-            )}
           </div>
         </div>
 
-        {/* Profile Content */}
-        {isEmptyProfile ? (
-          <div className="p-8 border-border border-2 border-dashed rounded-lg text-center">
-            <p className="text-muted-foreground">{t('emptyProfile')}</p>
+        {/* Stats Row */}
+        <p className="text-sm text-muted-foreground">
+          {isOwnProfile && (
+            <>
+              <Link href="/mypage/following" className="hover:underline">
+                <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                {t('followingCount')}
+              </Link>
+              <span className="mx-2" />
+            </>
+          )}
+          <Link href={`/@/${username}/followers`} className="hover:underline">
+            <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
+          </Link>
+        </p>
+
+        {/* Chess Account Links */}
+        {hasChessAccounts && (
+          <div className="flex items-center gap-4">
+            {profile.fideId && (
+              <a
+                href={`https://ratings.fide.com/profile/${profile.fideId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="FIDE profile"
+                title="FIDE"
+                className="opacity-70 transition-opacity hover:opacity-100"
+              >
+                <Image
+                  src="/images/fide-favicon.ico"
+                  alt="FIDE"
+                  width={24}
+                  height={24}
+                  unoptimized
+                />
+              </a>
+            )}
+            {profile.chesscomUsername && (
+              <a
+                href={`https://www.chess.com/member/${profile.chesscomUsername}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chess.com profile"
+                title="Chess.com"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <SiChessdotcom size={24} />
+              </a>
+            )}
+            {profile.lichessUsername && (
+              <a
+                href={`https://lichess.org/@/${profile.lichessUsername}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Lichess profile"
+                title="Lichess"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <SiLichess size={24} />
+              </a>
+            )}
           </div>
-        ) : profile.bio ? (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <SectionTitle>{t('bio')}</SectionTitle>
-              <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
-            </div>
+        )}
+
+        {/* Bio */}
+        {profile.bio && (
+          <div className="space-y-3">
+            <SectionTitle>{t('bio')}</SectionTitle>
+            <p className="text-foreground whitespace-pre-wrap">{profile.bio}</p>
           </div>
-        ) : null}
+        )}
+
+        {/* Topics Tab */}
+        <div>
+          <div className="border-b border-border">
+            <nav className="flex">
+              <button className="px-4 py-2 text-sm font-bold text-foreground border-b-2 border-foreground">
+                {t('topicsTab')}{' '}
+                <span className="text-muted-foreground font-normal">{posts.length}</span>
+              </button>
+            </nav>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  locale={locale}
+                  square={post.topicKey}
+                  showSquareBadge
+                />
+              ))
+            ) : (
+              <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
+            )}
+          </div>
+        </div>
       </div>
     </PagePanel>
   );

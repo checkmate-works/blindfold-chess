@@ -1887,7 +1887,10 @@
     "unfollow": "フォロー解除",
     "followersPageTitle": "フォロワー",
     "noFollowers": "まだフォロワーがいません。",
-    "followsYou": "フォローされています"
+    "followsYou": "フォローされています",
+    "editProfile": "プロフィール編集",
+    "topicsTab": "トピック",
+    "noTopicPosts": "まだ投稿がありません。"
   },
   "topics": {
     "title": "トピック",

@@ -1886,7 +1886,10 @@
     "unfollow": "Unfollow",
     "followersPageTitle": "Followers",
     "noFollowers": "No followers yet.",
-    "followsYou": "Follows you"
+    "followsYou": "Follows you",
+    "editProfile": "Edit profile",
+    "topicsTab": "Topics",
+    "noTopicPosts": "No posts yet."
   },
   "topics": {
     "title": "Topics",
