@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
+import { Link } from '@/i18n/routing';
 import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
@@ -51,6 +52,13 @@ export default async function ProfilePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
+        <Link
+          href={`/@/${profile.username}`}
+          className="inline-block text-sm text-primary hover:text-primary/80 transition-colors"
+        >
+          {t('viewPublicProfile')} &rarr;
+        </Link>
+
         <ProfileForm locale={locale} profile={profile} />
 
         <Divider />

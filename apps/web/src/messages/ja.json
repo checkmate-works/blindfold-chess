@@ -1858,7 +1858,9 @@
     "submit": "保存",
     "submitting": "保存中...",
     "error": "エラーが発生しました。もう一度お試しください。",
-    "breadcrumbMypage": "マイページ"
+    "breadcrumbMypage": "マイページ",
+    "viewPublicProfile": "公開プロフィールを見る",
+    "profileUpdated": "プロフィールを更新しました"
   },
   "Admin": {
     "title": "Admin",

@@ -1857,7 +1857,9 @@
     "submit": "Save",
     "submitting": "Saving...",
     "error": "An error occurred. Please try again.",
-    "breadcrumbMypage": "My Page"
+    "breadcrumbMypage": "My Page",
+    "viewPublicProfile": "View public profile",
+    "profileUpdated": "Profile updated"
   },
   "Admin": {
     "title": "Admin",

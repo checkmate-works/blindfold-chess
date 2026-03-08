@@ -9,6 +9,8 @@ import { TextInput, Textarea } from '@/app/_components';
 
 import type { Profile } from '@/lib/db';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
 import { AvatarUpload } from './AvatarUpload';
 import { CountrySelect } from './CountrySelect';
 import { FlairPicker } from './FlairPicker';
@@ -21,6 +23,7 @@ type Props = {
 export function ProfileForm({ locale, profile }: Props) {
   const t = useTranslations('profile');
   const router = useRouter();
+  const { showToast } = useToast();
   const [displayName, setDisplayName] = useState(profile.displayName ?? '');
   const [bio, setBio] = useState(profile.bio ?? '');
   const [country, setCountry] = useState(profile.country ?? '');
@@ -93,7 +96,9 @@ export function ProfileForm({ locale, profile }: Props) {
         return;
       }
 
-      router.push(`/${locale}/mypage?toast=profile_updated`);
+      showToast(t('profileUpdated'), 'success');
+      router.refresh();
+      setIsSubmitting(false);
     } catch {
       setError({ message: t('error') });
       setIsSubmitting(false);
