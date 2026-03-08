@@ -61,6 +61,10 @@
       "title": "Liked Posts",
       "description": "View posts you have liked"
     },
+    "mypageFollowing": {
+      "title": "Following",
+      "description": "Users you are following"
+    },
     "topics": {
       "title": "Topics",
       "description": "Discuss and share insights about chess squares, positions, and strategies"
@@ -1757,6 +1761,11 @@
     "breadcrumbMypage": "My Page",
     "empty": "No liked posts yet."
   },
+  "MypageFollowing": {
+    "title": "Following",
+    "empty": "You're not following anyone yet.",
+    "breadcrumbMypage": "My Page"
+  },
   "deleteAccount": {
     "title": "Delete Account",
     "warning": "This action is permanent and cannot be undone. All your personal data (display name, bio, country, chess accounts, etc.) will be erased. Your username will be retained to prevent reuse.",
@@ -1870,7 +1879,9 @@
     "followingCount": "Following",
     "follow": "Follow",
     "following": "Following",
-    "unfollow": "Unfollow"
+    "unfollow": "Unfollow",
+    "followersPageTitle": "Followers",
+    "noFollowers": "No followers yet."
   },
   "topics": {
     "title": "Topics",

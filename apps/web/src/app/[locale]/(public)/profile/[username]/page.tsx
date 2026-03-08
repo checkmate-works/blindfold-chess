@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
@@ -151,13 +152,17 @@ export default async function PublicProfilePage({ params }: Props) {
               <p className="text-sm text-muted-foreground mt-1">
                 {isOwnProfile && (
                   <>
-                    <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-                    {t('followingCount')}
+                    <Link href="/mypage/following" className="hover:underline">
+                      <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                      {t('followingCount')}
+                    </Link>
                     <span className="mx-2" />
                   </>
                 )}
-                <span className="font-semibold text-foreground">{followerCount}</span>{' '}
-                {t('followers')}
+                <Link href={`/@/${username}/followers`} className="hover:underline">
+                  <span className="font-semibold text-foreground">{followerCount}</span>{' '}
+                  {t('followers')}
+                </Link>
               </p>
             </div>
           </div>
