@@ -1,6 +1,7 @@
 import type { Square } from "@blindfold-chess/types";
 
 import {
+  type RandomSource,
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,
@@ -16,6 +17,7 @@ export { formatTime } from "../common";
 export function generateSingleQuestion(
   orientation: BoardOrientation,
   excludeSquares: Square[] = [],
+  rng: RandomSource = Math.random,
 ): CoordinateQuestion {
   // Get available squares (excluding recent ones)
   const availableSquares = allSquares.filter(
@@ -26,13 +28,13 @@ export function generateSingleQuestion(
   const squaresToChooseFrom =
     availableSquares.length > 0 ? availableSquares : allSquares;
 
-  const randomIndex = Math.floor(Math.random() * squaresToChooseFrom.length);
+  const randomIndex = Math.floor(rng() * squaresToChooseFrom.length);
   const targetSquare = squaresToChooseFrom[randomIndex];
 
   // Determine orientation for this question
   let questionOrientation: "white" | "black";
   if (orientation === "random") {
-    questionOrientation = Math.random() < 0.5 ? "white" : "black";
+    questionOrientation = rng() < 0.5 ? "white" : "black";
   } else {
     questionOrientation = orientation;
   }

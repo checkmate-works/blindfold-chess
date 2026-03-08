@@ -1,5 +1,7 @@
 import type { Square } from "@blindfold-chess/types";
 
+import type { RandomSource } from "../common";
+
 import { FILES, RANKS } from "./constants";
 import type { BoardSymmetryProblem, SymmetryType } from "./types";
 import { SYMMETRY_TYPES } from "./types";
@@ -7,11 +9,12 @@ import { SYMMETRY_TYPES } from "./types";
 /**
  * Generate a random board symmetry problem
  */
-export function generateProblem(): BoardSymmetryProblem {
-  const randomFile = FILES[Math.floor(Math.random() * FILES.length)];
-  const randomRank = RANKS[Math.floor(Math.random() * RANKS.length)];
-  const randomType =
-    SYMMETRY_TYPES[Math.floor(Math.random() * SYMMETRY_TYPES.length)];
+export function generateProblem(
+  rng: RandomSource = Math.random,
+): BoardSymmetryProblem {
+  const randomFile = FILES[Math.floor(rng() * FILES.length)];
+  const randomRank = RANKS[Math.floor(rng() * RANKS.length)];
+  const randomType = SYMMETRY_TYPES[Math.floor(rng() * SYMMETRY_TYPES.length)];
 
   return {
     square: `${randomFile}${randomRank}` as Square,

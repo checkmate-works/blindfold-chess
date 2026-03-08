@@ -14,6 +14,7 @@ export {
 } from "./countdown";
 export { computePracticeResult } from "./practice-result";
 export {
+  type RandomSource,
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,
@@ -23,6 +24,7 @@ export {
   formatTime,
   generateRandomSquare,
   generateSquareSequence,
+  shuffleArray,
 } from "./utils";
 export {
   KNIGHT_OFFSETS,

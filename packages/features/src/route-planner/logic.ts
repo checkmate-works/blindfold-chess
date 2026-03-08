@@ -1,6 +1,7 @@
 import type { Square } from "@blindfold-chess/types";
 
 import {
+  type RandomSource,
   BISHOP_DIRS,
   KNIGHT_OFFSETS,
   ROOK_DIRS,
@@ -207,6 +208,7 @@ export function isSameColor(sq1: string, sq2: string): boolean {
  */
 export function generateProblem(
   allowedPieces: RoutePlannerPieceType[] = ROUTE_PLANNER_PIECES,
+  rng: RandomSource = Math.random,
 ): RoutePlannerProblem {
   const pool = allowedPieces.length > 0 ? allowedPieces : ROUTE_PLANNER_PIECES;
 
@@ -216,19 +218,19 @@ export function generateProblem(
   let path: string[] | null;
 
   do {
-    piece = pool[Math.floor(Math.random() * pool.length)];
-    start = generateRandomSquare();
-    end = generateRandomSquare();
+    piece = pool[Math.floor(rng() * pool.length)];
+    start = generateRandomSquare(rng);
+    end = generateRandomSquare(rng);
 
     // Ensure start !== end
     while (start === end) {
-      end = generateRandomSquare();
+      end = generateRandomSquare(rng);
     }
 
     // Bishop: start and end must be on the same color
     if (piece === "b") {
       while (!isSameColor(start, end) || start === end) {
-        end = generateRandomSquare();
+        end = generateRandomSquare(rng);
       }
     }
 

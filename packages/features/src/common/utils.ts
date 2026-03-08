@@ -2,6 +2,9 @@ import type { Square } from "@blindfold-chess/types";
 
 import { FILES, RANKS } from "./constants";
 
+/** A source of randomness. Defaults to Math.random when not supplied. */
+export type RandomSource = () => number;
+
 /** Extract 0-based file index (a=0, h=7) from algebraic square name */
 export function squareToFileIndex(square: string): number {
   return square.charCodeAt(0) - "a".charCodeAt(0);
@@ -38,17 +41,20 @@ export function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
-export function generateRandomSquare(): Square {
-  return (FILES[Math.floor(Math.random() * FILES.length)] +
-    RANKS[Math.floor(Math.random() * RANKS.length)]) as Square;
+export function generateRandomSquare(rng: RandomSource = Math.random): Square {
+  return (FILES[Math.floor(rng() * FILES.length)] +
+    RANKS[Math.floor(rng() * RANKS.length)]) as Square;
 }
 
-export function generateSquareSequence(count: number): Square[] {
+export function generateSquareSequence(
+  count: number,
+  rng: RandomSource = Math.random,
+): Square[] {
   const squares: Square[] = [];
   const usedSquares = new Set<Square>();
 
   while (squares.length < count) {
-    const square = generateRandomSquare();
+    const square = generateRandomSquare(rng);
     if (!usedSquares.has(square)) {
       usedSquares.add(square);
       squares.push(square);
@@ -62,4 +68,19 @@ export function generateSquareSequence(count: number): Square[] {
   }
 
   return squares;
+}
+
+/**
+ * Fisher-Yates shuffle. Returns a new array (does not mutate the input).
+ */
+export function shuffleArray<T>(
+  arr: readonly T[],
+  rng: RandomSource = Math.random,
+): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
