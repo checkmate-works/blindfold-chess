@@ -92,12 +92,12 @@ export function generatePgn(moves: string[], startingFen?: string): string {
 }
 
 export function validatePgnWithDetails(pgn: string): {
-  isValid: boolean;
+  valid: boolean;
   error?: string;
   moveCount?: number;
 } {
   if (!pgn.trim()) {
-    return { isValid: false, error: "PGN cannot be empty" };
+    return { valid: false, error: "PGN cannot be empty" };
   }
 
   try {
@@ -105,12 +105,12 @@ export function validatePgnWithDetails(pgn: string): {
     chess.loadPgn(pgn);
     const history = chess.history();
     return {
-      isValid: true,
+      valid: true,
       moveCount: history.length,
     };
   } catch (error) {
     return {
-      isValid: false,
+      valid: false,
       error: error instanceof Error ? error.message : "Invalid PGN format",
     };
   }

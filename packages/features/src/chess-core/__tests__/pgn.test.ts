@@ -146,27 +146,27 @@ describe("generatePgn", () => {
 describe("validatePgnWithDetails", () => {
   it("returns valid with move count for a valid PGN", () => {
     const result = validatePgnWithDetails(SIMPLE_PGN);
-    expect(result.isValid).toBe(true);
+    expect(result.valid).toBe(true);
     expect(result.moveCount).toBe(4);
     expect(result.error).toBeUndefined();
   });
 
   it("returns invalid with error message for empty PGN", () => {
     const result = validatePgnWithDetails("");
-    expect(result.isValid).toBe(false);
+    expect(result.valid).toBe(false);
     expect(result.error).toBe("PGN cannot be empty");
   });
 
   it("returns invalid with error message for whitespace PGN", () => {
     const result = validatePgnWithDetails("   ");
-    expect(result.isValid).toBe(false);
+    expect(result.valid).toBe(false);
     expect(result.error).toBe("PGN cannot be empty");
   });
 
   it("returns invalid with error for malformed PGN", () => {
     // e5 is not a legal first move for white
     const result = validatePgnWithDetails("1. e5");
-    expect(result.isValid).toBe(false);
+    expect(result.valid).toBe(false);
     expect(result.error).toBeDefined();
   });
 });
@@ -563,20 +563,20 @@ describe("validatePgnWithDetails - edge cases", () => {
     const longPgn =
       "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. d3 Nf6 5. Nc3 d6 6. Be3 Bxe3 7. fxe3 O-O 8. O-O Be6 9. Bb3 Bxb3 10. axb3";
     const result = validatePgnWithDetails(longPgn);
-    expect(result.isValid).toBe(true);
+    expect(result.valid).toBe(true);
     // moveCount counts half-moves (individual ply), not full moves
     expect(result.moveCount).toBe(19);
   });
 
   it("returns valid for PGN with result markers", () => {
     const result = validatePgnWithDetails("1. e4 e5 1-0");
-    expect(result.isValid).toBe(true);
+    expect(result.valid).toBe(true);
     expect(result.moveCount).toBe(2);
   });
 
   it("returns valid for a single move", () => {
     const result = validatePgnWithDetails("1. e4");
-    expect(result.isValid).toBe(true);
+    expect(result.valid).toBe(true);
     expect(result.moveCount).toBe(1);
   });
 });
