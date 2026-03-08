@@ -1,4 +1,4 @@
-import type { PieceType } from "@blindfold-chess/types";
+import type { PieceType, Square } from "@blindfold-chess/types";
 
 export type RoutePlannerPieceType = Extract<PieceType, "n" | "b" | "r" | "q">;
 
@@ -11,8 +11,8 @@ export const ROUTE_PLANNER_PIECES: RoutePlannerPieceType[] = [
 
 export type RoutePlannerProblem = {
   piece: RoutePlannerPieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
 };
 
 export type RoutePlannerSettings = {
@@ -27,11 +27,11 @@ export const DEFAULT_ROUTE_PLANNER_SETTINGS: RoutePlannerSettings = {
 
 export type RoutePlannerProblemResult = {
   piece: RoutePlannerPieceType;
-  start: string;
-  end: string;
+  start: Square;
+  end: Square;
   success: boolean;
-  userPath: string[];
-  shortestPath: string[];
+  userPath: Square[];
+  shortestPath: Square[];
   skipped?: boolean;
 };
 

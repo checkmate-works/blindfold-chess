@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import { FILES, RANKS } from "./constants";
 
 /** Extract 0-based file index (a=0, h=7) from algebraic square name */
@@ -11,8 +13,9 @@ export function squareToRankIndex(square: string): number {
 }
 
 /** Build algebraic square name from 0-based indices */
-export function fileRankToSquare(fileIndex: number, rankIndex: number): string {
-  return String.fromCharCode("a".charCodeAt(0) + fileIndex) + (rankIndex + 1);
+export function fileRankToSquare(fileIndex: number, rankIndex: number): Square {
+  return (String.fromCharCode("a".charCodeAt(0) + fileIndex) +
+    (rankIndex + 1)) as Square;
 }
 
 export function isLightSquare(fileIndex: number, rankIndex: number): boolean {
@@ -29,16 +32,14 @@ export function computeSquareColor(square: string): "light" | "dark" {
   return (file + rank) % 2 === 0 ? "dark" : "light";
 }
 
-export function generateRandomSquare(): string {
-  return (
-    FILES[Math.floor(Math.random() * FILES.length)] +
-    RANKS[Math.floor(Math.random() * RANKS.length)]
-  );
+export function generateRandomSquare(): Square {
+  return (FILES[Math.floor(Math.random() * FILES.length)] +
+    RANKS[Math.floor(Math.random() * RANKS.length)]) as Square;
 }
 
-export function generateSquareSequence(count: number): string[] {
-  const squares: string[] = [];
-  const usedSquares = new Set<string>();
+export function generateSquareSequence(count: number): Square[] {
+  const squares: Square[] = [];
+  const usedSquares = new Set<Square>();
 
   while (squares.length < count) {
     const square = generateRandomSquare();

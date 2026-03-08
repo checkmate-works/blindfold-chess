@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import {
   isValidSquare,
   squareToFileIndex,
@@ -248,7 +250,7 @@ export function generateProblem(
     path = findShortestPath(piece, start, end);
   } while (!path || !meetsPathConstraint(piece, path));
 
-  return { piece, start, end };
+  return { piece, start: start as Square, end: end as Square };
 }
 
 /**

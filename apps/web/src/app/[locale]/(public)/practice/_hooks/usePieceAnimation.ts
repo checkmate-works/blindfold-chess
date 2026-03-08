@@ -1,9 +1,10 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { Color } from '@blindfold-chess/features/chess-core';
+import type { PieceType } from '@blindfold-chess/types';
 
 type AnimatingPiece = {
-  type: PieceSymbol;
+  type: PieceType;
   color: Color;
   from: { x: number; y: number };
   to: { x: number; y: number };
@@ -13,7 +14,7 @@ type AnimatingPiece = {
 type MoveDetails = {
   from: string;
   to: string;
-  piece: PieceSymbol;
+  piece: PieceType;
   color: Color;
   finalFen: string;
 };
@@ -31,7 +32,7 @@ type UsePieceAnimationReturn = {
   isAnimating: boolean;
   showPlayButton: boolean;
   hiddenSquare: string | null;
-  animatingPiece: { type: PieceSymbol; color: Color } | null;
+  animatingPiece: { type: PieceType; color: Color } | null;
   animatingPieceStyle: CSSProperties;
   handlePlay: () => void;
   handleReplay: () => void;

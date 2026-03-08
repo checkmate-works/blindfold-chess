@@ -1,4 +1,5 @@
 import { executeMove } from '@blindfold-chess/features/chess-core';
+import type { UciMove } from '@blindfold-chess/types';
 
 import { getChessEngine } from '@/app/[locale]/(public)/games/play/_lib/chess-engine';
 
@@ -128,7 +129,7 @@ export async function getPositionEvaluation(
 
         if (isUciFormat) {
           bestMoveAlgebraic = engine.convertUciToAlgebraic(
-            evalBefore.bestMove as `${string}${number}${string}${number}`,
+            evalBefore.bestMove as UciMove,
             fenBefore
           );
         } else {

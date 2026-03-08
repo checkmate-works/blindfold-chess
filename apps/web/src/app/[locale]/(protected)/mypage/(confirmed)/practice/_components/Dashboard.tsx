@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { PieceType } from '@blindfold-chess/types';
 
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
@@ -133,7 +133,7 @@ export function Dashboard({ locale }: { locale: string }) {
                 aria-label={t(`filters.pieces.${piece}`)}
                 title={t(`filters.pieces.${piece}`)}
               >
-                <ChessPiece type={piece as PieceSymbol} color="w" size={28} />
+                <ChessPiece type={piece as PieceType} color="w" size={28} />
               </button>
             ))}
           </div>

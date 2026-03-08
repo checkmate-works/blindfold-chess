@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import { FILES, RANKS } from "./constants";
 import type { BoardSymmetryProblem, SymmetryType } from "./types";
 import { SYMMETRY_TYPES } from "./types";
@@ -12,7 +14,7 @@ export function generateProblem(): BoardSymmetryProblem {
     SYMMETRY_TYPES[Math.floor(Math.random() * SYMMETRY_TYPES.length)];
 
   return {
-    square: `${randomFile}${randomRank}`,
+    square: `${randomFile}${randomRank}` as Square,
     type: randomType,
   };
 }
@@ -25,9 +27,9 @@ export function generateProblem(): BoardSymmetryProblem {
  * - point: both file and rank are mirrored (180-degree rotation)
  */
 export function calculateSymmetricSquare(
-  square: string,
+  square: Square,
   type: SymmetryType,
-): string {
+): Square {
   const fileIndex = FILES.indexOf(square[0] as (typeof FILES)[number]);
   const rankIndex = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
 
@@ -47,7 +49,7 @@ export function calculateSymmetricSquare(
       break;
   }
 
-  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}`;
+  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}` as Square;
 }
 
 /**
@@ -57,7 +59,7 @@ export function checkSymmetryAnswer(
   file: string,
   rank: string,
   problem: BoardSymmetryProblem,
-): { isCorrect: boolean; correctSquare: string } {
+): { isCorrect: boolean; correctSquare: Square } {
   const correctSquare = calculateSymmetricSquare(problem.square, problem.type);
   const isCorrect = `${file}${rank}` === correctSquare;
 

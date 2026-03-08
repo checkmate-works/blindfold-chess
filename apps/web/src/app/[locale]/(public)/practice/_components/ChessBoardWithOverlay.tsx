@@ -1,7 +1,8 @@
 import { ChessPiece, Square } from '@/app/_components';
-import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { Color } from '@blindfold-chess/features/chess-core';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -16,7 +17,7 @@ type Props = {
   showCoordinates?: boolean;
 };
 
-type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
+type FenPieceChar = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
 
 export function ChessBoardWithOverlay({
   fen,
@@ -25,7 +26,7 @@ export function ChessBoardWithOverlay({
   boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
-  const board = fenToBoardFlat(fen) as PieceType[];
+  const board = fenToBoardFlat(fen) as FenPieceChar[];
   const themeColors = getBoardThemeColors(boardTheme);
   const displayFiles = flipped ? [...FILES].reverse() : [...FILES];
   const displayRanks = flipped ? [...DISPLAY_RANKS].reverse() : [...DISPLAY_RANKS];
@@ -42,12 +43,12 @@ export function ChessBoardWithOverlay({
     return diff?.status;
   };
 
-  const renderPiece = (piece: PieceType) => {
+  const renderPiece = (piece: FenPieceChar) => {
     if (!piece) return null;
 
     const isWhite = piece === piece.toUpperCase();
     const color: Color = (isWhite ? 'w' : 'b') as Color;
-    const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
+    const type: PieceType = piece.toLowerCase() as PieceType;
 
     return (
       <div className="w-[80%] h-[80%] flex items-center justify-center">
