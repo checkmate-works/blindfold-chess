@@ -12,6 +12,7 @@ export {
   getNextCountdownValue,
   isCountdownActive,
 } from "./countdown";
+export { computePracticeResult } from "./practice-result";
 export {
   squareToFileIndex,
   squareToRankIndex,
