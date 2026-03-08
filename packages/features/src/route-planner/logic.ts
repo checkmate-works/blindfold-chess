@@ -1,6 +1,9 @@
 import type { Square } from "@blindfold-chess/types";
 
 import {
+  BISHOP_DIRS,
+  KNIGHT_OFFSETS,
+  ROOK_DIRS,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
@@ -32,7 +35,11 @@ const getValidMove = (f: number, r: number): string[] => {
   return sq ? [sq] : [];
 };
 
-const getValidLines = (f: number, r: number, dirs: number[][]): string[] => {
+const getValidLines = (
+  f: number,
+  r: number,
+  dirs: readonly (readonly number[])[],
+): string[] => {
   return dirs.flatMap((d) => {
     const lineMoves: string[] = [];
     for (let i = 1; i < 8; i++) {
@@ -48,17 +55,7 @@ const getValidLines = (f: number, r: number, dirs: number[][]): string[] => {
 
 const KnightRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const jumps = [
-      [1, 2],
-      [1, -2],
-      [-1, 2],
-      [-1, -2],
-      [2, 1],
-      [2, -1],
-      [-2, 1],
-      [-2, -1],
-    ];
-    return jumps.flatMap((d) => getValidMove(f + d[0], r + d[1]));
+    return KNIGHT_OFFSETS.flatMap((d) => getValidMove(f + d[0], r + d[1]));
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3 && pathLength <= 4;
@@ -67,13 +64,7 @@ const KnightRouteStrategy: RoutePlannerStrategy = {
 
 const BishopRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const dirs = [
-      [1, 1],
-      [1, -1],
-      [-1, 1],
-      [-1, -1],
-    ];
-    return getValidLines(f, r, dirs);
+    return getValidLines(f, r, BISHOP_DIRS);
   },
   meetsConstraint(pathLength) {
     return pathLength === 3;
@@ -82,13 +73,7 @@ const BishopRouteStrategy: RoutePlannerStrategy = {
 
 const RookRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
-    return getValidLines(f, r, dirs);
+    return getValidLines(f, r, ROOK_DIRS);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3;

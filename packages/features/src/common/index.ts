@@ -20,6 +20,14 @@ export {
   isLightSquare,
   isValidSquare,
   computeSquareColor,
+  formatTime,
   generateRandomSquare,
   generateSquareSequence,
 } from "./utils";
+export {
+  KNIGHT_OFFSETS,
+  BISHOP_DIRS,
+  ROOK_DIRS,
+  QUEEN_DIRS,
+  KING_OFFSETS,
+} from "./piece-moves";

@@ -8,6 +8,8 @@ import {
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
 
+export { formatTime } from "../common";
+
 /**
  * Generate a single coordinate quiz question
  */
@@ -88,15 +90,6 @@ export function coordinatesToSquare(
   }
 
   return fileRankToSquare(actualFile, actualRank) as Square;
-}
-
-/**
- * Format time in seconds to MM:SS
- */
-export function formatTime(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
 /**

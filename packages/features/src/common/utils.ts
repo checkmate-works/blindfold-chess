@@ -32,6 +32,12 @@ export function computeSquareColor(square: string): "light" | "dark" {
   return (file + rank) % 2 === 0 ? "dark" : "light";
 }
 
+export function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
 export function generateRandomSquare(): Square {
   return (FILES[Math.floor(Math.random() * FILES.length)] +
     RANKS[Math.floor(Math.random() * RANKS.length)]) as Square;

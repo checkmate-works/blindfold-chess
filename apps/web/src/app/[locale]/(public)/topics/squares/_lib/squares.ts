@@ -1,18 +1,17 @@
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
-const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const;
+import {
+  computeSquareColor,
+  isValidSquare as isValidSquareBase,
+} from '@blindfold-chess/features/common';
+import type { Square } from '@blindfold-chess/types';
+import { FILES, RANKS } from '@blindfold-chess/types';
 
-export type File = (typeof FILES)[number];
-export type Rank = (typeof RANKS)[number];
-export type Square = `${File}${Rank}`;
+export type { File, Rank, Square } from '@blindfold-chess/types';
 
 export const VALID_FILES = FILES;
 export const VALID_RANKS = RANKS;
 
 export function isValidSquare(value: string): value is Square {
-  if (value.length !== 2) return false;
-  const file = value[0];
-  const rank = value[1];
-  return (FILES as readonly string[]).includes(file) && (RANKS as readonly string[]).includes(rank);
+  return isValidSquareBase(value);
 }
 
 export function getAllSquares(): Square[] {
@@ -26,7 +25,5 @@ export function getAllSquares(): Square[] {
 }
 
 export function isLightSquare(square: Square): boolean {
-  const fileIndex = FILES.indexOf(square[0] as File);
-  const rankIndex = RANKS.indexOf(square[1] as Rank);
-  return (fileIndex + rankIndex) % 2 === 1;
+  return computeSquareColor(square) === 'light';
 }

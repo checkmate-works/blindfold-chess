@@ -1,6 +1,6 @@
 import { isLegalPieceMove } from "../chess-core";
 
-import { FILES, RANKS } from "../common";
+import { FILES, KING_OFFSETS, KNIGHT_OFFSETS, RANKS } from "../common";
 
 import type { MoveQuestion, PieceType } from "./types";
 
@@ -92,17 +92,8 @@ const RookMoveStrategy: PieceMoveStrategy = {
 
 const KnightMoveStrategy: PieceMoveStrategy = {
   generateCandidateMove(fromFile, fromRank) {
-    const knightMoves = [
-      [2, 1],
-      [2, -1],
-      [-2, 1],
-      [-2, -1],
-      [1, 2],
-      [1, -2],
-      [-1, 2],
-      [-1, -2],
-    ];
-    const move = knightMoves[Math.floor(Math.random() * knightMoves.length)];
+    const move =
+      KNIGHT_OFFSETS[Math.floor(Math.random() * KNIGHT_OFFSETS.length)];
     return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
   },
 };
@@ -119,17 +110,7 @@ const QueenMoveStrategy: PieceMoveStrategy = {
 
 const KingMoveStrategy: PieceMoveStrategy = {
   generateCandidateMove(fromFile, fromRank) {
-    const kingMoves = [
-      [1, 0],
-      [1, 1],
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, -1],
-      [0, -1],
-      [1, -1],
-    ];
-    const move = kingMoves[Math.floor(Math.random() * kingMoves.length)];
+    const move = KING_OFFSETS[Math.floor(Math.random() * KING_OFFSETS.length)];
     return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
   },
 };
