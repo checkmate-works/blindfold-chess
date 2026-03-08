@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/games/new/standard',
     '/games/new/pgn',
     '/games/new/position',
-    '/play',
+    '/games/play',
   ];
 
   // Add static pages for each locale

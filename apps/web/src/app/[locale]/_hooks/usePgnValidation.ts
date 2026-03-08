@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { validatePgnWithDetails } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { validatePgnWithDetails } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
 type UsePgnValidationOptions = {
   /** The value to validate, typically the *debounced* PGN content */

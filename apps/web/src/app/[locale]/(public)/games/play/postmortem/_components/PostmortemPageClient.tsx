@@ -9,7 +9,7 @@ import { FaCheck, FaTimes } from 'react-icons/fa';
 
 import { getEvaluationIcon } from '@/lib/evaluation';
 
-import { ClientBreadcrumb } from '@/app/[locale]/(public)/play/_components/ClientBreadcrumb';
+import { ClientBreadcrumb } from '@/app/[locale]/(public)/games/play/_components/ClientBreadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -82,7 +82,7 @@ export function PostmortemPageClient({ locale }: Props) {
       params.set('fen', startingFen);
     }
 
-    return `/play?${params.toString()}`;
+    return `/games/play?${params.toString()}`;
   };
 
   if (!pgn) {

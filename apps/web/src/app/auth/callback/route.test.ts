@@ -93,12 +93,12 @@ describe('Auth callback route', () => {
       mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
 
       const request = new Request(
-        'http://localhost:3000/auth/callback?code=test-code&next=/en/play'
+        'http://localhost:3000/auth/callback?code=test-code&next=/en/games/play'
       );
       await GET(request);
 
       const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe('/en/play');
+      expect(redirectUrl.pathname).toBe('/en/games/play');
       expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
     });
   });

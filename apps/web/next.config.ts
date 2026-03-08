@@ -51,6 +51,26 @@ const nextConfig: NextConfig = {
         destination: '/:locale/games/new',
         permanent: true,
       },
+      {
+        source: '/:locale/play',
+        destination: '/:locale/games/play',
+        permanent: true,
+      },
+      {
+        source: '/:locale/play/result',
+        destination: '/:locale/games/play/result',
+        permanent: true,
+      },
+      {
+        source: '/:locale/play/postmortem',
+        destination: '/:locale/games/play/postmortem',
+        permanent: true,
+      },
+      {
+        source: '/:locale/play/error',
+        destination: '/:locale/games/play/error',
+        permanent: true,
+      },
     ];
   },
 

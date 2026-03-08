@@ -159,7 +159,7 @@ function ResultContent({ game, gameId, locale }: ResultContentProps) {
     params.set('skillLevel', game.skillLevel.toString());
     params.set('moves', JSON.stringify(game.moves));
 
-    router.push(`/${locale}/play/postmortem?${params.toString()}`);
+    router.push(`/${locale}/games/play/postmortem?${params.toString()}`);
   }, [game, formattedPgn, gameId, locale, router]);
 
   const handleNewGameFromPosition = useCallback(
@@ -285,7 +285,7 @@ function ResultContent({ game, gameId, locale }: ResultContentProps) {
 
       <Divider />
       <ClientBreadcrumb
-        items={[{ label: t('title'), href: '/play' }, { label: t('gameOver') }]}
+        items={[{ label: t('title'), href: '/games/play' }, { label: t('gameOver') }]}
         locale={locale}
       />
     </div>

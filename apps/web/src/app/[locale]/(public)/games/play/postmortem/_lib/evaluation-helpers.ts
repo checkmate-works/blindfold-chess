@@ -1,6 +1,6 @@
 import { executeMove } from '@blindfold-chess/features/chess-core';
 
-import { getChessEngine } from '@/app/[locale]/(public)/play/_lib/chess-engine';
+import { getChessEngine } from '@/app/[locale]/(public)/games/play/_lib/chess-engine';
 
 export type MoveLogEntry = {
   moveNumber: number;

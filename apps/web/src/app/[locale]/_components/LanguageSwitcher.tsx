@@ -28,7 +28,7 @@ export function LanguageSwitcher({ currentLocale }: Props) {
 
     // List of paths where language switching would interrupt user activity
     const restrictedPaths = [
-      '/play',
+      '/games/play',
       '/practice/coordinate-quiz',
       '/practice/legal-moves',
       '/practice/algebraic-notation',

@@ -61,11 +61,11 @@ describe('proxy', () => {
       expect(location.searchParams.get('toast')).toBe('already_logged_in');
     });
 
-    it('should not redirect when accessing other pages like /en/play', async () => {
+    it('should not redirect when accessing other pages like /en/games/play', async () => {
       const mockResponse = NextResponse.next();
       mockUpdateSession.mockResolvedValue({ response: mockResponse, user: authenticatedUser });
 
-      const request = createRequest('/en/play');
+      const request = createRequest('/en/games/play');
       const result = await proxy(request);
 
       expect(result).toBe(mockResponse);
@@ -140,11 +140,11 @@ describe('proxy', () => {
   });
 
   describe('non-auth pages pass through for all users', () => {
-    it('should pass through for /en/play (unauthenticated)', async () => {
+    it('should pass through for /en/games/play (unauthenticated)', async () => {
       const mockResponse = NextResponse.next();
       mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
 
-      const request = createRequest('/en/play');
+      const request = createRequest('/en/games/play');
       const result = await proxy(request);
 
       expect(result).toBe(mockResponse);
@@ -250,7 +250,7 @@ describe('proxy', () => {
       const mockResponse = NextResponse.next();
       mockUpdateSession.mockResolvedValue({ response: mockResponse, user: null });
 
-      const request = createRequest('/en/play');
+      const request = createRequest('/en/games/play');
       await proxy(request);
 
       expect(mockUpdateSession).toHaveBeenCalledWith(request);

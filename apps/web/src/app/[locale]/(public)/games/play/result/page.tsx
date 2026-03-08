@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'play' });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'play/result' }),
+    ...generateCanonicalMetadata({ locale, path: 'games/play/result' }),
     title: t('title'),
   };
 }

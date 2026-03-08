@@ -81,7 +81,7 @@ export function PlayErrorClient({ locale }: Props) {
     }
 
     // Redirect back to play page with corrected data
-    router.push(`/${locale}/play?${params.toString()}`);
+    router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
   const handleDelete = async () => {

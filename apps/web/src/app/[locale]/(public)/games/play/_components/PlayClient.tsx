@@ -105,7 +105,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // Redirect to result page when game is over
   useEffect(() => {
     if (gameStatus !== 'in_progress' && playerResult && gameId) {
-      router.replace(`/${locale}/play/result?gameId=${gameId}`);
+      router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
     }
   }, [gameStatus, playerResult, gameId, locale, router]);
 

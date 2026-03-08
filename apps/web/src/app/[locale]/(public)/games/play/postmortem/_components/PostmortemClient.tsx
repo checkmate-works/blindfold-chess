@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button, ProgressBar } from '@/app/_components';
 import { FaCheck, FaEye, FaInfoCircle, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
-import { BoardViewModal } from '@/app/[locale]/(public)/play/_components/BoardViewModal';
+import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
-import { getPgnSuggestion } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { getPgnSuggestion } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
 import { useDebouncedInput } from '../_hooks/useDebouncedInput';
 import { useIsMobile } from '../_hooks/useIsMobile';

@@ -7,7 +7,7 @@ import { useAutoSave } from './use-auto-save';
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
-  usePathname: vi.fn(() => '/en/play'),
+  usePathname: vi.fn(() => '/en/games/play'),
 }));
 
 // Mock repositories

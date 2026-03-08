@@ -10,8 +10,8 @@ import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
-import { MoveNavigationControls } from '@/app/[locale]/(public)/play/_components/MoveNavigationControls';
-import { formatPgnToText } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
+import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
 type Props = {

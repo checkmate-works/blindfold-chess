@@ -28,7 +28,7 @@ export function GameListItem({ game, locale, onDelete }: Props) {
     });
 
     // Navigate to the game play screen with existing game state
-    router.push(`/${locale}/play?${params.toString()}`);
+    router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
   return (

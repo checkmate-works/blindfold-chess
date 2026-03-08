@@ -5,9 +5,9 @@ import type { ReactNode } from 'react';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
-import { ButtonInput } from '@/app/[locale]/(public)/play/_components/ButtonInput';
-import { MoveInput } from '@/app/[locale]/(public)/play/_components/MoveInput';
-import { MoveSelect } from '@/app/[locale]/(public)/play/_components/MoveSelect';
+import { ButtonInput } from '@/app/[locale]/(public)/games/play/_components/ButtonInput';
+import { MoveInput } from '@/app/[locale]/(public)/games/play/_components/MoveInput';
+import { MoveSelect } from '@/app/[locale]/(public)/games/play/_components/MoveSelect';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {

@@ -59,7 +59,7 @@ export function useUrlSync({
         params.set('gameId', effectiveGameId);
       }
 
-      router.replace(`/${locale}/play/error?${params.toString()}`);
+      router.replace(`/${locale}/games/play/error?${params.toString()}`);
     }
   }, [
     shouldRedirectToError,

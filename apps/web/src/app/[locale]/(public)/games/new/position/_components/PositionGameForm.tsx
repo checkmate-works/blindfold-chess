@@ -189,7 +189,7 @@ export function PositionGameForm({ locale }: Props) {
       gamePrefs: JSON.stringify(localSettings),
     });
 
-    router.push(`/${locale}/play?${searchParams.toString()}`);
+    router.push(`/${locale}/games/play?${searchParams.toString()}`);
   };
 
   const editableBoardLabels = useMemo(

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateFen } from '@/app/[locale]/(public)/play/_lib/pgn-parser';
+import { validateFen } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
 import { buildFenFromParts } from '../_lib/build-fen-from-parts';
 import type { CastlingRights } from './PositionSettings';

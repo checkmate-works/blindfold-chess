@@ -15,7 +15,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
  * 1. STEP1: Choose Move Input Method (text / select / button)
  * 2. STEP2: Board Peek Mode
  * 3. STEP3: Piece Visibility / Appearance
- * 4. Complete -> navigate to /play
+ * 4. Complete -> navigate to /games/play
  */
 
 type Props = {

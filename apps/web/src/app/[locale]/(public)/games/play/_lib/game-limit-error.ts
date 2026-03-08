@@ -14,14 +14,14 @@ type PendingGameData = {
  * Handle a GameLimitError by storing pending game data in sessionStorage
  * and dispatching the appropriate event.
  *
- * If the game has no moves (direct access to /play), dispatches a start error event.
+ * If the game has no moves (direct access to /games/play), dispatches a start error event.
  * Otherwise, stores the game data for rescue and dispatches a limit-reached event.
  */
 export function handleGameLimitError(error: GameLimitError, gameData: PendingGameData): void {
   console.warn('Game limit reached, cannot save game:', error.message);
 
   // When there are no moves, the user hit the limit on game start (e.g. direct
-  // access to /play). Dispatching start-error instead of writing to sessionStorage
+  // access to /games/play). Dispatching start-error instead of writing to sessionStorage
   // is intentional: there is no game data worth rescuing, so we redirect to an
   // error page rather than the rescue flow. This branch originally existed only in
   // the initial-save path, but applying it uniformly is the correct behavior for
