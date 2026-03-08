@@ -63,7 +63,10 @@ export {
   parsePgnMoveSequence,
 } from "./pgn";
 
+export type { PositionQuery } from "./position";
+
 export {
+  queryPosition,
   isCheckmate,
   isStalemate,
   isCheck,

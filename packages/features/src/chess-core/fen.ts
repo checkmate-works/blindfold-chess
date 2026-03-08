@@ -44,8 +44,15 @@ export function fenToBoardFlat(fen: string): string[] {
 }
 
 export function getTurnFromFen(fen: string): "w" | "b" {
-  const chess = new Chess(fen);
-  return chess.turn();
+  const parts = fen.split(" ");
+  if (parts.length < 6) {
+    throw new Error("Invalid FEN: incomplete FEN string");
+  }
+  const turn = parts[1];
+  if (turn !== "w" && turn !== "b") {
+    throw new Error("Invalid FEN: invalid turn field");
+  }
+  return turn;
 }
 
 export function getFenAfterMoves(initialFen: string, moves: string[]): string {

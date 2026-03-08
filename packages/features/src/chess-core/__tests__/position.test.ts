@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  queryPosition,
   isCheckmate,
   isStalemate,
   isCheck,
@@ -175,6 +176,61 @@ describe("findKingSquare", () => {
     const customFen = "8/8/8/4k3/8/8/8/4K3 w - - 0 1";
     expect(findKingSquare(customFen, "w")).toBe("e1");
     expect(findKingSquare(customFen, "b")).toBe("e5");
+  });
+});
+
+// ============================================================
+// queryPosition
+// ============================================================
+describe("queryPosition", () => {
+  it("returns consistent results with individual functions for starting position", () => {
+    const pos = queryPosition(STARTING_FEN);
+    expect(pos.isCheckmate()).toBe(false);
+    expect(pos.isStalemate()).toBe(false);
+    expect(pos.isCheck()).toBe(false);
+    expect(pos.isDraw()).toBe(false);
+    expect(pos.isInsufficientMaterial()).toBe(false);
+    expect(pos.isGameOver()).toBe(false);
+    expect(pos.findKingSquare("w")).toBe("e1");
+    expect(pos.findKingSquare("b")).toBe("e8");
+  });
+
+  it("detects checkmate in a fool's mate position", () => {
+    const foolsMateFen =
+      "rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3";
+    const pos = queryPosition(foolsMateFen);
+    expect(pos.isCheckmate()).toBe(true);
+    expect(pos.isCheck()).toBe(true);
+    expect(pos.isGameOver()).toBe(true);
+    expect(pos.isStalemate()).toBe(false);
+  });
+
+  it("detects stalemate", () => {
+    const stalemateFen = "k7/8/1Q6/8/8/8/8/2K5 b - - 0 1";
+    const pos = queryPosition(stalemateFen);
+    expect(pos.isStalemate()).toBe(true);
+    expect(pos.isDraw()).toBe(true);
+    expect(pos.isGameOver()).toBe(true);
+    expect(pos.isCheckmate()).toBe(false);
+  });
+
+  it("detects insufficient material", () => {
+    const kvkFen = "k7/8/8/8/8/8/8/K7 w - - 0 1";
+    const pos = queryPosition(kvkFen);
+    expect(pos.isInsufficientMaterial()).toBe(true);
+    expect(pos.isDraw()).toBe(true);
+    expect(pos.isGameOver()).toBe(true);
+  });
+
+  it("checks square attacks correctly", () => {
+    const pos = queryPosition(STARTING_FEN);
+    expect(pos.isSquareAttacked("e2", "w")).toBe(true);
+    expect(pos.isSquareAttacked("e5", "w")).toBe(false);
+    expect(pos.isSquareAttacked("e7", "b")).toBe(true);
+  });
+
+  it("throws for an invalid FEN", () => {
+    expect(() => queryPosition("invalid")).toThrow();
   });
 });
 
