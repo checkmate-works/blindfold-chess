@@ -59,6 +59,14 @@ async function runStorageAvatars() {
   await client.unsafe(avatarsSql);
 }
 
+async function runFollowsBlocksSetup() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'follows_blocks_setup.sql'),
+    'utf-8'
+  );
+  await client.unsafe(sql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -80,6 +88,10 @@ async function main() {
     console.log('Applying storage avatars setup...');
     await runStorageAvatars();
     console.log('Storage avatars setup applied!');
+
+    console.log('Applying follows & blocks setup...');
+    await runFollowsBlocksSetup();
+    console.log('Follows & blocks setup applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }

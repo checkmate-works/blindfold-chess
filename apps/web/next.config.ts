@@ -58,8 +58,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/:locale/@/:username',
-        destination: '/:locale/profile/:username',
+        source: '/:locale/@/:username/:path*',
+        destination: '/:locale/profile/:username/:path*',
       },
     ];
   },

@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
 import { LikeButton } from './LikeButton';
+import { UserAvatar } from './UserAvatar';
 
 type Props = {
   post: PostWithReplyMeta;
@@ -21,6 +22,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview =
     post.content.length > 200 ? post.content.slice(0, 200) + '...' : post.content;
+  const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
   return (
     <Link
@@ -28,54 +30,40 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
       locale={locale}
       className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
     >
-      <div className="flex items-start gap-3">
-        {post.author?.avatarUrl ? (
-          <Image
-            src={post.author.avatarUrl}
-            alt={displayName}
-            width={32}
-            height={32}
-            className="rounded-full flex-shrink-0"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-            <span className="text-xs text-muted-foreground">
-              {displayName.charAt(0).toUpperCase()}
+      <UserAvatar
+        profileHref={profileHref}
+        avatarUrl={post.author?.avatarUrl}
+        displayName={displayName}
+        locale={locale}
+        asLink={false}
+      >
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+          {showSquareBadge && (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
+              {square}
             </span>
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-            <span className="font-medium text-foreground">{displayName}</span>
-            {showSquareBadge && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
-                {square}
-              </span>
-            )}
-            <span>·</span>
-            <time dateTime={post.createdAt.toISOString()}>
-              {post.createdAt.toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
-            </time>
-          </div>
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words">
-            {contentPreview}
-          </p>
-
-          <div className="mt-2">
-            <LikeButton
-              postId={post.id}
-              locale={locale}
-              square={square}
-              initialLikeCount={post.likeMeta.likeCount}
-              initialLikedByMe={post.likeMeta.likedByMe}
-            />
-          </div>
+          )}
+          <span>·</span>
+          <time dateTime={post.createdAt.toISOString()}>
+            {post.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </time>
         </div>
-      </div>
+        <p className="text-sm text-foreground whitespace-pre-wrap break-words">{contentPreview}</p>
+
+        <div className="mt-2">
+          <LikeButton
+            postId={post.id}
+            locale={locale}
+            square={square}
+            initialLikeCount={post.likeMeta.likeCount}
+            initialLikedByMe={post.likeMeta.likedByMe}
+          />
+        </div>
+      </UserAvatar>
 
       {post.replyMeta.replyCount > 0 && (
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">

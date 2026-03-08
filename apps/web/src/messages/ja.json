@@ -61,6 +61,10 @@
       "title": "いいねした投稿",
       "description": "いいねした投稿の一覧を表示します"
     },
+    "mypageFollowing": {
+      "title": "フォロー中",
+      "description": "フォロー中のユーザー"
+    },
     "topics": {
       "title": "トピック",
       "description": "チェスのマス目やポジション、戦略について議論・共有しましょう"
@@ -1758,6 +1762,15 @@
     "breadcrumbMypage": "マイページ",
     "empty": "いいねした投稿はまだありません。"
   },
+  "MypageFollowing": {
+    "title": "フォロー中",
+    "empty": "まだ誰もフォローしていません。",
+    "breadcrumbMypage": "マイページ",
+    "unfollow": "フォロー解除",
+    "unfollowConfirmTitle": "フォロー解除",
+    "unfollowConfirmMessage": "{name} のフォローを解除しますか？",
+    "cancel": "キャンセル"
+  },
   "deleteAccount": {
     "title": "退会",
     "warning": "この操作は取り消すことができません。表示名、自己紹介、国、チェスアカウントなどの個人情報はすべて削除されます。ユーザー名は再利用防止のため保持されます。",
@@ -1866,7 +1879,15 @@
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
-    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。"
+    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。",
+    "followers": "フォロワー",
+    "followingCount": "フォロー中",
+    "follow": "フォローする",
+    "following": "フォロー中",
+    "unfollow": "フォロー解除",
+    "followersPageTitle": "フォロワー",
+    "noFollowers": "まだフォロワーがいません。",
+    "followsYou": "フォローされています"
   },
   "topics": {
     "title": "トピック",

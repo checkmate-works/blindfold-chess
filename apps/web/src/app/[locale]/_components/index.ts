@@ -17,3 +17,4 @@ export { PageTitle } from './PageTitle';
 export { PgnInput } from './PgnInput';
 export { SectionTitle } from './SectionTitle';
 export { SubsectionTitle } from './SubsectionTitle';
+export { UserCard } from './UserCard';
