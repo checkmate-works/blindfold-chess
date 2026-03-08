@@ -1881,9 +1881,14 @@
     "usersTable": {
       "email": "Email",
       "role": "Role",
+      "status": "Status",
       "createdAt": "Created At",
+      "actions": "Actions",
       "noUsersFound": "No users found",
-      "defaultRole": "user"
+      "defaultRole": "user",
+      "banned": "Banned",
+      "active": "Active",
+      "anonymous": "Anonymous"
     }
   },
   "publicProfile": {
@@ -1903,6 +1908,12 @@
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。"
+  },
+  "banned": {
+    "title": "アカウント停止",
+    "message": "あなたのアカウントは停止されており、このサービスを利用できません。",
+    "reason": "理由: {reason}",
+    "contact": "これが間違いだと思われる場合は、サポートまでお問い合わせください。"
   },
   "topics": {
     "title": "トピック",

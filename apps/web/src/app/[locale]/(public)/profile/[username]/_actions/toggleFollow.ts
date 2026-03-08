@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, follows, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 import { validateUsername } from '@/lib/username';
@@ -25,6 +26,10 @@ export async function toggleFollow(
 
   if (!user) {
     return { error: 'signInRequired' };
+  }
+
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
   }
 
   // Look up the target user's profile by username

@@ -7,6 +7,7 @@ const mockUpload = vi.fn();
 const mockGetPublicUrl = vi.fn();
 const mockList = vi.fn();
 const mockRemove = vi.fn();
+const mockIsUserBanned = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -23,6 +24,10 @@ vi.mock('@/lib/supabase/server', () => ({
         }),
       },
     }),
+}));
+
+vi.mock('@/lib/ban', () => ({
+  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
 const mockWhere = vi.fn().mockResolvedValue(undefined);
@@ -108,6 +113,7 @@ function setupAuthenticatedUser() {
   mockGetUser.mockResolvedValue({
     data: { user: { id: testUserId } },
   });
+  mockIsUserBanned.mockResolvedValue(false);
 }
 
 function setupSuccessfulUpload() {
@@ -141,6 +147,25 @@ describe('POST /api/profile/avatar', () => {
       const body = await response.json();
       expect(body).toEqual({ error: 'unauthorized' });
 
+      expect(mockUpload).not.toHaveBeenCalled();
+      expect(mockWhere).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ban enforcement', () => {
+    it('should return 403 when user is banned', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: testUserId } },
+      });
+      mockIsUserBanned.mockResolvedValue(true);
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(403);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'banned' });
       expect(mockUpload).not.toHaveBeenCalled();
       expect(mockWhere).not.toHaveBeenCalled();
     });

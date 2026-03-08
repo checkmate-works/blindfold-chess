@@ -131,6 +131,35 @@ Avoid documenting information that is self-evident from the code (routes, compon
   - `drizzle/*.sql` + `drizzle/meta/` — Drizzle-managed migrations (auto-generated, tracked by journal)
   - `drizzle/supabase/` — Supabase-specific SQL (RLS, auth hooks, permissions). Applied by `migrate.ts` only in Supabase environments.
 
+## Moderation & Audit Architecture
+
+### Design Pattern: Event Log with Materialized State
+
+The moderation system uses a **dual-source pattern** adopted from Discourse, GitLab, Mastodon, and Lichess — NOT pure Event Sourcing.
+
+- **State flag** on `profiles` table (`bannedAt`) — enables O(1) status checks. Every Server Action calls `isUserBanned()` (`@/lib/ban`), so deriving state by replaying events would be prohibitively expensive.
+- **Event log** in `moderation_actions` table — immutable, append-only audit trail recording all admin operations with full context (who acted, on what, why, when). Corrections are recorded as new events (e.g., `unban` after `ban`), never as updates to existing records.
+
+### Key Design Decisions
+
+- **Polymorphic target** (`target_type` + `target_id`) — same pattern as `topicPosts.topicType + topicKey`. No schema changes when new moderation targets are added.
+- **`action` is varchar, not pgEnum** — avoids ALTER TYPE migrations for new action types.
+- **`metadata` (JSONB)** — stores action-specific context (deleted content, previous values). Replaces dedicated `previous_value`/`new_value` columns.
+- **No `updated_at`** — audit logs are immutable by design.
+- **`reason`** (text) — human-readable justification. For BAN, replaces the former `profiles.ban_reason` column.
+- **`ip_address`** — for forensic analysis of admin actions.
+- **FK** (`actor_id` → `auth.users`) — defined in Supabase-side SQL, following established pattern.
+
+### Usage Patterns
+
+| Operation               | State source                                         | Event log                                                               |
+| ----------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
+| Is user banned?         | `profiles.bannedAt IS NOT NULL` via `isUserBanned()` | —                                                                       |
+| Why was user banned?    | —                                                    | Latest `moderation_actions` where `action='ban'` AND `target_id=userId` |
+| Full moderation history | —                                                    | All `moderation_actions` for a `target_id`, ordered by `created_at`     |
+
+See `moderation_actions` table TSDoc in `src/lib/db/schema.ts` for detailed design rationale.
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions

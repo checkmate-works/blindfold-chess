@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -22,6 +23,10 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  if (await isUserBanned(user.id)) {
+    return NextResponse.json({ error: 'banned' }, { status: 403 });
   }
 
   let formData: FormData;

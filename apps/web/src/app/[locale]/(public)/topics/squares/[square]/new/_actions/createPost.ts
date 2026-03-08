@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -30,6 +31,10 @@ export async function createPost(
 
   if (!user) {
     return { error: 'signInRequired' };
+  }
+
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
   }
 
   const content = formData.get('content');

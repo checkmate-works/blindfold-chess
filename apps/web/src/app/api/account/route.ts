@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -14,6 +15,10 @@ export async function DELETE() {
 
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  if (await isUserBanned(user.id)) {
+    return NextResponse.json({ error: 'banned' }, { status: 403 });
   }
 
   // Soft-delete the auth user first via admin client.

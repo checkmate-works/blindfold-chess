@@ -1880,9 +1880,14 @@
     "usersTable": {
       "email": "Email",
       "role": "Role",
+      "status": "Status",
       "createdAt": "Created At",
+      "actions": "Actions",
       "noUsersFound": "No users found",
-      "defaultRole": "user"
+      "defaultRole": "user",
+      "banned": "Banned",
+      "active": "Active",
+      "anonymous": "Anonymous"
     }
   },
   "publicProfile": {
@@ -1902,6 +1907,12 @@
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet."
+  },
+  "banned": {
+    "title": "Account Suspended",
+    "message": "Your account has been suspended and you cannot use this service.",
+    "reason": "Reason: {reason}",
+    "contact": "If you believe this is a mistake, please contact support."
   },
   "topics": {
     "title": "Topics",

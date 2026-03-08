@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -31,6 +32,10 @@ export async function createReply(
 
   if (!user) {
     return { error: 'signInRequired' };
+  }
+
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
   }
 
   const content = formData.get('content');

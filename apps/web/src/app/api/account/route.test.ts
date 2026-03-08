@@ -4,6 +4,7 @@ import { DELETE } from './route';
 
 const mockGetUser = vi.fn();
 const mockDeleteUser = vi.fn();
+const mockIsUserBanned = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -24,6 +25,10 @@ vi.mock('@/lib/supabase/admin', () => ({
       },
     },
   }),
+}));
+
+vi.mock('@/lib/ban', () => ({
+  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
 const mockWhere = vi.fn().mockResolvedValue(undefined);
@@ -58,11 +63,29 @@ describe('DELETE /api/account', () => {
     vi.clearAllMocks();
   });
 
+  describe('ban enforcement', () => {
+    it('should return 403 when user is banned', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: testUserId } },
+      });
+      mockIsUserBanned.mockResolvedValue(true);
+
+      const response = await DELETE();
+
+      expect(response.status).toBe(403);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'banned' });
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+      expect(mockWhere).not.toHaveBeenCalled();
+    });
+  });
+
   describe('normal case', () => {
     it('should delete account and return success for authenticated user', async () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: testUserId } },
       });
+      mockIsUserBanned.mockResolvedValue(false);
       mockDeleteUser.mockResolvedValue({ error: null });
 
       const response = await DELETE();
@@ -100,6 +123,7 @@ describe('DELETE /api/account', () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: testUserId } },
       });
+      mockIsUserBanned.mockResolvedValue(false);
       mockDeleteUser.mockResolvedValue({
         error: new Error('Admin API error'),
       });
@@ -122,6 +146,7 @@ describe('DELETE /api/account', () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: testUserId } },
       });
+      mockIsUserBanned.mockResolvedValue(false);
       mockDeleteUser.mockImplementation(async () => {
         callOrder.push('deleteUser');
         return { error: null };

@@ -4,6 +4,7 @@ import { createPost } from './createPost';
 
 const mockGetUser = vi.fn();
 const mockInsertValues = vi.fn().mockResolvedValue(undefined);
+const mockIsUserBanned = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -21,6 +22,10 @@ vi.mock('@/lib/db', () => ({
     }),
   },
   topicPosts: {},
+}));
+
+vi.mock('@/lib/ban', () => ({
+  isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
 const mockRedirect = vi.fn();
@@ -77,9 +82,21 @@ describe('createPost', () => {
     });
   });
 
+  describe('ban enforcement', () => {
+    it('should return banned when user is banned', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(true);
+
+      const result = await createPost('en', 'e4', {}, makeFormData('hello'));
+      expect(result).toEqual({ error: 'banned' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+  });
+
   describe('content validation', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
     });
 
     it('should return contentRequired when content is empty', async () => {
@@ -120,6 +137,7 @@ describe('createPost', () => {
   describe('successful post creation', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
     });
 
     it('should insert post and redirect on success', async () => {

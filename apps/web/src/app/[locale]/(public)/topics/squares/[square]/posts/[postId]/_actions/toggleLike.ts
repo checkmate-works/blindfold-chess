@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, count, eq } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, topicPostLikes } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -33,6 +34,10 @@ export async function toggleLike(
 
   if (!user) {
     return { error: 'signInRequired' };
+  }
+
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
   }
 
   // INSERT-first pattern: attempt to insert, catch unique violation to toggle.
