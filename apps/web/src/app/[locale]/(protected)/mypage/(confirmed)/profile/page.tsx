@@ -52,14 +52,25 @@ export default async function ProfilePage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        <Link
-          href={`/@/${profile.username}`}
-          className="inline-block text-sm text-primary hover:text-primary/80 transition-colors"
-        >
-          {t('viewPublicProfile')} &rarr;
-        </Link>
+        <div className="mb-4">
+          <Link
+            href={`/@/${profile.username}`}
+            className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            {t('viewPublicProfile', { username: profile.username })}
+          </Link>
+        </div>
 
         <ProfileForm locale={locale} profile={profile} />
+
+        <Divider />
+
+        <Link
+          href="/mypage/delete-account"
+          className="inline-block text-sm text-destructive hover:underline"
+        >
+          {t('deleteAccountLink')}
+        </Link>
 
         <Divider />
 

@@ -1700,9 +1700,18 @@
   "Mypage": {
     "title": "マイページ",
     "practiceLink": "練習記録",
-    "likesLink": "いいねした投稿",
-    "profileLink": "プロフィール編集",
-    "deleteAccountLink": "退会",
+    "dashboard": {
+      "viewProfile": "@{username} のプロフィール",
+      "practiceTitle": "練習記録",
+      "practiceSummary": "今週 {sessions} セッション / 最高スコア: {bestScore}",
+      "practiceEmpty": "今週はまだ記録がありません。",
+      "likesTitle": "いいねした投稿",
+      "likesSummary": "{count} 件の投稿にいいね",
+      "followingTitle": "フォロー中",
+      "followingSummary": "{count} 人をフォロー中",
+      "profileTitle": "プロフィール編集",
+      "profileSummary": "表示名やアバターを編集する"
+    },
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",
@@ -1859,8 +1868,9 @@
     "submitting": "保存中...",
     "error": "エラーが発生しました。もう一度お試しください。",
     "breadcrumbMypage": "マイページ",
-    "viewPublicProfile": "公開プロフィールを見る",
-    "profileUpdated": "プロフィールを更新しました"
+    "viewPublicProfile": "@{username} のプロフィール",
+    "profileUpdated": "プロフィールを更新しました",
+    "deleteAccountLink": "退会"
   },
   "Admin": {
     "title": "Admin",

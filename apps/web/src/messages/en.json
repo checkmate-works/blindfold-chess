@@ -1699,9 +1699,18 @@
   "Mypage": {
     "title": "My Page",
     "practiceLink": "Practice Records",
-    "likesLink": "Liked Posts",
-    "profileLink": "Edit Profile",
-    "deleteAccountLink": "Delete Account",
+    "dashboard": {
+      "viewProfile": "@{username}'s profile",
+      "practiceTitle": "Practice Records",
+      "practiceSummary": "{sessions} sessions this week / Best score: {bestScore}",
+      "practiceEmpty": "No records this week yet.",
+      "likesTitle": "Liked Posts",
+      "likesSummary": "{count, plural, one {# post} other {# posts}} liked",
+      "followingTitle": "Following",
+      "followingSummary": "Following {count, plural, one {# user} other {# users}}",
+      "profileTitle": "Edit Profile",
+      "profileSummary": "Edit your display name and avatar"
+    },
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
@@ -1858,8 +1867,9 @@
     "submitting": "Saving...",
     "error": "An error occurred. Please try again.",
     "breadcrumbMypage": "My Page",
-    "viewPublicProfile": "View public profile",
-    "profileUpdated": "Profile updated"
+    "viewPublicProfile": "@{username}'s profile",
+    "profileUpdated": "Profile updated",
+    "deleteAccountLink": "Delete Account"
   },
   "Admin": {
     "title": "Admin",
