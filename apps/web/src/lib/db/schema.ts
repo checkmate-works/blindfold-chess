@@ -238,6 +238,7 @@ export const topicPosts = pgTable(
     topicKey: varchar('topic_key', { length: 50 }).notNull(),
     parentId: uuid('parent_id'), // self-referencing FK defined in custom SQL
     content: text('content').notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },

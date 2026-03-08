@@ -43,6 +43,13 @@
       "when": 1772954033662,
       "tag": "0005_silent_medusa",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772958376442,
+      "tag": "0006_fearless_umar",
+      "breakpoints": true
     }
   ]
 }

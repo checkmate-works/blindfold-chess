@@ -26,7 +26,8 @@ export async function getPostsForSquare(square: string): Promise<TopicPostWithAu
       and(
         eq(topicPosts.topicType, 'square'),
         eq(topicPosts.topicKey, square),
-        isNull(topicPosts.parentId)
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
       )
     )
     .orderBy(desc(topicPosts.createdAt));
@@ -59,7 +60,8 @@ export async function getPostById(
       and(
         eq(topicPosts.id, postId),
         eq(topicPosts.topicType, 'square'),
-        eq(topicPosts.topicKey, square)
+        eq(topicPosts.topicKey, square),
+        isNull(topicPosts.deletedAt)
       )
     )
     .limit(1);
@@ -117,7 +119,7 @@ async function attachPostMeta(
       latestReplyAt: max(topicPosts.createdAt),
     })
     .from(topicPosts)
-    .where(inArray(topicPosts.parentId, postIds))
+    .where(and(inArray(topicPosts.parentId, postIds), isNull(topicPosts.deletedAt)))
     .groupBy(topicPosts.parentId);
 
   // Batch query 2: replies with author info for replier display
@@ -132,7 +134,7 @@ async function attachPostMeta(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(inArray(topicPosts.parentId, postIds))
+    .where(and(inArray(topicPosts.parentId, postIds), isNull(topicPosts.deletedAt)))
     .orderBy(desc(topicPosts.createdAt));
 
   // Batch query 3: like counts per post
@@ -231,7 +233,13 @@ export async function getRecentPostsAcrossSquares(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(eq(topicPosts.topicType, 'square'), isNull(topicPosts.parentId)))
+    .where(
+      and(
+        eq(topicPosts.topicType, 'square'),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
     .orderBy(desc(topicPosts.createdAt))
     .limit(limit);
 
@@ -291,7 +299,7 @@ export async function getLikedPostsByUser(
     .from(topicPostLikes)
     .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(eq(topicPostLikes.userId, userId))
+    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)))
     .orderBy(desc(topicPostLikes.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
@@ -330,7 +338,8 @@ export async function getPostsByUserId(
       and(
         eq(topicPosts.userId, userId),
         eq(topicPosts.topicType, 'square'),
-        isNull(topicPosts.parentId)
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
       )
     )
     .orderBy(desc(topicPosts.createdAt));
@@ -366,7 +375,7 @@ export async function getRepliesByPostId(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(eq(topicPosts.parentId, postId))
+    .where(and(eq(topicPosts.parentId, postId), isNull(topicPosts.deletedAt)))
     .orderBy(desc(topicPosts.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({

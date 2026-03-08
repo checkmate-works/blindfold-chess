@@ -14,7 +14,7 @@ import { LikeButton, UserAvatar } from '../../../_components';
 import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
-import { ReplyForm, ReplyList } from './_components';
+import { DeletePostButton, ReplyForm, ReplyList } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale; square: string; postId: string }>;
@@ -115,13 +115,18 @@ export default async function PostDetailPage({ params }: Props) {
             {post.content}
           </div>
 
-          <LikeButton
-            postId={post.id}
-            locale={locale}
-            square={square}
-            initialLikeCount={likeMeta.likeCount}
-            initialLikedByMe={likeMeta.likedByMe}
-          />
+          <div className="flex items-center gap-4">
+            <LikeButton
+              postId={post.id}
+              locale={locale}
+              square={square}
+              initialLikeCount={likeMeta.likeCount}
+              initialLikedByMe={likeMeta.likedByMe}
+            />
+            {user && user.id === post.userId && (
+              <DeletePostButton postId={post.id} locale={locale} square={square} />
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">

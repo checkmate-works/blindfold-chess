@@ -1987,6 +1987,14 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "投稿を削除",
+        "confirmMessage": "この投稿を削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
       }
     }
   }

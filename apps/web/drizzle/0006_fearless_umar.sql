@@ -1,0 +1,1 @@
+ALTER TABLE "topic_posts" ADD COLUMN "deleted_at" timestamp with time zone;
