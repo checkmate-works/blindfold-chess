@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
@@ -125,15 +126,25 @@ export default async function AdminUsersPage() {
                     {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
                   </td>
                   <td className="px-4 py-3">
-                    {!isCurrentUser && profile && (
-                      <>
-                        {isBanned ? (
-                          <UnbanButton userId={user.id} />
-                        ) : (
-                          <BanButton userId={user.id} />
-                        )}
-                      </>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {profile && (
+                        <Link
+                          href={`/admin/users/${user.id}/posts`}
+                          className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+                        >
+                          {t('usersTable.viewPosts')}
+                        </Link>
+                      )}
+                      {!isCurrentUser && profile && (
+                        <>
+                          {isBanned ? (
+                            <UnbanButton userId={user.id} />
+                          ) : (
+                            <BanButton userId={user.id} />
+                          )}
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

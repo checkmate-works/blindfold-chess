@@ -137,6 +137,7 @@ export default async function AdminAuditLogPage({
             <option value="">{t('auditLogTable.allActions')}</option>
             <option value="ban">ban</option>
             <option value="unban">unban</option>
+            <option value="delete_post">delete_post</option>
           </select>
         </div>
         <div>
@@ -189,7 +190,9 @@ export default async function AdminAuditLogPage({
                           ? 'bg-red-100 text-red-800'
                           : log.action === 'unban'
                             ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                            : log.action === 'delete_post'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-gray-100 text-gray-800'
                       }`}
                     >
                       {log.action}
