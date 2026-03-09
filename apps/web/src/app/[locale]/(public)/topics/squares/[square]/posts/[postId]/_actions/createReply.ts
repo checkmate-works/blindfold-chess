@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { and, eq, isNull } from 'drizzle-orm';
+
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -9,6 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { isValidSquare } from '../../../../_lib/squares';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_CONTENT_LENGTH = 5000;
 
 type CreateReplyState = {
@@ -24,6 +27,10 @@ export async function createReply(
 ): Promise<CreateReplyState> {
   if (!isValidSquare(square)) {
     return { error: 'Invalid square' };
+  }
+
+  if (!UUID_RE.test(postId)) {
+    return { error: 'invalidPostId' };
   }
 
   const supabase = await createClient();
@@ -42,6 +49,15 @@ export async function createReply(
   const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.createReply);
   if ('error' in rateLimitResult) {
     return { error: rateLimitResult.error };
+  }
+
+  const [parentPost] = await db
+    .select({ id: topicPosts.id })
+    .from(topicPosts)
+    .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+
+  if (!parentPost) {
+    return { error: 'postNotFound' };
   }
 
   const content = formData.get('content');
