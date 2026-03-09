@@ -75,6 +75,14 @@ async function runModerationActionsSetup() {
   await client.unsafe(sql);
 }
 
+async function runTopicPostsSetup() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'topic_posts_setup.sql'),
+    'utf-8'
+  );
+  await client.unsafe(sql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -104,6 +112,10 @@ async function main() {
     console.log('Applying moderation actions setup...');
     await runModerationActionsSetup();
     console.log('Moderation actions setup applied!');
+
+    console.log('Applying topic posts setup...');
+    await runTopicPostsSetup();
+    console.log('Topic posts setup applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }

@@ -136,3 +136,24 @@ CREATE POLICY "moderation_actions_insert" ON "moderation_actions"
       AND user_roles.role = 'admin'
     )
   );
+
+-- =============================================================================
+-- topic_posts
+-- =============================================================================
+ALTER TABLE "topic_posts" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "topic_posts_select" ON "topic_posts";
+CREATE POLICY "topic_posts_select" ON "topic_posts"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "topic_posts_insert" ON "topic_posts";
+CREATE POLICY "topic_posts_insert" ON "topic_posts"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "topic_posts_delete" ON "topic_posts";
+CREATE POLICY "topic_posts_delete" ON "topic_posts"
+  FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "topic_posts_update" ON "topic_posts";
+CREATE POLICY "topic_posts_update" ON "topic_posts"
+  FOR UPDATE USING (auth.uid() = user_id);
