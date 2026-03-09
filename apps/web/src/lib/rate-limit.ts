@@ -39,6 +39,7 @@ export const RATE_LIMITS = {
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
+  savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
 } as const;
 
 /**
