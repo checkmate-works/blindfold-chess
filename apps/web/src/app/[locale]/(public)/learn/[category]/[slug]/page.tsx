@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import {
@@ -42,8 +44,6 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const locales = ['en', 'ja'] as const;
-
   // We can't easily filter by category here without loading all articles,
   // but generateStaticParams is for pre-rendering.
   // Ideally we should know which article belongs to which category.
@@ -51,7 +51,7 @@ export async function generateStaticParams() {
 
   const allParams = [];
 
-  for (const locale of locales) {
+  for (const locale of SUPPORTED_LOCALES) {
     const articles = await getAllArticles(locale);
     for (const article of articles) {
       if (article.category) {

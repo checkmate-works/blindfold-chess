@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import {
   Breadcrumb,
   Divider,
@@ -22,10 +24,9 @@ type Props = {
 
 export async function generateStaticParams() {
   const slugs = getAvailableManualArticles();
-  const locales = ['en', 'ja'] as const;
 
   return slugs.flatMap((slug) =>
-    locales.map((locale) => ({
+    SUPPORTED_LOCALES.map((locale) => ({
       locale,
       slug,
     }))

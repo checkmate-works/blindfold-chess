@@ -10,6 +10,10 @@ This document outlines the technical decisions and implementation guidelines for
 - **Server Components by Default** - Prefer Server Components for SEO benefits
 - **Route Groups** - Use route groups like `(landing)` for organization without affecting URLs
 
+### Static Generation
+
+- **`generateStaticParams` must return all dynamic segments** — For routes under `[locale]/`, always include `locale` in the returned params using `SUPPORTED_LOCALES` from `@/config`. Omitting `locale` causes "Page changed from static to dynamic at runtime" errors in production (the error does not surface in `next dev`).
+
 ### SEO Optimization
 
 - **Server-Side Rendering** - Maximize SSR for better search engine crawling

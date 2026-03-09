@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import {
   Breadcrumb,
   Divider,
@@ -33,11 +35,9 @@ type Props = {
 export const dynamic = 'force-static';
 
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
-const locales = ['en', 'ja'] as const;
-
 export async function generateStaticParams() {
   return validCategories.flatMap((category) =>
-    locales.map((locale) => ({
+    SUPPORTED_LOCALES.map((locale) => ({
       locale,
       category,
     }))

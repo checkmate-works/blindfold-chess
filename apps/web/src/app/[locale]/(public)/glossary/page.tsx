@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import {
   Breadcrumb,
   Divider,
@@ -19,7 +21,7 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'ja' }];
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

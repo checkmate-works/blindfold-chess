@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import {
   Breadcrumb,
   Divider,
@@ -26,7 +28,12 @@ type Props = {
 // Queries the database at build time — requires a running DB connection for `next build`.
 export async function generateStaticParams() {
   const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
-  return letters.map((letter) => ({ letter: letter.toLowerCase() }));
+  return letters.flatMap((letter) =>
+    SUPPORTED_LOCALES.map((locale) => ({
+      locale,
+      letter: letter.toLowerCase(),
+    }))
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

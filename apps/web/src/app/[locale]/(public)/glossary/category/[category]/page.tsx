@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SUPPORTED_LOCALES } from '@/config';
+
 import {
   Breadcrumb,
   Divider,
@@ -28,7 +30,12 @@ type Props = {
 const VALID_CATEGORIES = Object.keys(CATEGORY_STYLES);
 
 export async function generateStaticParams() {
-  return VALID_CATEGORIES.map((category) => ({ category }));
+  return VALID_CATEGORIES.flatMap((category) =>
+    SUPPORTED_LOCALES.map((locale) => ({
+      locale,
+      category,
+    }))
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
