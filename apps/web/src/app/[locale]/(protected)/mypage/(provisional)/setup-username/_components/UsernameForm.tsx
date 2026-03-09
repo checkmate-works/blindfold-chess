@@ -31,6 +31,8 @@ export function UsernameForm({ locale }: Props) {
           return t('validation.tooLong');
         case 'invalid_format':
           return t('validation.invalidFormat');
+        case 'reserved':
+          return t('validation.reserved');
         case 'username_taken':
           return t('validation.taken');
         case 'username_already_set':

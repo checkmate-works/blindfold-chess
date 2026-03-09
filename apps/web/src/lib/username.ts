@@ -7,12 +7,13 @@
  * - No consecutive underscores
  * - No uppercase, no hyphens
  */
+import { isReservedUsername } from '@/lib/reserved-usernames';
 
 const USERNAME_REGEX = /^[a-z](?:[a-z0-9]_?)*[a-z0-9]$/;
 const USERNAME_MIN_LENGTH = 2;
 const USERNAME_MAX_LENGTH = 20;
 
-export type UsernameValidationError = 'too_short' | 'too_long' | 'invalid_format';
+export type UsernameValidationError = 'too_short' | 'too_long' | 'invalid_format' | 'reserved';
 
 export function validateUsername(username: string): UsernameValidationError | null {
   if (username.length < USERNAME_MIN_LENGTH) {
@@ -23,6 +24,9 @@ export function validateUsername(username: string): UsernameValidationError | nu
   }
   if (!USERNAME_REGEX.test(username)) {
     return 'invalid_format';
+  }
+  if (isReservedUsername(username)) {
+    return 'reserved';
   }
   return null;
 }

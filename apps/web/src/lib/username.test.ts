@@ -52,4 +52,45 @@ describe('validateUsername', () => {
     expect(validateUsername('ab@cd')).toBe('invalid_format');
     expect(validateUsername('ab.cd')).toBe('invalid_format');
   });
+
+  describe('reserved username integration', () => {
+    it('returns reserved for reserved usernames', () => {
+      expect(validateUsername('admin')).toBe('reserved');
+      expect(validateUsername('postmaster')).toBe('reserved');
+      expect(validateUsername('chess')).toBe('reserved');
+      expect(validateUsername('api')).toBe('reserved');
+    });
+
+    it('returns null for non-reserved valid usernames', () => {
+      expect(validateUsername('alice')).toBeNull();
+      expect(validateUsername('bob123')).toBeNull();
+      expect(validateUsername('player_one')).toBeNull();
+    });
+
+    it('returns format errors before reserved check', () => {
+      // "ADMIN" has uppercase letters, so invalid_format should be returned
+      // even though "admin" is a reserved username
+      expect(validateUsername('ADMIN')).toBe('invalid_format');
+      // "Admin" starts with uppercase
+      expect(validateUsername('Admin')).toBe('invalid_format');
+      // "ROOT" has uppercase letters
+      expect(validateUsername('ROOT')).toBe('invalid_format');
+    });
+
+    it('returns too_short before reserved check for short inputs', () => {
+      // Single character — too_short takes precedence
+      expect(validateUsername('a')).toBe('too_short');
+    });
+
+    it('returns too_long before reserved check for long inputs', () => {
+      // 21 characters — too_long takes precedence even if substring is reserved
+      expect(validateUsername('adminadminadminadmina')).toBe('too_long');
+    });
+
+    it('allows names similar to reserved words', () => {
+      expect(validateUsername('admin123')).toBeNull();
+      expect(validateUsername('myadmin')).toBeNull();
+      expect(validateUsername('chess99')).toBeNull();
+    });
+  });
 });

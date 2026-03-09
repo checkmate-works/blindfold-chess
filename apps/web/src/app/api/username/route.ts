@@ -44,7 +44,8 @@ export async function POST(request: Request) {
 
   const validationError = validateUsername(username);
   if (validationError) {
-    return NextResponse.json({ error: validationError }, { status: 400 });
+    const status = validationError === 'reserved' ? 409 : 400;
+    return NextResponse.json({ error: validationError }, { status });
   }
 
   if (isLameName(username)) {

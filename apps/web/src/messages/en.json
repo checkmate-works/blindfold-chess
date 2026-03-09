@@ -1821,10 +1821,11 @@
       "tooShort": "Username must be at least 2 characters.",
       "tooLong": "Username must be at most 20 characters.",
       "invalidFormat": "Username must start with a lowercase letter, end with a letter or number, and contain only lowercase letters, numbers, and non-consecutive underscores.",
-      "taken": "This username is already taken.",
+      "taken": "This username is not available.",
       "alreadySet": "Username has already been set.",
       "error": "An error occurred. Please try again.",
-      "usernameInappropriate": "This username is not allowed."
+      "usernameInappropriate": "This username is not allowed.",
+      "reserved": "This username is not available."
     }
   },
   "profile": {
