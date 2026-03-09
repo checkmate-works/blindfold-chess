@@ -9,13 +9,7 @@
  *     - Replacing or upgrading chess.js only requires changes here.
  */
 
-export type {
-  BoardPiece,
-  Color,
-  MoveResult,
-  PieceSymbol,
-  Square,
-} from "./types";
+export type { BoardPiece, Color, MoveResult } from "./types";
 
 export { toMoveResult } from "./types";
 
@@ -63,7 +57,10 @@ export {
   parsePgnMoveSequence,
 } from "./pgn";
 
+export type { PositionQuery } from "./position";
+
 export {
+  queryPosition,
   isCheckmate,
   isStalemate,
   isCheck,

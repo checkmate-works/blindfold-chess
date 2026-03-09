@@ -1,7 +1,8 @@
 import type { AlgebraicNotation } from "@blindfold-chess/types";
+import type { PieceSymbol, Square } from "chess.js";
 import { Chess } from "chess.js";
 
-import type { MoveResult, PieceSymbol, Square } from "./types";
+import type { MoveResult } from "./types";
 import { toMoveResult } from "./types";
 
 export function validateMoveSequence(

@@ -1,3 +1,7 @@
+import type { Square } from "@blindfold-chess/types";
+
+import type { RandomSource } from "../common";
+
 import { FILES, RANKS } from "./constants";
 import type { BoardSymmetryProblem, SymmetryType } from "./types";
 import { SYMMETRY_TYPES } from "./types";
@@ -5,14 +9,15 @@ import { SYMMETRY_TYPES } from "./types";
 /**
  * Generate a random board symmetry problem
  */
-export function generateProblem(): BoardSymmetryProblem {
-  const randomFile = FILES[Math.floor(Math.random() * FILES.length)];
-  const randomRank = RANKS[Math.floor(Math.random() * RANKS.length)];
-  const randomType =
-    SYMMETRY_TYPES[Math.floor(Math.random() * SYMMETRY_TYPES.length)];
+export function generateProblem(
+  rng: RandomSource = Math.random,
+): BoardSymmetryProblem {
+  const randomFile = FILES[Math.floor(rng() * FILES.length)];
+  const randomRank = RANKS[Math.floor(rng() * RANKS.length)];
+  const randomType = SYMMETRY_TYPES[Math.floor(rng() * SYMMETRY_TYPES.length)];
 
   return {
-    square: `${randomFile}${randomRank}`,
+    square: `${randomFile}${randomRank}` as Square,
     type: randomType,
   };
 }
@@ -25,9 +30,9 @@ export function generateProblem(): BoardSymmetryProblem {
  * - point: both file and rank are mirrored (180-degree rotation)
  */
 export function calculateSymmetricSquare(
-  square: string,
+  square: Square,
   type: SymmetryType,
-): string {
+): Square {
   const fileIndex = FILES.indexOf(square[0] as (typeof FILES)[number]);
   const rankIndex = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
 
@@ -47,7 +52,7 @@ export function calculateSymmetricSquare(
       break;
   }
 
-  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}`;
+  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}` as Square;
 }
 
 /**
@@ -57,7 +62,7 @@ export function checkSymmetryAnswer(
   file: string,
   rank: string,
   problem: BoardSymmetryProblem,
-): { isCorrect: boolean; correctSquare: string } {
+): { isCorrect: boolean; correctSquare: Square } {
   const correctSquare = calculateSymmetricSquare(problem.square, problem.type);
   const isCorrect = `${file}${rank}` === correctSquare;
 

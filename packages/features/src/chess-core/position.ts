@@ -3,34 +3,59 @@ import { Chess } from "chess.js";
 
 import { validateFen } from "./fen";
 
-export function isCheckmate(fen: string): boolean {
+export type PositionQuery = {
+  isCheckmate: () => boolean;
+  isStalemate: () => boolean;
+  isCheck: () => boolean;
+  isDraw: () => boolean;
+  isInsufficientMaterial: () => boolean;
+  isGameOver: () => boolean;
+  isSquareAttacked: (square: string, byColor: "w" | "b") => boolean;
+  findKingSquare: (color: "w" | "b") => string | null;
+};
+
+/**
+ * Create a single Chess instance for the given FEN and return lazy query accessors.
+ * Use this when you need multiple position queries on the same FEN to avoid
+ * redundant Chess instantiation.
+ */
+export function queryPosition(fen: string): PositionQuery {
   const chess = new Chess(fen);
-  return chess.isCheckmate();
+  return {
+    isCheckmate: () => chess.isCheckmate(),
+    isStalemate: () => chess.isStalemate(),
+    isCheck: () => chess.isCheck(),
+    isDraw: () => chess.isDraw(),
+    isInsufficientMaterial: () => chess.isInsufficientMaterial(),
+    isGameOver: () => chess.isGameOver(),
+    isSquareAttacked: (square: string, byColor: "w" | "b") =>
+      chess.isAttacked(square as Square, byColor),
+    findKingSquare: (color: "w" | "b") => findKingSquareFromChess(chess, color),
+  };
+}
+
+export function isCheckmate(fen: string): boolean {
+  return queryPosition(fen).isCheckmate();
 }
 
 export function isStalemate(fen: string): boolean {
-  const chess = new Chess(fen);
-  return chess.isStalemate();
+  return queryPosition(fen).isStalemate();
 }
 
 export function isCheck(fen: string): boolean {
-  const chess = new Chess(fen);
-  return chess.isCheck();
+  return queryPosition(fen).isCheck();
 }
 
 export function isDraw(fen: string): boolean {
-  const chess = new Chess(fen);
-  return chess.isDraw();
+  return queryPosition(fen).isDraw();
 }
 
 export function isInsufficientMaterial(fen: string): boolean {
-  const chess = new Chess(fen);
-  return chess.isInsufficientMaterial();
+  return queryPosition(fen).isInsufficientMaterial();
 }
 
 export function isGameOver(fen: string): boolean {
-  const chess = new Chess(fen);
-  return chess.isGameOver();
+  return queryPosition(fen).isGameOver();
 }
 
 export function isSquareAttacked(
@@ -38,13 +63,11 @@ export function isSquareAttacked(
   square: string,
   byColor: "w" | "b",
 ): boolean {
-  const chess = new Chess(fen);
-  return chess.isAttacked(square as Square, byColor);
+  return queryPosition(fen).isSquareAttacked(square, byColor);
 }
 
 export function findKingSquare(fen: string, color: "w" | "b"): string | null {
-  const chess = new Chess(fen);
-  return findKingSquareFromChess(chess, color);
+  return queryPosition(fen).findKingSquare(color);
 }
 
 // Ported from apps/web/src/app/[locale]/games/new/_lib/validate-position.ts

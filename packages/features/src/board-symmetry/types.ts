@@ -1,3 +1,5 @@
+import type { Square } from "@blindfold-chess/types";
+
 import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 export type SymmetryType = "horizontal" | "vertical" | "point";
@@ -8,7 +10,7 @@ export const SYMMETRY_TYPES: SymmetryType[] = [
 ];
 
 export type BoardSymmetryProblem = {
-  square: string;
+  square: Square;
   type: SymmetryType;
 };
 

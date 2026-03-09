@@ -1,9 +1,8 @@
 export const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
-export const ALL_FILES = FILES;
 export type File = (typeof FILES)[number];
 
-export const ALL_RANKS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
-export type Rank = (typeof ALL_RANKS)[number];
+export const NUMERIC_RANKS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export type Rank = (typeof NUMERIC_RANKS)[number];
 
 export const RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
 
@@ -64,5 +63,9 @@ export type Square = `${File}${Rank}`;
 
 export type Side = "white" | "black";
 
-export type UciMove = `${string}${number}${string}${number}`;
+export type UciMove =
+  | `${File}${Rank}${File}${Rank}`
+  | `${File}${Rank}${File}${Rank}${"q" | "r" | "b" | "n"}`;
+
+/** Semantic alias for a FEN string. Validated by chess.js at the chess-core boundary. */
 export type Fen = string;

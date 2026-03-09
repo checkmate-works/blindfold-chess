@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
-import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { Color } from '@blindfold-chess/features/chess-core';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -29,14 +30,14 @@ type Props = {
   showCoordinates?: boolean;
 };
 
-type PieceType = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
+type FenPieceChar = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
 
-const WHITE_PIECES: PieceType[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
-const BLACK_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n', 'p'];
+const WHITE_PIECES: FenPieceChar[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
+const BLACK_PIECES: FenPieceChar[] = ['k', 'q', 'r', 'b', 'n', 'p'];
 
 // Helper function to convert board array to FEN
 function boardToFen(
-  board: PieceType[],
+  board: FenPieceChar[],
   preserveTurnInfo?: boolean,
   originalPosition?: string
 ): string {
@@ -95,12 +96,12 @@ export function EditableChessBoard({
   boardTheme = DEFAULT_BOARD_THEME,
   showCoordinates = true,
 }: Props) {
-  const [board, setBoard] = useState<PieceType[]>(() => fenToBoardFlat(fen) as PieceType[]);
-  const [selectedPiece, setSelectedPiece] = useState<PieceType>('');
+  const [board, setBoard] = useState<FenPieceChar[]>(() => fenToBoardFlat(fen) as FenPieceChar[]);
+  const [selectedPiece, setSelectedPiece] = useState<FenPieceChar>('');
   const themeColors = getBoardThemeColors(boardTheme);
 
   useEffect(() => {
-    setBoard(fenToBoardFlat(fen) as PieceType[]);
+    setBoard(fenToBoardFlat(fen) as FenPieceChar[]);
   }, [fen]);
 
   const handleSquareClick = (squareIndex: number) => {
@@ -132,12 +133,12 @@ export function EditableChessBoard({
     onFenChange(newFen);
   };
 
-  const renderPiece = (piece: PieceType) => {
+  const renderPiece = (piece: FenPieceChar) => {
     if (!piece) return null;
 
     const isWhite = piece === piece.toUpperCase();
     const color: Color = (isWhite ? 'w' : 'b') as Color;
-    const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
+    const type: PieceType = piece.toLowerCase() as PieceType;
 
     return (
       <div className="w-[80%] h-[80%] flex items-center justify-center">
@@ -158,7 +159,7 @@ export function EditableChessBoard({
   const displayFiles = flipped ? [...FILES].reverse() : [...FILES];
   const displayRanks = flipped ? [...DISPLAY_RANKS].reverse() : [...DISPLAY_RANKS];
 
-  const renderPalette = (pieces: PieceType[], title: string) => (
+  const renderPalette = (pieces: FenPieceChar[], title: string) => (
     <div className="flex flex-col items-center gap-2">
       <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
       <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 border border-border rounded-lg">
@@ -176,7 +177,7 @@ export function EditableChessBoard({
         {pieces.map((piece) => {
           const isWhite = piece === piece.toUpperCase();
           const color: Color = (isWhite ? 'w' : 'b') as Color;
-          const type: PieceSymbol = piece.toLowerCase() as PieceSymbol;
+          const type: PieceType = piece.toLowerCase() as PieceType;
 
           return (
             <button

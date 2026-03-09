@@ -1,4 +1,10 @@
+import type { Square } from "@blindfold-chess/types";
+
 import {
+  type RandomSource,
+  BISHOP_DIRS,
+  KNIGHT_OFFSETS,
+  ROOK_DIRS,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
@@ -30,7 +36,11 @@ const getValidMove = (f: number, r: number): string[] => {
   return sq ? [sq] : [];
 };
 
-const getValidLines = (f: number, r: number, dirs: number[][]): string[] => {
+const getValidLines = (
+  f: number,
+  r: number,
+  dirs: readonly (readonly number[])[],
+): string[] => {
   return dirs.flatMap((d) => {
     const lineMoves: string[] = [];
     for (let i = 1; i < 8; i++) {
@@ -46,17 +56,7 @@ const getValidLines = (f: number, r: number, dirs: number[][]): string[] => {
 
 const KnightRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const jumps = [
-      [1, 2],
-      [1, -2],
-      [-1, 2],
-      [-1, -2],
-      [2, 1],
-      [2, -1],
-      [-2, 1],
-      [-2, -1],
-    ];
-    return jumps.flatMap((d) => getValidMove(f + d[0], r + d[1]));
+    return KNIGHT_OFFSETS.flatMap((d) => getValidMove(f + d[0], r + d[1]));
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3 && pathLength <= 4;
@@ -65,13 +65,7 @@ const KnightRouteStrategy: RoutePlannerStrategy = {
 
 const BishopRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const dirs = [
-      [1, 1],
-      [1, -1],
-      [-1, 1],
-      [-1, -1],
-    ];
-    return getValidLines(f, r, dirs);
+    return getValidLines(f, r, BISHOP_DIRS);
   },
   meetsConstraint(pathLength) {
     return pathLength === 3;
@@ -80,13 +74,7 @@ const BishopRouteStrategy: RoutePlannerStrategy = {
 
 const RookRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
-    return getValidLines(f, r, dirs);
+    return getValidLines(f, r, ROOK_DIRS);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3;
@@ -220,6 +208,7 @@ export function isSameColor(sq1: string, sq2: string): boolean {
  */
 export function generateProblem(
   allowedPieces: RoutePlannerPieceType[] = ROUTE_PLANNER_PIECES,
+  rng: RandomSource = Math.random,
 ): RoutePlannerProblem {
   const pool = allowedPieces.length > 0 ? allowedPieces : ROUTE_PLANNER_PIECES;
 
@@ -229,26 +218,26 @@ export function generateProblem(
   let path: string[] | null;
 
   do {
-    piece = pool[Math.floor(Math.random() * pool.length)];
-    start = generateRandomSquare();
-    end = generateRandomSquare();
+    piece = pool[Math.floor(rng() * pool.length)];
+    start = generateRandomSquare(rng);
+    end = generateRandomSquare(rng);
 
     // Ensure start !== end
     while (start === end) {
-      end = generateRandomSquare();
+      end = generateRandomSquare(rng);
     }
 
     // Bishop: start and end must be on the same color
     if (piece === "b") {
       while (!isSameColor(start, end) || start === end) {
-        end = generateRandomSquare();
+        end = generateRandomSquare(rng);
       }
     }
 
     path = findShortestPath(piece, start, end);
   } while (!path || !meetsPathConstraint(piece, path));
 
-  return { piece, start, end };
+  return { piece, start: start as Square, end: end as Square };
 }
 
 /**

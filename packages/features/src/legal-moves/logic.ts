@@ -1,6 +1,13 @@
 import { isLegalPieceMove } from "../chess-core";
 
-import { FILES, RANKS } from "../common";
+import {
+  type RandomSource,
+  FILES,
+  KING_OFFSETS,
+  KNIGHT_OFFSETS,
+  RANKS,
+  shuffleArray,
+} from "../common";
 
 import type { MoveQuestion, PieceType } from "./types";
 
@@ -17,17 +24,18 @@ export function isLegalMove(
 export function generateBalancedMoveQuestions(
   count: number,
   allowedPieces: PieceType[] = ["b", "n", "r", "q", "k"],
+  rng: RandomSource = Math.random,
 ): MoveQuestion[] {
   const questions: MoveQuestion[] = [];
   const targetLegalCount = Math.floor(count * 0.5); // Aim for 50% legal moves
   let legalCount = 0;
 
   while (questions.length < count) {
-    const piece =
-      allowedPieces[Math.floor(Math.random() * allowedPieces.length)];
+    const piece = allowedPieces[Math.floor(rng() * allowedPieces.length)];
     const question = generateMoveQuestionForPiece(
       piece,
       legalCount < targetLegalCount,
+      rng,
     );
 
     if (question) {
@@ -38,8 +46,7 @@ export function generateBalancedMoveQuestions(
     }
   }
 
-  // Shuffle the questions
-  return questions.sort(() => Math.random() - 0.5);
+  return shuffleArray(questions, rng);
 }
 
 // Strategy interface for piece move generation
@@ -47,14 +54,15 @@ interface PieceMoveStrategy {
   generateCandidateMove(
     fromFile: number,
     fromRank: number,
+    rng: RandomSource,
   ): { toFile: number; toRank: number };
 }
 
 // Concrete Strategies
 const BishopMoveStrategy: PieceMoveStrategy = {
-  generateCandidateMove(fromFile, fromRank) {
-    const diagonalOffset = Math.floor(Math.random() * 7) + 1;
-    const direction = Math.floor(Math.random() * 4);
+  generateCandidateMove(fromFile, fromRank, rng) {
+    const diagonalOffset = Math.floor(rng() * 7) + 1;
+    const direction = Math.floor(rng() * 4);
     switch (direction) {
       case 0:
         return {
@@ -81,55 +89,35 @@ const BishopMoveStrategy: PieceMoveStrategy = {
 };
 
 const RookMoveStrategy: PieceMoveStrategy = {
-  generateCandidateMove(fromFile, fromRank) {
-    if (Math.random() < 0.5) {
-      return { toFile: Math.floor(Math.random() * 8), toRank: fromRank }; // Horizontal
+  generateCandidateMove(fromFile, fromRank, rng) {
+    if (rng() < 0.5) {
+      return { toFile: Math.floor(rng() * 8), toRank: fromRank }; // Horizontal
     } else {
-      return { toFile: fromFile, toRank: Math.floor(Math.random() * 8) }; // Vertical
+      return { toFile: fromFile, toRank: Math.floor(rng() * 8) }; // Vertical
     }
   },
 };
 
 const KnightMoveStrategy: PieceMoveStrategy = {
-  generateCandidateMove(fromFile, fromRank) {
-    const knightMoves = [
-      [2, 1],
-      [2, -1],
-      [-2, 1],
-      [-2, -1],
-      [1, 2],
-      [1, -2],
-      [-1, 2],
-      [-1, -2],
-    ];
-    const move = knightMoves[Math.floor(Math.random() * knightMoves.length)];
+  generateCandidateMove(fromFile, fromRank, rng) {
+    const move = KNIGHT_OFFSETS[Math.floor(rng() * KNIGHT_OFFSETS.length)];
     return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
   },
 };
 
 const QueenMoveStrategy: PieceMoveStrategy = {
-  generateCandidateMove(fromFile, fromRank) {
-    if (Math.random() < 0.5) {
-      return BishopMoveStrategy.generateCandidateMove(fromFile, fromRank);
+  generateCandidateMove(fromFile, fromRank, rng) {
+    if (rng() < 0.5) {
+      return BishopMoveStrategy.generateCandidateMove(fromFile, fromRank, rng);
     } else {
-      return RookMoveStrategy.generateCandidateMove(fromFile, fromRank);
+      return RookMoveStrategy.generateCandidateMove(fromFile, fromRank, rng);
     }
   },
 };
 
 const KingMoveStrategy: PieceMoveStrategy = {
-  generateCandidateMove(fromFile, fromRank) {
-    const kingMoves = [
-      [1, 0],
-      [1, 1],
-      [0, 1],
-      [-1, 1],
-      [-1, 0],
-      [-1, -1],
-      [0, -1],
-      [1, -1],
-    ];
-    const move = kingMoves[Math.floor(Math.random() * kingMoves.length)];
+  generateCandidateMove(fromFile, fromRank, rng) {
+    const move = KING_OFFSETS[Math.floor(rng() * KING_OFFSETS.length)];
     return { toFile: fromFile + move[0], toRank: fromRank + move[1] };
   },
 };
@@ -147,70 +135,29 @@ const PieceStrategies: Record<PieceType, PieceMoveStrategy> = {
 export function generateMoveQuestionForPiece(
   pieceType: PieceType,
   preferLegal: boolean,
+  rng: RandomSource = Math.random,
 ): MoveQuestion | null {
-  // Try multiple times to generate a suitable question
-  for (let attempts = 0; attempts < 50; attempts++) {
-    const fromFile = Math.floor(Math.random() * 8);
-    const fromRank = Math.floor(Math.random() * 8);
+  const strategy = PieceStrategies[pieceType];
+
+  for (let attempts = 0; attempts < 200; attempts++) {
+    const fromFile = Math.floor(rng() * 8);
+    const fromRank = Math.floor(rng() * 8);
     const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
-    let toFile: number;
-    let toRank: number;
+    const { toFile, toRank } = preferLegal
+      ? strategy.generateCandidateMove(fromFile, fromRank, rng)
+      : { toFile: Math.floor(rng() * 8), toRank: Math.floor(rng() * 8) };
 
-    if (preferLegal) {
-      const strategy = PieceStrategies[pieceType];
-      if (strategy) {
-        const move = strategy.generateCandidateMove(fromFile, fromRank);
-        toFile = move.toFile;
-        toRank = move.toRank;
-      } else {
-        toFile = Math.floor(Math.random() * 8);
-        toRank = Math.floor(Math.random() * 8);
-      }
-    } else {
-      // Generate random moves (likely illegal)
-      toFile = Math.floor(Math.random() * 8);
-      toRank = Math.floor(Math.random() * 8);
-    }
+    if (toFile < 0 || toFile >= 8 || toRank < 0 || toRank >= 8) continue;
 
-    // Check if destination is valid
-    if (toFile >= 0 && toFile < 8 && toRank >= 0 && toRank < 8) {
-      const toSquare = FILES[toFile] + RANKS[toRank];
+    const toSquare = FILES[toFile] + RANKS[toRank];
+    if (toSquare === fromSquare) continue;
 
-      // Ensure from and to are different
-      if (toSquare !== fromSquare) {
-        const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
-
-        // Return if we got what we wanted
-        if ((preferLegal && isLegal) || (!preferLegal && !isLegal)) {
-          return {
-            from: fromSquare,
-            to: toSquare,
-            piece: pieceType,
-          };
-        }
-      }
+    const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
+    if (preferLegal === isLegal) {
+      return { from: fromSquare, to: toSquare, piece: pieceType };
     }
   }
 
-  // Fallback: return any valid question
-  const fromFile = Math.floor(Math.random() * 8);
-  const fromRank = Math.floor(Math.random() * 8);
-  const fromSquare = FILES[fromFile] + RANKS[fromRank];
-
-  let toFile = Math.floor(Math.random() * 8);
-  let toRank = Math.floor(Math.random() * 8);
-  let toSquare = FILES[toFile] + RANKS[toRank];
-
-  while (toSquare === fromSquare) {
-    toFile = Math.floor(Math.random() * 8);
-    toRank = Math.floor(Math.random() * 8);
-    toSquare = FILES[toFile] + RANKS[toRank];
-  }
-
-  return {
-    from: fromSquare,
-    to: toSquare,
-    piece: pieceType,
-  };
+  return null;
 }

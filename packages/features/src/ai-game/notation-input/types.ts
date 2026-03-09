@@ -1,6 +1,7 @@
-export type PromotionPiece = "q" | "r" | "b" | "n";
+import type { CastlingMove } from "@blindfold-chess/types";
+export type { CastlingMove } from "@blindfold-chess/types";
 
-export type CastlingMove = "O-O" | "O-O-O";
+export type PromotionPiece = "q" | "r" | "b" | "n";
 
 export type NotationInputState = {
   selectedPiece: string | null;

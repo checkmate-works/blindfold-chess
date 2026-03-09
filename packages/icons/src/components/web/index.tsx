@@ -13,17 +13,14 @@ import type {
 
 function renderElement(element: SvgElement, index: number): React.ReactNode {
   if (element.type === "circle") {
-    const { type, ...attrs } = element;
-    void type;
+    const { type: _type, ...attrs } = element;
     return <circle key={index} {...attrs} />;
   }
   if (element.type === "path") {
-    const { type, ...attrs } = element;
-    void type;
+    const { type: _type, ...attrs } = element;
     return <path key={index} {...attrs} />;
   }
-  const { type, children, ...attrs } = element;
-  void type;
+  const { type: _type, children, ...attrs } = element;
   return (
     <g key={index} {...attrs}>
       {children.map((child, i) => renderElement(child, i))}

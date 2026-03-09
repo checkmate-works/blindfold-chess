@@ -1,11 +1,11 @@
-import type { Color, PieceSymbol, Square } from "chess.js";
+import type { PieceType, Square } from "@blindfold-chess/types";
 import type { Move } from "chess.js";
 
-export type { Color, PieceSymbol, Square } from "chess.js";
+export type Color = "w" | "b";
 
 export type BoardPiece = {
   square: Square;
-  type: PieceSymbol;
+  type: PieceType;
   color: Color;
 } | null;
 
@@ -14,9 +14,9 @@ export type MoveResult = {
   from: Square;
   to: Square;
   color: Color;
-  piece: PieceSymbol;
-  captured?: PieceSymbol;
-  promotion?: PieceSymbol;
+  piece: PieceType;
+  captured?: PieceType;
+  promotion?: PieceType;
   flags: string;
   before: string;
   after: string;
@@ -25,12 +25,12 @@ export type MoveResult = {
 export function toMoveResult(m: Move): MoveResult {
   return {
     san: m.san,
-    from: m.from,
-    to: m.to,
-    color: m.color,
-    piece: m.piece,
-    captured: m.captured,
-    promotion: m.promotion,
+    from: m.from as Square,
+    to: m.to as Square,
+    color: m.color as Color,
+    piece: m.piece as PieceType,
+    captured: m.captured as PieceType | undefined,
+    promotion: m.promotion as PieceType | undefined,
     flags: m.flags,
     before: m.before,
     after: m.after,

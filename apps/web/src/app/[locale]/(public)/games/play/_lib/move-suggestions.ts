@@ -1,9 +1,9 @@
 import {
-  ALL_FILES,
   ALL_PIECE_SYMBOLS,
-  ALL_RANKS,
   AlgebraicNotation,
+  FILES,
   File,
+  NUMERIC_RANKS,
   Rank,
 } from '@blindfold-chess/types';
 
@@ -31,7 +31,7 @@ export function generateMoveSuggestions(input: string): AlgebraicNotation[] {
   }
 
   // Handle pawn moves (files without piece prefix)
-  if (ALL_FILES.some((file) => trimmedInput.startsWith(file))) {
+  if (FILES.some((file) => trimmedInput.startsWith(file))) {
     return generatePawnMoveSuggestions(trimmedInput);
   }
 
@@ -89,40 +89,40 @@ function generatePieceMoveSuggestions(input: string): AlgebraicNotation[] {
 
   // If no disambiguation characters, suggest all squares
   if (rest === '') {
-    ALL_FILES.forEach((file) => {
-      ALL_RANKS.forEach((rank) => {
+    FILES.forEach((file) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${file}${rank}`);
       });
     });
   }
   // If partial disambiguation with file (e.g., "Nf", "Qd")
-  else if (rest.length === 1 && ALL_FILES.includes(rest as File)) {
+  else if (rest.length === 1 && FILES.includes(rest as File)) {
     const file = rest;
-    ALL_RANKS.forEach((rank) => {
+    NUMERIC_RANKS.forEach((rank) => {
       suggestions.push(`${piece}${file}${rank}`);
     });
   }
   // If partial disambiguation with rank (e.g., "N1", "R8")
-  else if (rest.length === 1 && ALL_RANKS.includes(parseInt(rest) as Rank)) {
+  else if (rest.length === 1 && NUMERIC_RANKS.includes(parseInt(rest) as Rank)) {
     const rank = rest;
-    ALL_FILES.forEach((file) => {
+    FILES.forEach((file) => {
       suggestions.push(`${piece}${rank}${file}${rank}`);
     });
   }
   // If disambiguation + partial destination (e.g., "Nfd", "N1e")
   else if (rest.length === 2) {
     const [disambig, partialDest] = rest;
-    if (ALL_FILES.includes(disambig as File) && ALL_FILES.includes(partialDest as File)) {
+    if (FILES.includes(disambig as File) && FILES.includes(partialDest as File)) {
       // File disambiguation + destination file
-      ALL_RANKS.forEach((rank) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${disambig}${partialDest}${rank}`);
       });
     } else if (
-      ALL_RANKS.includes(parseInt(disambig) as Rank) &&
-      ALL_FILES.includes(partialDest as File)
+      NUMERIC_RANKS.includes(parseInt(disambig) as Rank) &&
+      FILES.includes(partialDest as File)
     ) {
       // Rank disambiguation + destination file
-      ALL_RANKS.forEach((rank) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${disambig}${partialDest}${rank}`);
       });
     }
@@ -146,9 +146,9 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
     const afterX = rest.slice(xIndex + 1);
 
     // If there's content after 'x', generate suggestions based on that
-    if (afterX.length === 1 && ALL_FILES.includes(afterX as File)) {
+    if (afterX.length === 1 && FILES.includes(afterX as File)) {
       // Partial destination file specified: Bxb -> Bxb1, Bxb2, ..., Bxb8
-      ALL_RANKS.forEach((rank) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${piece}${beforeX}x${afterX}${rank}`);
       });
     } else if (afterX.length === 2) {
@@ -161,31 +161,31 @@ function generatePieceCaptureSuggestions(input: string): AlgebraicNotation[] {
 
     if (beforeX === '') {
       // Simple captures: Bx -> Bxa1, Bxa2, ..., Bxh8
-      ALL_FILES.forEach((file) => {
-        ALL_RANKS.forEach((rank) => {
+      FILES.forEach((file) => {
+        NUMERIC_RANKS.forEach((rank) => {
           suggestions.push(`${piece}x${file}${rank}`);
         });
       });
     } else if (beforeX.length === 1) {
-      if (ALL_FILES.includes(beforeX as File)) {
+      if (FILES.includes(beforeX as File)) {
         // File disambiguated captures: Nfx -> Nfxa1, Nfxa2, ...
-        ALL_FILES.forEach((file) => {
-          ALL_RANKS.forEach((rank) => {
+        FILES.forEach((file) => {
+          NUMERIC_RANKS.forEach((rank) => {
             suggestions.push(`${piece}${beforeX}x${file}${rank}`);
           });
         });
-      } else if (ALL_RANKS.includes(parseInt(beforeX) as Rank)) {
+      } else if (NUMERIC_RANKS.includes(parseInt(beforeX) as Rank)) {
         // Rank disambiguated captures: N1x -> N1xa1, N1xa2, ...
-        ALL_FILES.forEach((file) => {
-          ALL_RANKS.forEach((rank) => {
+        FILES.forEach((file) => {
+          NUMERIC_RANKS.forEach((rank) => {
             suggestions.push(`${piece}${beforeX}x${file}${rank}`);
           });
         });
       }
     } else if (beforeX.length === 2) {
       // Fully disambiguated captures: Nb1x -> Nb1xa1, Nb1xa2, ...
-      ALL_FILES.forEach((file) => {
-        ALL_RANKS.forEach((rank) => {
+      FILES.forEach((file) => {
+        NUMERIC_RANKS.forEach((rank) => {
           suggestions.push(`${piece}${beforeX}x${file}${rank}`);
         });
       });
@@ -205,43 +205,43 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
   // Handle pawn captures: ax, bx, etc.
   if (input.endsWith('x')) {
     const file = input[0];
-    const fileIndex = ALL_FILES.indexOf(file as File);
+    const fileIndex = FILES.indexOf(file as File);
 
     // Get adjacent files for captures
     const captureFiles: string[] = [];
-    if (fileIndex > 0) captureFiles.push(ALL_FILES[fileIndex - 1]);
-    if (fileIndex < ALL_FILES.length - 1) captureFiles.push(ALL_FILES[fileIndex + 1]);
+    if (fileIndex > 0) captureFiles.push(FILES[fileIndex - 1]);
+    if (fileIndex < FILES.length - 1) captureFiles.push(FILES[fileIndex + 1]);
 
     captureFiles.forEach((captureFile) => {
-      ALL_RANKS.forEach((rank) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${file}x${captureFile}${rank}`);
       });
     });
   }
   // Handle pawn captures with specific destination file: cxd, axe, etc.
-  else if (input.length === 3 && input[1] === 'x' && ALL_FILES.includes(input[2] as File)) {
+  else if (input.length === 3 && input[1] === 'x' && FILES.includes(input[2] as File)) {
     const sourceFile = input[0];
     const destFile = input[2];
 
     // Validate that this is a valid pawn capture (adjacent files)
-    const sourceIndex = ALL_FILES.indexOf(sourceFile as File);
-    const destIndex = ALL_FILES.indexOf(destFile as File);
+    const sourceIndex = FILES.indexOf(sourceFile as File);
+    const destIndex = FILES.indexOf(destFile as File);
 
     if (Math.abs(sourceIndex - destIndex) === 1) {
-      ALL_RANKS.forEach((rank) => {
+      NUMERIC_RANKS.forEach((rank) => {
         suggestions.push(`${sourceFile}x${destFile}${rank}`);
       });
     }
   }
   // Handle regular pawn moves: a -> a1, a2, ..., a8
-  else if (input.length === 1 && ALL_FILES.includes(input as File)) {
+  else if (input.length === 1 && FILES.includes(input as File)) {
     const file = input;
-    ALL_RANKS.forEach((rank) => {
+    NUMERIC_RANKS.forEach((rank) => {
       suggestions.push(`${file}${rank}`);
     });
   }
   // Handle promotion suggestions for moves to 8th/1st rank
-  else if (input.length === 2 && ALL_FILES.includes(input[0] as File)) {
+  else if (input.length === 2 && FILES.includes(input[0] as File)) {
     const file = input[0];
     const rank = input[1];
 
@@ -257,8 +257,8 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
   else if (
     input.length === 4 &&
     input[1] === 'x' &&
-    ALL_FILES.includes(input[0] as File) &&
-    ALL_FILES.includes(input[2] as File) &&
+    FILES.includes(input[0] as File) &&
+    FILES.includes(input[2] as File) &&
     (input[3] === '8' || input[3] === '1')
   ) {
     const sourceFile = input[0];
@@ -266,8 +266,8 @@ function generatePawnMoveSuggestions(input: string): AlgebraicNotation[] {
     const rank = input[3];
 
     // Validate that this is a valid pawn capture (adjacent files)
-    const sourceIndex = ALL_FILES.indexOf(sourceFile as File);
-    const destIndex = ALL_FILES.indexOf(destFile as File);
+    const sourceIndex = FILES.indexOf(sourceFile as File);
+    const destIndex = FILES.indexOf(destFile as File);
 
     if (Math.abs(sourceIndex - destIndex) === 1) {
       // Generate promotion suggestions

@@ -20,8 +20,8 @@ export function usePgnValidation({
   const validationResult =
     showValidation && debouncedValue.trim() ? validatePgnWithDetails(debouncedValue) : null;
 
-  const showSuccess = Boolean(showValidation && validationResult?.isValid && debouncedValue.trim());
-  const showError = Boolean(showValidation && validationResult && !validationResult.isValid);
+  const showSuccess = Boolean(showValidation && validationResult?.valid && debouncedValue.trim());
+  const showError = Boolean(showValidation && validationResult && !validationResult.valid);
 
   // Extract invalid move from error message
   const getInvalidMove = (): string | null => {

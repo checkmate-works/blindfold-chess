@@ -1,3 +1,4 @@
+import type { Square } from "@blindfold-chess/types";
 import { describe, expect, it } from "vitest";
 
 import { FILES, RANKS } from "./constants";
@@ -112,7 +113,7 @@ describe("calculateSymmetricSquare", () => {
 
       for (const file of FILES) {
         for (const rank of RANKS) {
-          const square = `${file}${rank}`;
+          const square = `${file}${rank}` as Square;
           for (const type of SYMMETRY_TYPES) {
             const result = calculateSymmetricSquare(square, type);
             expect(result).toHaveLength(2);
@@ -130,7 +131,7 @@ describe("calculateSymmetricSquare", () => {
     it("point symmetry equals horizontal + vertical combined", () => {
       for (const file of FILES) {
         for (const rank of RANKS) {
-          const square = `${file}${rank}`;
+          const square = `${file}${rank}` as Square;
           const pointResult = calculateSymmetricSquare(square, "point");
           const hThenV = calculateSymmetricSquare(
             calculateSymmetricSquare(square, "horizontal"),

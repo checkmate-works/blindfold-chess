@@ -1,7 +1,6 @@
-import type { AlgebraicNotation, Side } from "@blindfold-chess/types";
+import type { AlgebraicNotation, Side, Square } from "@blindfold-chess/types";
 
 import { ChessGameManager } from "../chess-core/game-manager";
-import type { Square } from "../chess-core/types";
 
 import type { GameStatus, PlayerResult } from "./types";
 

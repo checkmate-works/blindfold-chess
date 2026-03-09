@@ -4,8 +4,9 @@ import { useCallback, useMemo, useRef } from 'react';
 
 import { BoardLayout, BoardOverlay, ChessPiece } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
-import type { Color, PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { Color } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
+import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
@@ -25,10 +26,10 @@ type Props = {
 };
 
 // Parse FEN into piece list, with manual fallback for invalid positions (e.g. missing king)
-function parseFenToPieces(fen: string): Array<{ type: PieceSymbol; color: Color; square: string }> {
+function parseFenToPieces(fen: string): Array<{ type: PieceType; color: Color; square: string }> {
   try {
     const board = fenToBoard(fen);
-    const result: Array<{ type: PieceSymbol; color: Color; square: string }> = [];
+    const result: Array<{ type: PieceType; color: Color; square: string }> = [];
 
     for (let rank = 0; rank < 8; rank++) {
       for (let file = 0; file < 8; file++) {
@@ -44,7 +45,7 @@ function parseFenToPieces(fen: string): Array<{ type: PieceSymbol; color: Color;
   } catch (error) {
     try {
       const piecePlacement = fen.split(' ')[0];
-      const result: Array<{ type: PieceSymbol; color: Color; square: string }> = [];
+      const result: Array<{ type: PieceType; color: Color; square: string }> = [];
 
       const ranks = piecePlacement.split('/');
       for (let rank = 0; rank < ranks.length; rank++) {
@@ -56,7 +57,7 @@ function parseFenToPieces(fen: string): Array<{ type: PieceSymbol; color: Color;
             const square = String.fromCharCode(97 + file) + (8 - rank);
             const isWhite = char === char.toUpperCase();
             result.push({
-              type: char.toLowerCase() as PieceSymbol,
+              type: char.toLowerCase() as PieceType,
               color: (isWhite ? 'w' : 'b') as Color,
               square,
             });

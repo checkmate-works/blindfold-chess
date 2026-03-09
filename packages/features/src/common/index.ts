@@ -12,13 +12,24 @@ export {
   getNextCountdownValue,
   isCountdownActive,
 } from "./countdown";
+export { computePracticeResult } from "./practice-result";
 export {
+  type RandomSource,
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,
   isLightSquare,
   isValidSquare,
   computeSquareColor,
+  formatTime,
   generateRandomSquare,
   generateSquareSequence,
+  shuffleArray,
 } from "./utils";
+export {
+  KNIGHT_OFFSETS,
+  BISHOP_DIRS,
+  ROOK_DIRS,
+  QUEEN_DIRS,
+  KING_OFFSETS,
+} from "./piece-moves";

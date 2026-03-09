@@ -1,7 +1,7 @@
 'use client';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceSymbol } from '@blindfold-chess/features/chess-core';
+import type { PieceType } from '@blindfold-chess/types';
 
 const PIECES = ['K', 'Q', 'R', 'B', 'N'];
 
@@ -27,7 +27,7 @@ export function PieceSelector({ selectedPiece, playerColor, pieceLabel, onPieceC
           }`}
         >
           {pieceLabel === 'icon' ? (
-            <ChessPiece type={piece.toLowerCase() as PieceSymbol} color={playerColor} size={24} />
+            <ChessPiece type={piece.toLowerCase() as PieceType} color={playerColor} size={24} />
           ) : (
             piece
           )}
