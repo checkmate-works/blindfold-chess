@@ -8,7 +8,8 @@ import { db, moderationActions, profiles, userRoles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-import { PaginationNav } from '../_components/PaginationNav';
+import { PaginationNav } from '@/app/[locale]/_components';
+
 import { BanButton } from './_components/BanButton';
 import { UnbanButton } from './_components/UnbanButton';
 

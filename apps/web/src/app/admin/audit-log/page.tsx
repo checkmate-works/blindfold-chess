@@ -6,7 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { db, moderationActions, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '../_components/PaginationNav';
+import { PaginationNav } from '@/app/[locale]/_components';
 
 const PAGE_SIZE = 20;
 

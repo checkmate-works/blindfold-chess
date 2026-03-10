@@ -14,6 +14,7 @@ export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';
 export { PageDescription } from './PageDescription';
 export { PageTitle } from './PageTitle';
+export { PaginationNav } from './PaginationNav';
 export { PgnInput } from './PgnInput';
 export { SectionTitle } from './SectionTitle';
 export { SubsectionTitle } from './SubsectionTitle';
