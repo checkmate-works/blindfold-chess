@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
 import { isLameName } from '@/lib/lame-name';
@@ -95,6 +96,13 @@ export async function PUT(request: Request) {
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, user.id));
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'update_profile',
+    targetType: 'user',
+    targetId: user.id,
+  });
 
   return NextResponse.json({ success: true });
 }

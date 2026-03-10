@@ -1,10 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { PUT } from './route';
 
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -198,6 +204,26 @@ describe('PUT /api/profile', () => {
       const body = await response.json();
       expect(body).toEqual({ success: true });
       expect(mockWhere).toHaveBeenCalled();
+    });
+
+    it('should log update_profile activity event on success', async () => {
+      const request = createRequest({ displayName: 'Chess Player' });
+      await PUT(request);
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'update_profile',
+        targetType: 'user',
+        targetId: testUserId,
+      });
+    });
+
+    it('should not log activity event when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      const request = createRequest({ displayName: 'Test' });
+      await PUT(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });

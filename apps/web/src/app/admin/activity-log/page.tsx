@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { db, moderationActions, profiles } from '@/lib/db';
+import { db, profiles, userActivityLog } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '../_components/PaginationNav';
@@ -16,7 +16,7 @@ const searchParamsCache = createSearchParamsCache({
   user: parseAsString.withDefault(''),
 });
 
-export default async function AdminAuditLogPage({
+export default async function AdminActivityLogPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -31,11 +31,11 @@ export default async function AdminAuditLogPage({
   // Build where conditions
   const conditions = [];
   if (actionFilter) {
-    conditions.push(eq(moderationActions.action, actionFilter));
+    conditions.push(eq(userActivityLog.action, actionFilter));
   }
 
-  // If user filter is set, find matching target IDs from profiles
-  let filteredTargetIds: string[] | null = null;
+  // If user filter is set, find matching user IDs from profiles
+  let filteredUserIds: string[] | null = null;
   if (userFilter) {
     const matchingProfiles = await db
       .select({ id: profiles.id })
@@ -61,11 +61,10 @@ export default async function AdminAuditLogPage({
     ];
 
     if (allMatchingIds.length === 0) {
-      // No matching users — return empty result
-      filteredTargetIds = [];
+      filteredUserIds = [];
     } else {
-      filteredTargetIds = allMatchingIds;
-      conditions.push(inArray(moderationActions.targetId, allMatchingIds));
+      filteredUserIds = allMatchingIds;
+      conditions.push(inArray(userActivityLog.userId, allMatchingIds));
     }
   }
 
@@ -74,38 +73,38 @@ export default async function AdminAuditLogPage({
   // Get total count for pagination
   const [countResult] = await db
     .select({ count: sql<number>`count(*)` })
-    .from(moderationActions)
+    .from(userActivityLog)
     .where(whereClause);
   const totalCount = Number(countResult.count);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   // Fetch logs for current page
   const logs =
-    filteredTargetIds?.length === 0
+    filteredUserIds?.length === 0
       ? []
       : await db
           .select()
-          .from(moderationActions)
+          .from(userActivityLog)
           .where(whereClause)
-          .orderBy(desc(moderationActions.createdAt))
+          .orderBy(desc(userActivityLog.createdAt))
           .limit(PAGE_SIZE)
           .offset((currentPage - 1) * PAGE_SIZE);
 
-  // Collect unique user IDs for target and actor lookups
-  const targetIds = [...new Set(logs.map((l) => l.targetId))];
-  const actorIds = [...new Set(logs.map((l) => l.actorId))];
-  const allUserIds = [...new Set([...targetIds, ...actorIds])];
+  // Collect unique user IDs for lookups
+  const userIds = [...new Set(logs.map((l) => l.userId))];
+  const targetIds = [...new Set(logs.filter((l) => l.targetId).map((l) => l.targetId!))];
+  const allLookupIds = [...new Set([...userIds, ...targetIds])];
 
-  // Fetch profiles for targets
-  const targetProfiles =
-    targetIds.length > 0
-      ? await db.select().from(profiles).where(inArray(profiles.id, targetIds))
+  // Fetch profiles
+  const lookupProfiles =
+    allLookupIds.length > 0
+      ? await db.select().from(profiles).where(inArray(profiles.id, allLookupIds))
       : [];
-  const profileMap = new Map(targetProfiles.map((p) => [p.id, p]));
+  const profileMap = new Map(lookupProfiles.map((p) => [p.id, p]));
 
-  // Fetch emails from Supabase Auth for all users
+  // Fetch emails from Supabase Auth
   const emailMap = new Map<string, string>();
-  if (allUserIds.length > 0) {
+  if (allLookupIds.length > 0) {
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
       perPage: 100,
@@ -117,24 +116,30 @@ export default async function AdminAuditLogPage({
     }
   }
 
+  // Get distinct action types for filter dropdown
+  const actionTypes = await db
+    .selectDistinct({ action: userActivityLog.action })
+    .from(userActivityLog)
+    .orderBy(userActivityLog.action);
+
   // Build search params for pagination links
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set('page', String(p));
     if (actionFilter) params.set('action', actionFilter);
     if (userFilter) params.set('user', userFilter);
-    return `/admin/audit-log?${params.toString()}`;
+    return `/admin/activity-log?${params.toString()}`;
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('auditLog')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('activityLog')}</h1>
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">
         <div>
           <label htmlFor="action-filter" className="block text-sm font-medium mb-1">
-            {t('auditLogTable.filterByAction')}
+            {t('activityLogTable.filterByAction')}
           </label>
           <select
             id="action-filter"
@@ -142,15 +147,17 @@ export default async function AdminAuditLogPage({
             defaultValue={actionFilter}
             className="border border-border rounded px-3 py-2 text-sm bg-background"
           >
-            <option value="">{t('auditLogTable.allActions')}</option>
-            <option value="ban">ban</option>
-            <option value="unban">unban</option>
-            <option value="delete_post">delete_post</option>
+            <option value="">{t('activityLogTable.allActions')}</option>
+            {actionTypes.map((at) => (
+              <option key={at.action} value={at.action}>
+                {at.action}
+              </option>
+            ))}
           </select>
         </div>
         <div>
           <label htmlFor="user-filter" className="block text-sm font-medium mb-1">
-            {t('auditLogTable.filterByUser')}
+            {t('activityLogTable.filterByUser')}
           </label>
           <input
             id="user-filter"
@@ -174,50 +181,47 @@ export default async function AdminAuditLogPage({
         <table className="w-full text-sm">
           <thead className="bg-secondary">
             <tr>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.action')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.target')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.actor')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.reason')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.ipAddress')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.timestamp')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.action')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.user')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.target')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.metadata')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.timestamp')}</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => {
-              const targetProfile = profileMap.get(log.targetId);
-              const targetDisplay =
-                targetProfile?.username ?? emailMap.get(log.targetId) ?? log.targetId;
-              const actorDisplay = emailMap.get(log.actorId) ?? log.actorId;
+              const userProfile = profileMap.get(log.userId);
+              const userDisplay = userProfile?.username ?? emailMap.get(log.userId) ?? log.userId;
+              const targetDisplay = log.targetId
+                ? (profileMap.get(log.targetId)?.username ??
+                  emailMap.get(log.targetId) ??
+                  log.targetId)
+                : '-';
+              const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
 
               return (
                 <tr key={log.id} className="border-t border-border">
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                        log.action === 'ban'
-                          ? 'bg-red-100 text-red-800'
-                          : log.action === 'unban'
-                            ? 'bg-green-100 text-green-800'
-                            : log.action === 'delete_post'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
+                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                       {log.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{targetDisplay}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>
+                  <td className="px-4 py-3">{userDisplay}</td>
                   <td className="px-4 py-3">
-                    {log.reason ? (
-                      <span title={log.reason}>
-                        {log.reason.length > 50 ? `${log.reason.slice(0, 50)}...` : log.reason}
+                    {log.targetType && (
+                      <span className="text-muted-foreground text-xs mr-1">[{log.targetType}]</span>
+                    )}
+                    {targetDisplay}
+                  </td>
+                  <td className="px-4 py-3">
+                    {metadataStr !== '-' && metadataStr !== '{}' ? (
+                      <span title={metadataStr} className="text-xs text-muted-foreground">
+                        {metadataStr.length > 60 ? `${metadataStr.slice(0, 60)}...` : metadataStr}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{log.ipAddress ?? '-'}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {new Date(log.createdAt).toLocaleString()}
                   </td>
@@ -226,8 +230,8 @@ export default async function AdminAuditLogPage({
             })}
             {logs.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  {t('auditLogTable.noLogsFound')}
+                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  {t('activityLogTable.noLogsFound')}
                 </td>
               </tr>
             )}

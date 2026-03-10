@@ -1,32 +1,39 @@
 import { getTranslations } from 'next-intl/server';
 
 import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles, topicPosts } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { PaginationNav } from '../_components/PaginationNav';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 
 const PAGE_SIZE = 20;
 
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+  user: parseAsString.withDefault(''),
+  topicType: parseAsString.withDefault(''),
+  status: parseAsString.withDefault(''),
+});
+
 export default async function AdminTopicPostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    page?: string;
-    user?: string;
-    topicType?: string;
-    status?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
+  const {
+    page,
+    user: rawUser,
+    topicType: topicTypeFilter,
+    status: statusFilter,
+  } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const adminClient = createAdminClient();
 
-  const currentPage = Math.max(1, parseInt(params.page ?? '1', 10) || 1);
-  const userFilter = params.user?.trim() || '';
-  const topicTypeFilter = params.topicType || '';
-  const statusFilter = params.status || '';
+  const currentPage = Math.max(1, page);
+  const userFilter = rawUser.trim();
 
   // Build where conditions
   const conditions = [];
@@ -136,13 +143,13 @@ export default async function AdminTopicPostsPage({
   };
 
   // Build search params for pagination links
-  const buildHref = (page: number) => {
-    const p = new URLSearchParams();
-    p.set('page', String(page));
-    if (userFilter) p.set('user', userFilter);
-    if (topicTypeFilter) p.set('topicType', topicTypeFilter);
-    if (statusFilter) p.set('status', statusFilter);
-    return `/admin/topic_posts?${p.toString()}`;
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    params.set('page', String(p));
+    if (userFilter) params.set('user', userFilter);
+    if (topicTypeFilter) params.set('topicType', topicTypeFilter);
+    if (statusFilter) params.set('status', statusFilter);
+    return `/admin/topic_posts?${params.toString()}`;
   };
 
   return (
@@ -272,32 +279,7 @@ export default async function AdminTopicPostsPage({
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Page {currentPage} / {totalPages}
-          </div>
-          <div className="flex gap-2">
-            {currentPage > 1 && (
-              <a
-                href={buildHref(currentPage - 1)}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-              >
-                {t('topicPosts.previousPage')}
-              </a>
-            )}
-            {currentPage < totalPages && (
-              <a
-                href={buildHref(currentPage + 1)}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-              >
-                {t('topicPosts.nextPage')}
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

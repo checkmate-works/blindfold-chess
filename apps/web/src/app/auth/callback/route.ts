@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { createClient } from '@/lib/supabase/server';
@@ -32,6 +33,12 @@ export async function GET(request: Request) {
 
     if (!error) {
       const userId = data.session.user.id;
+
+      logActivityEvent({
+        userId,
+        action: 'login',
+      });
+
       const [profile] = await db
         .select({ username: profiles.username })
         .from(profiles)

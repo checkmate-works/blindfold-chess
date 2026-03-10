@@ -412,3 +412,59 @@ export const rateLimitEvents = pgTable(
 
 export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
 export type NewRateLimitEvent = typeof rateLimitEvents.$inferInsert;
+
+/**
+ * User Activity Log — immutable event log for user actions.
+ *
+ * @design Follows the same immutable event log pattern as `moderation_actions`
+ *
+ * Tracks user-initiated actions (post creation/deletion, likes, follows, blocks,
+ * profile edits, logins) for analytics and admin visibility. Append-only — no
+ * UPDATE or DELETE RLS policies.
+ *
+ * @design Polymorphic target_type + target_id
+ *
+ * Consistent with `moderation_actions` and `topicPosts.topicType + topicKey`.
+ * target_type/target_id are optional because some actions (e.g., login, profile edit)
+ * don't have an external target entity.
+ *
+ * @design action is varchar, not pgEnum
+ *
+ * New action types will be added incrementally. Using varchar avoids requiring
+ * an ALTER TYPE migration for each new action.
+ *
+ * @design metadata (JSONB) for flexible context
+ *
+ * Stores action-specific data (e.g., topic key for post creation, changed fields
+ * for profile edits). Extensible without schema changes.
+ *
+ * @design No updated_at — activity logs are immutable
+ *
+ * Records are append-only. No UPDATE or DELETE RLS policies are defined.
+ *
+ * @design FKs managed in custom SQL
+ *
+ * `userId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`.
+ */
+export const userActivityLog = pgTable(
+  'user_activity_log',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    action: varchar('action', { length: 50 }).notNull(),
+    targetType: varchar('target_type', { length: 50 }),
+    targetId: uuid('target_id'),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_user_activity_log_user').on(table.userId),
+    index('idx_user_activity_log_action').on(table.action),
+    index('idx_user_activity_log_target').on(table.targetType, table.targetId),
+    index('idx_user_activity_log_created').on(table.createdAt),
+  ]
+);
+
+export type UserActivityLog = typeof userActivityLog.$inferSelect;
+export type NewUserActivityLog = typeof userActivityLog.$inferInsert;

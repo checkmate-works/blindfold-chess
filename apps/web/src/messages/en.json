@@ -1898,7 +1898,8 @@
       "banned": "Banned",
       "active": "Active",
       "anonymous": "Anonymous",
-      "viewPosts": "Posts"
+      "viewPosts": "Posts",
+      "viewActivity": "Activity"
     },
     "userPosts": {
       "title": "Posts by {username}",
@@ -1933,6 +1934,20 @@
       "ipAddress": "IP Address",
       "timestamp": "Timestamp",
       "noLogsFound": "No audit logs found",
+      "filterByAction": "Filter by action",
+      "filterByUser": "Filter by user",
+      "allActions": "All Actions",
+      "previousPage": "Previous",
+      "nextPage": "Next"
+    },
+    "activityLog": "Activity Log",
+    "activityLogTable": {
+      "action": "Action",
+      "user": "User",
+      "target": "Target",
+      "metadata": "Metadata",
+      "timestamp": "Timestamp",
+      "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
       "allActions": "All Actions",

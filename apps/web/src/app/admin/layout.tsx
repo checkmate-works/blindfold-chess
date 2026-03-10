@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { eq } from 'drizzle-orm';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
@@ -91,13 +92,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 >
                   {t('auditLog')}
                 </Link>
+                <Link
+                  href="/admin/activity-log"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('activityLog')}
+                </Link>
               </nav>
             </aside>
             <div className="flex-1 flex flex-col">
               <header className="flex justify-end p-4 border-b border-border">
                 <ThemeToggle />
               </header>
-              <main className="flex-1 p-8">{children}</main>
+              <main className="flex-1 p-8">
+                <NuqsAdapter>{children}</NuqsAdapter>
+              </main>
             </div>
           </div>
         </ThemeProvider>

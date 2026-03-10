@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -70,12 +71,23 @@ export async function createReply(
     return { error: 'contentTooLong' };
   }
 
-  await db.insert(topicPosts).values({
+  const [inserted] = await db
+    .insert(topicPosts)
+    .values({
+      userId: user.id,
+      topicType: 'square',
+      topicKey: square,
+      parentId: postId,
+      content: content.trim(),
+    })
+    .returning({ id: topicPosts.id });
+
+  logActivityEvent({
     userId: user.id,
-    topicType: 'square',
-    topicKey: square,
-    parentId: postId,
-    content: content.trim(),
+    action: 'create_reply',
+    targetType: 'topic_post',
+    targetId: inserted.id,
+    metadata: { parentId: postId, topicKey: square },
   });
 
   revalidatePath(`/${locale}/topics/squares/${square}/posts/${postId}`);

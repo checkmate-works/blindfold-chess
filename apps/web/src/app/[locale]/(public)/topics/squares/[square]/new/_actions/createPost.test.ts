@@ -1,10 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { createPost } from './createPost';
 
 const mockGetUser = vi.fn();
-const mockInsertValues = vi.fn().mockResolvedValue(undefined);
+const mockInsertValues = vi.fn();
+const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -15,13 +22,22 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+const generatedPostId = 'post-00000000-0000-0000-0000-000000000001';
+
 vi.mock('@/lib/db', () => ({
   db: {
     insert: () => ({
-      values: mockInsertValues,
+      values: (...args: unknown[]) => {
+        mockInsertValues(...args);
+        return {
+          returning: () => mockInsertReturning(),
+        };
+      },
     }),
   },
-  topicPosts: {},
+  topicPosts: {
+    id: 'id',
+  },
 }));
 
 vi.mock('@/lib/ban', () => ({
@@ -104,6 +120,7 @@ describe('createPost', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
     it('should return contentRequired when content is empty', async () => {
@@ -145,6 +162,7 @@ describe('createPost', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
     it('should insert post and redirect on success', async () => {
@@ -196,6 +214,35 @@ describe('createPost', () => {
       const result = await createPost('en', 'e4', {}, makeFormData(''));
       expect(result).toEqual({ error: 'signInRequired' });
       expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('activity logging', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
+    });
+
+    it('should log create_post activity event on success', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('My post'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'create_post',
+        targetType: 'topic_post',
+        targetId: generatedPostId,
+        metadata: { topicType: 'square', topicKey: 'e4' },
+      });
+    });
+
+    it('should not log activity event when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createPost('en', 'e4', {}, makeFormData('hello'));
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });

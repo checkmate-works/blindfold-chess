@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -58,6 +59,14 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
     .update(topicPosts)
     .set({ deletedAt: new Date() })
     .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_post',
+    targetType: 'topic_post',
+    targetId: postId,
+    metadata: { topicType: post.topicType, topicKey: post.topicKey },
+  });
 
   revalidatePath(`/${locale}/topics/squares/${post.topicKey}`);
 

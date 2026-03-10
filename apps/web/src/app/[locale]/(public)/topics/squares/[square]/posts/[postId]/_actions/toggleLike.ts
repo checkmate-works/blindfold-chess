@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, count, eq } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPostLikes } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -70,6 +71,13 @@ export async function toggleLike(
       .where(and(eq(topicPostLikes.userId, user.id), eq(topicPostLikes.postId, postId)));
     liked = false;
   }
+
+  logActivityEvent({
+    userId: user.id,
+    action: liked ? 'like' : 'unlike',
+    targetType: 'topic_post',
+    targetId: postId,
+  });
 
   const [result] = await db
     .select({ count: count() })
