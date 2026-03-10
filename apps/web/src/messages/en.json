@@ -1898,7 +1898,8 @@
       "banned": "Banned",
       "active": "Active",
       "anonymous": "Anonymous",
-      "viewPosts": "Posts"
+      "viewPosts": "Posts",
+      "viewActivity": "Activity"
     },
     "userPosts": {
       "title": "Posts by {username}",

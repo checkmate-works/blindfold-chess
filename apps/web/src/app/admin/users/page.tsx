@@ -128,12 +128,20 @@ export default async function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {profile && (
-                        <Link
-                          href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
-                          className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
-                        >
-                          {t('usersTable.viewPosts')}
-                        </Link>
+                        <>
+                          <Link
+                            href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
+                            className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+                          >
+                            {t('usersTable.viewPosts')}
+                          </Link>
+                          <Link
+                            href={`/admin/activity-log?user=${encodeURIComponent(profile.username)}`}
+                            className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+                          >
+                            {t('usersTable.viewActivity')}
+                          </Link>
+                        </>
                       )}
                       {!isCurrentUser && profile && (
                         <>
