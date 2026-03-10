@@ -354,6 +354,7 @@ describe('getPostsWithReplyMeta', () => {
       replyCount: 0,
       latestReplyAt: null,
       repliers: [],
+      uniqueReplierCount: 0,
     });
   });
 
@@ -661,6 +662,175 @@ describe('getPostsWithReplyMeta', () => {
     expect(result).toHaveLength(1);
     expect(result[0].author?.flair).toBeNull();
     expect(result[0].author?.country).toBeNull();
+  });
+
+  describe('uniqueReplierCount', () => {
+    it('should return uniqueReplierCount 0 when post has no replies', async () => {
+      setupMocks([postRow(testPostId)], [], []);
+
+      const result = await getPostsWithReplyMeta('e4');
+
+      expect(result[0].replyMeta.uniqueReplierCount).toBe(0);
+    });
+
+    it('should return uniqueReplierCount equal to repliers length when <= 3 unique repliers', async () => {
+      const statsRows = [
+        { parentId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+      ];
+      const avatarRows = [
+        {
+          parentId: testPostId,
+          userId: 'user-a',
+          avatarUrl: 'https://example.com/a.png',
+          displayName: 'A',
+          username: 'a',
+          createdAt: new Date('2025-01-03T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-b',
+          avatarUrl: 'https://example.com/b.png',
+          displayName: 'B',
+          username: 'b',
+          createdAt: new Date('2025-01-02T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-c',
+          avatarUrl: 'https://example.com/c.png',
+          displayName: 'C',
+          username: 'c',
+          createdAt: new Date('2025-01-01T00:00:00Z'),
+        },
+      ];
+
+      setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+      const result = await getPostsWithReplyMeta('e4');
+
+      expect(result[0].replyMeta.repliers).toHaveLength(3);
+      expect(result[0].replyMeta.uniqueReplierCount).toBe(3);
+    });
+
+    it('should return uniqueReplierCount greater than repliers length when > 3 unique repliers', async () => {
+      const statsRows = [
+        { parentId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+      ];
+      const avatarRows = [
+        {
+          parentId: testPostId,
+          userId: 'user-a',
+          avatarUrl: 'https://example.com/a.png',
+          displayName: 'A',
+          username: 'a',
+          createdAt: new Date('2025-01-05T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-b',
+          avatarUrl: 'https://example.com/b.png',
+          displayName: 'B',
+          username: 'b',
+          createdAt: new Date('2025-01-04T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-c',
+          avatarUrl: 'https://example.com/c.png',
+          displayName: 'C',
+          username: 'c',
+          createdAt: new Date('2025-01-03T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-d',
+          avatarUrl: 'https://example.com/d.png',
+          displayName: 'D',
+          username: 'd',
+          createdAt: new Date('2025-01-02T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-e',
+          avatarUrl: 'https://example.com/e.png',
+          displayName: 'E',
+          username: 'e',
+          createdAt: new Date('2025-01-01T00:00:00Z'),
+        },
+      ];
+
+      setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+      const result = await getPostsWithReplyMeta('e4');
+
+      // Only 3 repliers in the array, but 5 unique repliers total
+      expect(result[0].replyMeta.repliers).toHaveLength(3);
+      expect(result[0].replyMeta.uniqueReplierCount).toBe(5);
+    });
+
+    it('should not count duplicate users in uniqueReplierCount', async () => {
+      const statsRows = [
+        { parentId: testPostId, replyCount: 6, latestReplyAt: new Date('2025-01-06T00:00:00Z') },
+      ];
+      // 6 reply rows, but only 4 unique users (user-a and user-b reply twice each)
+      const avatarRows = [
+        {
+          parentId: testPostId,
+          userId: 'user-a',
+          avatarUrl: 'https://example.com/a.png',
+          displayName: 'A',
+          username: 'a',
+          createdAt: new Date('2025-01-06T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-b',
+          avatarUrl: 'https://example.com/b.png',
+          displayName: 'B',
+          username: 'b',
+          createdAt: new Date('2025-01-05T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-a',
+          avatarUrl: 'https://example.com/a.png',
+          displayName: 'A',
+          username: 'a',
+          createdAt: new Date('2025-01-04T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-c',
+          avatarUrl: 'https://example.com/c.png',
+          displayName: 'C',
+          username: 'c',
+          createdAt: new Date('2025-01-03T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-b',
+          avatarUrl: 'https://example.com/b.png',
+          displayName: 'B',
+          username: 'b',
+          createdAt: new Date('2025-01-02T00:00:00Z'),
+        },
+        {
+          parentId: testPostId,
+          userId: 'user-d',
+          avatarUrl: 'https://example.com/d.png',
+          displayName: 'D',
+          username: 'd',
+          createdAt: new Date('2025-01-01T00:00:00Z'),
+        },
+      ];
+
+      setupMocks([postRow(testPostId)], statsRows, avatarRows);
+
+      const result = await getPostsWithReplyMeta('e4');
+
+      expect(result[0].replyMeta.repliers).toHaveLength(3);
+      expect(result[0].replyMeta.uniqueReplierCount).toBe(4);
+    });
   });
 
   describe('sortBy parameter', () => {

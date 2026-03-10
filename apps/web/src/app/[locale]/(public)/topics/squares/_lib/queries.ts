@@ -89,6 +89,7 @@ export type ReplyMeta = {
   replyCount: number;
   latestReplyAt: Date | null;
   repliers: Replier[];
+  uniqueReplierCount: number;
 };
 
 export type LikeMeta = {
@@ -174,21 +175,23 @@ async function attachPostMeta(
   const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.likeCount]));
 
   // Collect up to 3 unique repliers per post (most recent, deduplicated by userId)
+  // while tracking ALL unique repliers for the +N overflow count
   const repliersMap = new Map<string, Replier[]>();
   const seenUsers = new Map<string, Set<string>>();
   for (const row of repliesWithAuthors) {
     if (!row.parentId) continue;
     const seen = seenUsers.get(row.parentId) ?? new Set();
     if (seen.has(row.userId)) continue;
-    const existing = repliersMap.get(row.parentId) ?? [];
-    if (existing.length >= 3) continue;
     seen.add(row.userId);
     seenUsers.set(row.parentId, seen);
-    existing.push({
-      avatarUrl: row.avatarUrl,
-      displayName: row.displayName || row.username || 'Anonymous',
-    });
-    repliersMap.set(row.parentId, existing);
+    const existing = repliersMap.get(row.parentId) ?? [];
+    if (existing.length < 3) {
+      existing.push({
+        avatarUrl: row.avatarUrl,
+        displayName: row.displayName || row.username || 'Anonymous',
+      });
+      repliersMap.set(row.parentId, existing);
+    }
   }
 
   return posts.map((post) => {
@@ -199,6 +202,7 @@ async function attachPostMeta(
         replyCount: stats?.replyCount ?? 0,
         latestReplyAt: stats?.latestReplyAt ?? null,
         repliers: repliersMap.get(post.id) ?? [],
+        uniqueReplierCount: seenUsers.get(post.id)?.size ?? 0,
       },
       likeMeta: {
         likeCount: likeCountMap.get(post.id) ?? 0,
