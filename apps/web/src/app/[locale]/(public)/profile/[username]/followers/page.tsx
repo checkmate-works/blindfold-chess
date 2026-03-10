@@ -2,15 +2,30 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, follows, profiles } from '@/lib/db';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle, UserCard } from '@/app/[locale]/_components';
+import {
+  Breadcrumb,
+  Divider,
+  PagePanel,
+  PageTitle,
+  PaginationNav,
+  UserCard,
+} from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+const PAGE_SIZE = 20;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
 
 type Props = {
   params: Promise<{ locale: Locale; username: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function FollowersPage({ params }: Props) {
+export default async function FollowersPage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
   const [profile] = await db
@@ -50,7 +65,19 @@ export default async function FollowersPage({ params }: Props) {
     notFound();
   }
 
+  const { page } = await searchParamsCache.parse(searchParams);
+
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
+
+  const [countResult] = await db
+    .select({ count: count() })
+    .from(follows)
+    .innerJoin(profiles, eq(follows.followerId, profiles.id))
+    .where(and(eq(follows.followingId, profile.id), isNull(profiles.deletedAt)));
+
+  const totalCount = countResult.count;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
 
   const followerList = await db
     .select({
@@ -61,9 +88,16 @@ export default async function FollowersPage({ params }: Props) {
     })
     .from(follows)
     .innerJoin(profiles, eq(follows.followerId, profiles.id))
-    .where(and(eq(follows.followingId, profile.id), isNull(profiles.deletedAt)));
+    .where(and(eq(follows.followingId, profile.id), isNull(profiles.deletedAt)))
+    .limit(PAGE_SIZE)
+    .offset((currentPage - 1) * PAGE_SIZE);
 
   const displayName = profile.displayName ?? username;
+
+  const buildHref = (p: number) => {
+    const qs = p > 1 ? `?page=${p}` : '';
+    return `/${locale}/@/${username}/followers${qs}`;
+  };
 
   return (
     <div className="space-y-8">
@@ -84,6 +118,8 @@ export default async function FollowersPage({ params }: Props) {
             ))}
           </div>
         )}
+
+        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         <Divider />
 

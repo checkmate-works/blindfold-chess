@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+
 import {
   Breadcrumb,
   Divider,
@@ -10,16 +12,28 @@ import {
   PageDescription,
   PagePanel,
   PageTitle,
+  PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getCategoryIcon } from '../_lib/constants';
-import { getCategoryBySlug, getPublishedPostsByCategory } from '../_lib/queries';
+import {
+  getCategoryBySlug,
+  getPublishedPostCountByCategory,
+  getPublishedPostsByCategoryPaginated,
+} from '../_lib/queries';
+
+const PAGE_SIZE = 20;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
 
 type Props = {
   params: Promise<{ locale: Locale; category: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CategoryPostsPage({ params }: Props) {
+export default async function CategoryPostsPage({ params, searchParams }: Props) {
   const { locale, category } = await params;
   const t = await getTranslations({ locale, namespace: 'posts' });
 
@@ -49,8 +63,24 @@ export default async function CategoryPostsPage({ params }: Props) {
     notFound();
   }
 
-  const posts = await getPublishedPostsByCategory(category);
+  const { page } = await searchParamsCache.parse(searchParams);
+
+  const totalCount = await getPublishedPostCountByCategory(category);
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+
+  const posts = await getPublishedPostsByCategoryPaginated(
+    category,
+    PAGE_SIZE,
+    (currentPage - 1) * PAGE_SIZE
+  );
+
   const categoryLabel = t(`categories.${category}`);
+
+  const buildHref = (p: number) => {
+    const qs = p > 1 ? `?page=${p}` : '';
+    return `/${locale}/posts/${category}${qs}`;
+  };
 
   return (
     <div className="space-y-8">
@@ -88,6 +118,8 @@ export default async function CategoryPostsPage({ params }: Props) {
             })}
           </ListLinkContainer>
         )}
+
+        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         <Divider />
 

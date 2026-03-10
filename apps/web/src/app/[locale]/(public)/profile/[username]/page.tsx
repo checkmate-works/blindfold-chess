@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
@@ -13,13 +14,20 @@ import { createClient } from '@/lib/supabase/server';
 
 import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components/PostCard';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
-import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { PagePanel, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 
+const PAGE_SIZE = 20;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
+
 type Props = {
   params: Promise<{ locale: Locale; username: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -50,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PublicProfilePage({ params }: Props) {
+export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
   const [profile] = await db
@@ -118,7 +126,18 @@ export default async function PublicProfilePage({ params }: Props) {
 
   const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
 
-  const posts = await getPostsByUserId(profile.id, user?.id);
+  const allPosts = await getPostsByUserId(profile.id, user?.id);
+
+  const { page } = await searchParamsCache.parse(searchParams);
+  const totalCount = allPosts.length;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const buildHref = (p: number) => {
+    const qs = p > 1 ? `?page=${p}` : '';
+    return `/${locale}/@/${username}${qs}`;
+  };
 
   return (
     <PagePanel>
@@ -266,7 +285,7 @@ export default async function PublicProfilePage({ params }: Props) {
             <nav className="flex">
               <button className="px-4 py-2 text-sm font-bold text-foreground border-b-2 border-foreground">
                 {t('topicsTab')}{' '}
-                <span className="text-muted-foreground font-normal">{posts.length}</span>
+                <span className="text-muted-foreground font-normal">{totalCount}</span>
               </button>
             </nav>
           </div>
@@ -286,6 +305,8 @@ export default async function PublicProfilePage({ params }: Props) {
               <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
             )}
           </div>
+
+          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
         </div>
       </div>
     </PagePanel>

@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 
 import { type Category, type Post, categories, db, posts } from '@/lib/db';
 
@@ -64,6 +64,45 @@ export async function getPublishedPostsByCategory(
     .innerJoin(categories, eq(posts.categoryId, categories.id))
     .where(and(eq(categories.slug, categorySlug), eq(posts.status, 'published')))
     .orderBy(...pinnedFirstOrdering);
+
+  return results.map((r) => ({
+    ...r.post,
+    category: r.category,
+  }));
+}
+
+/**
+ * Get published post count by category slug
+ */
+export async function getPublishedPostCountByCategory(categorySlug: string): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(posts)
+    .innerJoin(categories, eq(posts.categoryId, categories.id))
+    .where(and(eq(categories.slug, categorySlug), eq(posts.status, 'published')));
+
+  return result.count;
+}
+
+/**
+ * Get published posts by category slug with pagination
+ */
+export async function getPublishedPostsByCategoryPaginated(
+  categorySlug: string,
+  limit: number,
+  offset: number
+): Promise<PostWithCategory[]> {
+  const results = await db
+    .select({
+      post: posts,
+      category: categories,
+    })
+    .from(posts)
+    .innerJoin(categories, eq(posts.categoryId, categories.id))
+    .where(and(eq(categories.slug, categorySlug), eq(posts.status, 'published')))
+    .orderBy(...pinnedFirstOrdering)
+    .limit(limit)
+    .offset(offset);
 
   return results.map((r) => ({
     ...r.post,
