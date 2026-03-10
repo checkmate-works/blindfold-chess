@@ -90,13 +90,15 @@ export default async function PostDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        <div className="space-y-6">
+        <div className="p-4 bg-card border border-border rounded-lg space-y-4">
           <UserAvatar
             profileHref={profileHref}
             avatarUrl={post.author?.avatarUrl}
             displayName={displayName}
             locale={locale}
             size="md"
+            flair={post.author?.flair}
+            country={post.author?.country}
           >
             <div className="text-sm text-muted-foreground">
               <time dateTime={post.createdAt.toISOString()}>
@@ -129,17 +131,15 @@ export default async function PostDetailPage({ params }: Props) {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <SectionTitle>
-            {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
-          </SectionTitle>
+        <SectionTitle>
+          {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
+        </SectionTitle>
 
-          {replies.length > 0 ? (
-            <ReplyList replies={replies} locale={locale} square={square} />
-          ) : (
-            <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
-          )}
-        </div>
+        {replies.length > 0 ? (
+          <ReplyList replies={replies} locale={locale} square={square} />
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
+        )}
 
         {user ? (
           <ReplyForm locale={locale} square={square} postId={postId} />

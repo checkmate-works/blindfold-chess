@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
+import { FaRegComment } from 'react-icons/fa';
 
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
@@ -36,6 +37,8 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
         displayName={displayName}
         locale={locale}
         asLink={false}
+        flair={post.author?.flair}
+        country={post.author?.country}
       >
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
           {showSquareBadge && (
@@ -53,55 +56,64 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
           </time>
         </div>
         <p className="text-sm text-foreground whitespace-pre-wrap break-words">{contentPreview}</p>
-
-        <div className="mt-2">
-          <LikeButton
-            postId={post.id}
-            locale={locale}
-            square={square}
-            initialLikeCount={post.likeMeta.likeCount}
-            initialLikedByMe={post.likeMeta.likedByMe}
-          />
-        </div>
       </UserAvatar>
 
-      {post.replyMeta.replyCount > 0 && (
-        <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
-          <div className="flex -space-x-2">
-            {post.replyMeta.repliers.map((replier, i) =>
-              replier.avatarUrl ? (
-                <Image
-                  key={i}
-                  src={replier.avatarUrl}
-                  alt={replier.displayName}
-                  width={24}
-                  height={24}
-                  className="rounded-full border-2 border-card"
-                />
-              ) : (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
-                >
+      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+        <LikeButton
+          postId={post.id}
+          locale={locale}
+          square={square}
+          initialLikeCount={post.likeMeta.likeCount}
+          initialLikedByMe={post.likeMeta.likedByMe}
+        />
+
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <FaRegComment className="w-4 h-4" />
+          {post.replyMeta.replyCount > 0 && <span>{post.replyMeta.replyCount}</span>}
+        </div>
+
+        {post.replyMeta.replyCount > 0 && (
+          <div className="flex items-center gap-3 ml-auto">
+            <div className="flex -space-x-2">
+              {post.replyMeta.repliers.map((replier, i) =>
+                replier.avatarUrl ? (
+                  <Image
+                    key={i}
+                    src={replier.avatarUrl}
+                    alt={replier.displayName}
+                    width={24}
+                    height={24}
+                    className="rounded-full border-2 border-card"
+                  />
+                ) : (
+                  <div
+                    key={i}
+                    className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
+                  >
+                    <span className="text-[10px] text-muted-foreground">
+                      {replier.displayName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )
+              )}
+              {post.replyMeta.uniqueReplierCount > post.replyMeta.repliers.length && (
+                <div className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
                   <span className="text-[10px] text-muted-foreground">
-                    {replier.displayName.charAt(0).toUpperCase()}
+                    +{post.replyMeta.uniqueReplierCount - post.replyMeta.repliers.length}
                   </span>
                 </div>
-              )
+              )}
+            </div>
+            {post.replyMeta.latestReplyAt && (
+              <span className="text-xs text-muted-foreground">
+                {t('newReply', {
+                  time: formatRelativeTime(post.replyMeta.latestReplyAt, locale, t('justNow')),
+                })}
+              </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">
-            {t('replyCount', { count: post.replyMeta.replyCount })}
-          </span>
-          {post.replyMeta.latestReplyAt && (
-            <span className="text-xs text-muted-foreground ml-auto">
-              {t('newReply', {
-                time: formatRelativeTime(post.replyMeta.latestReplyAt, locale, t('justNow')),
-              })}
-            </span>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </Link>
   );
 }

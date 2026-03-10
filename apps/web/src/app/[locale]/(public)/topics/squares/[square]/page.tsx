@@ -17,12 +17,15 @@ import {
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { SortTabs } from '../_components';
+import type { SortMode } from '../_lib/queries';
 import { getPostsWithReplyMeta } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale; square: string }>;
+  searchParams: Promise<{ sort?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -41,19 +44,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SquarePostsPage({ params }: Props) {
+export default async function SquarePostsPage({ params, searchParams }: Props) {
   const { locale, square } = await params;
 
   if (!isValidSquare(square)) {
     notFound();
   }
 
+  const { sort } = await searchParams;
+  const validSorts: SortMode[] = ['new', 'popular', 'active'];
+  const sortBy: SortMode = validSorts.includes(sort as SortMode) ? (sort as SortMode) : 'new';
+
   const t = await getTranslations({ locale, namespace: 'topics' });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const posts = await getPostsWithReplyMeta(square, user?.id);
+  const posts = await getPostsWithReplyMeta(square, user?.id, sortBy);
 
   return (
     <div className="space-y-8">
@@ -75,6 +82,8 @@ export default async function SquarePostsPage({ params }: Props) {
             </Button>
           </Link>
         </div>
+
+        <SortTabs square={square} locale={locale} />
 
         {posts.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t('squares.noPosts')}</p>

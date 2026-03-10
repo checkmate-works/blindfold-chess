@@ -23,6 +23,8 @@ export function ReplyList({ replies, locale, square }: Props) {
               avatarUrl={reply.author?.avatarUrl}
               displayName={displayName}
               locale={locale}
+              flair={reply.author?.flair}
+              country={reply.author?.country}
             >
               <time
                 dateTime={reply.createdAt.toISOString()}

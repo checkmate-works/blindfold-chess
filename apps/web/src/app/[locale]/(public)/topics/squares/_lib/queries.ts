@@ -4,7 +4,7 @@ import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost } from '@/lib/db';
 
 export type TopicPostWithAuthor = TopicPost & {
-  author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl'> | null;
+  author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
 };
 
 /**
@@ -18,6 +18,8 @@ export async function getPostsForSquare(square: string): Promise<TopicPostWithAu
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -52,6 +54,8 @@ export async function getPostById(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -85,6 +89,7 @@ export type ReplyMeta = {
   replyCount: number;
   latestReplyAt: Date | null;
   repliers: Replier[];
+  uniqueReplierCount: number;
 };
 
 export type LikeMeta = {
@@ -170,21 +175,23 @@ async function attachPostMeta(
   const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.likeCount]));
 
   // Collect up to 3 unique repliers per post (most recent, deduplicated by userId)
+  // while tracking ALL unique repliers for the +N overflow count
   const repliersMap = new Map<string, Replier[]>();
   const seenUsers = new Map<string, Set<string>>();
   for (const row of repliesWithAuthors) {
     if (!row.parentId) continue;
     const seen = seenUsers.get(row.parentId) ?? new Set();
     if (seen.has(row.userId)) continue;
-    const existing = repliersMap.get(row.parentId) ?? [];
-    if (existing.length >= 3) continue;
     seen.add(row.userId);
     seenUsers.set(row.parentId, seen);
-    existing.push({
-      avatarUrl: row.avatarUrl,
-      displayName: row.displayName || row.username || 'Anonymous',
-    });
-    repliersMap.set(row.parentId, existing);
+    const existing = repliersMap.get(row.parentId) ?? [];
+    if (existing.length < 3) {
+      existing.push({
+        avatarUrl: row.avatarUrl,
+        displayName: row.displayName || row.username || 'Anonymous',
+      });
+      repliersMap.set(row.parentId, existing);
+    }
   }
 
   return posts.map((post) => {
@@ -195,6 +202,7 @@ async function attachPostMeta(
         replyCount: stats?.replyCount ?? 0,
         latestReplyAt: stats?.latestReplyAt ?? null,
         repliers: repliersMap.get(post.id) ?? [],
+        uniqueReplierCount: seenUsers.get(post.id)?.size ?? 0,
       },
       likeMeta: {
         likeCount: likeCountMap.get(post.id) ?? 0,
@@ -204,15 +212,39 @@ async function attachPostMeta(
   });
 }
 
+export type SortMode = 'new' | 'popular' | 'active';
+
 /**
- * Get top-level posts for a square with reply metadata.
+ * Get top-level posts for a square with reply metadata, sorted by the given mode.
  */
 export async function getPostsWithReplyMeta(
   square: string,
-  currentUserId?: string
+  currentUserId?: string,
+  sortBy: SortMode = 'new'
 ): Promise<PostWithReplyMeta[]> {
   const posts = await getPostsForSquare(square);
-  return attachPostMeta(posts, currentUserId);
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  if (sortBy === 'popular') {
+    return postsWithMeta.sort((a, b) => {
+      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
+      if (likeDiff !== 0) return likeDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+
+  if (sortBy === 'active') {
+    return postsWithMeta.sort((a, b) => {
+      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
+      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
+      const replyDiff = bLatest - aLatest;
+      if (replyDiff !== 0) return replyDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+
+  // 'new' — already sorted by createdAt DESC from getPostsForSquare
+  return postsWithMeta;
 }
 
 /**
@@ -229,6 +261,8 @@ export async function getRecentPostsAcrossSquares(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -293,6 +327,8 @@ export async function getLikedPostsByUser(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
       likedAt: topicPostLikes.createdAt,
     })
@@ -330,6 +366,8 @@ export async function getPostsByUserId(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -371,6 +409,8 @@ export async function getRepliesByPostId(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
