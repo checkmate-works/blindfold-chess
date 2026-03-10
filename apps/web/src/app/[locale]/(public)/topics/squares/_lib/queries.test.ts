@@ -19,12 +19,21 @@ vi.mock('@/lib/db', () => {
       parentId: 'topic_posts.parent_id',
       content: 'topic_posts.content',
       createdAt: 'topic_posts.created_at',
+      deletedAt: 'topic_posts.deleted_at',
     },
     profiles: {
       id: 'profiles.id',
       username: 'profiles.username',
       displayName: 'profiles.display_name',
       avatarUrl: 'profiles.avatar_url',
+      flair: 'profiles.flair',
+      country: 'profiles.country',
+    },
+    topicPostLikes: {
+      id: 'topic_post_likes.id',
+      userId: 'topic_post_likes.user_id',
+      postId: 'topic_post_likes.post_id',
+      createdAt: 'topic_post_likes.created_at',
     },
   };
 });
@@ -71,6 +80,31 @@ describe('getRepliesByPostId', () => {
     expect(result).toEqual([]);
   });
 
+  /**
+   * Helper: configure sequential db.select calls for getRepliesByPostId.
+   * Call 1: replies query
+   * Call 2: replyStats (attachPostMeta)
+   * Call 3: repliesWithAuthors (attachPostMeta)
+   * Call 4: likeCounts (attachPostMeta)
+   */
+  function setupReplyMocks(
+    replyRows: unknown[],
+    statsRows: unknown[] = [],
+    avatarRows: unknown[] = [],
+    likeRows: unknown[] = []
+  ) {
+    const repliesChain = mockChain(replyRows);
+    const statsChain = mockChain(statsRows);
+    const avatarsChain = mockChain(avatarRows);
+    const likesChain = mockChain(likeRows);
+
+    mockDb.select
+      .mockReturnValueOnce(repliesChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(statsChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(avatarsChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(likesChain as unknown as ReturnType<typeof mockDb.select>);
+  }
+
   it('should return replies with author profile data', async () => {
     const rows = [
       {
@@ -87,29 +121,24 @@ describe('getRepliesByPostId', () => {
           username: 'alice',
           displayName: 'Alice',
           avatarUrl: 'https://example.com/alice.png',
+          flair: null,
+          country: null,
         },
       },
     ];
 
-    const chain = mockChain(rows);
-    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+    setupReplyMocks(rows);
 
     const result = await getRepliesByPostId(testPostId);
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
-      id: 'reply-1',
-      userId: 'user-1',
-      topicType: 'square',
-      topicKey: 'e4',
-      parentId: testPostId,
-      content: 'First reply',
-      createdAt: new Date('2025-01-02T00:00:00Z'),
-      author: {
-        username: 'alice',
-        displayName: 'Alice',
-        avatarUrl: 'https://example.com/alice.png',
-      },
+    expect(result[0].id).toBe('reply-1');
+    expect(result[0].author).toEqual({
+      username: 'alice',
+      displayName: 'Alice',
+      avatarUrl: 'https://example.com/alice.png',
+      flair: null,
+      country: null,
     });
   });
 
@@ -129,6 +158,8 @@ describe('getRepliesByPostId', () => {
           username: 'bob',
           displayName: 'Bob',
           avatarUrl: null,
+          flair: null,
+          country: null,
         },
       },
       {
@@ -145,12 +176,13 @@ describe('getRepliesByPostId', () => {
           username: 'alice',
           displayName: 'Alice',
           avatarUrl: 'https://example.com/alice.png',
+          flair: null,
+          country: null,
         },
       },
     ];
 
-    const chain = mockChain(rows);
-    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+    setupReplyMocks(rows);
 
     const result = await getRepliesByPostId(testPostId);
 
@@ -178,12 +210,13 @@ describe('getRepliesByPostId', () => {
           username: 'alice',
           displayName: 'Alice',
           avatarUrl: null,
+          flair: null,
+          country: null,
         },
       },
     ];
 
-    const chain = mockChain(matchingRows);
-    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+    setupReplyMocks(matchingRows);
 
     const result = await getRepliesByPostId(testPostId);
 
@@ -208,13 +241,48 @@ describe('getRepliesByPostId', () => {
       },
     ];
 
-    const chain = mockChain(rows);
-    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+    setupReplyMocks(rows);
 
     const result = await getRepliesByPostId(testPostId);
 
     expect(result).toHaveLength(1);
     expect(result[0].author).toBeNull();
+  });
+
+  it('should include flair and country in reply author data', async () => {
+    const rows = [
+      {
+        post: {
+          id: 'reply-1',
+          userId: 'user-1',
+          topicType: 'square',
+          topicKey: 'e4',
+          parentId: testPostId,
+          content: 'Reply from titled player',
+          createdAt: new Date('2025-01-02T00:00:00Z'),
+        },
+        author: {
+          username: 'grandmaster',
+          displayName: 'GM Player',
+          avatarUrl: 'https://example.com/gm.png',
+          flair: 'GM',
+          country: 'NO',
+        },
+      },
+    ];
+
+    setupReplyMocks(rows);
+
+    const result = await getRepliesByPostId(testPostId);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].author).toEqual({
+      username: 'grandmaster',
+      displayName: 'GM Player',
+      avatarUrl: 'https://example.com/gm.png',
+      flair: 'GM',
+      country: 'NO',
+    });
   });
 });
 
@@ -228,16 +296,24 @@ describe('getPostsWithReplyMeta', () => {
    * Call 1: getPostsForSquare (posts)
    * Call 2: replyStats (counts + latestReplyAt)
    * Call 3: repliesWithAvatars (avatar rows)
+   * Call 4: likeCounts (like counts per post)
    */
-  function setupMocks(postRows: unknown[], statsRows: unknown[], avatarRows: unknown[]) {
+  function setupMocks(
+    postRows: unknown[],
+    statsRows: unknown[],
+    avatarRows: unknown[],
+    likeRows: unknown[] = []
+  ) {
     const postsChain = mockChain(postRows);
     const statsChain = mockChain(statsRows);
     const avatarsChain = mockChain(avatarRows);
+    const likesChain = mockChain(likeRows);
 
     mockDb.select
       .mockReturnValueOnce(postsChain as unknown as ReturnType<typeof mockDb.select>)
       .mockReturnValueOnce(statsChain as unknown as ReturnType<typeof mockDb.select>)
-      .mockReturnValueOnce(avatarsChain as unknown as ReturnType<typeof mockDb.select>);
+      .mockReturnValueOnce(avatarsChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(likesChain as unknown as ReturnType<typeof mockDb.select>);
   }
 
   const postRow = (id: string) => ({
@@ -254,6 +330,8 @@ describe('getPostsWithReplyMeta', () => {
       username: 'alice',
       displayName: 'Alice',
       avatarUrl: 'https://example.com/alice.png',
+      flair: null,
+      country: null,
     },
   });
 
@@ -478,6 +556,110 @@ describe('getPostsWithReplyMeta', () => {
       username: 'alice',
       displayName: 'Alice',
       avatarUrl: 'https://example.com/alice.png',
+      flair: null,
+      country: null,
     });
+  });
+
+  it('should include flair and country when author has both', async () => {
+    const postWithFlair = {
+      post: {
+        id: testPostId,
+        userId: 'user-1',
+        topicType: 'square',
+        topicKey: 'e4',
+        parentId: null,
+        content: 'Post with flair',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+      author: {
+        username: 'grandmaster',
+        displayName: 'GM Player',
+        avatarUrl: 'https://example.com/gm.png',
+        flair: 'GM',
+        country: 'US',
+      },
+    };
+
+    setupMocks([postWithFlair], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].author).toEqual({
+      username: 'grandmaster',
+      displayName: 'GM Player',
+      avatarUrl: 'https://example.com/gm.png',
+      flair: 'GM',
+      country: 'US',
+    });
+  });
+
+  it('should include flair when author has flair but no country', async () => {
+    const postWithFlairOnly = {
+      post: {
+        id: testPostId,
+        userId: 'user-1',
+        topicType: 'square',
+        topicKey: 'e4',
+        parentId: null,
+        content: 'Post with flair only',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+      author: {
+        username: 'titled_player',
+        displayName: 'Titled Player',
+        avatarUrl: null,
+        flair: 'FM',
+        country: null,
+      },
+    };
+
+    setupMocks([postWithFlairOnly], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].author?.flair).toBe('FM');
+    expect(result[0].author?.country).toBeNull();
+  });
+
+  it('should include country when author has country but no flair', async () => {
+    const postWithCountryOnly = {
+      post: {
+        id: testPostId,
+        userId: 'user-1',
+        topicType: 'square',
+        topicKey: 'e4',
+        parentId: null,
+        content: 'Post with country only',
+        createdAt: new Date('2025-01-01T00:00:00Z'),
+      },
+      author: {
+        username: 'casual_player',
+        displayName: 'Casual Player',
+        avatarUrl: 'https://example.com/casual.png',
+        flair: null,
+        country: 'JP',
+      },
+    };
+
+    setupMocks([postWithCountryOnly], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].author?.flair).toBeNull();
+    expect(result[0].author?.country).toBe('JP');
+  });
+
+  it('should handle author with neither flair nor country', async () => {
+    setupMocks([postRow(testPostId)], [], []);
+
+    const result = await getPostsWithReplyMeta('e4');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].author?.flair).toBeNull();
+    expect(result[0].author?.country).toBeNull();
   });
 });

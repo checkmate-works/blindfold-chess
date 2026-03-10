@@ -97,6 +97,8 @@ export default async function PostDetailPage({ params }: Props) {
             displayName={displayName}
             locale={locale}
             size="md"
+            flair={post.author?.flair}
+            country={post.author?.country}
           >
             <div className="text-sm text-muted-foreground">
               <time dateTime={post.createdAt.toISOString()}>

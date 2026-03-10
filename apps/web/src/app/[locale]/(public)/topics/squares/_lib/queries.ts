@@ -4,7 +4,7 @@ import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost } from '@/lib/db';
 
 export type TopicPostWithAuthor = TopicPost & {
-  author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl'> | null;
+  author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
 };
 
 /**
@@ -18,6 +18,8 @@ export async function getPostsForSquare(square: string): Promise<TopicPostWithAu
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -52,6 +54,8 @@ export async function getPostById(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -229,6 +233,8 @@ export async function getRecentPostsAcrossSquares(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -293,6 +299,8 @@ export async function getLikedPostsByUser(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
       likedAt: topicPostLikes.createdAt,
     })
@@ -330,6 +338,8 @@ export async function getPostsByUserId(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)
@@ -371,6 +381,8 @@ export async function getRepliesByPostId(
         username: profiles.username,
         displayName: profiles.displayName,
         avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
       },
     })
     .from(topicPosts)

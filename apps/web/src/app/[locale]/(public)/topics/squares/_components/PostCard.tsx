@@ -36,6 +36,8 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
         displayName={displayName}
         locale={locale}
         asLink={false}
+        flair={post.author?.flair}
+        country={post.author?.country}
       >
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
           {showSquareBadge && (
