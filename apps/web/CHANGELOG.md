@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented on the website.
 
+## 0.15.0 - 2026-03-11
+
+### Changed
+
+- Game management UI improvements — unified home game list layout with panel design, improved bulk-delete page, and fixed new game button
+
 ## 0.14.0 - 2026-02-27
 
 ### Added
