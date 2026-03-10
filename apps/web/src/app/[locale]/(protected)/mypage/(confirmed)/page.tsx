@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { and, count, eq, gte, lt } from 'drizzle-orm';
+import { and, count, eq, gte, isNull, lt } from 'drizzle-orm';
 
-import { db, follows, practiceSessions, profiles, topicPostLikes } from '@/lib/db';
+import { db, follows, practiceSessions, profiles, topicPostLikes, topicPosts } from '@/lib/db';
 import { getSessionScoreFields, parsePracticeSession } from '@/lib/db/practice-session-types';
 import { createClient } from '@/lib/supabase/server';
 
@@ -47,8 +47,16 @@ export default async function MypagePage({ params }: Props) {
       .from(profiles)
       .where(eq(profiles.id, userId))
       .limit(1),
-    db.select({ value: count() }).from(topicPostLikes).where(eq(topicPostLikes.userId, userId)),
-    db.select({ value: count() }).from(follows).where(eq(follows.followerId, userId)),
+    db
+      .select({ value: count() })
+      .from(topicPostLikes)
+      .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
+      .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt))),
+    db
+      .select({ value: count() })
+      .from(follows)
+      .innerJoin(profiles, eq(follows.followingId, profiles.id))
+      .where(and(eq(follows.followerId, userId), isNull(profiles.deletedAt))),
     (() => {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -110,7 +110,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const [followerResult] = await db
     .select({ count: count() })
     .from(follows)
-    .where(eq(follows.followingId, profile.id));
+    .innerJoin(profiles, eq(follows.followerId, profiles.id))
+    .where(and(eq(follows.followingId, profile.id), isNull(profiles.deletedAt)));
   const followerCount = followerResult.count;
 
   let followingCount = 0;
@@ -118,7 +119,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     const [followingResult] = await db
       .select({ count: count() })
       .from(follows)
-      .where(eq(follows.followerId, profile.id));
+      .innerJoin(profiles, eq(follows.followingId, profiles.id))
+      .where(and(eq(follows.followerId, profile.id), isNull(profiles.deletedAt)));
     followingCount = followingResult.count;
   }
 
