@@ -1,24 +1,32 @@
 import { getTranslations } from 'next-intl/server';
 
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, moderationActions, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { PaginationNav } from '../_components/PaginationNav';
+
 const PAGE_SIZE = 20;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+  action: parseAsString.withDefault(''),
+  user: parseAsString.withDefault(''),
+});
 
 export default async function AdminAuditLogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; action?: string; user?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
+  const { page, action: actionFilter, user: rawUser } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const adminClient = createAdminClient();
 
-  const currentPage = Math.max(1, parseInt(params.page ?? '1', 10) || 1);
-  const actionFilter = params.action || '';
-  const userFilter = params.user?.trim() || '';
+  const currentPage = Math.max(1, page);
+  const userFilter = rawUser.trim();
 
   // Build where conditions
   const conditions = [];
@@ -110,12 +118,12 @@ export default async function AdminAuditLogPage({
   }
 
   // Build search params for pagination links
-  const buildHref = (page: number) => {
-    const p = new URLSearchParams();
-    p.set('page', String(page));
-    if (actionFilter) p.set('action', actionFilter);
-    if (userFilter) p.set('user', userFilter);
-    return `/admin/audit-log?${p.toString()}`;
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    params.set('page', String(p));
+    if (actionFilter) params.set('action', actionFilter);
+    if (userFilter) params.set('user', userFilter);
+    return `/admin/audit-log?${params.toString()}`;
   };
 
   return (
@@ -227,32 +235,7 @@ export default async function AdminAuditLogPage({
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Page {currentPage} / {totalPages}
-          </div>
-          <div className="flex gap-2">
-            {currentPage > 1 && (
-              <a
-                href={buildHref(currentPage - 1)}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-              >
-                {t('auditLogTable.previousPage')}
-              </a>
-            )}
-            {currentPage < totalPages && (
-              <a
-                href={buildHref(currentPage + 1)}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-              >
-                {t('auditLogTable.nextPage')}
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }
