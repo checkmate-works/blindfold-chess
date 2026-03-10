@@ -41,7 +41,7 @@ export default async function AdminUsersPage({
   });
 
   const users = usersData?.users ?? [];
-  const totalCount = usersData?.total ?? 0;
+  const totalCount = usersData && 'total' in usersData ? usersData.total : 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   const userIds = users.map((u) => u.id);
