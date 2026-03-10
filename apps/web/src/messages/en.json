@@ -65,6 +65,10 @@
       "title": "Following",
       "description": "Users you are following"
     },
+    "mypagePractice": {
+      "title": "Practice Records",
+      "description": "View your practice session history and scores"
+    },
     "topics": {
       "title": "Topics",
       "description": "Discuss and share insights about chess squares, positions, and strategies"
@@ -1778,6 +1782,10 @@
     "unfollowConfirmTitle": "Unfollow User",
     "unfollowConfirmMessage": "Are you sure you want to unfollow {name}?",
     "cancel": "Cancel"
+  },
+  "MypagePractice": {
+    "title": "Practice Records",
+    "breadcrumbMypage": "My Page"
   },
   "deleteAccount": {
     "title": "Delete Account",

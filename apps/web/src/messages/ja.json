@@ -65,6 +65,10 @@
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
     },
+    "mypagePractice": {
+      "title": "練習記録",
+      "description": "練習セッションの履歴とスコアを確認できます"
+    },
     "topics": {
       "title": "トピック",
       "description": "チェスのマス目やポジション、戦略について議論・共有しましょう"
@@ -1779,6 +1783,10 @@
     "unfollowConfirmTitle": "フォロー解除",
     "unfollowConfirmMessage": "{name} のフォローを解除しますか？",
     "cancel": "キャンセル"
+  },
+  "MypagePractice": {
+    "title": "練習記録",
+    "breadcrumbMypage": "マイページ"
   },
   "deleteAccount": {
     "title": "退会",

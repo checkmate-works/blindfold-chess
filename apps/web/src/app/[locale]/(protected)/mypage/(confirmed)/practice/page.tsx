@@ -11,7 +11,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypage' });
+  const t = await getTranslations({ locale, namespace: 'metadata.mypagePractice' });
 
   return {
     title: t('title'),
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Mypage' });
+  const t = await getTranslations({ locale, namespace: 'MypagePractice' });
 
   return (
     <div className="space-y-8">
@@ -34,7 +34,7 @@ export default async function PracticePage({ params }: Props) {
 
         <Breadcrumb
           locale={locale}
-          items={[{ label: t('title'), href: '/mypage' }, { label: t('practiceLink') }]}
+          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
         />
       </PagePanel>
     </div>
