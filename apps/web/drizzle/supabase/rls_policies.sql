@@ -157,3 +157,24 @@ CREATE POLICY "topic_posts_delete" ON "topic_posts"
 DROP POLICY IF EXISTS "topic_posts_update" ON "topic_posts";
 CREATE POLICY "topic_posts_update" ON "topic_posts"
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- user_activity_log
+-- =============================================================================
+ALTER TABLE "user_activity_log" ENABLE ROW LEVEL SECURITY;
+
+-- Only admins can read activity logs
+DROP POLICY IF EXISTS "user_activity_log_select" ON "user_activity_log";
+CREATE POLICY "user_activity_log_select" ON "user_activity_log"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_roles.user_id = auth.uid()
+      AND user_roles.role = 'admin'
+    )
+  );
+
+-- Authenticated users can insert their own activity logs
+DROP POLICY IF EXISTS "user_activity_log_insert" ON "user_activity_log";
+CREATE POLICY "user_activity_log_insert" ON "user_activity_log"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);

@@ -2,13 +2,20 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { createReply } from './createReply';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
-const mockInsertValues = vi.fn().mockResolvedValue(undefined);
+const mockInsertReturning = vi.fn();
+const mockInsertValues = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -32,7 +39,12 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
     insert: () => ({
-      values: mockInsertValues,
+      values: (...args: unknown[]) => {
+        mockInsertValues(...args);
+        return {
+          returning: () => mockInsertReturning(),
+        };
+      },
     }),
   },
   topicPosts: {
@@ -71,6 +83,8 @@ function makeFormData(content: string): FormData {
   return fd;
 }
 
+const generatedReplyId = 'reply-00000000-0000-0000-0000-000000000001';
+
 function setupAuthenticatedUser() {
   mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
   mockIsUserBanned.mockResolvedValue(false);
@@ -79,6 +93,7 @@ function setupAuthenticatedUser() {
 
 function setupParentPostExists() {
   mockSelectFromWhere.mockReturnValue([{ id: validPostId }]);
+  mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
 }
 
 describe('createReply', () => {
@@ -461,6 +476,32 @@ describe('createReply', () => {
         makeFormData('hello')
       );
       expect(result).toEqual({ error: 'invalidPostId' });
+    });
+  });
+
+  describe('activity logging', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+      setupParentPostExists();
+    });
+
+    it('should log create_reply activity event on success', async () => {
+      await createReply('en', 'e4', validPostId, prevState, makeFormData('My reply'));
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'create_reply',
+        targetType: 'topic_post',
+        targetId: generatedReplyId,
+        metadata: { parentId: validPostId, topicKey: 'e4' },
+      });
+    });
+
+    it('should not log activity event when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createReply('en', 'e4', validPostId, prevState, makeFormData('hello'));
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });

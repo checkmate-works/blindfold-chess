@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, follows, profiles } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -77,6 +78,13 @@ export async function toggleFollow(
       .where(and(eq(follows.followerId, user.id), eq(follows.followingId, targetProfile.id)));
     following = false;
   }
+
+  logActivityEvent({
+    userId: user.id,
+    action: following ? 'follow' : 'unfollow',
+    targetType: 'user',
+    targetId: targetProfile.id,
+  });
 
   revalidatePath(`/${locale}/@/${targetUsername}`);
   revalidatePath(`/${locale}/mypage/following`);

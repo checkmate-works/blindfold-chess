@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { toggleFollow } from './toggleFollow';
 
 const mockGetUser = vi.fn();
@@ -7,6 +9,10 @@ const mockIsUserBanned = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -177,6 +183,43 @@ describe('toggleFollow', () => {
       const result = await toggleFollow('validuser', 'en');
       expect(result).toEqual({ error: 'signInRequired' });
       expect(mockIsUserBanned).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('activity logging', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockSelectFromWhere.mockResolvedValue([{ id: targetProfileId }]);
+    });
+
+    it('should log "follow" activity event when following', async () => {
+      mockInsertValues.mockResolvedValue(undefined);
+
+      await toggleFollow('validuser', 'en');
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'follow',
+        targetType: 'user',
+        targetId: targetProfileId,
+      });
+    });
+
+    it('should log "unfollow" activity event when unfollowing', async () => {
+      const uniqueError = new Error('Failed query');
+      const pgError = new Error('duplicate key');
+      (pgError as unknown as Record<string, string>).code = '23505';
+      uniqueError.cause = pgError;
+      mockInsertValues.mockRejectedValue(uniqueError);
+      mockDeleteWhere.mockResolvedValue(undefined);
+
+      await toggleFollow('validuser', 'en');
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'unfollow',
+        targetType: 'user',
+        targetId: targetProfileId,
+      });
     });
   });
 });

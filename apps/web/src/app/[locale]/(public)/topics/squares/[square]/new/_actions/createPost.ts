@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -53,11 +54,22 @@ export async function createPost(
     return { error: 'contentTooLong' };
   }
 
-  await db.insert(topicPosts).values({
+  const [inserted] = await db
+    .insert(topicPosts)
+    .values({
+      userId: user.id,
+      topicType: 'square',
+      topicKey: square,
+      content: content.trim(),
+    })
+    .returning({ id: topicPosts.id });
+
+  logActivityEvent({
     userId: user.id,
-    topicType: 'square',
-    topicKey: square,
-    content: content.trim(),
+    action: 'create_post',
+    targetType: 'topic_post',
+    targetId: inserted.id,
+    metadata: { topicType: 'square', topicKey: square },
   });
 
   redirect(`/${locale}/topics/squares/${square}`);

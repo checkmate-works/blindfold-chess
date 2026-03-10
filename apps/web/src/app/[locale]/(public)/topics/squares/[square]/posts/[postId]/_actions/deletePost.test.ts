@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { deletePost } from './deletePost';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockIsUserBanned = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -140,5 +146,37 @@ describe('deletePost', () => {
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ success: true });
     expect(mockUpdateSetWhere).toHaveBeenCalled();
+  });
+
+  it('should log activity event on successful deletion', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockSelectFromWhereLimit.mockResolvedValue([
+      {
+        id: testPostId,
+        userId: testUserId,
+        topicType: 'square',
+        topicKey: 'e4',
+        deletedAt: null,
+      },
+    ]);
+
+    await deletePost(testPostId, 'en');
+    expect(logActivityEvent).toHaveBeenCalledWith({
+      userId: testUserId,
+      action: 'delete_post',
+      targetType: 'topic_post',
+      targetId: testPostId,
+      metadata: { topicType: 'square', topicKey: 'e4' },
+    });
+  });
+
+  it('should not log activity event when deletion fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockSelectFromWhereLimit.mockResolvedValue([]);
+
+    await deletePost(testPostId, 'en');
+    expect(logActivityEvent).not.toHaveBeenCalled();
   });
 });

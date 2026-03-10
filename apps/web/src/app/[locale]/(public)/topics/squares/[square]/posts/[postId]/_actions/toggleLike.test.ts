@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { toggleLike } from './toggleLike';
 
 const mockGetUser = vi.fn();
@@ -7,6 +9,10 @@ const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -161,6 +167,44 @@ describe('toggleLike', () => {
       const result = await toggleLike(testPostId, 'en', 'e4');
       expect(result).toEqual({ error: 'signInRequired' });
       expect(mockIsUserBanned).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('activity logging', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+    });
+
+    it('should log "like" activity event when liking', async () => {
+      mockInsertValues.mockResolvedValue(undefined);
+      mockSelectCount.mockResolvedValue([{ count: 1 }]);
+
+      await toggleLike(testPostId, 'en', 'e4');
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'like',
+        targetType: 'topic_post',
+        targetId: testPostId,
+      });
+    });
+
+    it('should log "unlike" activity event when unliking', async () => {
+      const uniqueError = new Error('Failed query');
+      const pgError = new Error('duplicate key');
+      (pgError as unknown as Record<string, string>).code = '23505';
+      uniqueError.cause = pgError;
+      mockInsertValues.mockRejectedValue(uniqueError);
+      mockDeleteWhere.mockResolvedValue(undefined);
+      mockSelectCount.mockResolvedValue([{ count: 0 }]);
+
+      await toggleLike(testPostId, 'en', 'e4');
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'unlike',
+        targetType: 'topic_post',
+        targetId: testPostId,
+      });
     });
   });
 });

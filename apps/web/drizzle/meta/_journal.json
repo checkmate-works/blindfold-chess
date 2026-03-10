@@ -57,6 +57,13 @@
       "when": 1772967291753,
       "tag": "0007_cultured_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773135466537,
+      "tag": "0008_chief_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

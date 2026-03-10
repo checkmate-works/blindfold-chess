@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logActivityEvent } from '@/lib/activity-log';
+
 import { GET } from './route';
 
 const mockUserId = 'test-user-id-12345678';
 
 const mockExchangeCodeForSession = vi.fn();
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -262,6 +268,36 @@ describe('Auth callback route', () => {
       const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
       expect(redirectUrl.pathname).toBe('/ja/mypage');
       expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+    });
+  });
+
+  describe('activity logging', () => {
+    it('should log login activity event on successful authentication', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
+      await GET(request);
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: mockUserId,
+        action: 'login',
+      });
+    });
+
+    it('should not log activity event when code exchange fails', async () => {
+      mockExchangeCodeForSession.mockResolvedValue({ error: new Error('Invalid code') });
+
+      const request = new Request('http://localhost:3000/auth/callback?code=invalid-code');
+      await GET(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+
+    it('should not log activity event when no code is provided', async () => {
+      const request = new Request('http://localhost:3000/auth/callback');
+      await GET(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 });
