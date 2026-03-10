@@ -2,15 +2,28 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { and, desc, eq, inArray } from 'drizzle-orm';
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, moderationActions, profiles, userRoles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
+import { PaginationNav } from '../_components/PaginationNav';
 import { BanButton } from './_components/BanButton';
 import { UnbanButton } from './_components/UnbanButton';
 
-export default async function AdminUsersPage() {
+const PAGE_SIZE = 20;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { page } = await searchParamsCache.parse(searchParams);
   const adminClient = createAdminClient();
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
@@ -19,21 +32,31 @@ export default async function AdminUsersPage() {
     data: { user: currentUser },
   } = await supabase.auth.getUser();
 
+  const currentPage = Math.max(1, page);
+
   const { data: usersData } = await adminClient.auth.admin.listUsers({
-    page: 1,
-    perPage: 100,
+    page: currentPage,
+    perPage: PAGE_SIZE,
   });
 
   const users = usersData?.users ?? [];
+  const totalCount = usersData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const roles = await db.select().from(userRoles);
+  const userIds = users.map((u) => u.id);
+
+  const roles =
+    userIds.length > 0
+      ? await db.select().from(userRoles).where(inArray(userRoles.userId, userIds))
+      : [];
   const roleMap = new Map(roles.map((r) => [r.userId, r.role]));
 
-  const allProfiles = await db.select().from(profiles);
-  const profileMap = new Map(allProfiles.map((p) => [p.id, p]));
+  const userProfiles =
+    userIds.length > 0 ? await db.select().from(profiles).where(inArray(profiles.id, userIds)) : [];
+  const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
 
   // Fetch latest ban reason for each banned user from moderation_actions
-  const bannedUserIds = allProfiles.filter((p) => p.bannedAt != null).map((p) => p.id);
+  const bannedUserIds = userProfiles.filter((p) => p.bannedAt != null).map((p) => p.id);
   const banReasonMap = new Map<string, string | null>();
   if (bannedUserIds.length > 0) {
     const banReasons = await db
@@ -59,6 +82,8 @@ export default async function AdminUsersPage() {
       }
     }
   }
+
+  const buildHref = (p: number) => `/admin/users?page=${p}`;
 
   return (
     <div>
@@ -167,6 +192,8 @@ export default async function AdminUsersPage() {
           </tbody>
         </table>
       </div>
+
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }
