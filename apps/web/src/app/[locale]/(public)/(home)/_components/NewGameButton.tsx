@@ -15,7 +15,7 @@ export async function NewGameButton({ locale }: { locale: Locale }) {
         variant="primary"
         size="lg"
         icon={<FaPlus className="w-5 h-5" />}
-        className="w-full py-4 rounded-md font-medium touch-manipulation"
+        className="w-full touch-manipulation"
       >
         {t('newGame')}
       </Button>
