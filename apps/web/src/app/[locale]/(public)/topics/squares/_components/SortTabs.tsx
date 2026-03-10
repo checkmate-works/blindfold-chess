@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
+import { parseAsString, useQueryState } from 'nuqs';
 
 import type { SortMode } from '../_lib/queries';
 
@@ -16,11 +16,8 @@ type SortTabsProps = {
 
 export function SortTabs({ square, locale }: SortTabsProps) {
   const t = useTranslations('topics.squares.sort');
-  const searchParams = useSearchParams();
-  const rawSort = searchParams.get('sort');
-  const currentSort: SortMode = SORT_MODES.includes(rawSort as SortMode)
-    ? (rawSort as SortMode)
-    : 'new';
+  const [sort] = useQueryState('sort', parseAsString.withDefault('new'));
+  const currentSort: SortMode = SORT_MODES.includes(sort as SortMode) ? (sort as SortMode) : 'new';
 
   return (
     <div className="border-b border-border">
