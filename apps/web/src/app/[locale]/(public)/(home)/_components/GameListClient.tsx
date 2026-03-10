@@ -64,16 +64,16 @@ export function GameListClient({ locale }: Props) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <SectionTitle>{tGameList('title')}</SectionTitle>
-        {!isLoading && games.length > 0 && (
+      <SectionTitle>{tGameList('title')}</SectionTitle>
+      {!isLoading && games.length > 0 && (
+        <div className="flex justify-end">
           <SortButton
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSortChange={handleSortChange}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {isLoading ? (
         <GameListSkeleton />

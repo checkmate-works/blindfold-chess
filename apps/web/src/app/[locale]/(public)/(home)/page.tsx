@@ -57,7 +57,7 @@ export default async function HomePage({ params }: Props) {
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale)} />
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
           <div id="new-game-card">
             <NewGameButton locale={locale} />
           </div>
