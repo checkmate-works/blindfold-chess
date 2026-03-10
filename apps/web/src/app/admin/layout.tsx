@@ -91,6 +91,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 >
                   {t('auditLog')}
                 </Link>
+                <Link
+                  href="/admin/activity-log"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('activityLog')}
+                </Link>
               </nav>
             </aside>
             <div className="flex-1 flex flex-col">
