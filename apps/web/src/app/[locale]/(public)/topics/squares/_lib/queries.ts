@@ -208,15 +208,39 @@ async function attachPostMeta(
   });
 }
 
+export type SortMode = 'new' | 'popular' | 'active';
+
 /**
- * Get top-level posts for a square with reply metadata.
+ * Get top-level posts for a square with reply metadata, sorted by the given mode.
  */
 export async function getPostsWithReplyMeta(
   square: string,
-  currentUserId?: string
+  currentUserId?: string,
+  sortBy: SortMode = 'new'
 ): Promise<PostWithReplyMeta[]> {
   const posts = await getPostsForSquare(square);
-  return attachPostMeta(posts, currentUserId);
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  if (sortBy === 'popular') {
+    return postsWithMeta.sort((a, b) => {
+      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
+      if (likeDiff !== 0) return likeDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+
+  if (sortBy === 'active') {
+    return postsWithMeta.sort((a, b) => {
+      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
+      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
+      const replyDiff = bLatest - aLatest;
+      if (replyDiff !== 0) return replyDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }
+
+  // 'new' — already sorted by createdAt DESC from getPostsForSquare
+  return postsWithMeta;
 }
 
 /**

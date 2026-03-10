@@ -662,4 +662,178 @@ describe('getPostsWithReplyMeta', () => {
     expect(result[0].author?.flair).toBeNull();
     expect(result[0].author?.country).toBeNull();
   });
+
+  describe('sortBy parameter', () => {
+    const postIdA = 'post-a';
+    const postIdB = 'post-b';
+    const postIdC = 'post-c';
+
+    /**
+     * Helper to create a post row with a specific createdAt date.
+     */
+    const postRowWithDate = (id: string, createdAt: Date) => ({
+      post: {
+        id,
+        userId: 'user-1',
+        topicType: 'square',
+        topicKey: 'e4',
+        parentId: null,
+        content: `Post ${id}`,
+        createdAt,
+      },
+      author: {
+        username: 'alice',
+        displayName: 'Alice',
+        avatarUrl: 'https://example.com/alice.png',
+        flair: null,
+        country: null,
+      },
+    });
+
+    it('should return posts in createdAt DESC order for default (new) sort', async () => {
+      // getPostsForSquare already returns createdAt DESC, so "new" preserves that order
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+
+      setupMocks(postRows, [], [], []);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'new');
+
+      expect(result.map((p) => p.id)).toEqual([postIdA, postIdB, postIdC]);
+    });
+
+    it('should sort by like count DESC for popular sort', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      const likeRows = [
+        { postId: postIdA, likeCount: 1 },
+        { postId: postIdB, likeCount: 10 },
+        { postId: postIdC, likeCount: 5 },
+      ];
+
+      setupMocks(postRows, [], [], likeRows);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'popular');
+
+      expect(result.map((p) => p.id)).toEqual([postIdB, postIdC, postIdA]);
+    });
+
+    it('should use createdAt DESC as tiebreaker for popular sort when like counts are equal', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      // All posts have equal likes
+      const likeRows = [
+        { postId: postIdA, likeCount: 3 },
+        { postId: postIdB, likeCount: 3 },
+        { postId: postIdC, likeCount: 3 },
+      ];
+
+      setupMocks(postRows, [], [], likeRows);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'popular');
+
+      // Same likes => falls back to createdAt DESC
+      expect(result.map((p) => p.id)).toEqual([postIdA, postIdB, postIdC]);
+    });
+
+    it('should place posts with zero likes at the bottom for popular sort', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      // Only postIdC has likes
+      const likeRows = [{ postId: postIdC, likeCount: 2 }];
+
+      setupMocks(postRows, [], [], likeRows);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'popular');
+
+      // postIdC (2 likes) first, then postIdA and postIdB (0 likes) by createdAt DESC
+      expect(result.map((p) => p.id)).toEqual([postIdC, postIdA, postIdB]);
+    });
+
+    it('should sort by latestReplyAt DESC for active sort', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      const statsRows = [
+        { parentId: postIdA, replyCount: 1, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+        { parentId: postIdB, replyCount: 2, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
+        { parentId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-07T00:00:00Z') },
+      ];
+
+      setupMocks(postRows, statsRows, []);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'active');
+
+      // postIdB (Jan 10) > postIdC (Jan 7) > postIdA (Jan 5)
+      expect(result.map((p) => p.id)).toEqual([postIdB, postIdC, postIdA]);
+    });
+
+    it('should place posts with no replies at the bottom for active sort', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      // Only postIdC has replies
+      const statsRows = [
+        { parentId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-08T00:00:00Z') },
+      ];
+
+      setupMocks(postRows, statsRows, []);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'active');
+
+      // postIdC (has reply) first, then postIdA and postIdB (no replies, timestamp=0) by createdAt DESC
+      expect(result.map((p) => p.id)).toEqual([postIdC, postIdA, postIdB]);
+    });
+
+    it('should use createdAt DESC as tiebreaker for active sort when latestReplyAt is equal', async () => {
+      const sameReplyDate = new Date('2025-01-10T00:00:00Z');
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-02T00:00:00Z')),
+        postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
+      ];
+      const statsRows = [
+        { parentId: postIdA, replyCount: 1, latestReplyAt: sameReplyDate },
+        { parentId: postIdB, replyCount: 1, latestReplyAt: sameReplyDate },
+        { parentId: postIdC, replyCount: 1, latestReplyAt: sameReplyDate },
+      ];
+
+      setupMocks(postRows, statsRows, []);
+
+      const result = await getPostsWithReplyMeta('e4', undefined, 'active');
+
+      // Same latestReplyAt => falls back to createdAt DESC
+      expect(result.map((p) => p.id)).toEqual([postIdA, postIdB, postIdC]);
+    });
+
+    it('should default to new sort when sortBy is omitted', async () => {
+      const postRows = [
+        postRowWithDate(postIdA, new Date('2025-01-03T00:00:00Z')),
+        postRowWithDate(postIdB, new Date('2025-01-01T00:00:00Z')),
+      ];
+
+      setupMocks(postRows, [], [], []);
+
+      // Call without sortBy parameter
+      const result = await getPostsWithReplyMeta('e4');
+
+      expect(result.map((p) => p.id)).toEqual([postIdA, postIdB]);
+    });
+  });
 });

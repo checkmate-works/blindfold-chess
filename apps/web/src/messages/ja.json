@@ -2008,6 +2008,11 @@
       "postedBy": "{author}",
       "postedAt": "{date}に投稿",
       "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
       "postDetail": {
         "backToSquare": "{square}に戻る",
         "authorView": "{author}の{square}に対する見解"

@@ -2007,6 +2007,11 @@
       "postedBy": "by {author}",
       "postedAt": "Posted {date}",
       "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
       "postDetail": {
         "backToSquare": "Back to {square}",
         "authorView": "{author}'s thoughts on {square}"
