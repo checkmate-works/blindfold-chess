@@ -10,6 +10,22 @@ This document outlines the technical decisions and implementation guidelines for
 - **Server Components by Default** - Prefer Server Components for SEO benefits
 - **Route Groups** - Use route groups like `(landing)` for organization without affecting URLs
 
+### URL Naming Convention
+
+Route segment names use **singular or plural form depending on the nature of the route**, not uniformly one or the other. This follows the established convention seen in major web applications (Lichess, Chess.com, Cal.com, etc.) and differs from REST API conventions where all endpoints are plural.
+
+| Route type                                               | Form         | Examples                                 | Rationale                                              |
+| -------------------------------------------------------- | ------------ | ---------------------------------------- | ------------------------------------------------------ |
+| **Resource collection** (list → detail CRUD)             | **Plural**   | `/posts`, `/games`, `/topics`            | Represents a browsable collection of items             |
+| **Activity / functional area** (user performs an action) | **Singular** | `/practice`, `/learn`                    | Represents "a place to do something", not a collection |
+| **Personal section**                                     | **Singular** | `/mypage`, `/profile`                    | One per user, not a collection                         |
+| **Static / informational page**                          | **Singular** | `/faq`, `/privacy`, `/terms`, `/contact` | Single page, not a collection                          |
+
+**How to decide for new routes:**
+
+- Ask: "Is the user browsing a list of items?" → **plural** (e.g., `/posts`, `/games`)
+- Ask: "Is the user performing an activity or viewing a singular concept?" → **singular** (e.g., `/learn`, `/practice`)
+
 ### Static Generation
 
 - **`generateStaticParams` must return all dynamic segments** — For routes under `[locale]/`, always include `locale` in the returned params using `SUPPORTED_LOCALES` from `@/config`. Omitting `locale` causes "Page changed from static to dynamic at runtime" errors in production (the error does not surface in `next dev`).
