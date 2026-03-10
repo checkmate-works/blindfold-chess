@@ -10,8 +10,8 @@ import { notifyGameListUpdated } from '@/config';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameSortOption, SortDirection } from '@/lib/types';
 
+import { SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -64,8 +64,8 @@ export function GameListClient({ locale }: Props) {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between">
-        <PageTitle className="!mb-0 !text-left">{tGameList('title')}</PageTitle>
+      <div className="flex items-center justify-between">
+        <SectionTitle>{tGameList('title')}</SectionTitle>
         {!isLoading && games.length > 0 && (
           <SortButton
             sortBy={sortBy}
