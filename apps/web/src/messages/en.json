@@ -1175,7 +1175,9 @@
       "processing": "Processing...",
       "errorDeleting": "Failed to delete. Please try again.",
       "confirmTitle": "Delete Selected Games?",
-      "confirmMessage": "Are you sure you want to delete {count} games? This action cannot be undone."
+      "confirmMessage": "Are you sure you want to delete {count} games? This action cannot be undone.",
+      "deletedToast": "{count} games deleted successfully",
+      "deleteFailedToast": "Failed to delete games"
     }
   },
   "play": {

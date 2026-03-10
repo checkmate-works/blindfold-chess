@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { Game } from '@/lib/types';
@@ -15,6 +15,15 @@ type Props = {
 
 export function GameSelector({ games, isProcessing, renderActions }: Props) {
   const [selectedGameIds, setSelectedGameIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setSelectedGameIds((prev) => {
+      const currentGameIds = new Set(games.map((g) => g.id));
+      const filtered = new Set([...prev].filter((id) => currentGameIds.has(id)));
+      if (filtered.size !== prev.size) return filtered;
+      return prev;
+    });
+  }, [games]);
 
   const handleToggleGame = (gameId: string) => {
     const newSelection = new Set(selectedGameIds);

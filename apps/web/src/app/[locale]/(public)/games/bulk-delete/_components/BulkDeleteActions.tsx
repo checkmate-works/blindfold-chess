@@ -45,7 +45,7 @@ export function BulkDeleteActions({ selectedGameIds, onDelete, isProcessing }: P
           onClick={handleDeleteClick}
           disabled={selectedGameIds.size === 0 || isProcessing}
           loading={isProcessing}
-          className="flex-1 sm:flex-none sm:w-64"
+          className="w-full"
         >
           {t('delete')}
         </Button>

@@ -1176,7 +1176,9 @@
       "processing": "処理中...",
       "errorDeleting": "削除に失敗しました。もう一度お試しください。",
       "confirmTitle": "選択したゲームを削除しますか？",
-      "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。"
+      "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
+      "deletedToast": "{count}個のゲームを削除しました",
+      "deleteFailedToast": "ゲームの削除に失敗しました"
     }
   },
   "play": {
