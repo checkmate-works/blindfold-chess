@@ -27,6 +27,7 @@ type UseGamePersistenceReturn = {
   isLoadingFromStorage: boolean;
   savedGameStatus: 'in_progress' | 'win' | 'loss' | 'draw' | null;
   loadedGameData: SavedGameData | null;
+  gameNotFound: boolean;
 };
 
 /**
@@ -48,6 +49,7 @@ export function useGamePersistence({
     'in_progress' | 'win' | 'loss' | 'draw' | null
   >(null);
   const [loadedGameData, setLoadedGameData] = useState<SavedGameData | null>(null);
+  const [gameNotFound, setGameNotFound] = useState(false);
 
   // Load saved game status if gameId exists
   useEffect(() => {
@@ -114,6 +116,8 @@ export function useGamePersistence({
             shouldMakeAiMove,
             gamePreferences: savedGame.gamePreferences,
           });
+        } else {
+          setGameNotFound(true);
         }
 
         setIsLoadingFromStorage(false);
@@ -127,5 +131,6 @@ export function useGamePersistence({
     isLoadingFromStorage,
     savedGameStatus,
     loadedGameData,
+    gameNotFound,
   };
 }

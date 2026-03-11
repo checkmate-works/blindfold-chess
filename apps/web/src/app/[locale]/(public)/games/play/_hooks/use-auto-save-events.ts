@@ -37,8 +37,7 @@ export function useAutoSaveEvents({
     status === 'win' || status === 'loss' || status === 'draw';
 
   const shouldShowToast = () => {
-    const hasGameLimitError = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-    return (hasSavedInSession.current || hasPendingChanges.current) && hasGameLimitError !== 'true';
+    return hasSavedInSession.current || hasPendingChanges.current;
   };
 
   // Auto-save on page visibility change and show notification when navigating away

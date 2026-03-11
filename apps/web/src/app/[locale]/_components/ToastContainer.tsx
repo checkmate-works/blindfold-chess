@@ -52,22 +52,6 @@ export function ToastContainer() {
       // Prevent duplicate processing
       if (processingToastRef.current) return;
 
-      // Check for game limit error first (higher priority)
-      const gameLimitReached = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-      const hasPendingGame = sessionStorage.getItem('blindfold_chess_pending_game');
-
-      if (gameLimitReached === 'true' && hasPendingGame) {
-        // Redirect to limit-reached page instead of showing toast
-        processingToastRef.current = true;
-        router.push(`/${locale}/games/limit-reached`);
-
-        // Reset flag after redirect
-        setTimeout(() => {
-          processingToastRef.current = false;
-        }, 1000);
-        return;
-      }
-
       const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
       const shouldShowDeleteToast = sessionStorage.getItem('blindfold_chess_show_delete_toast');
 
@@ -96,22 +80,6 @@ export function ToastContainer() {
       }
     };
 
-    const handleGameLimitReached = () => {
-      // Immediate redirect for game limit
-      if (processingToastRef.current) return;
-
-      const gameLimitReached = sessionStorage.getItem('blindfold_chess_game_limit_reached');
-      if (gameLimitReached === 'true') {
-        processingToastRef.current = true;
-        router.push(`/${locale}/games/limit-reached`);
-
-        // Reset flag after redirect
-        setTimeout(() => {
-          processingToastRef.current = false;
-        }, 1000);
-      }
-    };
-
     const handleGameLimitStartError = () => {
       if (processingToastRef.current) return;
       processingToastRef.current = true;
@@ -125,11 +93,9 @@ export function ToastContainer() {
     checkForToast();
 
     // Listen for custom event
-    window.addEventListener('blindfold-chess:game-limit-reached', handleGameLimitReached);
     window.addEventListener('blindfold-chess:game-limit-start-error', handleGameLimitStartError);
 
     return () => {
-      window.removeEventListener('blindfold-chess:game-limit-reached', handleGameLimitReached);
       window.removeEventListener(
         'blindfold-chess:game-limit-start-error',
         handleGameLimitStartError

@@ -9,7 +9,6 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { handleGameLimitError } from '../_lib';
 import { useAutoSaveEvents } from './use-auto-save-events';
 import { useInitialSave } from './use-initial-save';
 
@@ -54,6 +53,7 @@ export function useAutoSave({
   const gameRepository = useMemo(() => new LocalStorageGameRepository(), []);
 
   const [currentGameId, setCurrentGameId] = useState<string | undefined>(gameId);
+  const currentGameIdRef = useRef<string | undefined>(gameId);
 
   // Game data refs — track the latest values for use in async callbacks
   const gameDataRefs: GameDataRefs = {
@@ -71,6 +71,7 @@ export function useAutoSave({
   const hasPlayerInteracted = useRef(false);
   const hasPendingChanges = useRef(false);
   const hasSavedInSession = useRef(false);
+  const isSavingRef = useRef(false);
   const isInitialSyncSave = useRef(false);
   const saveOnInitRef = useRef(saveOnInit);
   const enabledRef = useRef(enabled);
@@ -83,6 +84,7 @@ export function useAutoSave({
   useEffect(() => {
     if (gameId && gameId !== currentGameId) {
       setCurrentGameId(gameId);
+      currentGameIdRef.current = gameId;
     }
     gameDataRefs.moves.current = moves;
     gameDataRefs.status.current = status;
@@ -114,6 +116,7 @@ export function useAutoSave({
     gameDataRefs,
     saveStateRefs: { lastSavedMovesLength, lastSavedStatus, hasSavedInSession },
     setCurrentGameId,
+    currentGameIdRef,
   });
 
   // Save game function
@@ -121,8 +124,11 @@ export function useAutoSave({
     async (showNotification = false) => {
       if (!enabledRef.current) return;
 
+      // Mutex: skip if another save is already in progress
+      if (isSavingRef.current) return;
+
       // Skip if initial save is pending for a new game
-      if (saveOnInitRef.current && !currentGameId && !hasInitialSaveExecuted.current) {
+      if (saveOnInitRef.current && !currentGameIdRef.current && !hasInitialSaveExecuted.current) {
         return;
       }
 
@@ -138,6 +144,7 @@ export function useAutoSave({
         return;
       }
 
+      isSavingRef.current = true;
       setIsSaving(true);
 
       try {
@@ -152,25 +159,28 @@ export function useAutoSave({
         };
 
         let savedGameId: string;
+        const gameIdFromRef = currentGameIdRef.current;
 
-        if (currentGameId) {
+        if (gameIdFromRef) {
           // Check if game actually exists before updating
-          const existingGame = await gameRepository.load(currentGameId);
+          const existingGame = await gameRepository.load(gameIdFromRef);
           if (existingGame) {
             // Update existing game
             // Skip lastPlayed update during initial sync save (reopening a game without making a move)
-            await gameRepository.update(currentGameId, gameData, {
+            await gameRepository.update(gameIdFromRef, gameData, {
               updateLastPlayed: !isInitialSyncSave.current,
             });
-            savedGameId = currentGameId;
+            savedGameId = gameIdFromRef;
           } else {
             // Game ID provided but doesn't exist - create new game
             savedGameId = await gameRepository.create(gameData);
+            currentGameIdRef.current = savedGameId;
             setCurrentGameId(savedGameId);
           }
         } else {
           // Create new game
           savedGameId = await gameRepository.create(gameData);
+          currentGameIdRef.current = savedGameId;
           setCurrentGameId(savedGameId);
         }
 
@@ -198,18 +208,15 @@ export function useAutoSave({
       } catch (error) {
         setIsSaving(false);
         if (error instanceof GameLimitError) {
-          handleGameLimitError(error, {
-            moves: gameDataRefs.moves.current,
-            playerColor: gameDataRefs.playerColor.current,
-            skillLevel: gameDataRefs.skillLevel.current,
-            status: gameDataRefs.status.current,
-          });
+          console.warn('Game limit reached, cannot save game:', error);
         } else {
           console.error('Failed to auto-save game:', error);
         }
+      } finally {
+        isSavingRef.current = false;
       }
     },
-    [currentGameId, gameRepository] // eslint-disable-line react-hooks/exhaustive-deps
+    [gameRepository] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const prevEnabled = useRef(enabled);

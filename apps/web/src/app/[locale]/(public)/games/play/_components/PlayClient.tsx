@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -32,7 +32,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   });
 
   const { playerSide, skillLevel, startingFen, perGamePrefs, gameId } = gameConfig;
-  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove } = gameState;
+  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
   const {
@@ -108,6 +108,10 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
     }
   }, [gameStatus, playerResult, gameId, locale, router]);
+
+  if (gameNotFound) {
+    notFound();
+  }
 
   return (
     <div>

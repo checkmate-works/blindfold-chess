@@ -5,7 +5,6 @@ import { notifyGameListUpdated } from '@/config';
 import { GameLimitError } from '@/lib/errors';
 import type { LocalStorageGameRepository } from '@/lib/repositories';
 
-import { handleGameLimitError } from '../_lib';
 import type { GameDataRefs } from './use-auto-save';
 
 type UseInitialSaveOptions = {
@@ -20,6 +19,7 @@ type UseInitialSaveOptions = {
     hasSavedInSession: React.RefObject<boolean>;
   };
   setCurrentGameId: (id: string) => void;
+  currentGameIdRef: React.RefObject<string | undefined>;
 };
 
 /**
@@ -34,6 +34,7 @@ export function useInitialSave({
   gameDataRefs,
   saveStateRefs,
   setCurrentGameId,
+  currentGameIdRef,
 }: UseInitialSaveOptions) {
   const hasInitialSaveExecuted = useRef(false);
 
@@ -53,6 +54,7 @@ export function useInitialSave({
           };
 
           const savedGameId = await gameRepository.create(gameData);
+          currentGameIdRef.current = savedGameId;
           setCurrentGameId(savedGameId);
 
           saveStateRefs.lastSavedMovesLength.current = gameDataRefs.moves.current.length;
@@ -62,12 +64,8 @@ export function useInitialSave({
           notifyGameListUpdated();
         } catch (error) {
           if (error instanceof GameLimitError) {
-            handleGameLimitError(error, {
-              moves: gameDataRefs.moves.current,
-              playerColor: gameDataRefs.playerColor.current,
-              skillLevel: gameDataRefs.skillLevel.current,
-              status: gameDataRefs.status.current,
-            });
+            console.warn('Game limit reached on initial save:', error.message);
+            window.dispatchEvent(new Event('blindfold-chess:game-limit-start-error'));
           } else {
             console.error('Failed to save initial game state:', error);
           }

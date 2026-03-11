@@ -76,10 +76,11 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const { getAiMove } = useAiVersus(skillLevel);
 
   // Game persistence hook
-  const { isLoadingFromStorage, savedGameStatus, loadedGameData } = useGamePersistence({
-    initialGameId,
-    initialStartingFen,
-  });
+  const { isLoadingFromStorage, savedGameStatus, loadedGameData, gameNotFound } =
+    useGamePersistence({
+      initialGameId,
+      initialStartingFen,
+    });
 
   // Game state hook
   const {
@@ -132,7 +133,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
     gamePreferences: perGamePrefs,
-    enabled: !isLoadingFromStorage && !shouldRedirectToError,
+    enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
 
@@ -176,9 +177,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   }, [setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
-    shouldMakeAiMove,
+    shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
     gameStatus,
     moves,
+    playerSide,
     startingFen,
     getAiMove,
     onAiMoveSuccess: handleAiMoveSuccess,
@@ -328,6 +330,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       isPlayerTurn,
       isLoading,
       lastMove,
+      gameNotFound,
     },
     moveState: {
       moves,

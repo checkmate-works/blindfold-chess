@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { computeGameState } from '@blindfold-chess/features/ai-game';
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 type UseAiMoveOrchestrationOptions = {
   shouldMakeAiMove: boolean;
   gameStatus: GameStatus;
   moves: AlgebraicNotation[];
+  playerSide: Side;
   startingFen: string | undefined;
   getAiMove: (moves: AlgebraicNotation[], startingFen?: string) => Promise<string | null>;
   onAiMoveSuccess: (move: AlgebraicNotation) => void;
@@ -30,6 +32,7 @@ export function useAiMoveOrchestration({
   shouldMakeAiMove,
   gameStatus,
   moves,
+  playerSide,
   startingFen,
   getAiMove,
   onAiMoveSuccess,
@@ -43,6 +46,12 @@ export function useAiMoveOrchestration({
 
     const executeAiMove = async () => {
       if (isProcessingRef.current) {
+        return;
+      }
+
+      // Guard against stale shouldMakeAiMove: verify it's actually AI's turn
+      const currentState = computeGameState(moves, playerSide, startingFen);
+      if (currentState.isPlayerTurn || currentState.status !== 'in_progress') {
         return;
       }
 
@@ -106,7 +115,16 @@ export function useAiMoveOrchestration({
       isProcessingRef.current = false;
       setIsLoading(false);
     };
-  }, [shouldMakeAiMove, gameStatus, moves, getAiMove, startingFen, onAiMoveSuccess, onAiMoveError]);
+  }, [
+    shouldMakeAiMove,
+    gameStatus,
+    moves,
+    playerSide,
+    getAiMove,
+    startingFen,
+    onAiMoveSuccess,
+    onAiMoveError,
+  ]);
 
   return {
     isLoading,

@@ -1,6 +1,5 @@
 export { ChessEngine, getChessEngine, destroyChessEngine } from './chess-engine';
 export type { EvaluationResult } from './chess-engine';
-export { handleGameLimitError } from './game-limit-error';
 export { sortMoves } from './move-sorter';
 export { generateMoveSuggestions } from './move-suggestions';
 export {
