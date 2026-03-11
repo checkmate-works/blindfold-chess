@@ -31,7 +31,7 @@ export function GameSettingsContent({
   showPreview = true,
   showBoardAppearance = true,
   showBoardButtonOption = true,
-  compact = false,
+  compact = true,
 }: Props) {
   const t = useTranslations('Preferences');
 
