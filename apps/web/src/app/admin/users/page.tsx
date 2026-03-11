@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { db, moderationActions, profiles, userRoles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -94,6 +95,7 @@ export default async function AdminUsersPage({
           <thead className="bg-secondary">
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('usersTable.email')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('usersTable.username')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('usersTable.role')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('usersTable.status')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('usersTable.createdAt')}</th>
@@ -110,6 +112,19 @@ export default async function AdminUsersPage({
               return (
                 <tr key={user.id} className="border-t border-border">
                   <td className="px-4 py-3">{user.email ?? '-'}</td>
+                  <td className="px-4 py-3">
+                    {profile?.username ? (
+                      <Link
+                        href={`/en/profile/${encodeURIComponent(profile.username)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        {profile.username}
+                        <FaExternalLinkAlt className="h-3 w-3" />
+                      </Link>
+                    ) : null}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
@@ -185,7 +200,7 @@ export default async function AdminUsersPage({
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   {t('usersTable.noUsersFound')}
                 </td>
               </tr>

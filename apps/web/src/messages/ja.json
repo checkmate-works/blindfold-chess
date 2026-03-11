@@ -1878,7 +1878,8 @@
       "active": "Active",
       "anonymous": "Anonymous",
       "viewPosts": "投稿",
-      "viewActivity": "アクティビティ"
+      "viewActivity": "アクティビティ",
+      "username": "Username"
     },
     "userPosts": {
       "title": "{username} の投稿",

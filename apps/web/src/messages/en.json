@@ -1877,7 +1877,8 @@
       "active": "Active",
       "anonymous": "Anonymous",
       "viewPosts": "Posts",
-      "viewActivity": "Activity"
+      "viewActivity": "Activity",
+      "username": "Username"
     },
     "userPosts": {
       "title": "Posts by {username}",
