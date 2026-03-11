@@ -25,7 +25,7 @@ import { getPostsWithReplyMeta } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),

@@ -19,7 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
