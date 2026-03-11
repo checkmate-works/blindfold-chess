@@ -113,8 +113,7 @@
     "tabs": {
       "board": "Game",
       "controls": "Controls",
-      "appearance": "Appearance",
-      "ads": "Ads"
+      "appearance": "Appearance"
     },
     "game": {
       "title": "Board Settings",
@@ -189,13 +188,6 @@
         "modal": "Modal",
         "inline": "Inline"
       }
-    },
-    "ads": {
-      "title": "Advertisement Settings",
-      "description": "Customize advertisement display preferences",
-      "displaySettings": "Advertisement Display",
-      "enableAds": "Show advertisements",
-      "enableAdsDescription": "When disabled, ads will be hidden throughout the site"
     }
   },
   "Common": {
@@ -212,7 +204,7 @@
       },
       "ads": {
         "question": "Why are there advertisements on this site?",
-        "answer": "This service is provided free of charge, but maintaining servers and domains incurs costs. Ad revenue helps cover these expenses. If ads bother you, you can disable them in <settingsLink>settings</settingsLink>."
+        "answer": "This service is provided free of charge, but maintaining servers and domains incurs costs. Ad revenue helps cover these expenses. Additionally, revenue from affiliate programs such as Amazon Associates is also used to cover operating costs. For more information, please see our <affiliateLink>Affiliate Disclosure</affiliateLink>."
       },
       "chessEngine": {
         "question": "What chess engine does the AI use?",
