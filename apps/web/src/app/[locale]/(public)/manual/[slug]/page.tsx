@@ -3,13 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import {
-  Breadcrumb,
-  Divider,
-  MarkdownRenderer,
-  PageDescription,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -67,9 +61,8 @@ export default async function ManualArticlePage({ params }: Props) {
   return (
     <div className="space-y-12">
       {/* Header */}
-      <header className="space-y-4">
+      <header>
         <PageTitle>{article.metadata.title}</PageTitle>
-        {article.metadata.excerpt && <PageDescription>{article.metadata.excerpt}</PageDescription>}
       </header>
 
       {/* Content */}

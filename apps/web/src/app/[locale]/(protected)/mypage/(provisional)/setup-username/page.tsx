@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PageDescription, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { UsernameForm } from './_components';
 
@@ -27,7 +27,6 @@ export default async function SetupUsernamePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-      <PageDescription>{t('description')}</PageDescription>
       <PagePanel>
         <UsernameForm locale={locale} />
       </PagePanel>

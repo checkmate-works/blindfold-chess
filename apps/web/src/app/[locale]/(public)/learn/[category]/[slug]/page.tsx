@@ -11,7 +11,6 @@ import {
   CardLink,
   Divider,
   MarkdownRenderer,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -124,9 +123,8 @@ export default async function LearnArticlePage({ params }: Props) {
     <div className="space-y-12">
       <JsonLd data={generateArticleSchema(articleSchemaData)} />
       {/* Article header */}
-      <header className="space-y-4">
+      <header>
         <PageTitle>{article.metadata.title}</PageTitle>
-        {article.metadata.excerpt && <PageDescription>{article.metadata.excerpt}</PageDescription>}
       </header>
 
       <PagePanel>

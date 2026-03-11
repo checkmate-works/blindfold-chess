@@ -7,7 +7,6 @@ import {
   Breadcrumb,
   CardLink,
   Divider,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -57,8 +56,6 @@ export default async function LearnPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('learn.title')}</PageTitle>
-
-      <PageDescription>{t('learn.description')}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>

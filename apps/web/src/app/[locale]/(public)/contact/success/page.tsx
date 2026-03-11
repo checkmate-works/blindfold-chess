@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 
-import { PageDescription, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,8 +31,6 @@ export default async function ContactSuccessPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('success.title')}</PageTitle>
-
-      <PageDescription>{t('success.message')}</PageDescription>
 
       <PagePanel className="space-y-8 flex justify-center">
         <div className="w-full max-w-2xl mt-4 sm:mt-8">

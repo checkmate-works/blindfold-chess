@@ -9,7 +9,6 @@ import {
   Divider,
   ListLink,
   ListLinkContainer,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -76,8 +75,6 @@ export default async function LearnCategoryPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{categoryLabel}</PageTitle>
-
-      <PageDescription>{t('learn.description')}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>

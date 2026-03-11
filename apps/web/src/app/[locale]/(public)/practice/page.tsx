@@ -5,13 +5,7 @@ import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
-import {
-  Breadcrumb,
-  Divider,
-  PageDescription,
-  PagePanel,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -176,8 +170,6 @@ export default async function PracticePage({ params }: Props) {
     <div className="space-y-8">
       <JsonLd data={generateItemListSchema(itemListItems)} />
       <PageTitle>{t('practice.title')}</PageTitle>
-
-      <PageDescription>{t('practice.description')}</PageDescription>
 
       <PagePanel>
         <PracticeTabs tabs={tabs} />

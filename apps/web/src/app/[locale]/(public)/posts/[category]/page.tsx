@@ -9,7 +9,6 @@ import {
   Divider,
   ListLink,
   ListLinkContainer,
-  PageDescription,
   PagePanel,
   PageTitle,
   PaginationNav,
@@ -85,8 +84,6 @@ export default async function CategoryPostsPage({ params, searchParams }: Props)
   return (
     <div className="space-y-8">
       <PageTitle>{categoryLabel}</PageTitle>
-
-      <PageDescription>{t('categoryDescription', { category: categoryLabel })}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('postsListTitle')}</SectionTitle>

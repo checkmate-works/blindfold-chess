@@ -1,14 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import {
-  Breadcrumb,
-  CardLink,
-  Divider,
-  PageDescription,
-  PagePanel,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Breadcrumb, CardLink, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,8 +27,6 @@ export default async function TopicsPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-
-      <PageDescription>{t('description')}</PageDescription>
 
       <PagePanel>
         <div className="space-y-4">

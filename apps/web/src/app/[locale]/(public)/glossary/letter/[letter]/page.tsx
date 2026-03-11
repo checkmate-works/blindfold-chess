@@ -6,7 +6,6 @@ import { SUPPORTED_LOCALES } from '@/config';
 import {
   Breadcrumb,
   Divider,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -58,8 +57,6 @@ export default async function GlossaryLetterPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('letterPage.title', { letter: upperLetter })}</PageTitle>
-
-      <PageDescription>{t('letterPage.count', { count: filteredTerms.length })}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>

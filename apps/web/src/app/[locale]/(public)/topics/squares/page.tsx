@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/server';
 import {
   Breadcrumb,
   Divider,
-  PageDescription,
   PagePanel,
   PageTitle,
   PaginationNav,
@@ -70,8 +69,6 @@ export default async function SquaresPage({ params, searchParams }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('squares.title')}</PageTitle>
-
-      <PageDescription>{t('squares.description')}</PageDescription>
 
       <PagePanel>
         <SquareBoard locale={locale} />

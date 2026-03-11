@@ -7,7 +7,6 @@ import { SUPPORTED_LOCALES } from '@/config';
 import {
   Breadcrumb,
   Divider,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -70,8 +69,6 @@ export default async function GlossaryCategoryPage({ params }: Props) {
         <span className="text-4xl text-muted-foreground">{categoryStyle.icon}</span>
         <span>{t(`categories.${category}`)}</span>
       </PageTitle>
-
-      <PageDescription>{t('categoryPage.count', { count: filteredTerms.length })}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('categoryPage.termsTitle')}</SectionTitle>

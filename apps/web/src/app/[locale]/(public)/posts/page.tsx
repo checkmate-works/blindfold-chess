@@ -5,7 +5,6 @@ import {
   Breadcrumb,
   CardLink,
   Divider,
-  PageDescription,
   PagePanel,
   PageTitle,
   SectionTitle,
@@ -40,8 +39,6 @@ export default async function PostsPage({ params }: Props) {
   return (
     <div className="space-y-8">
       <PageTitle>{t('pageTitle')}</PageTitle>
-
-      <PageDescription>{t('pageDescription')}</PageDescription>
 
       <PagePanel>
         <SectionTitle>{t('categoriesListTitle')}</SectionTitle>

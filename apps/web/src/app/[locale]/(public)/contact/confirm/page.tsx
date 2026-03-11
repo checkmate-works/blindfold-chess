@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { PageDescription, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -45,8 +45,6 @@ export default async function ContactConfirmPage({ params, searchParams }: Props
   return (
     <div className="space-y-8">
       <PageTitle>{t('confirm.title')}</PageTitle>
-
-      <PageDescription>{t('confirm.description')}</PageDescription>
 
       <PagePanel>
         <ContactConfirm formData={formData} locale={locale} />
