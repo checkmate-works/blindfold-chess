@@ -91,7 +91,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       <PagePanel>
         <SectionTitle>{square}</SectionTitle>
 
-        <SquareHighlightBoard square={square} />
+        <SquareHighlightBoard square={square} locale={locale} />
 
         <p className="text-sm text-muted-foreground">
           {t('squares.postCount', { count: totalCount })}

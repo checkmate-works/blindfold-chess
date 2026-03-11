@@ -78,7 +78,7 @@ export default async function PostDetailPage({ params }: Props) {
           {t('squares.postDetail.authorView', { author: displayName, square })}
         </SectionTitle>
 
-        <SquareHighlightBoard square={square} />
+        <SquareHighlightBoard square={square} locale={locale} />
 
         <div>
           <Link
