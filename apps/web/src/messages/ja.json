@@ -1782,7 +1782,8 @@
     "alreadyLoggedIn": "すでにログインしています",
     "logoutSuccess": "ログアウトしました",
     "signInRequired": "ログインしてください",
-    "profileUpdated": "プロフィールを更新しました"
+    "profileUpdated": "プロフィールを更新しました",
+    "postCreated": "投稿しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

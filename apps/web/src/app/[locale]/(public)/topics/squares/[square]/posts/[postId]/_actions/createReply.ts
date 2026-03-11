@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
@@ -92,5 +93,5 @@ export async function createReply(
 
   revalidatePath(`/${locale}/topics/squares/${square}/posts/${postId}`);
 
-  return {};
+  redirect(`/${locale}/topics/squares/${square}/posts/${postId}?toast=post_created`);
 }

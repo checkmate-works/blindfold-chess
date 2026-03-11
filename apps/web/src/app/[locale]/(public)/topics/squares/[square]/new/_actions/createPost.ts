@@ -72,5 +72,5 @@ export async function createPost(
     metadata: { topicType: 'square', topicKey: square },
   });
 
-  redirect(`/${locale}/topics/squares/${square}`);
+  redirect(`/${locale}/topics/squares/${square}/posts/${inserted.id}?toast=post_created`);
 }

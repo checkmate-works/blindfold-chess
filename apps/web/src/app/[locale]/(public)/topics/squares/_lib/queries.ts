@@ -286,6 +286,63 @@ export async function getRecentPostsAcrossSquares(
 }
 
 /**
+ * Get the count of top-level posts across all squares.
+ */
+export async function getPostCountAcrossSquares(): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPosts)
+    .where(
+      and(
+        eq(topicPosts.topicType, 'square'),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    );
+  return result.count;
+}
+
+/**
+ * Get top-level posts across all squares with reply metadata, paginated.
+ */
+export async function getPostsAcrossSquaresPaginated(
+  limit: number,
+  offset: number,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
+      },
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, 'square'),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachPostMeta(posts, currentUserId);
+}
+
+/**
  * Get like metadata for a single post.
  */
 export async function getLikeMetaForPost(

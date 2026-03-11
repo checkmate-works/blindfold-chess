@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -9,16 +11,24 @@ import {
   PageDescription,
   PagePanel,
   PageTitle,
+  PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PostCard, SquareBoard } from './_components';
-import { getRecentPostsAcrossSquares } from './_lib/queries';
+import { getPostCountAcrossSquares, getPostsAcrossSquaresPaginated } from './_lib/queries';
+
+const PAGE_SIZE = 5;
+
+const searchParamsCache = createSearchParamsCache({
+  page: parseAsInteger.withDefault(1),
+});
 
 type Props = {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,14 +42,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SquaresPage({ params }: Props) {
+export default async function SquaresPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'topics' });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const recentPosts = await getRecentPostsAcrossSquares(5, user?.id);
+  const totalCount = await getPostCountAcrossSquares();
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+
+  const recentPosts = await getPostsAcrossSquaresPaginated(
+    PAGE_SIZE,
+    (currentPage - 1) * PAGE_SIZE,
+    user?.id
+  );
+
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (p > 1) params.set('page', String(p));
+    const qs = params.toString();
+    return `/${locale}/topics/squares${qs ? `?${qs}` : ''}`;
+  };
 
   return (
     <div className="space-y-8">
@@ -67,6 +93,8 @@ export default async function SquaresPage({ params }: Props) {
             ))}
           </div>
         )}
+
+        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         <Divider />
 

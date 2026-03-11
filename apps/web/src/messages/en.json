@@ -1781,7 +1781,8 @@
     "alreadyLoggedIn": "Already logged in",
     "logoutSuccess": "Signed out",
     "signInRequired": "Please sign in to continue",
-    "profileUpdated": "Profile updated"
+    "profileUpdated": "Profile updated",
+    "postCreated": "Posted successfully"
   },
   "setupUsername": {
     "title": "Create Your Account",
