@@ -13,7 +13,7 @@ type Props = {
 };
 
 export function BulkDeleteActions({ selectedGameIds, onDelete, isProcessing }: Props) {
-  const t = useTranslations('home.bulkDelete');
+  const t = useTranslations('bulkDelete');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleDeleteClick = () => {

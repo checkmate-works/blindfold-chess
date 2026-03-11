@@ -7,10 +7,10 @@ import { FaPlus } from 'react-icons/fa';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 export async function NewGameButton({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: 'home' });
+  const t = await getTranslations({ locale, namespace: 'home.gameList' });
 
   return (
-    <Link href={`/${locale}/games/new`} className="w-full">
+    <Link href={`/${locale}/games/new`} className="w-full block">
       <Button
         variant="primary"
         size="lg"

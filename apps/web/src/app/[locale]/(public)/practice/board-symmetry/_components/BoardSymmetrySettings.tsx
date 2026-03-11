@@ -26,8 +26,6 @@ const DEFAULT_TIME_LIMIT = 60;
 export default function BoardSymmetrySettings({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tSettings = useTranslations('practice.settings');
-  const tSquareColors = useTranslations('practice.squareColors'); // For re-using "seconds" label
-  const tPosMem = useTranslations('practice.positionMemory'); // reusing reset settings translations
 
   const router = useRouter();
 
@@ -91,7 +89,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
             onTimeLimitChange={setTimeLimit}
             labels={{
               timeLimit: tSettings('timeLimit'),
-              seconds: tSquareColors('seconds'),
+              seconds: tSettings('seconds'),
             }}
           />
         </div>
@@ -119,12 +117,12 @@ export default function BoardSymmetrySettings({ locale }: Props) {
 
       <div className="mt-8 flex justify-end">
         <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
-          {tPosMem('resetSettings')}
+          {t('resetSettings')}
         </Button>
       </div>
 
       <div className="mt-8 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
-        <SectionTitle>{tSquareColors('requiredKnowledge')}</SectionTitle>
+        <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/board-symmetry"
           icon="🦋"
@@ -136,10 +134,10 @@ export default function BoardSymmetrySettings({ locale }: Props) {
 
       <ConfirmationModal
         isOpen={isResetConfirmOpen}
-        title={tPosMem('resetSettingsConfirm.title')}
-        message={tPosMem('resetSettingsConfirm.message')}
-        confirmText={tPosMem('resetSettings')}
-        cancelText={tPosMem('cancel')}
+        title={t('resetSettingsConfirm.title')}
+        message={t('resetSettingsConfirm.message')}
+        confirmText={t('resetSettings')}
+        cancelText={t('cancel')}
         confirmVariant="danger"
         onConfirm={handleResetConfirm}
         onCancel={() => setIsResetConfirmOpen(false)}

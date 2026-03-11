@@ -13,7 +13,7 @@ type Props = {
 };
 
 export function SortButton({ sortBy, sortDirection, onSortChange }: Props) {
-  const t = useTranslations('home');
+  const t = useTranslations('home.gameList');
 
   return (
     <div className="flex items-center gap-3">

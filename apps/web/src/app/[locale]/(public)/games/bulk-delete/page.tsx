@@ -15,17 +15,17 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'home' });
+  const t = await getTranslations({ locale, namespace: 'bulkDelete' });
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'games/bulk-delete' }),
-    title: t('bulkDelete.title'),
+    title: t('title'),
   };
 }
 
 export default async function BulkDeletePage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'home.bulkDelete' });
+  const t = await getTranslations({ locale, namespace: 'bulkDelete' });
   const tGameList = await getTranslations({ locale, namespace: 'home.gameList' });
 
   return (

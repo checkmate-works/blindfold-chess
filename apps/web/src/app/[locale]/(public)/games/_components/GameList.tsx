@@ -13,7 +13,7 @@ export function GameList({
   onToggleAll,
   isAllSelected = false,
 }: GameListProps) {
-  const t = useTranslations('home.bulkDelete');
+  const t = useTranslations('bulkDelete');
 
   return (
     <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">

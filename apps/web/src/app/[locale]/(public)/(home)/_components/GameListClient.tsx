@@ -10,7 +10,6 @@ import { notifyGameListUpdated } from '@/config';
 import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { GameSortOption, SortDirection } from '@/lib/types';
 
-import { SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -26,8 +25,7 @@ type Props = {
 };
 
 export function GameListClient({ locale }: Props) {
-  const t = useTranslations('home');
-  const tGameList = useTranslations('home.gameList');
+  const t = useTranslations('home.gameList');
   const { showToast } = useToast();
   const [sortBy, setSortBy] = useState<GameSortOption>('lastPlayed');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -64,7 +62,6 @@ export function GameListClient({ locale }: Props) {
 
   return (
     <>
-      <SectionTitle>{tGameList('title')}</SectionTitle>
       {!isLoading && games.length > 0 && (
         <div className="flex justify-end">
           <SortButton
@@ -87,7 +84,7 @@ export function GameListClient({ locale }: Props) {
               href={`/${locale}/games/bulk-delete`}
               className="text-sm text-muted-foreground hover:text-foreground underline"
             >
-              {tGameList('bulkDelete')}
+              {t('bulkDelete')}
             </Link>
           </div>
         </>

@@ -14,7 +14,7 @@ import { BulkDeleteActions } from './BulkDeleteActions';
 import { GameSelectorSkeleton } from './GameSelectorSkeleton';
 
 export function BulkDeleteClient() {
-  const t = useTranslations('home.bulkDelete');
+  const t = useTranslations('bulkDelete');
   const { showToast } = useToast();
 
   const [games, setGames] = useState<Game[]>([]);

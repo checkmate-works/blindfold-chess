@@ -396,6 +396,7 @@
       "timeLimit": "制限時間",
       "problemCount": "問題数",
       "problems": "問",
+      "seconds": "秒",
       "start": "開始",
       "cancel": "キャンセル"
     },
@@ -416,6 +417,13 @@
       "viewTutorial": "チュートリアルを見る",
       "viewArticle": "ボードの対称性について学ぶ",
       "articleDescription": "盤上の対称的なマスの見つけ方を解説",
+      "resetSettings": "設定をリセット",
+      "resetSettingsConfirm": {
+        "title": "設定をリセットしますか？",
+        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "cancel": "キャンセル",
+      "requiredKnowledge": "前提知識",
       "correctAnswers": "正解数",
       "accuracy": "正答率",
       "timeTaken": "かかった時間",
@@ -1109,6 +1117,7 @@
     }
   },
   "home": {
+    "pageTitle": "ホーム",
     "gameList": {
       "title": "ゲーム履歴",
       "noGames": "まだゲームがありません",
@@ -1119,38 +1128,37 @@
       "draw": "引き分け",
       "inProgress": "進行中",
       "bulkDelete": "一括削除",
-      "startGuidance": "AIとの目隠しチェス対局は<link>ここ</link>から開始できます。"
-    },
-    "sortBy": "並び替え",
-    "lastPlayedDesc": "最終プレイ ↓",
-    "lastPlayedAsc": "最終プレイ ↑",
-    "createdDesc": "作成日時 ↓",
-    "createdAsc": "作成日時 ↑",
-    "newGame": "新しいゲーム",
-    "gameSavedToast": "ゲームを保存しました",
-    "deleteGameTitle": "ゲームを削除",
-    "deleteGameMessage": "このゲームを削除してもよろしいですか？この操作は取り消せません。",
-    "deleteConfirm": "削除",
-    "cancel": "キャンセル",
-    "gameDeletedToast": "ゲームを削除しました",
-    "gamesDeletedToast": "{count}個のゲームを削除しました",
-    "deleteFailedToast": "ゲームの削除に失敗しました",
-    "bulkDelete": {
-      "title": "ゲームの一括削除",
-      "explanation": "不要なゲームを選択して一括削除できます。",
-      "noGames": "削除できるゲームがありません",
-      "selectedCount": "{count}個のゲームを選択中",
-      "selectAll": "すべて選択",
-      "unselectAll": "選択を解除",
-      "delete": "削除",
+      "startGuidance": "AIとの目隠しチェス対局は<link>ここ</link>から開始できます。",
+      "sortBy": "並び替え",
+      "lastPlayedDesc": "最終プレイ ↓",
+      "lastPlayedAsc": "最終プレイ ↑",
+      "createdDesc": "作成日時 ↓",
+      "createdAsc": "作成日時 ↑",
+      "newGame": "新しいゲーム",
+      "deleteGameTitle": "ゲームを削除",
+      "deleteGameMessage": "このゲームを削除してもよろしいですか？この操作は取り消せません。",
+      "deleteConfirm": "削除",
       "cancel": "キャンセル",
-      "processing": "処理中...",
-      "errorDeleting": "削除に失敗しました。もう一度お試しください。",
-      "confirmTitle": "選択したゲームを削除しますか？",
-      "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
-      "deletedToast": "{count}個のゲームを削除しました",
+      "gameDeletedToast": "ゲームを削除しました",
+      "gamesDeletedToast": "{count}個のゲームを削除しました",
       "deleteFailedToast": "ゲームの削除に失敗しました"
     }
+  },
+  "bulkDelete": {
+    "title": "ゲームの一括削除",
+    "explanation": "不要なゲームを選択して一括削除できます。",
+    "noGames": "削除できるゲームがありません",
+    "selectedCount": "{count}個のゲームを選択中",
+    "selectAll": "すべて選択",
+    "unselectAll": "選択を解除",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "processing": "処理中...",
+    "errorDeleting": "削除に失敗しました。もう一度お試しください。",
+    "confirmTitle": "選択したゲームを削除しますか？",
+    "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
+    "deletedToast": "{count}個のゲームを削除しました",
+    "deleteFailedToast": "ゲームの削除に失敗しました"
   },
   "play": {
     "title": "チェス対戦",
@@ -1787,7 +1795,9 @@
     "logoutSuccess": "ログアウトしました",
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
-    "postCreated": "投稿しました"
+    "postCreated": "投稿しました",
+    "gameSaved": "ゲームが保存されました",
+    "gamesDeleted": "{count}個のゲームを削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

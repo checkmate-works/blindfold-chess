@@ -21,7 +21,7 @@ import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 
-import { PageTitle } from '@/app/[locale]/_components';
+import { PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Ad } from '@/app/[locale]/_components/Ad';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -47,20 +47,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
+  const tHome = await getTranslations({ locale, namespace: 'home' });
   const tPosts = await getTranslations({ locale, namespace: 'posts' });
 
   return (
     <>
       <div className="mb-8">
-        <PageTitle>Home</PageTitle>
+        <PageTitle>{tHome('pageTitle')}</PageTitle>
       </div>
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale)} />
         <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
-          <div id="new-game-card">
-            <NewGameButton locale={locale} />
-          </div>
+          <SectionTitle>{tHome('gameList.title')}</SectionTitle>
+
+          <NewGameButton locale={locale} />
 
           <GameListClient locale={locale} />
         </div>
@@ -72,7 +73,7 @@ export default async function HomePage({ params }: Props) {
             text="Buy me a Coffee"
             imageUrl="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=fujillc&button_colour=8bbdf2&font_colour=ffffff&font_family=Cookie&outline_colour=ffffff&coffee_colour=FFDD00"
             imageAlt="Buy me a Coffee"
-            className="inline-block transition-opacity hover:opacity-90 grayscale-0 hover:grayscale-0 opacity-90 transition-all duration-300"
+            className="inline-block hover:opacity-90 grayscale-0 hover:grayscale-0 opacity-90 transition-all duration-300"
           />
         </div>
 

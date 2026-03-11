@@ -22,7 +22,6 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
 
 export function ToastContainer() {
   const { toasts, hideToast, showToast } = useToast();
-  const t = useTranslations('home');
   const tToast = useTranslations('toast');
   const params = useParams();
   const pathname = usePathname();
@@ -59,7 +58,7 @@ export function ToastContainer() {
       if (shouldShowSaveToast === 'true') {
         processingToastRef.current = true;
         sessionStorage.removeItem('blindfold_chess_show_save_toast');
-        showToast(t('gameSavedToast'), 'success');
+        showToast(tToast('gameSaved'), 'success');
 
         // Reset flag after a delay
         setTimeout(() => {
@@ -72,7 +71,7 @@ export function ToastContainer() {
         sessionStorage.removeItem('blindfold_chess_deleted_count');
 
         const count = deletedCount ? parseInt(deletedCount, 10) : 1;
-        showToast(t('gamesDeletedToast', { count }), 'success');
+        showToast(tToast('gamesDeleted', { count }), 'success');
 
         // Reset flag after a delay
         setTimeout(() => {
@@ -102,7 +101,7 @@ export function ToastContainer() {
         handleGameLimitStartError
       );
     };
-  }, [pathname, showToast, t, router, locale]); // Re-run when pathname changes
+  }, [pathname, showToast, tToast, router, locale]); // Re-run when pathname changes
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">
