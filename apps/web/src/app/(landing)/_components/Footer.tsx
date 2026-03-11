@@ -1,4 +1,4 @@
-import type { getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';

@@ -33,6 +33,10 @@
       "title": "Contact Us",
       "description": "Contact form for Blindfold Chess inquiries"
     },
+    "affiliateDisclosure": {
+      "title": "Affiliate Disclosure",
+      "description": "Information about affiliate links on Blindfold Chess"
+    },
     "signIn": {
       "title": "Sign In",
       "description": "Sign in to your Blindfold Chess account"
@@ -1426,6 +1430,14 @@
     "dataRetentionItem2": "Game data stored in your browser's localStorage is retained on your device until you clear your browser data",
     "changesTitle": "Changes to Privacy Policy",
     "changesDescription": "The Site may update this Privacy Policy as needed. Updated Privacy Policy will take effect from the time it is posted on this page. Please check this page regularly."
+  },
+  "affiliateDisclosure": {
+    "title": "Affiliate Disclosure",
+    "description": "Information about affiliate links on Blindfold Chess",
+    "lastUpdated": "Last Updated: March 11, 2025",
+    "amazonDisclosureTitle": "Amazon Associate Program Disclosure",
+    "amazonDisclosureDescription": "As an Amazon Associate I earn from qualifying purchases. blindfold-chess.online is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.",
+    "footerText": "As an Amazon Associate I earn from qualifying purchases."
   },
   "terms": {
     "title": "Terms of Service",

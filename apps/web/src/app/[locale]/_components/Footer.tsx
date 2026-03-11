@@ -15,6 +15,7 @@ export async function Footer({ locale }: Props) {
   const tTerms = await getTranslations({ locale, namespace: 'terms' });
   const tCompany = await getTranslations({ locale, namespace: 'company' });
   const tContact = await getTranslations({ locale, namespace: 'contact' });
+  const tAffiliate = await getTranslations({ locale, namespace: 'affiliateDisclosure' });
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
 
@@ -63,6 +64,15 @@ export async function Footer({ locale }: Props) {
                   </Link>
                 </li>
               )}
+              <li>
+                <Link
+                  href={`/${locale}/affiliate-disclosure`}
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                >
+                  <FaChevronRight className="h-2 w-2" />
+                  {tAffiliate('title')}
+                </Link>
+              </li>
             </ul>
           </nav>
 
@@ -81,9 +91,12 @@ export async function Footer({ locale }: Props) {
             <LanguageSwitcher currentLocale={locale} />
           </div>
 
-          {/* Copyright */}
-          <div className="text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {SITE_DOMAIN}
+          {/* Copyright & Disclaimer */}
+          <div className="text-center text-xs text-muted-foreground space-y-1">
+            <p>{tAffiliate('footerText')}</p>
+            <p>
+              © {new Date().getFullYear()} {SITE_DOMAIN}
+            </p>
           </div>
         </div>
       </div>

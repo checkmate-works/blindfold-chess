@@ -33,6 +33,10 @@
       "title": "お問い合わせ",
       "description": "Blindfold Chessに関するお問い合わせフォーム"
     },
+    "affiliateDisclosure": {
+      "title": "アフィリエイト・ポリシー",
+      "description": "Blindfold Chessのアフィリエイトに関する開示事項"
+    },
     "signIn": {
       "title": "サインイン",
       "description": "Blindfold Chess アカウントにサインイン"
@@ -1427,6 +1431,14 @@
     "dataRetentionItem2": "ブラウザのlocalStorageに保存されるゲームデータは、ユーザーがブラウザデータを削除するまで端末上に保持されます",
     "changesTitle": "プライバシーポリシーの変更",
     "changesDescription": "当サイトは、必要に応じて本プライバシーポリシーを変更することがあります。変更後のプライバシーポリシーは、本ページに掲載した時点で効力を生じるものとします。定期的に本ページをご確認ください。"
+  },
+  "affiliateDisclosure": {
+    "title": "アフィリエイト・ポリシー",
+    "description": "アフィリエイトプログラムに関する開示事項",
+    "lastUpdated": "最終更新日: 2025年3月11日",
+    "amazonDisclosureTitle": "Amazonアソシエイト・プログラムに関する開示",
+    "amazonDisclosureDescription": "Amazonのアソシエイトとして、blindfold-chess.onlineは適格販売により収入を得ています。当サイトは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。",
+    "footerText": "As an Amazon Associate I earn from qualifying purchases."
   },
   "terms": {
     "title": "利用規約",
