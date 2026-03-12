@@ -1,6 +1,7 @@
 /**
  * Utility functions for learn section
  */
+import { createContentManager } from '@/app/[locale]/(public)/_lib/content-manager';
 import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -67,7 +68,7 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
 };
 
 // Static article registry by locale
-const articleRegistry = {
+const metadataRegistry = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/metadata.en'),
     ja: () => import('../_content/algebraic-notation/metadata.ja'),
@@ -126,11 +127,25 @@ const articleRegistry = {
   },
 } as const;
 
+const learnContentManager = createContentManager<ArticleMetadata>({
+  metadataRegistry,
+  contentRegistry,
+  sort: (a, b) => {
+    // Sort by custom order first, then by published date (newest first)
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    }
+    if (a.order !== undefined) return -1;
+    if (b.order !== undefined) return 1;
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  },
+});
+
 /**
  * Get list of available article slugs
  */
 export function getAvailableArticles(): string[] {
-  return Object.keys(articleRegistry);
+  return learnContentManager.getAvailableSlugs();
 }
 
 /**
@@ -140,35 +155,7 @@ export function getAvailableArticles(): string[] {
  * @returns Article or null if not found
  */
 export async function getArticle(slug: string, locale: Locale): Promise<Article | null> {
-  try {
-    if (!(slug in articleRegistry)) {
-      return null;
-    }
-
-    // Import metadata using registry with locale
-    const articleData = articleRegistry[slug as keyof typeof articleRegistry];
-    if (!(locale in articleData)) {
-      return null;
-    }
-
-    const metadataModule = await articleData[locale as keyof typeof articleData]();
-    const metadata = metadataModule.metadata;
-
-    // Import markdown content
-    if (!(slug in contentRegistry) || !(locale in contentRegistry[slug])) {
-      return null;
-    }
-
-    const content = await contentRegistry[slug][locale]();
-
-    return {
-      metadata,
-      content,
-    };
-  } catch (error) {
-    console.error(`Error loading article ${slug}:`, error);
-    return null;
-  }
+  return learnContentManager.getArticle(slug, locale);
 }
 
 /**
@@ -177,33 +164,7 @@ export async function getArticle(slug: string, locale: Locale): Promise<Article 
  * @returns Sorted array of article metadata
  */
 export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]> {
-  const slugs = getAvailableArticles();
-  const articles: ArticleMetadata[] = [];
-
-  for (const slug of slugs) {
-    try {
-      const articleData = articleRegistry[slug as keyof typeof articleRegistry];
-      if (locale in articleData) {
-        const metadataModule = await articleData[locale as keyof typeof articleData]();
-        articles.push(metadataModule.metadata);
-      }
-    } catch (error) {
-      console.error(`Error loading metadata for ${slug}:`, error);
-    }
-  }
-
-  // Sort by custom order first, then by published date (newest first)
-  return articles.sort((a, b) => {
-    // If both have order, sort by order (ascending)
-    if (a.order !== undefined && b.order !== undefined) {
-      return a.order - b.order;
-    }
-    // If only one has order, prioritize it
-    if (a.order !== undefined) return -1;
-    if (b.order !== undefined) return 1;
-    // If neither has order, sort by published date (newest first)
-    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-  });
+  return learnContentManager.getAllArticles(locale);
 }
 
 /**
