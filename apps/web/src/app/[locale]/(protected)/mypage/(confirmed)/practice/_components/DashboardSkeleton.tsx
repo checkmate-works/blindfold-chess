@@ -1,6 +1,4 @@
-function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={`animate-pulse rounded-md bg-muted ${className}`} {...props} />;
-}
+import { Skeleton } from '@/app/[locale]/_components';
 
 /** KPIカード1枚分のスケルトン（StatsCardと同じサイズ） */
 function StatsCardSkeleton() {

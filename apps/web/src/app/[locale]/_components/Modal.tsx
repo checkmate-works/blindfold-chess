@@ -10,9 +10,19 @@ type Props = {
   onClose: () => void;
   children: ReactNode;
   maxWidth?: string;
+  'aria-labelledby'?: string;
+  'aria-describedby'?: string;
 };
 
-export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl' }: Props) {
+export function Modal({
+  isOpen,
+  title,
+  onClose,
+  children,
+  maxWidth = 'max-w-2xl',
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
+}: Props) {
   const titleId = useId();
 
   useScrollLock(isOpen);
@@ -46,7 +56,8 @@ export function Modal({ isOpen, title, onClose, children, maxWidth = 'max-w-2xl'
           className={`bg-card rounded-lg shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
           role="dialog"
           aria-modal="true"
-          aria-labelledby={title ? titleId : undefined}
+          aria-labelledby={title ? titleId : ariaLabelledBy}
+          aria-describedby={ariaDescribedBy}
         >
           {/* Header */}
           {title && (
