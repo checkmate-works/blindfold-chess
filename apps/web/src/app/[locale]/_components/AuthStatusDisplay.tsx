@@ -39,7 +39,7 @@ export function AuthStatusDisplay() {
       <div ref={containerRef} className="relative">
         <button
           type="button"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center justify-center rounded-full border-2 border-muted-foreground text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground transition-colors p-[2px]"
           aria-label={t('account')}
           aria-expanded={isOpen}
           aria-haspopup="true"
@@ -49,7 +49,7 @@ export function AuthStatusDisplay() {
         </button>
 
         {isOpen && (
-          <div className="fixed top-16 right-0 w-48 border-l border-b border-border bg-card shadow-lg">
+          <div className="absolute right-0 top-full mt-2 z-50 w-48 rounded-lg border border-border bg-card shadow-lg">
             <div className="py-1">
               <Link
                 href={`/${locale}/mypage`}
