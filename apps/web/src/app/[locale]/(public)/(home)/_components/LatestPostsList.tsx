@@ -56,7 +56,7 @@ export async function LatestPostsList({ locale, title }: Props) {
           <Link
             href="/posts"
             locale={locale}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
           >
             {t('morePosts')}
           </Link>

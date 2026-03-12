@@ -40,4 +40,6 @@
   --color-border: var(--color-border);
   --color-input: var(--color-input);
   --color-ring: var(--color-ring);
+  --color-link-primary: var(--color-link-primary);
+  --color-link-secondary: var(--color-link-secondary);
 }

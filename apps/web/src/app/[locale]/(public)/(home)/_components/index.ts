@@ -6,4 +6,3 @@ export { GameListSkeleton } from './GameListSkeleton';
 export { LatestPostsList } from './LatestPostsList';
 export { LatestPostsSkeleton } from './LatestPostsSkeleton';
 export { NewGameButton } from './NewGameButton';
-export { SortButton } from './SortButton';

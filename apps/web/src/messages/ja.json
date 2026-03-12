@@ -92,6 +92,10 @@
     "topicsSquarePost": {
       "title": "{square}についての投稿",
       "description": "チェスの{square}マスに関する議論の投稿"
+    },
+    "games": {
+      "title": "ゲーム一覧",
+      "description": "目隠しチェスのゲームを管理"
     }
   },
   "Header": {
@@ -1141,8 +1145,12 @@
       "cancel": "キャンセル",
       "gameDeletedToast": "ゲームを削除しました",
       "gamesDeletedToast": "{count}個のゲームを削除しました",
-      "deleteFailedToast": "ゲームの削除に失敗しました"
+      "deleteFailedToast": "ゲームの削除に失敗しました",
+      "moreGames": "すべてのゲーム"
     }
+  },
+  "gamesPage": {
+    "pageTitle": "ゲーム"
   },
   "bulkDelete": {
     "title": "ゲームの一括削除",

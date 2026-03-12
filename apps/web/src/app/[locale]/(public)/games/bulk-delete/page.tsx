@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BulkDeletePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'bulkDelete' });
+  const tGamesPage = await getTranslations({ locale, namespace: 'gamesPage' });
   const tGameList = await getTranslations({ locale, namespace: 'home.gameList' });
 
   return (
@@ -36,7 +37,10 @@ export default async function BulkDeletePage({ params }: Props) {
         <SectionTitle>{tGameList('title')}</SectionTitle>
         <BulkDeleteClient />
 
-        <Breadcrumb items={[{ label: t('title'), href: undefined }]} locale={locale} />
+        <Breadcrumb
+          items={[{ label: tGamesPage('pageTitle'), href: '/games' }, { label: t('title') }]}
+          locale={locale}
+        />
       </PagePanel>
     </div>
   );

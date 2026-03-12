@@ -92,6 +92,10 @@
     "topicsSquarePost": {
       "title": "Post about {square}",
       "description": "A discussion post about the {square} square in chess"
+    },
+    "games": {
+      "title": "Your Games",
+      "description": "View and manage your blindfold chess games"
     }
   },
   "Header": {
@@ -1140,8 +1144,12 @@
       "cancel": "Cancel",
       "gameDeletedToast": "Game deleted successfully",
       "gamesDeletedToast": "{count} games deleted successfully",
-      "deleteFailedToast": "Failed to delete game"
+      "deleteFailedToast": "Failed to delete game",
+      "moreGames": "All games"
     }
+  },
+  "gamesPage": {
+    "pageTitle": "Games"
   },
   "bulkDelete": {
     "title": "Bulk Delete Games",

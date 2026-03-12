@@ -5,14 +5,6 @@ type Props = {
 export function GameListSkeleton({ rows = 5 }: Props = {}) {
   return (
     <div className="animate-pulse space-y-4">
-      {/* Sort button placeholder */}
-      <div className="flex justify-end">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 bg-muted rounded"></div>
-          <div className="h-9 w-36 bg-muted rounded-md"></div>
-        </div>
-      </div>
-
       {/* Game list placeholder */}
       <div className="bg-card rounded-md border border-border overflow-hidden">
         {Array.from({ length: rows }, (_, i) => (
@@ -48,11 +40,6 @@ export function GameListSkeleton({ rows = 5 }: Props = {}) {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Bulk delete link placeholder */}
-      <div className="text-right">
-        <div className="inline-block h-4 w-20 bg-muted rounded"></div>
       </div>
     </div>
   );

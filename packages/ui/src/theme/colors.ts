@@ -23,6 +23,8 @@ export const lightColors = {
   border: "#cccccc",
   input: "#ffffff",
   ring: "#3893E8",
+  linkPrimary: "#3893E8",
+  linkSecondary: "#7f7f7f",
 } as const;
 
 // Semantic UI colors for dark mode (Lichess-inspired warm dark)
@@ -50,6 +52,8 @@ export const darkColors = {
   border: "#3d3d3d",
   input: "#2b2926",
   ring: "#3893E8",
+  linkPrimary: "#3893E8",
+  linkSecondary: "#7f7f7f",
 } as const;
 
 // Type for theme colors (widened to string so both light and dark satisfy it)
