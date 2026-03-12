@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
+import type { PracticeCompleteLabels, ProblemResult } from '../_lib/practice-complete-types';
 import { DeleteFenConfirmModal } from './DeleteFenConfirmModal';
 import { ProblemResultItem } from './ProblemResultItem';
-import type { PracticeCompleteLabels, ProblemResult } from './practice-complete-types';
 
 type Props = {
   problemResults: ProblemResult[];

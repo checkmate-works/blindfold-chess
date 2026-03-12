@@ -2,7 +2,7 @@
 
 import { type ReactNode, useEffect, useId } from 'react';
 
-import { useScrollLock } from '../_hooks/useScrollLock';
+import { useScrollLock } from '../_hooks/use-scroll-lock';
 
 type Props = {
   isOpen: boolean;

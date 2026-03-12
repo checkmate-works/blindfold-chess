@@ -5,8 +5,7 @@ import dynamic from 'next/dynamic';
 // Server Components should use standard Link with explicit locale in href.
 import Link from 'next/link';
 
-import type { ChessTerm } from '@/app/[locale]/_lib/types';
-
+import type { ChessTerm } from '../_lib/types';
 import { CATEGORY_COLORS } from '../_lib/types';
 
 const GlossaryPositionBoard = dynamic(() =>

@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { db } from '@/lib/db';
 
-import type { ChessTerm } from '@/app/[locale]/_lib/types';
-
 import {
   getCategoryCounts,
   getGlossaryTerms,
@@ -12,6 +10,7 @@ import {
   getTermsByLetter,
   getUniqueLetters,
 } from './queries';
+import type { ChessTerm } from './types';
 
 // Mock the db module before importing queries
 vi.mock('@/lib/db', () => {

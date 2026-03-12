@@ -9,7 +9,7 @@ import type { EvaluationMark } from '@/lib/evaluation';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
+import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
 
 import { MoveNavigationControls } from './MoveNavigationControls';
 

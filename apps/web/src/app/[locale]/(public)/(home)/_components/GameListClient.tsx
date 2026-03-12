@@ -7,8 +7,8 @@ import { Link } from '@/i18n/routing';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useGameDelete } from '../_hooks/useGameDelete';
-import { useGameList } from '../_hooks/useGameList';
+import { useGameDelete } from '../_hooks/use-game-delete';
+import { useGameList } from '../_hooks/use-game-list';
 import { EmptyGameList } from './EmptyGameList';
 import { GameList } from './GameList';
 import { GameListSkeleton } from './GameListSkeleton';

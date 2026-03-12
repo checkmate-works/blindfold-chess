@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { Step4Client } from './Step4Client';
+import { Step4Client } from './_components/Step4Client';
 
 type Props = {
   params: Promise<{

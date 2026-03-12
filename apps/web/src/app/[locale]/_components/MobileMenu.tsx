@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { FaHome } from 'react-icons/fa';
 
-import { useScrollLock } from '../_hooks/useScrollLock';
+import { useScrollLock } from '../_hooks/use-scroll-lock';
+import { getIcon } from '../_lib/icon-mapping';
 import type { NavigationItem } from '../_lib/types';
-import { getIcon } from '../_lib/utils';
 
 type Props = {
   title: string;

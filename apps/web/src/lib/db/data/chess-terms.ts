@@ -1,4 +1,4 @@
-import { ChessTerm } from '@/app/[locale]/_lib/types';
+import { ChessTerm } from '@/app/[locale]/(public)/glossary/_lib/types';
 
 export const chessTerms: ChessTerm[] = [
   {

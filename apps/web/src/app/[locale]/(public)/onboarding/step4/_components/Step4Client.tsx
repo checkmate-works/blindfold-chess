@@ -9,7 +9,7 @@ import { Link } from '@/i18n/routing';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { OnboardingStepLayout } from '../_components';
+import { OnboardingStepLayout } from '../../_components';
 
 type Props = {
   locale: Locale;

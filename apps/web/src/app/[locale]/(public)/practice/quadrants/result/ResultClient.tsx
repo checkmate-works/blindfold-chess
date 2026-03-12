@@ -9,7 +9,7 @@ import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/P
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_components/get-common-practice-labels';
+import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

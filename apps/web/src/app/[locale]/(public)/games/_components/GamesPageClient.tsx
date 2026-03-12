@@ -14,8 +14,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { EmptyGameList } from '../../(home)/_components/EmptyGameList';
 import { GameList } from '../../(home)/_components/GameList';
 import { GameListSkeleton } from '../../(home)/_components/GameListSkeleton';
-import { useGameDelete } from '../../(home)/_hooks/useGameDelete';
-import { useGameList } from '../../(home)/_hooks/useGameList';
+import { useGameDelete } from '../../(home)/_hooks/use-game-delete';
+import { useGameList } from '../../(home)/_hooks/use-game-list';
 import { SortButton } from './SortButton';
 
 const GAMES_PAGE_MAX_COUNT = 20;

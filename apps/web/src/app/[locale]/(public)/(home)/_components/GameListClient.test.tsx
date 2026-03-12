@@ -13,7 +13,7 @@ afterEach(() => {
 
 const mockUseGameList = vi.fn();
 
-vi.mock('../_hooks/useGameList', () => ({
+vi.mock('../_hooks/use-game-list', () => ({
   useGameList: (...args: unknown[]) => mockUseGameList(...args),
 }));
 

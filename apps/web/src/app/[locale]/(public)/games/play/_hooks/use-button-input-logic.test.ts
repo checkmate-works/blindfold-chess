@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { useButtonInputLogic } from './useButtonInputLogic';
+import { useButtonInputLogic } from './use-button-input-logic';
 
 describe('useButtonInputLogic', () => {
   const mockOnSubmit = vi.fn();

@@ -8,9 +8,7 @@ import {
   glossaryTerms,
 } from '@/lib/db';
 
-import type { ChessTerm } from '@/app/[locale]/_lib/types';
-
-import type { GlossaryCategory } from './types';
+import type { ChessTerm, GlossaryCategory } from './types';
 
 function toChessTerm(
   row: {

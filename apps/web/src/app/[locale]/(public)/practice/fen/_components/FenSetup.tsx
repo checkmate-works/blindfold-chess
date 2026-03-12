@@ -18,10 +18,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
+import { useFenSettings } from '../_hooks/use-fen-settings';
 import { CustomFenSection } from './CustomFenSection';
 import { PresetProblemSection } from './PresetProblemSection';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
-import { useFenSettings } from './useFenSettings';
 
 type Props = {
   locale: Locale;

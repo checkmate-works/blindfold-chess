@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useDiagonalInput } from './useDiagonalInput';
+import { useDiagonalInput } from './use-diagonal-input';
 
 describe('useDiagonalInput', () => {
   const mockOnBothComplete = vi.fn();

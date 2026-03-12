@@ -5,8 +5,8 @@ import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaTrash } from 'react
 
 import { fenToLichessUrl } from '@/lib/lichess';
 
+import type { PracticeCompleteLabels, ProblemResult } from '../_lib/practice-complete-types';
 import { AnimatedChessBoard } from './AnimatedChessBoard';
-import type { PracticeCompleteLabels, ProblemResult } from './practice-complete-types';
 
 const EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 

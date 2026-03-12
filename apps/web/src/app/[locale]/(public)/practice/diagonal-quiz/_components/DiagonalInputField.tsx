@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 
-import type { ActiveField } from './useDiagonalInput';
+import type { ActiveField } from '../_hooks/use-diagonal-input';
 
 type Props = {
   label: string;

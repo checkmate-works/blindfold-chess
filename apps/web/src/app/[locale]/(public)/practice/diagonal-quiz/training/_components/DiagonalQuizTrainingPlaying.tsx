@@ -13,8 +13,8 @@ import { SectionTitle } from '@/app/[locale]/_components';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';
-import type { ActiveField } from '../../_components/useDiagonalInput';
-import { useDiagonalInput } from '../../_components/useDiagonalInput';
+import type { ActiveField } from '../../_hooks/use-diagonal-input';
+import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
 
 type Props = {
   currentSquare: string;

@@ -9,11 +9,15 @@ import { FaRedo } from 'react-icons/fa';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import type {
+  PracticeCompleteLabels,
+  ProblemResult,
+  ScoreStats,
+} from '../_lib/practice-complete-types';
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
 import { PracticeLayout } from './PracticeLayout';
 import { PracticePanel } from './PracticePanel';
 import { ProblemResultList } from './ProblemResultList';
-import type { PracticeCompleteLabels, ProblemResult, ScoreStats } from './practice-complete-types';
 
 type Props = {
   score: number;

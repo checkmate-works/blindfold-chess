@@ -1,8 +1,8 @@
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import type { PracticeCompleteLabels, ScoreStats } from '../_lib/practice-complete-types';
+import { isDetailedPieceStats } from '../_lib/practice-complete-types';
 import { SegmentedProgressBar } from './SegmentedProgressBar';
-import type { PracticeCompleteLabels, ScoreStats } from './practice-complete-types';
-import { isDetailedPieceStats } from './practice-complete-types';
 
 type Props = {
   score: number;

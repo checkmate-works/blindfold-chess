@@ -8,10 +8,10 @@ import { FaTrash } from 'react-icons/fa';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { useButtonInputLogic } from '../_hooks/use-button-input-logic';
 import { CastlingSelector } from './CastlingSelector';
 import { PieceSelector } from './PieceSelector';
 import { PromotionSelector } from './PromotionSelector';
-import { useButtonInputLogic } from './useButtonInputLogic';
 
 type Props = {
   fen: string;

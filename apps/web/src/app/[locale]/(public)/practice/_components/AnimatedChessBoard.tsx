@@ -11,7 +11,7 @@ import type { PieceType } from '@blindfold-chess/types';
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
-import { usePieceAnimation } from '../_hooks/usePieceAnimation';
+import { usePieceAnimation } from '../_hooks/use-piece-animation';
 
 type Props = {
   initialFen: string;

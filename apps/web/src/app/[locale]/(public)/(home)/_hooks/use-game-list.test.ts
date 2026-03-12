@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Game, GameSortOption, SortDirection } from '@/lib/types';
 
-import { useGameList } from './useGameList';
+import { useGameList } from './use-game-list';
 
 // Mock LocalStorageGameRepository
 const mockLoadAllSorted = vi.fn();

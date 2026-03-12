@@ -8,9 +8,9 @@ import { Button } from '@/app/_components';
 
 import { getPgnSuggestion } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
-import { useDebouncedInput } from '../_hooks/useDebouncedInput';
-import { useIsMobile } from '../_hooks/useIsMobile';
-import { usePgnValidation } from '../_hooks/usePgnValidation';
+import { useDebouncedInput } from '../_hooks/use-debounced-input';
+import { useIsMobile } from '../_hooks/use-is-mobile';
+import { usePgnValidation } from '../_hooks/use-pgn-validation';
 
 type Props = {
   value: string;

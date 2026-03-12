@@ -8,7 +8,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { MoveInputStep, OnboardingStepLayout } from '../_components';
+import { MoveInputStep, OnboardingStepLayout } from '../../_components';
 
 type MoveInputMode = GamePreferences['moveInputMode'];
 

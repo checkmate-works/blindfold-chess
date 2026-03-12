@@ -22,3 +22,15 @@ export const CATEGORY_COLORS: Record<GlossaryCategory, string> = {
   structure: 'bg-accent/50 text-accent-foreground',
   general: 'bg-card text-card-foreground',
 } as const;
+
+export interface ChessTerm {
+  term: string;
+  termJa?: string;
+  reading?: string;
+  definition: string;
+  definitionEn?: string;
+  aliases?: string[];
+  relatedTerms?: string[];
+  positions?: { fen: string; sortOrder: number; caption?: string }[];
+  category?: GlossaryCategory;
+}

@@ -9,7 +9,7 @@ import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_component
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { OnboardingStepLayout, PeekModeStep } from '../_components';
+import { OnboardingStepLayout, PeekModeStep } from '../../_components';
 
 type Props = {
   locale: Locale;

@@ -10,7 +10,7 @@ import { FaEye } from 'react-icons/fa';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useScrollLock } from '@/app/[locale]/_hooks/useScrollLock';
+import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
 
 import { useMoveSequenceRecall } from '../_hooks/use-move-sequence-recall';
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
