@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaRedo } from 'react-icons/fa';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -41,7 +42,7 @@ export function KnightTourResult({
   const { preferences } = useGamePreferences();
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         {/* ... (Header and Board sections unchanged) ... */}
         {/* Result Header */}
@@ -126,6 +127,6 @@ export function KnightTourResult({
           )}
         </div>
       </div>
-    </div>
+    </PracticeLayout>
   );
 }

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaInfoCircle, FaPlay } from 'react-icons/fa';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { BetaNotice, CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -122,7 +123,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
         <SectionTitle className="mb-6">
           <span className="inline-flex items-center gap-2">
@@ -263,6 +264,6 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         isOpen={isAboutFeatureOpen}
         onClose={() => setIsAboutFeatureOpen(false)}
       />
-    </div>
+    </PracticeLayout>
   );
 }

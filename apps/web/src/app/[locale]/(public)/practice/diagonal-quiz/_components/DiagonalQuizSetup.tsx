@@ -7,6 +7,7 @@ import { Button } from '@/app/_components';
 import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
@@ -55,7 +56,7 @@ export function DiagonalQuizSetup({
 
   return (
     <div>
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <PracticePanel className="p-6">
         <BetaNotice className="mb-6">
           <p>{t('betaNotice')}</p>
         </BetaNotice>
@@ -103,7 +104,7 @@ export function DiagonalQuizSetup({
             {t('tutorial.viewTutorial')}
           </button>
         </div>
-      </div>
+      </PracticePanel>
     </div>
   );
 }

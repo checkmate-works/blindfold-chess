@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { parseMoveSequence } from '../_lib/pgn-parser';
 import type { MoveSequenceData, MoveSequencePhase, MoveSequenceSessionResult } from '../_lib/types';
 import { MoveSequenceMemorize } from './MoveSequenceMemorize';
@@ -116,14 +117,14 @@ export function MoveSequenceSession({
   // Show error state
   if (parseError) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <PracticeLayout>
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6 text-center">
           <p className="text-destructive mb-4">{parseError}</p>
           <Button onClick={handleTryAgain} variant="secondary">
             {t('backToSetup')}
           </Button>
         </div>
-      </div>
+      </PracticeLayout>
     );
   }
 

@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -106,7 +107,7 @@ export function ResultClient({ locale }: Props) {
       />
 
       {relatedLinks.length > 0 && !isTutorial && (
-        <div className="max-w-4xl mx-auto">
+        <PracticeLayout>
           <SectionTitle className="text-xl font-semibold mb-4">
             {tPractice('relatedLearning')}
           </SectionTitle>
@@ -123,7 +124,7 @@ export function ResultClient({ locale }: Props) {
               />
             ))}
           </div>
-        </div>
+        </PracticeLayout>
       )}
     </PracticeResultPage>
   );

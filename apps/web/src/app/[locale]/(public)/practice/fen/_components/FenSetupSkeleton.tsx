@@ -1,6 +1,8 @@
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+
 export function FenSetupSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <div className="animate-pulse">
           {/* Title */}
@@ -28,6 +30,6 @@ export function FenSetupSkeleton() {
           <div className="h-12 bg-muted rounded-lg mt-6"></div>
         </div>
       </div>
-    </div>
+    </PracticeLayout>
   );
 }

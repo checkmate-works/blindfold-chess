@@ -1,9 +1,12 @@
 import { Skeleton } from '@/app/[locale]/_components';
 
+import { PracticeLayout } from './PracticeLayout';
+import { PracticePanel } from './PracticePanel';
+
 export function PracticeResultSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-card rounded-xl shadow-sm border border-border p-8">
+    <PracticeLayout>
+      <PracticePanel className="p-8">
         {/* Score display placeholder */}
         <div className="mb-6 text-center flex flex-col items-center">
           <Skeleton className="h-10 w-32 mb-2" />
@@ -15,7 +18,7 @@ export function PracticeResultSkeleton() {
           <Skeleton className="h-12 w-full rounded-lg" />
           <Skeleton className="h-12 w-full rounded-lg" />
         </div>
-      </div>
-    </div>
+      </PracticePanel>
+    </PracticeLayout>
   );
 }

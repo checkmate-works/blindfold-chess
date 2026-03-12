@@ -1,6 +1,8 @@
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+
 export function PositionMemorySetupSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <div className="animate-pulse">
           <div className="space-y-6">
@@ -59,6 +61,6 @@ export function PositionMemorySetupSkeleton() {
       <div className="mt-8 flex justify-end">
         <div className="h-10 bg-muted rounded w-32"></div>
       </div>
-    </div>
+    </PracticeLayout>
   );
 }

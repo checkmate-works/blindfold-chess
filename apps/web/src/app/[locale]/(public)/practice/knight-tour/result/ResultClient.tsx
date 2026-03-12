@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -111,8 +113,8 @@ export function ResultClient({ locale }: Props) {
       />
 
       {!isTutorial && (
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6 mt-8 space-y-3">
+        <PracticeLayout>
+          <PracticePanel className="p-6 mt-8 space-y-3">
             <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {relatedLinks.map((link) => (
@@ -126,8 +128,8 @@ export function ResultClient({ locale }: Props) {
                 />
               ))}
             </div>
-          </div>
-        </div>
+          </PracticePanel>
+        </PracticeLayout>
       )}
     </PracticeResultPage>
   );

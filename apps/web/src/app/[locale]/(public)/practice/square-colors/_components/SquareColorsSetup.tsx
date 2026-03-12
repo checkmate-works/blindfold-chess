@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -38,7 +39,7 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
 
   return (
     <div>
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <PracticePanel className="p-6">
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
@@ -66,9 +67,9 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
         >
           {mode === 'training' ? tp('startTraining') : t('start')}
         </Button>
-      </div>
+      </PracticePanel>
 
-      <div className="mt-8 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
+      <PracticePanel className="mt-8 p-6 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/square-colors"
@@ -77,7 +78,7 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
           description={t('articleDescription')}
           locale={locale}
         />
-      </div>
+      </PracticePanel>
     </div>
   );
 }

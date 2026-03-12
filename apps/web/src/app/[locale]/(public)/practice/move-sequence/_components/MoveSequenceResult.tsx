@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaRedo } from 'react-icons/fa';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import type { MoveSequenceSessionResult } from '../_lib/types';
@@ -30,7 +31,7 @@ export function MoveSequenceResult({
   const tPractice = useTranslations('practice');
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         {/* Result Header */}
         <SectionTitle className="text-2xl font-bold text-center mb-6">
@@ -130,6 +131,6 @@ export function MoveSequenceResult({
           )}
         </div>
       </div>
-    </div>
+    </PracticeLayout>
   );
 }

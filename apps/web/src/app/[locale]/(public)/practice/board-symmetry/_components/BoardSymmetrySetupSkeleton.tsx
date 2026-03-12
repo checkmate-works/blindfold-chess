@@ -1,6 +1,8 @@
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
+
 export function BoardSymmetrySetupSkeleton() {
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+    <PracticePanel className="p-6">
       <div className="animate-pulse">
         {/* Section Title */}
         <div className="h-6 bg-muted rounded w-24 mb-4"></div>
@@ -21,6 +23,6 @@ export function BoardSymmetrySetupSkeleton() {
         {/* Start Button */}
         <div className="h-12 bg-muted rounded-lg"></div>
       </div>
-    </div>
+    </PracticePanel>
   );
 }

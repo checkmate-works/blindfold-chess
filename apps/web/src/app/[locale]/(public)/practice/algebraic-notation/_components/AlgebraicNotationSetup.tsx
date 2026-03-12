@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 export function AlgebraicNotationSetup() {
@@ -19,7 +20,7 @@ export function AlgebraicNotationSetup() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <PracticePanel className="p-6">
         <p className="text-muted-foreground mb-6">{t('description')}</p>
 
         <Button
@@ -31,9 +32,9 @@ export function AlgebraicNotationSetup() {
         >
           {t('start')}
         </Button>
-      </div>
+      </PracticePanel>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
+      <PracticePanel className="p-6 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/notation/algebraic-notation"
@@ -42,7 +43,7 @@ export function AlgebraicNotationSetup() {
           description={t('articleDescription')}
           locale={locale}
         />
-      </div>
+      </PracticePanel>
     </div>
   );
 }

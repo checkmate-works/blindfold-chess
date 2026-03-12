@@ -10,6 +10,8 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
+import { PracticeLayout } from './PracticeLayout';
+import { PracticePanel } from './PracticePanel';
 import { ProblemResultList } from './ProblemResultList';
 import type { PracticeCompleteLabels, ProblemResult, ScoreStats } from './practice-complete-types';
 
@@ -54,8 +56,8 @@ export function PracticeComplete({
   const router = useRouter();
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-card rounded-xl shadow-sm border border-border p-8">
+    <PracticeLayout>
+      <PracticePanel className="p-8">
         <PracticeCompleteSummary
           score={score}
           total={total}
@@ -102,11 +104,11 @@ export function PracticeComplete({
             </div>
           )}
         </div>
-      </div>
+      </PracticePanel>
 
       {/* Related learning module */}
       {relatedModule && (
-        <div className="mt-12 bg-card rounded-xl shadow-sm border border-border p-6 space-y-3">
+        <PracticePanel className="mt-12 p-6 space-y-3">
           <SectionTitle>
             {relatedModule.sectionTitle || labels.relatedLearning || 'Related Learning'}
           </SectionTitle>
@@ -117,8 +119,8 @@ export function PracticeComplete({
             description={relatedModule.description}
             locale={locale}
           />
-        </div>
+        </PracticePanel>
       )}
-    </div>
+    </PracticeLayout>
   );
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
+import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -59,7 +60,7 @@ export function LegalMovesSetup({
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
         <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
 
@@ -132,6 +133,6 @@ export function LegalMovesSetup({
           />
         </div>
       </div>
-    </div>
+    </PracticeLayout>
   );
 }

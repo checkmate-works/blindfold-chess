@@ -10,6 +10,7 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { ProblemCountSlider } from '@/app/[locale]/(public)/practice/_components/ProblemCountSlider';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
@@ -89,7 +90,7 @@ export function RoutePlannerSettings({
 
   return (
     <div>
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <PracticePanel className="p-6">
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
 
         <div className="mb-6">
@@ -163,7 +164,7 @@ export function RoutePlannerSettings({
         </Button>
 
         {onShowTutorial && <RoutePlannerTutorialSkipLink onStartTutorial={onShowTutorial} />}
-      </div>
+      </PracticePanel>
 
       <div className="mt-8 flex justify-end">
         <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
