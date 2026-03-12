@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { FaRegComment } from 'react-icons/fa';
 
+import { truncateContent } from '../../_lib/truncate-content';
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
 import { LikeButton } from './LikeButton';
@@ -19,10 +20,10 @@ type Props = {
 };
 
 export function PostCard({ post, locale, square, showSquareBadge = false }: Props) {
+  const tTopics = useTranslations('topics');
   const t = useTranslations('topics.squares');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const contentPreview =
-    post.content.length > 200 ? post.content.slice(0, 200) + '...' : post.content;
+  const contentPreview = truncateContent(post.content);
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
   return (
@@ -55,7 +56,10 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
             })}
           </time>
         </div>
-        <p className="text-sm text-foreground whitespace-pre-wrap break-words">{contentPreview}</p>
+        <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
+          {contentPreview}
+        </p>
+        <span className="text-sm text-link-primary">{tTopics('showMore')}</span>
       </UserAvatar>
 
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
