@@ -44,6 +44,13 @@ export default async function TermsPage({ params }: Props) {
           <SectionTitle>{t('serviceDescriptionTitle')}</SectionTitle>
           <p>{t('serviceDescriptionContent')}</p>
 
+          <SectionTitle>{t('accountRegistrationTitle')}</SectionTitle>
+          <p>{t('accountRegistrationDescription')}</p>
+          <ul className="list-disc ml-6 space-y-2">
+            <li className="text-foreground/90 pl-2">{t('accountRegistrationItem1')}</li>
+            <li className="text-foreground/90 pl-2">{t('accountRegistrationItem2')}</li>
+          </ul>
+
           <SectionTitle>{t('dataHandlingTitle')}</SectionTitle>
           <p>
             <strong className="font-semibold text-foreground">{t('dataHandlingWarning')}</strong>

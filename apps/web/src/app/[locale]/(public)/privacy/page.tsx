@@ -132,6 +132,7 @@ export default async function PrivacyPage({ params }: Props) {
           <ul className="list-disc ml-6 space-y-2">
             <li className="text-foreground/90 pl-2">{t('dataRetentionItem1')}</li>
             <li className="text-foreground/90 pl-2">{t('dataRetentionItem2')}</li>
+            <li className="text-foreground/90 pl-2">{t('dataRetentionItem3')}</li>
           </ul>
 
           <SectionTitle>{t('changesTitle')}</SectionTitle>
