@@ -61,6 +61,24 @@ describe('isReservedUsername', () => {
     });
   });
 
+  describe('Category 6: Testing, development, and operational names', () => {
+    it.each(['test', 'testing', 'demo', 'dev', 'staging', 'production', 'sandbox', 'localhost'])(
+      'blocks testing/dev name "%s"',
+      (name) => {
+        expect(isReservedUsername(name)).toBe(true);
+      }
+    );
+  });
+
+  describe('Category 7: Generic and placeholder names', () => {
+    it.each(['user', 'anonymous', 'anon', 'guest', 'unknown', 'null', 'undefined'])(
+      'blocks generic/placeholder name "%s"',
+      (name) => {
+        expect(isReservedUsername(name)).toBe(true);
+      }
+    );
+  });
+
   describe('non-reserved usernames', () => {
     it.each(['alice', 'bob123', 'player_one', 'test_user_123', 'john', 'myapp', 'coolplayer'])(
       'allows normal username "%s"',
