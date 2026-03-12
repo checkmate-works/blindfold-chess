@@ -2014,6 +2014,9 @@
   "topics": {
     "title": "トピック",
     "description": "チェスのマス目やポジション、戦略について議論・共有しましょう",
+    "recentTopicPosts": "最近のトピック",
+    "moreTopicPosts": "トピックをもっと見る",
+    "showMore": "さらに表示",
     "categories": {
       "squares": {
         "title": "マス目",

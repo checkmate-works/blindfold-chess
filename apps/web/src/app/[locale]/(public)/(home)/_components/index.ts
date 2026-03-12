@@ -5,4 +5,8 @@ export { GameListItem } from './GameListItem';
 export { GameListSkeleton } from './GameListSkeleton';
 export { LatestPostsList } from './LatestPostsList';
 export { LatestPostsSkeleton } from './LatestPostsSkeleton';
+export { LatestTopicPostsList } from './LatestTopicPostsList';
+export { LatestTopicPostsSkeleton } from './LatestTopicPostsSkeleton';
 export { NewGameButton } from './NewGameButton';
+export { TopicPostCard } from './TopicPostCard';
+export { TopicSquareBoard } from './TopicSquareBoard';

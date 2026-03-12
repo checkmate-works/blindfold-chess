@@ -2013,6 +2013,9 @@
   "topics": {
     "title": "Topics",
     "description": "Discuss and share insights about chess squares, positions, and strategies",
+    "recentTopicPosts": "Recent Topics",
+    "moreTopicPosts": "More topics",
+    "showMore": "Show more",
     "categories": {
       "squares": {
         "title": "Squares",

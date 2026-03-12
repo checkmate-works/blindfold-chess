@@ -26,7 +26,14 @@ import { Ad } from '@/app/[locale]/_components/Ad';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { GameListClient, LatestPostsList, LatestPostsSkeleton, NewGameButton } from './_components';
+import {
+  GameListClient,
+  LatestPostsList,
+  LatestPostsSkeleton,
+  LatestTopicPostsList,
+  LatestTopicPostsSkeleton,
+  NewGameButton,
+} from './_components';
 
 type Props = {
   params: Promise<{
@@ -48,6 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const tHome = await getTranslations({ locale, namespace: 'home' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tPosts = await getTranslations({ locale, namespace: 'posts' });
 
   return (
@@ -58,6 +66,13 @@ export default async function HomePage({ params }: Props) {
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale)} />
+
+        <ErrorBoundary>
+          <Suspense fallback={<LatestTopicPostsSkeleton title={tTopics('recentTopicPosts')} />}>
+            <LatestTopicPostsList locale={locale} title={tTopics('recentTopicPosts')} />
+          </Suspense>
+        </ErrorBoundary>
+
         <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
           <SectionTitle>{tHome('gameList.title')}</SectionTitle>
 
