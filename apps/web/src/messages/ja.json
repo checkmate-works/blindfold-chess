@@ -1821,7 +1821,8 @@
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
     "gameSaved": "ゲームが保存されました",
-    "gamesDeleted": "{count}個のゲームを削除しました"
+    "gamesDeleted": "{count}個のゲームを削除しました",
+    "accountDeleted": "退会が完了しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

@@ -1820,7 +1820,8 @@
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
     "gameSaved": "Game saved successfully",
-    "gamesDeleted": "{count} games deleted successfully"
+    "gamesDeleted": "{count} games deleted successfully",
+    "accountDeleted": "Your account has been deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",

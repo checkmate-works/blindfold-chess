@@ -39,7 +39,7 @@ export function DeleteAccountButton({ locale }: Props) {
       }
 
       await signOut();
-      router.push(`/${locale}`);
+      router.push(`/${locale}?toast=account_deleted`);
     } catch {
       setError(t('error'));
       setIsDeleting(false);
