@@ -29,7 +29,10 @@ This project uses `supabase-js` only for Auth (GoTrue). Database access is handl
    - Select **External** as user type
    - Fill in the required fields (app name, support email)
    - Add scopes: `email`, `profile`, `openid`
+
+   > **Note:** Even if you only configure `email` and `openid` here, Supabase Auth (GoTrue) hardcodes `email` and `profile` as default scopes for the Google provider. The client-side `scopes` parameter is additive and cannot replace these defaults. As a result, Google's consent screen will always show "name and profile picture" permission. See: https://github.com/supabase/auth/blob/master/internal/api/provider/google.go
    - The app starts in **Testing** mode — add your Google account as a test user for local development
+
 5. Click **Create Credentials** > **OAuth client ID**
 6. Select **Web application** as the application type
 7. Configure the following:

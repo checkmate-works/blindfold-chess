@@ -21,6 +21,11 @@ export function GoogleOAuthButton({ namespace }: Props) {
     const supabase = createClient();
     if (!supabase) return;
 
+    // Note: Google's consent screen shows "name and profile picture" permission,
+    // but this app does not use that data. Supabase Auth (GoTrue) hardcodes
+    // `email` and `profile` as default scopes for the Google provider.
+    // The client-side `scopes` parameter is additive — it cannot replace defaults.
+    // See: https://github.com/supabase/auth/blob/master/internal/api/provider/google.go
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
