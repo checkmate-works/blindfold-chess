@@ -8,11 +8,15 @@ import { FcGoogle } from 'react-icons/fc';
 
 import { createClient } from '@/lib/supabase/client';
 
-export function GoogleSignInButton() {
-  const t = useTranslations('signIn');
+type Props = {
+  namespace: 'signIn' | 'signUp';
+};
+
+export function GoogleOAuthButton({ namespace }: Props) {
+  const t = useTranslations(namespace);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = async () => {
+  const handleClick = async () => {
     setIsLoading(true);
     const supabase = createClient();
     if (!supabase) return;
@@ -27,13 +31,13 @@ export function GoogleSignInButton() {
 
   return (
     <button
-      onClick={handleSignIn}
+      onClick={handleClick}
       disabled={isLoading}
       className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto px-6 py-3 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <FcGoogle className="w-5 h-5" />
       <span className="text-sm font-medium text-foreground">
-        {isLoading ? t('signingIn') : t('signInWithGoogle')}
+        {isLoading ? t('googleOAuthLoading') : t('googleOAuth')}
       </span>
     </button>
   );

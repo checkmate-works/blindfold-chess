@@ -86,6 +86,14 @@ export function AuthStatusDisplay() {
     );
   }
 
-  // TODO: Restore sign-in link when authentication is publicly launched
-  return null;
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <Link href={`/${locale}/sign-up`} className="text-link-primary hover:underline">
+        {t('signUp')}
+      </Link>
+      <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+        {t('signIn')}
+      </Link>
+    </div>
+  );
 }

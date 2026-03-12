@@ -16,13 +16,13 @@ vi.mock('next-intl', () => ({
 
 describe('AuthErrorMessage', () => {
   it('should render the auth error message', () => {
-    render(<AuthErrorMessage />);
+    render(<AuthErrorMessage namespace="signIn" />);
 
     expect(screen.getByText('authError')).toBeInTheDocument();
   });
 
   it('should render with appropriate error styling', () => {
-    const { container } = render(<AuthErrorMessage />);
+    const { container } = render(<AuthErrorMessage namespace="signUp" />);
 
     const wrapper = container.firstElementChild as HTMLElement;
     expect(wrapper.className).toContain('bg-destructive');

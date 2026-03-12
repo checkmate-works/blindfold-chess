@@ -1,3 +1,12 @@
+/**
+ * Sign Up Page (アカウント登録)
+ *
+ * @description
+ * Registration page using Google OAuth.
+ * Since OAuth treats sign-up and sign-in as the same operation (signInWithOAuth),
+ * existing users authenticating from this page are silently logged in.
+ * This is industry-standard behavior and also prevents account enumeration attacks.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
@@ -20,17 +29,17 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.signIn' });
+  const t = await getTranslations({ locale, namespace: 'metadata.signUp' });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'sign-in' }),
+    ...generateCanonicalMetadata({ locale, path: 'sign-up' }),
     title: t('title'),
     description: t('description'),
     robots: { index: false, follow: false },
   };
 }
 
-export default async function SignInPage({ params, searchParams }: Props) {
+export default async function SignUpPage({ params, searchParams }: Props) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     throw new Error(
       'Supabase environment variables are not configured. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
@@ -49,21 +58,21 @@ export default async function SignInPage({ params, searchParams }: Props) {
   }
 
   const { error } = await searchParams;
-  const t = await getTranslations({ locale, namespace: 'signIn' });
+  const t = await getTranslations({ locale, namespace: 'signUp' });
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
-        {error && <AuthErrorMessage namespace="signIn" />}
+        {error && <AuthErrorMessage namespace="signUp" />}
         <div>
-          <GoogleOAuthButton namespace="signIn" />
+          <GoogleOAuthButton namespace="signUp" />
         </div>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t('noAccount')}{' '}
-          <Link href="/sign-up" className="text-link-primary hover:underline">
-            {t('signUp')}
+          {t('alreadyHaveAccount')}{' '}
+          <Link href="/sign-in" className="text-link-primary hover:underline">
+            {t('signIn')}
           </Link>
         </p>
 

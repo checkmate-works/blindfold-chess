@@ -41,6 +41,10 @@
       "title": "Sign In",
       "description": "Sign in to your Blindfold Chess account"
     },
+    "signUp": {
+      "title": "Register",
+      "description": "Register for Blindfold Chess"
+    },
     "onboarding": {
       "title": "Setup",
       "description": "Set up your preferences before starting your first game"
@@ -1577,7 +1581,8 @@
     }
   },
   "AuthStatusDisplay": {
-    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "signUp": "Register",
     "account": "Account",
     "mypage": "My Page",
     "settings": "Settings",
@@ -1586,9 +1591,20 @@
   "signIn": {
     "title": "Sign In",
     "description": "Sign in to your Blindfold Chess account",
-    "signInWithGoogle": "Sign in with Google",
-    "signingIn": "Signing in...",
-    "authError": "Sign-in failed. Please try again."
+    "googleOAuth": "Sign in with Google",
+    "googleOAuthLoading": "Signing in...",
+    "authError": "Sign-in failed. Please try again.",
+    "noAccount": "Don't have an account?",
+    "signUp": "Register"
+  },
+  "signUp": {
+    "title": "Register",
+    "description": "Register for Blindfold Chess",
+    "googleOAuth": "Register with Google",
+    "googleOAuthLoading": "Registering...",
+    "authError": "Registration failed. Please try again.",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in"
   },
   "posts": {
     "pageTitle": "Posts",

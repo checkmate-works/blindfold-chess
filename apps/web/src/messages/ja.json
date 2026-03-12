@@ -41,6 +41,10 @@
       "title": "サインイン",
       "description": "Blindfold Chess アカウントにサインイン"
     },
+    "signUp": {
+      "title": "アカウント登録",
+      "description": "Blindfold Chess のアカウントを作成"
+    },
     "onboarding": {
       "title": "初期設定",
       "description": "初めてのゲームの前に設定をカスタマイズしましょう"
@@ -1578,7 +1582,8 @@
     }
   },
   "AuthStatusDisplay": {
-    "signUp": "サインアップ",
+    "signIn": "ログイン",
+    "signUp": "登録",
     "account": "アカウント",
     "mypage": "マイページ",
     "settings": "設定",
@@ -1587,9 +1592,20 @@
   "signIn": {
     "title": "サインイン",
     "description": "Blindfold Chess アカウントにサインイン",
-    "signInWithGoogle": "Google でサインイン",
-    "signingIn": "サインイン中...",
-    "authError": "サインインに失敗しました。もう一度お試しください。"
+    "googleOAuth": "Google でサインイン",
+    "googleOAuthLoading": "サインイン中...",
+    "authError": "サインインに失敗しました。もう一度お試しください。",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "signUp": "登録はこちら"
+  },
+  "signUp": {
+    "title": "アカウント登録",
+    "description": "Blindfold Chess のアカウントを作成",
+    "googleOAuth": "Google で登録",
+    "googleOAuthLoading": "登録中...",
+    "authError": "登録に失敗しました。もう一度お試しください。",
+    "alreadyHaveAccount": "既にアカウントをお持ちですか？",
+    "signIn": "ログイン"
   },
   "posts": {
     "pageTitle": "投稿",
