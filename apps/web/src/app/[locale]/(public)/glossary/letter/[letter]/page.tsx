@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const upperLetter = letter.toUpperCase();
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `glossary/letter/${letter}` }),
+    ...generateCanonicalMetadata({ locale, path: `glossary/letter/${letter.toLowerCase()}` }),
     title: t('title', { letter: upperLetter }),
     description: t('description', { letter: upperLetter }),
   };
