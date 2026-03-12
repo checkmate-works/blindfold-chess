@@ -29,11 +29,11 @@ export const CATEGORY_STYLES = {
   },
   memory: {
     icon: '🧠',
-    className: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
+    className: 'text-accent-purple bg-accent-purple-soft',
   },
   practice: {
     icon: '🏋️',
-    className: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400',
+    className: 'text-accent-orange bg-accent-orange-soft',
   },
 } as const;
 

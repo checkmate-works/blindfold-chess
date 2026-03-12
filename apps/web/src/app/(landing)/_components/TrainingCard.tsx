@@ -5,8 +5,8 @@ import Link from 'next/link';
 type IconColor = 'blue' | 'orange';
 
 const iconColorStyles: Record<IconColor, string> = {
-  blue: 'bg-blue-500/10 text-blue-500',
-  orange: 'bg-orange-500/10 text-orange-500',
+  blue: 'bg-info/10 text-info',
+  orange: 'bg-accent-orange/10 text-accent-orange',
 };
 
 type Props = {

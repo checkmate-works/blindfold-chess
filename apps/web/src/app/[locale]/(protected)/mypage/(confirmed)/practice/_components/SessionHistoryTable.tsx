@@ -22,8 +22,8 @@ function getIncorrectAnswersClassName(
   mistakeAllowance: number | null
 ): string {
   if (incorrectAnswers === null) return 'text-foreground';
-  if (mistakeAllowance !== null && incorrectAnswers >= mistakeAllowance) return 'text-red-500';
-  if (incorrectAnswers === 0) return 'text-green-500';
+  if (mistakeAllowance !== null && incorrectAnswers >= mistakeAllowance) return 'text-destructive';
+  if (incorrectAnswers === 0) return 'text-success';
   return 'text-foreground';
 }
 

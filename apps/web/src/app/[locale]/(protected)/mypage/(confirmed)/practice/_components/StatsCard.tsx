@@ -34,9 +34,7 @@ export function StatsCard({ label, value, sub, tooltip, comparison }: Props) {
     const isPositive = changeValue > 0;
 
     return (
-      <p
-        className={`text-xs mt-1 ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-      >
+      <p className={`text-xs mt-1 ${isPositive ? 'text-success' : 'text-destructive'}`}>
         {isPositive ? '\u25B2' : '\u25BC'} {displayValue} {compLabel}
       </p>
     );

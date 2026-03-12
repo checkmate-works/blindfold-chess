@@ -52,34 +52,34 @@ export function getEvaluationIcon(
 
   if (isMate || loss <= 20) {
     return (
-      <EvaluationBadge bgColor="bg-green-500" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-success" classes={classes} shadow={shadow}>
         <FaStar className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
   if (loss <= 50) {
     return (
-      <EvaluationBadge bgColor="bg-green-500" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-success" classes={classes} shadow={shadow}>
         <FaCheck className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
   if (loss <= 100) {
     return (
-      <EvaluationBadge bgColor="bg-yellow-500" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-warning" classes={classes} shadow={shadow}>
         ?!
       </EvaluationBadge>
     );
   }
   if (loss <= 300) {
     return (
-      <EvaluationBadge bgColor="bg-orange-500" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-caution" classes={classes} shadow={shadow}>
         ?
       </EvaluationBadge>
     );
   }
   return (
-    <EvaluationBadge bgColor="bg-red-500" classes={classes} shadow={shadow}>
+    <EvaluationBadge bgColor="bg-destructive" classes={classes} shadow={shadow}>
       ??
     </EvaluationBadge>
   );
