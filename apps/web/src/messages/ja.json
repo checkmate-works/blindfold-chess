@@ -114,6 +114,7 @@
     "practice": "練習",
     "articles": "記事",
     "manual": "マニュアル",
+    "announcements": "お知らせ",
     "faq": "よくある質問",
     "glossary": "用語集",
     "contact": "お問い合わせ",
@@ -1623,6 +1624,14 @@
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
     "moreArticles": "その他の記事"
+  },
+  "announcements": {
+    "pageTitle": "お知らせ",
+    "pageDescription": "Blindfold Chessからのお知らせ",
+    "noAnnouncements": "お知らせはまだありません。",
+    "announcementsListTitle": "すべてのお知らせ",
+    "membersOnly": "このお知らせはメンバー限定です。",
+    "signInToView": "ログインして閲覧"
   },
   "onboarding": {
     "title": "初期設定",

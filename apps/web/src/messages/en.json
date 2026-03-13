@@ -114,6 +114,7 @@
     "practice": "Practice",
     "articles": "Articles",
     "manual": "Manual",
+    "announcements": "Announcements",
     "faq": "FAQ",
     "glossary": "Glossary",
     "contact": "Contact",
@@ -1622,6 +1623,14 @@
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
     "moreArticles": "More articles"
+  },
+  "announcements": {
+    "pageTitle": "Announcements",
+    "pageDescription": "Announcements from Blindfold Chess",
+    "noAnnouncements": "No announcements yet.",
+    "announcementsListTitle": "All Announcements",
+    "membersOnly": "This announcement is available to members only.",
+    "signInToView": "Sign in to view"
   },
   "onboarding": {
     "title": "Setup",

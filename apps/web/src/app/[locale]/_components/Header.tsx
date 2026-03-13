@@ -55,6 +55,12 @@ export async function Header({ locale }: Props) {
       label: t('manual'),
       iconName: 'manual',
     },
+    {
+      id: 'announcements',
+      href: `/${locale}/announcements`,
+      label: t('announcements'),
+      iconName: 'announcements',
+    },
     { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
     { id: 'settings', href: `/${locale}/preferences`, label: t('settings'), iconName: 'settings' },
   ];
