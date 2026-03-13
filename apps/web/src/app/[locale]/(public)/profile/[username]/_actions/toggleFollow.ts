@@ -10,7 +10,6 @@ import { db, follows, profiles } from '@/lib/db';
 import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
-import { validateUsernameFormat } from '@/lib/username';
 
 type ToggleFollowResult = { following: boolean } | { error: string };
 
@@ -19,11 +18,6 @@ export async function toggleFollow(
   locale: string
 ): Promise<ToggleFollowResult> {
   console.log('[toggleFollow] called with:', { targetUsername, locale });
-
-  if (validateUsernameFormat(targetUsername) !== null) {
-    console.log('[toggleFollow] EARLY RETURN: invalidUsername');
-    return { error: 'invalidUsername' };
-  }
 
   const supabase = await createClient();
   const {
