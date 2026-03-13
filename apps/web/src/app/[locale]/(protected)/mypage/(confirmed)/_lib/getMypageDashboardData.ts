@@ -1,6 +1,6 @@
 import { and, count, eq, gte, isNull, lt } from 'drizzle-orm';
 
-import { db, follows, practiceSessions, profiles, topicPostLikes, topicPosts } from '@/lib/db';
+import { db, practiceSessions, profiles, topicPostLikes, topicPosts, userFollows } from '@/lib/db';
 import { getSessionScoreFields, parsePracticeSession } from '@/lib/db/practice-session-types';
 
 import { getMondayOfWeek } from '../practice/_lib/period-utils';
@@ -27,9 +27,9 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt))),
     db
       .select({ value: count() })
-      .from(follows)
-      .innerJoin(profiles, eq(follows.followingId, profiles.id))
-      .where(and(eq(follows.followerId, userId), isNull(profiles.deletedAt))),
+      .from(userFollows)
+      .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
+      .where(and(eq(userFollows.followerId, userId), isNull(profiles.deletedAt))),
     (() => {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

@@ -9,7 +9,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { SiChessdotcom, SiLichess } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
-import { db, follows, profiles } from '@/lib/db';
+import { db, profiles, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components/PostCard';
@@ -93,34 +93,34 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   let followedByProfile = false;
   if (user && !isOwnProfile) {
     const [existingFollow] = await db
-      .select({ id: follows.id })
-      .from(follows)
-      .where(and(eq(follows.followerId, user.id), eq(follows.followingId, profile.id)))
+      .select({ id: userFollows.id })
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, profile.id)))
       .limit(1);
     initialFollowing = !!existingFollow;
 
     const [reverseFollow] = await db
-      .select({ id: follows.id })
-      .from(follows)
-      .where(and(eq(follows.followerId, profile.id), eq(follows.followingId, user.id)))
+      .select({ id: userFollows.id })
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, profile.id), eq(userFollows.followingId, user.id)))
       .limit(1);
     followedByProfile = !!reverseFollow;
   }
 
   const [followerResult] = await db
     .select({ count: count() })
-    .from(follows)
-    .innerJoin(profiles, eq(follows.followerId, profiles.id))
-    .where(and(eq(follows.followingId, profile.id), isNull(profiles.deletedAt)));
+    .from(userFollows)
+    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
+    .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)));
   const followerCount = followerResult.count;
 
   let followingCount = 0;
   if (isOwnProfile) {
     const [followingResult] = await db
       .select({ count: count() })
-      .from(follows)
-      .innerJoin(profiles, eq(follows.followingId, profiles.id))
-      .where(and(eq(follows.followerId, profile.id), isNull(profiles.deletedAt)));
+      .from(userFollows)
+      .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
+      .where(and(eq(userFollows.followerId, profile.id), isNull(profiles.deletedAt)));
     followingCount = followingResult.count;
   }
 

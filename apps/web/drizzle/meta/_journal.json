@@ -85,6 +85,13 @@
       "when": 1773395561153,
       "tag": "20260313095241_replace_posts_with_articles_and_announcements",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1773401643318,
+      "tag": "20260313113403_rename_follows_blocks_to_user_follows_user_blocks",
+      "breakpoints": true
     }
   ]
 }

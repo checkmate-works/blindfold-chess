@@ -6,7 +6,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
-import { db, follows, profiles } from '@/lib/db';
+import { db, profiles, userFollows } from '@/lib/db';
 import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
@@ -56,7 +56,7 @@ export async function toggleFollow(
   // This avoids the race condition of SELECT-then-INSERT.
   let following: boolean;
   try {
-    await db.insert(follows).values({
+    await db.insert(userFollows).values({
       followerId: user.id,
       followingId: targetProfile.id,
     });
@@ -85,8 +85,10 @@ export async function toggleFollow(
     }
     // Already following — unfollow
     await db
-      .delete(follows)
-      .where(and(eq(follows.followerId, user.id), eq(follows.followingId, targetProfile.id)));
+      .delete(userFollows)
+      .where(
+        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfile.id))
+      );
     following = false;
     console.log('[toggleFollow] DELETE succeeded → following=false');
   }

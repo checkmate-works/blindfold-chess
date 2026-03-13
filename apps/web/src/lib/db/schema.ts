@@ -291,9 +291,9 @@ export const topicPostLikes = pgTable(
 export type TopicPostLike = typeof topicPostLikes.$inferSelect;
 export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
 
-// Follows
-export const follows = pgTable(
-  'follows',
+// User Follows
+export const userFollows = pgTable(
+  'user_follows',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     followerId: uuid('follower_id').notNull(), // references auth.users — FK defined in custom SQL
@@ -301,18 +301,18 @@ export const follows = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_follow').on(table.followerId, table.followingId),
-    index('idx_follows_follower').on(table.followerId),
-    index('idx_follows_following').on(table.followingId),
+    unique('uq_user_follow').on(table.followerId, table.followingId),
+    index('idx_user_follows_follower').on(table.followerId),
+    index('idx_user_follows_following').on(table.followingId),
   ]
 );
 
-export type Follow = typeof follows.$inferSelect;
-export type NewFollow = typeof follows.$inferInsert;
+export type UserFollow = typeof userFollows.$inferSelect;
+export type NewUserFollow = typeof userFollows.$inferInsert;
 
-// Blocks
-export const blocks = pgTable(
-  'blocks',
+// User Blocks
+export const userBlocks = pgTable(
+  'user_blocks',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     blockerId: uuid('blocker_id').notNull(), // references auth.users — FK defined in custom SQL
@@ -320,14 +320,14 @@ export const blocks = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_block').on(table.blockerId, table.blockedId),
-    index('idx_blocks_blocker').on(table.blockerId),
-    index('idx_blocks_blocked').on(table.blockedId),
+    unique('uq_user_block').on(table.blockerId, table.blockedId),
+    index('idx_user_blocks_blocker').on(table.blockerId),
+    index('idx_user_blocks_blocked').on(table.blockedId),
   ]
 );
 
-export type Block = typeof blocks.$inferSelect;
-export type NewBlock = typeof blocks.$inferInsert;
+export type UserBlock = typeof userBlocks.$inferSelect;
+export type NewUserBlock = typeof userBlocks.$inferInsert;
 
 /**
  * Moderation Actions — immutable audit log for admin moderation operations.
