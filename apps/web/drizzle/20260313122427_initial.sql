@@ -49,7 +49,8 @@ CREATE TABLE "glossary_term_aliases" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"term_id" uuid NOT NULL,
 	"alias" varchar(255) NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now(),
+	CONSTRAINT "uq_term_alias" UNIQUE("term_id","alias")
 );
 --> statement-breakpoint
 CREATE TABLE "glossary_term_positions" (
@@ -58,7 +59,8 @@ CREATE TABLE "glossary_term_positions" (
 	"fen" varchar(100) NOT NULL,
 	"sort_order" integer DEFAULT 0,
 	"caption" varchar(255),
-	"created_at" timestamp with time zone DEFAULT now()
+	"created_at" timestamp with time zone DEFAULT now(),
+	CONSTRAINT "uq_term_position" UNIQUE("term_id","fen")
 );
 --> statement-breakpoint
 CREATE TABLE "glossary_term_relations" (

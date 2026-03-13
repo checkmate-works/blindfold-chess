@@ -83,25 +83,33 @@ export const glossaryTermTranslations = pgTable(
   (table) => [unique('uq_term_locale').on(table.termId, table.locale)]
 );
 
-export const glossaryTermAliases = pgTable('glossary_term_aliases', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  termId: uuid('term_id')
-    .notNull()
-    .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-  alias: varchar('alias', { length: 255 }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+export const glossaryTermAliases = pgTable(
+  'glossary_term_aliases',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
+    alias: varchar('alias', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_term_alias').on(table.termId, table.alias)]
+);
 
-export const glossaryTermPositions = pgTable('glossary_term_positions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  termId: uuid('term_id')
-    .notNull()
-    .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-  fen: varchar('fen', { length: 100 }).notNull(),
-  sortOrder: integer('sort_order').default(0),
-  caption: varchar('caption', { length: 255 }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+export const glossaryTermPositions = pgTable(
+  'glossary_term_positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
+    fen: varchar('fen', { length: 100 }).notNull(),
+    sortOrder: integer('sort_order').default(0),
+    caption: varchar('caption', { length: 255 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_term_position').on(table.termId, table.fen)]
+);
 
 export const glossaryTermRelations = pgTable(
   'glossary_term_relations',

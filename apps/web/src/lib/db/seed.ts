@@ -1,4 +1,19 @@
-import { eq } from 'drizzle-orm';
+/**
+ * Database seed script
+ *
+ * Seeding strategy:
+ * - Master data (glossary) → onConflictDoUpdate (upsert)
+ *   Overwritten with the latest code data on every deploy. Code is the source of truth.
+ * - Initial data (ad_banners, site_settings) → onConflictDoNothing
+ *   Inserted only on first run; DB is the source of truth afterward.
+ *   Values modified via admin UI are never overwritten.
+ *
+ * This distinction mirrors the seed() (always update) vs seed_once() (first-time only)
+ * pattern from Rails' seed-fu gem. In the Drizzle / Prisma / RedwoodJS community,
+ * using the ORM's built-in upsert capabilities directly is the mainstream approach
+ * for master data seeding.
+ */
+import { not, sql } from 'drizzle-orm';
 
 import { chessTerms } from './data/chess-terms';
 import {
@@ -18,14 +33,22 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9-]/g, '');
 }
 
+// ---------------------------------------------------------------------------
+// Master data: Glossary (code is source of truth, upserted on every deploy)
+// ---------------------------------------------------------------------------
+
 async function seedGlossaryTerms() {
   console.log(`Seeding ${chessTerms.length} glossary terms...`);
+
+  // Collect valid pairs for orphaned-record cleanup after upsert
+  const validAliases: { termId: string; alias: string }[] = [];
+  const validPositions: { termId: string; fen: string }[] = [];
 
   for (const chessTerm of chessTerms) {
     const slug = slugify(chessTerm.term);
     const category = chessTerm.category || 'general';
 
-    // Upsert glossary term (idempotent on slug)
+    // Upsert term (idempotent on slug)
     const [term] = await db
       .insert(glossaryTerms)
       .values({ slug, termEn: chessTerm.term, category })
@@ -73,44 +96,105 @@ async function seedGlossaryTerms() {
         },
       });
 
-    // Aliases: delete existing + re-insert (no unique constraint to upsert on)
-    await db.delete(glossaryTermAliases).where(eq(glossaryTermAliases.termId, term.id));
-
+    // Upsert aliases (idempotent on term_id + alias unique constraint)
     if (chessTerm.aliases && chessTerm.aliases.length > 0) {
-      await db.insert(glossaryTermAliases).values(
-        chessTerm.aliases.map((alias) => ({
-          termId: term.id,
-          alias,
-        }))
-      );
+      for (const alias of chessTerm.aliases) {
+        await db
+          .insert(glossaryTermAliases)
+          .values({ termId: term.id, alias })
+          .onConflictDoNothing({
+            target: [glossaryTermAliases.termId, glossaryTermAliases.alias],
+          });
+        validAliases.push({ termId: term.id, alias });
+      }
     }
 
-    // Positions: delete existing + re-insert (same pattern as aliases)
-    await db.delete(glossaryTermPositions).where(eq(glossaryTermPositions.termId, term.id));
-
+    // Upsert positions (idempotent on term_id + fen unique constraint)
     if (chessTerm.positions && chessTerm.positions.length > 0) {
-      await db.insert(glossaryTermPositions).values(
-        chessTerm.positions.map((pos) => ({
-          termId: term.id,
-          fen: pos.fen,
-          sortOrder: pos.sortOrder,
-          caption: pos.caption || null,
-        }))
-      );
+      for (const pos of chessTerm.positions) {
+        await db
+          .insert(glossaryTermPositions)
+          .values({
+            termId: term.id,
+            fen: pos.fen,
+            sortOrder: pos.sortOrder,
+            caption: pos.caption || null,
+          })
+          .onConflictDoUpdate({
+            target: [glossaryTermPositions.termId, glossaryTermPositions.fen],
+            set: {
+              sortOrder: pos.sortOrder,
+              caption: pos.caption || null,
+            },
+          });
+        validPositions.push({ termId: term.id, fen: pos.fen });
+      }
     }
   }
+
+  // Clean up aliases/positions that were removed from the code data source.
+  //
+  // Upsert only handles additions and updates — it cannot detect deletions.
+  // Since code is the source of truth for master data, any DB records that
+  // no longer exist in the code must be deleted.
+  await cleanupOrphanedAliases(validAliases);
+  await cleanupOrphanedPositions(validPositions);
 }
+
+/**
+ * Delete alias records from the DB that no longer exist in the code data source.
+ */
+async function cleanupOrphanedAliases(validAliases: { termId: string; alias: string }[]) {
+  if (validAliases.length === 0) {
+    // No aliases in code — delete all existing records
+    await db.delete(glossaryTermAliases);
+    return;
+  }
+
+  // Build a (term_id, alias) tuple list and delete orphaned records via NOT IN
+  const tuples = validAliases.map((a) => sql`(${a.termId}, ${a.alias})`);
+  await db
+    .delete(glossaryTermAliases)
+    .where(
+      not(
+        sql`(${glossaryTermAliases.termId}, ${glossaryTermAliases.alias}) IN (${sql.join(tuples, sql`, `)})`
+      )
+    );
+}
+
+/**
+ * Delete position records from the DB that no longer exist in the code data source.
+ */
+async function cleanupOrphanedPositions(validPositions: { termId: string; fen: string }[]) {
+  if (validPositions.length === 0) {
+    await db.delete(glossaryTermPositions);
+    return;
+  }
+
+  const tuples = validPositions.map((p) => sql`(${p.termId}, ${p.fen})`);
+  await db
+    .delete(glossaryTermPositions)
+    .where(
+      not(
+        sql`(${glossaryTermPositions.termId}, ${glossaryTermPositions.fen}) IN (${sql.join(tuples, sql`, `)})`
+      )
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Initial data: Ads & site settings (DB is source of truth, insert once only)
+// ---------------------------------------------------------------------------
 
 async function seedAds() {
   console.log('Seeding ads configuration...');
 
-  // Seed site_settings: ads_enabled
+  // Site setting: ads_enabled
   await db
     .insert(siteSettings)
-    .values({ key: 'ads_enabled', value: { enabled: true } })
+    .values({ key: 'ads_enabled', value: { enabled: false } })
     .onConflictDoNothing({ target: siteSettings.key });
 
-  // Seed ad_banners
+  // Ad banners
   const bannerData = [
     {
       slot: 'home-wide',

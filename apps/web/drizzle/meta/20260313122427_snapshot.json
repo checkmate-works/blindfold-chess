@@ -340,7 +340,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "uq_term_alias": {
+          "name": "uq_term_alias",
+          "nullsNotDistinct": false,
+          "columns": ["term_id", "alias"]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -402,7 +408,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "uq_term_position": {
+          "name": "uq_term_position",
+          "nullsNotDistinct": false,
+          "columns": ["term_id", "fen"]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
