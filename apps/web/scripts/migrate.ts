@@ -59,9 +59,9 @@ async function runStorageAvatars() {
   await client.unsafe(avatarsSql);
 }
 
-async function runFollowsBlocksSetup() {
+async function runUserFollowsBlocksSetup() {
   const sql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'follows_blocks_setup.sql'),
+    join(__dirname, '..', 'drizzle', 'supabase', 'user_follows_blocks_setup.sql'),
     'utf-8'
   );
   await client.unsafe(sql);
@@ -113,9 +113,9 @@ async function main() {
     await runStorageAvatars();
     console.log('Storage avatars setup applied!');
 
-    console.log('Applying follows & blocks setup...');
-    await runFollowsBlocksSetup();
-    console.log('Follows & blocks setup applied!');
+    console.log('Applying user follows & blocks setup...');
+    await runUserFollowsBlocksSetup();
+    console.log('User follows & blocks setup applied!');
 
     console.log('Applying moderation actions setup...');
     await runModerationActionsSetup();
