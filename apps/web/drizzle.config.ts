@@ -18,4 +18,7 @@ export default defineConfig({
   dbCredentials: {
     url: databaseUrl,
   },
+  migrations: {
+    prefix: 'timestamp',
+  },
 });
