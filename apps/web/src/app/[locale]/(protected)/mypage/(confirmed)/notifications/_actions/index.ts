@@ -2,8 +2,8 @@
 
 import { and, count, desc, eq } from 'drizzle-orm';
 
+import { getAuthenticatedUser, getOptionalUser } from '@/lib/auth';
 import { db, notifications, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 const PAGE_SIZE = 20;
 
@@ -26,14 +26,7 @@ export type NotificationWithActor = {
 export async function getNotifications(
   page: number = 1
 ): Promise<{ items: NotificationWithActor[]; totalPages: number }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { items: [], totalPages: 0 };
-  }
+  const user = await getAuthenticatedUser();
 
   const [countResult] = await db
     .select({ count: count() })
@@ -87,10 +80,7 @@ export async function getNotifications(
 }
 
 export async function getUnreadCount(): Promise<number> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getOptionalUser();
 
   if (!user) {
     return 0;
@@ -105,14 +95,7 @@ export async function getUnreadCount(): Promise<number> {
 }
 
 export async function markAsRead(notificationId: string): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return;
-  }
+  const user = await getAuthenticatedUser();
 
   await db
     .update(notifications)
@@ -121,14 +104,7 @@ export async function markAsRead(notificationId: string): Promise<void> {
 }
 
 export async function markAllAsRead(): Promise<void> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return;
-  }
+  const user = await getAuthenticatedUser();
 
   await db
     .update(notifications)

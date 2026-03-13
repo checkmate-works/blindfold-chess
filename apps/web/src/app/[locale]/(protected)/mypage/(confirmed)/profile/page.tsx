@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 import { eq } from 'drizzle-orm';
 
+import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -33,19 +33,12 @@ export default async function ProfilePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'profile' });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(`/${locale}/sign-in`);
-  }
+  const user = await getAuthenticatedUser();
 
   const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
 
   if (!profile) {
-    redirect(`/${locale}/mypage/setup-username`);
+    notFound();
   }
 
   return (

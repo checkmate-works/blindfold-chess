@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components';
 import { getLikedPostsByUser } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
@@ -41,12 +41,9 @@ export default async function LikesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageLikes' });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
-  const allPosts = await getLikedPostsByUser(user!.id);
+  const allPosts = await getLikedPostsByUser(user.id);
 
   const { page } = await searchParamsCache.parse(searchParams);
   const totalCount = allPosts.length;

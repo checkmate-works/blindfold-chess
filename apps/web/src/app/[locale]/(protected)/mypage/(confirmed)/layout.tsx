@@ -2,8 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
+import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 export default async function ConfirmedLayout({
   children,
@@ -12,15 +12,7 @@ export default async function ConfirmedLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    const { locale } = await params;
-    redirect(`/${locale}/sign-in`);
-  }
+  const user = await getAuthenticatedUser();
 
   const [profile] = await db
     .select({ username: profiles.username })

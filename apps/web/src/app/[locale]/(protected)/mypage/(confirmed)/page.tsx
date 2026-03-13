@@ -4,9 +4,9 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { and, count, eq, gte, isNull, lt } from 'drizzle-orm';
 
+import { getAuthenticatedUser } from '@/lib/auth';
 import { db, follows, practiceSessions, profiles, topicPostLikes, topicPosts } from '@/lib/db';
 import { getSessionScoreFields, parsePracticeSession } from '@/lib/db/practice-session-types';
-import { createClient } from '@/lib/supabase/server';
 
 import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -33,12 +33,9 @@ export default async function MypagePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Mypage' });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
-  const userId = user!.id;
+  const userId = user.id;
 
   // Fetch all data in parallel
   const [profileResult, likesResult, followingResult, weekSessions] = await Promise.all([
