@@ -71,6 +71,13 @@
       "when": 1773359428389,
       "tag": "0009_charming_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773368429331,
+      "tag": "0010_short_kabuki",
+      "breakpoints": true
     }
   ]
 }

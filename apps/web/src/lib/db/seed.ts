@@ -2,12 +2,14 @@ import { eq } from 'drizzle-orm';
 
 import { chessTerms } from './data/chess-terms';
 import {
+  adBanners,
   categories,
   db,
   glossaryTermAliases,
   glossaryTermPositions,
   glossaryTermTranslations,
   glossaryTerms,
+  siteSettings,
 } from './index';
 
 const categoryData = [
@@ -117,11 +119,46 @@ async function seedGlossaryTerms() {
   }
 }
 
+async function seedAds() {
+  console.log('Seeding ads configuration...');
+
+  // Seed site_settings: ads_enabled
+  await db
+    .insert(siteSettings)
+    .values({ key: 'ads_enabled', value: { enabled: true } })
+    .onConflictDoNothing({ target: siteSettings.key });
+
+  // Seed ad_banners
+  const bannerData = [
+    {
+      slot: 'home-wide',
+      href: 'https://example.com',
+      imagePath: '/images/banners/banner1.webp',
+      alt: 'Advertisement',
+      width: 960,
+      height: 208,
+    },
+    {
+      slot: 'topics-squares-square',
+      href: 'https://example.com',
+      imagePath: '/images/banners/banner2.webp',
+      alt: 'Advertisement',
+      width: 400,
+      height: 400,
+    },
+  ] as const;
+
+  for (const banner of bannerData) {
+    await db.insert(adBanners).values(banner).onConflictDoNothing({ target: adBanners.slot });
+  }
+}
+
 async function seed() {
   console.log('Seeding database...');
 
   await seedCategories();
   await seedGlossaryTerms();
+  await seedAds();
 
   console.log('Seeding complete.');
 }

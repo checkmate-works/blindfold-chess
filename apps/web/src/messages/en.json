@@ -2020,6 +2020,29 @@
       "deleteModalReasonRequired": "Reason is required",
       "previousPage": "Previous",
       "nextPage": "Next"
+    },
+    "ads": "Ads",
+    "adsManagement": {
+      "title": "Ads Management",
+      "globalToggle": "Ads Enabled",
+      "globalToggleDescription": "Enable or disable all ads site-wide",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "banners": "Ad Banners",
+      "slot": "Slot",
+      "href": "Link URL",
+      "imagePath": "Image Path",
+      "imagePreview": "Preview",
+      "alt": "Alt Text",
+      "isActive": "Active",
+      "actions": "Actions",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "active": "Active",
+      "inactive": "Inactive",
+      "noBanners": "No ad banners found."
     }
   },
   "publicProfile": {

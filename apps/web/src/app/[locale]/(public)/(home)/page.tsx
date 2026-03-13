@@ -21,8 +21,7 @@ import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 
-import { PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Ad } from '@/app/[locale]/_components/Ad';
+import { AdBanner, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,16 +80,7 @@ export default async function HomePage({ params }: Props) {
           <GameListClient locale={locale} />
         </div>
 
-        {/* Buy me a Coffee Banner */}
-        <div className="flex justify-center w-full py-2">
-          <Ad
-            href="https://buymeacoffee.com/fujillc"
-            text="Buy me a Coffee"
-            imageUrl="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=fujillc&button_colour=8bbdf2&font_colour=ffffff&font_family=Cookie&outline_colour=ffffff&coffee_colour=FFDD00"
-            imageAlt="Buy me a Coffee"
-            className="inline-block hover:opacity-90 grayscale-0 hover:grayscale-0 opacity-90 transition-all duration-300"
-          />
-        </div>
+        <AdBanner slot="home-wide" locale={locale} />
 
         <ErrorBoundary>
           <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>

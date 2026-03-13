@@ -6,6 +6,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { createClient } from '@/lib/supabase/server';
 
 import {
+  AdBanner,
   Breadcrumb,
   Divider,
   PagePanel,
@@ -90,6 +91,8 @@ export default async function SquaresPage({ params, searchParams }: Props) {
             ))}
           </div>
         )}
+
+        <AdBanner slot="topics-squares-square" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
