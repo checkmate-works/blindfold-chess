@@ -2,11 +2,11 @@ import { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
+import { getPublishedArticlesForSitemap } from './[locale]/(public)/articles/_lib/queries';
 import { getCategoryCounts, getUniqueLetters } from './[locale]/(public)/glossary/_lib/queries';
 import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
 import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
-import { getCategories, getPublishedPosts } from './[locale]/(public)/posts/_lib/queries';
 
 // Remove trailing slash from BASE_URL if present to avoid double slashes
 const BASE_URL = SITE_URL.replace(/\/$/, '');
@@ -47,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/practice/route-planner',
     '/practice/quadrants',
     '/getting-started',
-    '/posts',
+    '/articles',
     '/games/new',
     '/games/new/standard',
     '/games/new/pgn',
@@ -131,32 +131,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Dynamic pages - Posts
+  // Dynamic pages - Articles
   try {
-    const [postCategories, publishedPosts] = await Promise.all([
-      getCategories(),
-      getPublishedPosts(),
-    ]);
+    const publishedArticles = await getPublishedArticlesForSitemap();
 
-    for (const locale of SUPPORTED_LOCALES) {
-      // Post category pages
-      for (const category of postCategories) {
-        sitemap.push({
-          url: `${BASE_URL}/${locale}/posts/${category.slug}`,
-          lastModified: now,
-        });
-      }
-
-      // Individual post pages
-      for (const post of publishedPosts) {
-        sitemap.push({
-          url: `${BASE_URL}/${locale}/posts/${post.category.slug}/${post.slug}`,
-          lastModified: post.updatedAt ?? post.publishedAt ?? now,
-        });
-      }
+    for (const article of publishedArticles) {
+      sitemap.push({
+        url: `${BASE_URL}/${article.locale}/articles/${article.slug}`,
+        lastModified: article.updatedAt ?? article.publishedAt ?? now,
+      });
     }
   } catch (error) {
-    console.error('Error fetching posts for sitemap:', error);
+    console.error('Error fetching articles for sitemap:', error);
   }
 
   return sitemap;

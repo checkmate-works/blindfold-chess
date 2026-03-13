@@ -2,7 +2,7 @@ type Props = {
   title: string;
 };
 
-export function LatestPostsSkeleton({ title }: Props) {
+export function LatestArticlesSkeleton({ title }: Props) {
   return (
     <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-3">
       <h2 className="text-lg font-semibold text-foreground">{title}</h2>

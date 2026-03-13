@@ -16,7 +16,7 @@ export const getIcon = (iconName: NavigationIconName) => {
   switch (iconName) {
     case 'home':
       return null;
-    case 'posts':
+    case 'articles':
       return <FaNewspaper className="h-5 w-5" />;
     case 'getting-started':
       return <FaRocket className="h-5 w-5" />;

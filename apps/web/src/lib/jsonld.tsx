@@ -210,7 +210,6 @@ export type BlogPostData = {
   title: string;
   description: string;
   slug: string;
-  category: string;
   publishedAt: Date | null;
   locale: string;
 };
@@ -220,7 +219,7 @@ export type BlogPostData = {
  * @see https://schema.org/BlogPosting
  */
 export function generateBlogPostingSchema(post: BlogPostData) {
-  const postUrl = `${SITE_URL}/${post.locale}/posts/${post.category}/${post.slug}`;
+  const postUrl = `${SITE_URL}/${post.locale}/articles/${post.slug}`;
 
   return {
     '@context': 'https://schema.org',

@@ -112,7 +112,7 @@
     "gettingStarted": "Getting Started",
     "learn": "Learn",
     "practice": "Practice",
-    "posts": "Posts",
+    "articles": "Articles",
     "manual": "Manual",
     "faq": "FAQ",
     "glossary": "Glossary",
@@ -1616,19 +1616,12 @@
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in"
   },
-  "posts": {
-    "pageTitle": "Posts",
-    "pageDescription": "News, updates, and articles about Blindfold Chess",
-    "categoryDescription": "Posts in the {category} category",
-    "noPosts": "No posts yet.",
-    "postsListTitle": "All Posts",
-    "categoriesListTitle": "Categories",
-    "noCategories": "No categories yet.",
-    "categories": {
-      "updates": "Updates",
-      "blog": "Blog"
-    },
-    "morePosts": "More posts"
+  "articles": {
+    "pageTitle": "Articles",
+    "pageDescription": "Articles about Blindfold Chess",
+    "noArticles": "No articles yet.",
+    "articlesListTitle": "All Articles",
+    "moreArticles": "More articles"
   },
   "onboarding": {
     "title": "Setup",

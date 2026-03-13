@@ -112,7 +112,7 @@
     "gettingStarted": "はじめに",
     "learn": "学ぶ",
     "practice": "練習",
-    "posts": "投稿一覧",
+    "articles": "記事",
     "manual": "マニュアル",
     "faq": "よくある質問",
     "glossary": "用語集",
@@ -1617,19 +1617,12 @@
     "alreadyHaveAccount": "既にアカウントをお持ちですか？",
     "signIn": "ログイン"
   },
-  "posts": {
-    "pageTitle": "投稿",
-    "pageDescription": "Blindfold Chessのニュース、更新情報、記事",
-    "categoryDescription": "{category}カテゴリの投稿",
-    "noPosts": "投稿はまだありません。",
-    "postsListTitle": "すべての投稿",
-    "categoriesListTitle": "カテゴリ一覧",
-    "noCategories": "カテゴリはまだありません。",
-    "categories": {
-      "updates": "更新情報",
-      "blog": "ブログ"
-    },
-    "morePosts": "その他の記事"
+  "articles": {
+    "pageTitle": "記事",
+    "pageDescription": "Blindfold Chessに関する記事",
+    "noArticles": "記事はまだありません。",
+    "articlesListTitle": "すべての記事",
+    "moreArticles": "その他の記事"
   },
   "onboarding": {
     "title": "初期設定",
