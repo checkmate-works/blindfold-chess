@@ -1,4 +1,6 @@
+import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -468,3 +470,38 @@ export const userActivityLog = pgTable(
 
 export type UserActivityLog = typeof userActivityLog.$inferSelect;
 export type NewUserActivityLog = typeof userActivityLog.$inferInsert;
+
+// Notifications
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    actorId: uuid('actor_id'),
+    type: varchar('type', { length: 50 }).notNull(),
+    targetType: varchar('target_type', { length: 50 }),
+    targetId: uuid('target_id'),
+    groupKey: varchar('group_key', { length: 255 }),
+    metadata: jsonb('metadata').default({}),
+    read: boolean('read').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_notifications_user_created').on(table.userId, table.createdAt),
+    index('idx_notifications_unread')
+      .on(table.userId)
+      .where(sql`read = false`),
+    index('idx_notifications_dedup').on(
+      table.userId,
+      table.type,
+      table.actorId,
+      table.targetType,
+      table.targetId
+    ),
+    index('idx_notifications_group_key').on(table.userId, table.groupKey),
+    index('idx_notifications_actor').on(table.actorId),
+  ]
+);
+
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;

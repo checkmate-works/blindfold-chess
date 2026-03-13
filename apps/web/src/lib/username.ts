@@ -13,9 +13,15 @@ const USERNAME_REGEX = /^[a-z](?:[a-z0-9]_?)*[a-z0-9]$/;
 const USERNAME_MIN_LENGTH = 2;
 const USERNAME_MAX_LENGTH = 20;
 
-export type UsernameValidationError = 'too_short' | 'too_long' | 'invalid_format' | 'reserved';
+export type UsernameFormatError = 'too_short' | 'too_long' | 'invalid_format';
+export type UsernameValidationError = UsernameFormatError | 'reserved';
 
-export function validateUsername(username: string): UsernameValidationError | null {
+/**
+ * Validate username format only (length, characters, pattern).
+ * Use this when checking an existing username (e.g., follow target lookup)
+ * where reserved word checking is unnecessary.
+ */
+export function validateUsernameFormat(username: string): UsernameFormatError | null {
   if (username.length < USERNAME_MIN_LENGTH) {
     return 'too_short';
   }
@@ -24,6 +30,18 @@ export function validateUsername(username: string): UsernameValidationError | nu
   }
   if (!USERNAME_REGEX.test(username)) {
     return 'invalid_format';
+  }
+  return null;
+}
+
+/**
+ * Full username validation including reserved word check.
+ * Use this for registration and username change flows.
+ */
+export function validateUsername(username: string): UsernameValidationError | null {
+  const formatError = validateUsernameFormat(username);
+  if (formatError) {
+    return formatError;
   }
   if (isReservedUsername(username)) {
     return 'reserved';

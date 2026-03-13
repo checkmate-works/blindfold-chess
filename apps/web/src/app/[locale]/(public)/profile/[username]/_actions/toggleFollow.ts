@@ -7,9 +7,10 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, follows, profiles } from '@/lib/db';
+import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
-import { validateUsername } from '@/lib/username';
+import { validateUsernameFormat } from '@/lib/username';
 
 type ToggleFollowResult = { following: boolean } | { error: string };
 
@@ -17,7 +18,10 @@ export async function toggleFollow(
   targetUsername: string,
   locale: string
 ): Promise<ToggleFollowResult> {
-  if (validateUsername(targetUsername) !== null) {
+  console.log('[toggleFollow] called with:', { targetUsername, locale });
+
+  if (validateUsernameFormat(targetUsername) !== null) {
+    console.log('[toggleFollow] EARLY RETURN: invalidUsername');
     return { error: 'invalidUsername' };
   }
 
@@ -63,12 +67,25 @@ export async function toggleFollow(
       followingId: targetProfile.id,
     });
     following = true;
+    console.log('[toggleFollow] INSERT succeeded → following=true');
   } catch (err: unknown) {
-    // Drizzle wraps the original PostgresError in a "Failed query" error.
-    // The unique violation code '23505' is on the cause, not the outer error.
-    const cause = err instanceof Error && err.cause;
-    const isUniqueViolation =
-      cause instanceof Error && 'code' in cause && (cause as { code: string }).code === '23505';
+    console.log('[toggleFollow] INSERT failed:', {
+      name: (err as Error)?.name,
+      message: (err as Error)?.message,
+      code: (err as Record<string, unknown>)?.code,
+      hasCause: !!(err as Error)?.cause,
+    });
+    // drizzle-orm may wrap PostgresError in a generic Error with the original
+    // as `cause`. Check both the error itself and its cause for the PG code.
+    const pgCode =
+      (err instanceof Error &&
+        (('code' in err && (err as { code: string }).code) ||
+          (err.cause instanceof Error &&
+            'code' in err.cause &&
+            (err.cause as { code: string }).code))) ||
+      undefined;
+    const isUniqueViolation = pgCode === '23505';
+    console.log('[toggleFollow] isUniqueViolation:', isUniqueViolation);
     if (!isUniqueViolation) {
       throw err;
     }
@@ -77,6 +94,7 @@ export async function toggleFollow(
       .delete(follows)
       .where(and(eq(follows.followerId, user.id), eq(follows.followingId, targetProfile.id)));
     following = false;
+    console.log('[toggleFollow] DELETE succeeded → following=false');
   }
 
   logActivityEvent({
@@ -85,6 +103,16 @@ export async function toggleFollow(
     targetType: 'user',
     targetId: targetProfile.id,
   });
+
+  if (following) {
+    createNotification({
+      userId: targetProfile.id,
+      actorId: user.id,
+      type: 'follow',
+      targetType: 'user',
+      targetId: targetProfile.id,
+    });
+  }
 
   revalidatePath(`/${locale}/@/${targetUsername}`);
   revalidatePath(`/${locale}/mypage/following`);

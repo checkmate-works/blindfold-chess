@@ -178,3 +178,23 @@ CREATE POLICY "user_activity_log_select" ON "user_activity_log"
 DROP POLICY IF EXISTS "user_activity_log_insert" ON "user_activity_log";
 CREATE POLICY "user_activity_log_insert" ON "user_activity_log"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- =============================================================================
+-- notifications
+-- =============================================================================
+ALTER TABLE "notifications" ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own notifications
+DROP POLICY IF EXISTS "notifications_select" ON "notifications";
+CREATE POLICY "notifications_select" ON "notifications"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Users can mark their own notifications as read
+DROP POLICY IF EXISTS "notifications_update" ON "notifications";
+CREATE POLICY "notifications_update" ON "notifications"
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Users can delete their own notifications
+DROP POLICY IF EXISTS "notifications_delete" ON "notifications";
+CREATE POLICY "notifications_delete" ON "notifications"
+  FOR DELETE USING (auth.uid() = user_id);

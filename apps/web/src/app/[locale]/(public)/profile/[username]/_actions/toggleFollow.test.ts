@@ -14,6 +14,14 @@ vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
+vi.mock('@/lib/notification', () => ({
+  createNotification: vi.fn(),
+}));
+
+vi.mock('@/lib/username', () => ({
+  validateUsernameFormat: (username: string) => (username.length < 2 ? 'too_short' : null),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -151,12 +159,23 @@ describe('toggleFollow', () => {
       });
     });
 
-    it('should delete follow and return following=false on unique violation (already following)', async () => {
-      const uniqueError = new Error('Failed query');
-      const pgError = new Error('duplicate key');
+    it('should delete follow and return following=false on unique violation (code on error)', async () => {
+      const pgError = new Error('duplicate key value violates unique constraint "uq_follow"');
       (pgError as unknown as Record<string, string>).code = '23505';
-      uniqueError.cause = pgError;
-      mockInsertValues.mockRejectedValue(uniqueError);
+      pgError.name = 'PostgresError';
+      mockInsertValues.mockRejectedValue(pgError);
+      mockDeleteWhere.mockResolvedValue(undefined);
+
+      const result = await toggleFollow('validuser', 'en');
+      expect(result).toEqual({ following: false });
+    });
+
+    it('should delete follow and return following=false on unique violation (code on cause)', async () => {
+      const cause = new Error('duplicate key value violates unique constraint "uq_follow"');
+      (cause as unknown as Record<string, string>).code = '23505';
+      cause.name = 'PostgresError';
+      const wrappedError = new Error('Failed query: insert into "follows"...', { cause });
+      mockInsertValues.mockRejectedValue(wrappedError);
       mockDeleteWhere.mockResolvedValue(undefined);
 
       const result = await toggleFollow('validuser', 'en');
@@ -206,11 +225,10 @@ describe('toggleFollow', () => {
     });
 
     it('should log "unfollow" activity event when unfollowing', async () => {
-      const uniqueError = new Error('Failed query');
-      const pgError = new Error('duplicate key');
+      const pgError = new Error('duplicate key value violates unique constraint "uq_follow"');
       (pgError as unknown as Record<string, string>).code = '23505';
-      uniqueError.cause = pgError;
-      mockInsertValues.mockRejectedValue(uniqueError);
+      pgError.name = 'PostgresError';
+      mockInsertValues.mockRejectedValue(pgError);
       mockDeleteWhere.mockResolvedValue(undefined);
 
       await toggleFollow('validuser', 'en');

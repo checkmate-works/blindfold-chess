@@ -64,6 +64,13 @@
       "when": 1773135466537,
       "tag": "0008_chief_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773359428389,
+      "tag": "0009_charming_queen_noir",
+      "breakpoints": true
     }
   ]
 }

@@ -8,9 +8,10 @@ import { MobileMenu } from './MobileMenu';
 
 type Props = {
   locale: string;
+  notificationBadge?: React.ReactNode;
 };
 
-export async function Header({ locale }: Props) {
+export async function Header({ locale, notificationBadge }: Props) {
   const t = await getTranslations({ locale, namespace: 'Header' });
 
   const menuItems: NavigationItem[] = [
@@ -79,8 +80,9 @@ export async function Header({ locale }: Props) {
             {/* Desktop navigation - REMOVED per user request to unify with mobile menu */}
           </div>
 
-          {/* Right side: Auth status */}
+          {/* Right side: Notifications + Auth status */}
           <div className="flex items-center space-x-4">
+            {notificationBadge}
             <AuthStatusDisplay />
           </div>
         </div>

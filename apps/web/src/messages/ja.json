@@ -77,6 +77,10 @@
       "title": "練習記録",
       "description": "練習セッションの履歴とスコアを確認できます"
     },
+    "mypageNotifications": {
+      "title": "通知",
+      "description": "通知を確認できます"
+    },
     "topics": {
       "title": "トピック",
       "description": "チェスのマス目やポジション、戦略について議論・共有しましょう"
@@ -1805,6 +1809,14 @@
   "MypagePractice": {
     "title": "練習記録",
     "breadcrumbMypage": "マイページ"
+  },
+  "MypageNotifications": {
+    "title": "通知",
+    "breadcrumbMypage": "マイページ",
+    "empty": "通知はまだありません。",
+    "markAllAsRead": "すべて既読にする",
+    "followMessage": "{actor} があなたをフォローしました",
+    "unknownNotification": "新しい通知があります"
   },
   "deleteAccount": {
     "title": "退会",

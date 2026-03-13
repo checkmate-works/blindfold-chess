@@ -77,6 +77,10 @@
       "title": "Practice Records",
       "description": "View your practice session history and scores"
     },
+    "mypageNotifications": {
+      "title": "Notifications",
+      "description": "View your notifications"
+    },
     "topics": {
       "title": "Topics",
       "description": "Discuss and share insights about chess squares, positions, and strategies"
@@ -1804,6 +1808,14 @@
   "MypagePractice": {
     "title": "Practice Records",
     "breadcrumbMypage": "My Page"
+  },
+  "MypageNotifications": {
+    "title": "Notifications",
+    "breadcrumbMypage": "My Page",
+    "empty": "No notifications yet.",
+    "markAllAsRead": "Mark all as read",
+    "followMessage": "{actor} started following you",
+    "unknownNotification": "You have a new notification"
   },
   "deleteAccount": {
     "title": "Delete Account",

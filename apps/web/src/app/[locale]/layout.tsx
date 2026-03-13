@@ -14,6 +14,7 @@ import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
+import { NotificationBadge } from './_components/NotificationBadge';
 import { Providers } from './_lib/providers';
 
 const inter = Inter({
@@ -144,7 +145,7 @@ export default async function Layout({
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers locale={locale} messages={messages}>
           <div className="flex flex-col min-h-screen">
-            <Header locale={locale} />
+            <Header locale={locale} notificationBadge={<NotificationBadge locale={locale} />} />
             <main className="flex-1 bg-secondary">
               <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
             </main>
