@@ -54,7 +54,7 @@ This runs Drizzle migrations and, in Supabase environments, also applies Supabas
 
 ### 3. Apply Custom Access Token Hook
 
-The hook function is in `drizzle/supabase/custom_access_token_hook.sql`. For production (Supabase), this is also handled automatically — `pnpm db:run-migrate` detects the Supabase environment and applies the hook after migrations during deployment. If you need to apply it manually, use `pnpm db:setup-auth-hook`.
+The hook function is in `drizzle/supabase/custom_access_token_hook.sql`. This is handled automatically — `pnpm db:run-migrate` detects the Supabase environment and applies the hook after migrations during deployment.
 
 > **Note**: The hook SQL requires Supabase-managed roles (`supabase_auth_admin`, `authenticated`, `anon`) and will intentionally fail on local PostgreSQL. This is expected — the hook is only meaningful in a Supabase environment.
 
@@ -113,10 +113,9 @@ Steps 3-4 (hook setup) are Supabase-only. The admin panel's authorization works 
 
 ## Available Scripts
 
-| Script                    | Description                                           |
-| ------------------------- | ----------------------------------------------------- |
-| `pnpm db:run-migrate`     | Run migrations + Supabase SQL (auto-detects Supabase) |
-| `pnpm db:setup-auth-hook` | Manually apply auth hook SQL (Supabase only)          |
+| Script                | Description                                           |
+| --------------------- | ----------------------------------------------------- |
+| `pnpm db:run-migrate` | Run migrations + Supabase SQL (auto-detects Supabase) |
 
 ## Security Notes
 
