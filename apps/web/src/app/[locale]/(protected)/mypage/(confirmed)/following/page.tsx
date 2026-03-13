@@ -4,8 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAuthenticatedUser } from '@/lib/auth';
 import { db, follows, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
 
 import {
   Breadcrumb,
@@ -43,10 +43,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageFollowing' });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   const { page } = await searchParamsCache.parse(searchParams);
 
@@ -54,7 +51,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     .select({ count: count() })
     .from(follows)
     .innerJoin(profiles, eq(follows.followingId, profiles.id))
-    .where(and(eq(follows.followerId, user!.id), isNull(profiles.deletedAt)));
+    .where(and(eq(follows.followerId, user.id), isNull(profiles.deletedAt)));
 
   const totalCount = countResult.count;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -69,7 +66,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     })
     .from(follows)
     .innerJoin(profiles, eq(follows.followingId, profiles.id))
-    .where(and(eq(follows.followerId, user!.id), isNull(profiles.deletedAt)))
+    .where(and(eq(follows.followerId, user.id), isNull(profiles.deletedAt)))
     .limit(PAGE_SIZE)
     .offset((currentPage - 1) * PAGE_SIZE);
 

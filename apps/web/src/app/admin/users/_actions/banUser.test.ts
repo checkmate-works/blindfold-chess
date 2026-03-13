@@ -169,14 +169,14 @@ describe('banUser', () => {
     expect(result).toEqual({ success: true });
   });
 
-  it('should accept a very long ban reason', async () => {
+  it('should return reasonTooLong when reason exceeds 1000 characters', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
-    mockUpdateUserById.mockResolvedValue({ error: null });
 
-    const longReason = 'a'.repeat(10000);
+    const longReason = 'a'.repeat(1001);
     const result = await banUser(targetUserId, longReason);
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ error: 'reasonTooLong' });
+    expect(mockUpdateUserById).not.toHaveBeenCalled();
   });
 
   it('should insert a moderation_actions record with correct fields on successful ban', async () => {

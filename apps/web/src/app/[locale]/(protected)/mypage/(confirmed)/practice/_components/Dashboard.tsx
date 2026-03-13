@@ -28,6 +28,9 @@ import { StatsCard } from './StatsCard';
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
 
+const selectClassName =
+  'px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring';
+
 export function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('Mypage');
   const {
@@ -74,7 +77,7 @@ export function Dashboard({ locale }: { locale: string }) {
         <select
           value={selectedMenu ?? ''}
           onChange={(e) => setSelectedMenu(e.target.value as PracticeMenuType)}
-          className="w-full sm:w-64 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className={`w-full sm:w-64 ${selectClassName}`}
         >
           {menuOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -86,7 +89,7 @@ export function Dashboard({ locale }: { locale: string }) {
         <select
           value={selectedPeriod}
           onChange={(e) => setSelectedPeriod(e.target.value as DatePeriod)}
-          className="w-full sm:w-48 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className={`w-full sm:w-48 ${selectClassName}`}
         >
           {DATE_PERIODS.map((period) => (
             <option key={period} value={period}>
@@ -104,7 +107,7 @@ export function Dashboard({ locale }: { locale: string }) {
           <select
             value={boardOrientationFilter}
             onChange={(e) => setBoardOrientationFilter(e.target.value)}
-            className="w-full sm:w-48 px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className={`w-full sm:w-48 ${selectClassName}`}
           >
             {['all', 'white', 'black', 'random'].map((opt) => (
               <option key={opt} value={opt}>

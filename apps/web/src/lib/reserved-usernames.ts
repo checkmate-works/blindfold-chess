@@ -9,6 +9,8 @@
  * 3. Impersonation of staff, administrators, or official accounts
  * 4. Misuse of well-known brand/platform names and geopolitical identifiers
  * 5. Squatting on domain-specific chess terminology reserved for official content
+ * 6. Conflict with common testing, development, and operational account names
+ * 7. Registration of overly generic or placeholder names
  *
  * ## Matching rules
  *
@@ -70,6 +72,8 @@ const URL_ROUTING_NAMES = [
   'games',
   'profile',
   'sign_in',
+  'sign_up',
+  'sign_out',
   'mypage',
   'onboarding',
   'learn',
@@ -85,6 +89,7 @@ const URL_ROUTING_NAMES = [
   'preferences',
   'banned',
   'getting_started',
+  'affiliate_disclosure',
   // Common web paths
   'app',
   'settings',
@@ -355,12 +360,60 @@ const CHESS_DOMAIN_NAMES = [
   'leela',
 ] as const;
 
+/**
+ * Category 6: Testing, development, and operational names.
+ *
+ * These names are commonly used for test accounts, development environments,
+ * and operational purposes. Reserving them prevents confusion with real users
+ * and avoids accidental use in production.
+ */
+const TESTING_AND_DEV_NAMES = [
+  'test',
+  'testing',
+  'demo',
+  'example',
+  'sample',
+  'dev',
+  'development',
+  'staging',
+  'production',
+  'debug',
+  'sandbox',
+  'qa',
+  'temp',
+  'tmp',
+  'dummy',
+  'localhost',
+] as const;
+
+/**
+ * Category 7: Generic and placeholder names.
+ *
+ * These names are too generic for real user accounts, could be confused with
+ * system-generated labels, or may cause technical issues due to being
+ * programming reserved words.
+ */
+const GENERIC_PLACEHOLDER_NAMES = [
+  'user',
+  'me',
+  'anonymous',
+  'anon',
+  'guest',
+  'unknown',
+  'nobody',
+  'deleted',
+  'null',
+  'undefined',
+] as const;
+
 const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   ...RFC_2142_ROLE_NAMES,
   ...URL_ROUTING_NAMES,
   ...IMPERSONATION_NAMES,
   ...BRAND_AND_GEO_NAMES,
   ...CHESS_DOMAIN_NAMES,
+  ...TESTING_AND_DEV_NAMES,
+  ...GENERIC_PLACEHOLDER_NAMES,
 ]);
 
 export function isReservedUsername(username: string): boolean {

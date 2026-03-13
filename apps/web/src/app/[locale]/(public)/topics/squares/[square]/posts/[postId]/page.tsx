@@ -6,7 +6,13 @@ import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Breadcrumb, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import {
+  AdBanner,
+  Breadcrumb,
+  PagePanel,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -154,6 +160,8 @@ export default async function PostDetailPage({ params }: Props) {
             </Link>
           </p>
         )}
+
+        <AdBanner slot="topics-squares-square" locale={locale} />
 
         <Breadcrumb
           items={[

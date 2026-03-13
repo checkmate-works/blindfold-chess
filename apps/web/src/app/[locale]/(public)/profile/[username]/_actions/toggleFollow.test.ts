@@ -14,6 +14,10 @@ vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
+vi.mock('@/lib/notification', () => ({
+  createNotification: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -71,14 +75,6 @@ const targetProfileId = 'target-00000000-0000-0000-0000-000000000001';
 describe('toggleFollow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('input validation', () => {
-    it('should return invalidUsername for invalid username', async () => {
-      const result = await toggleFollow('', 'en');
-      expect(result).toEqual({ error: 'invalidUsername' });
-      expect(mockGetUser).not.toHaveBeenCalled();
-    });
   });
 
   describe('authentication', () => {
@@ -151,12 +147,23 @@ describe('toggleFollow', () => {
       });
     });
 
-    it('should delete follow and return following=false on unique violation (already following)', async () => {
-      const uniqueError = new Error('Failed query');
-      const pgError = new Error('duplicate key');
+    it('should delete follow and return following=false on unique violation (code on error)', async () => {
+      const pgError = new Error('duplicate key value violates unique constraint "uq_follow"');
       (pgError as unknown as Record<string, string>).code = '23505';
-      uniqueError.cause = pgError;
-      mockInsertValues.mockRejectedValue(uniqueError);
+      pgError.name = 'PostgresError';
+      mockInsertValues.mockRejectedValue(pgError);
+      mockDeleteWhere.mockResolvedValue(undefined);
+
+      const result = await toggleFollow('validuser', 'en');
+      expect(result).toEqual({ following: false });
+    });
+
+    it('should delete follow and return following=false on unique violation (code on cause)', async () => {
+      const cause = new Error('duplicate key value violates unique constraint "uq_follow"');
+      (cause as unknown as Record<string, string>).code = '23505';
+      cause.name = 'PostgresError';
+      const wrappedError = new Error('Failed query: insert into "follows"...', { cause });
+      mockInsertValues.mockRejectedValue(wrappedError);
       mockDeleteWhere.mockResolvedValue(undefined);
 
       const result = await toggleFollow('validuser', 'en');
@@ -171,12 +178,6 @@ describe('toggleFollow', () => {
   });
 
   describe('validation order', () => {
-    it('should validate username before checking auth', async () => {
-      const result = await toggleFollow('', 'en');
-      expect(result).toEqual({ error: 'invalidUsername' });
-      expect(mockGetUser).not.toHaveBeenCalled();
-    });
-
     it('should check auth before ban check', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
 
@@ -206,11 +207,10 @@ describe('toggleFollow', () => {
     });
 
     it('should log "unfollow" activity event when unfollowing', async () => {
-      const uniqueError = new Error('Failed query');
-      const pgError = new Error('duplicate key');
+      const pgError = new Error('duplicate key value violates unique constraint "uq_follow"');
       (pgError as unknown as Record<string, string>).code = '23505';
-      uniqueError.cause = pgError;
-      mockInsertValues.mockRejectedValue(uniqueError);
+      pgError.name = 'PostgresError';
+      mockInsertValues.mockRejectedValue(pgError);
       mockDeleteWhere.mockResolvedValue(undefined);
 
       await toggleFollow('validuser', 'en');

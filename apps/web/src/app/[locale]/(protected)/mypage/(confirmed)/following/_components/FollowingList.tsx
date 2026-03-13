@@ -68,7 +68,7 @@ export function FollowingList({ initialList, locale }: Props) {
                 type="button"
                 onClick={() => handleUnfollow(user)}
                 disabled={isPending}
-                className="rounded-full border border-border px-5 py-1.5 text-sm font-semibold text-foreground transition-colors hover:border-red-300 hover:text-red-500 hover:bg-red-50 dark:hover:border-red-700 dark:hover:bg-red-950 disabled:opacity-50 cursor-pointer"
+                className="rounded-full border border-border px-5 py-1.5 text-sm font-semibold text-foreground transition-colors hover:border-destructive/30 hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 cursor-pointer"
               >
                 {t('unfollow')}
               </button>

@@ -5,7 +5,7 @@ import { FormEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { TextInput, Textarea } from '@/app/_components';
+import { Button, TextInput, Textarea } from '@/app/_components';
 
 import type { Profile } from '@/lib/db';
 
@@ -111,12 +111,7 @@ export function ProfileForm({ locale, profile }: Props) {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Avatar */}
       <section className="flex justify-center">
-        <AvatarUpload
-          currentAvatarUrl={profile.avatarUrl}
-          onUploaded={() => {
-            // Avatar is saved independently; no additional form state needed
-          }}
-        />
+        <AvatarUpload currentAvatarUrl={profile.avatarUrl} />
       </section>
 
       {/* Identity Section */}
@@ -235,13 +230,16 @@ export function ProfileForm({ locale, profile }: Props) {
 
       {error && !error.field && <p className="text-sm text-destructive">{error.message}</p>}
 
-      <button
+      <Button
         type="submit"
-        disabled={isSubmitting || displayName.trim().length === 0}
-        className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={isSubmitting}
+        disabled={displayName.trim().length === 0}
       >
-        {isSubmitting ? t('submitting') : t('submit')}
-      </button>
+        {t('submit')}
+      </Button>
     </form>
   );
 }

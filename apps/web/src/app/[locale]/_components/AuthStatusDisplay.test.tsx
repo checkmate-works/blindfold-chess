@@ -44,7 +44,7 @@ describe('AuthStatusDisplay', () => {
   });
 
   describe('when loading', () => {
-    it('should return null while loading', () => {
+    it('should render nothing while loading', () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: true,
@@ -56,7 +56,6 @@ describe('AuthStatusDisplay', () => {
     });
   });
 
-  // TODO: Restore sign-in link tests when authentication is publicly launched
   describe('when not signed in', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
@@ -66,9 +65,12 @@ describe('AuthStatusDisplay', () => {
       });
     });
 
-    it('should return null when not signed in', () => {
-      const { container } = render(<AuthStatusDisplay />);
-      expect(container.innerHTML).toBe('');
+    it('should display sign-up and sign-in links', () => {
+      render(<AuthStatusDisplay />);
+      const signUpLink = screen.getByText('signUp').closest('a');
+      const signInLink = screen.getByText('signIn').closest('a');
+      expect(signUpLink).toHaveAttribute('href', '/en/sign-up');
+      expect(signInLink).toHaveAttribute('href', '/en/sign-in');
     });
   });
 

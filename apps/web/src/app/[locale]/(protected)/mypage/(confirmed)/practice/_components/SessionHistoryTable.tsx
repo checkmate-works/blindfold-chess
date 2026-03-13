@@ -1,5 +1,3 @@
-'use client';
-
 type SessionRow = {
   date: string;
   correctAnswers: string;

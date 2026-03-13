@@ -3,10 +3,13 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components';
-import { getLikedPostsByUser } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
+import {
+  getLikedPostCountByUser,
+  getLikedPostsByUser,
+} from '@/app/[locale]/(public)/topics/squares/_lib/queries';
 import {
   Breadcrumb,
   Divider,
@@ -41,18 +44,14 @@ export default async function LikesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageLikes' });
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const allPosts = await getLikedPostsByUser(user!.id);
+  const user = await getAuthenticatedUser();
 
   const { page } = await searchParamsCache.parse(searchParams);
-  const totalCount = allPosts.length;
+
+  const totalCount = await getLikedPostCountByUser(user.id);
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const posts = await getLikedPostsByUser(user.id, PAGE_SIZE, (currentPage - 1) * PAGE_SIZE);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';

@@ -12,7 +12,12 @@ export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 export const MAX_GAMES = 20;
 
 export const GAME_UPDATED_EVENT = 'blindfold-chess:game-updated';
+export const NOTIFICATIONS_READ_EVENT = 'blindfold-chess:notifications-read';
 
 export function notifyGameListUpdated() {
   window.dispatchEvent(new CustomEvent(GAME_UPDATED_EVENT));
+}
+
+export function notifyNotificationsRead() {
+  window.dispatchEvent(new CustomEvent(NOTIFICATIONS_READ_EVENT));
 }

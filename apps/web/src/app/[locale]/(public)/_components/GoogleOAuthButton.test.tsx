@@ -2,7 +2,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { GoogleSignInButton } from './GoogleSignInButton';
+import { GoogleOAuthButton } from './GoogleOAuthButton';
 
 expect.extend(matchers);
 
@@ -24,36 +24,36 @@ vi.mock('@/lib/supabase/client', () => ({
   }),
 }));
 
-describe('GoogleSignInButton', () => {
+describe('GoogleOAuthButton', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render the sign-in button with Google text', () => {
-    render(<GoogleSignInButton />);
+  it('should render the button with OAuth text', () => {
+    render(<GoogleOAuthButton namespace="signIn" />);
 
     expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByText('signInWithGoogle')).toBeInTheDocument();
+    expect(screen.getByText('googleOAuth')).toBeInTheDocument();
   });
 
   it('should not be disabled initially', () => {
-    render(<GoogleSignInButton />);
+    render(<GoogleOAuthButton namespace="signIn" />);
 
     expect(screen.getByRole('button')).not.toBeDisabled();
   });
 
   it('should show loading text and become disabled when clicked', async () => {
-    render(<GoogleSignInButton />);
+    render(<GoogleOAuthButton namespace="signUp" />);
 
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
     expect(button).toBeDisabled();
-    expect(screen.getByText('signingIn')).toBeInTheDocument();
+    expect(screen.getByText('googleOAuthLoading')).toBeInTheDocument();
   });
 
   it('should call signInWithOAuth with google provider on click', () => {
-    render(<GoogleSignInButton />);
+    render(<GoogleOAuthButton namespace="signIn" />);
 
     fireEvent.click(screen.getByRole('button'));
 

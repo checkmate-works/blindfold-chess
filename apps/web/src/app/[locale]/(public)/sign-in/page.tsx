@@ -2,16 +2,19 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
+import { Link } from '@/i18n/routing';
+
 import { createClient } from '@/lib/supabase/server';
 
-import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { AuthErrorMessage } from './_components/AuthErrorMessage';
-import { GoogleSignInButton } from './_components/GoogleSignInButton';
+import { AuthErrorMessage } from '../_components/AuthErrorMessage';
+import { GoogleOAuthButton } from '../_components/GoogleOAuthButton';
 
 type Props = {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ error?: string }>;
 };
 
@@ -49,12 +52,25 @@ export default async function SignInPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'signIn' });
 
   return (
-    <>
+    <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
-      {error && <AuthErrorMessage />}
-      <div className="mt-8">
-        <GoogleSignInButton />
-      </div>
-    </>
+
+      <PagePanel>
+        {error && <AuthErrorMessage namespace="signIn" />}
+        <div>
+          <GoogleOAuthButton namespace="signIn" />
+        </div>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          {t('noAccount')}{' '}
+          <Link href="/sign-up" className="text-link-primary hover:underline">
+            {t('signUp')}
+          </Link>
+        </p>
+
+        <Divider />
+
+        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
+      </PagePanel>
+    </div>
   );
 }

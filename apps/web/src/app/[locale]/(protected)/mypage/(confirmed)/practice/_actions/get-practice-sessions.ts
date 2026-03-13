@@ -21,6 +21,31 @@ export type GetPracticeSessionsResponse = {
   previousSessions: PracticeSessionRow[];
 };
 
+function querySessionsByRange(
+  userId: string,
+  menuType: string | null,
+  range: { start: Date; end: Date }
+) {
+  const conditions = [eq(practiceSessions.userId, userId)];
+  if (menuType) {
+    conditions.push(eq(practiceSessions.menuType, menuType));
+  }
+  conditions.push(gte(practiceSessions.startedAt, range.start));
+  conditions.push(lt(practiceSessions.startedAt, range.end));
+
+  return db
+    .select({
+      id: practiceSessions.id,
+      menuType: practiceSessions.menuType,
+      startedAt: practiceSessions.startedAt,
+      settings: practiceSessions.settings,
+      result: practiceSessions.result,
+    })
+    .from(practiceSessions)
+    .where(and(...conditions))
+    .orderBy(desc(practiceSessions.startedAt));
+}
+
 export async function getPracticeSessions(
   menuType?: PracticeMenuType,
   period?: DatePeriod
@@ -35,51 +60,17 @@ export async function getPracticeSessions(
       return { success: false, sessions: [], previousSessions: [] };
     }
 
-    const conditions = [eq(practiceSessions.userId, user.id)];
-    if (menuType) {
-      conditions.push(eq(practiceSessions.menuType, menuType));
-    }
-
     const currentPeriod = period ?? 'thisWeek';
-    const range = getPeriodRange(currentPeriod);
-    conditions.push(gte(practiceSessions.startedAt, range.start));
-    conditions.push(lt(practiceSessions.startedAt, range.end));
+    const menu = menuType ?? null;
 
-    const rows = await db
-      .select({
-        id: practiceSessions.id,
-        menuType: practiceSessions.menuType,
-        startedAt: practiceSessions.startedAt,
-        settings: practiceSessions.settings,
-        result: practiceSessions.result,
-      })
-      .from(practiceSessions)
-      .where(and(...conditions))
-      .orderBy(desc(practiceSessions.startedAt));
-
+    const rows = await querySessionsByRange(user.id, menu, getPeriodRange(currentPeriod));
     const sessions = rows.map(parsePracticeSession);
 
-    // Fetch previous period data for comparison
-    const prevRange = getPreviousPeriodRange(currentPeriod);
-    const prevConditions = [eq(practiceSessions.userId, user.id)];
-    if (menuType) {
-      prevConditions.push(eq(practiceSessions.menuType, menuType));
-    }
-    prevConditions.push(gte(practiceSessions.startedAt, prevRange.start));
-    prevConditions.push(lt(practiceSessions.startedAt, prevRange.end));
-
-    const prevRows = await db
-      .select({
-        id: practiceSessions.id,
-        menuType: practiceSessions.menuType,
-        startedAt: practiceSessions.startedAt,
-        settings: practiceSessions.settings,
-        result: practiceSessions.result,
-      })
-      .from(practiceSessions)
-      .where(and(...prevConditions))
-      .orderBy(desc(practiceSessions.startedAt));
-
+    const prevRows = await querySessionsByRange(
+      user.id,
+      menu,
+      getPreviousPeriodRange(currentPeriod)
+    );
     const previousSessions = prevRows.map(parsePracticeSession);
 
     return { success: true, sessions, previousSessions };

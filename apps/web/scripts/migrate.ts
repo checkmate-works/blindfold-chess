@@ -83,6 +83,14 @@ async function runTopicPostsSetup() {
   await client.unsafe(sql);
 }
 
+async function runNotificationsSetup() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'notifications_setup.sql'),
+    'utf-8'
+  );
+  await client.unsafe(sql);
+}
+
 async function main() {
   console.log('Running migrations...');
   await migrate(db, { migrationsFolder: './drizzle' });
@@ -116,6 +124,10 @@ async function main() {
     console.log('Applying topic posts setup...');
     await runTopicPostsSetup();
     console.log('Topic posts setup applied!');
+
+    console.log('Applying notifications setup...');
+    await runNotificationsSetup();
+    console.log('Notifications setup applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }

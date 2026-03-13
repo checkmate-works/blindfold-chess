@@ -117,7 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Glossary letter pages
     for (const letter of glossaryLetters) {
       sitemap.push({
-        url: `${BASE_URL}/${locale}/glossary/letter/${letter}`,
+        url: `${BASE_URL}/${locale}/glossary/letter/${letter.toLowerCase()}`,
         lastModified: now,
       });
     }

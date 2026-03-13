@@ -371,13 +371,27 @@ export async function getLikeMetaForPost(
 }
 
 /**
- * Get posts liked by a specific user, ordered by like date (newest first).
+ * Get the count of posts liked by a specific user.
+ */
+export async function getLikedPostCountByUser(userId: string): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPostLikes)
+    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
+    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)));
+  return result.count;
+}
+
+/**
+ * Get posts liked by a specific user, ordered by like date (newest first), paginated.
  * Returns posts with reply/like metadata and the topicKey for each post.
  */
 export async function getLikedPostsByUser(
-  userId: string
+  userId: string,
+  limit?: number,
+  offset?: number
 ): Promise<(PostWithReplyMeta & { topicKey: string })[]> {
-  const results = await db
+  let query = db
     .select({
       post: topicPosts,
       author: {
@@ -393,7 +407,17 @@ export async function getLikedPostsByUser(
     .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
     .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPostLikes.createdAt));
+    .orderBy(desc(topicPostLikes.createdAt))
+    .$dynamic();
+
+  if (limit !== undefined) {
+    query = query.limit(limit);
+  }
+  if (offset !== undefined) {
+    query = query.offset(offset);
+  }
+
+  const results = await query;
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
     ...r.post,

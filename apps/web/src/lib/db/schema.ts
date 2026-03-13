@@ -1,4 +1,6 @@
+import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -468,3 +470,74 @@ export const userActivityLog = pgTable(
 
 export type UserActivityLog = typeof userActivityLog.$inferSelect;
 export type NewUserActivityLog = typeof userActivityLog.$inferInsert;
+
+// Site Settings
+export const siteSettings = pgTable('site_settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  key: varchar('key', { length: 100 }).unique().notNull(),
+  value: jsonb('value').notNull().default({}),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+});
+
+export type SiteSetting = typeof siteSettings.$inferSelect;
+export type NewSiteSetting = typeof siteSettings.$inferInsert;
+
+// Ad Banners
+export const adBanners = pgTable(
+  'ad_banners',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slot: varchar('slot', { length: 50 }).unique().notNull(),
+    href: varchar('href', { length: 2048 }).notNull(),
+    imagePath: varchar('image_path', { length: 1024 }).notNull(),
+    alt: varchar('alt', { length: 255 }).notNull().default('Advertisement'),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
+    isActive: boolean('is_active').notNull().default(true),
+    sortOrder: integer('sort_order').default(0),
+    startAt: timestamp('start_at', { withTimezone: true }),
+    endAt: timestamp('end_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [index('idx_ad_banners_active').on(table.isActive)]
+);
+
+export type AdBannerRecord = typeof adBanners.$inferSelect;
+export type NewAdBannerRecord = typeof adBanners.$inferInsert;
+
+// Notifications
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    actorId: uuid('actor_id'),
+    type: varchar('type', { length: 50 }).notNull(),
+    targetType: varchar('target_type', { length: 50 }),
+    targetId: uuid('target_id'),
+    groupKey: varchar('group_key', { length: 255 }),
+    metadata: jsonb('metadata').default({}),
+    read: boolean('read').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_notifications_user_created').on(table.userId, table.createdAt),
+    index('idx_notifications_unread')
+      .on(table.userId)
+      .where(sql`read = false`),
+    index('idx_notifications_dedup').on(
+      table.userId,
+      table.type,
+      table.actorId,
+      table.targetType,
+      table.targetId
+    ),
+    index('idx_notifications_group_key').on(table.userId, table.groupKey),
+    index('idx_notifications_actor').on(table.actorId),
+  ]
+);
+
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;

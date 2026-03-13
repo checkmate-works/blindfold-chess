@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
 
+import { truncateContent } from '../../topics/_lib/truncate-content';
 import { UserAvatar } from '../../topics/squares/_components/UserAvatar';
 import type { PostWithReplyMeta } from '../../topics/squares/_lib/queries';
 import { formatRelativeTime } from '../../topics/squares/_lib/relative-time';
@@ -14,11 +15,6 @@ type Props = {
   locale: string;
   topicKey: string;
 };
-
-function truncateContent(content: string, maxLength = 200): string {
-  if (content.length <= maxLength) return content;
-  return content.slice(0, maxLength).trimEnd() + '...';
-}
 
 export function TopicPostCard({ post, locale, topicKey }: Props) {
   const t = useTranslations('topics');

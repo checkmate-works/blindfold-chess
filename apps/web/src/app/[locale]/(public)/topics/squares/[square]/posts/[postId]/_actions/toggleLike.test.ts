@@ -9,9 +9,14 @@ const mockIsUserBanned = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
+const mockSelectPostAuthor = vi.fn();
 
 vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/notification', () => ({
+  createNotification: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -34,36 +39,46 @@ vi.mock('@/lib/rate-limit', () => ({
   },
 }));
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    insert: () => ({
-      values: mockInsertValues,
-    }),
-    delete: () => ({
-      where: mockDeleteWhere,
-    }),
-    select: () => ({
-      from: () => ({
-        where: () => mockSelectCount(),
+vi.mock('@/lib/db', () => {
+  const topicPostsTable = { id: 'id', userId: 'user_id' };
+  const topicPostLikesTable = { userId: 'user_id', postId: 'post_id' };
+
+  return {
+    db: {
+      insert: () => ({
+        values: mockInsertValues,
       }),
-    }),
-  },
-  topicPostLikes: {
-    userId: 'user_id',
-    postId: 'post_id',
-  },
-}));
+      delete: () => ({
+        where: mockDeleteWhere,
+      }),
+      select: () => ({
+        from: (table: unknown) => ({
+          where: () => {
+            if (table === topicPostsTable) {
+              return { limit: () => mockSelectPostAuthor() };
+            }
+            return mockSelectCount();
+          },
+        }),
+      }),
+    },
+    topicPosts: topicPostsTable,
+    topicPostLikes: topicPostLikesTable,
+  };
+});
 
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
+const testPostAuthorId = 'user-00000000-0000-0000-0000-000000000002';
 const testPostId = '11111111-2222-3333-4444-555555555555';
 
 describe('toggleLike', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSelectPostAuthor.mockResolvedValue([{ userId: testPostAuthorId }]);
   });
 
   describe('input validation', () => {
