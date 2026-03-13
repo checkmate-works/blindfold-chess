@@ -13,11 +13,8 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "copy-stockfish": "tsx scripts/copy-stockfish.ts",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
     "db:run-migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "db:setup-auth-hook": "psql $POSTGRES_URL -f drizzle/supabase/custom_access_token_hook.sql",
     "db:seed": "tsx src/lib/db/seed.ts",
     "capture-screenshots": "tsx scripts/capture-screenshots.ts"
   },

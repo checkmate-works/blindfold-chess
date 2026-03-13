@@ -27,8 +27,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
   GameListClient,
-  LatestPostsList,
-  LatestPostsSkeleton,
+  LatestArticlesList,
+  LatestArticlesSkeleton,
   LatestTopicPostsList,
   LatestTopicPostsSkeleton,
   NewGameButton,
@@ -55,7 +55,7 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const tHome = await getTranslations({ locale, namespace: 'home' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const tPosts = await getTranslations({ locale, namespace: 'posts' });
+  const tArticles = await getTranslations({ locale, namespace: 'articles' });
 
   return (
     <>
@@ -83,8 +83,8 @@ export default async function HomePage({ params }: Props) {
         <AdBanner slot="home-wide" locale={locale} />
 
         <ErrorBoundary>
-          <Suspense fallback={<LatestPostsSkeleton title={tPosts('pageTitle')} />}>
-            <LatestPostsList locale={locale} title={tPosts('pageTitle')} />
+          <Suspense fallback={<LatestArticlesSkeleton title={tArticles('pageTitle')} />}>
+            <LatestArticlesList locale={locale} title={tArticles('pageTitle')} />
           </Suspense>
         </ErrorBoundary>
       </div>

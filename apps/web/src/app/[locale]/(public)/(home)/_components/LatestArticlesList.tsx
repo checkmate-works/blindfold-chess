@@ -4,34 +4,33 @@ import { Link } from '@/i18n/routing';
 
 import { ListLink, ListLinkContainer, SectionTitle } from '@/app/[locale]/_components';
 
-import { getCategoryIcon } from '../../posts/_lib/constants';
-import { getLatestPublishedPosts } from '../../posts/_lib/queries';
+import { getLatestPublishedArticles } from '../../articles/_lib/queries';
 
-const LATEST_POSTS_DISPLAY_COUNT = 5;
+const LATEST_ARTICLES_DISPLAY_COUNT = 5;
 
 type Props = {
   locale: string;
   title: string;
 };
 
-export async function LatestPostsList({ locale, title }: Props) {
-  const posts = await getLatestPublishedPosts(LATEST_POSTS_DISPLAY_COUNT + 1);
-  const t = await getTranslations({ locale, namespace: 'posts' });
+export async function LatestArticlesList({ locale, title }: Props) {
+  const articles = await getLatestPublishedArticles(locale, LATEST_ARTICLES_DISPLAY_COUNT + 1);
+  const t = await getTranslations({ locale, namespace: 'articles' });
 
-  if (posts.length === 0) {
+  if (articles.length === 0) {
     return null;
   }
 
-  const hasMore = posts.length > LATEST_POSTS_DISPLAY_COUNT;
-  const displayPosts = hasMore ? posts.slice(0, LATEST_POSTS_DISPLAY_COUNT) : posts;
+  const hasMore = articles.length > LATEST_ARTICLES_DISPLAY_COUNT;
+  const displayArticles = hasMore ? articles.slice(0, LATEST_ARTICLES_DISPLAY_COUNT) : articles;
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
       <SectionTitle>{title}</SectionTitle>
       <ListLinkContainer>
-        {displayPosts.map((post) => {
-          const publishedDate = post.publishedAt
-            ? new Date(post.publishedAt).toLocaleDateString(locale, {
+        {displayArticles.map((article) => {
+          const publishedDate = article.publishedAt
+            ? new Date(article.publishedAt).toLocaleDateString(locale, {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
@@ -40,13 +39,13 @@ export async function LatestPostsList({ locale, title }: Props) {
 
           return (
             <ListLink
-              key={post.id}
-              href={`/posts/${post.category.slug}/${post.slug}`}
-              icon={getCategoryIcon(post.category.slug)}
-              title={post.title}
+              key={article.id}
+              href={`/articles/${article.slug}`}
+              icon="📰"
+              title={article.title}
               meta={publishedDate}
               locale={locale}
-              isPinned={post.pinnedAt !== null}
+              isPinned={article.pinnedAt !== null}
             />
           );
         })}
@@ -54,11 +53,11 @@ export async function LatestPostsList({ locale, title }: Props) {
       {hasMore && (
         <div className="text-center">
           <Link
-            href="/posts"
+            href="/articles"
             locale={locale}
             className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
           >
-            {t('morePosts')}
+            {t('moreArticles')}
           </Link>
         </div>
       )}

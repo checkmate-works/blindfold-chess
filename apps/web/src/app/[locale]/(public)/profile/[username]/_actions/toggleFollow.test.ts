@@ -59,7 +59,7 @@ vi.mock('@/lib/db', () => ({
     username: 'username',
     deletedAt: 'deleted_at',
   },
-  follows: {
+  userFollows: {
     followerId: 'follower_id',
     followingId: 'following_id',
   },

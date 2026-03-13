@@ -35,12 +35,12 @@ async function runAuthHook() {
   await client.unsafe(hookSql);
 }
 
-async function runProfilesSetup() {
-  const profilesSql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'profiles_setup.sql'),
+async function runForeignKeysAndGrants() {
+  const sql = readFileSync(
+    join(__dirname, '..', 'drizzle', 'supabase', 'foreign_keys_and_grants.sql'),
     'utf-8'
   );
-  await client.unsafe(profilesSql);
+  await client.unsafe(sql);
 }
 
 async function runRlsPolicies() {
@@ -51,41 +51,9 @@ async function runRlsPolicies() {
   await client.unsafe(rlsSql);
 }
 
-async function runStorageAvatars() {
-  const avatarsSql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'storage_avatars.sql'),
-    'utf-8'
-  );
-  await client.unsafe(avatarsSql);
-}
-
-async function runFollowsBlocksSetup() {
+async function runStorageSetup() {
   const sql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'follows_blocks_setup.sql'),
-    'utf-8'
-  );
-  await client.unsafe(sql);
-}
-
-async function runModerationActionsSetup() {
-  const sql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'moderation_actions_setup.sql'),
-    'utf-8'
-  );
-  await client.unsafe(sql);
-}
-
-async function runTopicPostsSetup() {
-  const sql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'topic_posts_setup.sql'),
-    'utf-8'
-  );
-  await client.unsafe(sql);
-}
-
-async function runNotificationsSetup() {
-  const sql = readFileSync(
-    join(__dirname, '..', 'drizzle', 'supabase', 'notifications_setup.sql'),
+    join(__dirname, '..', 'drizzle', 'supabase', 'storage_setup.sql'),
     'utf-8'
   );
   await client.unsafe(sql);
@@ -101,33 +69,17 @@ async function main() {
     await runAuthHook();
     console.log('Auth hook applied!');
 
+    console.log('Applying foreign keys and grants...');
+    await runForeignKeysAndGrants();
+    console.log('Foreign keys and grants applied!');
+
     console.log('Applying RLS policies...');
     await runRlsPolicies();
     console.log('RLS policies applied!');
 
-    console.log('Applying profiles setup...');
-    await runProfilesSetup();
-    console.log('Profiles setup applied!');
-
-    console.log('Applying storage avatars setup...');
-    await runStorageAvatars();
-    console.log('Storage avatars setup applied!');
-
-    console.log('Applying follows & blocks setup...');
-    await runFollowsBlocksSetup();
-    console.log('Follows & blocks setup applied!');
-
-    console.log('Applying moderation actions setup...');
-    await runModerationActionsSetup();
-    console.log('Moderation actions setup applied!');
-
-    console.log('Applying topic posts setup...');
-    await runTopicPostsSetup();
-    console.log('Topic posts setup applied!');
-
-    console.log('Applying notifications setup...');
-    await runNotificationsSetup();
-    console.log('Notifications setup applied!');
+    console.log('Applying storage setup...');
+    await runStorageSetup();
+    console.log('Storage setup applied!');
   } else {
     console.log('Local environment detected. Skipping Supabase-only setup.');
   }

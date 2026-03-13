@@ -13,28 +13,48 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-export const categories = pgTable('categories', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: varchar('slug', { length: 50 }).unique().notNull(),
-  sortOrder: integer('sort_order').default(0),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+// Articles
+export const articles = pgTable(
+  'articles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 255 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    status: varchar('status', { length: 20 }).default('draft'),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_articles_slug_locale').on(table.slug, table.locale)]
+);
 
-export const posts = pgTable('posts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: varchar('slug', { length: 255 }).notNull(),
-  title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').notNull(),
-  categoryId: uuid('category_id')
-    .notNull()
-    .references(() => categories.id),
-  locale: varchar('locale', { length: 10 }).default('en'),
-  status: varchar('status', { length: 20 }).default('draft'),
-  pinnedAt: timestamp('pinned_at', { withTimezone: true }),
-  publishedAt: timestamp('published_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+export type Article = typeof articles.$inferSelect;
+export type NewArticle = typeof articles.$inferInsert;
+
+// Announcements
+export const announcements = pgTable(
+  'announcements',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 255 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    status: varchar('status', { length: 20 }).default('draft'),
+    visibility: varchar('visibility', { length: 20 }).default('public'),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_announcements_slug_locale').on(table.slug, table.locale)]
+);
+
+export type Announcement = typeof announcements.$inferSelect;
+export type NewAnnouncement = typeof announcements.$inferInsert;
 
 // Glossary tables
 export const glossaryTerms = pgTable('glossary_terms', {
@@ -53,7 +73,7 @@ export const glossaryTermTranslations = pgTable(
     termId: uuid('term_id')
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-    locale: varchar('locale', { length: 10 }).notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),
@@ -63,25 +83,33 @@ export const glossaryTermTranslations = pgTable(
   (table) => [unique('uq_term_locale').on(table.termId, table.locale)]
 );
 
-export const glossaryTermAliases = pgTable('glossary_term_aliases', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  termId: uuid('term_id')
-    .notNull()
-    .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-  alias: varchar('alias', { length: 255 }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+export const glossaryTermAliases = pgTable(
+  'glossary_term_aliases',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
+    alias: varchar('alias', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_term_alias').on(table.termId, table.alias)]
+);
 
-export const glossaryTermPositions = pgTable('glossary_term_positions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  termId: uuid('term_id')
-    .notNull()
-    .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-  fen: varchar('fen', { length: 100 }).notNull(),
-  sortOrder: integer('sort_order').default(0),
-  caption: varchar('caption', { length: 255 }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+export const glossaryTermPositions = pgTable(
+  'glossary_term_positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
+    fen: varchar('fen', { length: 100 }).notNull(),
+    sortOrder: integer('sort_order').default(0),
+    caption: varchar('caption', { length: 255 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_term_position').on(table.termId, table.fen)]
+);
 
 export const glossaryTermRelations = pgTable(
   'glossary_term_relations',
@@ -117,10 +145,6 @@ export const practiceSessions = pgTable(
 );
 
 // Type exports for use in application code
-export type Category = typeof categories.$inferSelect;
-export type NewCategory = typeof categories.$inferInsert;
-export type Post = typeof posts.$inferSelect;
-export type NewPost = typeof posts.$inferInsert;
 export type GlossaryTerm = typeof glossaryTerms.$inferSelect;
 export type NewGlossaryTerm = typeof glossaryTerms.$inferInsert;
 export type GlossaryTermTranslation = typeof glossaryTermTranslations.$inferSelect;
@@ -141,7 +165,7 @@ export const profiles = pgTable('profiles', {
   displayName: varchar('display_name', { length: 255 }),
   avatarUrl: varchar('avatar_url', { length: 1024 }),
   bio: text('bio'),
-  country: varchar('country', { length: 2 }),
+  country: varchar('country', { length: 2 }), // ISO 3166-1 alpha-2
   flair: varchar('flair', { length: 50 }),
   fideId: varchar('fide_id', { length: 50 }),
   chesscomUsername: varchar('chesscom_username', { length: 255 }),
@@ -275,9 +299,9 @@ export const topicPostLikes = pgTable(
 export type TopicPostLike = typeof topicPostLikes.$inferSelect;
 export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
 
-// Follows
-export const follows = pgTable(
-  'follows',
+// User Follows
+export const userFollows = pgTable(
+  'user_follows',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     followerId: uuid('follower_id').notNull(), // references auth.users — FK defined in custom SQL
@@ -285,18 +309,18 @@ export const follows = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_follow').on(table.followerId, table.followingId),
-    index('idx_follows_follower').on(table.followerId),
-    index('idx_follows_following').on(table.followingId),
+    unique('uq_user_follow').on(table.followerId, table.followingId),
+    index('idx_user_follows_follower').on(table.followerId),
+    index('idx_user_follows_following').on(table.followingId),
   ]
 );
 
-export type Follow = typeof follows.$inferSelect;
-export type NewFollow = typeof follows.$inferInsert;
+export type UserFollow = typeof userFollows.$inferSelect;
+export type NewUserFollow = typeof userFollows.$inferInsert;
 
-// Blocks
-export const blocks = pgTable(
-  'blocks',
+// User Blocks
+export const userBlocks = pgTable(
+  'user_blocks',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     blockerId: uuid('blocker_id').notNull(), // references auth.users — FK defined in custom SQL
@@ -304,14 +328,14 @@ export const blocks = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_block').on(table.blockerId, table.blockedId),
-    index('idx_blocks_blocker').on(table.blockerId),
-    index('idx_blocks_blocked').on(table.blockedId),
+    unique('uq_user_block').on(table.blockerId, table.blockedId),
+    index('idx_user_blocks_blocker').on(table.blockerId),
+    index('idx_user_blocks_blocked').on(table.blockedId),
   ]
 );
 
-export type Block = typeof blocks.$inferSelect;
-export type NewBlock = typeof blocks.$inferInsert;
+export type UserBlock = typeof userBlocks.$inferSelect;
+export type NewUserBlock = typeof userBlocks.$inferInsert;
 
 /**
  * Moderation Actions — immutable audit log for admin moderation operations.

@@ -308,7 +308,6 @@ describe('JSON-LD Schema Generators', () => {
       title: 'Test Blog Post',
       description: 'A test blog post description',
       slug: 'test-blog-post',
-      category: 'news',
       publishedAt: new Date('2024-01-20T14:30:00Z'),
       locale: 'en',
     };
@@ -324,12 +323,12 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.inLanguage).toBe('en-US');
     });
 
-    it('should generate correct mainEntityOfPage URL for posts', () => {
+    it('should generate correct mainEntityOfPage URL for articles', () => {
       const schema = generateBlogPostingSchema(basePost);
 
       expect(schema.mainEntityOfPage).toEqual({
         '@type': 'WebPage',
-        '@id': 'https://www.blindfold-chess.online/en/posts/news/test-blog-post',
+        '@id': 'https://www.blindfold-chess.online/en/articles/test-blog-post',
       });
     });
 
@@ -376,16 +375,7 @@ describe('JSON-LD Schema Generators', () => {
       const schema = generateBlogPostingSchema(post);
 
       expect(schema.mainEntityOfPage['@id']).toBe(
-        'https://www.blindfold-chess.online/ja/posts/news/test-blog-post'
-      );
-    });
-
-    it('should handle different categories', () => {
-      const post: BlogPostData = { ...basePost, category: 'updates' };
-      const schema = generateBlogPostingSchema(post);
-
-      expect(schema.mainEntityOfPage['@id']).toBe(
-        'https://www.blindfold-chess.online/en/posts/updates/test-blog-post'
+        'https://www.blindfold-chess.online/ja/articles/test-blog-post'
       );
     });
 

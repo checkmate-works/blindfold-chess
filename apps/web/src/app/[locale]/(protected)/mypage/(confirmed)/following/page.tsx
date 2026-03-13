@@ -5,7 +5,7 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, follows, profiles } from '@/lib/db';
+import { db, profiles, userFollows } from '@/lib/db';
 
 import {
   Breadcrumb,
@@ -49,9 +49,9 @@ export default async function FollowingPage({ params, searchParams }: Props) {
 
   const [countResult] = await db
     .select({ count: count() })
-    .from(follows)
-    .innerJoin(profiles, eq(follows.followingId, profiles.id))
-    .where(and(eq(follows.followerId, user.id), isNull(profiles.deletedAt)));
+    .from(userFollows)
+    .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
+    .where(and(eq(userFollows.followerId, user.id), isNull(profiles.deletedAt)));
 
   const totalCount = countResult.count;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -64,9 +64,9 @@ export default async function FollowingPage({ params, searchParams }: Props) {
       displayName: profiles.displayName,
       avatarUrl: profiles.avatarUrl,
     })
-    .from(follows)
-    .innerJoin(profiles, eq(follows.followingId, profiles.id))
-    .where(and(eq(follows.followerId, user.id), isNull(profiles.deletedAt)))
+    .from(userFollows)
+    .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
+    .where(and(eq(userFollows.followerId, user.id), isNull(profiles.deletedAt)))
     .limit(PAGE_SIZE)
     .offset((currentPage - 1) * PAGE_SIZE);
 

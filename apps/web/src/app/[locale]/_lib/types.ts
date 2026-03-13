@@ -4,7 +4,7 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export type NavigationIconName =
   | 'home'
-  | 'posts'
+  | 'articles'
   | 'getting-started'
   | 'learn'
   | 'practice'

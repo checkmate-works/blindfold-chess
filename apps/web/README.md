@@ -90,9 +90,8 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 
 - `pnpm run copy-stockfish` - Copy Stockfish AI engine files to public directory (required before first run)
 - `pnpm db:seed` - Seed initial data (categories)
-- `pnpm db:generate` - Generate migrations from schema changes
+- `npx drizzle-kit generate --name=<migration_name>` - Generate migrations from schema changes (always specify `--name`)
 - `pnpm db:run-migrate` - Run migrations + Supabase SQL (auto-detects Supabase)
-- `pnpm db:setup-auth-hook` - Apply Custom Access Token Hook SQL (Supabase only)
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
 - `pnpm test:run` - Run unit tests once (CI mode)
 - `pnpm test:e2e` - Run E2E tests in headless mode (auto-starts dev server)

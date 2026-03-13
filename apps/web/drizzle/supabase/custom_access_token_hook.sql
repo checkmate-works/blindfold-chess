@@ -3,7 +3,6 @@
 -- It injects the user's role from user_roles into the JWT claims.
 --
 -- This file is automatically applied by scripts/migrate.ts on Supabase environments.
--- It can also be run manually: pnpm db:setup-auth-hook
 -- It requires Supabase-managed roles (supabase_auth_admin, authenticated, anon)
 -- and will fail on local PostgreSQL — this is intentional.
 

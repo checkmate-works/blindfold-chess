@@ -77,37 +77,37 @@ CREATE POLICY "topic_post_likes_delete" ON "topic_post_likes"
   FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
--- follows
+-- user_follows
 -- =============================================================================
-ALTER TABLE "follows" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_follows" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "follows_select" ON "follows";
-CREATE POLICY "follows_select" ON "follows"
+DROP POLICY IF EXISTS "user_follows_select" ON "user_follows";
+CREATE POLICY "user_follows_select" ON "user_follows"
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "follows_insert" ON "follows";
-CREATE POLICY "follows_insert" ON "follows"
+DROP POLICY IF EXISTS "user_follows_insert" ON "user_follows";
+CREATE POLICY "user_follows_insert" ON "user_follows"
   FOR INSERT WITH CHECK (auth.uid() = follower_id);
 
-DROP POLICY IF EXISTS "follows_delete" ON "follows";
-CREATE POLICY "follows_delete" ON "follows"
+DROP POLICY IF EXISTS "user_follows_delete" ON "user_follows";
+CREATE POLICY "user_follows_delete" ON "user_follows"
   FOR DELETE USING (auth.uid() = follower_id);
 
 -- =============================================================================
--- blocks
+-- user_blocks
 -- =============================================================================
-ALTER TABLE "blocks" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_blocks" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "blocks_select" ON "blocks";
-CREATE POLICY "blocks_select" ON "blocks"
+DROP POLICY IF EXISTS "user_blocks_select" ON "user_blocks";
+CREATE POLICY "user_blocks_select" ON "user_blocks"
   FOR SELECT USING (auth.uid() = blocker_id);
 
-DROP POLICY IF EXISTS "blocks_insert" ON "blocks";
-CREATE POLICY "blocks_insert" ON "blocks"
+DROP POLICY IF EXISTS "user_blocks_insert" ON "user_blocks";
+CREATE POLICY "user_blocks_insert" ON "user_blocks"
   FOR INSERT WITH CHECK (auth.uid() = blocker_id);
 
-DROP POLICY IF EXISTS "blocks_delete" ON "blocks";
-CREATE POLICY "blocks_delete" ON "blocks"
+DROP POLICY IF EXISTS "user_blocks_delete" ON "user_blocks";
+CREATE POLICY "user_blocks_delete" ON "user_blocks"
   FOR DELETE USING (auth.uid() = blocker_id);
 
 -- =============================================================================

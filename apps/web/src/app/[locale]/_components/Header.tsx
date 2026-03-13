@@ -38,10 +38,10 @@ export async function Header({ locale }: Props) {
       iconName: 'practice',
     },
     {
-      id: 'posts',
-      href: `/${locale}/posts`,
-      label: t('posts'),
-      iconName: 'posts',
+      id: 'articles',
+      href: `/${locale}/articles`,
+      label: t('articles'),
+      iconName: 'articles',
     },
     {
       id: 'glossary',

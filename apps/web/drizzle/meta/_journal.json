@@ -5,78 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1772753495871,
-      "tag": "0000_initial",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1772832700102,
-      "tag": "0001_abandoned_blacklash",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1772873723178,
-      "tag": "0002_natural_mesmero",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1772919068240,
-      "tag": "0003_cuddly_peter_parker",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1772950356087,
-      "tag": "0004_useful_emma_frost",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772954033662,
-      "tag": "0005_silent_medusa",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1772958376442,
-      "tag": "0006_fearless_umar",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1772967291753,
-      "tag": "0007_cultured_corsair",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1773135466537,
-      "tag": "0008_chief_shinobi_shaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1773359428389,
-      "tag": "0009_charming_queen_noir",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1773368429331,
-      "tag": "0010_short_kabuki",
+      "when": 1773404667561,
+      "tag": "20260313122427_initial",
       "breakpoints": true
     }
   ]
