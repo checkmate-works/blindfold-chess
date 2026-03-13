@@ -1,26 +1,23 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 
 import { FiBell } from 'react-icons/fi';
 
-import { createClient } from '@/lib/supabase/server';
-
 import { getUnreadCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions';
 
-type Props = {
-  locale: string;
-};
+export function NotificationBadge() {
+  const locale = useLocale();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-export async function NotificationBadge({ locale }: Props) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const unreadCount = await getUnreadCount();
+  useEffect(() => {
+    getUnreadCount()
+      .then(setUnreadCount)
+      .catch(() => {});
+  }, []);
 
   return (
     <Link

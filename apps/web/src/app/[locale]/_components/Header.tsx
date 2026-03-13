@@ -2,17 +2,25 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { createClient } from '@/lib/supabase/server';
+
 import type { NavigationItem } from '../_lib/types';
-import { AuthStatusDisplay } from './AuthStatusDisplay';
+import { HeaderRightSection } from './HeaderRightSection';
 import { MobileMenu } from './MobileMenu';
 
 type Props = {
   locale: string;
-  notificationBadge?: React.ReactNode;
 };
 
-export async function Header({ locale, notificationBadge }: Props) {
-  const t = await getTranslations({ locale, namespace: 'Header' });
+export async function Header({ locale }: Props) {
+  const [t, supabase] = await Promise.all([
+    getTranslations({ locale, namespace: 'Header' }),
+    createClient(),
+  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
 
   const menuItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -81,10 +89,7 @@ export async function Header({ locale, notificationBadge }: Props) {
           </div>
 
           {/* Right side: Notifications + Auth status */}
-          <div className="flex items-center space-x-4">
-            {notificationBadge}
-            <AuthStatusDisplay />
-          </div>
+          <HeaderRightSection isAuthenticated={isAuthenticated} />
         </div>
       </div>
     </header>

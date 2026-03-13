@@ -44,7 +44,7 @@ describe('AuthStatusDisplay', () => {
   });
 
   describe('when loading', () => {
-    it('should return null while loading', () => {
+    it('should render nothing while loading', () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: true,
