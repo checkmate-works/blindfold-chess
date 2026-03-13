@@ -73,6 +73,14 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+const mockRedirect = vi.fn();
+vi.mock('next/navigation', () => ({
+  redirect: (...args: unknown[]) => {
+    mockRedirect(...args);
+    throw new Error('NEXT_REDIRECT');
+  },
+}));
+
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const validPostId = '00000000-0000-0000-0000-000000000001';
 const prevState = {};
@@ -178,36 +186,39 @@ describe('createReply', () => {
       setupAuthenticatedUser();
       setupParentPostExists();
 
-      const result = await createReply('en', 'e4', validPostId, prevState, makeFormData('hello'));
-      expect(result).not.toEqual(expect.objectContaining({ error: 'invalidPostId' }));
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
     });
 
     it('should accept a valid uppercase UUID', async () => {
       setupAuthenticatedUser();
       setupParentPostExists();
 
-      const result = await createReply(
-        'en',
-        'e4',
-        'ABCDEF00-1234-5678-9ABC-DEF012345678',
-        prevState,
-        makeFormData('hello')
-      );
-      expect(result).not.toEqual(expect.objectContaining({ error: 'invalidPostId' }));
+      await expect(
+        createReply(
+          'en',
+          'e4',
+          'ABCDEF00-1234-5678-9ABC-DEF012345678',
+          prevState,
+          makeFormData('hello')
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
     });
 
     it('should accept a valid mixed-case UUID', async () => {
       setupAuthenticatedUser();
       setupParentPostExists();
 
-      const result = await createReply(
-        'en',
-        'e4',
-        'AbCdEf00-1234-5678-9aBc-DeF012345678',
-        prevState,
-        makeFormData('hello')
-      );
-      expect(result).not.toEqual(expect.objectContaining({ error: 'invalidPostId' }));
+      await expect(
+        createReply(
+          'en',
+          'e4',
+          'AbCdEf00-1234-5678-9aBc-DeF012345678',
+          prevState,
+          makeFormData('hello')
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
     });
   });
 
@@ -250,8 +261,9 @@ describe('createReply', () => {
       setupAuthenticatedUser();
       setupParentPostExists();
 
-      const result = await createReply('en', 'e4', validPostId, prevState, makeFormData('hello'));
-      expect(result).toEqual({});
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
     });
   });
@@ -339,14 +351,9 @@ describe('createReply', () => {
 
     it('should accept content at exactly 5000 characters', async () => {
       const maxContent = 'a'.repeat(5000);
-      const result = await createReply(
-        'en',
-        'e4',
-        validPostId,
-        prevState,
-        makeFormData(maxContent)
-      );
-      expect(result).toEqual({});
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData(maxContent))
+      ).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
     });
   });
@@ -358,15 +365,10 @@ describe('createReply', () => {
     });
 
     it('should insert reply with correct parentId, topicType, and topicKey', async () => {
-      const result = await createReply(
-        'en',
-        'e4',
-        validPostId,
-        prevState,
-        makeFormData('My reply about e4')
-      );
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('My reply about e4'))
+      ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(result).toEqual({});
       expect(mockInsertValues).toHaveBeenCalledWith({
         userId: testUserId,
         topicType: 'square',
@@ -377,15 +379,10 @@ describe('createReply', () => {
     });
 
     it('should trim whitespace from content', async () => {
-      const result = await createReply(
-        'ja',
-        'a1',
-        validPostId,
-        prevState,
-        makeFormData('  trimmed reply  ')
-      );
+      await expect(
+        createReply('ja', 'a1', validPostId, prevState, makeFormData('  trimmed reply  '))
+      ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(result).toEqual({});
       expect(mockInsertValues).toHaveBeenCalledWith({
         userId: testUserId,
         topicType: 'square',
@@ -396,13 +393,19 @@ describe('createReply', () => {
     });
 
     it('should call revalidatePath with correct path after successful reply', async () => {
-      await createReply('en', 'e4', validPostId, prevState, makeFormData('hello'));
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
       expect(revalidatePath).toHaveBeenCalledWith(`/en/topics/squares/e4/posts/${validPostId}`);
     });
 
-    it('should return empty object on success', async () => {
-      const result = await createReply('en', 'e4', validPostId, prevState, makeFormData('hello'));
-      expect(result).toEqual({});
+    it('should redirect with toast param after successful reply', async () => {
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockRedirect).toHaveBeenCalledWith(
+        `/en/topics/squares/e4/posts/${validPostId}?toast=post_created`
+      );
     });
   });
 
@@ -486,7 +489,9 @@ describe('createReply', () => {
     });
 
     it('should log create_reply activity event on success', async () => {
-      await createReply('en', 'e4', validPostId, prevState, makeFormData('My reply'));
+      await expect(
+        createReply('en', 'e4', validPostId, prevState, makeFormData('My reply'))
+      ).rejects.toThrow('NEXT_REDIRECT');
 
       expect(logActivityEvent).toHaveBeenCalledWith({
         userId: testUserId,

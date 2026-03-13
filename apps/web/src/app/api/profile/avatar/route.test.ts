@@ -71,10 +71,10 @@ function createMockFile(content: string | Uint8Array, name: string, type: string
   const bytes = typeof content === 'string' ? new TextEncoder().encode(content) : content;
   const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
 
-  const file = new File([bytes], name, { type });
+  const file = new File([bytes as BlobPart], name, { type });
   // jsdom FormData.get() may return a File without arrayBuffer; patch it
   if (typeof file.arrayBuffer !== 'function') {
-    (file as Record<string, unknown>).arrayBuffer = () => Promise.resolve(buffer);
+    (file as unknown as Record<string, unknown>).arrayBuffer = () => Promise.resolve(buffer);
   }
   return file;
 }

@@ -177,7 +177,9 @@ describe('createPost', () => {
         content: 'My post about e4',
       });
 
-      expect(mockRedirect).toHaveBeenCalledWith('/en/topics/squares/e4');
+      expect(mockRedirect).toHaveBeenCalledWith(
+        `/en/topics/squares/e4/posts/${generatedPostId}?toast=post_created`
+      );
     });
 
     it('should trim whitespace from content', async () => {
@@ -198,7 +200,9 @@ describe('createPost', () => {
         'NEXT_REDIRECT'
       );
 
-      expect(mockRedirect).toHaveBeenCalledWith('/ja/topics/squares/h8');
+      expect(mockRedirect).toHaveBeenCalledWith(
+        `/ja/topics/squares/h8/posts/${generatedPostId}?toast=post_created`
+      );
     });
   });
 

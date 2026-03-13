@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import * as Haptics from "expo-haptics";
+import type { Square } from "@blindfold-chess/types";
 import {
   generateProblem,
   findShortestPath,
@@ -20,7 +21,7 @@ type UseRoutePlannerSessionProps = {
 
 type ProblemResult = {
   success: boolean;
-  shortestPath: string[];
+  shortestPath: Square[];
   message: string;
 };
 
@@ -31,7 +32,7 @@ export function useRoutePlannerSession({
 }: UseRoutePlannerSessionProps) {
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [problem, setProblem] = useState<RoutePlannerProblem | null>(null);
-  const [moves, setMoves] = useState<string[]>([]);
+  const [moves, setMoves] = useState<Square[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [result, setResult] = useState<ProblemResult | null>(null);
   const [isShowingResult, setIsShowingResult] = useState(false);
@@ -64,7 +65,7 @@ export function useRoutePlannerSession({
   const handleRankPress = useCallback(
     (rank: string) => {
       if (!problem || isShowingResult || !selectedFile) return;
-      const square = `${selectedFile}${rank}`;
+      const square = `${selectedFile}${rank}` as Square;
       setMoves((prev) => [...prev, square]);
       setSelectedFile(null);
     },
@@ -97,7 +98,9 @@ export function useRoutePlannerSession({
       problem.end,
     );
     const shortestPath =
-      findShortestPath(problem.piece, problem.start, problem.end) || [];
+      (findShortestPath(problem.piece, problem.start, problem.end) as
+        | Square[]
+        | null) || [];
 
     const isSuccess = validation.valid;
 
@@ -119,7 +122,9 @@ export function useRoutePlannerSession({
   const handleSkip = useCallback(() => {
     if (!problem) return;
     const shortestPath =
-      findShortestPath(problem.piece, problem.start, problem.end) || [];
+      (findShortestPath(problem.piece, problem.start, problem.end) as
+        | Square[]
+        | null) || [];
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     setResult({
       success: false,
