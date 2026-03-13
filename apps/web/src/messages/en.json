@@ -204,7 +204,8 @@
   },
   "Common": {
     "sponsoredLink": "Sponsored Link",
-    "testAd": "Test Ad"
+    "testAd": "Test Ad",
+    "adLabel": "Ad"
   },
   "faq": {
     "title": "Frequently Asked Questions",
@@ -1815,6 +1816,7 @@
     "empty": "No notifications yet.",
     "markAllAsRead": "Mark all as read",
     "followMessage": "{actor} started following you",
+    "likeMessage": "{actor} liked your post",
     "unknownNotification": "You have a new notification"
   },
   "deleteAccount": {

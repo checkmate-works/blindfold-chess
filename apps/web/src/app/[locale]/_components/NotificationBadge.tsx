@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
 
+import { NOTIFICATIONS_READ_EVENT } from '@/config';
 import { FiBell } from 'react-icons/fi';
 
 import { getUnreadCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions';
@@ -17,6 +18,18 @@ export function NotificationBadge() {
     getUnreadCount()
       .then(setUnreadCount)
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleNotificationsRead = () => {
+      setUnreadCount(0);
+    };
+
+    window.addEventListener(NOTIFICATIONS_READ_EVENT, handleNotificationsRead);
+
+    return () => {
+      window.removeEventListener(NOTIFICATIONS_READ_EVENT, handleNotificationsRead);
+    };
   }, []);
 
   return (

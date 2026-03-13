@@ -6,7 +6,8 @@ import { and, count, eq } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
-import { db, topicPostLikes } from '@/lib/db';
+import { db, topicPostLikes, topicPosts } from '@/lib/db';
+import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -78,6 +79,25 @@ export async function toggleLike(
     targetType: 'topic_post',
     targetId: postId,
   });
+
+  if (liked) {
+    const [post] = await db
+      .select({ userId: topicPosts.userId })
+      .from(topicPosts)
+      .where(eq(topicPosts.id, postId))
+      .limit(1);
+
+    if (post && post.userId !== user.id) {
+      createNotification({
+        userId: post.userId,
+        actorId: user.id,
+        type: 'like',
+        targetType: 'topic_post',
+        targetId: postId,
+        metadata: { topicType: 'square', topicKey: square, postId },
+      });
+    }
+  }
 
   const [result] = await db
     .select({ count: count() })

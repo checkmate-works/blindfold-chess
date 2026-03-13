@@ -4,6 +4,8 @@ import { useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { notifyNotificationsRead } from '@/config';
+
 import { markAllAsRead } from '../_actions';
 
 type Props = {
@@ -22,6 +24,7 @@ export function MarkAllReadButton({ label }: Props) {
       onClick={() => {
         startTransition(async () => {
           await markAllAsRead();
+          notifyNotificationsRead();
           router.refresh();
         });
       }}

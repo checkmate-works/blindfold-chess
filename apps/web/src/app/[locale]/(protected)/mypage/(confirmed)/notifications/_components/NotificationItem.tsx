@@ -27,6 +27,8 @@ export function NotificationItem({ notification }: Props) {
     switch (notification.type) {
       case 'follow':
         return t('followMessage', { actor: actorName });
+      case 'like':
+        return t('likeMessage', { actor: actorName });
       default:
         return t('unknownNotification');
     }
@@ -35,6 +37,16 @@ export function NotificationItem({ notification }: Props) {
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
       return `/${locale}/@/${actor.username}`;
+    }
+    if (notification.type === 'like' && notification.metadata) {
+      const meta = notification.metadata as {
+        topicType?: string;
+        topicKey?: string;
+        postId?: string;
+      };
+      if (meta.topicType && meta.topicKey && meta.postId) {
+        return `/${locale}/topics/${meta.topicType}s/${meta.topicKey}/posts/${meta.postId}`;
+      }
     }
     return null;
   }
@@ -91,7 +103,7 @@ export function NotificationItem({ notification }: Props) {
 
   if (link) {
     return (
-      <Link href={link} onClick={handleClick}>
+      <Link href={link} onClick={handleClick} className="block">
         {content}
       </Link>
     );
