@@ -4,11 +4,20 @@ import { useTransition } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+import { Link } from '@/i18n/routing';
 
 import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
+
+type LikeMetadata = { topicType: string; topicKey: string; postId: string };
+
+function isLikeMetadata(m: unknown): m is LikeMetadata {
+  return (
+    typeof m === 'object' && m !== null && 'topicType' in m && 'topicKey' in m && 'postId' in m
+  );
+}
 
 type Props = {
   notification: NotificationWithActor;
@@ -36,17 +45,10 @@ export function NotificationItem({ notification }: Props) {
 
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
-      return `/${locale}/@/${actor.username}`;
+      return `/@/${actor.username}`;
     }
-    if (notification.type === 'like' && notification.metadata) {
-      const meta = notification.metadata as {
-        topicType?: string;
-        topicKey?: string;
-        postId?: string;
-      };
-      if (meta.topicType && meta.topicKey && meta.postId) {
-        return `/${locale}/topics/${meta.topicType}s/${meta.topicKey}/posts/${meta.postId}`;
-      }
+    if (notification.type === 'like' && isLikeMetadata(notification.metadata)) {
+      return `/topics/${notification.metadata.topicType}s/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
     }
     return null;
   }

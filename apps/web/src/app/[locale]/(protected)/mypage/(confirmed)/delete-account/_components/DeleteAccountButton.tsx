@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@/app/_components';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
@@ -54,14 +56,16 @@ export function DeleteAccountButton({ locale }: Props) {
   return (
     <div className="space-y-4">
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <button
+      <Button
         type="button"
+        variant="destructive"
+        size="lg"
+        fullWidth
+        loading={isDeleting}
         onClick={handleDeleteClick}
-        disabled={isDeleting}
-        className="w-full px-6 py-3 bg-destructive text-destructive-foreground rounded-lg font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isDeleting ? t('deleting') : t('confirmButton')}
-      </button>
+        {t('confirmButton')}
+      </Button>
 
       <ConfirmationModal
         isOpen={isModalOpen}

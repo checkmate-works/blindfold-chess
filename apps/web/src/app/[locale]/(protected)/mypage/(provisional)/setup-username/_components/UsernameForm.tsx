@@ -40,7 +40,7 @@ export function UsernameForm({ locale }: Props) {
         case 'username_inappropriate':
           return t('validation.usernameInappropriate');
         case 'display_name_inappropriate':
-          return t('validation.usernameInappropriate');
+          return t('validation.displayNameInappropriate');
         default:
           return t('validation.error');
       }

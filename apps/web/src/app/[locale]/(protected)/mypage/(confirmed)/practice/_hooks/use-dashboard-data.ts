@@ -80,6 +80,8 @@ export type TableRow = {
   mistakeAllowance: number | null;
 };
 
+const TABLE_MAX_ROWS = 20;
+
 export type ChartDataPoint = {
   date: string;
   score: number;
@@ -207,7 +209,7 @@ export function useDashboardData(locale: string) {
 
   // TODO: ページネーション対応
   const tableRows = useMemo((): TableRow[] => {
-    return filteredSessions.slice(0, 20).map((s) => {
+    return filteredSessions.slice(0, TABLE_MAX_ROWS).map((s) => {
       const fields = getSessionScoreFields(s);
       return {
         date: formatDate(s.startedAt, locale),

@@ -7,6 +7,8 @@ import { useTheme } from 'next-themes';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
+import { useDropdownClose } from '../_hooks/use-dropdown-close';
+
 type Props = {
   value: string;
   onChange: (emoji: string) => void;
@@ -24,35 +26,7 @@ export function FlairPicker({ value, onChange, placeholder, clearLabel }: Props)
     setMounted(true);
   }, []);
 
-  // Handle click outside to close
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Handle Escape key
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [isOpen]);
+  useDropdownClose(containerRef, isOpen, setIsOpen);
 
   const handleEmojiSelect = (emoji: { native: string }) => {
     onChange(emoji.native);

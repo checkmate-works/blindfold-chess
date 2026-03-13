@@ -1870,6 +1870,7 @@
       "alreadySet": "ユーザー名は既に設定済みです。",
       "error": "エラーが発生しました。もう一度お試しください。",
       "usernameInappropriate": "このユーザー名は使用できません。",
+      "displayNameInappropriate": "この表示名は使用できません。",
       "reserved": "このユーザー名は使用できません。"
     }
   },

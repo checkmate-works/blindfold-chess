@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { COUNTRY_CODES, countryCodeToFlag } from '@/lib/countries';
 
+import { useDropdownClose } from '../_hooks/use-dropdown-close';
+
 type Props = {
   value: string;
   onChange: (code: string) => void;
@@ -46,6 +48,8 @@ export function CountrySelect({
     );
   }, [countries, search]);
 
+  useDropdownClose(containerRef, isOpen, setIsOpen);
+
   // Focus search input when dropdown opens
   useEffect(() => {
     if (isOpen) {
@@ -54,36 +58,6 @@ export function CountrySelect({
       });
     } else {
       setSearch('');
-    }
-  }, [isOpen]);
-
-  // Handle click outside to close
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Handle Escape key
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-      };
     }
   }, [isOpen]);
 

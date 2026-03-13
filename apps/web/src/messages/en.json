@@ -1869,6 +1869,7 @@
       "alreadySet": "Username has already been set.",
       "error": "An error occurred. Please try again.",
       "usernameInappropriate": "This username is not allowed.",
+      "displayNameInappropriate": "This display name is not allowed.",
       "reserved": "This username is not available."
     }
   },

@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAuthenticatedUser } from '@/lib/auth';
+
 import {
   Breadcrumb,
   Divider,
@@ -11,8 +13,8 @@ import {
   PaginationNav,
 } from '@/app/[locale]/_components';
 
-import { getNotifications, getUnreadCount } from './_actions';
 import { MarkAllReadButton, NotificationItem } from './_components';
+import { getNotifications, getUnreadCount } from './_lib/queries';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -38,10 +40,11 @@ export default async function NotificationsPage({ params, searchParams }: Props)
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageNotifications' });
 
+  const user = await getAuthenticatedUser();
   const { page } = await searchParamsCache.parse(searchParams);
   const [{ items, totalPages }, unreadCount] = await Promise.all([
-    getNotifications(page),
-    getUnreadCount(),
+    getNotifications(user.id, page),
+    getUnreadCount(user.id),
   ]);
 
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));

@@ -9,7 +9,7 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 type Props = {
   currentAvatarUrl: string | null;
-  onUploaded: (url: string) => void;
+  onUploaded?: (url: string) => void;
 };
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -76,7 +76,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
 
       const { avatarUrl } = await res.json();
       setPreviewUrl(avatarUrl);
-      onUploaded(avatarUrl);
+      onUploaded?.(avatarUrl);
       showToast(t('avatarUploaded'), 'success');
     } catch {
       setError(t('avatarUploadFailed'));
