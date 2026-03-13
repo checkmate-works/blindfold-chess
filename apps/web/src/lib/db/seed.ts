@@ -3,7 +3,6 @@ import { eq } from 'drizzle-orm';
 import { chessTerms } from './data/chess-terms';
 import {
   adBanners,
-  categories,
   db,
   glossaryTermAliases,
   glossaryTermPositions,
@@ -12,28 +11,11 @@ import {
   siteSettings,
 } from './index';
 
-const categoryData = [
-  { slug: 'updates', sortOrder: 1 },
-  { slug: 'blog', sortOrder: 2 },
-] as const;
-
 function slugify(text: string): string {
   return text
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
-}
-
-async function seedCategories() {
-  for (const category of categoryData) {
-    await db
-      .insert(categories)
-      .values(category)
-      .onConflictDoUpdate({
-        target: categories.slug,
-        set: { sortOrder: category.sortOrder },
-      });
-  }
 }
 
 async function seedGlossaryTerms() {
@@ -156,7 +138,6 @@ async function seedAds() {
 async function seed() {
   console.log('Seeding database...');
 
-  await seedCategories();
   await seedGlossaryTerms();
   await seedAds();
 

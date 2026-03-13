@@ -13,28 +13,48 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-export const categories = pgTable('categories', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: varchar('slug', { length: 50 }).unique().notNull(),
-  sortOrder: integer('sort_order').default(0),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-});
+// Articles
+export const articles = pgTable(
+  'articles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 255 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    status: varchar('status', { length: 20 }).default('draft'),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_articles_slug_locale').on(table.slug, table.locale)]
+);
 
-export const posts = pgTable('posts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  slug: varchar('slug', { length: 255 }).notNull(),
-  title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').notNull(),
-  categoryId: uuid('category_id')
-    .notNull()
-    .references(() => categories.id),
-  locale: varchar('locale', { length: 10 }).default('en'),
-  status: varchar('status', { length: 20 }).default('draft'),
-  pinnedAt: timestamp('pinned_at', { withTimezone: true }),
-  publishedAt: timestamp('published_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+export type Article = typeof articles.$inferSelect;
+export type NewArticle = typeof articles.$inferInsert;
+
+// Announcements
+export const announcements = pgTable(
+  'announcements',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 255 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    status: varchar('status', { length: 20 }).default('draft'),
+    visibility: varchar('visibility', { length: 20 }).default('public'),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [unique('uq_announcements_slug_locale').on(table.slug, table.locale)]
+);
+
+export type Announcement = typeof announcements.$inferSelect;
+export type NewAnnouncement = typeof announcements.$inferInsert;
 
 // Glossary tables
 export const glossaryTerms = pgTable('glossary_terms', {
@@ -53,7 +73,7 @@ export const glossaryTermTranslations = pgTable(
     termId: uuid('term_id')
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-    locale: varchar('locale', { length: 10 }).notNull(),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),
@@ -117,10 +137,6 @@ export const practiceSessions = pgTable(
 );
 
 // Type exports for use in application code
-export type Category = typeof categories.$inferSelect;
-export type NewCategory = typeof categories.$inferInsert;
-export type Post = typeof posts.$inferSelect;
-export type NewPost = typeof posts.$inferInsert;
 export type GlossaryTerm = typeof glossaryTerms.$inferSelect;
 export type NewGlossaryTerm = typeof glossaryTerms.$inferInsert;
 export type GlossaryTermTranslation = typeof glossaryTermTranslations.$inferSelect;
@@ -141,7 +157,7 @@ export const profiles = pgTable('profiles', {
   displayName: varchar('display_name', { length: 255 }),
   avatarUrl: varchar('avatar_url', { length: 1024 }),
   bio: text('bio'),
-  country: varchar('country', { length: 2 }),
+  country: varchar('country', { length: 2 }), // ISO 3166-1 alpha-2
   flair: varchar('flair', { length: 50 }),
   fideId: varchar('fide_id', { length: 50 }),
   chesscomUsername: varchar('chesscom_username', { length: 255 }),
