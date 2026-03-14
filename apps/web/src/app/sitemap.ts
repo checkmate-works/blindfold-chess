@@ -11,6 +11,21 @@ import { getCategories, getPublishedPosts } from './[locale]/(public)/posts/_lib
 // Remove trailing slash from BASE_URL if present to avoid double slashes
 const BASE_URL = SITE_URL.replace(/\/$/, '');
 
+/**
+ * Generate alternates object for hreflang cross-references.
+ * Each locale variant gets a link to all other locale variants,
+ * enabling Google to understand the language relationship.
+ */
+function generateAlternates(path: string) {
+  const languages: Record<string, string> = {};
+  for (const locale of SUPPORTED_LOCALES) {
+    languages[locale] = `${BASE_URL}/${locale}${path}`;
+  }
+  // x-default points to the English version
+  languages['x-default'] = `${BASE_URL}/en${path}`;
+  return { languages };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const sitemap: MetadataRoute.Sitemap = [];
@@ -55,12 +70,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/games/play',
   ];
 
-  // Add static pages for each locale
+  // Add static pages for each locale with hreflang alternates
   for (const locale of SUPPORTED_LOCALES) {
     for (const page of staticPages) {
       sitemap.push({
         url: `${BASE_URL}/${locale}${page}`,
         lastModified: now,
+        alternates: generateAlternates(page),
       });
     }
   }
@@ -71,9 +87,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const articles = await getAllArticles(locale);
       for (const article of articles) {
         if (article.category) {
+          const path = `/learn/${article.category}/${article.slug}`;
           sitemap.push({
-            url: `${BASE_URL}/${locale}/learn/${article.category}/${article.slug}`,
+            url: `${BASE_URL}/${locale}${path}`,
             lastModified: new Date(article.publishedAt),
+            alternates: generateAlternates(path),
           });
         }
       }
@@ -86,9 +104,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const learnCategories = Object.values(ARTICLE_CATEGORIES);
   for (const locale of SUPPORTED_LOCALES) {
     for (const category of learnCategories) {
+      const path = `/learn/${category}`;
       sitemap.push({
-        url: `${BASE_URL}/${locale}/learn/${category}`,
+        url: `${BASE_URL}/${locale}${path}`,
         lastModified: now,
+        alternates: generateAlternates(path),
       });
     }
   }
@@ -98,9 +118,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     try {
       const sections = await getAllManualArticles(locale);
       for (const section of sections) {
+        const path = `/manual/${section.slug}`;
         sitemap.push({
-          url: `${BASE_URL}/${locale}/manual/${section.slug}`,
+          url: `${BASE_URL}/${locale}${path}`,
           lastModified: now,
+          alternates: generateAlternates(path),
         });
       }
     } catch (error) {
@@ -116,17 +138,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of SUPPORTED_LOCALES) {
     // Glossary letter pages
     for (const letter of glossaryLetters) {
+      const path = `/glossary/letter/${letter}`;
       sitemap.push({
-        url: `${BASE_URL}/${locale}/glossary/letter/${letter}`,
+        url: `${BASE_URL}/${locale}${path}`,
         lastModified: now,
+        alternates: generateAlternates(path),
       });
     }
 
     // Glossary category pages
     for (const category of glossaryCategories) {
+      const path = `/glossary/category/${category}`;
       sitemap.push({
-        url: `${BASE_URL}/${locale}/glossary/category/${category}`,
+        url: `${BASE_URL}/${locale}${path}`,
         lastModified: now,
+        alternates: generateAlternates(path),
       });
     }
   }
@@ -141,17 +167,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const locale of SUPPORTED_LOCALES) {
       // Post category pages
       for (const category of postCategories) {
+        const path = `/posts/${category.slug}`;
         sitemap.push({
-          url: `${BASE_URL}/${locale}/posts/${category.slug}`,
+          url: `${BASE_URL}/${locale}${path}`,
           lastModified: now,
+          alternates: generateAlternates(path),
         });
       }
 
       // Individual post pages
       for (const post of publishedPosts) {
+        const path = `/posts/${post.category.slug}/${post.slug}`;
         sitemap.push({
-          url: `${BASE_URL}/${locale}/posts/${post.category.slug}/${post.slug}`,
+          url: `${BASE_URL}/${locale}${path}`,
           lastModified: post.updatedAt ?? post.publishedAt ?? now,
+          alternates: generateAlternates(path),
         });
       }
     }
