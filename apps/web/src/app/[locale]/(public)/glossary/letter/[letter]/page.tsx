@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
@@ -24,8 +25,6 @@ type Props = {
   }>;
 };
 
-export const dynamic = 'force-static';
-
 // Queries the database at build time — requires a running DB connection for `next build`.
 export async function generateStaticParams() {
   const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
@@ -39,6 +38,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, letter } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'metadata.glossary.letter' });
   const upperLetter = letter.toUpperCase();
 
@@ -51,6 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GlossaryLetterPage({ params }: Props) {
   const { locale, letter } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'glossary' });
   const upperLetter = letter.toUpperCase();
 
