@@ -27,8 +27,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
   GameListClient,
-  LatestArticlesList,
-  LatestArticlesSkeleton,
   LatestTopicPostsList,
   LatestTopicPostsSkeleton,
   NewGameButton,
@@ -55,7 +53,6 @@ export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   const tHome = await getTranslations({ locale, namespace: 'home' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const tArticles = await getTranslations({ locale, namespace: 'articles' });
 
   return (
     <>
@@ -65,12 +62,6 @@ export default async function HomePage({ params }: Props) {
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale)} />
-
-        <ErrorBoundary>
-          <Suspense fallback={<LatestTopicPostsSkeleton title={tTopics('recentTopicPosts')} />}>
-            <LatestTopicPostsList locale={locale} title={tTopics('recentTopicPosts')} />
-          </Suspense>
-        </ErrorBoundary>
 
         <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
           <SectionTitle>{tHome('gameList.title')}</SectionTitle>
@@ -83,8 +74,8 @@ export default async function HomePage({ params }: Props) {
         <AdBanner slot="home-wide" locale={locale} />
 
         <ErrorBoundary>
-          <Suspense fallback={<LatestArticlesSkeleton title={tArticles('pageTitle')} />}>
-            <LatestArticlesList locale={locale} title={tArticles('pageTitle')} />
+          <Suspense fallback={<LatestTopicPostsSkeleton title={tTopics('recentTopicPosts')} />}>
+            <LatestTopicPostsList locale={locale} title={tTopics('recentTopicPosts')} />
           </Suspense>
         </ErrorBoundary>
       </div>
