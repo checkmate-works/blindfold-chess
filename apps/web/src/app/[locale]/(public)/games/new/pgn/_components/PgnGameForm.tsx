@@ -22,7 +22,8 @@ import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_component
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks/use-move-navigation';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
-import { PgnInput, SectionTitle } from '@/app/[locale]/_components';
+import { PgnInput } from '@/app/[locale]/_components/PgnInput';
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';

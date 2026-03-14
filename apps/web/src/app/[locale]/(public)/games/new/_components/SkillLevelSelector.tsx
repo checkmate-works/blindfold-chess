@@ -10,7 +10,7 @@ import { getEloRating } from '@/lib/chess/elo';
 import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 import { SkillLevelInfoModal } from './SkillLevelInfoModal';
 
