@@ -50,7 +50,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'articles' });
 
   const currentPage = Math.max(1, Number(page) || 1);
-  const totalCount = await getPublishedArticleCount(locale);
+  const totalCount = await getPublishedArticleCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ARTICLES_PER_PAGE));
 
   if (currentPage > totalPages && totalPages > 0) {
