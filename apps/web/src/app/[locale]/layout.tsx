@@ -49,16 +49,9 @@ export async function generateMetadata({
       ],
       apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
     },
-    alternates: {
-      languages: {
-        en: '/en',
-        ja: '/ja',
-      },
-    },
     openGraph: {
       title: SITE_NAME,
       description,
-      url: `${SITE_URL}/${locale}`,
       siteName: SITE_NAME,
       type: 'website',
       locale: currentLocale,

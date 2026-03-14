@@ -31,5 +31,8 @@ export function generateCanonicalMetadata({
         'x-default': enUrl,
       },
     },
+    openGraph: {
+      url: canonical,
+    },
   };
 }
