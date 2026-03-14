@@ -27,19 +27,10 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const allParams = [];
+  const announcements = await getPublishedAnnouncements();
+  const slugs = [...new Set(announcements.map((a) => a.slug))];
 
-  for (const locale of SUPPORTED_LOCALES) {
-    const announcements = await getPublishedAnnouncements(locale);
-    for (const announcement of announcements) {
-      allParams.push({
-        locale,
-        slug: announcement.slug,
-      });
-    }
-  }
-
-  return allParams;
+  return SUPPORTED_LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

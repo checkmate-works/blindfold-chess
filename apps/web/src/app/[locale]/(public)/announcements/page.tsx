@@ -51,7 +51,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
   const currentPage = Math.max(1, Number(page) || 1);
-  const totalCount = await getPublishedAnnouncementCount(locale);
+  const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
 
   if (currentPage > totalPages && totalPages > 0) {
