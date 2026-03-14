@@ -169,7 +169,7 @@ export default async function AdminTopicPostsPage({
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
         </div>
         <div>
@@ -180,7 +180,7 @@ export default async function AdminTopicPostsPage({
             id="topic-type-filter"
             name="topicType"
             defaultValue={topicTypeFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('topicPosts.allTopicTypes')}</option>
             {topicTypes.map((tt) => (
@@ -198,7 +198,7 @@ export default async function AdminTopicPostsPage({
             id="status-filter"
             name="status"
             defaultValue={statusFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('topicPosts.allStatuses')}</option>
             <option value="active">{t('topicPosts.active')}</option>

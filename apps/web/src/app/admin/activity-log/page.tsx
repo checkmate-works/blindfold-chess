@@ -145,7 +145,7 @@ export default async function AdminActivityLogPage({
             id="action-filter"
             name="action"
             defaultValue={actionFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('activityLogTable.allActions')}</option>
             {actionTypes.map((at) => (
@@ -165,7 +165,7 @@ export default async function AdminActivityLogPage({
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
         </div>
         <button

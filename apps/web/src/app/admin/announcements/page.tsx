@@ -98,7 +98,7 @@ export default async function AdminAnnouncementsPage({
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/admin/announcements/${item.id}/edit`}
-                      className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+                      className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
                     >
                       {t('edit')}
                     </Link>

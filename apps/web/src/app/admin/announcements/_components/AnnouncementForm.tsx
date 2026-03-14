@@ -93,7 +93,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={labels.slugPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
             maxLength={255}
           />
         </div>
@@ -108,7 +108,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={labels.titlePlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
             maxLength={255}
           />
         </div>
@@ -122,7 +122,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={labels.contentPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground resize-none"
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
             rows={10}
           />
         </div>
@@ -135,7 +135,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             id="locale"
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
           >
             <option value="en">en</option>
             <option value="ja">ja</option>
@@ -157,7 +157,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             type="button"
             onClick={handlePreview}
             disabled={isPending}
-            className="px-4 py-2 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm rounded bg-card border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
           >
             {labels.preview}
           </button>
@@ -165,7 +165,7 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             type="button"
             onClick={() => router.push('/admin/announcements')}
             disabled={isPending}
-            className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
+            className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
           >
             {labels.cancel}
           </button>
