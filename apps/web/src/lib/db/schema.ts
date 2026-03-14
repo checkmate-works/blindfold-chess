@@ -14,6 +14,36 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+// Article Categories
+export const articleCategories = pgTable('article_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: varchar('slug', { length: 100 }).unique().notNull(),
+  displayOrder: integer('display_order').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type ArticleCategory = typeof articleCategories.$inferSelect;
+export type NewArticleCategory = typeof articleCategories.$inferInsert;
+
+// Article Category Translations
+export const articleCategoryTranslations = pgTable(
+  'article_category_translations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    categoryId: uuid('category_id')
+      .notNull()
+      .references(() => articleCategories.id, { onDelete: 'cascade' }),
+    locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
+    name: varchar('name', { length: 100 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [unique('uq_category_translation_locale').on(table.categoryId, table.locale)]
+);
+
+export type ArticleCategoryTranslation = typeof articleCategoryTranslations.$inferSelect;
+export type NewArticleCategoryTranslation = typeof articleCategoryTranslations.$inferInsert;
+
 // Articles
 export const articles = pgTable(
   'articles',
@@ -21,19 +51,70 @@ export const articles = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     slug: varchar('slug', { length: 255 }).notNull(),
     title: varchar('title', { length: 255 }).notNull(),
+    excerpt: text('excerpt'),
+    description: text('description'),
     content: text('content').notNull(),
     locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     status: varchar('status', { length: 20 }).default('draft'),
+    categoryId: uuid('category_id').references(() => articleCategories.id),
+    displayOrder: integer('display_order').notNull().default(0),
+    icon: varchar('icon', { length: 10 }),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [unique('uq_articles_slug_locale').on(table.slug, table.locale)]
+  (table) => [
+    unique('uq_articles_slug_locale').on(table.slug, table.locale),
+    index('idx_articles_category').on(table.categoryId),
+  ]
 );
 
 export type Article = typeof articles.$inferSelect;
 export type NewArticle = typeof articles.$inferInsert;
+
+// Tags
+export const tags = pgTable('tags', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: varchar('slug', { length: 100 }).unique().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;
+
+// Article Tags (junction table)
+export const articleTags = pgTable(
+  'article_tags',
+  {
+    articleId: uuid('article_id')
+      .notNull()
+      .references(() => articles.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique('uq_article_tag').on(table.articleId, table.tagId)]
+);
+
+export type ArticleTag = typeof articleTags.$inferSelect;
+export type NewArticleTag = typeof articleTags.$inferInsert;
+
+// Article Practice Modules (junction table)
+export const articlePracticeModules = pgTable(
+  'article_practice_modules',
+  {
+    articleId: uuid('article_id')
+      .notNull()
+      .references(() => articles.id, { onDelete: 'cascade' }),
+    practiceModuleId: varchar('practice_module_id', { length: 100 }).notNull(),
+    displayOrder: integer('display_order').notNull().default(0),
+  },
+  (table) => [unique('uq_article_practice_module').on(table.articleId, table.practiceModuleId)]
+);
+
+export type ArticlePracticeModule = typeof articlePracticeModules.$inferSelect;
+export type NewArticlePracticeModule = typeof articlePracticeModules.$inferInsert;
 
 // Announcements
 export const announcements = pgTable(

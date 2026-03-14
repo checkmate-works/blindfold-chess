@@ -31,13 +31,49 @@ CREATE TABLE "announcements" (
 	CONSTRAINT "uq_announcements_slug_locale" UNIQUE("slug","locale")
 );
 --> statement-breakpoint
+CREATE TABLE "article_categories" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" varchar(100) NOT NULL,
+	"display_order" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "article_categories_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "article_category_translations" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"category_id" uuid NOT NULL,
+	"locale" varchar(10) NOT NULL,
+	"name" varchar(100) NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "uq_category_translation_locale" UNIQUE("category_id","locale")
+);
+--> statement-breakpoint
+CREATE TABLE "article_practice_modules" (
+	"article_id" uuid NOT NULL,
+	"practice_module_id" varchar(100) NOT NULL,
+	"display_order" integer DEFAULT 0 NOT NULL,
+	CONSTRAINT "uq_article_practice_module" UNIQUE("article_id","practice_module_id")
+);
+--> statement-breakpoint
+CREATE TABLE "article_tags" (
+	"article_id" uuid NOT NULL,
+	"tag_id" uuid NOT NULL,
+	CONSTRAINT "uq_article_tag" UNIQUE("article_id","tag_id")
+);
+--> statement-breakpoint
 CREATE TABLE "articles" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slug" varchar(255) NOT NULL,
 	"title" varchar(255) NOT NULL,
+	"excerpt" text,
+	"description" text,
 	"content" text NOT NULL,
 	"locale" varchar(10) NOT NULL,
 	"status" varchar(20) DEFAULT 'draft',
+	"category_id" uuid,
+	"display_order" integer DEFAULT 0 NOT NULL,
+	"icon" varchar(10),
 	"pinned_at" timestamp with time zone,
 	"published_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -161,6 +197,13 @@ CREATE TABLE "site_settings" (
 	CONSTRAINT "site_settings_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
+CREATE TABLE "tags" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" varchar(100) NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "tags_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
 CREATE TABLE "topic_post_likes" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -217,6 +260,11 @@ CREATE TABLE "user_roles" (
 	CONSTRAINT "uq_user_role" UNIQUE("user_id","role")
 );
 --> statement-breakpoint
+ALTER TABLE "article_category_translations" ADD CONSTRAINT "article_category_translations_category_id_article_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."article_categories"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "article_practice_modules" ADD CONSTRAINT "article_practice_modules_article_id_articles_id_fk" FOREIGN KEY ("article_id") REFERENCES "public"."articles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "article_tags" ADD CONSTRAINT "article_tags_article_id_articles_id_fk" FOREIGN KEY ("article_id") REFERENCES "public"."articles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "article_tags" ADD CONSTRAINT "article_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "articles" ADD CONSTRAINT "articles_category_id_article_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."article_categories"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "glossary_term_aliases" ADD CONSTRAINT "glossary_term_aliases_term_id_glossary_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."glossary_terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "glossary_term_positions" ADD CONSTRAINT "glossary_term_positions_term_id_glossary_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."glossary_terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "glossary_term_relations" ADD CONSTRAINT "glossary_term_relations_term_id_glossary_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."glossary_terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -224,6 +272,7 @@ ALTER TABLE "glossary_term_relations" ADD CONSTRAINT "glossary_term_relations_re
 ALTER TABLE "glossary_term_translations" ADD CONSTRAINT "glossary_term_translations_term_id_glossary_terms_id_fk" FOREIGN KEY ("term_id") REFERENCES "public"."glossary_terms"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "topic_post_likes" ADD CONSTRAINT "topic_post_likes_post_id_topic_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."topic_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "idx_ad_banners_active" ON "ad_banners" USING btree ("is_active");--> statement-breakpoint
+CREATE INDEX "idx_articles_category" ON "articles" USING btree ("category_id");--> statement-breakpoint
 CREATE INDEX "idx_moderation_actions_actor" ON "moderation_actions" USING btree ("actor_id");--> statement-breakpoint
 CREATE INDEX "idx_moderation_actions_target" ON "moderation_actions" USING btree ("target_type","target_id");--> statement-breakpoint
 CREATE INDEX "idx_moderation_actions_action" ON "moderation_actions" USING btree ("action");--> statement-breakpoint
