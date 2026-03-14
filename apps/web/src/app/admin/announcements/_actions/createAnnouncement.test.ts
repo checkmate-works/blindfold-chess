@@ -344,4 +344,98 @@ describe('createAnnouncement', () => {
     await createAnnouncement({ ...validData, slug: '' });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
+
+  // --- Edge case tests added by Tester ---
+
+  it('should succeed when slug is exactly 255 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, slug: 'a'.repeat(255) });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed when title is exactly 255 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, title: 'a'.repeat(255) });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed when locale is exactly 10 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, locale: 'a'.repeat(10) });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should return error when slug is exactly 1 character over limit', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, slug: 'a'.repeat(256) });
+    expect(result).toEqual({ error: 'invalid slug' });
+  });
+
+  it('should succeed with single character slug', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, slug: 'x' });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed with single character content', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, content: 'x' });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed with markdown special characters in content', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const specialContent =
+      '# Heading\n\n**bold** _italic_ ~~strike~~\n\n```code```\n\n| col1 | col2 |\n|------|------|\n| a    | b    |';
+    const result = await createAnnouncement({ ...validData, content: specialContent });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed with very long content', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const longContent = 'x'.repeat(100000);
+    const result = await createAnnouncement({ ...validData, content: longContent });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed with unicode characters in title and content', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      title: 'お知らせ - Announcement 🎉',
+      content: '日本語のコンテンツです。\n\nEmoji: 🏁♟️👑',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should not trigger notification and not call revalidatePath when publishedAt validation fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: null,
+    });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
 });

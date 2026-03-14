@@ -21,8 +21,21 @@ type EditAnnouncementFormProps = {
 export function EditAnnouncementForm({ id, defaultValues, labels }: EditAnnouncementFormProps) {
   return (
     <AnnouncementForm
-      defaultValues={defaultValues}
-      onSubmit={(data) => updateAnnouncement(id, data)}
+      defaultValues={{
+        slug: defaultValues.slug,
+        title: defaultValues.title,
+        content: defaultValues.content,
+        locale: defaultValues.locale,
+      }}
+      onSaveDraft={(data) =>
+        updateAnnouncement(id, {
+          ...data,
+          status: 'draft',
+          visibility: defaultValues.visibility,
+          pinnedAt: defaultValues.pinnedAt,
+          publishedAt: defaultValues.publishedAt,
+        })
+      }
       labels={labels}
     />
   );

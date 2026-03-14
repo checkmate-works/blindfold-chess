@@ -241,7 +241,7 @@ describe('updateAnnouncement', () => {
       status: 'published',
       publishedAt: '2024-06-15T12:00:00Z',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
   });
 
   it('should succeed when status is draft and publishedAt is not set', async () => {
@@ -252,7 +252,7 @@ describe('updateAnnouncement', () => {
       status: 'draft',
       publishedAt: null,
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
   });
 
   it('should succeed when status is draft and publishedAt is set', async () => {
@@ -263,7 +263,7 @@ describe('updateAnnouncement', () => {
       status: 'draft',
       publishedAt: '2024-06-15T12:00:00Z',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
   });
 
   it('should accept members_only as a valid visibility', async () => {
@@ -273,7 +273,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       visibility: 'members_only',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
   });
 
   it('should return not found when announcement does not exist', async () => {
@@ -288,7 +288,7 @@ describe('updateAnnouncement', () => {
     setupAdminWithAnnouncement();
 
     const result = await updateAnnouncement(announcementId, validData);
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
     expect(mockUpdateSetWhere).toHaveBeenCalled();
   });
 
@@ -301,7 +301,7 @@ describe('updateAnnouncement', () => {
       slug: 'my-announcement',
       publishedAt: '2024-06-15T12:00:00Z',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
       announcementId,
       'my-announcement',
@@ -317,7 +317,7 @@ describe('updateAnnouncement', () => {
       status: 'published',
       publishedAt: '2024-06-15T12:00:00Z',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 
@@ -328,7 +328,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       status: 'draft',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 
@@ -339,7 +339,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       status: 'draft',
     });
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 
@@ -371,5 +371,104 @@ describe('updateAnnouncement', () => {
 
     await updateAnnouncement(announcementId, { ...validData, slug: '' });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  // --- Edge case tests added by Tester ---
+
+  it('should succeed when slug is exactly 255 characters', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      slug: 'a'.repeat(255),
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should succeed when title is exactly 255 characters', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      title: 'a'.repeat(255),
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should succeed when locale is exactly 10 characters', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      locale: 'a'.repeat(10),
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should NOT trigger notification when published article is edited and saved as draft', async () => {
+    setupAdminWithAnnouncement('published');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'draft',
+      title: 'Edited Published Article',
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should succeed with markdown special characters in content', async () => {
+    setupAdminWithAnnouncement();
+
+    const specialContent =
+      '# Heading\n\n**bold** _italic_ ~~strike~~\n\n```code```\n\n| col1 | col2 |\n|------|------|\n| a    | b    |';
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      content: specialContent,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should succeed with very long content', async () => {
+    setupAdminWithAnnouncement();
+
+    const longContent = 'x'.repeat(100000);
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      content: longContent,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should succeed with unicode characters in title and content', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      title: 'お知らせ更新 - Updated 🎉',
+      content: '日本語のコンテンツです。\n\nEmoji: 🏁♟️👑',
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+  });
+
+  it('should not trigger notification and not call revalidatePath when publishedAt validation fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: null,
+    });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('should return the id in success response for existing announcement', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, validData);
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect('id' in result && result.id).toBe(announcementId);
   });
 });

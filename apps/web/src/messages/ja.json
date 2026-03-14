@@ -2041,7 +2041,13 @@
         "save": "Save",
         "saving": "Saving...",
         "cancel": "Cancel",
-        "backToList": "Back to Announcements"
+        "backToList": "Back to Announcements",
+        "saveDraft": "下書き保存",
+        "savingDraft": "保存中...",
+        "preview": "プレビュー",
+        "previewTitle": "お知らせプレビュー",
+        "backToEdit": "編集に戻る",
+        "contentPreview": "コンテンツプレビュー"
       }
     },
     "topicPosts": {

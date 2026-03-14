@@ -1,14 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 
-import { createAnnouncement } from '../_actions/createAnnouncement';
-import { AnnouncementForm } from '../_components/AnnouncementForm';
+import { NewAnnouncementForm } from '../_components/NewAnnouncementForm';
 
 export default async function NewAnnouncementPage() {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.announcementsTable' });
 
   return (
-    <AnnouncementForm
-      onSubmit={createAnnouncement}
+    <NewAnnouncementForm
       labels={{
         formTitle: t('form.createTitle'),
         slug: t('form.slug'),
@@ -18,18 +16,11 @@ export default async function NewAnnouncementPage() {
         content: t('form.content'),
         contentPlaceholder: t('form.contentPlaceholder'),
         locale: t('form.locale'),
-        status: t('form.status'),
-        visibility: t('form.visibility'),
-        pinnedAt: t('form.pinnedAt'),
-        publishedAt: t('form.publishedAt'),
-        save: t('form.save'),
-        saving: t('form.saving'),
+        saveDraft: t('form.saveDraft'),
+        savingDraft: t('form.savingDraft'),
+        preview: t('form.preview'),
         cancel: t('form.cancel'),
         backToList: t('form.backToList'),
-        draft: t('draft'),
-        published: t('published'),
-        public: t('public'),
-        members: t('members'),
       }}
     />
   );

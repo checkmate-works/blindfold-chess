@@ -2070,7 +2070,13 @@
         "save": "Save",
         "saving": "Saving...",
         "cancel": "Cancel",
-        "backToList": "Back to Announcements"
+        "backToList": "Back to Announcements",
+        "saveDraft": "Save Draft",
+        "savingDraft": "Saving...",
+        "preview": "Preview",
+        "previewTitle": "Preview Announcement",
+        "backToEdit": "Back to Edit",
+        "contentPreview": "Content Preview"
       }
     },
     "ads": "Ads",

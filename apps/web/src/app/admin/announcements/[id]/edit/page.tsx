@@ -6,13 +6,7 @@ import { eq } from 'drizzle-orm';
 import { announcements, db } from '@/lib/db';
 
 import { EditAnnouncementForm } from '../../_components/EditAnnouncementForm';
-
-function formatDateTimeLocal(date: Date | null): string | null {
-  if (!date) return null;
-  const d = new Date(date);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+import { formatDateTimeLocal } from '../../_lib/format';
 
 export default async function EditAnnouncementPage({
   params,
@@ -54,18 +48,11 @@ export default async function EditAnnouncementPage({
         content: t('form.content'),
         contentPlaceholder: t('form.contentPlaceholder'),
         locale: t('form.locale'),
-        status: t('form.status'),
-        visibility: t('form.visibility'),
-        pinnedAt: t('form.pinnedAt'),
-        publishedAt: t('form.publishedAt'),
-        save: t('form.save'),
-        saving: t('form.saving'),
+        saveDraft: t('form.saveDraft'),
+        savingDraft: t('form.savingDraft'),
+        preview: t('form.preview'),
         cancel: t('form.cancel'),
         backToList: t('form.backToList'),
-        draft: t('draft'),
-        published: t('published'),
-        public: t('public'),
-        members: t('members'),
       }}
     />
   );

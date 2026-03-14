@@ -22,7 +22,7 @@ type UpdateData = {
   publishedAt: string | null;
 };
 
-type UpdateResult = { success: true } | { error: string };
+type UpdateResult = { success: true; id: string } | { error: string };
 
 export async function updateAnnouncement(id: string, data: UpdateData): Promise<UpdateResult> {
   const supabase = await createClient();
@@ -101,5 +101,5 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
 
   revalidatePath('/admin/announcements');
 
-  return { success: true };
+  return { success: true, id };
 }

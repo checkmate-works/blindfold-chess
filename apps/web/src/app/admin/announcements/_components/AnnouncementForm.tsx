@@ -4,22 +4,18 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-type AnnouncementFormData = {
+type AnnouncementEditData = {
   slug: string;
   title: string;
   content: string;
   locale: string;
-  status: string;
-  visibility: string;
-  pinnedAt: string | null;
-  publishedAt: string | null;
 };
 
 type AnnouncementFormProps = {
-  defaultValues?: AnnouncementFormData;
-  onSubmit: (
-    data: AnnouncementFormData
-  ) => Promise<{ success: true; id?: string } | { error: string }>;
+  defaultValues?: AnnouncementEditData;
+  onSaveDraft: (
+    data: AnnouncementEditData
+  ) => Promise<{ success: true; id: string } | { error: string }>;
   labels: {
     formTitle: string;
     slug: string;
@@ -29,22 +25,15 @@ type AnnouncementFormProps = {
     content: string;
     contentPlaceholder: string;
     locale: string;
-    status: string;
-    visibility: string;
-    pinnedAt: string;
-    publishedAt: string;
-    save: string;
-    saving: string;
+    saveDraft: string;
+    savingDraft: string;
+    preview: string;
     cancel: string;
     backToList: string;
-    draft: string;
-    published: string;
-    public: string;
-    members: string;
   };
 };
 
-export function AnnouncementForm({ defaultValues, onSubmit, labels }: AnnouncementFormProps) {
+export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: AnnouncementFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -53,29 +42,29 @@ export function AnnouncementForm({ defaultValues, onSubmit, labels }: Announceme
   const [title, setTitle] = useState(defaultValues?.title ?? '');
   const [content, setContent] = useState(defaultValues?.content ?? '');
   const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
-  const [status, setStatus] = useState(defaultValues?.status ?? 'draft');
-  const [visibility, setVisibility] = useState(defaultValues?.visibility ?? 'public');
-  const [pinnedAt, setPinnedAt] = useState(defaultValues?.pinnedAt ?? '');
-  const [publishedAt, setPublishedAt] = useState(defaultValues?.publishedAt ?? '');
 
-  const handleSubmit = () => {
+  const handleSaveDraft = () => {
     setError(null);
     startTransition(async () => {
-      const result = await onSubmit({
-        slug,
-        title,
-        content,
-        locale,
-        status,
-        visibility,
-        pinnedAt: pinnedAt || null,
-        publishedAt: publishedAt || null,
-      });
+      const result = await onSaveDraft({ slug, title, content, locale });
 
       if ('error' in result) {
         setError(result.error);
       } else {
         router.push('/admin/announcements');
+      }
+    });
+  };
+
+  const handlePreview = () => {
+    setError(null);
+    startTransition(async () => {
+      const result = await onSaveDraft({ slug, title, content, locale });
+
+      if ('error' in result) {
+        setError(result.error);
+      } else {
+        router.push(`/admin/announcements/${result.id}/preview`);
       }
     });
   };
@@ -138,79 +127,19 @@ export function AnnouncementForm({ defaultValues, onSubmit, labels }: Announceme
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label htmlFor="locale" className="block text-sm font-medium mb-1">
-              {labels.locale}
-            </label>
-            <select
-              id="locale"
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
-            >
-              <option value="en">en</option>
-              <option value="ja">ja</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium mb-1">
-              {labels.status}
-            </label>
-            <select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
-            >
-              <option value="draft">{labels.draft}</option>
-              <option value="published">{labels.published}</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="visibility" className="block text-sm font-medium mb-1">
-              {labels.visibility}
-            </label>
-            <select
-              id="visibility"
-              value={visibility}
-              onChange={(e) => setVisibility(e.target.value)}
-              className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
-            >
-              <option value="public">{labels.public}</option>
-              <option value="members_only">{labels.members}</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="pinnedAt" className="block text-sm font-medium mb-1">
-              {labels.pinnedAt}
-            </label>
-            <input
-              id="pinnedAt"
-              type="datetime-local"
-              value={pinnedAt}
-              onChange={(e) => setPinnedAt(e.target.value)}
-              className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="publishedAt" className="block text-sm font-medium mb-1">
-              {labels.publishedAt}
-            </label>
-            <input
-              id="publishedAt"
-              type="datetime-local"
-              value={publishedAt}
-              onChange={(e) => setPublishedAt(e.target.value)}
-              className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
-            />
-          </div>
+        <div>
+          <label htmlFor="locale" className="block text-sm font-medium mb-1">
+            {labels.locale}
+          </label>
+          <select
+            id="locale"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            className="w-full border border-border rounded px-3 py-2 text-sm bg-background text-foreground"
+          >
+            <option value="en">en</option>
+            <option value="ja">ja</option>
+          </select>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -218,11 +147,19 @@ export function AnnouncementForm({ defaultValues, onSubmit, labels }: Announceme
         <div className="flex items-center gap-2 pt-2">
           <button
             type="button"
-            onClick={handleSubmit}
+            onClick={handleSaveDraft}
             disabled={isPending}
             className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isPending ? labels.saving : labels.save}
+            {isPending ? labels.savingDraft : labels.saveDraft}
+          </button>
+          <button
+            type="button"
+            onClick={handlePreview}
+            disabled={isPending}
+            className="px-4 py-2 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+          >
+            {labels.preview}
           </button>
           <button
             type="button"
