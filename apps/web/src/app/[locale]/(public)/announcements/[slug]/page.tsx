@@ -107,7 +107,7 @@ export default async function AnnouncementPage({ params }: Props) {
       </header>
 
       <PagePanel>
-        <article className="prose prose-slate dark:prose-invert max-w-none">
+        <article className="prose prose-slate dark:prose-invert max-w-none break-words">
           <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
         </article>
 
