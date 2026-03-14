@@ -1,9 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
-import { announcements, db } from '@/lib/db';
+import { announcements, db, notifications } from '@/lib/db';
 
 import { MarkdownRenderer } from '@/app/[locale]/_components';
 
@@ -27,6 +27,16 @@ export default async function PreviewAnnouncementPage({
   if (!announcement) {
     notFound();
   }
+
+  const [existingNotification] = await db
+    .select({ id: notifications.id })
+    .from(notifications)
+    .where(
+      and(eq(notifications.targetType, 'announcement'), eq(notifications.targetId, announcement.id))
+    )
+    .limit(1);
+
+  const notificationSent = !!existingNotification;
 
   return (
     <div>
@@ -67,6 +77,7 @@ export default async function PreviewAnnouncementPage({
             pinnedAt: formatDateTimeLocal(announcement.pinnedAt) ?? '',
             publishedAt: formatDateTimeLocal(announcement.publishedAt) ?? '',
           }}
+          notificationSent={notificationSent}
           labels={{
             status: t('form.status'),
             visibility: t('form.visibility'),
@@ -79,6 +90,8 @@ export default async function PreviewAnnouncementPage({
             published: t('published'),
             public: t('public'),
             members: t('members'),
+            sendNotification: t('form.sendNotification'),
+            notificationAlreadySent: t('form.notificationAlreadySent'),
           }}
         />
       </div>

@@ -20,6 +20,7 @@ type AnnouncementPreviewFormProps = {
     pinnedAt: string;
     publishedAt: string;
   };
+  notificationSent: boolean;
   labels: {
     status: string;
     visibility: string;
@@ -32,6 +33,8 @@ type AnnouncementPreviewFormProps = {
     published: string;
     public: string;
     members: string;
+    sendNotification: string;
+    notificationAlreadySent: string;
   };
 };
 
@@ -39,6 +42,7 @@ export function AnnouncementPreviewForm({
   id,
   announcementData,
   defaultValues,
+  notificationSent,
   labels,
 }: AnnouncementPreviewFormProps) {
   const router = useRouter();
@@ -49,6 +53,10 @@ export function AnnouncementPreviewForm({
   const [visibility, setVisibility] = useState(defaultValues.visibility);
   const [pinnedAt, setPinnedAt] = useState(defaultValues.pinnedAt);
   const [publishedAt, setPublishedAt] = useState(defaultValues.publishedAt);
+  const [sendNotification, setSendNotification] = useState(false);
+
+  const isInitialPublish = defaultValues.status !== 'published' && status === 'published';
+  const showNotificationCheckbox = isInitialPublish;
 
   const handleSubmit = () => {
     setError(null);
@@ -59,6 +67,7 @@ export function AnnouncementPreviewForm({
         visibility,
         pinnedAt: pinnedAt || null,
         publishedAt: publishedAt || null,
+        sendNotification: showNotificationCheckbox && !notificationSent && sendNotification,
       });
 
       if ('error' in result) {
@@ -176,6 +185,24 @@ export function AnnouncementPreviewForm({
             onChange={(e) => setPublishedAt(e.target.value)}
             className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
           />
+        </div>
+      )}
+
+      {showNotificationCheckbox && (
+        <div className="flex items-center gap-2">
+          {notificationSent ? (
+            <p className="text-sm text-muted-foreground">{labels.notificationAlreadySent}</p>
+          ) : (
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={sendNotification}
+                onChange={(e) => setSendNotification(e.target.checked)}
+                className="rounded border-border"
+              />
+              {labels.sendNotification}
+            </label>
+          )}
         </div>
       )}
 

@@ -7,6 +7,7 @@ const mockSelectFromWhere = vi.fn();
 const mockInsertValuesReturning = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockNotifyAllUsersOfAnnouncement = vi.fn();
+const mockHasAnnouncementNotification = vi.fn();
 
 const generatedId = 'generated-00000000-0000-0000-0000-000000000001';
 
@@ -62,6 +63,7 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/lib/announcement-notification', () => ({
   notifyAllUsersOfAnnouncement: (...args: unknown[]) => mockNotifyAllUsersOfAnnouncement(...args),
+  hasAnnouncementNotification: (...args: unknown[]) => mockHasAnnouncementNotification(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
@@ -80,6 +82,7 @@ const validData = {
 describe('createAnnouncement', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasAnnouncementNotification.mockResolvedValue(false);
   });
 
   it('should return unauthorized when user is not authenticated', async () => {
@@ -295,7 +298,7 @@ describe('createAnnouncement', () => {
     );
   });
 
-  it('should trigger notification when status is published', async () => {
+  it('should trigger notification when status is published and sendNotification is true', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
@@ -304,6 +307,7 @@ describe('createAnnouncement', () => {
       status: 'published',
       slug: 'published-announcement',
       publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
     });
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
@@ -313,11 +317,68 @@ describe('createAnnouncement', () => {
     );
   });
 
+  it('should NOT trigger notification when sendNotification is true but notification already exists', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockHasAnnouncementNotification.mockResolvedValue(true);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'published',
+      slug: 'published-announcement',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(generatedId);
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when status is published but sendNotification is false', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: false,
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when status is published and sendNotification is omitted', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
   it('should NOT trigger notification when status is draft', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
     const result = await createAnnouncement(validData);
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when status is draft even with sendNotification true', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'draft',
+      sendNotification: true,
+    });
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
@@ -437,5 +498,48 @@ describe('createAnnouncement', () => {
     });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('should not call hasAnnouncementNotification when sendNotification is false', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: false,
+    });
+    expect(mockHasAnnouncementNotification).not.toHaveBeenCalled();
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should not call hasAnnouncementNotification when status is draft', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await createAnnouncement({
+      ...validData,
+      status: 'draft',
+      sendNotification: true,
+    });
+    expect(mockHasAnnouncementNotification).not.toHaveBeenCalled();
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should call hasAnnouncementNotification with inserted id when sendNotification is true and published', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+    mockHasAnnouncementNotification.mockResolvedValue(false);
+
+    await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledTimes(1);
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(generatedId);
+    expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledTimes(1);
   });
 });

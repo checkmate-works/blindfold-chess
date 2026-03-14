@@ -1,8 +1,25 @@
-import { and, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { db, profiles } from './db';
+import { db, notifications, profiles } from './db';
 import { createNotification } from './notification';
+
+/**
+ * Check whether a notification has already been sent for the given announcement.
+ * Returns true if at least one notification record exists with
+ * targetType='announcement' and targetId=announcementId.
+ */
+export async function hasAnnouncementNotification(announcementId: string): Promise<boolean> {
+  const [existing] = await db
+    .select({ id: notifications.id })
+    .from(notifications)
+    .where(
+      and(eq(notifications.targetType, 'announcement'), eq(notifications.targetId, announcementId))
+    )
+    .limit(1);
+
+  return !!existing;
+}
 
 /**
  * Send notifications to all active (non-banned, non-deleted) users

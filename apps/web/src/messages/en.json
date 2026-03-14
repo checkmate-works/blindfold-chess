@@ -2076,7 +2076,9 @@
         "preview": "Preview",
         "previewTitle": "Preview Announcement",
         "backToEdit": "Back to Edit",
-        "contentPreview": "Content Preview"
+        "contentPreview": "Content Preview",
+        "sendNotification": "Send notification to users",
+        "notificationAlreadySent": "Notification already sent"
       }
     },
     "ads": "Ads",

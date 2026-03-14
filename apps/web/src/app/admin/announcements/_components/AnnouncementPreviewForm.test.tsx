@@ -31,6 +31,8 @@ const defaultLabels = {
   published: 'Published',
   public: 'Public',
   members: 'Members',
+  sendNotification: 'Send notification to users',
+  notificationAlreadySent: 'Notification already sent',
 };
 
 const defaultValues = {
@@ -58,6 +60,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -74,6 +77,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -87,6 +91,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -100,6 +105,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={{ ...defaultValues, status: 'published', publishedAt: '2024-06-15T14:00' }}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -114,6 +120,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -131,6 +138,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -152,6 +160,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={values}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -170,6 +179,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -184,6 +194,7 @@ describe('AnnouncementPreviewForm', () => {
       visibility: 'public',
       pinnedAt: null,
       publishedAt: null,
+      sendNotification: false,
     });
     expect(mockPush).toHaveBeenCalledWith('/admin/announcements');
   });
@@ -196,6 +207,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -213,6 +225,7 @@ describe('AnnouncementPreviewForm', () => {
       visibility: 'members_only',
       pinnedAt: null,
       publishedAt: null,
+      sendNotification: false,
     });
   });
 
@@ -226,6 +239,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -246,6 +260,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={defaultValues}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -264,6 +279,7 @@ describe('AnnouncementPreviewForm', () => {
         id={testId}
         announcementData={announcementData}
         defaultValues={{ ...defaultValues, pinnedAt: '', publishedAt: '' }}
+        notificationSent={false}
         labels={defaultLabels}
       />
     );
@@ -279,5 +295,254 @@ describe('AnnouncementPreviewForm', () => {
         publishedAt: null,
       })
     );
+  });
+
+  // Notification checkbox tests
+
+  it('should not show notification checkbox when status is draft', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
+  });
+
+  it('should not show notification checkbox when announcement is already published', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={{ ...defaultValues, status: 'published', publishedAt: '2024-06-15T14:00' }}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
+  });
+
+  it('should show notification checkbox when switching from draft to published', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    expect(screen.getByText('Send notification to users')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+  });
+
+  it('should show "Notification already sent" when notification was already sent', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={true}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    expect(screen.getByText('Notification already sent')).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+  });
+
+  it('should send sendNotification=true when checkbox is checked', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
+      ...announcementData,
+      status: 'published',
+      visibility: 'public',
+      pinnedAt: null,
+      publishedAt: null,
+      sendNotification: true,
+    });
+  });
+
+  it('should send sendNotification=false when checkbox is not checked on publish', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
+      ...announcementData,
+      status: 'published',
+      visibility: 'public',
+      pinnedAt: null,
+      publishedAt: null,
+      sendNotification: false,
+    });
+  });
+
+  it('should send sendNotification=false when notificationSent is true even if publishing', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={true}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
+      ...announcementData,
+      status: 'published',
+      visibility: 'public',
+      pinnedAt: null,
+      publishedAt: null,
+      sendNotification: false,
+    });
+  });
+
+  it('should hide notification checkbox when switching back to draft', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    expect(screen.getByText('Send notification to users')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Draft' }));
+    expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
+  });
+
+  it('should send sendNotification=false when checkbox is checked then unchecked before submit', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(screen.getByRole('checkbox')).toBeChecked();
+
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
+      ...announcementData,
+      status: 'published',
+      visibility: 'public',
+      pinnedAt: null,
+      publishedAt: null,
+      sendNotification: false,
+    });
+  });
+
+  it('should reset sendNotification when toggling status draft->published->draft->published', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    // Switch to published and check the notification checkbox
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByRole('checkbox'));
+    expect(screen.getByRole('checkbox')).toBeChecked();
+
+    // Switch back to draft (checkbox disappears)
+    fireEvent.click(screen.getByRole('radio', { name: 'Draft' }));
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+
+    // Switch back to published - checkbox should be unchecked (state preserved but UI hidden/shown)
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    // The checkbox reappears; sendNotification state is preserved
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+  });
+
+  it('should not show notification checkbox when defaultValues.status is published (already published)', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={{ ...defaultValues, status: 'published', publishedAt: '2024-06-15T14:00' }}
+        notificationSent={true}
+        labels={defaultLabels}
+      />
+    );
+
+    // Already published -> published is not an initial publish, no checkbox
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
+    expect(screen.queryByText('Notification already sent')).not.toBeInTheDocument();
   });
 });

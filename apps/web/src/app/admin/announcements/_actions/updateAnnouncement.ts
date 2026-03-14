@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { notifyAllUsersOfAnnouncement } from '@/lib/announcement-notification';
+import {
+  hasAnnouncementNotification,
+  notifyAllUsersOfAnnouncement,
+} from '@/lib/announcement-notification';
 import { announcements, db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -20,6 +23,7 @@ type UpdateData = {
   visibility: string;
   pinnedAt: string | null;
   publishedAt: string | null;
+  sendNotification?: boolean;
 };
 
 type UpdateResult = { success: true; id: string } | { error: string };
@@ -72,7 +76,7 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     return { error: 'Published date is required when status is published' };
   }
 
-  // Fetch current announcement to detect status change
+  // Fetch current announcement to verify it exists
   const [current] = await db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
 
   if (!current) {
@@ -94,9 +98,12 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     })
     .where(eq(announcements.id, id));
 
-  // Trigger notification when status changes to 'published'
-  if (current.status !== 'published' && data.status === 'published') {
-    await notifyAllUsersOfAnnouncement(id, data.slug, data.title);
+  // Trigger notification only when explicitly requested and not already sent
+  if (data.sendNotification && data.status === 'published') {
+    const alreadySent = await hasAnnouncementNotification(id);
+    if (!alreadySent) {
+      await notifyAllUsersOfAnnouncement(id, data.slug, data.title);
+    }
   }
 
   revalidatePath('/admin/announcements');

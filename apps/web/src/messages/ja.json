@@ -2047,7 +2047,9 @@
         "preview": "プレビュー",
         "previewTitle": "お知らせプレビュー",
         "backToEdit": "編集に戻る",
-        "contentPreview": "コンテンツプレビュー"
+        "contentPreview": "コンテンツプレビュー",
+        "sendNotification": "ユーザーに通知を送信する",
+        "notificationAlreadySent": "通知送信済み"
       }
     },
     "topicPosts": {

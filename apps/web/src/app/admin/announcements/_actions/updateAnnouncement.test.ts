@@ -7,6 +7,7 @@ const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockNotifyAllUsersOfAnnouncement = vi.fn();
+const mockHasAnnouncementNotification = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -58,6 +59,7 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/lib/announcement-notification', () => ({
   notifyAllUsersOfAnnouncement: (...args: unknown[]) => mockNotifyAllUsersOfAnnouncement(...args),
+  hasAnnouncementNotification: (...args: unknown[]) => mockHasAnnouncementNotification(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
@@ -96,6 +98,7 @@ function setupAdminWithAnnouncement(currentStatus = 'draft') {
 describe('updateAnnouncement', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasAnnouncementNotification.mockResolvedValue(false);
   });
 
   it('should return unauthorized when user is not authenticated', async () => {
@@ -292,7 +295,7 @@ describe('updateAnnouncement', () => {
     expect(mockUpdateSetWhere).toHaveBeenCalled();
   });
 
-  it('should trigger notification when status changes to published', async () => {
+  it('should trigger notification when sendNotification is true and status is published', async () => {
     setupAdminWithAnnouncement('draft');
 
     const result = await updateAnnouncement(announcementId, {
@@ -300,6 +303,7 @@ describe('updateAnnouncement', () => {
       status: 'published',
       slug: 'my-announcement',
       publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
     });
     expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
@@ -307,6 +311,47 @@ describe('updateAnnouncement', () => {
       'my-announcement',
       'Updated Announcement'
     );
+  });
+
+  it('should NOT trigger notification when sendNotification is true but notification already exists', async () => {
+    setupAdminWithAnnouncement('draft');
+    mockHasAnnouncementNotification.mockResolvedValue(true);
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      slug: 'my-announcement',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(announcementId);
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when status changes to published but sendNotification is false', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: false,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when status changes to published and sendNotification is omitted', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 
   it('should NOT trigger notification when status stays published', async () => {
@@ -338,6 +383,18 @@ describe('updateAnnouncement', () => {
     const result = await updateAnnouncement(announcementId, {
       ...validData,
       status: 'draft',
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should NOT trigger notification when sendNotification is true but status is draft', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'draft',
+      sendNotification: true,
     });
     expect(result).toEqual({ success: true, id: announcementId });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
@@ -470,5 +527,68 @@ describe('updateAnnouncement', () => {
     const result = await updateAnnouncement(announcementId, validData);
     expect(result).toEqual({ success: true, id: announcementId });
     expect('id' in result && result.id).toBe(announcementId);
+  });
+
+  it('should trigger notification when sendNotification is true and published->published (not yet notified)', async () => {
+    setupAdminWithAnnouncement('published');
+    mockHasAnnouncementNotification.mockResolvedValue(false);
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      slug: 'already-published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(announcementId);
+    expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
+      announcementId,
+      'already-published',
+      'Updated Announcement'
+    );
+  });
+
+  it('should NOT trigger notification when sendNotification is true and published->published but already notified', async () => {
+    setupAdminWithAnnouncement('published');
+    mockHasAnnouncementNotification.mockResolvedValue(true);
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      slug: 'already-published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(announcementId);
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should not call hasAnnouncementNotification when sendNotification is false', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: false,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockHasAnnouncementNotification).not.toHaveBeenCalled();
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should not call hasAnnouncementNotification when status is draft even with sendNotification true', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'draft',
+      sendNotification: true,
+    });
+    expect(result).toEqual({ success: true, id: announcementId });
+    expect(mockHasAnnouncementNotification).not.toHaveBeenCalled();
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 });

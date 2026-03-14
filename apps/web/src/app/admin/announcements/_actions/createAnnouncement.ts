@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { notifyAllUsersOfAnnouncement } from '@/lib/announcement-notification';
+import {
+  hasAnnouncementNotification,
+  notifyAllUsersOfAnnouncement,
+} from '@/lib/announcement-notification';
 import { announcements, db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -20,6 +23,7 @@ type CreateData = {
   visibility: string;
   pinnedAt: string | null;
   publishedAt: string | null;
+  sendNotification?: boolean;
 };
 
 type CreateResult = { success: true; id: string } | { error: string };
@@ -86,8 +90,11 @@ export async function createAnnouncement(data: CreateData): Promise<CreateResult
     })
     .returning({ id: announcements.id });
 
-  if (data.status === 'published') {
-    await notifyAllUsersOfAnnouncement(inserted.id, data.slug, data.title);
+  if (data.sendNotification && data.status === 'published') {
+    const alreadySent = await hasAnnouncementNotification(inserted.id);
+    if (!alreadySent) {
+      await notifyAllUsersOfAnnouncement(inserted.id, data.slug, data.title);
+    }
   }
 
   revalidatePath('/admin/announcements');
