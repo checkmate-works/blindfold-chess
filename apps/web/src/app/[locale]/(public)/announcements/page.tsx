@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 import { HiLockClosed } from 'react-icons/hi2';
 
+import { getOptionalUser } from '@/lib/auth';
+
 import {
   Breadcrumb,
   Divider,
@@ -50,6 +52,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const { page } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
+  const user = await getOptionalUser();
   const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
@@ -97,7 +100,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
                     locale={locale}
                     isPinned={announcement.pinnedAt !== null}
                     badge={
-                      announcement.visibility === 'members_only' ? (
+                      announcement.visibility === 'members_only' && !user ? (
                         <>
                           <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
                         </>
