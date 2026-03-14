@@ -26,6 +26,8 @@ type Props = {
   }>;
 };
 
+export const dynamic = 'force-static';
+
 const VALID_CATEGORIES = Object.keys(CATEGORY_STYLES);
 
 export async function generateStaticParams() {

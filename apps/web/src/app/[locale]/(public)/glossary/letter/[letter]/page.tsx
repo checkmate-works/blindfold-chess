@@ -24,6 +24,8 @@ type Props = {
   }>;
 };
 
+export const dynamic = 'force-static';
+
 // Queries the database at build time — requires a running DB connection for `next build`.
 export async function generateStaticParams() {
   const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
