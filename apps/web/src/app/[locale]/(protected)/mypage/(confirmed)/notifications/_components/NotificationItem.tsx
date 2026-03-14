@@ -71,7 +71,7 @@ export function NotificationItem({ notification }: Props) {
   }
 
   function handleClick() {
-    if (notification.read) return;
+    if (notification.isRead) return;
     startTransition(async () => {
       await markAsRead(notification.id);
       router.refresh();
@@ -89,7 +89,7 @@ export function NotificationItem({ notification }: Props) {
   const content = (
     <div
       className={`flex items-start gap-4 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50 ${
-        !notification.read ? 'bg-accent/30' : ''
+        !notification.isRead ? 'bg-accent/30' : ''
       }`}
     >
       {notification.type === 'announcement' ? (
@@ -116,7 +116,7 @@ export function NotificationItem({ notification }: Props) {
         <p className="text-sm text-foreground">{message}</p>
         <p className="text-xs text-muted-foreground mt-1">{timeAgo}</p>
       </div>
-      {!notification.read && (
+      {!notification.isRead && (
         <div className="flex-shrink-0 mt-1">
           <div className="h-2 w-2 rounded-full bg-link-primary" />
         </div>

@@ -11,8 +11,8 @@ CREATE TABLE "ad_banners" (
 	"sort_order" integer DEFAULT 0,
 	"start_at" timestamp with time zone,
 	"end_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "ad_banners_slot_unique" UNIQUE("slot")
 );
 --> statement-breakpoint
@@ -26,8 +26,8 @@ CREATE TABLE "announcements" (
 	"visibility" varchar(20) DEFAULT 'public',
 	"pinned_at" timestamp with time zone,
 	"published_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_announcements_slug_locale" UNIQUE("slug","locale")
 );
 --> statement-breakpoint
@@ -40,8 +40,8 @@ CREATE TABLE "articles" (
 	"status" varchar(20) DEFAULT 'draft',
 	"pinned_at" timestamp with time zone,
 	"published_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_articles_slug_locale" UNIQUE("slug","locale")
 );
 --> statement-breakpoint
@@ -49,7 +49,7 @@ CREATE TABLE "glossary_term_aliases" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"term_id" uuid NOT NULL,
 	"alias" varchar(255) NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_term_alias" UNIQUE("term_id","alias")
 );
 --> statement-breakpoint
@@ -59,7 +59,7 @@ CREATE TABLE "glossary_term_positions" (
 	"fen" varchar(100) NOT NULL,
 	"sort_order" integer DEFAULT 0,
 	"caption" varchar(255),
-	"created_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_term_position" UNIQUE("term_id","fen")
 );
 --> statement-breakpoint
@@ -67,7 +67,7 @@ CREATE TABLE "glossary_term_relations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"term_id" uuid NOT NULL,
 	"related_term_id" uuid NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_term_relation" UNIQUE("term_id","related_term_id")
 );
 --> statement-breakpoint
@@ -78,8 +78,8 @@ CREATE TABLE "glossary_term_translations" (
 	"term" varchar(255) NOT NULL,
 	"definition" text NOT NULL,
 	"reading" varchar(255),
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_term_locale" UNIQUE("term_id","locale")
 );
 --> statement-breakpoint
@@ -88,8 +88,8 @@ CREATE TABLE "glossary_terms" (
 	"slug" varchar(255) NOT NULL,
 	"term_en" varchar(255) NOT NULL,
 	"category" varchar(50) NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "glossary_terms_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
@@ -114,7 +114,7 @@ CREATE TABLE "notifications" (
 	"target_id" uuid,
 	"group_key" varchar(255),
 	"metadata" jsonb DEFAULT '{}'::jsonb,
-	"read" boolean DEFAULT false NOT NULL,
+	"is_read" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -122,7 +122,7 @@ CREATE TABLE "practice_sessions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"menu_type" text NOT NULL,
-	"started_at" timestamp with time zone DEFAULT now(),
+	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"settings" jsonb DEFAULT '{}'::jsonb,
 	"result" jsonb NOT NULL
 );
@@ -156,8 +156,8 @@ CREATE TABLE "site_settings" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"key" varchar(100) NOT NULL,
 	"value" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
-	"updated_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "site_settings_key_unique" UNIQUE("key")
 );
 --> statement-breakpoint
@@ -196,7 +196,8 @@ CREATE TABLE "user_blocks" (
 	"blocker_id" uuid NOT NULL,
 	"blocked_id" uuid NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_user_block" UNIQUE("blocker_id","blocked_id")
+	CONSTRAINT "uq_user_block" UNIQUE("blocker_id","blocked_id"),
+	CONSTRAINT "chk_no_self_block" CHECK ("user_blocks"."blocker_id" != "user_blocks"."blocked_id")
 );
 --> statement-breakpoint
 CREATE TABLE "user_follows" (
@@ -204,14 +205,15 @@ CREATE TABLE "user_follows" (
 	"follower_id" uuid NOT NULL,
 	"following_id" uuid NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "uq_user_follow" UNIQUE("follower_id","following_id")
+	CONSTRAINT "uq_user_follow" UNIQUE("follower_id","following_id"),
+	CONSTRAINT "chk_no_self_follow" CHECK ("user_follows"."follower_id" != "user_follows"."following_id")
 );
 --> statement-breakpoint
 CREATE TABLE "user_roles" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"role" "app_role" DEFAULT 'user' NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now(),
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_user_role" UNIQUE("user_id","role")
 );
 --> statement-breakpoint
@@ -227,7 +229,7 @@ CREATE INDEX "idx_moderation_actions_target" ON "moderation_actions" USING btree
 CREATE INDEX "idx_moderation_actions_action" ON "moderation_actions" USING btree ("action");--> statement-breakpoint
 CREATE INDEX "idx_moderation_actions_created" ON "moderation_actions" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "idx_notifications_user_created" ON "notifications" USING btree ("user_id","created_at");--> statement-breakpoint
-CREATE INDEX "idx_notifications_unread" ON "notifications" USING btree ("user_id") WHERE read = false;--> statement-breakpoint
+CREATE INDEX "idx_notifications_unread" ON "notifications" USING btree ("user_id") WHERE is_read = false;--> statement-breakpoint
 CREATE INDEX "idx_notifications_dedup" ON "notifications" USING btree ("user_id","type","actor_id","target_type","target_id");--> statement-breakpoint
 CREATE INDEX "idx_notifications_group_key" ON "notifications" USING btree ("user_id","group_key");--> statement-breakpoint
 CREATE INDEX "idx_notifications_actor" ON "notifications" USING btree ("actor_id");--> statement-breakpoint

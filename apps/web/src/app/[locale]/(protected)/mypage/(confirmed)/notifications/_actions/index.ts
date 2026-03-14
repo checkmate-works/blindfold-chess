@@ -20,7 +20,7 @@ export async function markAsRead(notificationId: string): Promise<void> {
 
   await db
     .update(notifications)
-    .set({ read: true })
+    .set({ isRead: true })
     .where(and(eq(notifications.id, notificationId), eq(notifications.userId, user.id)));
 }
 
@@ -29,6 +29,6 @@ export async function markAllAsRead(): Promise<void> {
 
   await db
     .update(notifications)
-    .set({ read: true })
-    .where(and(eq(notifications.userId, user.id), eq(notifications.read, false)));
+    .set({ isRead: true })
+    .where(and(eq(notifications.userId, user.id), eq(notifications.isRead, false)));
 }

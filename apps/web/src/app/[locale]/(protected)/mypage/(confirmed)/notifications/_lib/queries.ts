@@ -11,7 +11,7 @@ export type NotificationWithActor = {
   targetId: string | null;
   groupKey: string | null;
   metadata: unknown;
-  read: boolean;
+  isRead: boolean;
   createdAt: Date;
   actor: {
     username: string;
@@ -41,7 +41,7 @@ export async function getNotifications(
       targetId: notifications.targetId,
       groupKey: notifications.groupKey,
       metadata: notifications.metadata,
-      read: notifications.read,
+      isRead: notifications.isRead,
       createdAt: notifications.createdAt,
       actorUsername: profiles.username,
       actorDisplayName: profiles.displayName,
@@ -61,7 +61,7 @@ export async function getNotifications(
     targetId: row.targetId,
     groupKey: row.groupKey,
     metadata: row.metadata,
-    read: row.read,
+    isRead: row.isRead,
     createdAt: row.createdAt,
     actor: row.actorUsername
       ? {
@@ -79,7 +79,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
   const [result] = await db
     .select({ count: count() })
     .from(notifications)
-    .where(and(eq(notifications.userId, userId), eq(notifications.read, false)));
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
 
   return result.count;
 }

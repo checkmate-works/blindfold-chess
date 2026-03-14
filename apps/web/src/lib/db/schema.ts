@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -25,8 +26,8 @@ export const articles = pgTable(
     status: varchar('status', { length: 20 }).default('draft'),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_articles_slug_locale').on(table.slug, table.locale)]
 );
@@ -47,8 +48,8 @@ export const announcements = pgTable(
     visibility: varchar('visibility', { length: 20 }).default('public'),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_announcements_slug_locale').on(table.slug, table.locale)]
 );
@@ -62,8 +63,8 @@ export const glossaryTerms = pgTable('glossary_terms', {
   slug: varchar('slug', { length: 255 }).unique().notNull(),
   termEn: varchar('term_en', { length: 255 }).notNull(),
   category: varchar('category', { length: 50 }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const glossaryTermTranslations = pgTable(
@@ -77,8 +78,8 @@ export const glossaryTermTranslations = pgTable(
     term: varchar('term', { length: 255 }).notNull(),
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_term_locale').on(table.termId, table.locale)]
 );
@@ -91,7 +92,7 @@ export const glossaryTermAliases = pgTable(
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
     alias: varchar('alias', { length: 255 }).notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_term_alias').on(table.termId, table.alias)]
 );
@@ -106,7 +107,7 @@ export const glossaryTermPositions = pgTable(
     fen: varchar('fen', { length: 100 }).notNull(),
     sortOrder: integer('sort_order').default(0),
     caption: varchar('caption', { length: 255 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_term_position').on(table.termId, table.fen)]
 );
@@ -121,7 +122,7 @@ export const glossaryTermRelations = pgTable(
     relatedTermId: uuid('related_term_id')
       .notNull()
       .references(() => glossaryTerms.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_term_relation').on(table.termId, table.relatedTermId)]
 );
@@ -133,7 +134,7 @@ export const practiceSessions = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(),
     menuType: text('menu_type').notNull(),
-    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow(),
+    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
     settings: jsonb('settings').default({}),
     result: jsonb('result').notNull(),
   },
@@ -189,7 +190,7 @@ export const userRoles = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users
     role: appRoleEnum('role').notNull().default('user'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_user_role').on(table.userId, table.role)]
 );
@@ -310,6 +311,7 @@ export const userFollows = pgTable(
   },
   (table) => [
     unique('uq_user_follow').on(table.followerId, table.followingId),
+    check('chk_no_self_follow', sql`${table.followerId} != ${table.followingId}`),
     index('idx_user_follows_follower').on(table.followerId),
     index('idx_user_follows_following').on(table.followingId),
   ]
@@ -329,6 +331,7 @@ export const userBlocks = pgTable(
   },
   (table) => [
     unique('uq_user_block').on(table.blockerId, table.blockedId),
+    check('chk_no_self_block', sql`${table.blockerId} != ${table.blockedId}`),
     index('idx_user_blocks_blocker').on(table.blockerId),
     index('idx_user_blocks_blocked').on(table.blockedId),
   ]
@@ -500,8 +503,8 @@ export const siteSettings = pgTable('site_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   key: varchar('key', { length: 100 }).unique().notNull(),
   value: jsonb('value').notNull().default({}),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
@@ -522,8 +525,8 @@ export const adBanners = pgTable(
     sortOrder: integer('sort_order').default(0),
     startAt: timestamp('start_at', { withTimezone: true }),
     endAt: timestamp('end_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [index('idx_ad_banners_active').on(table.isActive)]
 );
@@ -543,14 +546,14 @@ export const notifications = pgTable(
     targetId: uuid('target_id'),
     groupKey: varchar('group_key', { length: 255 }),
     metadata: jsonb('metadata').default({}),
-    read: boolean('read').default(false).notNull(),
+    isRead: boolean('is_read').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     index('idx_notifications_user_created').on(table.userId, table.createdAt),
     index('idx_notifications_unread')
       .on(table.userId)
-      .where(sql`read = false`),
+      .where(sql`is_read = false`),
     index('idx_notifications_dedup').on(
       table.userId,
       table.type,
