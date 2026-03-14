@@ -68,6 +68,10 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     return { error: 'invalid visibility' };
   }
 
+  if (data.status === 'published' && !data.publishedAt) {
+    return { error: 'Published date is required when status is published' };
+  }
+
   // Fetch current announcement to detect status change
   const [current] = await db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
 

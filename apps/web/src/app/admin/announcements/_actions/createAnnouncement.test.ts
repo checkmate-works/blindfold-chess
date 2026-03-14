@@ -193,6 +193,50 @@ describe('createAnnouncement', () => {
     expect(result).toEqual({ error: 'invalid visibility' });
   });
 
+  it('should return error when status is published and publishedAt is not set', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: null,
+    });
+    expect(result).toEqual({ error: 'Published date is required when status is published' });
+  });
+
+  it('should succeed when status is published and publishedAt is set', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed when status is draft and publishedAt is not set', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({ ...validData, status: 'draft', publishedAt: null });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should succeed when status is draft and publishedAt is set', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAnnouncement({
+      ...validData,
+      status: 'draft',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
   it('should successfully create announcement with valid data', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
@@ -259,6 +303,7 @@ describe('createAnnouncement', () => {
       ...validData,
       status: 'published',
       slug: 'published-announcement',
+      publishedAt: '2024-06-15T12:00:00Z',
     });
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(

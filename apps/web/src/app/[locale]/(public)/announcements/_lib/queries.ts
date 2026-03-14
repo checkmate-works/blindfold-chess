@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
 
@@ -49,13 +49,7 @@ export async function getPublishedAnnouncements(): Promise<Announcement[]> {
   return db
     .select()
     .from(announcements)
-    .where(
-      and(
-        eq(announcements.status, 'published'),
-        eq(announcements.visibility, 'public'),
-        isNotNull(announcements.publishedAt)
-      )
-    )
+    .where(and(eq(announcements.status, 'published'), eq(announcements.visibility, 'public')))
     .orderBy(...pinnedFirstOrdering);
 }
 
@@ -73,7 +67,7 @@ export async function getPublishedAnnouncementsPaginated(
   const rows = await db
     .select()
     .from(announcements)
-    .where(and(eq(announcements.status, 'published'), isNotNull(announcements.publishedAt)))
+    .where(eq(announcements.status, 'published'))
     .orderBy(...pinnedFirstOrdering);
 
   return deduplicateBySlug(rows, locale).slice(offset, offset + limit);
@@ -87,7 +81,7 @@ export async function getPublishedAnnouncementCount(): Promise<number> {
   const [result] = await db
     .select({ count: sql<number>`COUNT(DISTINCT ${announcements.slug})` })
     .from(announcements)
-    .where(and(eq(announcements.status, 'published'), isNotNull(announcements.publishedAt)));
+    .where(eq(announcements.status, 'published'));
 
   return Number(result.count);
 }
@@ -108,13 +102,7 @@ export async function getPublishedAnnouncement(
   const results = await db
     .select()
     .from(announcements)
-    .where(
-      and(
-        eq(announcements.slug, slug),
-        eq(announcements.status, 'published'),
-        isNotNull(announcements.publishedAt)
-      )
-    );
+    .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
 
   if (results.length === 0) return null;
 

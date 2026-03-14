@@ -68,6 +68,10 @@ export async function createAnnouncement(data: CreateData): Promise<CreateResult
     return { error: 'invalid visibility' };
   }
 
+  if (data.status === 'published' && !data.publishedAt) {
+    return { error: 'Published date is required when status is published' };
+  }
+
   const [inserted] = await db
     .insert(announcements)
     .values({

@@ -221,6 +221,51 @@ describe('updateAnnouncement', () => {
     expect(result).toEqual({ error: 'invalid visibility' });
   });
 
+  it('should return error when status is published and publishedAt is not set', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: null,
+    });
+    expect(result).toEqual({ error: 'Published date is required when status is published' });
+  });
+
+  it('should succeed when status is published and publishedAt is set', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true });
+  });
+
+  it('should succeed when status is draft and publishedAt is not set', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'draft',
+      publishedAt: null,
+    });
+    expect(result).toEqual({ success: true });
+  });
+
+  it('should succeed when status is draft and publishedAt is set', async () => {
+    setupAdminWithAnnouncement();
+
+    const result = await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'draft',
+      publishedAt: '2024-06-15T12:00:00Z',
+    });
+    expect(result).toEqual({ success: true });
+  });
+
   it('should accept members_only as a valid visibility', async () => {
     setupAdminWithAnnouncement();
 
@@ -254,6 +299,7 @@ describe('updateAnnouncement', () => {
       ...validData,
       status: 'published',
       slug: 'my-announcement',
+      publishedAt: '2024-06-15T12:00:00Z',
     });
     expect(result).toEqual({ success: true });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
@@ -269,6 +315,7 @@ describe('updateAnnouncement', () => {
     const result = await updateAnnouncement(announcementId, {
       ...validData,
       status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
     });
     expect(result).toEqual({ success: true });
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
