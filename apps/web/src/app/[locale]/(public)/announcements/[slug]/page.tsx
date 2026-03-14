@@ -103,13 +103,16 @@ export default async function AnnouncementPage({ params }: Props) {
     <div className="space-y-12">
       <header>
         <PageTitle>{announcement.title}</PageTitle>
-        {publishedDate && <p className="text-sm text-muted-foreground mt-2">{publishedDate}</p>}
       </header>
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none break-words">
           <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
         </article>
+
+        {publishedDate && (
+          <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
+        )}
 
         <Divider />
 

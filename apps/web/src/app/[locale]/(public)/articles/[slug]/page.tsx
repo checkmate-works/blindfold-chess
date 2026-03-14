@@ -79,13 +79,16 @@ export default async function ArticlePage({ params }: Props) {
 
       <header>
         <PageTitle>{article.title}</PageTitle>
-        {publishedDate && <p className="text-sm text-muted-foreground mt-2">{publishedDate}</p>}
       </header>
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none">
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
+
+        {publishedDate && (
+          <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
+        )}
 
         <Divider />
 
