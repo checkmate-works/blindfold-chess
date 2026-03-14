@@ -50,6 +50,10 @@ vi.mock('@/lib/db', () => ({
     status: 'status',
     pinnedAt: 'pinned_at',
     publishedAt: 'published_at',
+    excerpt: 'excerpt',
+    description: 'description',
+    categoryId: 'category_id',
+    icon: 'icon',
   },
   userRoles: { userId: 'user_id' },
 }));
@@ -68,6 +72,10 @@ const validData = {
   status: 'draft',
   pinnedAt: null,
   publishedAt: null,
+  excerpt: null,
+  description: null,
+  categoryId: null,
+  icon: null,
 };
 
 describe('createArticle', () => {
@@ -214,6 +222,44 @@ describe('createArticle', () => {
     expect(result).toEqual({ success: true, id: generatedId });
   });
 
+  it('should return error when icon exceeds 10 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, icon: 'a'.repeat(11) });
+    expect(result).toEqual({ error: 'invalid icon' });
+  });
+
+  it('should succeed when icon is exactly 10 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, icon: 'a'.repeat(10) });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
+
+  it('should include new fields in INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({
+      ...validData,
+      excerpt: 'Test excerpt',
+      description: 'Test description',
+      categoryId: 'cat-123',
+      icon: '♟️',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({
+        excerpt: 'Test excerpt',
+        description: 'Test description',
+        categoryId: 'cat-123',
+        icon: '♟️',
+      })
+    );
+  });
+
   it('should successfully create article with valid data', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
@@ -228,6 +274,10 @@ describe('createArticle', () => {
       status: 'draft',
       pinnedAt: null,
       publishedAt: null,
+      excerpt: null,
+      description: null,
+      categoryId: null,
+      icon: null,
     });
   });
 
@@ -405,5 +455,100 @@ describe('createArticle', () => {
     });
     expect(result).toEqual({ success: true, id: generatedId });
     // No notification function should be called - articles don't have notification feature
+  });
+
+  // --- Null / empty-string handling for new optional fields ---
+
+  it('should convert empty string excerpt to null in INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, excerpt: '' });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ excerpt: null })
+    );
+  });
+
+  it('should convert empty string description to null in INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, description: '' });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ description: null })
+    );
+  });
+
+  it('should convert empty string categoryId to null in INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, categoryId: '' });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ categoryId: null })
+    );
+  });
+
+  it('should convert empty string icon to null in INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, icon: '' });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(expect.objectContaining({ icon: null }));
+  });
+
+  it('should pass null excerpt directly through to INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, excerpt: null });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ excerpt: null })
+    );
+  });
+
+  it('should pass null description directly through to INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, description: null });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ description: null })
+    );
+  });
+
+  it('should pass null categoryId directly through to INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, categoryId: null });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(
+      expect.objectContaining({ categoryId: null })
+    );
+  });
+
+  it('should pass null icon directly through to INSERT values', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, icon: null });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(expect.objectContaining({ icon: null }));
+  });
+
+  it('should succeed when icon is a single emoji character', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createArticle({ ...validData, icon: '♟' });
+    expect(result).toEqual({ success: true, id: generatedId });
+    expect(mockInsertValuesReturning).toHaveBeenCalledWith(expect.objectContaining({ icon: '♟' }));
   });
 });

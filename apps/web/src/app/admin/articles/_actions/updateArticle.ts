@@ -17,6 +17,10 @@ type UpdateData = {
   status: string;
   pinnedAt: string | null;
   publishedAt: string | null;
+  excerpt: string | null;
+  description: string | null;
+  categoryId: string | null;
+  icon: string | null;
 };
 
 type UpdateResult = { success: true; id: string } | { error: string };
@@ -65,6 +69,10 @@ export async function updateArticle(id: string, data: UpdateData): Promise<Updat
     return { error: 'Published date is required when status is published' };
   }
 
+  if (data.icon && data.icon.length > 10) {
+    return { error: 'invalid icon' };
+  }
+
   // Fetch current article to verify it exists
   const [current] = await db.select().from(articles).where(eq(articles.id, id)).limit(1);
 
@@ -82,6 +90,10 @@ export async function updateArticle(id: string, data: UpdateData): Promise<Updat
       status: data.status,
       pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
       publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+      excerpt: data.excerpt || null,
+      description: data.description || null,
+      categoryId: data.categoryId || null,
+      icon: data.icon || null,
       updatedAt: new Date(),
     })
     .where(eq(articles.id, id));

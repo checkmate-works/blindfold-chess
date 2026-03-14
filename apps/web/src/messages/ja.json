@@ -2095,10 +2095,25 @@
         "backToList": "記事一覧に戻る",
         "saveDraft": "下書き保存",
         "savingDraft": "保存中...",
-        "preview": "プレビュー",
+        "draftSaved": "下書きを保存しました",
+        "preview": "公開設定",
         "previewTitle": "記事プレビュー",
+        "publishTitle": "記事を公開",
+        "publish": "公開する",
+        "publishing": "公開中...",
         "backToEdit": "編集に戻る",
-        "contentPreview": "コンテンツプレビュー"
+        "contentPreview": "コンテンツプレビュー",
+        "excerpt": "抜粋",
+        "excerptPlaceholder": "記事の概要...",
+        "description": "説明文 (SEO)",
+        "descriptionPlaceholder": "検索エンジン向けのメタディスクリプション...",
+        "category": "カテゴリ",
+        "categoryNone": "なし",
+        "icon": "アイコン",
+        "iconPlaceholder": "例: ♟️",
+        "metadata": "メタデータ",
+        "tabEdit": "編集",
+        "tabPreview": "プレビュー"
       }
     },
     "topicPosts": {

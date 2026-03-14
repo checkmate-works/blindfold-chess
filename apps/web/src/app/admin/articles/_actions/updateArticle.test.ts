@@ -4,6 +4,7 @@ import { updateArticle } from './updateArticle';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
+const mockUpdateSet = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
 
@@ -31,9 +32,12 @@ vi.mock('@/lib/db', () => ({
       }),
     }),
     update: () => ({
-      set: () => ({
-        where: mockUpdateSetWhere,
-      }),
+      set: (data: unknown) => {
+        mockUpdateSet(data);
+        return {
+          where: mockUpdateSetWhere,
+        };
+      },
     }),
   },
   articles: {
@@ -46,6 +50,10 @@ vi.mock('@/lib/db', () => ({
     pinnedAt: 'pinned_at',
     publishedAt: 'published_at',
     updatedAt: 'updated_at',
+    excerpt: 'excerpt',
+    description: 'description',
+    categoryId: 'category_id',
+    icon: 'icon',
   },
   userRoles: { userId: 'user_id' },
 }));
@@ -65,6 +73,10 @@ const validData = {
   status: 'draft',
   pinnedAt: null,
   publishedAt: null,
+  excerpt: null,
+  description: null,
+  categoryId: null,
+  icon: null,
 };
 
 function setupAdminWithArticle(currentStatus = 'draft') {
@@ -239,6 +251,21 @@ describe('updateArticle', () => {
     expect(result).toEqual({ success: true, id: articleId });
   });
 
+  it('should return error when icon exceeds 10 characters', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await updateArticle(articleId, { ...validData, icon: 'a'.repeat(11) });
+    expect(result).toEqual({ error: 'invalid icon' });
+  });
+
+  it('should succeed when icon is exactly 10 characters', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, icon: 'a'.repeat(10) });
+    expect(result).toEqual({ success: true, id: articleId });
+  });
+
   it('should return not found when article does not exist', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
@@ -394,5 +421,92 @@ describe('updateArticle', () => {
     });
     expect(result).toEqual({ success: true, id: articleId });
     // No notification function should be called - articles don't have notification feature
+  });
+
+  // --- Null / empty-string handling for new optional fields ---
+
+  it('should convert empty string excerpt to null in UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, excerpt: '' });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ excerpt: null }));
+  });
+
+  it('should convert empty string description to null in UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, description: '' });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ description: null }));
+  });
+
+  it('should convert empty string categoryId to null in UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, categoryId: '' });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ categoryId: null }));
+  });
+
+  it('should convert empty string icon to null in UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, icon: '' });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ icon: null }));
+  });
+
+  it('should pass null excerpt directly through to UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, excerpt: null });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ excerpt: null }));
+  });
+
+  it('should pass null description directly through to UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, description: null });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ description: null }));
+  });
+
+  it('should pass null categoryId directly through to UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, categoryId: null });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ categoryId: null }));
+  });
+
+  it('should pass null icon directly through to UPDATE set values', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, { ...validData, icon: null });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(expect.objectContaining({ icon: null }));
+  });
+
+  it('should include all new fields in UPDATE set values when all are provided', async () => {
+    setupAdminWithArticle();
+
+    const result = await updateArticle(articleId, {
+      ...validData,
+      excerpt: 'Updated excerpt',
+      description: 'Updated description',
+      categoryId: 'cat-456',
+      icon: '♟️',
+    });
+    expect(result).toEqual({ success: true, id: articleId });
+    expect(mockUpdateSet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        excerpt: 'Updated excerpt',
+        description: 'Updated description',
+        categoryId: 'cat-456',
+        icon: '♟️',
+      })
+    );
   });
 });

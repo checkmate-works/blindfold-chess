@@ -17,6 +17,10 @@ type CreateData = {
   status: string;
   pinnedAt: string | null;
   publishedAt: string | null;
+  excerpt: string | null;
+  description: string | null;
+  categoryId: string | null;
+  icon: string | null;
 };
 
 type CreateResult = { success: true; id: string } | { error: string };
@@ -65,6 +69,10 @@ export async function createArticle(data: CreateData): Promise<CreateResult> {
     return { error: 'Published date is required when status is published' };
   }
 
+  if (data.icon && data.icon.length > 10) {
+    return { error: 'invalid icon' };
+  }
+
   const [inserted] = await db
     .insert(articles)
     .values({
@@ -75,6 +83,10 @@ export async function createArticle(data: CreateData): Promise<CreateResult> {
       status: data.status || 'draft',
       pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
       publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+      excerpt: data.excerpt || null,
+      description: data.description || null,
+      categoryId: data.categoryId || null,
+      icon: data.icon || null,
     })
     .returning({ id: articles.id });
 

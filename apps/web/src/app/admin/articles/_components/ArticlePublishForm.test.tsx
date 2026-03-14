@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ArticlePreviewForm } from './ArticlePreviewForm';
+import { ArticlePublishForm } from './ArticlePublishForm';
 
 const mockPush = vi.fn();
 
@@ -20,18 +20,14 @@ vi.mock('../_actions/updateArticle', () => ({
 const testId = 'art-00000000-0000-0000-0000-000000000001';
 
 const defaultLabels = {
-  status: 'Status',
   pinnedAt: 'Pinned At',
   publishedAt: 'Published At',
-  save: 'Save',
-  saving: 'Saving...',
+  publish: 'Publish',
+  publishing: 'Publishing...',
   backToEdit: 'Back to Edit',
-  draft: 'Draft',
-  published: 'Published',
 };
 
 const defaultValues = {
-  status: 'draft',
   pinnedAt: '',
   publishedAt: '',
 };
@@ -41,16 +37,20 @@ const articleData = {
   title: 'Test Article',
   content: '# Hello\nThis is a test.',
   locale: 'en',
+  excerpt: null,
+  description: null,
+  categoryId: null,
+  icon: null,
 };
 
-describe('ArticlePreviewForm', () => {
+describe('ArticlePublishForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render Status as radio buttons', () => {
+  it('should NOT render status radio buttons (always publishes)', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -58,13 +58,12 @@ describe('ArticlePreviewForm', () => {
       />
     );
 
-    expect(screen.getByRole('radio', { name: 'Draft' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Published' })).toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
   });
 
-  it('should NOT render Visibility radio buttons (articles have no visibility)', () => {
+  it('should always render Published At field', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -72,13 +71,12 @@ describe('ArticlePreviewForm', () => {
       />
     );
 
-    expect(screen.queryByText('Public')).not.toBeInTheDocument();
-    expect(screen.queryByText('Members')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Published At')).toBeInTheDocument();
   });
 
   it('should render Pinned At field', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -89,9 +87,9 @@ describe('ArticlePreviewForm', () => {
     expect(screen.getByLabelText('Pinned At')).toBeInTheDocument();
   });
 
-  it('should not show Published At when status is draft', () => {
+  it('should render Publish and Back to Edit buttons', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -99,63 +97,18 @@ describe('ArticlePreviewForm', () => {
       />
     );
 
-    expect(screen.queryByLabelText('Published At')).not.toBeInTheDocument();
-  });
-
-  it('should show Published At when status is published', () => {
-    render(
-      <ArticlePreviewForm
-        id={testId}
-        articleData={articleData}
-        defaultValues={{ ...defaultValues, status: 'published', publishedAt: '2024-06-15T14:00' }}
-        labels={defaultLabels}
-      />
-    );
-
-    expect(screen.getByLabelText('Published At')).toBeInTheDocument();
-    expect(screen.getByLabelText('Published At')).toHaveValue('2024-06-15T14:00');
-  });
-
-  it('should show Published At when switching status from draft to published', () => {
-    render(
-      <ArticlePreviewForm
-        id={testId}
-        articleData={articleData}
-        defaultValues={defaultValues}
-        labels={defaultLabels}
-      />
-    );
-
-    expect(screen.queryByLabelText('Published At')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
-
-    expect(screen.getByLabelText('Published At')).toBeInTheDocument();
-  });
-
-  it('should render Save and Back to Edit buttons', () => {
-    render(
-      <ArticlePreviewForm
-        id={testId}
-        articleData={articleData}
-        defaultValues={defaultValues}
-        labels={defaultLabels}
-      />
-    );
-
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back to Edit' })).toBeInTheDocument();
   });
 
   it('should populate form with default values', () => {
     const values = {
-      status: 'published',
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
     };
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={values}
@@ -163,16 +116,15 @@ describe('ArticlePreviewForm', () => {
       />
     );
 
-    expect(screen.getByRole('radio', { name: 'Published' })).toBeChecked();
     expect(screen.getByLabelText('Pinned At')).toHaveValue('2024-06-15T12:00');
     expect(screen.getByLabelText('Published At')).toHaveValue('2024-06-15T14:00');
   });
 
-  it('should call updateArticle with form data and navigate to list on Save', async () => {
+  it('should call updateArticle with status published and navigate to list on Publish', async () => {
     mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -181,34 +133,7 @@ describe('ArticlePreviewForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    });
-
-    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
-      ...articleData,
-      status: 'draft',
-      pinnedAt: null,
-      publishedAt: null,
-    });
-    expect(mockPush).toHaveBeenCalledWith('/admin/articles');
-  });
-
-  it('should submit changed status values', async () => {
-    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
-
-    render(
-      <ArticlePreviewForm
-        id={testId}
-        articleData={articleData}
-        defaultValues={defaultValues}
-        labels={defaultLabels}
-      />
-    );
-
-    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     });
 
     expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
@@ -217,15 +142,14 @@ describe('ArticlePreviewForm', () => {
       pinnedAt: null,
       publishedAt: null,
     });
+    expect(mockPush).toHaveBeenCalledWith('/admin/articles');
   });
 
-  it('should display error message when updateArticle returns an error', async () => {
-    mockUpdateArticle.mockResolvedValue({
-      error: 'Published date is required when status is published',
-    });
+  it('should always set status to published regardless of original status', async () => {
+    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -234,18 +158,62 @@ describe('ArticlePreviewForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     });
 
-    expect(
-      screen.getByText('Published date is required when status is published')
-    ).toBeInTheDocument();
+    const callArgs = mockUpdateArticle.mock.calls[0][1];
+    expect(callArgs.status).toBe('published');
+  });
+
+  it('should submit with entered publishedAt and pinnedAt values', async () => {
+    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <ArticlePublishForm
+        id={testId}
+        articleData={articleData}
+        defaultValues={{ pinnedAt: '2024-01-01T12:00', publishedAt: '2024-06-15T14:00' }}
+        labels={defaultLabels}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    });
+
+    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
+      ...articleData,
+      status: 'published',
+      pinnedAt: '2024-01-01T12:00',
+      publishedAt: '2024-06-15T14:00',
+    });
+  });
+
+  it('should display error message when updateArticle returns an error', async () => {
+    mockUpdateArticle.mockResolvedValue({
+      error: 'Something went wrong',
+    });
+
+    render(
+      <ArticlePublishForm
+        id={testId}
+        articleData={articleData}
+        defaultValues={defaultValues}
+        labels={defaultLabels}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    });
+
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('should navigate to edit page on Back to Edit', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -263,16 +231,16 @@ describe('ArticlePreviewForm', () => {
     mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
-        defaultValues={{ ...defaultValues, pinnedAt: '', publishedAt: '' }}
+        defaultValues={{ pinnedAt: '', publishedAt: '' }}
         labels={defaultLabels}
       />
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     });
 
     expect(mockUpdateArticle).toHaveBeenCalledWith(
@@ -288,15 +256,13 @@ describe('ArticlePreviewForm', () => {
 
   it('should NOT show notification checkbox (articles have no notification feature)', () => {
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
       />
     );
-
-    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
 
     expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
@@ -306,7 +272,7 @@ describe('ArticlePreviewForm', () => {
     mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -315,7 +281,7 @@ describe('ArticlePreviewForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     });
 
     const callArgs = mockUpdateArticle.mock.calls[0][1];
@@ -328,7 +294,7 @@ describe('ArticlePreviewForm', () => {
     mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <ArticlePreviewForm
+      <ArticlePublishForm
         id={testId}
         articleData={articleData}
         defaultValues={defaultValues}
@@ -337,10 +303,112 @@ describe('ArticlePreviewForm', () => {
     );
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     });
 
     const callArgs = mockUpdateArticle.mock.calls[0][1];
     expect('visibility' in callArgs).toBe(false);
+  });
+
+  // --- New fields in articleData are passed through to updateArticle ---
+
+  it('should pass articleData with new fields to updateArticle on Publish', async () => {
+    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
+
+    const articleDataWithFields = {
+      slug: 'test-article',
+      title: 'Test Article',
+      content: '# Hello\nThis is a test.',
+      locale: 'en',
+      excerpt: 'A brief summary',
+      description: 'Meta description for SEO',
+      categoryId: 'cat-123',
+      icon: '♟️',
+    };
+
+    render(
+      <ArticlePublishForm
+        id={testId}
+        articleData={articleDataWithFields}
+        defaultValues={defaultValues}
+        labels={defaultLabels}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    });
+
+    expect(mockUpdateArticle).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({
+        excerpt: 'A brief summary',
+        description: 'Meta description for SEO',
+        categoryId: 'cat-123',
+        icon: '♟️',
+      })
+    );
+  });
+
+  it('should pass articleData with null new fields to updateArticle on Publish', async () => {
+    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <ArticlePublishForm
+        id={testId}
+        articleData={articleData}
+        defaultValues={defaultValues}
+        labels={defaultLabels}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    });
+
+    expect(mockUpdateArticle).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({
+        excerpt: null,
+        description: null,
+        categoryId: null,
+        icon: null,
+      })
+    );
+  });
+
+  it('should merge articleData and form values correctly on Publish', async () => {
+    mockUpdateArticle.mockResolvedValue({ success: true, id: testId });
+
+    const articleDataWithFields = {
+      slug: 'test-article',
+      title: 'Test Article',
+      content: '# Hello\nThis is a test.',
+      locale: 'en',
+      excerpt: 'Summary',
+      description: 'Description',
+      categoryId: 'cat-1',
+      icon: '♟️',
+    };
+
+    render(
+      <ArticlePublishForm
+        id={testId}
+        articleData={articleDataWithFields}
+        defaultValues={{ pinnedAt: '2024-01-01T12:00', publishedAt: '2024-06-15T14:00' }}
+        labels={defaultLabels}
+      />
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    });
+
+    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
+      ...articleDataWithFields,
+      status: 'published',
+      pinnedAt: '2024-01-01T12:00',
+      publishedAt: '2024-06-15T14:00',
+    });
   });
 });
