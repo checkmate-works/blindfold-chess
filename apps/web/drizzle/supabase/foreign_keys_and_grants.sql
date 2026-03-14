@@ -179,3 +179,104 @@ $$;
 
 -- Grant necessary permissions (no INSERT — controlled by server-side only)
 GRANT SELECT, UPDATE, DELETE ON TABLE public.notifications TO authenticated;
+
+-- =============================================================================
+-- practice_sessions
+-- =============================================================================
+
+-- FK constraint: practice_sessions.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'practice_sessions_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.practice_sessions
+      ADD CONSTRAINT practice_sessions_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions
+GRANT SELECT, INSERT, DELETE ON TABLE public.practice_sessions TO authenticated;
+
+-- =============================================================================
+-- rate_limit_events
+-- =============================================================================
+
+-- FK constraint: rate_limit_events.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'rate_limit_events_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.rate_limit_events
+      ADD CONSTRAINT rate_limit_events_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions
+GRANT INSERT ON TABLE public.rate_limit_events TO authenticated;
+
+-- =============================================================================
+-- user_activity_log
+-- =============================================================================
+
+-- FK constraint: user_activity_log.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_activity_log_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_activity_log
+      ADD CONSTRAINT user_activity_log_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions
+GRANT SELECT, INSERT ON TABLE public.user_activity_log TO authenticated;
+
+-- =============================================================================
+-- user_roles
+-- =============================================================================
+
+-- FK constraint: user_roles.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_roles_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_roles
+      ADD CONSTRAINT user_roles_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions
+GRANT SELECT ON TABLE public.user_roles TO authenticated;
+
+-- =============================================================================
+-- topic_post_likes
+-- =============================================================================
+
+-- FK constraint: topic_post_likes.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'topic_post_likes_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.topic_post_likes
+      ADD CONSTRAINT topic_post_likes_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions
+GRANT SELECT, INSERT, DELETE ON TABLE public.topic_post_likes TO authenticated;
+GRANT SELECT ON TABLE public.topic_post_likes TO anon;
