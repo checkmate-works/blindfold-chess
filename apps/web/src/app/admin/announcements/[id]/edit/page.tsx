@@ -1,0 +1,59 @@
+import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+
+import { eq } from 'drizzle-orm';
+
+import { announcements, db } from '@/lib/db';
+
+import { EditAnnouncementForm } from '../../_components/EditAnnouncementForm';
+import { formatDateTimeLocal } from '../../_lib/format';
+
+export default async function EditAnnouncementPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin.announcementsTable' });
+
+  const [announcement] = await db
+    .select()
+    .from(announcements)
+    .where(eq(announcements.id, id))
+    .limit(1);
+
+  if (!announcement) {
+    notFound();
+  }
+
+  return (
+    <EditAnnouncementForm
+      id={announcement.id}
+      defaultValues={{
+        slug: announcement.slug,
+        title: announcement.title,
+        content: announcement.content,
+        locale: announcement.locale,
+        status: announcement.status ?? 'draft',
+        visibility: announcement.visibility ?? 'public',
+        pinnedAt: formatDateTimeLocal(announcement.pinnedAt),
+        publishedAt: formatDateTimeLocal(announcement.publishedAt),
+      }}
+      labels={{
+        formTitle: t('form.editTitle'),
+        slug: t('form.slug'),
+        slugPlaceholder: t('form.slugPlaceholder'),
+        title: t('form.title'),
+        titlePlaceholder: t('form.titlePlaceholder'),
+        content: t('form.content'),
+        contentPlaceholder: t('form.contentPlaceholder'),
+        locale: t('form.locale'),
+        saveDraft: t('form.saveDraft'),
+        savingDraft: t('form.savingDraft'),
+        preview: t('form.preview'),
+        cancel: t('form.cancel'),
+        backToList: t('form.backToList'),
+      }}
+    />
+  );
+}

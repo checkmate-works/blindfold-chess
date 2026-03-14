@@ -29,7 +29,9 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           }
           return <PageTitle>{children}</PageTitle>;
         },
-        h2: ({ children }) => <SectionTitle className="mb-4 mt-10">{children}</SectionTitle>,
+        h2: ({ children }) => (
+          <SectionTitle className="mb-4 mt-10 first:mt-0">{children}</SectionTitle>
+        ),
         h3: ({ children }) => <SubsectionTitle className="mb-3 mt-8">{children}</SubsectionTitle>,
         p: ({ children, node }) => {
           // Check if paragraph contains only an image (including demo components)

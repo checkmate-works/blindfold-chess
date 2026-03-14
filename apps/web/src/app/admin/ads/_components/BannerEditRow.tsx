@@ -55,7 +55,7 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
             type="text"
             value={href}
             onChange={(e) => setHref(e.target.value)}
-            className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
+            className="w-full px-2 py-1 text-sm border border-border rounded bg-card text-foreground"
           />
         </td>
         <td className="px-4 py-3">
@@ -63,7 +63,7 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
             type="text"
             value={imagePath}
             onChange={(e) => setImagePath(e.target.value)}
-            className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
+            className="w-full px-2 py-1 text-sm border border-border rounded bg-card text-foreground"
           />
         </td>
         <td className="px-4 py-3">
@@ -80,7 +80,7 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
             type="text"
             value={alt}
             onChange={(e) => setAlt(e.target.value)}
-            className="w-full px-2 py-1 text-sm border border-border rounded bg-background text-foreground"
+            className="w-full px-2 py-1 text-sm border border-border rounded bg-card text-foreground"
           />
         </td>
         <td className="px-4 py-3">
@@ -103,7 +103,7 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
             <button
               onClick={handleCancel}
               disabled={isPending}
-              className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+              className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
             >
               {labels.cancel}
             </button>
@@ -140,7 +140,7 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
       <td className="px-4 py-3">
         <button
           onClick={() => setIsEditing(true)}
-          className="px-3 py-1 text-xs font-medium rounded bg-secondary text-foreground hover:bg-background border border-border transition-colors"
+          className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
         >
           {labels.edit}
         </button>

@@ -177,7 +177,6 @@ const URL_ROUTING_NAMES = [
  * the primary reason for reservation.
  */
 const IMPERSONATION_NAMES = [
-  'admin',
   'administrator',
   'sysadmin',
   'moderator',

@@ -18,9 +18,10 @@ type ListLinkProps = {
   meta?: string;
   locale?: string;
   isPinned?: boolean;
+  badge?: ReactNode;
 };
 
-export function ListLink({ href, icon, title, meta, locale, isPinned }: ListLinkProps) {
+export function ListLink({ href, icon, title, meta, locale, isPinned, badge }: ListLinkProps) {
   return (
     <li className="border-b border-border last:border-b-0 hover:bg-muted transition-colors">
       <Link href={href} locale={locale} className="block px-4 py-3">
@@ -29,6 +30,11 @@ export function ListLink({ href, icon, title, meta, locale, isPinned }: ListLink
           <div className="flex-1 min-w-0">
             <span className="text-foreground font-medium truncate block">{title}</span>
           </div>
+          {badge && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">
+              {badge}
+            </span>
+          )}
           {isPinned && <FaThumbtack className="text-muted-foreground flex-shrink-0" />}
           {meta && <span className="text-xs text-muted-foreground flex-shrink-0">{meta}</span>}
         </div>

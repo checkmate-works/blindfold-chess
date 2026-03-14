@@ -58,7 +58,7 @@ export function DeletePostAdminButton({
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-background border border-border rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-4">{labels.deleteModalTitle}</h3>
 
             <label htmlFor={`delete-reason-${postId}`} className="block text-sm font-medium mb-2">
@@ -82,7 +82,7 @@ export function DeletePostAdminButton({
                   setIsOpen(false);
                   setError(null);
                 }}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
+                className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
                 disabled={isPending}
               >
                 {labels.deleteModalCancel}

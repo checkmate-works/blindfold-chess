@@ -99,6 +99,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('activityLog')}
                 </Link>
                 <Link
+                  href="/admin/announcements"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('announcements')}
+                </Link>
+                <Link
+                  href="/admin/articles"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('articles')}
+                </Link>
+                <Link
                   href="/admin/ads"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >

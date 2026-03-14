@@ -140,7 +140,7 @@ export default async function AdminAuditLogPage({
             id="action-filter"
             name="action"
             defaultValue={actionFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('auditLogTable.allActions')}</option>
             <option value="ban">ban</option>
@@ -158,7 +158,7 @@ export default async function AdminAuditLogPage({
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-background"
+            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
         </div>
         <button
