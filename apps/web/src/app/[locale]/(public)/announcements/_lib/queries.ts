@@ -34,7 +34,6 @@ export async function getPublishedAnnouncementsPaginated(
       and(
         eq(announcements.status, 'published'),
         eq(announcements.locale, locale),
-        eq(announcements.visibility, 'public'),
         isNotNull(announcements.publishedAt)
       )
     )
@@ -51,7 +50,6 @@ export async function getPublishedAnnouncementCount(locale: string): Promise<num
       and(
         eq(announcements.status, 'published'),
         eq(announcements.locale, locale),
-        eq(announcements.visibility, 'public'),
         isNotNull(announcements.publishedAt)
       )
     );

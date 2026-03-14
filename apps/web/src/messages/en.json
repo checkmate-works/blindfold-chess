@@ -1630,6 +1630,7 @@
     "noAnnouncements": "No announcements yet.",
     "announcementsListTitle": "All Announcements",
     "membersOnly": "This announcement is available to members only.",
+    "membersOnlyBadge": "Members only",
     "signInToView": "Sign in to view"
   },
   "onboarding": {
@@ -1819,7 +1820,8 @@
     "markAllAsRead": "Mark all as read",
     "followMessage": "{actor} started following you",
     "likeMessage": "{actor} liked your post",
-    "unknownNotification": "You have a new notification"
+    "unknownNotification": "You have a new notification",
+    "announcementMessage": "New announcement: {title}"
   },
   "deleteAccount": {
     "title": "Delete Account",

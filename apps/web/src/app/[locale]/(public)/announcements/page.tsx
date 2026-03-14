@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
+import { HiLockClosed } from 'react-icons/hi2';
 
 import {
   Breadcrumb,
@@ -95,6 +96,13 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
                     meta={publishedDate}
                     locale={locale}
                     isPinned={announcement.pinnedAt !== null}
+                    badge={
+                      announcement.visibility === 'members_only' ? (
+                        <>
+                          <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
+                        </>
+                      ) : undefined
+                    }
                   />
                 );
               })}

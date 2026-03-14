@@ -4,7 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
 
-import { truncateContent } from '../../topics/_lib/truncate-content';
+import { truncateContent } from '@/lib/truncate-content';
+
 import { UserAvatar } from '../../topics/squares/_components/UserAvatar';
 import type { PostWithReplyMeta } from '../../topics/squares/_lib/queries';
 import { formatRelativeTime } from '../../topics/squares/_lib/relative-time';

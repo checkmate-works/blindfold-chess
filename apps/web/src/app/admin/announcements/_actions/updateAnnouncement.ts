@@ -92,7 +92,7 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
 
   // Trigger notification when status changes to 'published'
   if (current.status !== 'published' && data.status === 'published') {
-    await notifyAllUsersOfAnnouncement(id, data.slug);
+    await notifyAllUsersOfAnnouncement(id, data.slug, data.title);
   }
 
   revalidatePath('/admin/announcements');

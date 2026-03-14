@@ -83,7 +83,7 @@ export async function createAnnouncement(data: CreateData): Promise<CreateResult
     .returning({ id: announcements.id });
 
   if (data.status === 'published') {
-    await notifyAllUsersOfAnnouncement(inserted.id, data.slug);
+    await notifyAllUsersOfAnnouncement(inserted.id, data.slug, data.title);
   }
 
   revalidatePath('/admin/announcements');

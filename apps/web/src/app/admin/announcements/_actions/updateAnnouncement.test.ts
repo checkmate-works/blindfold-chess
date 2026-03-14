@@ -258,7 +258,8 @@ describe('updateAnnouncement', () => {
     expect(result).toEqual({ success: true });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
       announcementId,
-      'my-announcement'
+      'my-announcement',
+      'Updated Announcement'
     );
   });
 

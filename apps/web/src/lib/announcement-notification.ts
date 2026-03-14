@@ -6,14 +6,15 @@ import { createNotification } from './notification';
 
 /**
  * Send notifications to all active (non-banned, non-deleted) users
- * when a members-only announcement is published.
+ * when an announcement is published.
  *
  * This is a fire-and-forget utility — failures in individual
  * notification inserts are silently handled by `createNotification`.
  */
 export async function notifyAllUsersOfAnnouncement(
   announcementId: string,
-  slug: string
+  slug: string,
+  title: string
 ): Promise<void> {
   const users = await db
     .select({ id: profiles.id })
@@ -26,7 +27,7 @@ export async function notifyAllUsersOfAnnouncement(
       type: 'announcement',
       targetType: 'announcement',
       targetId: announcementId,
-      metadata: { slug },
+      metadata: { slug, title },
     });
   }
 }

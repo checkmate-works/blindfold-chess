@@ -1631,6 +1631,7 @@
     "noAnnouncements": "お知らせはまだありません。",
     "announcementsListTitle": "すべてのお知らせ",
     "membersOnly": "このお知らせはメンバー限定です。",
+    "membersOnlyBadge": "メンバー限定",
     "signInToView": "ログインして閲覧"
   },
   "onboarding": {
@@ -1820,7 +1821,8 @@
     "markAllAsRead": "すべて既読にする",
     "followMessage": "{actor} があなたをフォローしました",
     "likeMessage": "{actor} があなたの投稿にいいねしました",
-    "unknownNotification": "新しい通知があります"
+    "unknownNotification": "新しい通知があります",
+    "announcementMessage": "新しいお知らせ: {title}"
   },
   "deleteAccount": {
     "title": "退会",

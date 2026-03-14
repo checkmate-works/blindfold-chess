@@ -7,6 +7,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
+import { HiMegaphone } from 'react-icons/hi2';
+
+import { truncateContent } from '@/lib/truncate-content';
 
 import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
@@ -17,6 +20,12 @@ function isLikeMetadata(m: unknown): m is LikeMetadata {
   return (
     typeof m === 'object' && m !== null && 'topicType' in m && 'topicKey' in m && 'postId' in m
   );
+}
+
+type AnnouncementMetadata = { slug: string; title: string };
+
+function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
+  return typeof m === 'object' && m !== null && 'slug' in m && 'title' in m;
 }
 
 type Props = {
@@ -38,6 +47,11 @@ export function NotificationItem({ notification }: Props) {
         return t('followMessage', { actor: actorName });
       case 'like':
         return t('likeMessage', { actor: actorName });
+      case 'announcement':
+        if (isAnnouncementMetadata(notification.metadata)) {
+          return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
+        }
+        return t('unknownNotification');
       default:
         return t('unknownNotification');
     }
@@ -49,6 +63,9 @@ export function NotificationItem({ notification }: Props) {
     }
     if (notification.type === 'like' && isLikeMetadata(notification.metadata)) {
       return `/topics/${notification.metadata.topicType}s/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
+    }
+    if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
+      return `/announcements/${notification.metadata.slug}`;
     }
     return null;
   }
@@ -75,7 +92,11 @@ export function NotificationItem({ notification }: Props) {
         !notification.read ? 'bg-accent/30' : ''
       }`}
     >
-      {actor?.avatarUrl ? (
+      {notification.type === 'announcement' ? (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
+          <HiMegaphone className="h-5 w-5" />
+        </div>
+      ) : actor?.avatarUrl ? (
         <Image
           src={actor.avatarUrl}
           alt={actorName}

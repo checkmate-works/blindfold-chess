@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { FaRegComment } from 'react-icons/fa';
 
-import { truncateContent } from '../../_lib/truncate-content';
+import { truncateContent } from '@/lib/truncate-content';
+
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
 import { LikeButton } from './LikeButton';

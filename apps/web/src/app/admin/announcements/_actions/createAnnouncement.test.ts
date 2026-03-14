@@ -263,7 +263,8 @@ describe('createAnnouncement', () => {
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledWith(
       generatedId,
-      'published-announcement'
+      'published-announcement',
+      'Test Announcement'
     );
   });
 

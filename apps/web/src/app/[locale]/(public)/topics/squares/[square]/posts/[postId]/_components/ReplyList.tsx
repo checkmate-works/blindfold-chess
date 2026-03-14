@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { truncateContent } from '../../../../../_lib/truncate-content';
+import { truncateContent } from '@/lib/truncate-content';
+
 import { LikeButton, UserAvatar } from '../../../../_components';
 import type { PostWithReplyMeta } from '../../../../_lib/queries';
 

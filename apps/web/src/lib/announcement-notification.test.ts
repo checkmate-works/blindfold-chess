@@ -34,7 +34,7 @@ describe('notifyAllUsersOfAnnouncement', () => {
   });
 
   it('should create notifications for all active users', async () => {
-    await notifyAllUsersOfAnnouncement('ann-123', 'new-feature');
+    await notifyAllUsersOfAnnouncement('ann-123', 'new-feature', 'New Feature Released');
 
     expect(mockCreateNotification).toHaveBeenCalledTimes(3);
     expect(mockCreateNotification).toHaveBeenCalledWith({
@@ -42,41 +42,28 @@ describe('notifyAllUsersOfAnnouncement', () => {
       type: 'announcement',
       targetType: 'announcement',
       targetId: 'ann-123',
-      metadata: { slug: 'new-feature' },
+      metadata: { slug: 'new-feature', title: 'New Feature Released' },
     });
     expect(mockCreateNotification).toHaveBeenCalledWith({
       userId: 'user-2',
       type: 'announcement',
       targetType: 'announcement',
       targetId: 'ann-123',
-      metadata: { slug: 'new-feature' },
+      metadata: { slug: 'new-feature', title: 'New Feature Released' },
     });
     expect(mockCreateNotification).toHaveBeenCalledWith({
       userId: 'user-3',
       type: 'announcement',
       targetType: 'announcement',
       targetId: 'ann-123',
-      metadata: { slug: 'new-feature' },
+      metadata: { slug: 'new-feature', title: 'New Feature Released' },
     });
-  });
-
-  it('should pass correct notification type and metadata', async () => {
-    await notifyAllUsersOfAnnouncement('ann-456', 'maintenance-notice');
-
-    for (const call of mockCreateNotification.mock.calls) {
-      expect(call[0]).toMatchObject({
-        type: 'announcement',
-        targetType: 'announcement',
-        targetId: 'ann-456',
-        metadata: { slug: 'maintenance-notice' },
-      });
-    }
   });
 
   it('should not create notifications when no active users exist', async () => {
     mockUsers = [];
 
-    await notifyAllUsersOfAnnouncement('ann-empty', 'empty-slug');
+    await notifyAllUsersOfAnnouncement('ann-empty', 'empty-slug', 'Empty Title');
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });
@@ -86,7 +73,7 @@ describe('notifyAllUsersOfAnnouncement', () => {
     // Banned/deleted users are excluded at the DB level, so the mock only returns active users.
     mockUsers = [{ id: 'active-user-1' }];
 
-    await notifyAllUsersOfAnnouncement('ann-999', 'filtered');
+    await notifyAllUsersOfAnnouncement('ann-999', 'filtered', 'Filtered Title');
 
     expect(mockCreateNotification).toHaveBeenCalledTimes(1);
     expect(mockCreateNotification).toHaveBeenCalledWith({
@@ -94,19 +81,19 @@ describe('notifyAllUsersOfAnnouncement', () => {
       type: 'announcement',
       targetType: 'announcement',
       targetId: 'ann-999',
-      metadata: { slug: 'filtered' },
+      metadata: { slug: 'filtered', title: 'Filtered Title' },
     });
   });
 
   it('should create notification with correct targetId for each user', async () => {
     mockUsers = [{ id: 'user-a' }, { id: 'user-b' }];
 
-    await notifyAllUsersOfAnnouncement('specific-ann-id', 'some-slug');
+    await notifyAllUsersOfAnnouncement('specific-ann-id', 'some-slug', 'Some Title');
 
     expect(mockCreateNotification).toHaveBeenCalledTimes(2);
 
     const userIds = mockCreateNotification.mock.calls.map(
-      (call: [{ userId: string }]) => call[0].userId
+      (call: { userId: string }[]) => call[0].userId
     );
     expect(userIds).toEqual(['user-a', 'user-b']);
   });
