@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
 import { isLameName } from '@/lib/lame-name';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 import { validateUsername } from '@/lib/username';
 
@@ -26,6 +27,11 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.setupUsername);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
   }
 
   let body: { username?: string; displayName?: string };

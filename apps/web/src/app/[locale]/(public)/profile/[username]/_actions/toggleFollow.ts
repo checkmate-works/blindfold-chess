@@ -17,8 +17,6 @@ export async function toggleFollow(
   targetUsername: string,
   locale: string
 ): Promise<ToggleFollowResult> {
-  console.log('[toggleFollow] called with:', { targetUsername, locale });
-
   const supabase = await createClient();
   const {
     data: { user },
@@ -61,14 +59,7 @@ export async function toggleFollow(
       followingId: targetProfile.id,
     });
     following = true;
-    console.log('[toggleFollow] INSERT succeeded → following=true');
   } catch (err: unknown) {
-    console.log('[toggleFollow] INSERT failed:', {
-      name: (err as Error)?.name,
-      message: (err as Error)?.message,
-      code: (err as Record<string, unknown>)?.code,
-      hasCause: !!(err as Error)?.cause,
-    });
     // drizzle-orm may wrap PostgresError in a generic Error with the original
     // as `cause`. Check both the error itself and its cause for the PG code.
     const pgCode =
@@ -79,7 +70,6 @@ export async function toggleFollow(
             (err.cause as { code: string }).code))) ||
       undefined;
     const isUniqueViolation = pgCode === '23505';
-    console.log('[toggleFollow] isUniqueViolation:', isUniqueViolation);
     if (!isUniqueViolation) {
       throw err;
     }
@@ -90,7 +80,6 @@ export async function toggleFollow(
         and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfile.id))
       );
     following = false;
-    console.log('[toggleFollow] DELETE succeeded → following=false');
   }
 
   logActivityEvent({
