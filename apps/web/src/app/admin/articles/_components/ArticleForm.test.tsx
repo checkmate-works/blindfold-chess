@@ -13,6 +13,14 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+vi.mock('next-navigation-guard', () => ({
+  useNavigationGuard: () => ({
+    active: false,
+    accept: vi.fn(),
+    reject: vi.fn(),
+  }),
+}));
+
 vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
   MarkdownRenderer: ({ content }: { content: string }) => (
     <div data-testid="markdown-preview">{content}</div>
@@ -44,6 +52,10 @@ const defaultLabels = {
   metadata: 'Metadata',
   tabEdit: 'Edit',
   tabPreview: 'Preview',
+  unsavedChangesTitle: 'Unsaved Changes',
+  unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
+  unsavedChangesConfirm: 'Leave',
+  unsavedChangesCancel: 'Stay',
 };
 
 function openMetadataPanel() {

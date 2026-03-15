@@ -1,10 +1,11 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button, Textarea } from '@/app/_components';
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { Button, Textarea, UnsavedChangesDialog } from '@/app/_components';
 
 import { createReply } from '../_actions/createReply';
 
@@ -16,8 +17,12 @@ type Props = {
 
 export function ReplyForm({ locale, square, postId }: Props) {
   const t = useTranslations('topics.squares.replies');
+  const tUnsaved = useTranslations('unsavedChanges');
   const boundCreateReply = createReply.bind(null, locale, square, postId);
   const [state, formAction, isPending] = useActionState(boundCreateReply, {});
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const errorMessage = state.error
     ? t.has(state.error)
@@ -51,12 +56,23 @@ export function ReplyForm({ locale, square, postId }: Props) {
           maxLength={5000}
           placeholder={t('contentPlaceholder')}
           required
+          onChange={(e) => setIsDirty(e.target.value.length > 0)}
         />
       </div>
 
       <Button type="submit" variant="primary" fullWidth disabled={isPending} loading={isPending}>
         {isPending ? t('submitting') : t('submit')}
       </Button>
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirm}
+        onCancel={cancel}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
     </form>
   );
 }

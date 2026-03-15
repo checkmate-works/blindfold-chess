@@ -3,6 +3,7 @@
 import { ReactNode, Suspense } from 'react';
 
 import { NextIntlClientProvider } from 'next-intl';
+import { NavigationGuardProvider } from 'next-navigation-guard';
 import { ThemeProvider } from 'next-themes';
 
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -22,18 +23,20 @@ export function Providers({ children, locale, messages }: Props) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <NuqsAdapter>
-          <AuthProvider>
-            <GamePreferencesProvider>
-              <ToastProvider>
-                {children}
-                <Suspense>
-                  <ToastContainer />
-                </Suspense>
-              </ToastProvider>
-            </GamePreferencesProvider>
-          </AuthProvider>
-        </NuqsAdapter>
+        <NavigationGuardProvider>
+          <NuqsAdapter>
+            <AuthProvider>
+              <GamePreferencesProvider>
+                <ToastProvider>
+                  {children}
+                  <Suspense>
+                    <ToastContainer />
+                  </Suspense>
+                </ToastProvider>
+              </GamePreferencesProvider>
+            </AuthProvider>
+          </NuqsAdapter>
+        </NavigationGuardProvider>
       </ThemeProvider>
     </NextIntlClientProvider>
   );

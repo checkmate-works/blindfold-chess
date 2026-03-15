@@ -26,5 +26,9 @@ export function getArticleFormLabels(t: TranslationFn, formTitle: string) {
     metadata: t('form.metadata'),
     tabEdit: t('form.tabEdit'),
     tabPreview: t('form.tabPreview'),
+    unsavedChangesTitle: t('form.unsavedChangesTitle'),
+    unsavedChangesMessage: t('form.unsavedChangesMessage'),
+    unsavedChangesConfirm: t('form.unsavedChangesConfirm'),
+    unsavedChangesCancel: t('form.unsavedChangesCancel'),
   };
 }

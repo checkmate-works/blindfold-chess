@@ -2142,7 +2142,11 @@
         "iconPlaceholder": "e.g. ♟️",
         "metadata": "Metadata",
         "tabEdit": "Edit",
-        "tabPreview": "Preview"
+        "tabPreview": "Preview",
+        "unsavedChangesTitle": "Unsaved Changes",
+        "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?",
+        "unsavedChangesConfirm": "Leave",
+        "unsavedChangesCancel": "Stay"
       }
     },
     "ads": "Ads",
@@ -2270,5 +2274,11 @@
         "deleting": "Deleting..."
       }
     }
+  },
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "message": "You have unsaved changes. Are you sure you want to leave?",
+    "confirm": "Leave",
+    "cancel": "Stay"
   }
 }

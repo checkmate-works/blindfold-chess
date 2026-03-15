@@ -2113,7 +2113,11 @@
         "iconPlaceholder": "例: ♟️",
         "metadata": "メタデータ",
         "tabEdit": "編集",
-        "tabPreview": "プレビュー"
+        "tabPreview": "プレビュー",
+        "unsavedChangesTitle": "未保存の変更",
+        "unsavedChangesMessage": "未保存の変更があります。このページを離れてもよろしいですか？",
+        "unsavedChangesConfirm": "離れる",
+        "unsavedChangesCancel": "戻る"
       }
     },
     "topicPosts": {
@@ -2248,5 +2252,11 @@
         "deleting": "削除中..."
       }
     }
+  },
+  "unsavedChanges": {
+    "title": "未保存の変更",
+    "message": "未保存の変更があります。このページを離れてもよろしいですか？",
+    "confirm": "離れる",
+    "cancel": "戻る"
   }
 }

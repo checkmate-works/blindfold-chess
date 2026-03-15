@@ -8,4 +8,5 @@ export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';
 export { InfoModal } from './InfoModal';
 export { ProgressBar } from './ProgressBar';
+export { UnsavedChangesDialog } from './UnsavedChangesDialog';
 export { Square } from './chess/Square';

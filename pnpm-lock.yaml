@@ -193,6 +193,9 @@ importers:
       next-intl:
         specifier: ^4.8.3
         version: 4.8.3(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)(typescript@5.9.3)
+      next-navigation-guard:
+        specifier: ^0.2.0
+        version: 0.2.0(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -5762,6 +5765,12 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  next-navigation-guard@0.2.0:
+    resolution: {integrity: sha512-EnQcqJi/bcHXnirnY0TGSFkQ3Rl9ID4BZWdU2ovoWAkA72mCofI2hTcaqUUOmlSBVZp4AvSGm1kQmkOJDLrEjg==}
+    peerDependencies:
+      next: ^14 || ^15
+      react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -13797,6 +13806,11 @@ snapshots:
       typescript: 5.9.3
     transitivePeerDependencies:
       - '@swc/helpers'
+
+  next-navigation-guard@0.2.0(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1):
+    dependencies:
+      next: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      react: 19.2.1
 
   next-themes@0.4.6(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
     dependencies:

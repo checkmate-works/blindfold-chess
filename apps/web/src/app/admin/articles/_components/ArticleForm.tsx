@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/app/_components';
 import { LuSettings, LuX } from 'react-icons/lu';
 
 import { MarkdownRenderer } from '@/app/[locale]/_components/MarkdownRenderer';
@@ -41,6 +43,10 @@ type ArticleFormProps = {
     metadata: string;
     tabEdit: string;
     tabPreview: string;
+    unsavedChangesTitle: string;
+    unsavedChangesMessage: string;
+    unsavedChangesConfirm: string;
+    unsavedChangesCancel: string;
   };
 };
 
@@ -65,6 +71,35 @@ export function ArticleForm({
   const [description, setDescription] = useState(defaultValues?.description ?? '');
   const [categoryId, setCategoryId] = useState(defaultValues?.categoryId ?? '');
   const [icon, setIcon] = useState(defaultValues?.icon ?? '');
+
+  const isDirty = useMemo(() => {
+    const initial = defaultValues ?? {
+      slug: '',
+      title: '',
+      content: '',
+      locale: 'en',
+      excerpt: '',
+      description: '',
+      categoryId: '',
+      icon: '',
+    };
+    return (
+      slug !== initial.slug ||
+      title !== initial.title ||
+      content !== initial.content ||
+      locale !== initial.locale ||
+      excerpt !== initial.excerpt ||
+      description !== initial.description ||
+      categoryId !== initial.categoryId ||
+      icon !== initial.icon
+    );
+  }, [slug, title, content, locale, excerpt, description, categoryId, icon, defaultValues]);
+
+  const {
+    isBlocking,
+    confirm: confirmNavigation,
+    cancel: cancelNavigation,
+  } = useUnsavedChanges({ isDirty });
 
   const buildFormData = () => ({
     slug,
@@ -248,6 +283,16 @@ export function ArticleForm({
             </div>
           )}
         </div>
+
+        <UnsavedChangesDialog
+          open={isBlocking}
+          onConfirm={confirmNavigation}
+          onCancel={cancelNavigation}
+          title={labels.unsavedChangesTitle}
+          message={labels.unsavedChangesMessage}
+          confirmLabel={labels.unsavedChangesConfirm}
+          cancelLabel={labels.unsavedChangesCancel}
+        />
 
         {/* Metadata side panel */}
         {metadataOpen && (

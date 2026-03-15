@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { NavigationGuardProvider } from 'next-navigation-guard';
 import { ThemeProvider } from 'next-themes';
 import { Inter } from 'next/font/google';
 import Image from 'next/image';
@@ -123,7 +124,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <ThemeToggle />
               </header>
               <main className="flex-1 p-8">
-                <NuqsAdapter>{children}</NuqsAdapter>
+                <NavigationGuardProvider>
+                  <NuqsAdapter>{children}</NuqsAdapter>
+                </NavigationGuardProvider>
               </main>
             </div>
           </div>
