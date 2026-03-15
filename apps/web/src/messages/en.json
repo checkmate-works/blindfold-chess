@@ -1,5 +1,7 @@
 {
   "metadata": {
+    "siteName": "Shingan Chess",
+    "seoSiteName": "Blindfold Chess",
     "siteDescription": "A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.",
     "home": {
       "title": "Home",
@@ -107,7 +109,7 @@
     }
   },
   "Header": {
-    "title": "Blindfold Chess",
+    "title": "Shingan Chess",
     "home": "Home",
     "gettingStarted": "Getting Started",
     "learn": "Learn",
@@ -280,7 +282,8 @@
   "manual": {
     "title": "Manual",
     "description": "User guides and documentation for Blindfold Chess",
-    "articlesTitle": "Guides"
+    "articlesTitle": "Guides",
+    "articleNotFound": "Article Not Found"
   },
   "navigation": {
     "practice": "Practice",
@@ -354,7 +357,8 @@
       "moves": "Piece Movement",
       "visualization": "Visualization"
     },
-    "categoryTitle": "{category} Articles"
+    "categoryTitle": "{category} Articles",
+    "articleNotFound": "Article Not Found"
   },
   "practice": {
     "title": "Practice",
@@ -877,6 +881,7 @@
     },
     "routePlanner": {
       "title": "Route Planner",
+      "session": "In Progress",
       "description": "Calculate the shortest path for a piece to reach a target square",
       "betaNotice": "This feature is in beta and may contain unexpected bugs.",
       "settings": "Settings",
@@ -1227,7 +1232,8 @@
     "newGameFromHere": "New game from here",
     "saving": "Saving...",
     "saved": "Saved",
-    "postmortem": "Game Review"
+    "postmortem": "Game Review",
+    "resultTitle": "Game Result"
   },
   "postmortem": {
     "title": "Game Review",
@@ -1562,6 +1568,7 @@
     }
   },
   "landing": {
+    "tagline": "Blindfold Chess Community",
     "getStarted": "Get Started",
     "goToTop": "Go to Top Page",
     "aiBattle": {
@@ -1636,7 +1643,8 @@
     "pageDescription": "Articles about Blindfold Chess",
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
-    "moreArticles": "More articles"
+    "moreArticles": "More articles",
+    "articleNotFound": "Article Not Found"
   },
   "announcements": {
     "pageTitle": "Announcements",
@@ -1645,7 +1653,8 @@
     "announcementsListTitle": "All Announcements",
     "membersOnly": "This announcement is available to members only.",
     "membersOnlyBadge": "Members only",
-    "signInToView": "Sign in to view"
+    "signInToView": "Sign in to view",
+    "announcementNotFound": "Announcement Not Found"
   },
   "onboarding": {
     "title": "Setup",

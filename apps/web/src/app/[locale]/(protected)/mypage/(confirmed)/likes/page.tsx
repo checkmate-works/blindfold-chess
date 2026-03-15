@@ -10,13 +10,8 @@ import {
   getLikedPostCountByUser,
   getLikedPostsByUser,
 } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
 const PAGE_SIZE = 5;
 

@@ -7,13 +7,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
 
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
 import { FollowingList } from './_components/FollowingList';
 

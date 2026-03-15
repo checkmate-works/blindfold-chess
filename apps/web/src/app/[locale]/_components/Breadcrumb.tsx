@@ -1,6 +1,7 @@
 // Note: Using standard next/link instead of @/i18n/routing Link
 // to avoid DYNAMIC_SERVER_USAGE errors in production.
 // Server Components should use standard Link with explicit locale in href.
+import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -11,17 +12,18 @@ type BreadcrumbItem = {
   href?: string;
 };
 
-type Props = {
+type BreadcrumbContentProps = {
   items: BreadcrumbItem[];
   locale?: string;
+  brandName: string;
 };
 
-export function Breadcrumb({ items, locale }: Props) {
+export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbContentProps) {
   const effectiveLocale = locale || 'en';
 
   return (
     <>
-      <JsonLd data={generateBreadcrumbListSchema(items, effectiveLocale)} />
+      <JsonLd data={generateBreadcrumbListSchema(items, effectiveLocale, brandName)} />
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="flex items-center space-x-1 text-sm">
           <li>
@@ -31,7 +33,7 @@ export function Breadcrumb({ items, locale }: Props) {
             >
               <Image
                 src="/logo.png"
-                alt="Blindfold Chess"
+                alt={brandName}
                 width={24}
                 height={24}
                 className="rounded-sm"
@@ -58,4 +60,17 @@ export function Breadcrumb({ items, locale }: Props) {
       </nav>
     </>
   );
+}
+
+type BreadcrumbProps = {
+  items: BreadcrumbItem[];
+  locale?: string;
+};
+
+export async function Breadcrumb({ items, locale }: BreadcrumbProps) {
+  const effectiveLocale = locale || 'en';
+  const t = await getTranslations({ locale: effectiveLocale, namespace: 'metadata' });
+  const brandName = t('siteName');
+
+  return <BreadcrumbContent items={items} locale={locale} brandName={brandName} />;
 }

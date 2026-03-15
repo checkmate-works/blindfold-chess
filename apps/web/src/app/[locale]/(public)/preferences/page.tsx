@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 import { PreferencesTabs } from './_components/PreferencesTabs';

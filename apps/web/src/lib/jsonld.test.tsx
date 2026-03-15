@@ -26,11 +26,11 @@ describe('JSON-LD Schema Generators', () => {
 
   describe('generateWebSiteSchema', () => {
     it('should generate correct schema for English locale', () => {
-      const schema = generateWebSiteSchema('en');
+      const schema = generateWebSiteSchema('en', 'Shingan Chess');
 
       expect(schema['@context']).toBe('https://schema.org');
       expect(schema['@type']).toBe('WebSite');
-      expect(schema.name).toBe('Blindfold Chess');
+      expect(schema.name).toBe('Shingan Chess');
       expect(schema.url).toBe('https://www.blindfold-chess.online');
       expect(schema.inLanguage).toBe('en-US');
       expect(schema.publisher).toEqual({
@@ -41,13 +41,14 @@ describe('JSON-LD Schema Generators', () => {
     });
 
     it('should generate correct schema for Japanese locale', () => {
-      const schema = generateWebSiteSchema('ja');
+      const schema = generateWebSiteSchema('ja', '心眼チェス');
 
+      expect(schema.name).toBe('心眼チェス');
       expect(schema.inLanguage).toBe('ja-JP');
     });
 
     it('should default to en-US for unknown locale', () => {
-      const schema = generateWebSiteSchema('fr');
+      const schema = generateWebSiteSchema('fr', 'Shingan Chess');
 
       expect(schema.inLanguage).toBe('en-US');
     });
@@ -76,7 +77,7 @@ describe('JSON-LD Schema Generators', () => {
   describe('generateBreadcrumbListSchema', () => {
     it('should generate schema with home as first item', () => {
       const items: BreadcrumbItem[] = [];
-      const schema = generateBreadcrumbListSchema(items, 'en');
+      const schema = generateBreadcrumbListSchema(items, 'en', 'Shingan Chess');
 
       expect(schema['@context']).toBe('https://schema.org');
       expect(schema['@type']).toBe('BreadcrumbList');
@@ -84,14 +85,14 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.itemListElement[0]).toEqual({
         '@type': 'ListItem',
         position: 1,
-        name: 'Blindfold Chess',
+        name: 'Shingan Chess',
         item: 'https://www.blindfold-chess.online/en',
       });
     });
 
     it('should generate schema with single item', () => {
       const items: BreadcrumbItem[] = [{ label: 'Learn', href: '/learn' }];
-      const schema = generateBreadcrumbListSchema(items, 'en');
+      const schema = generateBreadcrumbListSchema(items, 'en', 'Shingan Chess');
 
       expect(schema.itemListElement).toHaveLength(2);
       expect(schema.itemListElement[1]).toEqual({
@@ -108,7 +109,7 @@ describe('JSON-LD Schema Generators', () => {
         { label: 'Basics', href: '/learn/basics' },
         { label: 'Chess Notation' },
       ];
-      const schema = generateBreadcrumbListSchema(items, 'en');
+      const schema = generateBreadcrumbListSchema(items, 'en', 'Shingan Chess');
 
       expect(schema.itemListElement).toHaveLength(4);
       expect(schema.itemListElement[1].position).toBe(2);
@@ -118,7 +119,7 @@ describe('JSON-LD Schema Generators', () => {
 
     it('should omit item URL for items without href', () => {
       const items: BreadcrumbItem[] = [{ label: 'Current Page' }];
-      const schema = generateBreadcrumbListSchema(items, 'en');
+      const schema = generateBreadcrumbListSchema(items, 'en', 'Shingan Chess');
 
       expect(schema.itemListElement[1]).toEqual({
         '@type': 'ListItem',
@@ -130,7 +131,7 @@ describe('JSON-LD Schema Generators', () => {
 
     it('should use correct locale prefix for Japanese', () => {
       const items: BreadcrumbItem[] = [{ label: 'Learn', href: '/learn' }];
-      const schema = generateBreadcrumbListSchema(items, 'ja');
+      const schema = generateBreadcrumbListSchema(items, 'ja', '心眼チェス');
 
       expect((schema.itemListElement[0] as { item: string }).item).toBe(
         'https://www.blindfold-chess.online/ja'
@@ -146,7 +147,7 @@ describe('JSON-LD Schema Generators', () => {
         { label: 'Category', href: '/learn/category' },
         { label: 'Article', href: '/learn/category/article' },
       ];
-      const schema = generateBreadcrumbListSchema(items, 'en');
+      const schema = generateBreadcrumbListSchema(items, 'en', 'Shingan Chess');
 
       expect((schema.itemListElement[3] as { item: string }).item).toBe(
         'https://www.blindfold-chess.online/en/learn/category/article'

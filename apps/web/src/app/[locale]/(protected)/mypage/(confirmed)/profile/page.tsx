@@ -8,7 +8,8 @@ import { eq } from 'drizzle-orm';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 import { ProfileForm } from './_components';

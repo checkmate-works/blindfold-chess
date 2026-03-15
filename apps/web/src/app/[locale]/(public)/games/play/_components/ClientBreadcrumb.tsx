@@ -1,6 +1,6 @@
 'use client';
 
-import { Breadcrumb as BaseBreadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 
 type BreadcrumbItem = {
   label: string;
@@ -10,6 +10,7 @@ type BreadcrumbItem = {
 type Props = {
   items: BreadcrumbItem[];
   locale?: string;
+  brandName: string;
 };
 
 /**
@@ -17,6 +18,6 @@ type Props = {
  * Use this in dynamic client components where searchParams or other client-side data is used.
  * For static server components, use the base Breadcrumb component directly.
  */
-export function ClientBreadcrumb({ items, locale }: Props) {
-  return <BaseBreadcrumb items={items} locale={locale} />;
+export function ClientBreadcrumb({ items, locale, brandName }: Props) {
+  return <BreadcrumbContent items={items} locale={locale} brandName={brandName} />;
 }

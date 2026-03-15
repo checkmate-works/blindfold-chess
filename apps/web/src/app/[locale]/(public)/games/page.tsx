@@ -14,13 +14,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

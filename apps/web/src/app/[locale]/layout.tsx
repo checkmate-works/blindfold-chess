@@ -3,7 +3,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -30,13 +30,15 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata' });
 
+  const siteName = t('siteName');
+  const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
   const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
 
   return {
     title: {
-      default: SITE_NAME,
-      template: `%s | ${SITE_NAME}`,
+      default: seoSiteName,
+      template: `%s | ${seoSiteName}`,
     },
     description,
     authors: [{ name: AUTHOR_NAME }],
@@ -50,9 +52,9 @@ export async function generateMetadata({
       apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
     },
     openGraph: {
-      title: SITE_NAME,
+      title: siteName,
       description,
-      siteName: SITE_NAME,
+      siteName: siteName,
       type: 'website',
       locale: currentLocale,
       images: [
@@ -60,13 +62,13 @@ export async function generateMetadata({
           url: '/logo.png',
           width: 512,
           height: 512,
-          alt: `${SITE_NAME} Logo`,
+          alt: `${siteName} Logo`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: SITE_NAME,
+      title: siteName,
       description,
       images: ['/logo.png'],
     },
@@ -98,6 +100,7 @@ export default async function Layout({
     notFound();
   }
 
+  const t = await getTranslations({ locale, namespace: 'metadata' });
   const allMessages = await getMessages({ locale });
 
   // Namespaces used only by Server Components (via getTranslations()), not by
@@ -128,7 +131,7 @@ export default async function Layout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <JsonLd data={generateWebSiteSchema(locale)} />
+        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>

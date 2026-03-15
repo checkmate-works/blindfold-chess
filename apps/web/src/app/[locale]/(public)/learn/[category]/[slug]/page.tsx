@@ -8,7 +8,6 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import {
-  Breadcrumb,
   CardLink,
   Divider,
   MarkdownRenderer,
@@ -16,6 +15,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import {
   getPracticeModuleIcon,
@@ -71,8 +71,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticle(slug, locale);
 
   if (!article || (article.metadata.category && article.metadata.category !== category)) {
+    const t = await getTranslations({ locale, namespace: 'learn' });
     return {
-      title: 'Article Not Found',
+      title: t('articleNotFound'),
     };
   }
 

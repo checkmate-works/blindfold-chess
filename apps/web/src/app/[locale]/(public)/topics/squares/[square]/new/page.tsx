@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

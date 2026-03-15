@@ -79,7 +79,7 @@ export async function Header({ locale }: Props) {
               {/* Logo - always visible */}
               <Image
                 src="/logo.png"
-                alt="Blindfold Chess Logo"
+                alt={`${t('title')} Logo`}
                 width={40}
                 height={40}
                 className="w-10 h-10"

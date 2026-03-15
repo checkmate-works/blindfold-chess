@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { Breadcrumb, Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: Props) {
   const article = await getManualArticle(slug, locale);
 
   if (!article) {
+    const t = await getTranslations({ locale, namespace: 'manual' });
     return {
-      title: 'Article Not Found',
+      title: t('articleNotFound'),
     };
   }
 

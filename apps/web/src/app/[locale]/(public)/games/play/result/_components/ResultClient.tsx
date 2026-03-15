@@ -25,9 +25,10 @@ import type { FormattedPgnMove } from '../../_lib';
 
 type Props = {
   locale: Locale;
+  brandName: string;
 };
 
-export function ResultClient({ locale }: Props) {
+export function ResultClient({ locale, brandName }: Props) {
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
 
@@ -69,16 +70,17 @@ export function ResultClient({ locale }: Props) {
     );
   }
 
-  return <ResultContent game={game} gameId={gameId} locale={locale} />;
+  return <ResultContent game={game} gameId={gameId} locale={locale} brandName={brandName} />;
 }
 
 type ResultContentProps = {
   game: Game;
   gameId: string;
   locale: Locale;
+  brandName: string;
 };
 
-function ResultContent({ game, gameId, locale }: ResultContentProps) {
+function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) {
   const t = useTranslations('play');
   const router = useRouter();
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -287,6 +289,7 @@ function ResultContent({ game, gameId, locale }: ResultContentProps) {
       <ClientBreadcrumb
         items={[{ label: t('title'), href: '/games/play' }, { label: t('gameOver') }]}
         locale={locale}
+        brandName={brandName}
       />
     </div>
   );

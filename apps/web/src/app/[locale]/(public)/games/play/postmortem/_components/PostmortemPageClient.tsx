@@ -19,6 +19,7 @@ import { PostmortemClient } from './PostmortemClient';
 
 type Props = {
   locale: Locale;
+  brandName: string;
 };
 
 function SelectedMoveElement({ display }: { display: SelectedMoveDisplay }) {
@@ -48,7 +49,7 @@ function SelectedMoveElement({ display }: { display: SelectedMoveDisplay }) {
   }
 }
 
-export function PostmortemPageClient({ locale }: Props) {
+export function PostmortemPageClient({ locale, brandName }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
   const tPlay = useTranslations('play');
@@ -111,6 +112,7 @@ export function PostmortemPageClient({ locale }: Props) {
       <ClientBreadcrumb
         items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
         locale={locale}
+        brandName={brandName}
       />
     </div>
   );

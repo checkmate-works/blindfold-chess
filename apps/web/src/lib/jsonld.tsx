@@ -1,4 +1,4 @@
-import { AUTHOR_NAME, SITE_NAME, SITE_URL } from '@/config';
+import { AUTHOR_NAME, SITE_URL } from '@/config';
 
 /**
  * Renders JSON-LD structured data as a script tag
@@ -13,11 +13,11 @@ export function JsonLd({ data }: { data: object }) {
  * WebSite schema for the root layout
  * @see https://schema.org/WebSite
  */
-export function generateWebSiteSchema(locale: string) {
+export function generateWebSiteSchema(locale: string, brandName: string) {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: SITE_NAME,
+    name: brandName,
     url: SITE_URL,
     inLanguage: locale === 'ja' ? 'ja-JP' : 'en-US',
     publisher: {
@@ -52,14 +52,14 @@ export function generateOrganizationSchema() {
  * WebApplication schema for the home page
  * @see https://schema.org/WebApplication
  */
-export function generateWebApplicationSchema(locale: string) {
+export function generateWebApplicationSchema(locale: string, brandName: string) {
   const description =
     locale === 'ja' ? '目隠しチェスの無料練習アプリ' : 'A free training app for blindfold chess';
 
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: SITE_NAME,
+    name: brandName,
     url: SITE_URL,
     applicationCategory: 'GameApplication',
     operatingSystem: 'Any',
@@ -97,7 +97,11 @@ type ListItem = ListItemWithUrl | ListItemWithoutUrl;
  * BreadcrumbList schema
  * @see https://schema.org/BreadcrumbList
  */
-export function generateBreadcrumbListSchema(items: BreadcrumbItem[], locale: string) {
+export function generateBreadcrumbListSchema(
+  items: BreadcrumbItem[],
+  locale: string,
+  brandName: string
+) {
   const baseUrl = SITE_URL;
   const localePrefix = `/${locale}`;
 
@@ -106,7 +110,7 @@ export function generateBreadcrumbListSchema(items: BreadcrumbItem[], locale: st
     {
       '@type': 'ListItem',
       position: 1,
-      name: SITE_NAME,
+      name: brandName,
       item: `${baseUrl}${localePrefix}`,
     },
   ];

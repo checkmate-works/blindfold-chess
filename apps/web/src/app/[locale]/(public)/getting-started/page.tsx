@@ -18,13 +18,13 @@ import {
 } from 'react-icons/fa';
 
 import {
-  Breadcrumb,
   Divider,
   PagePanel,
   PageTitle,
   SectionTitle,
   SubsectionTitle,
 } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

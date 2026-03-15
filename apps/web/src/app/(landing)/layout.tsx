@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_NAME, SITE_URL } from '@/config';
+import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
@@ -24,10 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
   const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+  const siteName = t('siteName');
+  const seoSiteName = t('seoSiteName');
   const siteDescription = t('siteDescription');
 
   return {
-    title: SITE_NAME,
+    title: seoSiteName,
     description: siteDescription,
     authors: [{ name: AUTHOR_NAME }],
     metadataBase: new URL(SITE_URL),
@@ -40,10 +42,10 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: SITE_NAME,
+      title: siteName,
       description: siteDescription,
       url: locale === 'en' ? `${SITE_URL}/en` : `${SITE_URL}/ja`,
-      siteName: SITE_NAME,
+      siteName: siteName,
       type: 'website',
       locale: currentLocale,
       images: [
@@ -51,13 +53,13 @@ export async function generateMetadata(): Promise<Metadata> {
           url: '/logo.png',
           width: 512,
           height: 512,
-          alt: `${SITE_NAME} Logo`,
+          alt: `${siteName} Logo`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: SITE_NAME,
+      title: siteName,
       description: siteDescription,
       images: ['/logo.png'],
     },
@@ -66,11 +68,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function LandingLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocaleFromRequest();
+  const t = await getTranslations({ locale, namespace: 'metadata' });
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <JsonLd data={generateWebSiteSchema(locale)} />
+        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>

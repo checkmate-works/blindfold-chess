@@ -49,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
+  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
   const tHome = await getTranslations({ locale, namespace: 'home' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
 
@@ -59,7 +60,7 @@ export default async function HomePage({ params }: Props) {
       </div>
 
       <div className="space-y-6">
-        <JsonLd data={generateWebApplicationSchema(locale)} />
+        <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
         <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
           <SectionTitle>{tHome('gameList.title')}</SectionTitle>

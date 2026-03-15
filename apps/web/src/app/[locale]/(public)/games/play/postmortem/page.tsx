@@ -43,10 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostmortemPage({ params }: Props) {
   const { locale } = await params;
+  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
 
   return (
     <Suspense>
-      <PostmortemPageClient locale={locale} />
+      <PostmortemPageClient locale={locale} brandName={tMetadata('siteName')} />
     </Suspense>
   );
 }

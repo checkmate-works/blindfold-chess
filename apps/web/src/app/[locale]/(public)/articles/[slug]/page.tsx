@@ -6,13 +6,8 @@ import { SUPPORTED_LOCALES } from '@/config';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
-import {
-  Breadcrumb,
-  Divider,
-  MarkdownRenderer,
-  PagePanel,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Divider, MarkdownRenderer, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -37,8 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getPublishedArticle(slug, locale);
 
   if (!article) {
+    const t = await getTranslations({ locale, namespace: 'articles' });
     return {
-      title: 'Article Not Found',
+      title: t('articleNotFound'),
     };
   }
 

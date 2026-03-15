@@ -5,13 +5,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
 import { MarkAllReadButton, NotificationItem } from './_components';
 import { getNotifications, getUnreadCount } from './_lib/queries';

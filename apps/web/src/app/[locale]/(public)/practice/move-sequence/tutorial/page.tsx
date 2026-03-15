@@ -1,7 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { Breadcrumb, Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

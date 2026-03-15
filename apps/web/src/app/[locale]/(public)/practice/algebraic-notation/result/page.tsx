@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/algebraic-notation/result' }),
-    title: t('algebraicNotation.title'),
+    title: `${t('algebraicNotation.title')} - ${t('result')}`,
   };
 }
 

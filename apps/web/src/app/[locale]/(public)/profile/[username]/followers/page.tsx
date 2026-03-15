@@ -7,14 +7,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, profiles, userFollows } from '@/lib/db';
 
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  UserCard,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, PaginationNav, UserCard } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 const PAGE_SIZE = 5;

@@ -5,7 +5,8 @@ import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
-import { Breadcrumb, Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

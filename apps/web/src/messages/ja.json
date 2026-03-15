@@ -1,5 +1,7 @@
 {
   "metadata": {
+    "siteName": "心眼チェス",
+    "seoSiteName": "目隠しチェス",
     "siteDescription": "目隠しチェスの練習が無料でできるオンラインプラットフォーム。チェスのビジュアライゼーションスキルや計算力を向上させましょう。",
     "home": {
       "title": "ホーム",
@@ -107,7 +109,7 @@
     }
   },
   "Header": {
-    "title": "目隠しチェス",
+    "title": "心眼チェス",
     "home": "ホーム",
     "gettingStarted": "はじめに",
     "learn": "学ぶ",
@@ -281,7 +283,8 @@
   "manual": {
     "title": "マニュアル",
     "description": "Blindfold Chess のユーザーガイドとドキュメント",
-    "articlesTitle": "マニュアル一覧"
+    "articlesTitle": "マニュアル一覧",
+    "articleNotFound": "記事が見つかりません"
   },
   "navigation": {
     "practice": "練習",
@@ -355,7 +358,8 @@
       "moves": "駒の動き",
       "visualization": "ビジュアライゼーション"
     },
-    "categoryTitle": "{category}の記事"
+    "categoryTitle": "{category}の記事",
+    "articleNotFound": "記事が見つかりません"
   },
   "practice": {
     "title": "練習",
@@ -878,6 +882,7 @@
     },
     "routePlanner": {
       "title": "ルートプランナー",
+      "session": "練習中",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
       "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
       "settings": "設定",
@@ -1228,7 +1233,8 @@
     "newGameFromHere": "ここから新規対局",
     "saving": "保存中...",
     "saved": "保存済み",
-    "postmortem": "感想戦"
+    "postmortem": "感想戦",
+    "resultTitle": "ゲーム結果"
   },
   "postmortem": {
     "title": "感想戦",
@@ -1563,6 +1569,7 @@
     }
   },
   "landing": {
+    "tagline": "目隠しチェスSNS",
     "getStarted": "はじめる",
     "goToTop": "トップページへ",
     "aiBattle": {
@@ -1637,7 +1644,8 @@
     "pageDescription": "Blindfold Chessに関する記事",
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
-    "moreArticles": "その他の記事"
+    "moreArticles": "その他の記事",
+    "articleNotFound": "記事が見つかりません"
   },
   "announcements": {
     "pageTitle": "お知らせ",
@@ -1646,7 +1654,8 @@
     "announcementsListTitle": "すべてのお知らせ",
     "membersOnly": "このお知らせはメンバー限定です。",
     "membersOnlyBadge": "メンバー限定",
-    "signInToView": "ログインして閲覧"
+    "signInToView": "ログインして閲覧",
+    "announcementNotFound": "お知らせが見つかりません"
   },
   "onboarding": {
     "title": "初期設定",

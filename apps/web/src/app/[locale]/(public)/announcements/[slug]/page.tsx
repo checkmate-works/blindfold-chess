@@ -7,13 +7,8 @@ import { Link } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
 
-import {
-  Breadcrumb,
-  Divider,
-  MarkdownRenderer,
-  PagePanel,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { Divider, MarkdownRenderer, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -38,8 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const announcement = await getPublishedAnnouncement(slug, locale);
 
   if (!announcement) {
+    const t = await getTranslations({ locale, namespace: 'announcements' });
     return {
-      title: 'Announcement Not Found',
+      title: t('announcementNotFound'),
     };
   }
 

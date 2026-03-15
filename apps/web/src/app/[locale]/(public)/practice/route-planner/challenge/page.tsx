@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/route-planner/challenge' }),
-    title: t('practice.routePlanner.title'),
+    title: `${t('practice.routePlanner.title')} - ${t('practice.routePlanner.session')}`,
     description: t('practice.routePlanner.description'),
     robots: {
       index: false,

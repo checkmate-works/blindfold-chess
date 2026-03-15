@@ -1,24 +1,30 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { SITE_NAME } from '@/config';
-
 import { getLocaleFromRequest } from '@/lib/locale';
 
 import { AiBattleSection, HeroSection, LearnSection, TrainingSection } from './_components';
 import { Footer } from './_components/Footer';
 
-export const metadata: Metadata = {
-  title: SITE_NAME,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocaleFromRequest();
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+
+  return {
+    title: t('seoSiteName'),
+  };
+}
 
 export default async function RootPage() {
   const locale = await getLocaleFromRequest();
-  const t = await getTranslations({ locale, namespace: 'landing' });
+  const [t, metaT] = await Promise.all([
+    getTranslations({ locale, namespace: 'landing' }),
+    getTranslations({ locale, namespace: 'metadata' }),
+  ]);
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
-      <HeroSection locale={locale} t={t} />
+      <HeroSection locale={locale} t={t} siteName={metaT('siteName')} />
       <AiBattleSection locale={locale} t={t} />
       <TrainingSection locale={locale} t={t} />
       <LearnSection locale={locale} t={t} />

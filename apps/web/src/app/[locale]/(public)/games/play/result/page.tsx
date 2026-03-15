@@ -19,20 +19,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'games/play/result' }),
-    title: t('title'),
+    title: t('resultTitle'),
   };
 }
 
 export default async function ResultPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'play' });
+  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
 
   return (
     <>
       <div className="mb-8">
         <PageTitle>{t('title')}</PageTitle>
       </div>
-      <ResultClient locale={locale} />
+      <ResultClient locale={locale} brandName={tMetadata('siteName')} />
     </>
   );
 }

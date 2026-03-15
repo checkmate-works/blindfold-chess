@@ -1,6 +1,5 @@
 export { AuthStatusDisplay } from './AuthStatusDisplay';
 export { BetaNotice } from './BetaNotice';
-export { Breadcrumb } from './Breadcrumb';
 export { CardLink } from './CardLink';
 export { ChessBoardDemo } from './ChessBoardDemo';
 export { PagePanel } from './PagePanel';

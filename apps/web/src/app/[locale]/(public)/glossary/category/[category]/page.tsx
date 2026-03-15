@@ -5,13 +5,8 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import {
-  Breadcrumb,
-  Divider,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

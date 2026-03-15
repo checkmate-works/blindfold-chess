@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/board-symmetry/result' }),
-    title: t('boardSymmetry.title'),
+    title: `${t('boardSymmetry.title')} - ${t('result')}`,
   };
 }
 

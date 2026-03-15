@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz/result' }),
-    title: t('coordinateQuiz.title'),
+    title: `${t('coordinateQuiz.title')} - ${t('result')}`,
   };
 }
 

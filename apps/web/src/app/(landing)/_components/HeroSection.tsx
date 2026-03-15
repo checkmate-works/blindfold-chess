@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
-import { SITE_NAME } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -13,9 +12,10 @@ import { ScrollIndicator } from './ScrollIndicator';
 type Props = {
   locale: Locale;
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
+  siteName: string;
 };
 
-export function HeroSection({ locale, t }: Props) {
+export function HeroSection({ locale, t, siteName }: Props) {
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center p-6 bg-gradient-to-br from-secondary via-background to-secondary">
       <div className="text-center w-full max-w-4xl mx-auto space-y-12">
@@ -24,16 +24,21 @@ export function HeroSection({ locale, t }: Props) {
           <div className="flex justify-center">
             <Image
               src="/logo.png"
-              alt={`${SITE_NAME} Logo`}
+              alt={`${siteName} Logo`}
               width={120}
               height={120}
               className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
               priority
             />
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
-            {SITE_NAME}
-          </h1>
+          <div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
+              {siteName}
+            </h1>
+            <h2 className="mt-2 text-lg sm:text-xl text-muted-foreground font-medium">
+              {t('tagline')}
+            </h2>
+          </div>
         </div>
 
         {/* Call to Action */}
