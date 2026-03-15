@@ -21,6 +21,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AuthErrorMessage } from '../_components/AuthErrorMessage';
 import { GoogleOAuthButton } from '../_components/GoogleOAuthButton';
+import { FeatureCardsSection } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -75,6 +76,8 @@ export default async function SignUpPage({ params, searchParams }: Props) {
             {t('signIn')}
           </Link>
         </p>
+
+        <FeatureCardsSection t={t} />
 
         <Divider />
 

@@ -1616,7 +1616,21 @@
     "googleOAuthLoading": "登録中...",
     "authError": "登録に失敗しました。もう一度お試しください。",
     "alreadyHaveAccount": "既にアカウントをお持ちですか？",
-    "signIn": "ログイン"
+    "signIn": "ログイン",
+    "features": {
+      "sectionTitle": "🚀 鋭意実装中です",
+      "sectionSubtitle": "✨ ただいま先行登録を受け付けています",
+      "social": {
+        "title": "ソーシャル機能",
+        "description": "チェスに関するトピックで他のプレイヤーと盛り上がれます。",
+        "badge": "Coming Soon"
+      },
+      "leaderboard": {
+        "title": "スコア記録・リーダーボード",
+        "description": "練習機能のスコアを記録し、リーダーボードで競い合えます。",
+        "badge": "Planning"
+      }
+    }
   },
   "articles": {
     "pageTitle": "記事",

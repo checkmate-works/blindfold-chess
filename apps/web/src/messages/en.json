@@ -1615,7 +1615,21 @@
     "googleOAuthLoading": "Registering...",
     "authError": "Registration failed. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "features": {
+      "sectionTitle": "🚀 We're actively building these features",
+      "sectionSubtitle": "✨ Early registration is now open",
+      "social": {
+        "title": "Social Features",
+        "description": "Connect with other players and discuss chess topics.",
+        "badge": "Coming Soon"
+      },
+      "leaderboard": {
+        "title": "Score Tracking & Leaderboard",
+        "description": "Track your practice scores and compete on the leaderboard.",
+        "badge": "Planning"
+      }
+    }
   },
   "articles": {
     "pageTitle": "Articles",
