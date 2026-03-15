@@ -22,7 +22,7 @@ describe('isReservedUsername', () => {
   });
 
   describe('Category 3: Impersonation prevention', () => {
-    it.each(['admin', 'administrator', 'moderator', 'mod', 'staff', 'system', 'bot', 'owner'])(
+    it.each(['sysadmin', 'administrator', 'moderator', 'mod', 'staff', 'system', 'bot', 'owner'])(
       'blocks impersonation name "%s"',
       (name) => {
         expect(isReservedUsername(name)).toBe(true);

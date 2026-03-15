@@ -172,9 +172,12 @@ const URL_ROUTING_NAMES = [
  * official system accounts. Blocking them prevents social engineering
  * attacks and user confusion.
  *
- * Note: "admin", "root", "webmaster", and "support" also appear in
- * Categories 1/2 but are listed here as the impersonation concern is
- * the primary reason for reservation.
+ * Note: "root", "webmaster", and "support" also appear in Categories 1/2
+ * but are listed here as the impersonation concern is the primary reason
+ * for reservation.
+ *
+ * "admin" is excluded from this list because it is reserved for use as an
+ * operator's own username.
  */
 const IMPERSONATION_NAMES = [
   'administrator',

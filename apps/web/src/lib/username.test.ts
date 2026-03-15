@@ -55,7 +55,7 @@ describe('validateUsername', () => {
 
   describe('reserved username integration', () => {
     it('returns reserved for reserved usernames', () => {
-      expect(validateUsername('admin')).toBe('reserved');
+      expect(validateUsername('administrator')).toBe('reserved');
       expect(validateUsername('postmaster')).toBe('reserved');
       expect(validateUsername('chess')).toBe('reserved');
       expect(validateUsername('api')).toBe('reserved');
