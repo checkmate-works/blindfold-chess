@@ -13,18 +13,6 @@ export function buildDashboardCards(
 ): DashboardCard[] {
   return [
     {
-      icon: '\u{1F4CA}',
-      href: '/mypage/practice',
-      title: t('dashboard.practiceTitle'),
-      summary:
-        data.weekSessionCount > 0
-          ? t('dashboard.practiceSummary', {
-              sessions: data.weekSessionCount,
-              bestScore: data.weekBestScore,
-            })
-          : t('dashboard.practiceEmpty'),
-    },
-    {
       icon: '\u2764\uFE0F',
       href: '/mypage/likes',
       title: t('dashboard.likesTitle'),
