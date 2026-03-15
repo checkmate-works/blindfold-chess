@@ -32,17 +32,17 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: AUTHOR_NAME }],
     metadataBase: new URL(SITE_URL),
     alternates: {
-      canonical: '/',
+      canonical: locale === 'en' ? '/en' : '/ja',
       languages: {
         en: '/en',
         ja: '/ja',
-        'x-default': '/',
+        'x-default': '/en',
       },
     },
     openGraph: {
       title: SITE_NAME,
       description: siteDescription,
-      url: SITE_URL,
+      url: locale === 'en' ? `${SITE_URL}/en` : `${SITE_URL}/ja`,
       siteName: SITE_NAME,
       type: 'website',
       locale: currentLocale,

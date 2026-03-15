@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
@@ -39,6 +40,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'metadata.glossary.category' });
 
   // Get localized category name
@@ -54,6 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GlossaryCategoryPage({ params }: Props) {
   const { locale, category } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   if (!VALID_CATEGORIES.includes(category)) {

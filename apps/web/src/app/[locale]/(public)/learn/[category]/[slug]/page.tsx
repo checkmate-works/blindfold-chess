@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
@@ -31,8 +32,6 @@ import {
   getCategoryCounts,
   getPracticeModulesForArticle,
 } from '../../_lib/utils';
-
-export const dynamic = 'force-static';
 
 type Props = {
   params: Promise<{
@@ -68,6 +67,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug, category } = await params;
+  setRequestLocale(locale);
   const article = await getArticle(slug, locale);
 
   if (!article || (article.metadata.category && article.metadata.category !== category)) {
@@ -85,6 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LearnArticlePage({ params }: Props) {
   const { locale, slug, category } = await params;
+  setRequestLocale(locale);
   const article = await getArticle(slug, locale);
   const t = await getTranslations({ locale });
 

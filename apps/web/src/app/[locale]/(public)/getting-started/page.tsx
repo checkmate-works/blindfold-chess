@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button, ChessBoard } from '@/app/_components';
@@ -27,8 +28,6 @@ import {
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const dynamic = 'force-static';
-
 type Props = {
   params: Promise<{
     locale: Locale;
@@ -37,6 +36,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gettingStarted' });
 
   return {
@@ -57,6 +57,7 @@ const trainingCategories = [
 
 export default async function GettingStartedPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gettingStarted' });
 
   return (

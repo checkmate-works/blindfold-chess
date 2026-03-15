@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
@@ -31,8 +32,6 @@ type Props = {
   }>;
 };
 
-export const dynamic = 'force-static';
-
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
 export async function generateStaticParams() {
   return validCategories.flatMap((category) =>
@@ -45,6 +44,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   if (!validCategories.includes(category)) {
@@ -62,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LearnCategoryPage({ params }: Props) {
   const { locale, category } = await params;
+  setRequestLocale(locale);
 
   if (!validCategories.includes(category)) {
     notFound();

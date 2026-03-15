@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
@@ -29,6 +30,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const article = await getManualArticle(slug, locale);
 
   if (!article) {
@@ -49,6 +51,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ManualArticlePage({ params }: Props) {
   const { locale, slug } = await params;
+  setRequestLocale(locale);
   const article = await getManualArticle(slug, locale);
   const t = await getTranslations({ locale, namespace: 'manual' });
 

@@ -17,12 +17,12 @@ export default async function RootPage() {
   const t = await getTranslations({ locale, namespace: 'landing' });
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <main className="min-h-screen bg-background text-foreground flex flex-col">
       <HeroSection locale={locale} t={t} />
       <AiBattleSection locale={locale} t={t} />
       <TrainingSection locale={locale} t={t} />
       <LearnSection locale={locale} t={t} />
       <Footer locale={locale} t={t} />
-    </div>
+    </main>
   );
 }
