@@ -43,6 +43,7 @@ export default async function MypagePage({ params }: Props) {
           <div className="mb-4">
             <Link
               href={`/@/${data.username}`}
+              locale={locale}
               className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               {t('dashboard.viewProfile', { username: data.username })}
@@ -54,6 +55,7 @@ export default async function MypagePage({ params }: Props) {
             <Link
               key={card.href}
               href={card.href}
+              locale={locale}
               className="block rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted"
             >
               <span className="text-2xl">{card.icon}</span>

@@ -48,6 +48,7 @@ export default async function ProfilePage({ params }: Props) {
         <div className="mb-4">
           <Link
             href={`/@/${profile.username}`}
+            locale={locale}
             className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >
             {t('viewPublicProfile', { username: profile.username })}
@@ -60,6 +61,7 @@ export default async function ProfilePage({ params }: Props) {
 
         <Link
           href="/mypage/delete-account"
+          locale={locale}
           className="inline-block text-sm text-destructive hover:underline"
         >
           {t('deleteAccountLink')}

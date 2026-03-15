@@ -71,7 +71,11 @@ export default async function AnnouncementPage({ params }: Props) {
           <PagePanel>
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-4">{t('membersOnly')}</p>
-              <Link href="/sign-in" className="text-link-primary hover:underline font-medium">
+              <Link
+                href="/sign-in"
+                locale={locale}
+                className="text-link-primary hover:underline font-medium"
+              >
                 {t('signInToView')}
               </Link>
             </div>

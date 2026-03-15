@@ -187,6 +187,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             {isOwnProfile ? (
               <Link
                 href="/mypage/profile"
+                locale={locale}
                 className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
               >
                 {t('editProfile')}
@@ -213,14 +214,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         <p className="text-sm text-muted-foreground">
           {isOwnProfile && (
             <>
-              <Link href="/mypage/following" className="hover:underline">
+              <Link href="/mypage/following" locale={locale} className="hover:underline">
                 <span className="font-semibold text-foreground">{followingCount}</span>{' '}
                 {t('followingCount')}
               </Link>
               <span className="mx-2" />
             </>
           )}
-          <Link href={`/@/${username}/followers`} className="hover:underline">
+          <Link href={`/@/${username}/followers`} locale={locale} className="hover:underline">
             <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
           </Link>
         </p>

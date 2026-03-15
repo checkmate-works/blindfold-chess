@@ -57,6 +57,7 @@ export function Step4Client({ locale }: Props) {
             <Link
               key={mode.href}
               href={mode.href}
+              locale={locale}
               className="group block p-4 rounded-md border border-border transition-all hover:shadow-md hover:border-foreground/20"
             >
               <div className="flex items-start gap-3">

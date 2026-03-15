@@ -57,6 +57,7 @@ export default async function FAQPage({ params }: Props) {
         settingsLink: (chunks) => (
           <Link
             href="/preferences?tab=game"
+            locale={locale}
             className="text-foreground underline hover:opacity-80 transition-colors"
           >
             {chunks}
@@ -71,6 +72,7 @@ export default async function FAQPage({ params }: Props) {
         affiliateLink: (chunks) => (
           <Link
             href="/affiliate-disclosure"
+            locale={locale}
             className="text-foreground underline hover:opacity-80 transition-colors"
           >
             {chunks}

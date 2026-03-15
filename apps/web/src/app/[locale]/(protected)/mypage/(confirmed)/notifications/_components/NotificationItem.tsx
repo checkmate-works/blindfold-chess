@@ -126,7 +126,7 @@ export function NotificationItem({ notification }: Props) {
 
   if (link) {
     return (
-      <Link href={link} onClick={handleClick} className="block">
+      <Link href={link} locale={locale} onClick={handleClick} className="block">
         {content}
       </Link>
     );

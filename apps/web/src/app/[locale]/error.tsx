@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
@@ -15,6 +15,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const locale = useLocale();
   const t = useTranslations('error');
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function Error({
           </Button>
           <Link
             href="/"
+            locale={locale}
             className="px-4 py-2 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors inline-block"
           >
             {t('goHome')}

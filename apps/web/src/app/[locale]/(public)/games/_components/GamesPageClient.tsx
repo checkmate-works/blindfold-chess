@@ -73,6 +73,7 @@ export function GamesPageClient({ locale }: Props) {
           <div className="mt-4 text-right">
             <Link
               href="/games/bulk-delete"
+              locale={locale}
               className="text-sm text-muted-foreground hover:text-foreground underline"
             >
               {t('bulkDelete')}

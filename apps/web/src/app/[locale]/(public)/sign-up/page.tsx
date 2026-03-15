@@ -72,7 +72,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         </div>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('alreadyHaveAccount')}{' '}
-          <Link href="/sign-in" className="text-link-primary hover:underline">
+          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
             {t('signIn')}
           </Link>
         </p>
