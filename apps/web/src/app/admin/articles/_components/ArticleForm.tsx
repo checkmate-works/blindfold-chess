@@ -8,16 +8,7 @@ import { LuSettings, LuX } from 'react-icons/lu';
 
 import { MarkdownRenderer } from '@/app/[locale]/_components/MarkdownRenderer';
 
-type ArticleEditData = {
-  slug: string;
-  title: string;
-  content: string;
-  locale: string;
-  excerpt: string;
-  description: string;
-  categoryId: string;
-  icon: string;
-};
+import type { ArticleEditData } from '../_lib/types';
 
 type ArticleFormProps = {
   defaultValues?: ArticleEditData;

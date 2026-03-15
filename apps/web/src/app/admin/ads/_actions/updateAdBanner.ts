@@ -4,8 +4,9 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { adBanners, db, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
+import { adBanners, db } from '@/lib/db';
+
+import { requireAdmin } from '../../_lib/auth';
 
 type UpdateData = {
   href: string;
@@ -17,23 +18,9 @@ type UpdateData = {
 type UpdateResult = { success: true } | { error: string };
 
 export async function updateAdBanner(id: string, data: UpdateData): Promise<UpdateResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
-    return { error: 'unauthorized' };
+  const auth = await requireAdmin();
+  if ('error' in auth) {
+    return auth;
   }
 
   if (!data.href || data.href.length > 2048) {

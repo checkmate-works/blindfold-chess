@@ -24,21 +24,60 @@ function pickByLocale(rows: Article[], locale: string): Article {
 }
 
 /**
- * Deduplicate articles by slug, keeping the best locale variant for each.
- * Preserves the original ordering of the first occurrence of each slug.
+ * Build a SQL query that deduplicates articles by slug, keeping the best
+ * locale variant for each slug. Uses ROW_NUMBER() window function to rank
+ * locale variants per slug by priority:
+ *   1. Requested locale
+ *   2. Default locale (en)
+ *   3. Any other locale
+ *
+ * The result is ordered by pinned_at DESC NULLS LAST, published_at DESC,
+ * then paginated with LIMIT/OFFSET applied after deduplication.
  */
-function deduplicateBySlug(rows: Article[], locale: string): Article[] {
-  const grouped = new Map<string, Article[]>();
-  for (const row of rows) {
-    const group = grouped.get(row.slug);
-    if (group) {
-      group.push(row);
-    } else {
-      grouped.set(row.slug, [row]);
-    }
-  }
+async function getDeduplicatedArticles(
+  locale: string,
+  limit: number,
+  offset: number
+): Promise<Article[]> {
+  const rows = await db.execute<Article>(sql`
+    SELECT
+      id,
+      slug,
+      title,
+      excerpt,
+      description,
+      content,
+      locale,
+      status,
+      category_id AS "categoryId",
+      display_order AS "displayOrder",
+      icon,
+      pinned_at AS "pinnedAt",
+      published_at AS "publishedAt",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
+    FROM (
+      SELECT *,
+        ROW_NUMBER() OVER (
+          PARTITION BY ${articles.slug}
+          ORDER BY
+            CASE ${articles.locale}
+              WHEN ${locale} THEN 0
+              WHEN ${DEFAULT_LOCALE} THEN 1
+              ELSE 2
+            END
+        ) AS rn
+      FROM ${articles}
+      WHERE ${articles.status} = 'published'
+        AND ${articles.publishedAt} IS NOT NULL
+    ) ranked
+    WHERE rn = 1
+    ORDER BY pinned_at DESC NULLS LAST, published_at DESC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `);
 
-  return [...grouped.values()].map((group) => pickByLocale(group, locale));
+  return rows;
 }
 
 /**
@@ -56,18 +95,15 @@ export async function getPublishedArticles(): Promise<Article[]> {
 /**
  * Get latest published articles for the home page, deduplicated by slug.
  * Each slug appears once, preferring the requested locale version.
+ *
+ * Uses SQL ROW_NUMBER() to deduplicate and paginate in the database,
+ * avoiding fetching all articles into application memory.
  */
 export async function getLatestPublishedArticles(
   locale: string,
   limit: number
 ): Promise<Article[]> {
-  const rows = await db
-    .select()
-    .from(articles)
-    .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)))
-    .orderBy(...pinnedFirstOrdering);
-
-  return deduplicateBySlug(rows, locale).slice(0, limit);
+  return getDeduplicatedArticles(locale, limit, 0);
 }
 
 /**
@@ -85,19 +121,16 @@ export async function getPublishedArticleCount(): Promise<number> {
 /**
  * Get paginated articles for the listing page, deduplicated by slug.
  * Each slug appears once, preferring the requested locale version.
+ *
+ * Uses SQL ROW_NUMBER() to deduplicate and paginate in the database,
+ * avoiding fetching all articles into application memory.
  */
 export async function getPublishedArticlesPaginated(
   locale: string,
   limit: number,
   offset: number
 ): Promise<Article[]> {
-  const rows = await db
-    .select()
-    .from(articles)
-    .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)))
-    .orderBy(...pinnedFirstOrdering);
-
-  return deduplicateBySlug(rows, locale).slice(offset, offset + limit);
+  return getDeduplicatedArticles(locale, limit, offset);
 }
 
 /**

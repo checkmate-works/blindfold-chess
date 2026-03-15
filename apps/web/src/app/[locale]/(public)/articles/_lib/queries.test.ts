@@ -14,6 +14,7 @@ import {
 vi.mock('@/lib/db', () => {
   const mockDb = {
     select: vi.fn(),
+    execute: vi.fn(),
   };
 
   return {
@@ -111,14 +112,12 @@ describe('articles queries', () => {
 
   describe('getLatestPublishedArticles', () => {
     it('should return deduplicated articles limited by count', async () => {
-      const articles = [
+      // With SQL deduplication, db.execute returns already-deduplicated results
+      const deduplicated = [
         makeArticle({ id: 'art-1', slug: 'first', locale: 'en' }),
-        makeArticle({ id: 'art-2', slug: 'first', locale: 'ja' }),
         makeArticle({ id: 'art-3', slug: 'second', locale: 'en' }),
-        makeArticle({ id: 'art-4', slug: 'third', locale: 'en' }),
       ];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getLatestPublishedArticles('en', 2);
 
@@ -128,12 +127,11 @@ describe('articles queries', () => {
     });
 
     it('should prefer the requested locale', async () => {
-      const articles = [
-        makeArticle({ id: 'art-1', slug: 'hello', locale: 'en', title: 'Hello' }),
+      // SQL ROW_NUMBER picks the best locale; db.execute returns the winner
+      const deduplicated = [
         makeArticle({ id: 'art-2', slug: 'hello', locale: 'ja', title: 'こんにちは' }),
       ];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getLatestPublishedArticles('ja', 5);
 
@@ -143,9 +141,8 @@ describe('articles queries', () => {
     });
 
     it('should fall back to default locale (en) when requested locale is not available', async () => {
-      const articles = [makeArticle({ id: 'art-1', slug: 'hello', locale: 'en' })];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      const deduplicated = [makeArticle({ id: 'art-1', slug: 'hello', locale: 'en' })];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getLatestPublishedArticles('ja', 5);
 
@@ -154,9 +151,8 @@ describe('articles queries', () => {
     });
 
     it('should fall back to first available when neither requested nor default locale exists', async () => {
-      const articles = [makeArticle({ id: 'art-1', slug: 'hello', locale: 'fr' })];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      const deduplicated = [makeArticle({ id: 'art-1', slug: 'hello', locale: 'fr' })];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getLatestPublishedArticles('ja', 5);
 
@@ -165,8 +161,7 @@ describe('articles queries', () => {
     });
 
     it('should return empty array when no articles exist', async () => {
-      const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getLatestPublishedArticles('en', 5);
 
@@ -174,9 +169,7 @@ describe('articles queries', () => {
     });
 
     it('should return empty array when limit is 0', async () => {
-      const articles = [makeArticle({ id: 'art-1', slug: 'hello', locale: 'en' })];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getLatestPublishedArticles('en', 0);
 
@@ -186,9 +179,8 @@ describe('articles queries', () => {
 
   describe('getPublishedArticlesPaginated', () => {
     it('should return paginated articles', async () => {
-      const articles = [makeArticle({ id: 'art-1', slug: 'page-item' })];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      const deduplicated = [makeArticle({ id: 'art-1', slug: 'page-item' })];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('en', 20, 0);
 
@@ -197,8 +189,7 @@ describe('articles queries', () => {
     });
 
     it('should return empty array when offset exceeds total', async () => {
-      const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getPublishedArticlesPaginated('en', 20, 100);
 
@@ -206,8 +197,7 @@ describe('articles queries', () => {
     });
 
     it('should return empty array for pagination with 0 results', async () => {
-      const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getPublishedArticlesPaginated('en', 10, 0);
 
@@ -215,13 +205,12 @@ describe('articles queries', () => {
     });
 
     it('should deduplicate by slug, preferring the requested locale', async () => {
-      const articles = [
-        makeArticle({ id: 'art-en', slug: 'hello', locale: 'en', title: 'Hello' }),
+      // SQL does the deduplication; mock returns already-deduplicated results
+      const deduplicated = [
         makeArticle({ id: 'art-ja', slug: 'hello', locale: 'ja', title: 'こんにちは' }),
         makeArticle({ id: 'art-2', slug: 'other', locale: 'en' }),
       ];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('ja', 20, 0);
 
@@ -232,9 +221,10 @@ describe('articles queries', () => {
     });
 
     it('should fall back to default locale (en) when requested locale is not available', async () => {
-      const articles = [makeArticle({ id: 'art-en', slug: 'hello', locale: 'en', title: 'Hello' })];
-      const chain = mockChain(articles);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      const deduplicated = [
+        makeArticle({ id: 'art-en', slug: 'hello', locale: 'en', title: 'Hello' }),
+      ];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('ja', 20, 0);
 
@@ -387,8 +377,7 @@ describe('articles queries', () => {
 
   describe('getPublishedArticlesPaginated - edge cases', () => {
     it('should return empty array when limit is 0', async () => {
-      const chain = mockChain([makeArticle({ id: 'art-1', slug: 'hello' })]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getPublishedArticlesPaginated('en', 0, 0);
 
@@ -396,11 +385,7 @@ describe('articles queries', () => {
     });
 
     it('should return empty when offset equals number of deduplicated results', async () => {
-      const chain = mockChain([
-        makeArticle({ id: 'art-1', slug: 'a' }),
-        makeArticle({ id: 'art-2', slug: 'b' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue([] as never);
 
       const result = await getPublishedArticlesPaginated('en', 10, 2);
 
@@ -408,12 +393,8 @@ describe('articles queries', () => {
     });
 
     it('should return last item when offset is count-1 with limit 1', async () => {
-      const chain = mockChain([
-        makeArticle({ id: 'art-1', slug: 'a' }),
-        makeArticle({ id: 'art-2', slug: 'b' }),
-        makeArticle({ id: 'art-3', slug: 'c' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      const deduplicated = [makeArticle({ id: 'art-3', slug: 'c' })];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('en', 1, 2);
 
@@ -422,14 +403,12 @@ describe('articles queries', () => {
     });
 
     it('should deduplicate 3+ locale variants per slug and pick requested locale', async () => {
-      const chain = mockChain([
-        makeArticle({ id: 'art-en', slug: 'hello', locale: 'en' }),
-        makeArticle({ id: 'art-ja', slug: 'hello', locale: 'ja' }),
-        makeArticle({ id: 'art-fr', slug: 'hello', locale: 'fr' }),
+      // SQL ROW_NUMBER handles deduplication; mock returns already-deduplicated
+      const deduplicated = [
         makeArticle({ id: 'art-de', slug: 'hello', locale: 'de' }),
         makeArticle({ id: 'art-other', slug: 'other', locale: 'en' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      ];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('de', 20, 0);
 
@@ -440,14 +419,13 @@ describe('articles queries', () => {
     });
 
     it('should preserve ordering of first slug occurrence after deduplication', async () => {
-      const chain = mockChain([
-        makeArticle({ id: 'art-1-en', slug: 'first', locale: 'en' }),
-        makeArticle({ id: 'art-2-en', slug: 'second', locale: 'en' }),
+      // SQL handles ordering; mock returns already-ordered deduplicated results
+      const deduplicated = [
         makeArticle({ id: 'art-1-ja', slug: 'first', locale: 'ja' }),
-        makeArticle({ id: 'art-3-en', slug: 'third', locale: 'en' }),
         makeArticle({ id: 'art-2-ja', slug: 'second', locale: 'ja' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+        makeArticle({ id: 'art-3-en', slug: 'third', locale: 'en' }),
+      ];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('ja', 20, 0);
 
@@ -461,12 +439,12 @@ describe('articles queries', () => {
     });
 
     it('should handle mixed fallback: some slugs match locale, some fall back', async () => {
-      const chain = mockChain([
+      const deduplicated = [
         makeArticle({ id: 'art-1-ja', slug: 'has-ja', locale: 'ja' }),
         makeArticle({ id: 'art-2-en', slug: 'no-ja', locale: 'en' }),
         makeArticle({ id: 'art-3-fr', slug: 'only-fr', locale: 'fr' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      ];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('ja', 20, 0);
 
@@ -477,14 +455,9 @@ describe('articles queries', () => {
     });
 
     it('should apply pagination after deduplication', async () => {
-      // 4 rows but only 2 unique slugs after deduplication
-      const chain = mockChain([
-        makeArticle({ id: 'art-1-en', slug: 'a', locale: 'en' }),
-        makeArticle({ id: 'art-1-ja', slug: 'a', locale: 'ja' }),
-        makeArticle({ id: 'art-2-en', slug: 'b', locale: 'en' }),
-        makeArticle({ id: 'art-2-ja', slug: 'b', locale: 'ja' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL deduplicates first, then paginates; mock returns the paginated result
+      const deduplicated = [makeArticle({ id: 'art-1-en', slug: 'a', locale: 'en' })];
+      mockDb.execute.mockResolvedValue(deduplicated as never);
 
       const result = await getPublishedArticlesPaginated('en', 1, 0);
 

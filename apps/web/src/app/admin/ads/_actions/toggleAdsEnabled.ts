@@ -4,29 +4,16 @@ import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { db, siteSettings, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
+import { db, siteSettings } from '@/lib/db';
+
+import { requireAdmin } from '../../_lib/auth';
 
 type ToggleResult = { success: true } | { error: string };
 
 export async function toggleAdsEnabled(): Promise<ToggleResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
-    return { error: 'unauthorized' };
+  const auth = await requireAdmin();
+  if ('error' in auth) {
+    return auth;
   }
 
   const [row] = await db

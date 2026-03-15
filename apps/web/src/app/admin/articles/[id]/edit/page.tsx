@@ -3,10 +3,12 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
-import { articleCategories, articleCategoryTranslations, articles, db } from '@/lib/db';
+import { articles, db } from '@/lib/db';
 
 import { EditArticleForm } from '../../_components/EditArticleForm';
 import { formatDateTimeLocal } from '../../_lib/format';
+import { getArticleFormLabels } from '../../_lib/labels';
+import { getArticleCategories } from '../../_lib/queries';
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,18 +20,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  const categories = await db
-    .select({
-      id: articleCategories.id,
-      name: articleCategoryTranslations.name,
-    })
-    .from(articleCategories)
-    .innerJoin(
-      articleCategoryTranslations,
-      eq(articleCategoryTranslations.categoryId, articleCategories.id)
-    )
-    .where(eq(articleCategoryTranslations.locale, 'en'))
-    .orderBy(articleCategories.displayOrder);
+  const categories = await getArticleCategories();
 
   return (
     <EditArticleForm
@@ -48,32 +39,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         icon: article.icon ?? '',
       }}
       categories={categories}
-      labels={{
-        formTitle: t('form.editTitle'),
-        slug: t('form.slug'),
-        slugPlaceholder: t('form.slugPlaceholder'),
-        title: t('form.title'),
-        titlePlaceholder: t('form.titlePlaceholder'),
-        content: t('form.content'),
-        contentPlaceholder: t('form.contentPlaceholder'),
-        locale: t('form.locale'),
-        saveDraft: t('form.saveDraft'),
-        savingDraft: t('form.savingDraft'),
-        draftSaved: t('form.draftSaved'),
-        preview: t('form.preview'),
-        cancel: t('form.cancel'),
-        excerpt: t('form.excerpt'),
-        excerptPlaceholder: t('form.excerptPlaceholder'),
-        description: t('form.description'),
-        descriptionPlaceholder: t('form.descriptionPlaceholder'),
-        category: t('form.category'),
-        categoryNone: t('form.categoryNone'),
-        icon: t('form.icon'),
-        iconPlaceholder: t('form.iconPlaceholder'),
-        metadata: t('form.metadata'),
-        tabEdit: t('form.tabEdit'),
-        tabPreview: t('form.tabPreview'),
-      }}
+      labels={getArticleFormLabels(t, t('form.editTitle'))}
     />
   );
 }

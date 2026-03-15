@@ -2,14 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { eq } from 'drizzle-orm';
-
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
 } from '@/lib/announcement-notification';
-import { announcements, db, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
+import { announcements, db } from '@/lib/db';
+
+import { requireAdmin } from '../../_lib/auth';
 
 const VALID_STATUSES = ['draft', 'published'] as const;
 const VALID_VISIBILITIES = ['public', 'members_only'] as const;
@@ -29,23 +28,9 @@ type CreateData = {
 type CreateResult = { success: true; id: string } | { error: string };
 
 export async function createAnnouncement(data: CreateData): Promise<CreateResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
-    return { error: 'unauthorized' };
+  const auth = await requireAdmin();
+  if ('error' in auth) {
+    return auth;
   }
 
   if (!data.slug || data.slug.length > 255) {

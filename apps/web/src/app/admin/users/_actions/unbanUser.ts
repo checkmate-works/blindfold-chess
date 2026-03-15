@@ -4,33 +4,18 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { db, moderationActions, profiles, userRoles } from '@/lib/db';
+import { db, moderationActions, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
 
+import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
 
 type UnbanUserResult = { success: true } | { error: string };
 
 export async function unbanUser(targetUserId: string): Promise<UnbanUserResult> {
-  // Verify the requesting user is an admin
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
-    return { error: 'unauthorized' };
+  const auth = await requireAdmin();
+  if ('error' in auth) {
+    return auth;
   }
 
   // 1. Read current bannedAt for rollback
@@ -65,7 +50,7 @@ export async function unbanUser(targetUserId: string): Promise<UnbanUserResult> 
         .where(eq(profiles.id, targetUserId));
 
       await tx.insert(moderationActions).values({
-        actorId: user.id,
+        actorId: auth.userId,
         action: 'unban',
         targetType: 'user',
         targetId: targetUserId,

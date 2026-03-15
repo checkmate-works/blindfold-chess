@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { db, moderationActions, topicPosts, userRoles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
+import { db, moderationActions, topicPosts } from '@/lib/db';
 
+import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
 
 type DeletePostAdminResult = { success: true } | { error: string };
@@ -15,23 +15,9 @@ export async function deletePostAdmin(
   postId: string,
   reason: string
 ): Promise<DeletePostAdminResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
-  }
-
-  const [userRole] = await db
-    .select()
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
-    .limit(1);
-
-  if (!userRole || userRole.role !== 'admin') {
-    return { error: 'unauthorized' };
+  const auth = await requireAdmin();
+  if ('error' in auth) {
+    return auth;
   }
 
   const trimmedReason = reason.trim();
@@ -65,7 +51,7 @@ export async function deletePostAdmin(
     await tx.update(topicPosts).set({ deletedAt: new Date() }).where(eq(topicPosts.id, postId));
 
     await tx.insert(moderationActions).values({
-      actorId: user.id,
+      actorId: auth.userId,
       action: 'delete_post',
       targetType: 'topic_post',
       targetId: postId,
