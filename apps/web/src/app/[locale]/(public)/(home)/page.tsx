@@ -21,16 +21,14 @@ import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 
-import { AdBanner, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import {
-  GameListClient,
-  LatestTopicPostsList,
-  LatestTopicPostsSkeleton,
-  NewGameButton,
-} from './_components';
+import { GameListClient, LatestTopicPostsSkeleton } from './_components';
+import { LatestTopicPostsList } from './_components/LatestTopicPostsList';
+import { NewGameButton } from './_components/NewGameButton';
 
 type Props = {
   params: Promise<{

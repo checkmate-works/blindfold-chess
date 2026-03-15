@@ -6,13 +6,8 @@ import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
 
-import {
-  AdBanner,
-  Breadcrumb,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { Breadcrumb, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

@@ -9,7 +9,6 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { createClient } from '@/lib/supabase/server';
 
 import {
-  AdBanner,
   Breadcrumb,
   Divider,
   PagePanel,
@@ -17,6 +16,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

@@ -88,8 +88,9 @@ Route segment names use **singular or plural form depending on the nature of the
 
 ### Barrel File (index.ts) Convention
 
-- **Keep barrel imports** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.
-- **Do NOT split or eliminate barrels for speculative performance reasons** - While barrel files re-exporting `'use client'` components can theoretically hinder tree-shaking, Next.js with Turbopack handles this well in practice. Do not convert barrel imports to individual file imports without concrete evidence (e.g., bundle analysis) showing an actual problem. The readability and maintainability cost of ~45+ file changes outweighs unproven benefits.
+- **Keep barrel imports for client-safe components** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.
+- **Exclude server components from barrel files** - Components that use server-only APIs (`next/headers`, `@supabase/ssr`'s `createServerClient`, `next-intl/server` value imports, `@/lib/supabase/server`) or are `async function` components (React Server Components) must NOT be re-exported from barrel files. Import them directly from their file path instead (e.g., `from './_components/Header'` or `from '@/app/[locale]/_components/AdBanner'`). This prevents "server-only module imported in client component" errors when a client component imports from the same barrel.
+- **`type`-only imports from server modules are safe** - If a component only uses `import type { ... } from 'next-intl/server'` (type-level only, no value import), it can remain in the barrel file.
 
 ### Import Order Convention
 

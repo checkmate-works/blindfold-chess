@@ -5,7 +5,8 @@ import { SITE_NAME } from '@/config';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 
-import { AiBattleSection, Footer, HeroSection, LearnSection, TrainingSection } from './_components';
+import { AiBattleSection, HeroSection, LearnSection, TrainingSection } from './_components';
+import { Footer } from './_components/Footer';
 
 export const metadata: Metadata = {
   title: SITE_NAME,

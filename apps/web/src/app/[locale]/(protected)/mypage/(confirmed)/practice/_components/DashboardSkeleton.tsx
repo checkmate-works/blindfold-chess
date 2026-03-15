@@ -1,4 +1,4 @@
-import { Skeleton } from '@/app/[locale]/_components';
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /** KPIカード1枚分のスケルトン（StatsCardと同じサイズ） */
 function StatsCardSkeleton() {

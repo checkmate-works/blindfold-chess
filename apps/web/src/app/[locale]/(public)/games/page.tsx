@@ -13,7 +13,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components';
+import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
 import {
   Breadcrumb,
   Divider,
