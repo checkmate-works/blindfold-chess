@@ -240,7 +240,13 @@ export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
 export type PracticeSession = typeof practiceSessions.$inferSelect;
 export type NewPracticeSession = typeof practiceSessions.$inferInsert;
 
-// Profiles
+/**
+ * Profiles
+ *
+ * Note: email is intentionally omitted — it is managed by Supabase Auth
+ * (auth.users) as the single source of truth. Do not duplicate it here
+ * to avoid denormalization. Use a JOIN or the Admin API when needed.
+ */
 export const profiles = pgTable('profiles', {
   id: uuid('id').primaryKey(), // references auth.users(id) — FK defined in custom SQL
   username: varchar('username', { length: 255 }).unique().notNull(),
