@@ -1,17 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useLocale } from 'next-intl';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { NOTIFICATIONS_READ_EVENT } from '@/config';
 import { FiBell } from 'react-icons/fi';
 
 import { getUnreadCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 export function NotificationBadge() {
   const locale = useLocale();
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const previousPathname = useRef(pathname);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -19,6 +24,16 @@ export function NotificationBadge() {
       .then(setUnreadCount)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    if (previousPathname.current === pathname) return;
+
+    previousPathname.current = pathname;
+    getUnreadCount()
+      .then(setUnreadCount)
+      .catch(() => {});
+  }, [pathname, user]);
 
   useEffect(() => {
     const handleNotificationsRead = () => {

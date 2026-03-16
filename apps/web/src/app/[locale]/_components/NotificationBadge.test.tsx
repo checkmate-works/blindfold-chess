@@ -9,6 +9,13 @@ afterEach(() => {
 });
 
 const mockGetUnreadCount = vi.fn();
+const mockUsePathname = vi.fn(() => '/en/mypage');
+const mockUseAuth = vi.fn(() => ({
+  user: { id: 'test-user' },
+  isLoading: false,
+  session: null,
+  signOut: vi.fn(),
+}));
 
 vi.mock('@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions', () => ({
   getUnreadCount: () => mockGetUnreadCount(),
@@ -18,9 +25,24 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
 }));
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => mockUsePathname(),
+}));
+
+vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
 describe('NotificationBadge', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockGetUnreadCount.mockReset();
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockUseAuth.mockReturnValue({
+      user: { id: 'test-user' },
+      isLoading: false,
+      session: null,
+      signOut: vi.fn(),
+    });
   });
 
   it('should display unread count on mount', async () => {
@@ -212,5 +234,217 @@ describe('NotificationBadge', () => {
     });
 
     expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('should refetch unread count when pathname changes', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(5);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    mockGetUnreadCount.mockResolvedValueOnce(3);
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    // 1 for initial mount + 1 for route change
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not refetch when pathname stays the same', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(5);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    // Only the initial mount call
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not refetch on route change when user is not authenticated', async () => {
+    mockUseAuth.mockReturnValue({ user: null, isLoading: false, session: null, signOut: vi.fn() });
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(0);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+    });
+
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+
+    rerender(<NotificationBadge />);
+
+    // Should still be 1 (only the initial mount call, no route change refetch)
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('should refetch on multiple consecutive route changes', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(5);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    mockGetUnreadCount.mockResolvedValueOnce(3);
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    mockGetUnreadCount.mockResolvedValueOnce(1);
+    mockUsePathname.mockReturnValue('/en/mypage/settings');
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('1')).toBeInTheDocument();
+    });
+
+    // 1 for initial mount + 2 for route changes
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(3);
+  });
+
+  it('should retain previous count when getUnreadCount fails on route change', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(7);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('7')).toBeInTheDocument();
+    });
+
+    mockGetUnreadCount.mockRejectedValueOnce(new Error('Server error'));
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(mockGetUnreadCount).toHaveBeenCalledTimes(2);
+    });
+
+    // Previous count should be retained
+    expect(screen.getByText('7')).toBeInTheDocument();
+  });
+
+  it('should hide badge when route change returns unread count of 0', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(3);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    mockGetUnreadCount.mockResolvedValueOnce(0);
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
+      expect(screen.queryByText('0')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should not duplicate fetch between initial mount and route change effect on first render', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValue(5);
+
+    render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    // Initial mount useEffect fires once; route change useEffect should skip
+    // because previousPathname.current === pathname on first render
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('should refetch on route change after user becomes authenticated', async () => {
+    mockUseAuth.mockReturnValue({ user: null, isLoading: false, session: null, signOut: vi.fn() });
+    mockUsePathname.mockReturnValue('/en/login');
+    mockGetUnreadCount.mockResolvedValueOnce(0);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+    });
+
+    // User logs in and navigates to mypage
+    mockUseAuth.mockReturnValue({
+      user: { id: 'test-user' },
+      isLoading: false,
+      session: null,
+      signOut: vi.fn(),
+    });
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(4);
+
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('4')).toBeInTheDocument();
+    });
+
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(2);
+  });
+
+  it('should handle route change combined with event dispatch correctly', async () => {
+    mockUsePathname.mockReturnValue('/en/mypage');
+    mockGetUnreadCount.mockResolvedValueOnce(5);
+
+    const { rerender } = render(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    // Route change triggers refetch
+    mockGetUnreadCount.mockResolvedValueOnce(3);
+    mockUsePathname.mockReturnValue('/en/mypage/notifications');
+    rerender(<NotificationBadge />);
+
+    await waitFor(() => {
+      expect(screen.getByText('3')).toBeInTheDocument();
+    });
+
+    // Event dispatch triggers another refetch
+    mockGetUnreadCount.mockResolvedValueOnce(1);
+    act(() => {
+      window.dispatchEvent(new CustomEvent(NOTIFICATIONS_READ_EVENT));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('1')).toBeInTheDocument();
+    });
+
+    // 1 mount + 1 route change + 1 event
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(3);
   });
 });
