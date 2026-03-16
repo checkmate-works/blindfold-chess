@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
 import { HiMegaphone } from 'react-icons/hi2';
 
@@ -74,6 +75,7 @@ export function NotificationItem({ notification }: Props) {
     if (notification.isRead) return;
     startTransition(async () => {
       await markAsRead(notification.id);
+      notifyNotificationsRead();
       router.refresh();
     });
   }

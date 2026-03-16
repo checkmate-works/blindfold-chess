@@ -22,7 +22,9 @@ export function NotificationBadge() {
 
   useEffect(() => {
     const handleNotificationsRead = () => {
-      setUnreadCount(0);
+      getUnreadCount()
+        .then(setUnreadCount)
+        .catch(() => {});
     };
 
     window.addEventListener(NOTIFICATIONS_READ_EVENT, handleNotificationsRead);
