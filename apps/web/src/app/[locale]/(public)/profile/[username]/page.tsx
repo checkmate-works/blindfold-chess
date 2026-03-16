@@ -183,7 +183,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             </h1>
             <p className="text-muted-foreground mt-1">@{profile.username}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-2">
             {isOwnProfile ? (
               <Link
                 href="/mypage/profile"
@@ -195,7 +195,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             ) : (
               <>
                 {followedByProfile && (
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
                     {t('followsYou')}
                   </span>
                 )}
