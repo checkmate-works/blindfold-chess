@@ -143,9 +143,50 @@ This keeps documentation close to the code and avoids bloating this global file.
 
 Avoid documenting information that is self-evident from the code (routes, components, query params with meaningful names).
 
+## Local Development Setup
+
+### Supabase Local
+
+Local development uses [Supabase CLI](https://supabase.com/docs/guides/local-development) instead of standalone PostgreSQL. Supabase local provides PostgreSQL, Auth (GoTrue), Storage, Studio, and Inbucket (email testing) in Docker containers.
+
+```bash
+cd apps/web
+
+# Start Supabase local (first run downloads Docker images)
+supabase start
+
+# The output shows anon key, service_role key, etc.
+# Copy these to .env.local:
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key from output>
+#   SUPABASE_SERVICE_ROLE_KEY=<service_role key from output>
+
+# Run migrations
+pnpm db:run-migrate
+
+# Stop Supabase local
+supabase stop
+```
+
+```bash
+# キーを JSON 形式で取得
+supabase status -o json
+```
+
+- **Supabase Studio**: http://127.0.0.1:54323
+- **Inbucket (email testing)**: http://127.0.0.1:54324
+- **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **API**: http://127.0.0.1:54321
+
+### Google OAuth (Optional)
+
+To test Google login locally, set up credentials in `supabase/.env`:
+
+1. Create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Copy `supabase/.env.example` to `supabase/.env` and fill in the values
+
 ## Database Migration
 
-- **Always use `pnpm db:run-migrate`** — This runs `scripts/migrate.ts`, which executes Drizzle migrations and then applies Supabase-specific SQL (RLS policies, auth hook, profiles setup, storage avatars) in production environments.
+- **Always use `pnpm db:run-migrate`** — This runs `scripts/migrate.ts`, which executes Drizzle migrations and then applies Supabase-specific SQL (RLS policies, auth hook, profiles setup, storage avatars) in Supabase environments (both local and production).
 - **Do NOT use `drizzle-kit push`** — `push` bypasses migration tracking (`drizzle.__drizzle_migrations`) and directly syncs the schema to the DB. This causes the migration journal and actual DB state to diverge, leading to errors on subsequent `migrate` runs.
 - **Schema changes workflow**: Edit `src/lib/db/schema.ts` → run `npx drizzle-kit generate --name=<migration_name>` → run `pnpm db:run-migrate`
 - **Always specify `--name` when generating migrations** — Running `drizzle-kit generate` without `--name` produces opaque sequential filenames. Always provide a descriptive name so the migration's purpose is clear from the filename alone.
@@ -156,7 +197,7 @@ Avoid documenting information that is self-evident from the code (routes, compon
   ```
 - **Migration file structure**:
   - `drizzle/*.sql` + `drizzle/meta/` — Drizzle-managed migrations (auto-generated, tracked by journal)
-  - `drizzle/supabase/` — Supabase-specific SQL (RLS, auth hooks, permissions). Applied by `migrate.ts` only in Supabase environments.
+  - `drizzle/supabase/` — Supabase-specific SQL (RLS, auth hooks, permissions). Applied by `migrate.ts` in Supabase environments (detected by presence of `supabase_auth_admin` role).
 
 ## Moderation & Audit Architecture
 

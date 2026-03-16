@@ -84,7 +84,7 @@ INSERT INTO user_roles (user_id, role) VALUES ('<your-uuid>', 'admin');
 
 Run this in:
 
-- **Local**: `psql postgresql://postgres:postgres@localhost:5432/blindfold_chess`
+- **Local**: `psql postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 - **Remote**: Supabase Dashboard > **SQL Editor**
 
 ### 6. Sign Out and Sign Back In

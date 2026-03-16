@@ -5,11 +5,11 @@ import * as schema from './schema';
 
 // POSTGRES_URL: Set by Vercel Marketplace Supabase integration
 // DATABASE_URL: For manual configuration
-// Default: Local docker-compose PostgreSQL for development
+// Default: Supabase local PostgreSQL for development
 const connectionString =
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/blindfold_chess';
+  'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
 // Reuse the same postgres client across HMR reloads in development.
 // Without this, each hot-reload creates a new connection pool, eventually

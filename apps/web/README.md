@@ -8,19 +8,44 @@ Free online platform to practice blindfold chess.
 
 - Node.js 24.x
 - pnpm 10.x
+- Docker (required by Supabase CLI)
+- [Supabase CLI](https://supabase.com/docs/guides/local-development)
 
-### Installation
+### Setup
 
 ```bash
-# Install dependencies (run from monorepo root)
+# Install dependencies (from monorepo root)
 pnpm install
 
 # Copy Stockfish AI engine files (required for AI opponent)
-# Run inside apps/web directory
 pnpm run copy-stockfish
 
+# Start Supabase local (first run downloads Docker images)
+supabase start
+```
+
+After `supabase start` completes, it prints API keys. Copy these values into `.env.local`:
+
+```bash
+cp .env.example .env.local
+```
+
+| `supabase start` output field | `.env.local` variable           | Notes                                         |
+| ----------------------------- | ------------------------------- | --------------------------------------------- |
+| `anon key`                    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key used by the browser client         |
+| `service_role key`            | `SUPABASE_SERVICE_ROLE_KEY`     | Secret key for server-side operations         |
+| `API URL`                     | `NEXT_PUBLIC_SUPABASE_URL`      | Already defaulted to `http://127.0.0.1:54321` |
+
+> **Tip:** You can also retrieve the keys in JSON format: `supabase status -o json`
+
+```bash
+# Apply database schema
+pnpm db:run-migrate
+
+# Seed initial data (categories)
+pnpm db:seed
+
 # Start development server
-# Can be run from root (pnpm dev) or inside apps/web
 pnpm dev
 ```
 
@@ -28,30 +53,50 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Local Development
 
-### Posts Feature Setup
+### Google OAuth Setup (for Google Sign-In)
 
-The Posts feature requires a PostgreSQL database. For local development, use Docker Compose:
+To test Google Sign-In locally, you need to configure OAuth credentials:
+
+1. **Create OAuth credentials** in [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+   - Go to **APIs & Services** > **Credentials** > **Create Credentials** > **OAuth client ID**
+   - Select **Web application** as the application type
+
+2. **Register redirect URIs** in Google Cloud Console:
+
+   | Field                         | Value                                     |
+   | ----------------------------- | ----------------------------------------- |
+   | Authorized JavaScript origins | `http://localhost:3000`                   |
+   | Authorized redirect URIs      | `http://127.0.0.1:54321/auth/v1/callback` |
+
+   > **Note:** The redirect URI points to the local Supabase Auth endpoint, not your Next.js app. For production, the redirect URI is `https://<reference-id>.supabase.co/auth/v1/callback` (see [authentication-setup.md](docs/authentication-setup.md)).
+
+3. **Configure Supabase environment**:
+
+   ```bash
+   cp supabase/.env.example supabase/.env
+   ```
+
+   Edit `supabase/.env` and fill in the values from the Google Cloud Console:
+   - `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` — your OAuth Client ID
+   - `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET` — your OAuth Client Secret
+
+4. **Restart Supabase** to pick up the new environment variables:
+   ```bash
+   supabase stop && supabase start
+   ```
+
+For detailed authentication documentation, see [docs/authentication-setup.md](docs/authentication-setup.md).
+
+### Local Services
+
+- **Supabase Studio**: http://127.0.0.1:54323
+- **Inbucket (email testing)**: http://127.0.0.1:54324
+- **PostgreSQL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+
+To stop Supabase:
 
 ```bash
-# Start PostgreSQL container
-docker compose up -d
-
-# Apply database schema
-pnpm db:run-migrate
-
-# Seed initial data (categories)
-pnpm db:seed
-```
-
-The default database connection is `postgresql://postgres:postgres@localhost:5432/blindfold_chess`. No `.env.local` configuration is required for local development.
-
-To stop the database:
-
-```bash
-docker compose down
-
-# To also remove the data volume:
-docker compose down -v
+supabase stop
 ```
 
 ## Deployment
