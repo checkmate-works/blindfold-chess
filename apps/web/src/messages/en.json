@@ -1951,6 +1951,19 @@
     "auditLog": "Audit Log",
     "totalUsers": "Total Users",
     "roleAssignments": "Role Assignments",
+    "dashboardKpi": {
+      "from": "From",
+      "to": "To",
+      "past7days": "Past 7 days",
+      "past28days": "Past 28 days",
+      "past90days": "Past 90 days",
+      "newUsersPeriodTotal": "New Users (Period Total)",
+      "postsPeriodTotal": "Posts (Period Total)",
+      "dailyTrends": "Daily Trends",
+      "newUsers": "New Users",
+      "posts": "Posts",
+      "noData": "No data for the selected period."
+    },
     "usersTable": {
       "email": "Email",
       "role": "Role",

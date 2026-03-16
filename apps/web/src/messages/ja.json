@@ -1952,6 +1952,19 @@
     "auditLog": "Audit Log",
     "totalUsers": "Total Users",
     "roleAssignments": "Role Assignments",
+    "dashboardKpi": {
+      "from": "開始日",
+      "to": "終了日",
+      "past7days": "過去7日",
+      "past28days": "過去28日",
+      "past90days": "過去90日",
+      "newUsersPeriodTotal": "新規ユーザー数（期間合計）",
+      "postsPeriodTotal": "投稿数（期間合計）",
+      "dailyTrends": "日別推移",
+      "newUsers": "新規ユーザー",
+      "posts": "投稿",
+      "noData": "選択期間のデータがありません。"
+    },
     "usersTable": {
       "email": "Email",
       "role": "Role",
