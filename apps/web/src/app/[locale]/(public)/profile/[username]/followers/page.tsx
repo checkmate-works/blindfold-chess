@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, count, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, profiles, userFollows } from '@/lib/db';
@@ -11,7 +11,7 @@ import { Divider, PagePanel, PageTitle, PaginationNav, UserCard } from '@/app/[l
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -83,6 +83,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
     .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)))
+    .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
     .offset((currentPage - 1) * PAGE_SIZE);
 

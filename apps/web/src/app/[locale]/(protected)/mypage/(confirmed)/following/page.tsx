@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { and, count, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
@@ -12,7 +12,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
 import { FollowingList } from './_components/FollowingList';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -62,6 +62,7 @@ export default async function FollowingPage({ params, searchParams }: Props) {
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
     .where(and(eq(userFollows.followerId, user.id), isNull(profiles.deletedAt)))
+    .orderBy(desc(userFollows.createdAt))
     .limit(PAGE_SIZE)
     .offset((currentPage - 1) * PAGE_SIZE);
 
