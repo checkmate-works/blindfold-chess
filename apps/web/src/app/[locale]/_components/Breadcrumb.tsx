@@ -1,7 +1,7 @@
 // Note: Using standard next/link instead of @/i18n/routing Link
 // to avoid DYNAMIC_SERVER_USAGE errors in production.
 // Server Components should use standard Link with explicit locale in href.
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -67,9 +67,8 @@ type BreadcrumbProps = {
   locale?: string;
 };
 
-export async function Breadcrumb({ items, locale }: BreadcrumbProps) {
-  const effectiveLocale = locale || 'en';
-  const t = await getTranslations({ locale: effectiveLocale, namespace: 'metadata' });
+export function Breadcrumb({ items, locale }: BreadcrumbProps) {
+  const t = useTranslations('metadata');
   const brandName = t('siteName');
 
   return <BreadcrumbContent items={items} locale={locale} brandName={brandName} />;
