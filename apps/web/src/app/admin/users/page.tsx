@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { and, desc, eq, inArray } from 'drizzle-orm';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { db, moderationActions, profiles, userRoles } from '@/lib/db';
@@ -12,12 +12,14 @@ import { createClient } from '@/lib/supabase/server';
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { BanButton } from './_components/BanButton';
+import { StatusFilter } from './_components/StatusFilter';
 import { UnbanButton } from './_components/UnbanButton';
 
 const PAGE_SIZE = 20;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
+  status: parseAsString.withDefault(''),
 });
 
 export default async function AdminUsersPage({
@@ -25,7 +27,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page, status: statusFilter } = await searchParamsCache.parse(searchParams);
   const adminClient = createAdminClient();
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
@@ -57,6 +59,23 @@ export default async function AdminUsersPage({
     userIds.length > 0 ? await db.select().from(profiles).where(inArray(profiles.id, userIds)) : [];
   const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
 
+  // Apply post-fetch status filter
+  const filteredUsers = statusFilter
+    ? users.filter((user) => {
+        const profile = profileMap.get(user.id);
+        switch (statusFilter) {
+          case 'active':
+            return profile != null && profile.bannedAt == null;
+          case 'banned':
+            return profile != null && profile.bannedAt != null;
+          case 'anonymous':
+            return profile == null;
+          default:
+            return true;
+        }
+      })
+    : users;
+
   // Fetch latest ban reason for each banned user from moderation_actions
   const bannedUserIds = userProfiles.filter((p) => p.bannedAt != null).map((p) => p.id);
   const banReasonMap = new Map<string, string | null>();
@@ -85,11 +104,29 @@ export default async function AdminUsersPage({
     }
   }
 
-  const buildHref = (p: number) => `/admin/users?page=${p}`;
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    params.set('page', String(p));
+    if (statusFilter) params.set('status', statusFilter);
+    return `/admin/users?${params.toString()}`;
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{t('users')}</h1>
+
+      <div className="mb-6">
+        <StatusFilter
+          labels={{
+            filterByStatus: t('usersTable.filterByStatus'),
+            allStatuses: t('usersTable.allStatuses'),
+            active: t('usersTable.active'),
+            banned: t('usersTable.banned'),
+            anonymous: t('usersTable.anonymous'),
+          }}
+        />
+      </div>
+
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-secondary">
@@ -103,7 +140,7 @@ export default async function AdminUsersPage({
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => {
+            {filteredUsers.map((user) => {
               const profile = profileMap.get(user.id);
               const isBanned = profile?.bannedAt != null;
               const isCurrentUser = currentUser?.id === user.id;
@@ -198,7 +235,7 @@ export default async function AdminUsersPage({
                 </tr>
               );
             })}
-            {users.length === 0 && (
+            {filteredUsers.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                   {t('usersTable.noUsersFound')}
