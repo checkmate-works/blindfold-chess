@@ -41,7 +41,23 @@ export const RATE_LIMITS = {
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
+  /**
+   * Opening post limit is keyed per topicKey — use `createOpeningPostAction(slug)` to
+   * build the action string (e.g., 'create_opening_post:french-defense').
+   */
+  createOpeningPost: { action: 'create_opening_post', maxAttempts: 1, windowMs: 86_400_000 },
 } as const;
+
+/**
+ * Build a per-opening rate limit config by appending the slug to the action name.
+ * This allows 1 post per day per opening.
+ */
+export function createOpeningPostRateLimit(slug: string): RateLimitConfig {
+  return {
+    ...RATE_LIMITS.createOpeningPost,
+    action: `${RATE_LIMITS.createOpeningPost.action}:${slug}`,
+  };
+}
 
 /**
  * Check whether a user has exceeded the rate limit for a given action.

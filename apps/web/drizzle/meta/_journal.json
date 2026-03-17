@@ -15,6 +15,13 @@
       "when": 1773716484155,
       "tag": "20260317030124_create_chess_openings_table",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773724834001,
+      "tag": "20260317052033_create_topic_post_ratings_table",
+      "breakpoints": true
     }
   ]
 }

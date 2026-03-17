@@ -7,6 +7,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -386,6 +387,56 @@ export const topicPostLikes = pgTable(
 
 export type TopicPostLike = typeof topicPostLikes.$inferSelect;
 export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
+
+/**
+ * Topic Post Ratings — 1:1 extension of topic_posts for structured ratings.
+ *
+ * @description
+ * Stores structured ratings (preference and proficiency) for topic posts.
+ * Used for opening topics where users can rate how much they like an opening
+ * and how proficient they are with it, in addition to or instead of free-text content.
+ *
+ * @design 1:1 relationship with topic_posts via UNIQUE constraint on post_id
+ *
+ * Not all topic posts have ratings (e.g., square topics are text-only).
+ * A separate table avoids NULL-heavy columns on topic_posts and cleanly
+ * separates structured ratings from free-text content.
+ *
+ * @design At least one rating required
+ *
+ * The CHECK constraint ensures that at least one of preference_rating or
+ * proficiency_rating is provided. This prevents empty rating records.
+ */
+export const topicPostRatings = pgTable(
+  'topic_post_ratings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    preferenceRating: smallint('preference_rating'),
+    proficiencyRating: smallint('proficiency_rating'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'chk_rating_range_preference',
+      sql`${table.preferenceRating} IS NULL OR (${table.preferenceRating} >= 1 AND ${table.preferenceRating} <= 5)`
+    ),
+    check(
+      'chk_rating_range_proficiency',
+      sql`${table.proficiencyRating} IS NULL OR (${table.proficiencyRating} >= 1 AND ${table.proficiencyRating} <= 5)`
+    ),
+    check(
+      'chk_at_least_one_rating',
+      sql`${table.preferenceRating} IS NOT NULL OR ${table.proficiencyRating} IS NOT NULL`
+    ),
+  ]
+);
+
+export type TopicPostRating = typeof topicPostRatings.$inferSelect;
+export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(
