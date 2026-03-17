@@ -8,9 +8,11 @@ import { FaRegComment } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/truncate-content';
 
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+
+import { toggleLike } from '../[square]/posts/[postId]/_actions/toggleLike';
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
-import { LikeButton } from './LikeButton';
 import { UserAvatar } from './UserAvatar';
 
 type Props = {
@@ -67,9 +69,11 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
         <LikeButton
           postId={post.id}
           locale={locale}
-          square={square}
+          topicKey={square}
           initialLikeCount={post.likeMeta.likeCount}
           initialLikedByMe={post.likeMeta.likedByMe}
+          toggleLikeAction={toggleLike}
+          i18nNamespace="topics.squares"
         />
 
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -89,6 +93,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
                     width={24}
                     height={24}
                     className="rounded-full border-2 border-card"
+                    unoptimized
                   />
                 ) : (
                   <div

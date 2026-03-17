@@ -6,13 +6,22 @@ import { useTranslations } from 'next-intl';
 
 import { truncateContent } from '@/lib/truncate-content';
 
-import { LikeButton, UserAvatar } from '../../../../_components';
-import type { PostWithReplyMeta } from '../../../../_lib/queries';
+import type { PostWithReplyMeta } from '../_lib/queries';
+import { LikeButton } from './LikeButton';
+import { UserAvatar } from './UserAvatar';
+
+type ToggleLikeAction = (
+  postId: string,
+  locale: string,
+  topicKey: string
+) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   replies: PostWithReplyMeta[];
   locale: string;
-  square: string;
+  topicKey: string;
+  toggleLikeAction: ToggleLikeAction;
+  likeI18nNamespace: string;
 };
 
 function ReplyContent({ content }: { content: string }) {
@@ -39,7 +48,13 @@ function ReplyContent({ content }: { content: string }) {
   );
 }
 
-export function ReplyList({ replies, locale, square }: Props) {
+export function ReplyList({
+  replies,
+  locale,
+  topicKey,
+  toggleLikeAction,
+  likeI18nNamespace,
+}: Props) {
   return (
     <div className="space-y-4">
       {replies.map((reply) => {
@@ -73,9 +88,11 @@ export function ReplyList({ replies, locale, square }: Props) {
             <LikeButton
               postId={reply.id}
               locale={locale}
-              square={square}
+              topicKey={topicKey}
               initialLikeCount={reply.likeMeta.likeCount}
               initialLikedByMe={reply.likeMeta.likedByMe}
+              toggleLikeAction={toggleLikeAction}
+              i18nNamespace={likeI18nNamespace}
             />
           </div>
         );

@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { PostWithReplyMeta } from '../../../../_lib/queries';
+import type { PostWithReplyMeta } from '../_lib/queries';
 import { ReplyList } from './ReplyList';
 
 afterEach(() => {
@@ -12,12 +12,17 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('../../../../_components', () => ({
+vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
   LikeButton: () => <div data-testid="like-button" />,
+}));
+
+vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
   UserAvatar: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="user-avatar">{children}</div>
   ),
 }));
+
+const mockToggleLike = vi.fn();
 
 function makeReply(overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMeta {
   return {
@@ -53,7 +58,15 @@ function makeReply(overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMet
 describe('ReplyList', () => {
   it('should display short content without show more button', () => {
     const reply = makeReply({ content: 'Hello world' });
-    render(<ReplyList replies={[reply]} locale="en" square="e4" />);
+    render(
+      <ReplyList
+        replies={[reply]}
+        locale="en"
+        topicKey="e4"
+        toggleLikeAction={mockToggleLike}
+        likeI18nNamespace="topics.squares"
+      />
+    );
 
     expect(screen.getByText('Hello world')).toBeDefined();
     expect(screen.queryByText('showMore')).toBeNull();
@@ -62,7 +75,15 @@ describe('ReplyList', () => {
   it('should truncate long content and show "show more" button', () => {
     const longContent = 'a'.repeat(300);
     const reply = makeReply({ content: longContent });
-    render(<ReplyList replies={[reply]} locale="en" square="e4" />);
+    render(
+      <ReplyList
+        replies={[reply]}
+        locale="en"
+        topicKey="e4"
+        toggleLikeAction={mockToggleLike}
+        likeI18nNamespace="topics.squares"
+      />
+    );
 
     // Should show truncated content (200 chars + ...)
     expect(screen.getByText('a'.repeat(200) + '...')).toBeDefined();
@@ -73,7 +94,15 @@ describe('ReplyList', () => {
   it('should expand content when "show more" is clicked', () => {
     const longContent = 'a'.repeat(300);
     const reply = makeReply({ content: longContent });
-    render(<ReplyList replies={[reply]} locale="en" square="e4" />);
+    render(
+      <ReplyList
+        replies={[reply]}
+        locale="en"
+        topicKey="e4"
+        toggleLikeAction={mockToggleLike}
+        likeI18nNamespace="topics.squares"
+      />
+    );
 
     // Click "show more"
     fireEvent.click(screen.getByText('showMore'));
@@ -87,7 +116,15 @@ describe('ReplyList', () => {
   it('should not show "show more" for content exactly 200 characters', () => {
     const content = 'b'.repeat(200);
     const reply = makeReply({ content });
-    render(<ReplyList replies={[reply]} locale="en" square="e4" />);
+    render(
+      <ReplyList
+        replies={[reply]}
+        locale="en"
+        topicKey="e4"
+        toggleLikeAction={mockToggleLike}
+        likeI18nNamespace="topics.squares"
+      />
+    );
 
     expect(screen.getByText(content)).toBeDefined();
     expect(screen.queryByText('showMore')).toBeNull();
@@ -98,7 +135,15 @@ describe('ReplyList', () => {
       makeReply({ id: 'reply-1', content: 'First reply' }),
       makeReply({ id: 'reply-2', content: 'Second reply' }),
     ];
-    render(<ReplyList replies={replies} locale="en" square="e4" />);
+    render(
+      <ReplyList
+        replies={replies}
+        locale="en"
+        topicKey="e4"
+        toggleLikeAction={mockToggleLike}
+        likeI18nNamespace="topics.squares"
+      />
+    );
 
     expect(screen.getByText('First reply')).toBeDefined();
     expect(screen.getByText('Second reply')).toBeDefined();

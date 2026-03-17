@@ -10,56 +10,67 @@ import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/Del
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
 import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
+import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { UserAvatar } from '../../../_components';
-import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
-import { isValidSquare } from '../../../_lib/squares';
-import { SquareHighlightBoard } from '../../_components';
+import { MiniBoard } from '../../../_components/MiniBoard';
+import {
+  getLikeMetaForPost,
+  getOpeningBySlug,
+  getOpeningPostById,
+  getRepliesByPostId,
+} from '../../../_lib/queries';
+import { RatingDisplay } from '../../_components';
 import { createReply } from './_actions/createReply';
 import { deletePost } from './_actions/deletePost';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
-  params: Promise<{ locale: Locale; square: string; postId: string }>;
+  params: Promise<{ locale: Locale; slug: string; postId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, square, postId } = await params;
+  const { locale, slug, postId } = await params;
 
-  if (!isValidSquare(square)) {
+  const opening = await getOpeningBySlug(slug);
+  if (!opening) {
     return {};
   }
 
-  const post = await getPostById(postId, square);
+  const post = await getOpeningPostById(postId, slug);
   if (!post) {
     return {};
   }
 
-  const t = await getTranslations({ locale, namespace: 'metadata.topicsSquarePost' });
+  const t = await getTranslations({ locale, namespace: 'metadata.topicsOpeningPost' });
+
+  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const translated = nameT(slug as never);
+  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
 
   return {
     ...generateCanonicalMetadata({
       locale,
-      path: `topics/squares/${square}/posts/${postId}`,
+      path: `topics/openings/${slug}/posts/${postId}`,
     }),
-    title: t('title', { square }),
-    description: t('description', { square }),
+    title: t('title', { name: displayName }),
+    description: t('description', { name: displayName }),
   };
 }
 
-export default async function PostDetailPage({ params }: Props) {
-  const { locale, square, postId } = await params;
+export default async function OpeningPostDetailPage({ params }: Props) {
+  const { locale, slug, postId } = await params;
 
-  if (!isValidSquare(square)) {
+  const opening = await getOpeningBySlug(slug);
+  if (!opening) {
     notFound();
   }
 
-  const post = await getPostById(postId, square);
+  const post = await getOpeningPostById(postId, slug);
   if (!post) {
     notFound();
   }
@@ -74,27 +85,45 @@ export default async function PostDetailPage({ params }: Props) {
   ]);
 
   const t = await getTranslations({ locale, namespace: 'topics' });
-  const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
+  const dt = await getTranslations({ locale, namespace: 'topics.openings' });
+  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+
+  const translated = nameT(slug as never);
+  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+
+  const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('squares.pageTitle')}</PageTitle>
+      <PageTitle>{dt('detail.pageTitle')}</PageTitle>
 
       <PagePanel>
         <SectionTitle>
-          {t('squares.postDetail.authorView', { author: displayName, square })}
+          {dt('postDetail.authorView', { author: authorName, name: displayName })}
         </SectionTitle>
 
-        <SquareHighlightBoard square={square} locale={locale} />
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <MiniBoard fen={opening.fen} size={160} />
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="text-muted-foreground">{dt('detail.ecoCode')}: </span>
+              <span className="font-mono font-medium text-foreground">{opening.ecoCode}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">{dt('detail.moves')}: </span>
+              <span className="font-mono text-foreground">{opening.pgn}</span>
+            </div>
+          </div>
+        </div>
 
         <div>
           <Link
-            href={`/topics/squares/${square}`}
+            href={`/topics/openings/${slug}`}
             locale={locale}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            &larr; {t('squares.postDetail.backToSquare', { square })}
+            &larr; {dt('postDetail.backToOpening', { name: displayName })}
           </Link>
         </div>
 
@@ -102,7 +131,7 @@ export default async function PostDetailPage({ params }: Props) {
           <UserAvatar
             profileHref={profileHref}
             avatarUrl={post.author?.avatarUrl}
-            displayName={displayName}
+            displayName={authorName}
             locale={locale}
             size="md"
             flair={post.author?.flair}
@@ -121,6 +150,13 @@ export default async function PostDetailPage({ params }: Props) {
             </div>
           </UserAvatar>
 
+          {post.rating && (
+            <RatingDisplay
+              preferenceRating={post.rating.preferenceRating}
+              proficiencyRating={post.rating.proficiencyRating}
+            />
+          )}
+
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
             {post.content}
           </div>
@@ -129,47 +165,47 @@ export default async function PostDetailPage({ params }: Props) {
             <LikeButton
               postId={post.id}
               locale={locale}
-              topicKey={square}
+              topicKey={slug}
               initialLikeCount={likeMeta.likeCount}
               initialLikedByMe={likeMeta.likedByMe}
               toggleLikeAction={toggleLike}
-              i18nNamespace="topics.squares"
+              i18nNamespace="topics.openings.postDetail"
             />
             {user && user.id === post.userId && (
               <DeletePostButton
                 postId={post.id}
                 locale={locale}
-                redirectPath={`/${locale}/topics/squares/${square}`}
+                redirectPath={`/${locale}/topics/openings/${slug}`}
                 deletePostAction={deletePost}
-                i18nNamespace="topics.squares.deletePost"
+                i18nNamespace="topics.openings.deletePost"
               />
             )}
           </div>
         </div>
 
         <SectionTitle>
-          {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
+          {dt('replies.title')} ({dt('replies.count', { count: replies.length })})
         </SectionTitle>
 
         {replies.length > 0 ? (
           <ReplyList
             replies={replies}
             locale={locale}
-            topicKey={square}
+            topicKey={slug}
             toggleLikeAction={toggleLike}
-            likeI18nNamespace="topics.squares"
+            likeI18nNamespace="topics.openings.postDetail"
           />
         ) : (
-          <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
+          <p className="text-sm text-muted-foreground">{dt('replies.noReplies')}</p>
         )}
 
         {user ? (
           <ReplyForm
             locale={locale}
-            topicKey={square}
+            topicKey={slug}
             postId={postId}
             createReplyAction={createReply}
-            i18nNamespace="topics.squares.replies"
+            i18nNamespace="topics.openings.replies"
           />
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -178,19 +214,19 @@ export default async function PostDetailPage({ params }: Props) {
               locale={locale}
               className="text-foreground underline hover:text-muted-foreground transition-colors"
             >
-              {t('squares.replies.loginToReply')}
+              {dt('replies.loginToReply')}
             </Link>
           </p>
         )}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="topics-openings-detail" locale={locale} />
 
         <Breadcrumb
           items={[
             { label: t('title'), href: '/topics' },
-            { label: t('squares.title'), href: '/topics/squares' },
-            { label: square, href: `/topics/squares/${square}` },
-            { label: t('squares.readMore') },
+            { label: t('openings.title'), href: '/topics/openings' },
+            { label: displayName, href: `/topics/openings/${slug}` },
+            { label: t('openings.readMore') },
           ]}
           locale={locale}
         />

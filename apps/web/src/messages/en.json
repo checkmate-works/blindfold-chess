@@ -103,6 +103,10 @@
       "title": "New Post - {name}",
       "description": "Share your thoughts about the {name} chess opening"
     },
+    "topicsOpeningPost": {
+      "title": "Post about {name}",
+      "description": "A discussion post about the {name} chess opening"
+    },
     "topicsSquare": {
       "title": "Square {square}",
       "description": "Discussions and insights about the {square} square in chess"
@@ -1856,7 +1860,8 @@
     "followMessage": "{actor} started following you",
     "likeMessage": "{actor} liked your post",
     "unknownNotification": "You have a new notification",
-    "announcementMessage": "New announcement: {title}"
+    "announcementMessage": "New announcement: {title}",
+    "newPostMessage": "{actor} shared a new post"
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -2380,6 +2385,45 @@
       "ratings": {
         "preference": "Preference",
         "proficiency": "Proficiency"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToOpening": "Back to {name}",
+        "like": "Like",
+        "unlike": "Unlike"
+      },
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later."
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Post",
+        "confirmMessage": "Are you sure you want to delete this post? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
       }
     },
     "squares": {

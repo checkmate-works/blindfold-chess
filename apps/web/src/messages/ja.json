@@ -103,6 +103,10 @@
       "title": "新規投稿 - {name}",
       "description": "{name}についての感想を共有しましょう"
     },
+    "topicsOpeningPost": {
+      "title": "{name}についての投稿",
+      "description": "{name}についての議論の投稿"
+    },
     "topicsSquare": {
       "title": "マス目 {square}",
       "description": "チェスの{square}マスに関する議論と考察"
@@ -1857,7 +1861,8 @@
     "followMessage": "{actor} があなたをフォローしました",
     "likeMessage": "{actor} があなたの投稿にいいねしました",
     "unknownNotification": "新しい通知があります",
-    "announcementMessage": "新しいお知らせ: {title}"
+    "announcementMessage": "新しいお知らせ: {title}",
+    "newPostMessage": "{actor} が新しい投稿をしました"
   },
   "deleteAccount": {
     "title": "退会",
@@ -2358,6 +2363,45 @@
       "ratings": {
         "preference": "好み",
         "proficiency": "習熟度"
+      },
+      "postDetail": {
+        "authorView": "{author}の{name}に対する見解",
+        "backToOpening": "{name}に戻る",
+        "like": "いいね",
+        "unlike": "いいね解除"
+      },
+      "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信がありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "あなたの考えを共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "投稿を削除",
+        "confirmMessage": "この投稿を削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
       }
     },
     "squares": {

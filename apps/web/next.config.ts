@@ -17,10 +17,22 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
-  // Optimize images from external sources
+  // Optimize images from external sources (Supabase Storage avatars, etc.)
   images: {
     formats: ['image/avif', 'image/webp'],
-    remotePatterns: [],
+    remotePatterns: (() => {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (!supabaseUrl) return [];
+      const url = new URL(supabaseUrl);
+      return [
+        {
+          protocol: url.protocol.replace(':', '') as 'http' | 'https',
+          hostname: url.hostname,
+          port: url.port,
+          pathname: '/storage/v1/object/public/**',
+        },
+      ];
+    })(),
   },
 
   // Optimize production builds

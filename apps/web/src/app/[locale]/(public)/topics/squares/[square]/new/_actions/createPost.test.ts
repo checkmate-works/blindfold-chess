@@ -13,6 +13,11 @@ vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
+const mockNotifyFollowersOfNewPost = vi.fn();
+vi.mock('@/lib/notification', () => ({
+  notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -247,6 +252,44 @@ describe('createPost', () => {
 
       await createPost('en', 'e4', {}, makeFormData('hello'));
       expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('follower notification', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
+    });
+
+    it('should call notifyFollowersOfNewPost with correct arguments on success', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('My post about e4'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+
+      expect(mockNotifyFollowersOfNewPost).toHaveBeenCalledWith({
+        actorId: testUserId,
+        postId: generatedPostId,
+        topicType: 'square',
+        topicKey: 'e4',
+      });
+    });
+
+    it('should pass topicType as square', async () => {
+      await expect(createPost('en', 'd5', {}, makeFormData('post'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+
+      expect(mockNotifyFollowersOfNewPost).toHaveBeenCalledWith(
+        expect.objectContaining({ topicType: 'square' })
+      );
+    });
+
+    it('should not call notifyFollowersOfNewPost when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createPost('en', 'e4', {}, makeFormData('hello'));
+      expect(mockNotifyFollowersOfNewPost).not.toHaveBeenCalled();
     });
   });
 });

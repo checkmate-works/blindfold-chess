@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPostRatings, topicPosts } from '@/lib/db';
+import { notifyFollowersOfNewPost } from '@/lib/notification';
 import { checkRateLimit, createOpeningPostRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -94,7 +95,14 @@ export async function createOpeningPost(
     metadata: { topicType: 'opening', topicKey: slug },
   });
 
-  redirect(`/${locale}/topics/openings/${slug}?toast=post_created`);
+  notifyFollowersOfNewPost({
+    actorId: user.id,
+    postId: inserted.id,
+    topicType: 'opening',
+    topicKey: slug,
+  });
+
+  redirect(`/${locale}/topics/openings/${slug}/posts/${inserted.id}?toast=post_created`);
 }
 
 function parseRating(value: FormDataEntryValue | null): number | null {

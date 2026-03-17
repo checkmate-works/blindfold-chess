@@ -14,6 +14,11 @@ vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
+const mockNotifyFollowersOfNewPost = vi.fn();
+vi.mock('@/lib/notification', () => ({
+  notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -252,7 +257,7 @@ describe('createOpeningPost', () => {
       });
 
       expect(mockRedirect).toHaveBeenCalledWith(
-        '/en/topics/openings/french-defense?toast=post_created'
+        `/en/topics/openings/french-defense/posts/${generatedPostId}?toast=post_created`
       );
     });
 
@@ -288,7 +293,7 @@ describe('createOpeningPost', () => {
       ).rejects.toThrow('NEXT_REDIRECT');
 
       expect(mockRedirect).toHaveBeenCalledWith(
-        '/ja/topics/openings/sicilian-defense?toast=post_created'
+        `/ja/topics/openings/sicilian-defense/posts/${generatedPostId}?toast=post_created`
       );
     });
   });
@@ -413,6 +418,38 @@ describe('createOpeningPost', () => {
 
       await createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'hello' }));
       expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('follower notification', () => {
+    it('should call notifyFollowersOfNewPost with correct arguments on success', async () => {
+      await expect(
+        createOpeningPost('en', 'sicilian-defense', {}, makeFormData({ content: 'Great opening!' }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockNotifyFollowersOfNewPost).toHaveBeenCalledWith({
+        actorId: testUserId,
+        postId: generatedPostId,
+        topicType: 'opening',
+        topicKey: 'sicilian-defense',
+      });
+    });
+
+    it('should pass topicType as opening', async () => {
+      await expect(
+        createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'post' }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockNotifyFollowersOfNewPost).toHaveBeenCalledWith(
+        expect.objectContaining({ topicType: 'opening' })
+      );
+    });
+
+    it('should not call notifyFollowersOfNewPost when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'hello' }));
+      expect(mockNotifyFollowersOfNewPost).not.toHaveBeenCalled();
     });
   });
 });

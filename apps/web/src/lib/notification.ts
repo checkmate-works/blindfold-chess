@@ -1,7 +1,7 @@
 import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
-import { db, notifications } from './db';
+import { db, notifications, userFollows } from './db';
 
 type NotificationEvent = {
   userId: string;
@@ -56,5 +56,41 @@ export function createNotification(event: NotificationEvent): void {
       groupKey: event.groupKey ?? null,
       metadata: event.metadata ?? {},
     });
+  })().catch(() => {});
+}
+
+/**
+ * Notify all followers of a user about a new post.
+ * Fire-and-forget — failures are silently caught.
+ */
+export function notifyFollowersOfNewPost(params: {
+  actorId: string;
+  postId: string;
+  topicType: string;
+  topicKey: string;
+}): void {
+  (async () => {
+    const followers = await db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, params.actorId));
+
+    // Each createNotification triggers up to 2 DB queries (dedup SELECT + INSERT).
+    // At current scale this is acceptable, but for large follower counts consider
+    // batching inserts instead of looping.
+    for (const follower of followers) {
+      createNotification({
+        userId: follower.followerId,
+        actorId: params.actorId,
+        type: 'new_post',
+        targetType: 'topic_post',
+        targetId: params.postId,
+        metadata: {
+          topicType: params.topicType,
+          topicKey: params.topicKey,
+          postId: params.postId,
+        },
+      });
+    }
   })().catch(() => {});
 }

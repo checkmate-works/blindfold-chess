@@ -6,18 +6,32 @@ import { useTranslations } from 'next-intl';
 
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
-import { toggleLike } from '../[square]/posts/[postId]/_actions/toggleLike';
+type ToggleLikeAction = (
+  postId: string,
+  locale: string,
+  topicKey: string
+) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   postId: string;
   locale: string;
-  square: string;
+  topicKey: string;
   initialLikeCount: number;
   initialLikedByMe: boolean;
+  toggleLikeAction: ToggleLikeAction;
+  i18nNamespace: string;
 };
 
-export function LikeButton({ postId, locale, square, initialLikeCount, initialLikedByMe }: Props) {
-  const t = useTranslations('topics.squares');
+export function LikeButton({
+  postId,
+  locale,
+  topicKey,
+  initialLikeCount,
+  initialLikedByMe,
+  toggleLikeAction,
+  i18nNamespace,
+}: Props) {
+  const t = useTranslations(i18nNamespace);
   const [isPending, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useOptimistic(
     { liked: initialLikedByMe, count: initialLikeCount },
@@ -33,7 +47,7 @@ export function LikeButton({ postId, locale, square, initialLikeCount, initialLi
       const newCount = optimistic.count + (newLiked ? 1 : -1);
       setOptimistic({ liked: newLiked, count: newCount });
 
-      await toggleLike(postId, locale, square);
+      await toggleLikeAction(postId, locale, topicKey);
     });
   };
 

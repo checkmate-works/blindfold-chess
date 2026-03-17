@@ -5,26 +5,37 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { deletePost } from '../_actions/deletePost';
+type DeletePostAction = (
+  postId: string,
+  locale: string
+) => Promise<{ success: true } | { error: string }>;
 
 type Props = {
   postId: string;
   locale: string;
-  square: string;
+  redirectPath: string;
+  deletePostAction: DeletePostAction;
+  i18nNamespace: string;
 };
 
-export function DeletePostButton({ postId, locale, square }: Props) {
+export function DeletePostButton({
+  postId,
+  locale,
+  redirectPath,
+  deletePostAction,
+  i18nNamespace,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const t = useTranslations('topics.squares.deletePost');
+  const t = useTranslations(i18nNamespace);
   const router = useRouter();
 
   async function handleDelete() {
     setIsPending(true);
     setError(null);
 
-    const result = await deletePost(postId, locale);
+    const result = await deletePostAction(postId, locale);
 
     if ('error' in result) {
       setError(result.error);
@@ -32,7 +43,7 @@ export function DeletePostButton({ postId, locale, square }: Props) {
     } else {
       setIsOpen(false);
       setIsPending(false);
-      router.push(`/${locale}/topics/squares/${square}`);
+      router.push(redirectPath);
     }
   }
 
