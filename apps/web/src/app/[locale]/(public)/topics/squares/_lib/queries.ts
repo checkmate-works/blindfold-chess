@@ -1,6 +1,7 @@
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
+import { db, profiles, topicPostLikes, topicPostRatings, topicPosts } from '@/lib/db';
+import type { TopicPostRating } from '@/lib/db';
 
 import {
   attachPostMeta,
@@ -18,6 +19,11 @@ import type {
 
 export { attachPostMeta, getLikeMetaForPost, getRepliesByPostId };
 export type { LikeMeta, PostWithReplyMeta, Replier, ReplyMeta, SortMode, TopicPostWithAuthor };
+
+export type ProfilePostWithReplyMeta = PostWithReplyMeta & {
+  topicKey: string;
+  rating: Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null;
+};
 
 /**
  * Get top-level posts for a specific square
@@ -284,12 +290,13 @@ export async function getLikedPostsByUser(
 
 /**
  * Get top-level posts by a specific user, ordered by creation date (newest first).
- * Returns posts with reply/like metadata and the topicKey for each post.
+ * Returns posts with reply/like metadata, the topicKey, and optional rating for each post.
+ * Includes both 'square' and 'opening' topic types.
  */
 export async function getPostsByUserId(
   userId: string,
   currentUserId?: string
-): Promise<(PostWithReplyMeta & { topicKey: string })[]> {
+): Promise<ProfilePostWithReplyMeta[]> {
   const results = await db
     .select({
       post: topicPosts,
@@ -300,13 +307,18 @@ export async function getPostsByUserId(
         flair: profiles.flair,
         country: profiles.country,
       },
+      rating: {
+        preferenceRating: topicPostRatings.preferenceRating,
+        proficiencyRating: topicPostRatings.proficiencyRating,
+      },
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .where(
       and(
         eq(topicPosts.userId, userId),
-        eq(topicPosts.topicType, 'square'),
+        inArray(topicPosts.topicType, ['square', 'opening']),
         isNull(topicPosts.parentId),
         isNull(topicPosts.deletedAt)
       )
@@ -318,10 +330,17 @@ export async function getPostsByUserId(
     author: r.author,
   }));
 
+  const ratingMap = new Map(
+    results
+      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
+      .map((r) => [r.post.id, r.rating])
+  );
+
   const postsWithMeta = await attachPostMeta(posts, currentUserId);
 
   return postsWithMeta.map((p) => ({
     ...p,
     topicKey: p.topicKey,
+    rating: ratingMap.get(p.id) ?? null,
   }));
 }

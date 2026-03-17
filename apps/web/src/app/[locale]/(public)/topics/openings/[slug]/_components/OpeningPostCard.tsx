@@ -8,10 +8,12 @@ import { FaRegComment } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/truncate-content';
 
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/squares/_lib/relative-time';
 
 import type { OpeningPostWithReplyMeta } from '../../_lib/queries';
+import { toggleLike } from '../posts/[postId]/_actions/toggleLike';
 import { RatingDisplay } from './RatingDisplay';
 
 type Props = {
@@ -69,10 +71,15 @@ export function OpeningPostCard({ post, locale, slug }: Props) {
       </UserAvatar>
 
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <span className="text-red-500/70">&#9829;</span>
-          {post.likeMeta.likeCount > 0 && <span>{post.likeMeta.likeCount}</span>}
-        </div>
+        <LikeButton
+          postId={post.id}
+          locale={locale}
+          topicKey={slug}
+          initialLikeCount={post.likeMeta.likeCount}
+          initialLikedByMe={post.likeMeta.likedByMe}
+          toggleLikeAction={toggleLike}
+          i18nNamespace="topics.openings"
+        />
 
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <FaRegComment className="w-4 h-4" />

@@ -12,6 +12,7 @@ import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { OpeningPostCard } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/OpeningPostCard';
 import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components/PostCard';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
 import { PagePanel, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
@@ -295,15 +296,19 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
           <div className="mt-4 space-y-3">
             {posts.length > 0 ? (
-              posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  square={post.topicKey}
-                  showSquareBadge
-                />
-              ))
+              posts.map((post) =>
+                post.topicType === 'opening' ? (
+                  <OpeningPostCard key={post.id} post={post} locale={locale} slug={post.topicKey} />
+                ) : (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    locale={locale}
+                    square={post.topicKey}
+                    showSquareBadge
+                  />
+                )
+              )
             ) : (
               <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
             )}
