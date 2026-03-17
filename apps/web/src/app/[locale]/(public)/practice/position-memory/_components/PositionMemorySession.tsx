@@ -52,7 +52,7 @@ export function PositionMemorySession({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
@@ -292,8 +292,8 @@ export function PositionMemorySession({
     window.location.href = `/${locale}/practice/position-memory`;
   }, [locale]);
 
-  // Wait for positions to be initialized (avoid SSR/hydration mismatch)
-  if (!hasMounted || positions.length === 0) {
+  // Wait for positions to be initialized and preferences to be loaded (avoid SSR/hydration mismatch)
+  if (!hasMounted || !isLoaded || positions.length === 0) {
     return null;
   }
 

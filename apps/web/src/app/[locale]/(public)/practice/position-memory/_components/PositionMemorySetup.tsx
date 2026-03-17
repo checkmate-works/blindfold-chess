@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
@@ -42,7 +42,7 @@ export function PositionMemorySetup({
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const { settings, updateSettings, saveSettings, clearSettings } = usePositionMemorySettings({
     urlFens,
@@ -157,22 +157,30 @@ export function PositionMemorySetup({
   return (
     <PracticeLayout>
       <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-        <PositionMemorySettings
-          timeLimit={timeLimit}
-          problemCount={problemCount}
-          shuffleProblems={shuffleProblems}
-          useCustomFen={useCustomFen}
-          customFenInput={customFenInput}
-          customFenError={customFenError}
-          copyStatus={copyStatus}
-          boardTheme={preferences.boardTheme}
-          onTimeLimitChange={(v) => updateSettings({ timeLimit: v })}
-          onProblemCountChange={(v) => updateSettings({ problemCount: v })}
-          onShuffleChange={(v) => updateSettings({ shuffleProblems: v })}
-          onUseCustomFenChange={(v) => updateSettings({ useCustomFen: v })}
-          onCustomFenInputChange={(v) => updateSettings({ customFenInput: v })}
-          onCopyShareLink={handleCopyShareLink}
-        />
+        {!isLoaded ? (
+          <div className="flex justify-center">
+            <div className="w-full max-w-xs">
+              <BoardSkeleton />
+            </div>
+          </div>
+        ) : (
+          <PositionMemorySettings
+            timeLimit={timeLimit}
+            problemCount={problemCount}
+            shuffleProblems={shuffleProblems}
+            useCustomFen={useCustomFen}
+            customFenInput={customFenInput}
+            customFenError={customFenError}
+            copyStatus={copyStatus}
+            boardTheme={preferences.boardTheme}
+            onTimeLimitChange={(v) => updateSettings({ timeLimit: v })}
+            onProblemCountChange={(v) => updateSettings({ problemCount: v })}
+            onShuffleChange={(v) => updateSettings({ shuffleProblems: v })}
+            onUseCustomFenChange={(v) => updateSettings({ useCustomFen: v })}
+            onCustomFenInputChange={(v) => updateSettings({ customFenInput: v })}
+            onCopyShareLink={handleCopyShareLink}
+          />
+        )}
 
         <Button
           onClick={handleStart}

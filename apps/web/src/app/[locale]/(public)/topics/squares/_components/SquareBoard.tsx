@@ -1,17 +1,20 @@
 'use client';
 
-import { BoardLayout } from '@/app/_components';
+import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/boardThemes';
+
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {
   locale: string;
 };
 
 export function SquareBoard({ locale }: Props) {
-  const themeColors = getBoardThemeColors(DEFAULT_BOARD_THEME);
+  const { preferences, isLoaded } = useGamePreferences();
+  const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   const renderSquare = ({ square, isLight }: SquareRenderInfo) => {
     const coordinateClass = isLight ? themeColors.lightCoordinates : themeColors.darkCoordinates;
@@ -26,6 +29,14 @@ export function SquareBoard({ locale }: Props) {
       </Link>
     );
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="max-w-xs mx-auto">
+        <BoardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xs mx-auto">

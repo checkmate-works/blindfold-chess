@@ -5,6 +5,8 @@ import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { BoardSkeleton } from '@/app/_components';
+
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/_hooks/use-batch-training-session';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -23,7 +25,7 @@ const BATCH_SIZE = 100;
 
 export default function SquareColorsTrainingSession({ locale }: Props) {
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const { showToast } = useToast();
   const tp = useTranslations('practice');
 
@@ -60,6 +62,16 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare) {
     return <PracticeResultSkeleton />;
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <BoardSkeleton />
+        </div>
+      </div>
+    );
   }
 
   return (

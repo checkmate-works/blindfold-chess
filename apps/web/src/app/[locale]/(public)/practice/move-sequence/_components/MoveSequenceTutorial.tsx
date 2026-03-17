@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button, ChessBoard } from '@/app/_components';
+import { BoardSkeleton, Button, ChessBoard } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -26,7 +26,7 @@ const MOVE_INTERVAL = 1000;
 export function MoveSequenceTutorial({ locale }: Props) {
   const t = useTranslations('practice.moveSequence');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const {
     currentFen,
@@ -60,15 +60,19 @@ export function MoveSequenceTutorial({ locale }: Props) {
 
         <div className="mb-4">
           <div className="relative">
-            <ChessBoard
-              fen={currentFen}
-              flipped={false}
-              showCoordinates={true}
-              boardTheme={preferences.boardTheme}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
-            />
+            {!isLoaded ? (
+              <BoardSkeleton />
+            ) : (
+              <ChessBoard
+                fen={currentFen}
+                flipped={false}
+                showCoordinates={true}
+                boardTheme={preferences.boardTheme}
+                lastMove={preferences.highlightLastMove ? lastMove : null}
+              />
+            )}
 
-            {!isPlaying && !hasPlayed && (
+            {isLoaded && !isPlaying && !hasPlayed && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
                   onClick={handlePlay}

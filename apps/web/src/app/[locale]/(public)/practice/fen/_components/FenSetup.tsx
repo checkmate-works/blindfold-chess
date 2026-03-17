@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
@@ -30,7 +30,7 @@ type Props = {
 export function FenSetup({ locale }: Props) {
   const t = useTranslations('practice.fen');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const {
@@ -120,16 +120,23 @@ export function FenSetup({ locale }: Props) {
             </div>
           </div>
 
-          {!useCustomFen && (
-            <PresetProblemSection
-              problemCount={problemCount}
-              presetCount={presetCount}
-              shuffleProblems={shuffleProblems}
-              boardTheme={preferences.boardTheme}
-              onProblemCountChange={setProblemCount}
-              onShuffleChange={setShuffleProblems}
-            />
-          )}
+          {!useCustomFen &&
+            (!isLoaded ? (
+              <div className="flex justify-center">
+                <div className="w-full max-w-xs">
+                  <BoardSkeleton />
+                </div>
+              </div>
+            ) : (
+              <PresetProblemSection
+                problemCount={problemCount}
+                presetCount={presetCount}
+                shuffleProblems={shuffleProblems}
+                boardTheme={preferences.boardTheme}
+                onProblemCountChange={setProblemCount}
+                onShuffleChange={setShuffleProblems}
+              />
+            ))}
 
           {useCustomFen && (
             <CustomFenSection

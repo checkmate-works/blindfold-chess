@@ -49,7 +49,7 @@ export function FenSession({
 }: Props) {
   const t = useTranslations('practice.fen');
 
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
@@ -193,8 +193,8 @@ export function FenSession({
     [t]
   );
 
-  // Wait for positions to be initialized
-  if (!hasMounted || positions.length === 0) {
+  // Wait for positions to be initialized and preferences to be loaded
+  if (!hasMounted || !isLoaded || positions.length === 0) {
     return null;
   }
 

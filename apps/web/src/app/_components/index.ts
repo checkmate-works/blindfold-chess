@@ -3,6 +3,7 @@ export { TextInput } from './TextInput';
 export { Textarea } from './Textarea';
 export * from './BoardOverlay';
 export { BoardLayout } from './chess/BoardLayout';
+export { BoardSkeleton } from './chess/BoardSkeleton';
 export type { SquareRenderInfo } from './chess/BoardLayout';
 export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';

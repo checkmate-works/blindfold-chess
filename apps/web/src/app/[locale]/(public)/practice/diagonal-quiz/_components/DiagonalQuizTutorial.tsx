@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { getDiagonals } from '@blindfold-chess/features/diagonal-quiz';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
@@ -54,7 +54,7 @@ export function DiagonalQuizTutorial({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz.tutorial');
   const t_quiz = useTranslations('practice.diagonalQuiz');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('diagonal');
   const [trialAnswered, setTrialAnswered] = useState(false);
   const [trialResult, setTrialResult] = useState<{
@@ -181,14 +181,18 @@ export function DiagonalQuizTutorial({ locale }: Props) {
         {step !== 'trial' ? (
           <>
             <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6 relative">
-              <AnimatedChessBoard
-                initialFen={BISHOP_FEN}
-                showCoordinates={true}
-                flipped={false}
-                boardTheme={preferences.boardTheme}
-              >
-                {getOverlayContent()}
-              </AnimatedChessBoard>
+              {!isLoaded ? (
+                <BoardSkeleton rounded={false} />
+              ) : (
+                <AnimatedChessBoard
+                  initialFen={BISHOP_FEN}
+                  showCoordinates={true}
+                  flipped={false}
+                  boardTheme={preferences.boardTheme}
+                >
+                  {getOverlayContent()}
+                </AnimatedChessBoard>
+              )}
             </div>
 
             {/* Legend */}

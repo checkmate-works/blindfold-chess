@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button, ChessBoard } from '@/app/_components';
+import { BoardSkeleton, Button, ChessBoard } from '@/app/_components';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -21,7 +21,7 @@ const MOVE_INTERVAL = 1000; // 1 second between moves
 
 export function MoveSequenceMemorize({ data, onComplete }: Props) {
   const t = useTranslations('practice.moveSequence');
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
 
@@ -107,16 +107,20 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
       <div className="flex justify-center">
         <div className="w-full max-w-md">
           <div className="relative">
-            <ChessBoard
-              fen={currentFen}
-              flipped={flipped}
-              showCoordinates={preferences.showCoordinates}
-              boardTheme={preferences.boardTheme}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
-            />
+            {!isLoaded ? (
+              <BoardSkeleton />
+            ) : (
+              <ChessBoard
+                fen={currentFen}
+                flipped={flipped}
+                showCoordinates={preferences.showCoordinates}
+                boardTheme={preferences.boardTheme}
+                lastMove={preferences.highlightLastMove ? lastMove : null}
+              />
+            )}
 
             {/* Play button overlay - show when not playing */}
-            {!isPlaying && !hasPlayed && (
+            {isLoaded && !isPlaying && !hasPlayed && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
                   onClick={handlePlay}

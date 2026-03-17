@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaSyncAlt } from 'react-icons/fa';
 
@@ -38,7 +38,7 @@ export function PositionGameForm({ locale }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [isLoading, setIsLoading] = useState(false);
@@ -216,15 +216,19 @@ export function PositionGameForm({ locale }: Props) {
           <FaSyncAlt className="w-4 h-4" />
         </button>
       </div>
-      <EditableChessBoard
-        fen={positionFen}
-        onFenChange={handlePositionFenChange}
-        labels={editableBoardLabels}
-        editable
-        flipped={flipped}
-        boardTheme={preferences.boardTheme}
-        showCoordinates={preferences.showCoordinates}
-      />
+      {!isLoaded ? (
+        <BoardSkeleton />
+      ) : (
+        <EditableChessBoard
+          fen={positionFen}
+          onFenChange={handlePositionFenChange}
+          labels={editableBoardLabels}
+          editable
+          flipped={flipped}
+          boardTheme={preferences.boardTheme}
+          showCoordinates={preferences.showCoordinates}
+        />
+      )}
 
       {/* Position Settings Accordion */}
       <div className="rounded-md border border-border overflow-hidden">

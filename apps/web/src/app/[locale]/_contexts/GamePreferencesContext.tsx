@@ -123,6 +123,7 @@ const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
 
 type GamePreferencesContextType = {
   preferences: GamePreferences;
+  isLoaded: boolean;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
   resetPreferences: () => void;
 };
@@ -197,10 +198,11 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   const value = useMemo<GamePreferencesContextType>(
     () => ({
       preferences,
+      isLoaded,
       updatePreferences,
       resetPreferences,
     }),
-    [preferences, updatePreferences, resetPreferences]
+    [preferences, isLoaded, updatePreferences, resetPreferences]
   );
 
   return (

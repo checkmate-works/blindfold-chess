@@ -4,7 +4,7 @@ import { Fragment } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaArrowRight, FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -36,7 +36,7 @@ export function RoutePlannerResultView({
   isLastProblem,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   return (
     <div className="space-y-6">
@@ -86,20 +86,24 @@ export function RoutePlannerResultView({
       {/* Visual Board Result */}
       <div className="flex justify-center">
         <div className="w-full max-w-sm">
-          <RoutePlannerBoard
-            startSquare={problem.start}
-            targetSquare={problem.end}
-            piece={problem.piece}
-            path={
-              highlightedPathIndex !== null
-                ? result.shortestPath.slice(0, highlightedPathIndex + 1)
-                : [problem.start, ...moves]
-            }
-            boardTheme={preferences.boardTheme}
-            highlightedSquare={
-              highlightedPathIndex !== null ? result.shortestPath[highlightedPathIndex] : null
-            }
-          />
+          {!isLoaded ? (
+            <BoardSkeleton />
+          ) : (
+            <RoutePlannerBoard
+              startSquare={problem.start}
+              targetSquare={problem.end}
+              piece={problem.piece}
+              path={
+                highlightedPathIndex !== null
+                  ? result.shortestPath.slice(0, highlightedPathIndex + 1)
+                  : [problem.start, ...moves]
+              }
+              boardTheme={preferences.boardTheme}
+              highlightedSquare={
+                highlightedPathIndex !== null ? result.shortestPath[highlightedPathIndex] : null
+              }
+            />
+          )}
         </div>
       </div>
 

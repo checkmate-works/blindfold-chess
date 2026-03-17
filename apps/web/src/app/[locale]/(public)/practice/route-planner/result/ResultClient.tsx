@@ -28,7 +28,7 @@ export function ResultClient({ locale }: Props) {
   const tPractice = useTranslations('practice');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const dataParam = searchParams.get('data');
   const modeParam = searchParams.get('mode');
@@ -116,7 +116,7 @@ export function ResultClient({ locale }: Props) {
           label: tPractice('doOtherPractice'),
         }}
       >
-        {results.length > 0 && (
+        {results.length > 0 && isLoaded && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-muted-foreground mb-4">
               {tPractice('problemDetails')}

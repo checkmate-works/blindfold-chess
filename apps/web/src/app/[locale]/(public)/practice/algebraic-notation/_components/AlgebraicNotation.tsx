@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { BoardSkeleton } from '@/app/_components';
+
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -17,7 +19,7 @@ type Props = {
 };
 
 export default function AlgebraicNotation({ questions, locale }: Props) {
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [showResult, setShowResult] = useState(false);
@@ -55,15 +57,23 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
           <ProgressBar current={currentQuestionIndex + 1} total={questions.length} />
 
           {/* Question */}
-          <AlgebraicNotationPlaying
-            question={question}
-            currentQuestionIndex={currentQuestionIndex}
-            selectedAnswer={selectedAnswer}
-            showResult={showResult}
-            boardTheme={preferences.boardTheme}
-            onOptionSelect={handleOptionSelect}
-            locale={locale}
-          />
+          {!isLoaded ? (
+            <div className="flex justify-center">
+              <div className="w-full max-w-md">
+                <BoardSkeleton />
+              </div>
+            </div>
+          ) : (
+            <AlgebraicNotationPlaying
+              question={question}
+              currentQuestionIndex={currentQuestionIndex}
+              selectedAnswer={selectedAnswer}
+              showResult={showResult}
+              boardTheme={preferences.boardTheme}
+              onOptionSelect={handleOptionSelect}
+              locale={locale}
+            />
+          )}
 
           {/* Result */}
           {showResult && (
