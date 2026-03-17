@@ -2273,6 +2273,15 @@
       "title": "Openings",
       "description": "Explore and learn about chess openings and their key positions.",
       "sectionTitle": "{move} Openings",
+      "categoryFilter": {
+        "label": "Category",
+        "open": "Open Game",
+        "semi-open": "Semi-Open Game",
+        "closed": "Closed Game",
+        "indian": "Indian Systems",
+        "flank": "Flank Openings",
+        "other": "Others"
+      },
       "names": {
         "ruy-lopez": "Ruy Lopez",
         "italian-game": "Italian Game",

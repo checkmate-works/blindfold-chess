@@ -2251,6 +2251,15 @@
       "title": "オープニング",
       "description": "チェスのオープニングとその主要なポジションを探索・学習しましょう。",
       "sectionTitle": "{move} のオープニング",
+      "categoryFilter": {
+        "label": "カテゴリー",
+        "open": "オープンゲーム",
+        "semi-open": "セミオープンゲーム",
+        "closed": "クローズドゲーム",
+        "indian": "インディアンシステム",
+        "flank": "フランクオープニング",
+        "other": "その他"
+      },
       "names": {
         "ruy-lopez": "ルイ・ロペス",
         "italian-game": "イタリアン・ゲーム",
