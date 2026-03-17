@@ -261,6 +261,14 @@ $$;
 GRANT SELECT ON TABLE public.user_roles TO authenticated;
 
 -- =============================================================================
+-- chess_openings (master data — no FK to auth.users, public read)
+-- =============================================================================
+
+-- Grant read permissions (master data is publicly readable)
+GRANT SELECT ON TABLE public.chess_openings TO authenticated;
+GRANT SELECT ON TABLE public.chess_openings TO anon;
+
+-- =============================================================================
 -- topic_post_likes
 -- =============================================================================
 

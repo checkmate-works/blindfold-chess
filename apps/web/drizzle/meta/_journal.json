@@ -8,6 +8,13 @@
       "when": 1773523541929,
       "tag": "20260314212541_create_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773716484155,
+      "tag": "20260317030124_create_chess_openings_table",
+      "breakpoints": true
     }
   ]
 }

@@ -202,3 +202,12 @@ CREATE POLICY "notifications_update" ON "notifications"
 DROP POLICY IF EXISTS "notifications_delete" ON "notifications";
 CREATE POLICY "notifications_delete" ON "notifications"
   FOR DELETE USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- chess_openings (master data — public read, service role only write)
+-- =============================================================================
+ALTER TABLE "chess_openings" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "chess_openings_select" ON "chess_openings";
+CREATE POLICY "chess_openings_select" ON "chess_openings"
+  FOR SELECT USING (true);

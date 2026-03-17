@@ -655,3 +655,58 @@ export const notifications = pgTable(
 
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
+
+/**
+ * Chess Openings — master data for chess opening families.
+ *
+ * @description
+ * Stores chess opening families (e.g., French Defense, Sicilian Defense) with their
+ * representative PGN move sequences and resulting FEN positions. Used as topicKey
+ * source for topic_posts with topicType='opening'.
+ *
+ * @design Master data, not user-generated content
+ *
+ * This table is seeded via migration/script and managed by admins only.
+ * Users cannot create, modify, or delete openings. RLS allows public reads
+ * but restricts writes to the service role.
+ *
+ * @design FEN derived from PGN at seed time
+ *
+ * The `fen` column stores the board state after executing the `pgn` moves.
+ * This is computed at seed time using chess.js (via @blindfold-chess/features/chess-core)
+ * to avoid runtime computation.
+ *
+ * @design slug as topicKey
+ *
+ * The `slug` column serves as the `topicKey` value when `topicType='opening'`,
+ * following the same pattern as other topic types. It appears in URLs
+ * (e.g., /topics/openings/french-defense).
+ *
+ * @design No parent_id — flat structure for now
+ *
+ * This initial schema stores only opening families (e.g., "Sicilian Defense"),
+ * not individual variations (e.g., "Sicilian Najdorf"). A `parent_id` column
+ * for hierarchical variation support may be added in a future migration.
+ */
+export const chessOpenings = pgTable(
+  'chess_openings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 100 }).unique().notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    ecoCode: varchar('eco_code', { length: 3 }).notNull(),
+    pgn: text('pgn').notNull(),
+    fen: varchar('fen', { length: 100 }).notNull(),
+    firstMoveSquare: varchar('first_move_square', { length: 2 }).notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_chess_openings_first_move_square').on(table.firstMoveSquare),
+    index('idx_chess_openings_eco_code').on(table.ecoCode),
+  ]
+);
+
+export type ChessOpening = typeof chessOpenings.$inferSelect;
+export type NewChessOpening = typeof chessOpenings.$inferInsert;

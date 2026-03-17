@@ -13,13 +13,16 @@
  * using the ORM's built-in upsert capabilities directly is the mainstream approach
  * for master data seeding.
  */
+import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
 import { not, sql } from 'drizzle-orm';
 
+import { chessOpenings as chessOpeningsData } from './data/chess-openings';
 import { chessTerms } from './data/chess-terms';
 import {
   adBanners,
   articleCategories,
   articleCategoryTranslations,
+  chessOpenings,
   db,
   glossaryTermAliases,
   glossaryTermPositions,
@@ -243,6 +246,56 @@ async function seedArticleCategories() {
 }
 
 // ---------------------------------------------------------------------------
+// Master data: Chess Openings (code is source of truth, upserted on every deploy)
+// ---------------------------------------------------------------------------
+
+async function seedChessOpenings() {
+  console.log(`Seeding ${chessOpeningsData.length} chess openings...`);
+
+  const validSlugs: string[] = [];
+
+  for (const opening of chessOpeningsData) {
+    // Compute FEN from PGN at seed time
+    const moves = parsePgn(opening.pgn);
+    const fen = getFenAfterMoves(getStartingFen(), moves);
+
+    await db
+      .insert(chessOpenings)
+      .values({
+        slug: opening.slug,
+        name: opening.name,
+        ecoCode: opening.ecoCode,
+        pgn: opening.pgn,
+        fen,
+        firstMoveSquare: opening.firstMoveSquare,
+        sortOrder: opening.sortOrder,
+      })
+      .onConflictDoUpdate({
+        target: chessOpenings.slug,
+        set: {
+          name: opening.name,
+          ecoCode: opening.ecoCode,
+          pgn: opening.pgn,
+          fen,
+          firstMoveSquare: opening.firstMoveSquare,
+          sortOrder: opening.sortOrder,
+          updatedAt: new Date(),
+        },
+      });
+
+    validSlugs.push(opening.slug);
+  }
+
+  // Clean up openings removed from code data source
+  if (validSlugs.length > 0) {
+    const slugValues = validSlugs.map((s) => sql`${s}`);
+    await db
+      .delete(chessOpenings)
+      .where(not(sql`${chessOpenings.slug} IN (${sql.join(slugValues, sql`, `)})`));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Initial data: Ads & site settings (DB is source of truth, insert once only)
 // ---------------------------------------------------------------------------
 
@@ -285,6 +338,7 @@ async function seed() {
 
   await seedGlossaryTerms();
   await seedArticleCategories();
+  await seedChessOpenings();
   await seedAds();
 
   console.log('Seeding complete.');
