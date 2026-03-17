@@ -298,7 +298,13 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             {posts.length > 0 ? (
               posts.map((post) =>
                 post.topicType === 'opening' ? (
-                  <OpeningPostCard key={post.id} post={post} locale={locale} slug={post.topicKey} />
+                  <OpeningPostCard
+                    key={post.id}
+                    post={post}
+                    locale={locale}
+                    slug={post.topicKey}
+                    openingName={post.openingName}
+                  />
                 ) : (
                   <PostCard
                     key={post.id}

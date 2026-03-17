@@ -1,6 +1,13 @@
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPostRatings, topicPosts } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  profiles,
+  topicPostLikes,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
 import type { TopicPostRating } from '@/lib/db';
 
 import {
@@ -23,6 +30,7 @@ export type { LikeMeta, PostWithReplyMeta, Replier, ReplyMeta, SortMode, TopicPo
 export type ProfilePostWithReplyMeta = PostWithReplyMeta & {
   topicKey: string;
   rating: Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null;
+  openingName: string | null;
 };
 
 /**
@@ -311,10 +319,12 @@ export async function getPostsByUserId(
         preferenceRating: topicPostRatings.preferenceRating,
         proficiencyRating: topicPostRatings.proficiencyRating,
       },
+      openingName: chessOpenings.name,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
     .where(
       and(
         eq(topicPosts.userId, userId),
@@ -336,11 +346,16 @@ export async function getPostsByUserId(
       .map((r) => [r.post.id, r.rating])
   );
 
+  const openingNameMap = new Map(
+    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
+  );
+
   const postsWithMeta = await attachPostMeta(posts, currentUserId);
 
   return postsWithMeta.map((p) => ({
     ...p,
     topicKey: p.topicKey,
     rating: ratingMap.get(p.id) ?? null,
+    openingName: openingNameMap.get(p.id) ?? null,
   }));
 }

@@ -20,9 +20,10 @@ type Props = {
   post: OpeningPostWithReplyMeta;
   locale: string;
   slug: string;
+  openingName?: string | null;
 };
 
-export function OpeningPostCard({ post, locale, slug }: Props) {
+export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
   const tTopics = useTranslations('topics');
   const t = useTranslations('topics.openings');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -45,7 +46,7 @@ export function OpeningPostCard({ post, locale, slug }: Props) {
         flair={post.author?.flair}
         country={post.author?.country}
       >
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+        <div className="text-sm text-muted-foreground mb-1">
           <time dateTime={post.createdAt.toISOString()}>
             {post.createdAt.toLocaleDateString(locale, {
               year: 'numeric',
@@ -53,6 +54,13 @@ export function OpeningPostCard({ post, locale, slug }: Props) {
               day: 'numeric',
             })}
           </time>
+          {openingName && (
+            <div className="mt-2">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
+                {openingName}
+              </span>
+            </div>
+          )}
         </div>
         {post.rating && (
           <div className="mb-2">

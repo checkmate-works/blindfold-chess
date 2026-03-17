@@ -41,6 +41,10 @@ vi.mock('@/lib/db', () => {
       preferenceRating: 'topic_post_ratings.preference_rating',
       proficiencyRating: 'topic_post_ratings.proficiency_rating',
     },
+    chessOpenings: {
+      slug: 'chess_openings.slug',
+      name: 'chess_openings.name',
+    },
   };
 });
 
@@ -119,7 +123,8 @@ function makePostRow(
   topicType: 'square' | 'opening',
   topicKey: string,
   createdAt: Date,
-  rating: { preferenceRating: number | null; proficiencyRating: number | null } | null = null
+  rating: { preferenceRating: number | null; proficiencyRating: number | null } | null = null,
+  openingName: string | null = null
 ) {
   return {
     post: {
@@ -134,6 +139,7 @@ function makePostRow(
     },
     author: defaultAuthor,
     rating: rating ?? { preferenceRating: null, proficiencyRating: null },
+    openingName,
   };
 }
 
@@ -389,5 +395,94 @@ describe('getPostsByUserId', () => {
     expect(post).toHaveProperty('replyMeta');
     expect(post).toHaveProperty('likeMeta');
     expect(post).toHaveProperty('rating');
+    expect(post).toHaveProperty('openingName');
+  });
+
+  it('should return openingName when opening exists in chessOpenings table', async () => {
+    const mainRows = [
+      makePostRow(
+        'post-op-1',
+        'opening',
+        'sicilian-defense',
+        new Date('2025-06-01T00:00:00Z'),
+        { preferenceRating: 4, proficiencyRating: 3 },
+        'Sicilian Defense'
+      ),
+    ];
+
+    setupMocks(mainRows);
+
+    const result = await getPostsByUserId(userId);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].openingName).toBe('Sicilian Defense');
+    expect(result[0].topicType).toBe('opening');
+  });
+
+  it('should return null openingName when opening does not exist in chessOpenings table', async () => {
+    const mainRows = [
+      makePostRow(
+        'post-op-1',
+        'opening',
+        'unknown-opening',
+        new Date('2025-06-01T00:00:00Z'),
+        { preferenceRating: 3, proficiencyRating: null },
+        null
+      ),
+    ];
+
+    setupMocks(mainRows);
+
+    const result = await getPostsByUserId(userId);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].openingName).toBeNull();
+    expect(result[0].topicType).toBe('opening');
+  });
+
+  it('should return null openingName for square posts', async () => {
+    const mainRows = [makePostRow('post-sq-1', 'square', 'e4', new Date('2025-06-01T00:00:00Z'))];
+
+    setupMocks(mainRows);
+
+    const result = await getPostsByUserId(userId);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].openingName).toBeNull();
+    expect(result[0].topicType).toBe('square');
+  });
+
+  it('should correctly differentiate openingName across mixed posts', async () => {
+    const mainRows = [
+      makePostRow(
+        'post-op-1',
+        'opening',
+        'french-defense',
+        new Date('2025-06-03T00:00:00Z'),
+        { preferenceRating: 5, proficiencyRating: 4 },
+        'French Defense'
+      ),
+      makePostRow('post-sq-1', 'square', 'e4', new Date('2025-06-02T00:00:00Z')),
+      makePostRow(
+        'post-op-2',
+        'opening',
+        'unknown-opening',
+        new Date('2025-06-01T00:00:00Z'),
+        { preferenceRating: 2, proficiencyRating: null },
+        null
+      ),
+    ];
+
+    setupMocks(mainRows);
+
+    const result = await getPostsByUserId(userId);
+
+    expect(result).toHaveLength(3);
+    // Opening with known name in chessOpenings
+    expect(result[0].openingName).toBe('French Defense');
+    // Square post - always null
+    expect(result[1].openingName).toBeNull();
+    // Opening not found in chessOpenings
+    expect(result[2].openingName).toBeNull();
   });
 });

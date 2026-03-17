@@ -44,13 +44,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
         flair={post.author?.flair}
         country={post.author?.country}
       >
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-          {showSquareBadge && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
-              {square}
-            </span>
-          )}
-          <span>·</span>
+        <div className="text-sm text-muted-foreground mb-1">
           <time dateTime={post.createdAt.toISOString()}>
             {post.createdAt.toLocaleDateString(locale, {
               year: 'numeric',
@@ -58,6 +52,13 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
               day: 'numeric',
             })}
           </time>
+          {showSquareBadge && (
+            <div className="mt-2">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
+                {square}
+              </span>
+            </div>
+          )}
         </div>
         <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
           {contentPreview}
