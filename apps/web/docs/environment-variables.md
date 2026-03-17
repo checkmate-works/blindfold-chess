@@ -32,8 +32,8 @@ DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 Used by Supabase Auth for Google Sign-In. Without these variables, the authentication feature is disabled and the app runs normally without sign-in capability.
 
 ```bash
-# Supabase project URL and anonymous key
-# Local development: Run `supabase start` and copy the values from the output
+# Supabase project URL and Publishable key
+# Local development: Run `supabase start`, then `supabase status -o json` to retrieve API_URL and PUBLISHABLE_KEY
 # Vercel/Production: Automatically set by Supabase integration,
 #                    or copy from Supabase Dashboard → Project Settings → API
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
@@ -41,7 +41,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 # Supabase service role key (server-side only)
 # Used for admin operations such as user management and bypassing RLS.
-# Local development: Copy `service_role key` from `supabase start` output
+# Local development: Run `supabase status -o json` and copy SECRET_KEY
 # Production: Supabase Dashboard → Project Settings → API Keys → service_role
 # WARNING: Do NOT prefix with NEXT_PUBLIC_ — this key must never be exposed to the browser.
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key

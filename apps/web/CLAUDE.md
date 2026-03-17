@@ -155,10 +155,10 @@ cd apps/web
 # Start Supabase local (first run downloads Docker images)
 supabase start
 
-# The output shows anon key, service_role key, etc.
-# Copy these to .env.local:
-#   NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key from output>
-#   SUPABASE_SERVICE_ROLE_KEY=<service_role key from output>
+# Retrieve keys in JSON format and copy to .env.local:
+#   supabase status -o json
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=<PUBLISHABLE_KEY from JSON output>
+#   SUPABASE_SERVICE_ROLE_KEY=<SECRET_KEY from JSON output>
 
 # Run migrations
 pnpm db:run-migrate
@@ -167,10 +167,7 @@ pnpm db:run-migrate
 supabase stop
 ```
 
-```bash
-# キーを JSON 形式で取得
-supabase status -o json
-```
+> These keys are also visible in the human-readable `supabase start` output under "Authentication Keys" (Publishable / Secret).
 
 - **Supabase Studio**: http://127.0.0.1:54323
 - **Inbucket (email testing)**: http://127.0.0.1:54324
