@@ -50,14 +50,14 @@ export default async function AdminDashboardPage({
           <p className="text-sm text-muted-foreground">{t('dashboardKpi.newUsersPeriodTotal')}</p>
           <p className="text-3xl font-semibold mt-1">{newUsersData.total}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {startDate} ~ {endDate}
+            {startDate} ~ {endDate} (UTC)
           </p>
         </div>
         <div className="rounded-lg border border-border bg-secondary p-6">
           <p className="text-sm text-muted-foreground">{t('dashboardKpi.postsPeriodTotal')}</p>
           <p className="text-3xl font-semibold mt-1">{postsData.total}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {startDate} ~ {endDate}
+            {startDate} ~ {endDate} (UTC)
           </p>
         </div>
       </div>

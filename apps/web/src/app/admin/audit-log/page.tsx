@@ -8,7 +8,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-const PAGE_SIZE = 20;
+import { AdminDataTable } from '../_components/AdminDataTable';
+import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -25,7 +26,6 @@ export default async function AdminAuditLogPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const adminClient = createAdminClient();
 
-  const currentPage = Math.max(1, page);
   const userFilter = rawUser.trim();
 
   // Build where conditions
@@ -76,8 +76,10 @@ export default async function AdminAuditLogPage({
     .select({ count: sql<number>`count(*)` })
     .from(moderationActions)
     .where(whereClause);
-  const totalCount = Number(countResult.count);
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const { currentPage, totalPages, limit, offset } = getPaginationData(
+    page,
+    Number(countResult.count)
+  );
 
   // Fetch logs for current page
   const logs =
@@ -88,8 +90,8 @@ export default async function AdminAuditLogPage({
           .from(moderationActions)
           .where(whereClause)
           .orderBy(desc(moderationActions.createdAt))
-          .limit(PAGE_SIZE)
-          .offset((currentPage - 1) * PAGE_SIZE);
+          .limit(limit)
+          .offset(offset);
 
   // Collect unique user IDs for target and actor lookups
   const targetIds = [...new Set(logs.map((l) => l.targetId))];
@@ -169,71 +171,59 @@ export default async function AdminAuditLogPage({
         </button>
       </form>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-secondary">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.action')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.target')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.actor')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.reason')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.ipAddress')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('auditLogTable.timestamp')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log) => {
-              const targetProfile = profileMap.get(log.targetId);
-              const targetDisplay =
-                targetProfile?.username ?? emailMap.get(log.targetId) ?? log.targetId;
-              const actorDisplay = emailMap.get(log.actorId) ?? log.actorId;
+      <AdminDataTable
+        headers={[
+          t('auditLogTable.action'),
+          t('auditLogTable.target'),
+          t('auditLogTable.actor'),
+          t('auditLogTable.reason'),
+          t('auditLogTable.ipAddress'),
+          t('auditLogTable.timestamp'),
+        ]}
+        items={logs}
+        emptyMessage={t('auditLogTable.noLogsFound')}
+        renderRow={(log) => {
+          const targetProfile = profileMap.get(log.targetId);
+          const targetDisplay =
+            targetProfile?.username ?? emailMap.get(log.targetId) ?? log.targetId;
+          const actorDisplay = emailMap.get(log.actorId) ?? log.actorId;
 
-              return (
-                <tr key={log.id} className="border-t border-border">
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                        log.action === 'ban'
-                          ? 'bg-red-100 text-red-800'
-                          : log.action === 'unban'
-                            ? 'bg-green-100 text-green-800'
-                            : log.action === 'delete_post'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{targetDisplay}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>
-                  <td className="px-4 py-3">
-                    {log.reason ? (
-                      <span title={log.reason}>
-                        {log.reason.length > 50 ? `${log.reason.slice(0, 50)}...` : log.reason}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{log.ipAddress ?? '-'}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(log.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              );
-            })}
-            {logs.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  {t('auditLogTable.noLogsFound')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          return (
+            <tr key={log.id} className="border-t border-border">
+              <td className="px-4 py-3">
+                <span
+                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                    log.action === 'ban'
+                      ? 'bg-red-100 text-red-800'
+                      : log.action === 'unban'
+                        ? 'bg-green-100 text-green-800'
+                        : log.action === 'delete_post'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {log.action}
+                </span>
+              </td>
+              <td className="px-4 py-3">{targetDisplay}</td>
+              <td className="px-4 py-3 text-muted-foreground">{actorDisplay}</td>
+              <td className="px-4 py-3">
+                {log.reason ? (
+                  <span title={log.reason}>
+                    {log.reason.length > 50 ? `${log.reason.slice(0, 50)}...` : log.reason}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">-</span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{log.ipAddress ?? '-'}</td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {new Date(log.createdAt).toLocaleString()}
+              </td>
+            </tr>
+          );
+        }}
+      />
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>

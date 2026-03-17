@@ -27,7 +27,10 @@ export function StatusFilter({ labels }: StatusFilterProps) {
         id="status-filter"
         value={status}
         onChange={(e) => {
-          setParams({ status: e.target.value || null, page: null }, { history: 'push' });
+          setParams(
+            { status: e.target.value || null, page: null },
+            { history: 'push', shallow: false }
+          );
         }}
         className="border border-border rounded px-3 py-2 text-sm bg-card"
       >
