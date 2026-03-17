@@ -21,7 +21,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OpeningSortTabs } from '../_components';
-import { MiniBoard } from '../_components/MiniBoard';
+import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import type { SortMode } from '../_lib/queries';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
@@ -108,19 +108,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
       <PagePanel>
         <SectionTitle>{displayName}</SectionTitle>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-start">
-          <MiniBoard fen={opening.fen} size={160} />
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">{dt('ecoCode')}: </span>
-              <span className="font-mono font-medium text-foreground">{opening.ecoCode}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{dt('moves')}: </span>
-              <span className="font-mono text-foreground">{opening.pgn}</span>
-            </div>
-          </div>
-        </div>
+        <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
 
         <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
 

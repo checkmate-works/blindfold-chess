@@ -17,7 +17,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { MiniBoard } from '../../../_components/MiniBoard';
+import { OpeningBoardWithMoves } from '../../../_components/OpeningBoardWithMoves';
 import {
   getLikeMetaForPost,
   getOpeningBySlug,
@@ -103,19 +103,7 @@ export default async function OpeningPostDetailPage({ params }: Props) {
           {dt('postDetail.authorView', { author: authorName, name: displayName })}
         </SectionTitle>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-start">
-          <MiniBoard fen={opening.fen} size={160} />
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">{dt('detail.ecoCode')}: </span>
-              <span className="font-mono font-medium text-foreground">{opening.ecoCode}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">{dt('detail.moves')}: </span>
-              <span className="font-mono text-foreground">{opening.pgn}</span>
-            </div>
-          </div>
-        </div>
+        <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
 
         <div>
           <Link
