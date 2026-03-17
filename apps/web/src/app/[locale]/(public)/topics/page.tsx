@@ -38,6 +38,13 @@ export default async function TopicsPage({ params }: Props) {
             description={t('categories.squares.description')}
             locale={locale}
           />
+          <CardLink
+            href="/topics/openings"
+            icon="♞"
+            title={t('categories.openings.title')}
+            description={t('categories.openings.description')}
+            locale={locale}
+          />
         </div>
 
         <Divider />

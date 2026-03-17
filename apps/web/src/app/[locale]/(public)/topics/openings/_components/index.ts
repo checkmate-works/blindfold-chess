@@ -1,0 +1,1 @@
+export { OpeningCard } from './OpeningCard';
