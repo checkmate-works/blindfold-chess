@@ -8,9 +8,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
+import { AdminDataTable } from '../_components/AdminDataTable';
+import { getPaginationData } from '../_lib/pagination';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
-
-const PAGE_SIZE = 20;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -33,7 +33,6 @@ export default async function AdminTopicPostsPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const adminClient = createAdminClient();
 
-  const currentPage = Math.max(1, page);
   const userFilter = rawUser.trim();
 
   // Build where conditions
@@ -90,8 +89,10 @@ export default async function AdminTopicPostsPage({
     .select({ count: sql<number>`count(*)` })
     .from(topicPosts)
     .where(whereClause);
-  const totalCount = Number(countResult.count);
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const { currentPage, totalPages, limit, offset } = getPaginationData(
+    page,
+    Number(countResult.count)
+  );
 
   // Fetch posts for current page
   const posts =
@@ -102,8 +103,8 @@ export default async function AdminTopicPostsPage({
           .from(topicPosts)
           .where(whereClause)
           .orderBy(desc(topicPosts.createdAt))
-          .limit(PAGE_SIZE)
-          .offset((currentPage - 1) * PAGE_SIZE);
+          .limit(limit)
+          .offset(offset);
 
   // Collect unique user IDs for author lookups
   const authorIds = [...new Set(posts.map((p) => p.userId))];
@@ -213,72 +214,54 @@ export default async function AdminTopicPostsPage({
         </button>
       </form>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="bg-secondary">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.content')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.topicType')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.topicKey')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.author')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.status')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.createdAt')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('topicPosts.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {posts.map((post) => {
-              const isDeleted = post.deletedAt != null;
-              const authorProfile = profileMap.get(post.userId);
-              const authorDisplay =
-                authorProfile?.username ?? emailMap.get(post.userId) ?? post.userId;
+      <AdminDataTable
+        headers={[
+          t('topicPosts.content'),
+          t('topicPosts.topicType'),
+          t('topicPosts.topicKey'),
+          t('topicPosts.author'),
+          t('topicPosts.status'),
+          t('topicPosts.createdAt'),
+          t('topicPosts.actions'),
+        ]}
+        items={posts}
+        emptyMessage={t('topicPosts.noPostsFound')}
+        renderRow={(post) => {
+          const isDeleted = post.deletedAt != null;
+          const authorProfile = profileMap.get(post.userId);
+          const authorDisplay = authorProfile?.username ?? emailMap.get(post.userId) ?? post.userId;
 
-              return (
-                <tr
-                  key={post.id}
-                  className={`border-t border-border ${isDeleted ? 'opacity-50' : ''}`}
-                >
-                  <td className="px-4 py-3 max-w-md">
-                    <span className={isDeleted ? 'line-through' : ''}>
-                      {post.content.length > 100
-                        ? `${post.content.slice(0, 100)}...`
-                        : post.content}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{post.topicType}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{post.topicKey}</td>
-                  <td className="px-4 py-3">{authorDisplay}</td>
-                  <td className="px-4 py-3">
-                    {isDeleted ? (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                        {t('topicPosts.deleted')}
-                      </span>
-                    ) : (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                        {t('topicPosts.active')}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {new Date(post.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    {!isDeleted && <DeletePostAdminButton postId={post.id} labels={deleteLabels} />}
-                  </td>
-                </tr>
-              );
-            })}
-            {posts.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
-                  {t('topicPosts.noPostsFound')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          return (
+            <tr key={post.id} className={`border-t border-border ${isDeleted ? 'opacity-50' : ''}`}>
+              <td className="px-4 py-3 max-w-md">
+                <span className={isDeleted ? 'line-through' : ''}>
+                  {post.content.length > 100 ? `${post.content.slice(0, 100)}...` : post.content}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{post.topicType}</td>
+              <td className="px-4 py-3 text-muted-foreground">{post.topicKey}</td>
+              <td className="px-4 py-3">{authorDisplay}</td>
+              <td className="px-4 py-3">
+                {isDeleted ? (
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    {t('topicPosts.deleted')}
+                  </span>
+                ) : (
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    {t('topicPosts.active')}
+                  </span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {new Date(post.createdAt).toLocaleString()}
+              </td>
+              <td className="px-4 py-3">
+                {!isDeleted && <DeletePostAdminButton postId={post.id} labels={deleteLabels} />}
+              </td>
+            </tr>
+          );
+        }}
+      />
 
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>

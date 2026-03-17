@@ -1996,7 +1996,9 @@
       "anonymous": "Anonymous",
       "viewPosts": "投稿",
       "viewActivity": "アクティビティ",
-      "username": "Username"
+      "username": "Username",
+      "filterByStatus": "Status",
+      "allStatuses": "All"
     },
     "userPosts": {
       "title": "{username} の投稿",

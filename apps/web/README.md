@@ -24,19 +24,20 @@ pnpm run copy-stockfish
 supabase start
 ```
 
-After `supabase start` completes, it prints API keys. Copy these values into `.env.local`:
+After `supabase start` completes, retrieve the API keys by running `supabase status -o json`. Copy these values into `.env.local`:
 
 ```bash
+supabase status -o json
 cp .env.example .env.local
 ```
 
-| `supabase start` output field | `.env.local` variable           | Notes                                         |
-| ----------------------------- | ------------------------------- | --------------------------------------------- |
-| `anon key`                    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key used by the browser client         |
-| `service_role key`            | `SUPABASE_SERVICE_ROLE_KEY`     | Secret key for server-side operations         |
-| `API URL`                     | `NEXT_PUBLIC_SUPABASE_URL`      | Already defaulted to `http://127.0.0.1:54321` |
+| `supabase status -o json` field | `.env.local` variable           | Notes                                         |
+| ------------------------------- | ------------------------------- | --------------------------------------------- |
+| `PUBLISHABLE_KEY`               | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key used by the browser client         |
+| `SECRET_KEY`                    | `SUPABASE_SERVICE_ROLE_KEY`     | Secret key for server-side operations         |
+| `API_URL`                       | `NEXT_PUBLIC_SUPABASE_URL`      | Already defaulted to `http://127.0.0.1:54321` |
 
-> **Tip:** You can also retrieve the keys in JSON format: `supabase status -o json`
+> **Tip:** These values are also visible in the `supabase start` output under "Authentication Keys" (Publishable / Secret) and "APIs" (Project URL).
 
 ```bash
 # Apply database schema

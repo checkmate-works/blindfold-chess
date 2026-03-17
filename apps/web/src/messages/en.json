@@ -1995,7 +1995,9 @@
       "anonymous": "Anonymous",
       "viewPosts": "Posts",
       "viewActivity": "Activity",
-      "username": "Username"
+      "username": "Username",
+      "filterByStatus": "Status",
+      "allStatuses": "All"
     },
     "userPosts": {
       "title": "Posts by {username}",

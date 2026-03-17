@@ -9,9 +9,6 @@ import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 import { practiceSessions } from '@/lib/db/schema';
 import { createClient } from '@/lib/supabase/server';
 
-import type { DatePeriod } from '../_lib/period-utils';
-import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
-
 export type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 export type { DatePeriod } from '../_lib/period-utils';
 
@@ -47,8 +44,11 @@ function querySessionsByRange(
 }
 
 export async function getPracticeSessions(
-  menuType?: PracticeMenuType,
-  period?: DatePeriod
+  menuType: PracticeMenuType | undefined,
+  currentRangeStart: string,
+  currentRangeEnd: string,
+  previousRangeStart: string,
+  previousRangeEnd: string
 ): Promise<GetPracticeSessionsResponse> {
   try {
     const supabase = await createClient();
@@ -60,17 +60,14 @@ export async function getPracticeSessions(
       return { success: false, sessions: [], previousSessions: [] };
     }
 
-    const currentPeriod = period ?? 'thisWeek';
     const menu = menuType ?? null;
+    const currentRange = { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) };
+    const previousRange = { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) };
 
-    const rows = await querySessionsByRange(user.id, menu, getPeriodRange(currentPeriod));
+    const rows = await querySessionsByRange(user.id, menu, currentRange);
     const sessions = rows.map(parsePracticeSession);
 
-    const prevRows = await querySessionsByRange(
-      user.id,
-      menu,
-      getPreviousPeriodRange(currentPeriod)
-    );
+    const prevRows = await querySessionsByRange(user.id, menu, previousRange);
     const previousSessions = prevRows.map(parsePracticeSession);
 
     return { success: true, sessions, previousSessions };

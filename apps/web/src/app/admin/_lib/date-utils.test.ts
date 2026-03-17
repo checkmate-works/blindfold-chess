@@ -109,6 +109,54 @@ describe('daysAgo', () => {
     // 2 days inclusive: Mar 1 - 1 = Feb 29 (leap year)
     expect(daysAgo(2)).toBe('2024-02-29');
   });
+
+  it('should use UTC date, not local TZ (T23:00:00Z is next day in UTC+9)', () => {
+    // 2026-03-16T23:00:00Z is still March 16 in UTC,
+    // but would be 2026-03-17 08:00 in UTC+9 (JST)
+    vi.setSystemTime(new Date('2026-03-16T23:00:00Z'));
+    expect(daysAgo(1)).toBe('2026-03-16');
+  });
+
+  it('should use UTC date at midnight boundary', () => {
+    // At exactly midnight UTC on March 17, daysAgo(1) should return March 17
+    vi.setSystemTime(new Date('2026-03-17T00:00:00Z'));
+    expect(daysAgo(1)).toBe('2026-03-17');
+  });
+
+  it('should compute range start in UTC when near day boundary', () => {
+    // 2026-03-16T23:00:00Z → UTC date is March 16
+    // daysAgo(7) inclusive: March 16 - 6 = March 10
+    vi.setSystemTime(new Date('2026-03-16T23:00:00Z'));
+    expect(daysAgo(7)).toBe('2026-03-10');
+  });
+
+  it('should handle year boundary crossing near UTC midnight (23:59)', () => {
+    // 2026-01-01T23:59:59Z → UTC date is Jan 1, 2026
+    // daysAgo(7) inclusive: Jan 1 - 6 = Dec 26, 2025
+    vi.setSystemTime(new Date('2026-01-01T23:59:59Z'));
+    expect(daysAgo(7)).toBe('2025-12-26');
+  });
+
+  it('should handle year boundary crossing at UTC midnight (00:00)', () => {
+    // 2026-01-01T00:00:01Z → UTC date is Jan 1, 2026
+    // daysAgo(7) inclusive: Jan 1 - 6 = Dec 26, 2025
+    vi.setSystemTime(new Date('2026-01-01T00:00:01Z'));
+    expect(daysAgo(7)).toBe('2025-12-26');
+  });
+
+  it('should handle month boundary crossing near UTC midnight (23:59)', () => {
+    // 2026-03-01T23:59:59Z → UTC date is Mar 1, 2026
+    // daysAgo(7) inclusive: Mar 1 - 6 = Feb 23, 2026
+    vi.setSystemTime(new Date('2026-03-01T23:59:59Z'));
+    expect(daysAgo(7)).toBe('2026-02-23');
+  });
+
+  it('should handle month boundary crossing at UTC midnight (00:00)', () => {
+    // 2026-03-01T00:00:01Z → UTC date is Mar 1, 2026
+    // daysAgo(7) inclusive: Mar 1 - 6 = Feb 23, 2026
+    vi.setSystemTime(new Date('2026-03-01T00:00:01Z'));
+    expect(daysAgo(7)).toBe('2026-02-23');
+  });
 });
 
 describe('today - UTC behavior', () => {
