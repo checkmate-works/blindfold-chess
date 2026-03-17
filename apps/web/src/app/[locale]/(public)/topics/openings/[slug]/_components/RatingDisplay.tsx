@@ -2,22 +2,37 @@
 
 import { useTranslations } from 'next-intl';
 
+import { RatingFaceIcon } from '@blindfold-chess/icons';
+import type { RatingFaceLevel } from '@blindfold-chess/icons';
+
+const RATING_FACE_COLORS: Record<RatingFaceLevel, string> = {
+  1: '#7C3AED',
+  2: '#60A5FA',
+  3: '#F59E0B',
+  4: '#EF4444',
+  5: '#EC4899',
+};
+
 type Props = {
   preferenceRating: number | null;
   proficiencyRating: number | null;
 };
 
-function RatingStars({ value }: { value: number }) {
+function RatingFaces({ value }: { value: number }) {
   return (
     <span className="inline-flex gap-0.5" aria-label={`${value} out of 5`}>
-      {Array.from({ length: 5 }, (_, i) => (
-        <span
-          key={i}
-          className={`text-xs ${i < value ? 'text-amber-500' : 'text-muted-foreground/30'}`}
-        >
-          ★
-        </span>
-      ))}
+      {([1, 2, 3, 4, 5] as const).map((level) => {
+        const isActive = level === value;
+        return (
+          <span key={level} className={isActive ? 'opacity-100' : 'opacity-30'}>
+            <RatingFaceIcon
+              level={level as RatingFaceLevel}
+              size={16}
+              faceColor={isActive ? RATING_FACE_COLORS[level] : undefined}
+            />
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -34,13 +49,13 @@ export function RatingDisplay({ preferenceRating, proficiencyRating }: Props) {
       {preferenceRating !== null && (
         <span className="inline-flex items-center gap-1.5">
           <span>{t('preference')}</span>
-          <RatingStars value={preferenceRating} />
+          <RatingFaces value={preferenceRating} />
         </span>
       )}
       {proficiencyRating !== null && (
         <span className="inline-flex items-center gap-1.5">
           <span>{t('proficiency')}</span>
-          <RatingStars value={proficiencyRating} />
+          <RatingFaces value={proficiencyRating} />
         </span>
       )}
     </div>

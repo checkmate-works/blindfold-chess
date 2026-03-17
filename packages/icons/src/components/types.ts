@@ -1,5 +1,5 @@
 import type { PieceType } from "../data/chess-pieces";
-import type { PieceColor } from "../data/types";
+import type { PieceColor, RatingFaceLevel } from "../data/types";
 
 export type SpinnerIconProps = {
   size?: number;
@@ -15,4 +15,10 @@ export type ChessPieceIconProps = {
 export type StrokeIconProps = {
   size?: number;
   color?: string;
+};
+
+export type RatingFaceIconProps = {
+  level: RatingFaceLevel;
+  size?: number;
+  faceColor?: string;
 };
