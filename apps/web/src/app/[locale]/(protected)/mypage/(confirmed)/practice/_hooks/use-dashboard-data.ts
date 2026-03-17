@@ -22,6 +22,7 @@ import {
   PIECE_TYPES,
   derivePieceFilterFromSessions,
 } from '../_lib/derive-piece-filter';
+import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';
 
@@ -135,7 +136,16 @@ export function useDashboardData(locale: string) {
     let cancelled = false;
     (async () => {
       setIsLoading(true);
-      const response = await getPracticeSessions(selectedMenu, selectedPeriod);
+      const currentRange = getPeriodRange(selectedPeriod);
+      const previousRange = getPreviousPeriodRange(selectedPeriod);
+
+      const response = await getPracticeSessions(
+        selectedMenu,
+        currentRange.start.toISOString(),
+        currentRange.end.toISOString(),
+        previousRange.start.toISOString(),
+        previousRange.end.toISOString()
+      );
       if (!cancelled && response.success) {
         setAllSessions(response.sessions);
         setPreviousSessions(response.previousSessions);
