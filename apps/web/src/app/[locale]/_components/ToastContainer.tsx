@@ -18,6 +18,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   sign_in_required: { messageKey: 'signInRequired', type: 'info' },
   profile_updated: { messageKey: 'profileUpdated', type: 'success' },
   post_created: { messageKey: 'postCreated', type: 'success' },
+  rate_limited: { messageKey: 'rateLimited', type: 'info' },
   account_deleted: { messageKey: 'accountDeleted', type: 'success' },
 };
 

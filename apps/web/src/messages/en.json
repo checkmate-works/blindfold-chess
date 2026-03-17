@@ -95,6 +95,14 @@
       "title": "Chess Openings",
       "description": "Explore and learn about chess openings and their key positions"
     },
+    "topicsOpeningDetail": {
+      "title": "{name} - Chess Opening",
+      "description": "Discussions and ratings about the {name} chess opening"
+    },
+    "topicsOpeningNewPost": {
+      "title": "New Post - {name}",
+      "description": "Share your thoughts about the {name} chess opening"
+    },
     "topicsSquare": {
       "title": "Square {square}",
       "description": "Discussions and insights about the {square} square in chess"
@@ -1869,6 +1877,7 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
+    "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted"
@@ -2330,6 +2339,47 @@
         "kings-indian-classical": "King's Indian Defense: Classical Variation",
         "kings-indian-samisch": "King's Indian Defense: Samisch Variation",
         "grunfeld-exchange": "Grunfeld Defense: Exchange Variation"
+      },
+      "detail": {
+        "pageTitle": "Impressions & Insights",
+        "postCount": "{count, plural, one {# post} other {# posts}}",
+        "noPosts": "No posts yet. Be the first to share your thoughts!",
+        "newPost": "New Post",
+        "ecoCode": "ECO Code",
+        "moves": "Moves"
+      },
+      "newPostForm": {
+        "title": "New Post about {name}",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Share your thoughts about this opening...",
+        "preferenceLabel": "How much do you like this opening?",
+        "proficiencyLabel": "How well do you know this opening?",
+        "preferenceLabels": {
+          "1": "Dislike",
+          "2": "Not great",
+          "3": "Neutral",
+          "4": "Like",
+          "5": "Love"
+        },
+        "proficiencyLabels": {
+          "1": "Beginner",
+          "2": "Novice",
+          "3": "Intermediate",
+          "4": "Advanced",
+          "5": "Expert"
+        },
+        "submit": "Post",
+        "submitting": "Posting...",
+        "contentOrRatingRequired": "Please enter some content or provide at least one rating",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "invalidOpening": "Invalid opening",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to create a post",
+        "rateLimited": "You can only post once per day for each opening. Please try again later."
+      },
+      "ratings": {
+        "preference": "Preference",
+        "proficiency": "Proficiency"
       }
     },
     "squares": {

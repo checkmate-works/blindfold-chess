@@ -1,0 +1,1 @@
+export { NewOpeningPostForm } from './NewOpeningPostForm';

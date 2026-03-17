@@ -23,7 +23,9 @@ vi.mock('./db', () => ({
 
 vi.mock('server-only', () => ({}));
 
-const { checkRateLimit, RATE_LIMITS } = await import('./rate-limit');
+const { checkRateLimit, isRateLimited, createOpeningPostRateLimit, RATE_LIMITS } = await import(
+  './rate-limit'
+);
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 
@@ -195,5 +197,128 @@ describe('RATE_LIMITS', () => {
       maxAttempts: 3,
       windowMs: 3_600_000,
     });
+  });
+
+  it('should define createOpeningPost with expected values', () => {
+    expect(RATE_LIMITS.createOpeningPost).toEqual({
+      action: 'create_opening_post',
+      maxAttempts: 1,
+      windowMs: 86_400_000,
+    });
+  });
+
+  it('should define setupUsername with expected values', () => {
+    expect(RATE_LIMITS.setupUsername).toEqual({
+      action: 'setup_username',
+      maxAttempts: 5,
+      windowMs: 600_000,
+    });
+  });
+
+  it('should define savePracticeResult with expected values', () => {
+    expect(RATE_LIMITS.savePracticeResult).toEqual({
+      action: 'save_practice_result',
+      maxAttempts: 60,
+      windowMs: 3_600_000,
+    });
+  });
+});
+
+describe('isRateLimited', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return false when count is 0 (no events in window)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+
+    const result = await isRateLimited(testUserId, testConfig);
+    expect(result).toBe(false);
+  });
+
+  it('should return false when count is under the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 1 }]);
+
+    const result = await isRateLimited(testUserId, testConfig);
+    expect(result).toBe(false);
+  });
+
+  it('should return false at maxAttempts - 1 (boundary: just under)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: testConfig.maxAttempts - 1 }]);
+
+    const result = await isRateLimited(testUserId, testConfig);
+    expect(result).toBe(false);
+  });
+
+  it('should return true when count is exactly at the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: testConfig.maxAttempts }]);
+
+    const result = await isRateLimited(testUserId, testConfig);
+    expect(result).toBe(true);
+  });
+
+  it('should return true when count exceeds the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: testConfig.maxAttempts + 5 }]);
+
+    const result = await isRateLimited(testUserId, testConfig);
+    expect(result).toBe(true);
+  });
+
+  it('should NOT insert any event (read-only)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+
+    await isRateLimited(testUserId, testConfig);
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('should NOT insert any event even when not rate-limited', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 1 }]);
+
+    await isRateLimited(testUserId, testConfig);
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('should return true when maxAttempts is 1 and count is 1', async () => {
+    const singleAttemptConfig = { action: 'single', maxAttempts: 1, windowMs: 60_000 };
+    mockSelectFromWhere.mockResolvedValue([{ count: 1 }]);
+
+    const result = await isRateLimited(testUserId, singleAttemptConfig);
+    expect(result).toBe(true);
+  });
+
+  it('should return false when maxAttempts is 1 and count is 0', async () => {
+    const singleAttemptConfig = { action: 'single', maxAttempts: 1, windowMs: 60_000 };
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+
+    const result = await isRateLimited(testUserId, singleAttemptConfig);
+    expect(result).toBe(false);
+  });
+});
+
+describe('createOpeningPostRateLimit', () => {
+  it('should append slug to action name', () => {
+    const config = createOpeningPostRateLimit('french-defense');
+    expect(config.action).toBe('create_opening_post:french-defense');
+  });
+
+  it('should preserve maxAttempts from base config', () => {
+    const config = createOpeningPostRateLimit('french-defense');
+    expect(config.maxAttempts).toBe(RATE_LIMITS.createOpeningPost.maxAttempts);
+  });
+
+  it('should preserve windowMs from base config', () => {
+    const config = createOpeningPostRateLimit('french-defense');
+    expect(config.windowMs).toBe(RATE_LIMITS.createOpeningPost.windowMs);
+  });
+
+  it('should produce different actions for different slugs', () => {
+    const config1 = createOpeningPostRateLimit('french-defense');
+    const config2 = createOpeningPostRateLimit('sicilian-defense');
+    expect(config1.action).not.toBe(config2.action);
+  });
+
+  it('should handle slug with special characters', () => {
+    const config = createOpeningPostRateLimit('kings-indian-defense');
+    expect(config.action).toBe('create_opening_post:kings-indian-defense');
   });
 });

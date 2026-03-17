@@ -95,6 +95,14 @@
       "title": "チェスオープニング",
       "description": "チェスのオープニングとその主要なポジションを探索・学習しましょう"
     },
+    "topicsOpeningDetail": {
+      "title": "{name} - チェスオープニング",
+      "description": "{name}についての議論と評価"
+    },
+    "topicsOpeningNewPost": {
+      "title": "新規投稿 - {name}",
+      "description": "{name}についての感想を共有しましょう"
+    },
     "topicsSquare": {
       "title": "マス目 {square}",
       "description": "チェスの{square}マスに関する議論と考察"
@@ -1870,6 +1878,7 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
+    "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました"
@@ -2308,6 +2317,47 @@
         "kings-indian-classical": "キングズ・インディアン・ディフェンス: クラシカル・バリエーション",
         "kings-indian-samisch": "キングズ・インディアン・ディフェンス: ゼーミッシュ・バリエーション",
         "grunfeld-exchange": "グリュンフェルド・ディフェンス: エクスチェンジ・バリエーション"
+      },
+      "detail": {
+        "pageTitle": "みんなが考えるオープニングの特徴や印象",
+        "postCount": "{count}件の投稿",
+        "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
+        "newPost": "新規投稿",
+        "ecoCode": "ECOコード",
+        "moves": "手順"
+      },
+      "newPostForm": {
+        "title": "{name}について投稿",
+        "contentLabel": "内容",
+        "contentPlaceholder": "このオープニングについて思うことを共有しましょう...",
+        "preferenceLabel": "このオープニングはどのくらい好きですか？",
+        "proficiencyLabel": "このオープニングの習熟度は？",
+        "preferenceLabels": {
+          "1": "嫌い",
+          "2": "あまり好きではない",
+          "3": "普通",
+          "4": "好き",
+          "5": "大好き"
+        },
+        "proficiencyLabels": {
+          "1": "初心者",
+          "2": "初級者",
+          "3": "中級者",
+          "4": "上級者",
+          "5": "エキスパート"
+        },
+        "submit": "投稿する",
+        "submitting": "投稿中...",
+        "contentOrRatingRequired": "内容を入力するか、少なくとも1つの評価を選択してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "invalidOpening": "無効なオープニングです",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "投稿するにはサインインが必要です",
+        "rateLimited": "各オープニングへの投稿は1日1回までです。しばらくしてからもう一度お試しください。"
+      },
+      "ratings": {
+        "preference": "好み",
+        "proficiency": "習熟度"
       }
     },
     "squares": {

@@ -83,6 +83,7 @@ export default async function OpeningsPage({ params }: Props) {
                   key={opening.id}
                   opening={opening}
                   displayName={getDisplayName(opening.slug, opening.name)}
+                  locale={locale}
                 />
               ))}
             </div>
