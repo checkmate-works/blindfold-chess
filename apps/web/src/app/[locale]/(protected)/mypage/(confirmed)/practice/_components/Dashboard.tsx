@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PieceType } from '@blindfold-chess/types';
+import { FaQuestion } from 'react-icons/fa';
 
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
@@ -14,6 +15,7 @@ import {
   ORIENTATION_FILTER_MENUS,
   PIECE_FILTER_MENUS,
   PIECE_TYPES,
+  type PieceSelection,
   useDashboardData,
 } from '../_hooks/use-dashboard-data';
 import { getComparisonLabel, getPreviousPeriodLabel } from '../_lib/dashboard-utils';
@@ -41,7 +43,7 @@ export function Dashboard({ locale }: { locale: string }) {
     boardOrientationFilter,
     setBoardOrientationFilter,
     pieceFilter,
-    handlePieceToggle,
+    handlePieceSelect,
     isLoading,
     availableMenuTypes,
     currentStats,
@@ -123,20 +125,24 @@ export function Dashboard({ locale }: { locale: string }) {
           <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             {t('filters.selectedPiece')}
           </label>
-          <div className="flex gap-2">
-            {PIECE_TYPES.map((piece) => (
+          <div className="flex gap-1 sm:gap-2">
+            {([...PIECE_TYPES, 'random'] as PieceSelection[]).map((option) => (
               <button
-                key={piece}
-                onClick={() => handlePieceToggle(piece)}
-                className={`w-12 h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                  pieceFilter[piece]
+                key={option}
+                onClick={() => handlePieceSelect(option)}
+                className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
+                  pieceFilter === option
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border'
                 }`}
-                aria-label={t(`filters.pieces.${piece}`)}
-                title={t(`filters.pieces.${piece}`)}
+                aria-label={t(`filters.pieces.${option}`)}
+                title={t(`filters.pieces.${option}`)}
               >
-                <ChessPiece type={piece as PieceType} color="w" size={28} />
+                {option === 'random' ? (
+                  <FaQuestion className="w-4 h-4 sm:w-5 sm:h-5" />
+                ) : (
+                  <ChessPiece type={option as PieceType} color="w" size={24} />
+                )}
               </button>
             ))}
           </div>

@@ -13,32 +13,28 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType, PracticeMode } from '../_lib/types';
 import { LegalMovesSettings } from './LegalMovesSettings';
+import type { PieceSelection } from './PieceSelector';
 
 type Props = {
   locale: Locale;
-  timeLimit: number;
-  selectedPieces: Record<PieceType, boolean>;
-  onTimeLimitChange: (value: number) => void;
-  onPieceToggle: (piece: PieceType) => void;
   mode: PracticeMode;
   onModeChange: (mode: PracticeMode) => void;
+  pieceSelection: PieceSelection;
+  onPieceSelect: (selection: PieceSelection) => void;
 };
 
 export function LegalMovesSetup({
   locale,
-  timeLimit,
-  selectedPieces,
-  onTimeLimitChange,
-  onPieceToggle,
   mode,
   onModeChange,
+  pieceSelection,
+  onPieceSelect,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tp = useTranslations('practice');
   const router = useRouter();
 
   const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-  const hasSelectedPieces = pieces.some((piece) => selectedPieces[piece]);
 
   const modeOptions: { value: PracticeMode; label: string }[] = [
     { value: 'training', label: tp('modeTraining') },
@@ -46,15 +42,15 @@ export function LegalMovesSetup({
   ];
 
   const handleStart = () => {
-    const selectedPieceTypes = pieces.filter((piece) => selectedPieces[piece]).join(',');
+    const piecesParam = pieceSelection === 'random' ? pieces.join(',') : pieceSelection;
 
     if (mode === 'training') {
       router.push(
-        `/${locale}/practice/legal-moves/training?pieces=${selectedPieceTypes}#legal-moves-training-session`
+        `/${locale}/practice/legal-moves/training?pieces=${piecesParam}#legal-moves-training-session`
       );
     } else {
       router.push(
-        `/${locale}/practice/legal-moves/challenge?timeLimit=60&pieces=${selectedPieceTypes}#legal-moves-session`
+        `/${locale}/practice/legal-moves/challenge?timeLimit=60&pieces=${piecesParam}#legal-moves-session`
       );
     }
   };
@@ -80,17 +76,10 @@ export function LegalMovesSetup({
           </div>
         )}
 
-        <LegalMovesSettings
-          timeLimit={timeLimit}
-          selectedPieces={selectedPieces}
-          onTimeLimitChange={onTimeLimitChange}
-          onPieceToggle={onPieceToggle}
-          showTimeSlider={false}
-        />
+        <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
 
         <Button
           onClick={handleStart}
-          disabled={!hasSelectedPieces}
           variant="primary"
           size="lg"
           className="w-full mt-6"
