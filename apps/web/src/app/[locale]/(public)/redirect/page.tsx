@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { isInternalUrl } from '@/lib/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RedirectActions } from './_components/RedirectActions';
@@ -48,6 +49,7 @@ export default async function RedirectPage({ params, searchParams }: Props) {
           <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
           <p className="text-muted-foreground">{t('invalidUrl')}</p>
         </div>
+        <AdBanner slot="banner-standard" locale={locale} />
       </PagePanel>
     );
   }
@@ -65,6 +67,7 @@ export default async function RedirectPage({ params, searchParams }: Props) {
         </div>
         <RedirectActions url={url} locale={locale} />
       </div>
+      <AdBanner slot="banner-standard" locale={locale} />
     </PagePanel>
   );
 }

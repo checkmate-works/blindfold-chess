@@ -171,6 +171,8 @@ export default async function PostDetailPage({ params }: Props) {
           </div>
         </div>
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <SectionTitle>
           {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
         </SectionTitle>
@@ -211,7 +213,7 @@ export default async function PostDetailPage({ params }: Props) {
           <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
         ) : null}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Breadcrumb
           items={[

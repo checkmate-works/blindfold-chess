@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -28,8 +29,11 @@ export default async function CoordinateQuizResultPage(props: Props) {
   const { locale } = await props.params;
 
   return (
-    <Suspense>
-      <ResultClient locale={locale} />
-    </Suspense>
+    <>
+      <Suspense>
+        <ResultClient locale={locale} />
+      </Suspense>
+      <AdBanner slot="banner-standard" locale={locale} />
+    </>
   );
 }

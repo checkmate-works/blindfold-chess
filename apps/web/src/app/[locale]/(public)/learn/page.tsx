@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -74,6 +75,8 @@ export default async function LearnPage({ params }: Props) {
             );
           })}
         </div>
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 

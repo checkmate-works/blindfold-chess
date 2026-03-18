@@ -16,6 +16,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -110,6 +111,8 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
 
         {currentPage === 1 && <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
 
@@ -133,6 +136,8 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
             ))}
           </div>
         )}
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

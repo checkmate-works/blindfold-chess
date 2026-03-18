@@ -74,6 +74,8 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PagePanel>
         {currentPage === 1 && <SquareBoard locale={locale} />}
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
         {recentPosts.length === 0 ? (
@@ -92,7 +94,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

@@ -134,6 +134,8 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {t('squares.postCount', { count: totalCount })}
@@ -158,7 +160,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

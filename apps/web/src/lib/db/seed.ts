@@ -311,7 +311,7 @@ async function seedAds() {
   // Ad banners
   const bannerData = [
     {
-      slot: 'home-wide',
+      slot: 'banner-wide',
       href: 'https://example.com',
       imagePath: '/images/banners/banner1.webp',
       alt: 'Advertisement',
@@ -319,7 +319,7 @@ async function seedAds() {
       height: 208,
     },
     {
-      slot: 'topics-squares-square',
+      slot: 'banner-standard',
       href: 'https://example.com',
       imagePath: '/images/banners/banner2.webp',
       alt: 'Advertisement',

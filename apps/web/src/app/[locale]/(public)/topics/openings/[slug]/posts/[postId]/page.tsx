@@ -194,6 +194,8 @@ export default async function OpeningPostDetailPage({ params }: Props) {
           </div>
         </div>
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <SectionTitle>
           {dt('replies.title')} ({dt('replies.count', { count: replies.length })})
         </SectionTitle>
@@ -234,7 +236,7 @@ export default async function OpeningPostDetailPage({ params }: Props) {
           <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
         ) : null}
 
-        <AdBanner slot="topics-openings-detail" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Breadcrumb
           items={[

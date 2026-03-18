@@ -16,6 +16,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -133,6 +134,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
               </Suspense>
             )}
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
 
         {recentPosts.length === 0 ? (
@@ -144,6 +147,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
             ))}
           </div>
         )}
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
