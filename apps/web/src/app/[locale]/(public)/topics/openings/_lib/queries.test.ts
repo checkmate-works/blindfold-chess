@@ -6,6 +6,8 @@ import {
   getOpeningBySlug,
   getOpenings,
   getOpeningsByFirstMoveSquare,
+  getPostCountByFirstMoveSquare,
+  getPostsByFirstMoveSquarePaginated,
   isValidOpening,
 } from './queries';
 
@@ -28,6 +30,14 @@ vi.mock('@/lib/db', () => {
       createdAt: 'chess_openings.created_at',
       updatedAt: 'chess_openings.updated_at',
     },
+    topicPosts: {
+      id: 'topic_posts.id',
+      topicType: 'topic_posts.topic_type',
+      topicKey: 'topic_posts.topic_key',
+      parentId: 'topic_posts.parent_id',
+      deletedAt: 'topic_posts.deleted_at',
+      createdAt: 'topic_posts.created_at',
+    },
   };
 });
 
@@ -39,7 +49,7 @@ const mockDb = vi.mocked(db);
  */
 function mockChain(rows: unknown[]) {
   const chain: Record<string, unknown> = {};
-  const methods = ['select', 'from', 'where', 'orderBy', 'limit'];
+  const methods = ['select', 'from', 'where', 'orderBy', 'limit', 'offset', 'leftJoin'];
   for (const m of methods) {
     chain[m] = vi.fn().mockReturnValue(chain);
   }
@@ -196,5 +206,69 @@ describe('isValidOpening', () => {
     const result = await isValidOpening('nonexistent-opening');
 
     expect(result).toBe(false);
+  });
+});
+
+describe('getPostCountByFirstMoveSquare', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return 0 when no openings match the square', async () => {
+    // First call: select slugs from chessOpenings — returns empty
+    const slugChain = mockChain([]);
+    mockDb.select.mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>);
+
+    const result = await getPostCountByFirstMoveSquare('a3');
+
+    expect(result).toBe(0);
+    // Should only call select once (no second query needed)
+    expect(mockDb.select).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return the count of posts for matching openings', async () => {
+    // First call: select slugs from chessOpenings
+    const slugChain = mockChain([{ slug: 'ruy-lopez' }, { slug: 'italian-game' }]);
+    // Second call: count from topicPosts
+    const countChain = mockChain([{ count: 5 }]);
+
+    mockDb.select
+      .mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(countChain as unknown as ReturnType<typeof mockDb.select>);
+
+    const result = await getPostCountByFirstMoveSquare('e4');
+
+    expect(result).toBe(5);
+    expect(mockDb.select).toHaveBeenCalledTimes(2);
+  });
+
+  it('should return 0 when openings exist but have no posts', async () => {
+    const slugChain = mockChain([{ slug: 'queens-gambit' }]);
+    const countChain = mockChain([{ count: 0 }]);
+
+    mockDb.select
+      .mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>)
+      .mockReturnValueOnce(countChain as unknown as ReturnType<typeof mockDb.select>);
+
+    const result = await getPostCountByFirstMoveSquare('d4');
+
+    expect(result).toBe(0);
+  });
+});
+
+describe('getPostsByFirstMoveSquarePaginated', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return empty array when no openings match the square', async () => {
+    const slugChain = mockChain([]);
+    mockDb.select.mockReturnValueOnce(slugChain as unknown as ReturnType<typeof mockDb.select>);
+
+    const result = await getPostsByFirstMoveSquarePaginated('a3', 10, 0);
+
+    expect(result).toEqual([]);
+    // Should only call select once (early return, no post query)
+    expect(mockDb.select).toHaveBeenCalledTimes(1);
   });
 });

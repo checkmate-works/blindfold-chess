@@ -8,6 +8,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createClient } from '@/lib/supabase/server';
 
+import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import {
   Divider,
   PagePanel,
@@ -71,6 +72,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const allPosts = await getPostsWithReplyMeta(square, user?.id, sortBy);
+  const openingsForSquare = await getOpeningsByFirstMoveSquare(square);
 
   const totalCount = allPosts.length;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -93,6 +95,16 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
         <SectionTitle>{square}</SectionTitle>
 
         {currentPage === 1 && <SquareHighlightBoard square={square} locale={locale} />}
+
+        {openingsForSquare.length > 0 && (
+          <Link
+            href={`/topics/openings?first_move=${square}`}
+            locale={locale}
+            className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
+          >
+            {t('squares.openingsLink', { square })}
+          </Link>
+        )}
 
         <p className="text-sm text-muted-foreground">
           {t('squares.postCount', { count: totalCount })}

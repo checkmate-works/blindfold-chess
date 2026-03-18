@@ -3,11 +3,12 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import {
   Divider,
   PagePanel,
@@ -20,20 +21,25 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
+  OpeningCard,
   OpeningCategoryFilter,
   OpeningCategorySectionTitle,
   OpeningsListByCategory,
 } from './_components';
 import {
   getOpenings,
+  getOpeningsByFirstMoveSquare,
   getPostCountAcrossOpenings,
+  getPostCountByFirstMoveSquare,
   getPostsAcrossOpeningsPaginated,
+  getPostsByFirstMoveSquarePaginated,
 } from './_lib/queries';
 
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
+  first_move: parseAsString,
 });
 
 type Props = {
@@ -54,29 +60,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function OpeningsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page, first_move } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const totalCount = await getPostCountAcrossOpenings();
+
+  const firstMoveSquare = first_move && isValidSquare(first_move) ? first_move : null;
+
+  const totalCount = firstMoveSquare
+    ? await getPostCountByFirstMoveSquare(firstMoveSquare)
+    : await getPostCountAcrossOpenings();
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
 
-  const recentPosts = await getPostsAcrossOpeningsPaginated(
-    PAGE_SIZE,
-    (currentPage - 1) * PAGE_SIZE,
-    user?.id
-  );
+  const recentPosts = firstMoveSquare
+    ? await getPostsByFirstMoveSquarePaginated(
+        firstMoveSquare,
+        PAGE_SIZE,
+        (currentPage - 1) * PAGE_SIZE,
+        user?.id
+      )
+    : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
 
-  const openings = await getOpenings();
+  const openings = firstMoveSquare
+    ? await getOpeningsByFirstMoveSquare(firstMoveSquare)
+    : await getOpenings();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
+    if (firstMoveSquare) params.set('first_move', firstMoveSquare);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
     return `/${locale}/topics/openings${qs ? `?${qs}` : ''}`;
+  };
+
+  const getDisplayName = (slug: string, fallback: string) => {
+    const translated = nameT(slug as never);
+    return translated === `topics.openings.names.${slug}` ? fallback : translated;
   };
 
   return (
@@ -84,13 +107,31 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
       <PageTitle>{t('openings.title')}</PageTitle>
 
       <PagePanel>
-        {currentPage === 1 && (
-          <Suspense>
-            <OpeningCategorySectionTitle />
-            <OpeningCategoryFilter />
-            <OpeningsListByCategory openings={openings} locale={locale} />
-          </Suspense>
-        )}
+        {firstMoveSquare
+          ? currentPage === 1 && (
+              <>
+                <SectionTitle>
+                  {t('openings.firstMoveFilter.title', { square: firstMoveSquare })}
+                </SectionTitle>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {openings.map((opening) => (
+                    <OpeningCard
+                      key={opening.id}
+                      opening={opening}
+                      displayName={getDisplayName(opening.slug, opening.name)}
+                      locale={locale}
+                    />
+                  ))}
+                </div>
+              </>
+            )
+          : currentPage === 1 && (
+              <Suspense>
+                <OpeningCategorySectionTitle />
+                <OpeningCategoryFilter />
+                <OpeningsListByCategory openings={openings} locale={locale} />
+              </Suspense>
+            )}
 
         <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
 

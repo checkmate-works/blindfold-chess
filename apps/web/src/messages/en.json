@@ -2278,6 +2278,9 @@
       "recentPosts": "Recent Posts",
       "noRecentPosts": "No posts yet.",
       "sectionTitle": "{move} Openings",
+      "firstMoveFilter": {
+        "title": "Openings starting with {square}"
+      },
       "categoryFilter": {
         "label": "Category",
         "open": "Open Game",
@@ -2450,6 +2453,7 @@
       "postCount": "{count, plural, one {# post} other {# posts}}",
       "noPosts": "No posts yet. Be the first to share your thoughts!",
       "newPost": "New Post",
+      "openingsLink": "View openings starting with {square}",
       "backToSquares": "Back to Squares",
       "backToTopics": "Back to Topics",
       "postedBy": "by {author}",
