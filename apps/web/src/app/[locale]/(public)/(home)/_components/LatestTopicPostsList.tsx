@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
+import { createClient } from '@/lib/supabase/server';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { getRecentPostsAcrossTopics } from '../../topics/_lib/queries';
@@ -15,7 +17,11 @@ type Props = {
 };
 
 export async function LatestTopicPostsList({ locale, title }: Props) {
-  const posts = await getRecentPostsAcrossTopics(DISPLAY_COUNT + 1);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const posts = await getRecentPostsAcrossTopics(DISPLAY_COUNT + 1, user?.id);
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   if (posts.length === 0) {
