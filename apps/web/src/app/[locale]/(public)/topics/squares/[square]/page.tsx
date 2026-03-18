@@ -8,6 +8,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createClient } from '@/lib/supabase/server';
 
+import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import {
   Divider,
@@ -67,6 +68,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const sortBy: SortMode = validSorts.includes(sort as SortMode) ? (sort as SortMode) : 'new';
 
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const supabase = await createClient();
   const {
     data: { user },
@@ -78,6 +80,15 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
   const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const getDisplayName = (slug: string, fallback: string) => {
+    const translated = nameT(slug as never);
+    return translated === `topics.openings.names.${slug}` ? fallback : translated;
+  };
+
+  const MAX_OPENING_CARDS = 3;
+  const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
+  const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -96,14 +107,31 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
 
         {currentPage === 1 && <SquareHighlightBoard square={square} locale={locale} />}
 
-        {openingsForSquare.length > 0 && (
-          <Link
-            href={`/topics/openings?first_move=${square}`}
-            locale={locale}
-            className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
-          >
-            {t('squares.openingsLink', { square })}
-          </Link>
+        {visibleOpenings.length > 0 && (
+          <div className="space-y-3">
+            <SectionTitle>{t('squares.openingsLink', { square })}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {visibleOpenings.map((opening) => (
+                <OpeningCard
+                  key={opening.id}
+                  opening={opening}
+                  displayName={getDisplayName(opening.slug, opening.name)}
+                  locale={locale}
+                />
+              ))}
+            </div>
+            {hasMoreOpenings && (
+              <div className="text-center">
+                <Link
+                  href={`/topics/openings?first_move=${square}`}
+                  locale={locale}
+                  className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
+                >
+                  {t('squares.moreOpenings')}
+                </Link>
+              </div>
+            )}
+          </div>
         )}
 
         <p className="text-sm text-muted-foreground">
