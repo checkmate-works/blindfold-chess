@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { ChessBoard } from '@/app/_components';
+import { BoardSkeleton, ChessBoard } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -19,7 +19,7 @@ type Props = {
 
 export function PresetProblemList({ selectedPresetId, onSelectPreset }: Props) {
   const t = useTranslations('practice.moveSequence');
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [showPreview, setShowPreview] = useState(true);
 
   const {
@@ -65,16 +65,20 @@ export function PresetProblemList({ selectedPresetId, onSelectPreset }: Props) {
         <div className="mt-4">
           <div className="max-w-xs mx-auto">
             <div className="relative">
-              <ChessBoard
-                fen={previewFen || selectedPresetData.startFen}
-                showCoordinates={true}
-                flipped={false}
-                boardTheme={preferences.boardTheme}
-                lastMove={preferences.highlightLastMove ? lastMove : null}
-              />
+              {!isLoaded ? (
+                <BoardSkeleton />
+              ) : (
+                <ChessBoard
+                  fen={previewFen || selectedPresetData.startFen}
+                  showCoordinates={true}
+                  flipped={false}
+                  boardTheme={preferences.boardTheme}
+                  lastMove={preferences.highlightLastMove ? lastMove : null}
+                />
+              )}
 
               {/* Play button overlay */}
-              {!isPlayingPreview && previewMoveIndex < 0 && (
+              {isLoaded && !isPlayingPreview && previewMoveIndex < 0 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                   <button
                     onClick={handlePlayPreview}

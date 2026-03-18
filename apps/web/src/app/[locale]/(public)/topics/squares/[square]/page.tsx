@@ -8,6 +8,8 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createClient } from '@/lib/supabase/server';
 
+import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
+import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import {
   Divider,
   PagePanel,
@@ -66,16 +68,27 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const sortBy: SortMode = validSorts.includes(sort as SortMode) ? (sort as SortMode) : 'new';
 
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const allPosts = await getPostsWithReplyMeta(square, user?.id, sortBy);
+  const openingsForSquare = await getOpeningsByFirstMoveSquare(square);
 
   const totalCount = allPosts.length;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
   const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const getDisplayName = (slug: string, fallback: string) => {
+    const translated = nameT(slug as never);
+    return translated === `topics.openings.names.${slug}` ? fallback : translated;
+  };
+
+  const MAX_OPENING_CARDS = 3;
+  const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
+  const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -92,13 +105,42 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       <PagePanel>
         <SectionTitle>{square}</SectionTitle>
 
-        <SquareHighlightBoard square={square} locale={locale} />
+        {currentPage === 1 && <SquareHighlightBoard square={square} locale={locale} />}
 
-        <p className="text-sm text-muted-foreground">
-          {t('squares.postCount', { count: totalCount })}
-        </p>
+        {visibleOpenings.length > 0 && (
+          <div className="space-y-3">
+            <SectionTitle>{t('squares.openingsLink', { square })}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {visibleOpenings.map((opening) => (
+                <OpeningCard
+                  key={opening.id}
+                  opening={opening}
+                  displayName={getDisplayName(opening.slug, opening.name)}
+                  locale={locale}
+                />
+              ))}
+            </div>
+            {hasMoreOpenings && (
+              <div className="text-center">
+                <Link
+                  href={`/topics/openings?first_move=${square}`}
+                  locale={locale}
+                  className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
+                >
+                  {t('squares.moreOpenings')}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
-        <div>
+        <AdBanner slot="banner-wide" locale={locale} />
+
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {t('squares.postCount', { count: totalCount })}
+          </p>
+
           <Link href={`/topics/squares/${square}/new`} locale={locale}>
             <Button variant="primary" asChild>
               {t('squares.newPost')}
@@ -118,7 +160,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

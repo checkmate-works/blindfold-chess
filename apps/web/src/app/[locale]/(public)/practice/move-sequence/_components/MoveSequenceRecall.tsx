@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { ChessBoard } from '@/app/_components';
+import { BoardSkeleton, ChessBoard } from '@/app/_components';
 import { FaEye } from 'react-icons/fa';
 
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
@@ -23,7 +23,7 @@ type Props = {
 
 export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
   const t = useTranslations('practice.moveSequence');
-  const { preferences, updatePreferences } = useGamePreferences();
+  const { preferences, isLoaded, updatePreferences } = useGamePreferences();
 
   const [moveInput, setMoveInput] = useState('');
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -199,13 +199,17 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
           {/* Content */}
           <div className="relative z-10 w-full max-w-lg px-4">
             <div className="rounded-md overflow-hidden shadow-lg">
-              <ChessBoard
-                fen={currentFen}
-                flipped={flipped}
-                showCoordinates={preferences.showCoordinates}
-                boardTheme={preferences.boardTheme}
-                lastMove={preferences.highlightLastMove ? lastMove : null}
-              />
+              {!isLoaded ? (
+                <BoardSkeleton />
+              ) : (
+                <ChessBoard
+                  fen={currentFen}
+                  flipped={flipped}
+                  showCoordinates={preferences.showCoordinates}
+                  boardTheme={preferences.boardTheme}
+                  lastMove={preferences.highlightLastMove ? lastMove : null}
+                />
+              )}
             </div>
           </div>
         </div>

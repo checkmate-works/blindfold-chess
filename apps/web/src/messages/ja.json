@@ -91,6 +91,22 @@
       "title": "マス目トピック",
       "description": "個々のチェスのマス目についての議論を閲覧"
     },
+    "topicsOpenings": {
+      "title": "チェスオープニング",
+      "description": "チェスのオープニングとその主要なポジションを探索・学習しましょう"
+    },
+    "topicsOpeningDetail": {
+      "title": "{name} - チェスオープニング",
+      "description": "{name}についての議論と評価"
+    },
+    "topicsOpeningNewPost": {
+      "title": "新規投稿 - {name}",
+      "description": "{name}についての感想を共有しましょう"
+    },
+    "topicsOpeningPost": {
+      "title": "{name}についての投稿",
+      "description": "{name}についての議論の投稿"
+    },
     "topicsSquare": {
       "title": "マス目 {square}",
       "description": "チェスの{square}マスに関する議論と考察"
@@ -1848,7 +1864,8 @@
     "followMessage": "{actor} があなたをフォローしました",
     "likeMessage": "{actor} があなたの投稿にいいねしました",
     "unknownNotification": "新しい通知があります",
-    "announcementMessage": "新しいお知らせ: {title}"
+    "announcementMessage": "新しいお知らせ: {title}",
+    "newPostMessage": "{actor} が新しい投稿をしました"
   },
   "deleteAccount": {
     "title": "退会",
@@ -1869,6 +1886,7 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
+    "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました"
@@ -2220,21 +2238,211 @@
     "title": "トピック",
     "description": "チェスのマス目やポジション、戦略について議論・共有しましょう",
     "recentTopicPosts": "最近のトピック",
+    "recentPosts": "最近の投稿",
+    "noRecentPosts": "まだ投稿がありません。",
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
+    "showLess": "閉じる",
     "categories": {
       "squares": {
         "title": "マス目",
         "description": "個々のチェスのマス目についての議論"
+      },
+      "openings": {
+        "title": "オープニング",
+        "description": "チェスのオープニングを探索・学習しましょう"
       }
+    },
+    "openings": {
+      "title": "オープニング",
+      "description": "チェスのオープニングとその主要なポジションを探索・学習しましょう。",
+      "recentPosts": "新着の投稿",
+      "noRecentPosts": "まだ投稿がありません。",
+      "sectionTitle": "{move} のオープニング",
+      "firstMoveFilter": {
+        "title": "初手{square}のオープニング"
+      },
+      "categoryFilter": {
+        "label": "カテゴリー",
+        "open": "オープンゲーム",
+        "semi-open": "セミオープンゲーム",
+        "closed": "クローズドゲーム",
+        "indian": "インディアンシステム",
+        "flank": "フランクオープニング",
+        "other": "その他"
+      },
+      "names": {
+        "ruy-lopez": "ルイ・ロペス",
+        "italian-game": "イタリアン・ゲーム",
+        "scotch-game": "スコッチ・ゲーム",
+        "petrovs-defense": "ペトロフ・ディフェンス",
+        "kings-gambit": "キングズ・ギャンビット",
+        "vienna-game": "ウィーン・ゲーム",
+        "four-knights-game": "フォーナイツ・ゲーム",
+        "bishops-opening": "ビショップズ・オープニング",
+        "philidor-defense": "フィリドール・ディフェンス",
+        "evans-gambit": "エヴァンズ・ギャンビット",
+        "center-game": "センター・ゲーム",
+        "giuoco-piano": "ジオッコ・ピアノ",
+        "two-knights-defense": "ツーナイツ・ディフェンス",
+        "sicilian-defense": "シシリアン・ディフェンス",
+        "french-defense": "フレンチ・ディフェンス",
+        "caro-kann-defense": "カロ・カン・ディフェンス",
+        "pirc-defense": "ピルツ・ディフェンス",
+        "alekhines-defense": "アレヒン・ディフェンス",
+        "scandinavian-defense": "スカンジナビアン・ディフェンス",
+        "modern-defense": "モダン・ディフェンス",
+        "nimzowitsch-defense": "ニムゾヴィッチ・ディフェンス",
+        "owens-defense": "オーウェン・ディフェンス",
+        "st-george-defense": "セントジョージ・ディフェンス",
+        "queens-gambit": "クイーンズ・ギャンビット",
+        "queens-gambit-declined": "クイーンズ・ギャンビット・ディクラインド",
+        "queens-gambit-accepted": "クイーンズ・ギャンビット・アクセプテッド",
+        "slav-defense": "スラヴ・ディフェンス",
+        "semi-slav-defense": "セミスラヴ・ディフェンス",
+        "london-system": "ロンドン・システム",
+        "colle-system": "コーレ・システム",
+        "torre-attack": "トーレ・アタック",
+        "blackmar-diemer-gambit": "ブラックマー・ディーマー・ギャンビット",
+        "stonewall-attack": "ストーンウォール・アタック",
+        "chigorin-defense": "チゴリン・ディフェンス",
+        "albin-countergambit": "アルビン・カウンターギャンビット",
+        "tarrasch-defense": "タラッシュ・ディフェンス",
+        "kings-indian-defense": "キングズ・インディアン・ディフェンス",
+        "nimzo-indian-defense": "ニムゾ・インディアン・ディフェンス",
+        "queens-indian-defense": "クイーンズ・インディアン・ディフェンス",
+        "grunfeld-defense": "グリュンフェルド・ディフェンス",
+        "catalan-opening": "カタラン・オープニング",
+        "benoni-defense": "ベノニ・ディフェンス",
+        "bogo-indian-defense": "ボゴ・インディアン・ディフェンス",
+        "old-indian-defense": "オールド・インディアン・ディフェンス",
+        "budapest-gambit": "ブダペスト・ギャンビット",
+        "dutch-defense": "ダッチ・ディフェンス",
+        "trompowsky-attack": "トロンポフスキー・アタック",
+        "veresov-opening": "ヴェレソフ・オープニング",
+        "richter-veresov-attack": "リヒター・ヴェレソフ・アタック",
+        "english-opening": "イングリッシュ・オープニング",
+        "english-opening-symmetrical": "イングリッシュ・オープニング: シンメトリカル",
+        "english-opening-reversed-sicilian": "イングリッシュ・オープニング: リバースド・シシリアン",
+        "reti-opening": "レティ・オープニング",
+        "kings-indian-attack": "キングズ・インディアン・アタック",
+        "birds-opening": "バード・オープニング",
+        "birds-opening-dutch-variation": "バード・オープニング: ダッチ・バリエーション",
+        "larsens-opening": "ラーセン・オープニング",
+        "kings-fianchetto-opening": "キングズ・フィアンケット・オープニング",
+        "sokolsky-opening": "ソコルスキー・オープニング",
+        "grob-opening": "グロブ・オープニング",
+        "sicilian-najdorf": "シシリアン・ディフェンス: ナイドルフ・バリエーション",
+        "sicilian-dragon": "シシリアン・ディフェンス: ドラゴン・バリエーション",
+        "sicilian-scheveningen": "シシリアン・ディフェンス: シェヴェニンゲン・バリエーション",
+        "sicilian-sveshnikov": "シシリアン・ディフェンス: スヴェシニコフ・バリエーション",
+        "french-winawer": "フレンチ・ディフェンス: ウィナワー・バリエーション",
+        "french-tarrasch": "フレンチ・ディフェンス: タラッシュ・バリエーション",
+        "french-advance": "フレンチ・ディフェンス: アドバンス・バリエーション",
+        "caro-kann-advance": "カロ・カン・ディフェンス: アドバンス・バリエーション",
+        "caro-kann-classical": "カロ・カン・ディフェンス: クラシカル・バリエーション",
+        "kings-indian-classical": "キングズ・インディアン・ディフェンス: クラシカル・バリエーション",
+        "kings-indian-samisch": "キングズ・インディアン・ディフェンス: ゼーミッシュ・バリエーション",
+        "grunfeld-exchange": "グリュンフェルド・ディフェンス: エクスチェンジ・バリエーション"
+      },
+      "detail": {
+        "pageTitle": "Opening",
+        "postCount": "{count}件の投稿",
+        "noPosts": "まだ投稿がありません。",
+        "newPost": "あなたの考えを投稿",
+        "ecoCode": "ECOコード",
+        "moves": "手順"
+      },
+      "newPostForm": {
+        "title": "{name}について投稿",
+        "contentLabel": "内容",
+        "contentPlaceholder": "このオープニングについて思うことを共有しましょう...",
+        "preferenceLabel": "このオープニングはどのくらい好きですか？",
+        "proficiencyLabel": "このオープニングの習熟度は？",
+        "preferenceLabels": {
+          "1": "嫌い",
+          "2": "あまり好きではない",
+          "3": "普通",
+          "4": "好き",
+          "5": "大好き"
+        },
+        "proficiencyLabels": {
+          "1": "初心者",
+          "2": "初級者",
+          "3": "中級者",
+          "4": "上級者",
+          "5": "エキスパート"
+        },
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "submit": "投稿する",
+        "submitting": "投稿中...",
+        "contentOrRatingRequired": "内容を入力するか、少なくとも1つの評価を選択してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "invalidOpening": "無効なオープニングです",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "投稿するにはサインインが必要です",
+        "rateLimited": "各オープニングへの投稿は1日1回までです。しばらくしてからもう一度お試しください。"
+      },
+      "ratings": {
+        "preference": "好み",
+        "proficiency": "習熟度"
+      },
+      "postDetail": {
+        "authorView": "{author}の{name}に対する見解",
+        "backToOpening": "{name}に戻る",
+        "like": "いいね",
+        "unlike": "いいね解除"
+      },
+      "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信がありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "あなたの考えを共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者が返信を無効にしています。",
+        "followRequired": "フォロワーのみ返信できます。"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "投稿を削除",
+        "confirmMessage": "この投稿を削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      },
+      "newGameFromHere": "ここから新規対局"
     },
     "squares": {
       "title": "マス目",
       "description": "マス目を選んで議論を閲覧・共有しましょう",
-      "pageTitle": "みんなが考えるマスの特徴や印象",
+      "pageTitle": "Squares",
       "postCount": "{count}件の投稿",
-      "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
-      "newPost": "新規投稿",
+      "noPosts": "まだ投稿がありません。",
+      "newPost": "あなたの考えを投稿",
+      "openingsLink": "初手{square}のオープニング",
+      "moreOpenings": "もっと見る",
       "backToSquares": "マス目一覧に戻る",
       "backToTopics": "トピックに戻る",
       "postedBy": "{author}",
@@ -2253,6 +2461,11 @@
         "title": "{square}について投稿",
         "contentLabel": "内容",
         "contentPlaceholder": "このマス目について思うことを共有しましょう...",
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
         "submit": "投稿する",
         "submitting": "投稿中...",
         "contentRequired": "内容を入力してください",
@@ -2282,7 +2495,9 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する",
-        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。"
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者が返信を無効にしています。",
+        "followRequired": "フォロワーのみ返信できます。"
       },
       "deletePost": {
         "button": "削除",
@@ -2299,5 +2514,13 @@
     "message": "未保存の変更があります。このページを離れてもよろしいですか？",
     "confirm": "離れる",
     "cancel": "戻る"
+  },
+  "redirect": {
+    "title": "外部リンク",
+    "warning": "外部のウェブサイトに移動しようとしています。このリンクはユーザーによって共有されたもので、検証されていません。",
+    "destination": "以下のURLに移動します：",
+    "continue": "続行する",
+    "goBack": "戻る",
+    "invalidUrl": "指定されたURLは無効です。"
   }
 }

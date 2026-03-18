@@ -15,9 +15,9 @@ import { truncateContent } from '@/lib/truncate-content';
 import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
 
-type LikeMetadata = { topicType: string; topicKey: string; postId: string };
+type PostMetadata = { topicType: string; topicKey: string; postId: string };
 
-function isLikeMetadata(m: unknown): m is LikeMetadata {
+function isPostMetadata(m: unknown): m is PostMetadata {
   return (
     typeof m === 'object' && m !== null && 'topicType' in m && 'topicKey' in m && 'postId' in m
   );
@@ -48,6 +48,8 @@ export function NotificationItem({ notification }: Props) {
         return t('followMessage', { actor: actorName });
       case 'like':
         return t('likeMessage', { actor: actorName });
+      case 'new_post':
+        return t('newPostMessage', { actor: actorName });
       case 'announcement':
         if (isAnnouncementMetadata(notification.metadata)) {
           return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
@@ -58,12 +60,21 @@ export function NotificationItem({ notification }: Props) {
     }
   }
 
+  function getTopicSegment(topicType: string): string {
+    if (topicType === 'opening') return 'openings';
+    return `${topicType}s`;
+  }
+
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
       return `/@/${actor.username}`;
     }
-    if (notification.type === 'like' && isLikeMetadata(notification.metadata)) {
-      return `/topics/${notification.metadata.topicType}s/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
+    if (
+      (notification.type === 'like' || notification.type === 'new_post') &&
+      isPostMetadata(notification.metadata)
+    ) {
+      const segment = getTopicSegment(notification.metadata.topicType);
+      return `/topics/${segment}/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;

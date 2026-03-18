@@ -41,18 +41,25 @@ export const RATE_LIMITS = {
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
+  /**
+   * Opening post limit is keyed per topicKey — use `createOpeningPostAction(slug)` to
+   * build the action string (e.g., 'create_opening_post:french-defense').
+   */
+  createOpeningPost: { action: 'create_opening_post', maxAttempts: 1, windowMs: 86_400_000 },
 } as const;
 
 /**
- * Check whether a user has exceeded the rate limit for a given action.
- *
- * If under the limit, a new event is inserted and `{ success: true }` is returned.
- * If at or over the limit, no event is inserted and `{ error: 'rateLimited' }` is returned.
+ * Build a per-opening rate limit config by appending the slug to the action name.
+ * This allows 1 post per day per opening.
  */
-export async function checkRateLimit(
-  userId: string,
-  config: RateLimitConfig
-): Promise<{ success: true } | { error: 'rateLimited' }> {
+export function createOpeningPostRateLimit(slug: string): RateLimitConfig {
+  return {
+    ...RATE_LIMITS.createOpeningPost,
+    action: `${RATE_LIMITS.createOpeningPost.action}:${slug}`,
+  };
+}
+
+async function countEventsInWindow(userId: string, config: RateLimitConfig): Promise<number> {
   const windowStart = sql`now() - ${config.windowMs / 1000.0}::double precision * interval '1 second'`;
 
   const [result] = await db
@@ -66,7 +73,28 @@ export async function checkRateLimit(
       )
     );
 
-  if (result.count >= config.maxAttempts) {
+  return result.count;
+}
+
+/**
+ * Read-only rate limit check — returns true if the user has reached the limit.
+ * Does NOT insert an event. Use this for UI gating (e.g. hiding a button).
+ */
+export async function isRateLimited(userId: string, config: RateLimitConfig): Promise<boolean> {
+  return (await countEventsInWindow(userId, config)) >= config.maxAttempts;
+}
+
+/**
+ * Check whether a user has exceeded the rate limit for a given action.
+ *
+ * If under the limit, a new event is inserted and `{ success: true }` is returned.
+ * If at or over the limit, no event is inserted and `{ error: 'rateLimited' }` is returned.
+ */
+export async function checkRateLimit(
+  userId: string,
+  config: RateLimitConfig
+): Promise<{ success: true } | { error: 'rateLimited' }> {
+  if ((await countEventsInWindow(userId, config)) >= config.maxAttempts) {
     return { error: 'rateLimited' };
   }
 

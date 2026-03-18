@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 
-import { BoardLayout } from '@/app/_components';
+import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
@@ -13,15 +13,16 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 type Props = {
   square: string;
   locale: string;
+  disableLinks?: boolean;
 };
 
-export function SquareHighlightBoard({ square, locale }: Props) {
-  const { preferences } = useGamePreferences();
+export function SquareHighlightBoard({ square, locale, disableLinks = false }: Props) {
+  const { preferences, isLoaded } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   const renderSquare = useCallback(
     ({ square: sq }: SquareRenderInfo) => {
-      if (sq === square) {
+      if (sq === square || disableLinks) {
         return null;
       }
 
@@ -34,7 +35,7 @@ export function SquareHighlightBoard({ square, locale }: Props) {
         />
       );
     },
-    [square, locale]
+    [square, locale, disableLinks]
   );
 
   const squareProps = useCallback(
@@ -43,6 +44,14 @@ export function SquareHighlightBoard({ square, locale }: Props) {
     }),
     [square]
   );
+
+  if (!isLoaded) {
+    return (
+      <div className="max-w-xs mx-auto">
+        <BoardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xs mx-auto">

@@ -18,7 +18,7 @@ type Props = {
 };
 
 export function BoardOrientationSelector({ value, onChange, labels }: Props) {
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   const options: { key: BoardOrientation; label: string }[] = [
@@ -26,6 +26,10 @@ export function BoardOrientationSelector({ value, onChange, labels }: Props) {
     { key: 'black', label: labels.black },
     { key: 'random', label: labels.random },
   ];
+
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-2">

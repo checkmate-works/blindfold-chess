@@ -15,6 +15,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import {
@@ -135,6 +136,8 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         {relatedPracticeModules && (
           <div className="space-y-4">
             <SectionTitle>{t('learn.practiceYourSkills')}</SectionTitle>
@@ -199,6 +202,8 @@ export default async function LearnArticlePage({ params }: Props) {
             })}
           </div>
         </div>
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 

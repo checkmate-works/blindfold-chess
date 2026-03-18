@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
@@ -27,7 +27,7 @@ type TutorialStep = 'intro' | 'visualization' | 'start';
 export function RoutePlannerTutorial({ locale }: Props) {
   const t = useTranslations('practice.routePlanner.tutorial');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStart = () => {
@@ -219,14 +219,18 @@ export function RoutePlannerTutorial({ locale }: Props) {
         </p>
 
         <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6 relative">
-          <AnimatedChessBoard
-            initialFen="8/8/8/8/4N3/8/8/8 w - - 0 1"
-            showCoordinates={true}
-            flipped={false}
-            boardTheme={preferences.boardTheme}
-          >
-            {getOverlayContent()}
-          </AnimatedChessBoard>
+          {!isLoaded ? (
+            <BoardSkeleton rounded={false} />
+          ) : (
+            <AnimatedChessBoard
+              initialFen="8/8/8/8/4N3/8/8/8 w - - 0 1"
+              showCoordinates={true}
+              flipped={false}
+              boardTheme={preferences.boardTheme}
+            >
+              {getOverlayContent()}
+            </AnimatedChessBoard>
+          )}
         </div>
 
         <div className="flex gap-4">

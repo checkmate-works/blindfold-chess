@@ -6,6 +6,7 @@ export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
 export { GameListItemBase } from './GameListItemBase';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { LinkedText } from './LinkedText';
 export { ListLink, ListLinkContainer } from './ListLink';
 export { MarkdownRenderer } from './MarkdownRenderer';
 export { MobileMenu } from './MobileMenu';

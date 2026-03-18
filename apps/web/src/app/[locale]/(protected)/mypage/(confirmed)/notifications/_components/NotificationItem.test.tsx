@@ -19,6 +19,8 @@ vi.mock('next-intl', () => ({
   useLocale: () => 'en',
   useTranslations: () => (key: string, params?: Record<string, string>) => {
     if (key === 'followMessage' && params) return `${params.actor} followed you`;
+    if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
+    if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
     return key;
   },
 }));
@@ -155,5 +157,70 @@ describe('NotificationItem', () => {
     });
 
     expect(mockMarkAsRead).toHaveBeenCalledTimes(1);
+  });
+
+  describe('new_post notification', () => {
+    it('should display the correct message for new_post type', () => {
+      const notification = createNotification({
+        type: 'new_post',
+        metadata: { topicType: 'opening', topicKey: 'sicilian-defense', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.getByText('Alice shared a new post')).toBeDefined();
+    });
+
+    it('should link to /topics/openings/{topicKey}/posts/{postId} for opening metadata', () => {
+      const notification = createNotification({
+        type: 'new_post',
+        metadata: { topicType: 'opening', topicKey: 'sicilian-defense', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice shared a new post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/openings/sicilian-defense/posts/post-1');
+    });
+
+    it('should link to /topics/squares/{topicKey}/posts/{postId} for square metadata', () => {
+      const notification = createNotification({
+        type: 'new_post',
+        metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-42' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice shared a new post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
+    });
+  });
+
+  describe('like notification with isPostMetadata rename', () => {
+    it('should display the correct message for like type', () => {
+      const notification = createNotification({
+        type: 'like',
+        metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.getByText('Alice liked your post')).toBeDefined();
+    });
+
+    it('should link to the correct post for like type with post metadata', () => {
+      const notification = createNotification({
+        type: 'like',
+        metadata: { topicType: 'square', topicKey: 'd5', postId: 'post-99' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/squares/d5/posts/post-99');
+    });
   });
 });

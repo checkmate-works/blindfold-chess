@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaRedo } from 'react-icons/fa';
 
@@ -39,7 +39,7 @@ export function KnightTourResult({
   const locale = useLocale();
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   return (
     <PracticeLayout>
@@ -63,14 +63,18 @@ export function KnightTourResult({
         {/* Final Board */}
         <div className="flex justify-center mb-6">
           <div className="w-full max-w-md">
-            <KnightTourBoard
-              currentSquare={lastSquare}
-              visitedSquares={visitedSquares}
-              availableMoves={[]}
-              showCoordinates={preferences.showCoordinates}
-              showMoveNumbers={true}
-              boardTheme={preferences.boardTheme}
-            />
+            {!isLoaded ? (
+              <BoardSkeleton />
+            ) : (
+              <KnightTourBoard
+                currentSquare={lastSquare}
+                visitedSquares={visitedSquares}
+                availableMoves={[]}
+                showCoordinates={preferences.showCoordinates}
+                showMoveNumbers={true}
+                boardTheme={preferences.boardTheme}
+              />
+            )}
           </div>
         </div>
 

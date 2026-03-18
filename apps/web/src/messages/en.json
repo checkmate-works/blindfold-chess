@@ -91,6 +91,22 @@
       "title": "Square Topics",
       "description": "Browse discussions about individual chess squares"
     },
+    "topicsOpenings": {
+      "title": "Chess Openings",
+      "description": "Explore and learn about chess openings and their key positions"
+    },
+    "topicsOpeningDetail": {
+      "title": "{name} - Chess Opening",
+      "description": "Discussions and ratings about the {name} chess opening"
+    },
+    "topicsOpeningNewPost": {
+      "title": "New Post - {name}",
+      "description": "Share your thoughts about the {name} chess opening"
+    },
+    "topicsOpeningPost": {
+      "title": "Post about {name}",
+      "description": "A discussion post about the {name} chess opening"
+    },
     "topicsSquare": {
       "title": "Square {square}",
       "description": "Discussions and insights about the {square} square in chess"
@@ -1847,7 +1863,8 @@
     "followMessage": "{actor} started following you",
     "likeMessage": "{actor} liked your post",
     "unknownNotification": "You have a new notification",
-    "announcementMessage": "New announcement: {title}"
+    "announcementMessage": "New announcement: {title}",
+    "newPostMessage": "{actor} shared a new post"
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -1868,6 +1885,7 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
+    "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted"
@@ -2242,21 +2260,211 @@
     "title": "Topics",
     "description": "Discuss and share insights about chess squares, positions, and strategies",
     "recentTopicPosts": "Recent Topics",
+    "recentPosts": "Recent Posts",
+    "noRecentPosts": "No posts yet.",
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
+    "showLess": "Show less",
     "categories": {
       "squares": {
         "title": "Squares",
         "description": "Discussion about individual chess squares"
+      },
+      "openings": {
+        "title": "Openings",
+        "description": "Explore and learn about chess openings"
       }
+    },
+    "openings": {
+      "title": "Openings",
+      "description": "Explore and learn about chess openings and their key positions.",
+      "recentPosts": "Recent Posts",
+      "noRecentPosts": "No posts yet.",
+      "sectionTitle": "{move} Openings",
+      "firstMoveFilter": {
+        "title": "Openings starting with {square}"
+      },
+      "categoryFilter": {
+        "label": "Category",
+        "open": "Open Game",
+        "semi-open": "Semi-Open Game",
+        "closed": "Closed Game",
+        "indian": "Indian Systems",
+        "flank": "Flank Openings",
+        "other": "Others"
+      },
+      "names": {
+        "ruy-lopez": "Ruy Lopez",
+        "italian-game": "Italian Game",
+        "scotch-game": "Scotch Game",
+        "petrovs-defense": "Petrov's Defense",
+        "kings-gambit": "King's Gambit",
+        "vienna-game": "Vienna Game",
+        "four-knights-game": "Four Knights Game",
+        "bishops-opening": "Bishop's Opening",
+        "philidor-defense": "Philidor Defense",
+        "evans-gambit": "Evans Gambit",
+        "center-game": "Center Game",
+        "giuoco-piano": "Giuoco Piano",
+        "two-knights-defense": "Two Knights Defense",
+        "sicilian-defense": "Sicilian Defense",
+        "french-defense": "French Defense",
+        "caro-kann-defense": "Caro-Kann Defense",
+        "pirc-defense": "Pirc Defense",
+        "alekhines-defense": "Alekhine's Defense",
+        "scandinavian-defense": "Scandinavian Defense",
+        "modern-defense": "Modern Defense",
+        "nimzowitsch-defense": "Nimzowitsch Defense",
+        "owens-defense": "Owen's Defense",
+        "st-george-defense": "St. George Defense",
+        "queens-gambit": "Queen's Gambit",
+        "queens-gambit-declined": "Queen's Gambit Declined",
+        "queens-gambit-accepted": "Queen's Gambit Accepted",
+        "slav-defense": "Slav Defense",
+        "semi-slav-defense": "Semi-Slav Defense",
+        "london-system": "London System",
+        "colle-system": "Colle System",
+        "torre-attack": "Torre Attack",
+        "blackmar-diemer-gambit": "Blackmar-Diemer Gambit",
+        "stonewall-attack": "Stonewall Attack",
+        "chigorin-defense": "Chigorin Defense",
+        "albin-countergambit": "Albin Countergambit",
+        "tarrasch-defense": "Tarrasch Defense",
+        "kings-indian-defense": "King's Indian Defense",
+        "nimzo-indian-defense": "Nimzo-Indian Defense",
+        "queens-indian-defense": "Queen's Indian Defense",
+        "grunfeld-defense": "Grunfeld Defense",
+        "catalan-opening": "Catalan Opening",
+        "benoni-defense": "Benoni Defense",
+        "bogo-indian-defense": "Bogo-Indian Defense",
+        "old-indian-defense": "Old Indian Defense",
+        "budapest-gambit": "Budapest Gambit",
+        "dutch-defense": "Dutch Defense",
+        "trompowsky-attack": "Trompowsky Attack",
+        "veresov-opening": "Veresov Opening",
+        "richter-veresov-attack": "Richter-Veresov Attack",
+        "english-opening": "English Opening",
+        "english-opening-symmetrical": "English Opening: Symmetrical Variation",
+        "english-opening-reversed-sicilian": "English Opening: Reversed Sicilian",
+        "reti-opening": "Reti Opening",
+        "kings-indian-attack": "King's Indian Attack",
+        "birds-opening": "Bird's Opening",
+        "birds-opening-dutch-variation": "Bird's Opening: Dutch Variation",
+        "larsens-opening": "Larsen's Opening",
+        "kings-fianchetto-opening": "King's Fianchetto Opening",
+        "sokolsky-opening": "Sokolsky Opening",
+        "grob-opening": "Grob Opening",
+        "sicilian-najdorf": "Sicilian Defense: Najdorf Variation",
+        "sicilian-dragon": "Sicilian Defense: Dragon Variation",
+        "sicilian-scheveningen": "Sicilian Defense: Scheveningen Variation",
+        "sicilian-sveshnikov": "Sicilian Defense: Sveshnikov Variation",
+        "french-winawer": "French Defense: Winawer Variation",
+        "french-tarrasch": "French Defense: Tarrasch Variation",
+        "french-advance": "French Defense: Advance Variation",
+        "caro-kann-advance": "Caro-Kann Defense: Advance Variation",
+        "caro-kann-classical": "Caro-Kann Defense: Classical Variation",
+        "kings-indian-classical": "King's Indian Defense: Classical Variation",
+        "kings-indian-samisch": "King's Indian Defense: Samisch Variation",
+        "grunfeld-exchange": "Grunfeld Defense: Exchange Variation"
+      },
+      "detail": {
+        "pageTitle": "Opening",
+        "postCount": "{count, plural, one {# post} other {# posts}}",
+        "noPosts": "No posts yet.",
+        "newPost": "Share your thoughts",
+        "ecoCode": "ECO Code",
+        "moves": "Moves"
+      },
+      "newPostForm": {
+        "title": "New Post about {name}",
+        "contentLabel": "Content",
+        "contentPlaceholder": "Share your thoughts about this opening...",
+        "preferenceLabel": "How much do you like this opening?",
+        "proficiencyLabel": "How well do you know this opening?",
+        "preferenceLabels": {
+          "1": "Dislike",
+          "2": "Not great",
+          "3": "Neutral",
+          "4": "Like",
+          "5": "Love"
+        },
+        "proficiencyLabels": {
+          "1": "Beginner",
+          "2": "Novice",
+          "3": "Intermediate",
+          "4": "Advanced",
+          "5": "Expert"
+        },
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "submit": "Post",
+        "submitting": "Posting...",
+        "contentOrRatingRequired": "Please enter some content or provide at least one rating",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "invalidOpening": "Invalid opening",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to create a post",
+        "rateLimited": "You can only post once per day for each opening. Please try again later."
+      },
+      "ratings": {
+        "preference": "Preference",
+        "proficiency": "Proficiency"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToOpening": "Back to {name}",
+        "like": "Like",
+        "unlike": "Unlike"
+      },
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this post.",
+        "followRequired": "Only followers of the author can reply to this post."
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Post",
+        "confirmMessage": "Are you sure you want to delete this post? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      },
+      "newGameFromHere": "New game from here"
     },
     "squares": {
       "title": "Squares",
       "description": "Select a square to view and share discussions",
-      "pageTitle": "Impressions & Insights",
+      "pageTitle": "Squares",
       "postCount": "{count, plural, one {# post} other {# posts}}",
-      "noPosts": "No posts yet. Be the first to share your thoughts!",
-      "newPost": "New Post",
+      "noPosts": "No posts yet.",
+      "newPost": "Share your thoughts",
+      "openingsLink": "Openings starting with {square}",
+      "moreOpenings": "More openings",
       "backToSquares": "Back to Squares",
       "backToTopics": "Back to Topics",
       "postedBy": "by {author}",
@@ -2275,6 +2483,11 @@
         "title": "New Post about {square}",
         "contentLabel": "Content",
         "contentPlaceholder": "Share your thoughts about this square...",
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
         "submit": "Post",
         "submitting": "Posting...",
         "contentRequired": "Please enter some content",
@@ -2304,7 +2517,9 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
         "loginToReply": "Sign in to reply",
-        "rateLimited": "Too many replies. Please try again later."
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this post.",
+        "followRequired": "Only followers of the author can reply to this post."
       },
       "deletePost": {
         "button": "Delete",
@@ -2321,5 +2536,13 @@
     "message": "You have unsaved changes. Are you sure you want to leave?",
     "confirm": "Leave",
     "cancel": "Stay"
+  },
+  "redirect": {
+    "title": "External Link",
+    "warning": "You are about to visit an external website. This link was shared by a user and has not been verified.",
+    "destination": "You will be redirected to:",
+    "continue": "Continue",
+    "goBack": "Go Back",
+    "invalidUrl": "The provided URL is invalid."
   }
 }

@@ -2,11 +2,13 @@ import type { SVGProps } from "react";
 
 import { getPieceData } from "../../data/chess-pieces";
 import { flagData } from "../../data/flag";
+import { getRatingFaceData } from "../../data/rating-faces";
 import { spinnerData } from "../../data/spinner";
 import type { SvgElement, StrokeIconSvgData } from "../../data/types";
 import { undoData } from "../../data/undo";
 import type {
   ChessPieceIconProps,
+  RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
 } from "../types";
@@ -130,10 +132,38 @@ function createStrokeIcon(data: StrokeIconSvgData, displayName: string) {
 export const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
 export const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
 
+type WebRatingFaceIconProps = RatingFaceIconProps & {
+  className?: string;
+} & Omit<SVGProps<SVGSVGElement>, "viewBox" | "children">;
+
+export function RatingFaceIcon({
+  level,
+  size = 24,
+  faceColor,
+  className,
+  ...rest
+}: WebRatingFaceIconProps) {
+  const data = getRatingFaceData(level, faceColor);
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={data.viewBox}
+      width={size}
+      height={size}
+      className={className}
+      {...rest}
+    >
+      {data.elements.map((el, i) => renderElement(el, i))}
+    </svg>
+  );
+}
+
 export type {
   ChessPieceIconProps,
+  RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
 } from "../types";
 export type { PieceType } from "../../data/chess-pieces";
-export type { PieceColor } from "../../data/types";
+export type { PieceColor, RatingFaceLevel } from "../../data/types";

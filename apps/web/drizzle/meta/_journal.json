@@ -8,6 +8,27 @@
       "when": 1773523541929,
       "tag": "20260314212541_create_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773716484155,
+      "tag": "20260317030124_create_chess_openings_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773724834001,
+      "tag": "20260317052033_create_topic_post_ratings_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773822847094,
+      "tag": "20260318083407_add_reply_permission_to_topic_posts",
+      "breakpoints": true
     }
   ]
 }

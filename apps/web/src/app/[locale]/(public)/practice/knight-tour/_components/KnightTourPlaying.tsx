@@ -1,5 +1,7 @@
 'use client';
 
+import { BoardSkeleton } from '@/app/_components';
+
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { KnightTourBoard } from './KnightTourBoard';
@@ -26,7 +28,7 @@ export function KnightTourPlaying({
   onQuit,
   canUndo,
 }: Props) {
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   return (
     <KnightTourPlayingLayout
@@ -40,14 +42,18 @@ export function KnightTourPlaying({
     >
       <div className="flex justify-center">
         <div className="w-full max-w-md">
-          <KnightTourBoard
-            currentSquare={currentSquare}
-            visitedSquares={visitedSquares}
-            availableMoves={availableMoves}
-            onSquareClick={onSquareClick}
-            showCoordinates={preferences.showCoordinates}
-            boardTheme={preferences.boardTheme}
-          />
+          {!isLoaded ? (
+            <BoardSkeleton />
+          ) : (
+            <KnightTourBoard
+              currentSquare={currentSquare}
+              visitedSquares={visitedSquares}
+              availableMoves={availableMoves}
+              onSquareClick={onSquareClick}
+              showCoordinates={preferences.showCoordinates}
+              boardTheme={preferences.boardTheme}
+            />
+          )}
         </div>
       </div>
     </KnightTourPlayingLayout>

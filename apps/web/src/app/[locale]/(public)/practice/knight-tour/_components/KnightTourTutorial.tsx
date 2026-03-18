@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -92,7 +92,7 @@ const MOVE_INTERVAL = 600;
 export function KnightTourTutorial({ locale }: Props) {
   const t = useTranslations('practice.knightTour');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const [currentSquare, setCurrentSquare] = useState(TUTORIAL_SQUARES[0]);
   const [visitedSquares, setVisitedSquares] = useState<Map<string, number>>(
@@ -170,16 +170,20 @@ export function KnightTourTutorial({ locale }: Props) {
 
         <div className="mb-4">
           <div className="relative">
-            <KnightTourBoard
-              currentSquare={currentSquare}
-              visitedSquares={visitedSquares}
-              availableMoves={[]}
-              showCoordinates={true}
-              showMoveNumbers={true}
-              boardTheme={preferences.boardTheme}
-            />
+            {!isLoaded ? (
+              <BoardSkeleton />
+            ) : (
+              <KnightTourBoard
+                currentSquare={currentSquare}
+                visitedSquares={visitedSquares}
+                availableMoves={[]}
+                showCoordinates={true}
+                showMoveNumbers={true}
+                boardTheme={preferences.boardTheme}
+              />
+            )}
 
-            {!isPlaying && !hasPlayed && (
+            {isLoaded && !isPlaying && !hasPlayed && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
                   onClick={handlePlay}

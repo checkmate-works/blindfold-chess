@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { BoardSkeleton } from '@/app/_components';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -29,7 +31,7 @@ const TIME_LIMIT = 60;
 export default function SquareColorsChallenge({ locale }: Props) {
   const router = useRouter();
   const { user } = useAuth();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   // Batch-based question generation via ref
   const squaresRef = useRef<string[]>([]);
@@ -116,6 +118,16 @@ export default function SquareColorsChallenge({ locale }: Props) {
 
   if (!currentSquare) {
     return <PracticeResultSkeleton />;
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <BoardSkeleton />
+        </div>
+      </div>
+    );
   }
 
   return (

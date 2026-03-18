@@ -5,11 +5,11 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import { PostCard } from '@/app/[locale]/(public)/topics/squares/_components';
+import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import {
   getLikedPostCountByUser,
   getLikedPostsByUser,
-} from '@/app/[locale]/(public)/topics/squares/_lib/queries';
+} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 
@@ -62,13 +62,7 @@ export default async function LikesPage({ params, searchParams }: Props) {
         ) : (
           <div className="space-y-4">
             {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                locale={locale}
-                square={post.topicKey}
-                showSquareBadge
-              />
+              <TopicPostCard key={post.id} post={post} locale={locale} />
             ))}
           </div>
         )}

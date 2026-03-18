@@ -1,0 +1,1 @@
+ALTER TABLE "topic_posts" ADD COLUMN "reply_permission" varchar(20) DEFAULT 'everyone' NOT NULL;

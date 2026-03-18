@@ -3,20 +3,28 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
+import { and, eq } from 'drizzle-orm';
 
+import { db, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
+import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
+import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { LikeButton, UserAvatar } from '../../../_components';
+import { UserAvatar } from '../../../_components';
 import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
-import { DeletePostButton, ReplyForm, ReplyList } from './_components';
+import { createReply } from './_actions/createReply';
+import { deletePost } from './_actions/deletePost';
+import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
   params: Promise<{ locale: Locale; square: string; postId: string }>;
@@ -67,7 +75,29 @@ export default async function PostDetailPage({ params }: Props) {
     getLikeMetaForPost(postId, user?.id),
   ]);
 
+  const isAuthor = user?.id === post.userId;
+  let canReply = true;
+  let replyRestrictionMessage: string | null = null;
+
+  if (!isAuthor && post.replyPermission === 'nobody') {
+    canReply = false;
+  } else if (!isAuthor && post.replyPermission === 'followers' && user) {
+    const [follow] = await db
+      .select({ id: userFollows.id })
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, post.userId)));
+
+    if (!follow) {
+      canReply = false;
+    }
+  }
+
   const t = await getTranslations({ locale, namespace: 'topics' });
+
+  if (!isAuthor && post.replyPermission === 'followers' && !canReply) {
+    replyRestrictionMessage = t('squares.replies.followRequired');
+  }
+
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
@@ -116,48 +146,74 @@ export default async function PostDetailPage({ params }: Props) {
           </UserAvatar>
 
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-            {post.content}
+            <LinkedText text={post.content} locale={locale} />
           </div>
 
           <div className="flex items-center gap-4">
             <LikeButton
               postId={post.id}
               locale={locale}
-              square={square}
+              topicKey={square}
               initialLikeCount={likeMeta.likeCount}
               initialLikedByMe={likeMeta.likedByMe}
+              toggleLikeAction={toggleLike}
+              i18nNamespace="topics.squares"
             />
             {user && user.id === post.userId && (
-              <DeletePostButton postId={post.id} locale={locale} square={square} />
+              <DeletePostButton
+                postId={post.id}
+                locale={locale}
+                redirectPath={`/${locale}/topics/squares/${square}`}
+                deletePostAction={deletePost}
+                i18nNamespace="topics.squares.deletePost"
+              />
             )}
           </div>
         </div>
+
+        <AdBanner slot="banner-wide" locale={locale} />
 
         <SectionTitle>
           {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
         </SectionTitle>
 
         {replies.length > 0 ? (
-          <ReplyList replies={replies} locale={locale} square={square} />
+          <ReplyList
+            replies={replies}
+            locale={locale}
+            topicKey={square}
+            toggleLikeAction={toggleLike}
+            likeI18nNamespace="topics.squares"
+          />
         ) : (
           <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
         )}
 
-        {user ? (
-          <ReplyForm locale={locale} square={square} postId={postId} />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            <Link
-              href="/sign-in"
+        {canReply ? (
+          user ? (
+            <ReplyForm
               locale={locale}
-              className="text-foreground underline hover:text-muted-foreground transition-colors"
-            >
-              {t('squares.replies.loginToReply')}
-            </Link>
-          </p>
-        )}
+              topicKey={square}
+              postId={postId}
+              createReplyAction={createReply}
+              i18nNamespace="topics.squares.replies"
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link
+                href="/sign-in"
+                locale={locale}
+                className="text-foreground underline hover:text-muted-foreground transition-colors"
+              >
+                {t('squares.replies.loginToReply')}
+              </Link>
+            </p>
+          )
+        ) : replyRestrictionMessage ? (
+          <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
+        ) : null}
 
-        <AdBanner slot="topics-squares-square" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Breadcrumb
           items={[

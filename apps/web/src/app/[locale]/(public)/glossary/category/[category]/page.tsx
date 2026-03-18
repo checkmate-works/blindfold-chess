@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -73,9 +74,13 @@ export default async function GlossaryCategoryPage({ params }: Props) {
 
         <GlossaryTermList terms={filteredTerms} locale={locale} />
 
+        <AdBanner slot="banner-wide" locale={locale} />
+
         <SectionTitle>{t('categoryPage.categoriesTitle')}</SectionTitle>
 
         <CategoryIndex locale={locale} currentCategory={category} />
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 

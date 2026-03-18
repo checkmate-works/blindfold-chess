@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
+import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
@@ -23,7 +23,7 @@ const LUCENA_FEN = '1K1k4/1P6/8/8/8/8/r7/4R3 w - - 0 1';
 export function PositionMemoryTutorial({ locale }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
-  const { preferences } = useGamePreferences();
+  const { preferences, isLoaded } = useGamePreferences();
 
   const handleStart = () => {
     const params = new URLSearchParams();
@@ -42,12 +42,16 @@ export function PositionMemoryTutorial({ locale }: Props) {
         <p className="text-muted-foreground mb-6">{t('tutorial.description')}</p>
 
         <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6">
-          <AnimatedChessBoard
-            initialFen={LUCENA_FEN}
-            showCoordinates={true}
-            flipped={false}
-            boardTheme={preferences.boardTheme}
-          />
+          {!isLoaded ? (
+            <BoardSkeleton rounded={false} />
+          ) : (
+            <AnimatedChessBoard
+              initialFen={LUCENA_FEN}
+              showCoordinates={true}
+              flipped={false}
+              boardTheme={preferences.boardTheme}
+            />
+          )}
         </div>
 
         <Button

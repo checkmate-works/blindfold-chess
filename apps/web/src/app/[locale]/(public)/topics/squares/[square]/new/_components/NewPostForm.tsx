@@ -29,6 +29,7 @@ export function NewPostForm({ locale, square }: Props) {
           state.error as
             | 'contentRequired'
             | 'contentTooLong'
+            | 'invalidReplyPermission'
             | 'error'
             | 'signInRequired'
             | 'rateLimited'
@@ -57,6 +58,22 @@ export function NewPostForm({ locale, square }: Props) {
           required
           onChange={(e) => setIsDirty(e.target.value.length > 0)}
         />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="replyPermission" className="block text-sm font-medium text-foreground">
+          {t('replyPermissionLabel')}
+        </label>
+        <select
+          id="replyPermission"
+          name="replyPermission"
+          defaultValue="everyone"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+        >
+          <option value="everyone">{t('replyPermission_everyone')}</option>
+          <option value="followers">{t('replyPermission_followers')}</option>
+          <option value="nobody">{t('replyPermission_nobody')}</option>
+        </select>
       </div>
 
       <Button type="submit" variant="primary" fullWidth disabled={isPending} loading={isPending}>

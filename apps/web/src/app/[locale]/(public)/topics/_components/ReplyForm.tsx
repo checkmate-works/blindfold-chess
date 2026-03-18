@@ -7,18 +7,28 @@ import { useTranslations } from 'next-intl';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, Textarea, UnsavedChangesDialog } from '@/app/_components';
 
-import { createReply } from '../_actions/createReply';
+type CreateReplyState = { error?: string };
+
+type CreateReplyAction = (
+  locale: string,
+  topicKey: string,
+  postId: string,
+  prevState: CreateReplyState,
+  formData: FormData
+) => Promise<CreateReplyState>;
 
 type Props = {
   locale: string;
-  square: string;
+  topicKey: string;
   postId: string;
+  createReplyAction: CreateReplyAction;
+  i18nNamespace: string;
 };
 
-export function ReplyForm({ locale, square, postId }: Props) {
-  const t = useTranslations('topics.squares.replies');
+export function ReplyForm({ locale, topicKey, postId, createReplyAction, i18nNamespace }: Props) {
+  const t = useTranslations(i18nNamespace);
   const tUnsaved = useTranslations('unsavedChanges');
-  const boundCreateReply = createReply.bind(null, locale, square, postId);
+  const boundCreateReply = createReplyAction.bind(null, locale, topicKey, postId);
   const [state, formAction, isPending] = useActionState(boundCreateReply, {});
   const [isDirty, setIsDirty] = useState(false);
 

@@ -51,3 +51,10 @@ export type StrokeIconSvgData = {
   strokeLinejoin: "miter" | "round" | "bevel";
   paths: string[];
 };
+
+export type RatingFaceLevel = 1 | 2 | 3 | 4 | 5;
+
+export type RatingFaceSvgData = {
+  viewBox: string;
+  elements: SvgElement[];
+};

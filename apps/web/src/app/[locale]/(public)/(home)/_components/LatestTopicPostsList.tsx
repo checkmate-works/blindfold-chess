@@ -2,9 +2,11 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
+import { createClient } from '@/lib/supabase/server';
+
 import { SectionTitle } from '@/app/[locale]/_components';
 
-import { getRecentPostsAcrossSquares } from '../../topics/squares/_lib/queries';
+import { getRecentPostsAcrossTopics } from '../../topics/_lib/queries';
 import { TopicPostCard } from './TopicPostCard';
 
 const DISPLAY_COUNT = 3;
@@ -15,7 +17,11 @@ type Props = {
 };
 
 export async function LatestTopicPostsList({ locale, title }: Props) {
-  const posts = await getRecentPostsAcrossSquares(DISPLAY_COUNT + 1);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const posts = await getRecentPostsAcrossTopics(DISPLAY_COUNT + 1, user?.id);
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   if (posts.length === 0) {
@@ -30,13 +36,13 @@ export async function LatestTopicPostsList({ locale, title }: Props) {
       <SectionTitle>{title}</SectionTitle>
       <div className="space-y-3">
         {displayPosts.map((post) => (
-          <TopicPostCard key={post.id} post={post} locale={locale} topicKey={post.topicKey} />
+          <TopicPostCard key={post.id} post={post} locale={locale} />
         ))}
       </div>
       {hasMore && (
         <div className="text-center">
           <Link
-            href="/topics/squares"
+            href="/topics"
             locale={locale}
             className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
           >

@@ -70,7 +70,7 @@ export default async function HomePage({ params }: Props) {
           <GameListClient locale={locale} />
         </div>
 
-        <AdBanner slot="home-wide" locale={locale} />
+        <AdBanner slot="banner-wide" locale={locale} />
 
         <ErrorBoundary>
           <Suspense fallback={<LatestTopicPostsSkeleton title={tTopics('recentTopicPosts')} />}>
