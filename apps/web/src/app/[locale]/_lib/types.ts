@@ -8,6 +8,7 @@ export type NavigationIconName =
   | 'getting-started'
   | 'learn'
   | 'practice'
+  | 'topics'
   | 'manual'
   | 'announcements'
   | 'faq'
