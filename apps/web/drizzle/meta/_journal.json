@@ -22,6 +22,13 @@
       "when": 1773724834001,
       "tag": "20260317052033_create_topic_post_ratings_table",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773822847094,
+      "tag": "20260318083407_add_reply_permission_to_topic_posts",
+      "breakpoints": true
     }
   ]
 }

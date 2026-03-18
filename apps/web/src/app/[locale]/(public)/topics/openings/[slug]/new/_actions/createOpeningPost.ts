@@ -9,6 +9,7 @@ import { notifyFollowersOfNewPost } from '@/lib/notification';
 import { checkRateLimit, createOpeningPostRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { VALID_REPLY_PERMISSIONS } from '../../../../_lib/constants';
 import { isValidOpening } from '../../../_lib/queries';
 
 const MAX_CONTENT_LENGTH = 5000;
@@ -59,6 +60,17 @@ export async function createOpeningPost(
     return { error: 'contentTooLong' };
   }
 
+  const replyPermissionRaw = formData.get('replyPermission');
+  const replyPermission =
+    typeof replyPermissionRaw === 'string' &&
+    (VALID_REPLY_PERMISSIONS as readonly string[]).includes(replyPermissionRaw)
+      ? replyPermissionRaw
+      : null;
+
+  if (!replyPermission) {
+    return { error: 'invalidReplyPermission' };
+  }
+
   // Rate limit check runs after validation so a failed submission does not consume the event.
   const rateLimitResult = await checkRateLimit(user.id, createOpeningPostRateLimit(slug));
   if ('error' in rateLimitResult) {
@@ -73,6 +85,7 @@ export async function createOpeningPost(
         topicType: 'opening',
         topicKey: slug,
         content: contentStr,
+        replyPermission,
       })
       .returning({ id: topicPosts.id });
 

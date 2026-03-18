@@ -2392,6 +2392,11 @@
           "4": "Advanced",
           "5": "Expert"
         },
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
         "submit": "Post",
         "submitting": "Posting...",
         "contentOrRatingRequired": "Please enter some content or provide at least one rating",
@@ -2434,7 +2439,9 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
         "loginToReply": "Sign in to reply",
-        "rateLimited": "Too many replies. Please try again later."
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this post.",
+        "followRequired": "Only followers of the author can reply to this post."
       },
       "deletePost": {
         "button": "Delete",
@@ -2473,6 +2480,11 @@
         "title": "New Post about {square}",
         "contentLabel": "Content",
         "contentPlaceholder": "Share your thoughts about this square...",
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
         "submit": "Post",
         "submitting": "Posting...",
         "contentRequired": "Please enter some content",
@@ -2502,7 +2514,9 @@
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
         "loginToReply": "Sign in to reply",
-        "rateLimited": "Too many replies. Please try again later."
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this post.",
+        "followRequired": "Only followers of the author can reply to this post."
       },
       "deletePost": {
         "button": "Delete",

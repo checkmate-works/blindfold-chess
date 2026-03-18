@@ -84,11 +84,13 @@ function makeFormData(fields: {
   content?: string;
   preferenceRating?: string;
   proficiencyRating?: string;
+  replyPermission?: string;
 }): FormData {
   const fd = new FormData();
   if (fields.content !== undefined) fd.set('content', fields.content);
   if (fields.preferenceRating !== undefined) fd.set('preferenceRating', fields.preferenceRating);
   if (fields.proficiencyRating !== undefined) fd.set('proficiencyRating', fields.proficiencyRating);
+  fd.set('replyPermission', fields.replyPermission ?? 'everyone');
   return fd;
 }
 
@@ -254,6 +256,7 @@ describe('createOpeningPost', () => {
         topicType: 'opening',
         topicKey: 'french-defense',
         content: 'I love this opening',
+        replyPermission: 'everyone',
       });
 
       expect(mockRedirect).toHaveBeenCalledWith(
@@ -277,6 +280,7 @@ describe('createOpeningPost', () => {
         topicType: 'opening',
         topicKey: 'french-defense',
         content: '',
+        replyPermission: 'everyone',
       });
 
       // Second call: topic_post_ratings
@@ -450,6 +454,67 @@ describe('createOpeningPost', () => {
 
       await createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'hello' }));
       expect(mockNotifyFollowersOfNewPost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reply_permission validation', () => {
+    it('should accept reply_permission "everyone"', async () => {
+      await expect(
+        createOpeningPost(
+          'en',
+          'french-defense',
+          {},
+          makeFormData({ content: 'post', replyPermission: 'everyone' })
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'everyone' })
+      );
+    });
+
+    it('should accept reply_permission "followers"', async () => {
+      await expect(
+        createOpeningPost(
+          'en',
+          'french-defense',
+          {},
+          makeFormData({ content: 'post', replyPermission: 'followers' })
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'followers' })
+      );
+    });
+
+    it('should accept reply_permission "nobody"', async () => {
+      await expect(
+        createOpeningPost(
+          'en',
+          'french-defense',
+          {},
+          makeFormData({ content: 'post', replyPermission: 'nobody' })
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'nobody' })
+      );
+    });
+
+    it('should return invalidReplyPermission for an invalid value', async () => {
+      const fd = new FormData();
+      fd.set('content', 'hello');
+      fd.set('replyPermission', 'invalid_value');
+      const result = await createOpeningPost('en', 'french-defense', {}, fd);
+      expect(result).toEqual({ error: 'invalidReplyPermission' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should return invalidReplyPermission when replyPermission is missing', async () => {
+      const fd = new FormData();
+      fd.set('content', 'hello');
+      const result = await createOpeningPost('en', 'french-defense', {}, fd);
+      expect(result).toEqual({ error: 'invalidReplyPermission' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
     });
   });
 });

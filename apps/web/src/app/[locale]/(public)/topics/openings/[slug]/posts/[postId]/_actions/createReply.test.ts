@@ -56,6 +56,12 @@ vi.mock('@/lib/db', () => ({
     parentId: 'parent_id',
     content: 'content',
     deletedAt: 'deleted_at',
+    replyPermission: 'reply_permission',
+  },
+  userFollows: {
+    id: 'id',
+    followerId: 'follower_id',
+    followingId: 'following_id',
   },
 }));
 
@@ -104,8 +110,16 @@ function setupAuthenticatedUser() {
   mockCheckRateLimit.mockResolvedValue({ success: true });
 }
 
-function setupParentPostExists() {
-  mockSelectFromWhere.mockReturnValue([{ id: validPostId }]);
+const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
+
+function setupParentPostExists(overrides: { userId?: string; replyPermission?: string } = {}) {
+  mockSelectFromWhere.mockReturnValue([
+    {
+      id: validPostId,
+      userId: overrides.userId ?? otherUserId,
+      replyPermission: overrides.replyPermission ?? 'everyone',
+    },
+  ]);
   mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
 }
 
@@ -499,6 +513,87 @@ describe('createReply (openings)', () => {
 
       await createReply('en', 'sicilian-defense', validPostId, prevState, makeFormData('hello'));
       expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reply_permission enforcement', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should return repliesDisabled when reply_permission is nobody', async () => {
+      setupParentPostExists({ replyPermission: 'nobody' });
+
+      const result = await createReply(
+        'en',
+        'sicilian-defense',
+        validPostId,
+        prevState,
+        makeFormData('hello')
+      );
+      expect(result).toEqual({ error: 'repliesDisabled' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should return followRequired when reply_permission is followers and user is not a follower', async () => {
+      mockSelectFromWhere
+        .mockReturnValueOnce([
+          { id: validPostId, userId: otherUserId, replyPermission: 'followers' },
+        ])
+        .mockReturnValueOnce([]);
+
+      const result = await createReply(
+        'en',
+        'sicilian-defense',
+        validPostId,
+        prevState,
+        makeFormData('hello')
+      );
+      expect(result).toEqual({ error: 'followRequired' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should allow reply when reply_permission is followers and user is a follower', async () => {
+      mockSelectFromWhere
+        .mockReturnValueOnce([
+          { id: validPostId, userId: otherUserId, replyPermission: 'followers' },
+        ])
+        .mockReturnValueOnce([{ id: 'follow-1' }]);
+      mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
+
+      await expect(
+        createReply('en', 'sicilian-defense', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalled();
+    });
+
+    it('should allow the author to reply even when reply_permission is nobody', async () => {
+      setupParentPostExists({ userId: testUserId, replyPermission: 'nobody' });
+
+      await expect(
+        createReply('en', 'sicilian-defense', validPostId, prevState, makeFormData('author reply'))
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalled();
+    });
+
+    it('should allow the author to reply even when reply_permission is followers (bypass follower check)', async () => {
+      setupParentPostExists({ userId: testUserId, replyPermission: 'followers' });
+
+      await expect(
+        createReply('en', 'sicilian-defense', validPostId, prevState, makeFormData('author reply'))
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalled();
+      // Should not have made a second select (follower check) since author bypasses
+      expect(mockSelectFromWhere).toHaveBeenCalledTimes(1);
+    });
+
+    it('should allow reply when reply_permission is everyone', async () => {
+      setupParentPostExists({ replyPermission: 'everyone' });
+
+      await expect(
+        createReply('en', 'sicilian-defense', validPostId, prevState, makeFormData('hello'))
+      ).rejects.toThrow('NEXT_REDIRECT');
+      expect(mockInsertValues).toHaveBeenCalled();
     });
   });
 });

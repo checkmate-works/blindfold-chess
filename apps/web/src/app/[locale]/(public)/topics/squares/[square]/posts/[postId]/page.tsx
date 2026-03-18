@@ -3,7 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
+import { and, eq } from 'drizzle-orm';
 
+import { db, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
@@ -73,7 +75,29 @@ export default async function PostDetailPage({ params }: Props) {
     getLikeMetaForPost(postId, user?.id),
   ]);
 
+  const isAuthor = user?.id === post.userId;
+  let canReply = true;
+  let replyRestrictionMessage: string | null = null;
+
+  if (!isAuthor && post.replyPermission === 'nobody') {
+    canReply = false;
+  } else if (!isAuthor && post.replyPermission === 'followers' && user) {
+    const [follow] = await db
+      .select({ id: userFollows.id })
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, post.userId)));
+
+    if (!follow) {
+      canReply = false;
+    }
+  }
+
   const t = await getTranslations({ locale, namespace: 'topics' });
+
+  if (!isAuthor && post.replyPermission === 'followers' && !canReply) {
+    replyRestrictionMessage = t('squares.replies.followRequired');
+  }
+
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
@@ -163,25 +187,29 @@ export default async function PostDetailPage({ params }: Props) {
           <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
         )}
 
-        {user ? (
-          <ReplyForm
-            locale={locale}
-            topicKey={square}
-            postId={postId}
-            createReplyAction={createReply}
-            i18nNamespace="topics.squares.replies"
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            <Link
-              href="/sign-in"
+        {canReply ? (
+          user ? (
+            <ReplyForm
               locale={locale}
-              className="text-foreground underline hover:text-muted-foreground transition-colors"
-            >
-              {t('squares.replies.loginToReply')}
-            </Link>
-          </p>
-        )}
+              topicKey={square}
+              postId={postId}
+              createReplyAction={createReply}
+              i18nNamespace="topics.squares.replies"
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link
+                href="/sign-in"
+                locale={locale}
+                className="text-foreground underline hover:text-muted-foreground transition-colors"
+              >
+                {t('squares.replies.loginToReply')}
+              </Link>
+            </p>
+          )
+        ) : replyRestrictionMessage ? (
+          <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
+        ) : null}
 
         <AdBanner slot="topics-squares-square" locale={locale} />
 

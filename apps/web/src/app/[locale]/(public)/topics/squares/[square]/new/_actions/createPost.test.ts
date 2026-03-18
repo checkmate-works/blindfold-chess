@@ -66,9 +66,10 @@ vi.mock('next/navigation', () => ({
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 
-function makeFormData(content: string): FormData {
+function makeFormData(content: string, replyPermission: string = 'everyone'): FormData {
   const fd = new FormData();
   fd.set('content', content);
+  fd.set('replyPermission', replyPermission);
   return fd;
 }
 
@@ -180,6 +181,7 @@ describe('createPost', () => {
         topicType: 'square',
         topicKey: 'e4',
         content: 'My post about e4',
+        replyPermission: 'everyone',
       });
 
       expect(mockRedirect).toHaveBeenCalledWith(
@@ -197,6 +199,7 @@ describe('createPost', () => {
         topicType: 'square',
         topicKey: 'a1',
         content: 'trimmed content',
+        replyPermission: 'everyone',
       });
     });
 
@@ -290,6 +293,58 @@ describe('createPost', () => {
 
       await createPost('en', 'e4', {}, makeFormData('hello'));
       expect(mockNotifyFollowersOfNewPost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reply_permission validation', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
+    });
+
+    it('should accept reply_permission "everyone"', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('post', 'everyone'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'everyone' })
+      );
+    });
+
+    it('should accept reply_permission "followers"', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('post', 'followers'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'followers' })
+      );
+    });
+
+    it('should accept reply_permission "nobody"', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('post', 'nobody'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ replyPermission: 'nobody' })
+      );
+    });
+
+    it('should return invalidReplyPermission for an invalid value', async () => {
+      const fd = new FormData();
+      fd.set('content', 'hello');
+      fd.set('replyPermission', 'invalid_value');
+      const result = await createPost('en', 'e4', {}, fd);
+      expect(result).toEqual({ error: 'invalidReplyPermission' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should return invalidReplyPermission when replyPermission is missing', async () => {
+      const fd = new FormData();
+      fd.set('content', 'hello');
+      const result = await createPost('en', 'e4', {}, fd);
+      expect(result).toEqual({ error: 'invalidReplyPermission' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
     });
   });
 });

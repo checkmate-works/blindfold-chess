@@ -9,6 +9,7 @@ import { notifyFollowersOfNewPost } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { VALID_REPLY_PERMISSIONS } from '../../../../_lib/constants';
 import { isValidSquare } from '../../../_lib/squares';
 
 const MAX_CONTENT_LENGTH = 5000;
@@ -55,6 +56,17 @@ export async function createPost(
     return { error: 'contentTooLong' };
   }
 
+  const replyPermissionRaw = formData.get('replyPermission');
+  const replyPermission =
+    typeof replyPermissionRaw === 'string' &&
+    (VALID_REPLY_PERMISSIONS as readonly string[]).includes(replyPermissionRaw)
+      ? replyPermissionRaw
+      : null;
+
+  if (!replyPermission) {
+    return { error: 'invalidReplyPermission' };
+  }
+
   const [inserted] = await db
     .insert(topicPosts)
     .values({
@@ -62,6 +74,7 @@ export async function createPost(
       topicType: 'square',
       topicKey: square,
       content: content.trim(),
+      replyPermission,
     })
     .returning({ id: topicPosts.id });
 

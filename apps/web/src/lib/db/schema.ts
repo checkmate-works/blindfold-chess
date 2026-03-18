@@ -337,6 +337,16 @@ export type NewUserRole = typeof userRoles.$inferInsert;
  * The column exists in the initial schema to solidify the table structure, but
  * reply functionality is not implemented in the initial scope.
  *
+ * @design reply_permission — poster-controlled reply restriction (X/Twitter model)
+ *
+ * Controls who can reply to a post, inspired by X/Twitter's reply restriction feature.
+ * Allowed values: 'everyone' (default), 'followers', 'nobody'.
+ * - 'everyone': anyone can reply (standard behavior)
+ * - 'followers': only users who follow the post author can reply
+ * - 'nobody': replies are disabled entirely
+ * Uses varchar instead of pgEnum for extensibility — future values like
+ * 'approval_required' can be added without ALTER TYPE migrations.
+ *
  * @design FKs managed in custom SQL
  *
  * userId → auth.users and parentId → topic_posts self-reference are defined in
@@ -353,6 +363,7 @@ export const topicPosts = pgTable(
     topicKey: varchar('topic_key', { length: 50 }).notNull(),
     parentId: uuid('parent_id'), // self-referencing FK defined in custom SQL
     content: text('content').notNull(),
+    replyPermission: varchar('reply_permission', { length: 20 }).notNull().default('everyone'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

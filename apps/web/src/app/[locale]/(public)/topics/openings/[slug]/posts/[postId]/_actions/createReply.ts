@@ -7,7 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
-import { db, topicPosts } from '@/lib/db';
+import { db, topicPosts, userFollows } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -54,12 +54,35 @@ export async function createReply(
   }
 
   const [parentPost] = await db
-    .select({ id: topicPosts.id })
+    .select({
+      id: topicPosts.id,
+      userId: topicPosts.userId,
+      replyPermission: topicPosts.replyPermission,
+    })
     .from(topicPosts)
     .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
 
   if (!parentPost) {
     return { error: 'postNotFound' };
+  }
+
+  const isAuthor = parentPost.userId === user.id;
+
+  if (!isAuthor && parentPost.replyPermission === 'nobody') {
+    return { error: 'repliesDisabled' };
+  }
+
+  if (!isAuthor && parentPost.replyPermission === 'followers') {
+    const [follow] = await db
+      .select({ id: userFollows.id })
+      .from(userFollows)
+      .where(
+        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, parentPost.userId))
+      );
+
+    if (!follow) {
+      return { error: 'followRequired' };
+    }
   }
 
   const content = formData.get('content');

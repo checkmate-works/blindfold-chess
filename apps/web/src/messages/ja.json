@@ -2370,6 +2370,11 @@
           "4": "上級者",
           "5": "エキスパート"
         },
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
         "submit": "投稿する",
         "submitting": "投稿中...",
         "contentOrRatingRequired": "内容を入力するか、少なくとも1つの評価を選択してください",
@@ -2412,7 +2417,9 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する",
-        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。"
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者が返信を無効にしています。",
+        "followRequired": "フォロワーのみ返信できます。"
       },
       "deletePost": {
         "button": "削除",
@@ -2451,6 +2458,11 @@
         "title": "{square}について投稿",
         "contentLabel": "内容",
         "contentPlaceholder": "このマス目について思うことを共有しましょう...",
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
         "submit": "投稿する",
         "submitting": "投稿中...",
         "contentRequired": "内容を入力してください",
@@ -2480,7 +2492,9 @@
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する",
-        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。"
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者が返信を無効にしています。",
+        "followRequired": "フォロワーのみ返信できます。"
       },
       "deletePost": {
         "button": "削除",
