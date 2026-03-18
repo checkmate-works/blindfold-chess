@@ -5,12 +5,13 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { isValidSquare } from '../../_lib/squares';
+import { SquareHighlightBoard } from '../_components';
 import { NewPostForm } from './_components';
 
 type Props = {
@@ -53,9 +54,13 @@ export default async function NewPostPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('squares.newPostForm.title', { square: square })}</PageTitle>
+      <PageTitle>{t('squares.pageTitle')}</PageTitle>
 
       <PagePanel>
+        <SectionTitle>{t('squares.newPostForm.title', { square: square })}</SectionTitle>
+
+        <SquareHighlightBoard square={square} locale={locale} disableLinks />
+
         <NewPostForm locale={locale} square={square} />
 
         <Divider />

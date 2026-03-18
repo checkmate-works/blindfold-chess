@@ -5,11 +5,12 @@ import { notFound, redirect } from 'next/navigation';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { MiniBoard } from '../../_components/MiniBoard';
 import { getOpeningBySlug } from '../../_lib/queries';
 import { NewOpeningPostForm } from './_components';
 
@@ -60,6 +61,7 @@ export default async function NewOpeningPostPage({ params }: Props) {
   }
 
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
   const translated = nameT(slug as never);
@@ -67,9 +69,15 @@ export default async function NewOpeningPostPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('openings.newPostForm.title', { name: displayName })}</PageTitle>
+      <PageTitle>{dt('pageTitle')}</PageTitle>
 
       <PagePanel>
+        <SectionTitle>{t('openings.newPostForm.title', { name: displayName })}</SectionTitle>
+
+        <div className="max-w-xs mx-auto">
+          <MiniBoard fen={opening.fen} responsive />
+        </div>
+
         <NewOpeningPostForm locale={locale} slug={slug} />
 
         <Divider />

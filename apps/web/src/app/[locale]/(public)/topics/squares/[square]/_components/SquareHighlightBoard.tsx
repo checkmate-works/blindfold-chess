@@ -13,15 +13,16 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 type Props = {
   square: string;
   locale: string;
+  disableLinks?: boolean;
 };
 
-export function SquareHighlightBoard({ square, locale }: Props) {
+export function SquareHighlightBoard({ square, locale, disableLinks = false }: Props) {
   const { preferences, isLoaded } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   const renderSquare = useCallback(
     ({ square: sq }: SquareRenderInfo) => {
-      if (sq === square) {
+      if (sq === square || disableLinks) {
         return null;
       }
 
@@ -34,7 +35,7 @@ export function SquareHighlightBoard({ square, locale }: Props) {
         />
       );
     },
-    [square, locale]
+    [square, locale, disableLinks]
   );
 
   const squareProps = useCallback(
