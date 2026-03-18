@@ -25,7 +25,8 @@ import {
 } from '../_lib/derive-piece-filter';
 import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
-export { PIECE_TYPES, type PieceSelection } from '../_lib/derive-piece-filter';
+export { PIECE_TYPES } from '../_lib/derive-piece-filter';
+export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
 type FilterContext = {
   boardOrientationFilter: string;

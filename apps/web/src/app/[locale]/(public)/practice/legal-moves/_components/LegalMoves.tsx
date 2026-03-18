@@ -1,11 +1,12 @@
 'use client';
 
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PracticeMode } from '../_lib/types';
 import { LegalMovesSetup } from './LegalMovesSetup';
-import type { PieceSelection } from './PieceSelector';
 
 type Props = {
   locale: Locale;

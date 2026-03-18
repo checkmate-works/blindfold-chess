@@ -2,9 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PieceType } from '@blindfold-chess/types';
-import { FaQuestion } from 'react-icons/fa';
+import { PieceSelector } from '@/app/_components';
 
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
 
@@ -14,8 +12,6 @@ import type { DatePeriod } from '../_actions/get-practice-sessions';
 import {
   ORIENTATION_FILTER_MENUS,
   PIECE_FILTER_MENUS,
-  PIECE_TYPES,
-  type PieceSelection,
   useDashboardData,
 } from '../_hooks/use-dashboard-data';
 import { getComparisonLabel, getPreviousPeriodLabel } from '../_lib/dashboard-utils';
@@ -125,27 +121,11 @@ export function Dashboard({ locale }: { locale: string }) {
           <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             {t('filters.selectedPiece')}
           </label>
-          <div className="flex gap-1 sm:gap-2">
-            {([...PIECE_TYPES, 'random'] as PieceSelection[]).map((option) => (
-              <button
-                key={option}
-                onClick={() => handlePieceSelect(option)}
-                className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-md font-bold text-lg transition-colors border ${
-                  pieceFilter === option
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background hover:bg-muted border-border'
-                }`}
-                aria-label={t(`filters.pieces.${option}`)}
-                title={t(`filters.pieces.${option}`)}
-              >
-                {option === 'random' ? (
-                  <FaQuestion className="w-4 h-4 sm:w-5 sm:h-5" />
-                ) : (
-                  <ChessPiece type={option as PieceType} color="w" size={24} />
-                )}
-              </button>
-            ))}
-          </div>
+          <PieceSelector
+            selected={pieceFilter}
+            onSelect={handlePieceSelect}
+            getLabel={(s) => t(`filters.pieces.${s}`)}
+          />
         </div>
       )}
 

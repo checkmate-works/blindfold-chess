@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
@@ -13,7 +14,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType, PracticeMode } from '../_lib/types';
 import { LegalMovesSettings } from './LegalMovesSettings';
-import type { PieceSelection } from './PieceSelector';
 
 type Props = {
   locale: Locale;

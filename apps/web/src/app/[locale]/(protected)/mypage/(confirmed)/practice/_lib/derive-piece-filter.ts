@@ -1,9 +1,11 @@
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+
 import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 import { isTypedSession } from '@/lib/db/practice-session-types';
 
-export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
+export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
-export type PieceSelection = (typeof PIECE_TYPES)[number] | 'random';
+export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 

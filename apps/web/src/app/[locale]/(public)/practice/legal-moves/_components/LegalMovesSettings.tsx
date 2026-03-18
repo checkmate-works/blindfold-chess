@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import type { PieceSelection } from './PieceSelector';
-import { PieceSelector } from './PieceSelector';
+import { PieceSelector } from '@/app/_components';
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
 type Props = {
   pieceSelection: PieceSelection;
@@ -19,7 +19,12 @@ export function LegalMovesSettings({ pieceSelection, onPieceSelect }: Props) {
         <label className="block text-sm font-medium text-foreground mb-4">
           {t('pieceSelection')}
         </label>
-        <PieceSelector selected={pieceSelection} onSelect={onPieceSelect} />
+        <PieceSelector
+          selected={pieceSelection}
+          onSelect={onPieceSelect}
+          getLabel={(s) => (s === 'random' ? t('pieces.random') : t(`pieces.${s}`))}
+          showLabel
+        />
       </div>
     </div>
   );
