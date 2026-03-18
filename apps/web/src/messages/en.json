@@ -2362,7 +2362,7 @@
         "grunfeld-exchange": "Grunfeld Defense: Exchange Variation"
       },
       "detail": {
-        "pageTitle": "Impressions & Insights",
+        "pageTitle": "Opening",
         "postCount": "{count, plural, one {# post} other {# posts}}",
         "noPosts": "No posts yet. Be the first to share your thoughts!",
         "newPost": "New Post",
@@ -2446,7 +2446,7 @@
     "squares": {
       "title": "Squares",
       "description": "Select a square to view and share discussions",
-      "pageTitle": "Impressions & Insights",
+      "pageTitle": "Squares",
       "postCount": "{count, plural, one {# post} other {# posts}}",
       "noPosts": "No posts yet. Be the first to share your thoughts!",
       "newPost": "New Post",

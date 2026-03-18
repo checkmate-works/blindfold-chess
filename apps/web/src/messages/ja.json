@@ -2340,7 +2340,7 @@
         "grunfeld-exchange": "グリュンフェルド・ディフェンス: エクスチェンジ・バリエーション"
       },
       "detail": {
-        "pageTitle": "みんなが考えるオープニングの特徴や印象",
+        "pageTitle": "Opening",
         "postCount": "{count}件の投稿",
         "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
         "newPost": "新規投稿",
@@ -2424,7 +2424,7 @@
     "squares": {
       "title": "マス目",
       "description": "マス目を選んで議論を閲覧・共有しましょう",
-      "pageTitle": "みんなが考えるマスの特徴や印象",
+      "pageTitle": "Squares",
       "postCount": "{count}件の投稿",
       "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
       "newPost": "新規投稿",
