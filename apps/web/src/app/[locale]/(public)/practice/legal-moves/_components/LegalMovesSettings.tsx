@@ -2,52 +2,29 @@
 
 import { useTranslations } from 'next-intl';
 
-import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
-
-import type { PieceType } from '../_lib/types';
-import { PieceSelector } from './PieceSelector';
+import { PieceSelector } from '@/app/_components';
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
 type Props = {
-  timeLimit: number;
-  selectedPieces: Record<PieceType, boolean>;
-  onTimeLimitChange: (timeLimit: number) => void;
-  onPieceToggle: (piece: PieceType) => void;
-  showTimeSlider?: boolean;
+  pieceSelection: PieceSelection;
+  onPieceSelect: (selection: PieceSelection) => void;
 };
 
-export function LegalMovesSettings({
-  timeLimit,
-  selectedPieces,
-  onTimeLimitChange,
-  onPieceToggle,
-  showTimeSlider = true,
-}: Props) {
+export function LegalMovesSettings({ pieceSelection, onPieceSelect }: Props) {
   const t = useTranslations('practice.legalMoves');
-  const hasSelectedPieces = Object.values(selectedPieces).some((selected) => selected);
 
   return (
     <div className="space-y-6">
-      {/* Time Limit */}
-      {showTimeSlider && (
-        <TimeSlider
-          timeLimit={timeLimit}
-          onTimeLimitChange={onTimeLimitChange}
-          labels={{
-            timeLimit: t('timeLimit'),
-            seconds: t('seconds'),
-          }}
-        />
-      )}
-
-      {/* Piece Selection */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-4">
           {t('pieceSelection')}
         </label>
-        <PieceSelector selectedPieces={selectedPieces} onPieceToggle={onPieceToggle} />
-        {!hasSelectedPieces && (
-          <p className="mt-3 text-sm text-destructive text-center">{t('selectAtLeastOne')}</p>
-        )}
+        <PieceSelector
+          selected={pieceSelection}
+          onSelect={onPieceSelect}
+          getLabel={(s) => (s === 'random' ? t('pieces.random') : t(`pieces.${s}`))}
+          showLabel
+        />
       </div>
     </div>
   );

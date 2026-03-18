@@ -530,14 +530,14 @@
       "timeLimit": "制限時間",
       "seconds": "秒",
       "pieceSelection": "駒の選択",
-      "selectAtLeastOne": "少なくとも1つの駒を選択してください",
       "selectedCount": "{count}個選択中",
       "pieces": {
         "b": "ビショップ",
         "n": "ナイト",
         "r": "ルーク",
         "q": "クイーン",
-        "k": "キング"
+        "k": "キング",
+        "random": "ランダム"
       },
       "start": "開始",
       "question": "{from}から{to}へ移動できますか？",
@@ -1801,7 +1801,8 @@
         "q": "クイーン",
         "r": "ルーク",
         "b": "ビショップ",
-        "n": "ナイト"
+        "n": "ナイト",
+        "random": "ランダム"
       }
     },
     "menuTypes": {

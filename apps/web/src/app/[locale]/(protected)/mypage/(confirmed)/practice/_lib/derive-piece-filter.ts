@@ -1,42 +1,47 @@
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+
 import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 import { isTypedSession } from '@/lib/db/practice-session-types';
 
+export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+
 export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
-export const DEFAULT_PIECE_FILTER: Record<string, boolean> = {
-  k: true,
-  q: true,
-  r: true,
-  b: true,
-  n: true,
-};
+export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 
 /**
- * Derive a piece filter from session data.
- * If all legal_moves sessions share the same selectedPieces configuration,
- * returns a filter matching that configuration. Otherwise returns DEFAULT_PIECE_FILTER.
+ * Derive a piece selection from session data.
+ * - If all legal_moves sessions use the same single piece, returns that piece.
+ * - If all sessions use all 5 pieces, returns 'random'.
+ * - Otherwise (mixed or no data), returns 'random'.
  */
-export function derivePieceFilterFromSessions(
-  sessions: PracticeSessionRow[]
-): Record<string, boolean> {
+export function derivePieceSelectionFromSessions(sessions: PracticeSessionRow[]): PieceSelection {
   const legalMovesSessions = sessions.filter(
     (s): s is Extract<PracticeSessionRow, { menuType: 'legal_moves' }> =>
       isTypedSession(s) && s.menuType === 'legal_moves'
   );
 
-  if (legalMovesSessions.length === 0) return DEFAULT_PIECE_FILTER;
+  if (legalMovesSessions.length === 0) return DEFAULT_PIECE_SELECTION;
 
   const firstPieces = [...legalMovesSessions[0].settings.selectedPieces].sort().join(',');
   const allSame = legalMovesSessions.every(
     (s) => [...s.settings.selectedPieces].sort().join(',') === firstPieces
   );
 
-  if (!allSame) return DEFAULT_PIECE_FILTER;
+  if (!allSame) return DEFAULT_PIECE_SELECTION;
 
-  const activePieceSet = new Set(legalMovesSessions[0].settings.selectedPieces);
-  const filter: Record<string, boolean> = {};
-  for (const p of PIECE_TYPES) {
-    filter[p] = activePieceSet.has(p);
+  const pieces = [...legalMovesSessions[0].settings.selectedPieces].sort();
+
+  // All 5 pieces selected = random
+  if (pieces.length === PIECE_TYPES.length && pieces.every((p, i) => p === PIECE_TYPES[i])) {
+    return 'random';
   }
-  return filter;
+
+  // Single piece selected
+  if (pieces.length === 1 && (PIECE_TYPES as readonly string[]).includes(pieces[0])) {
+    return pieces[0] as PieceSelection;
+  }
+
+  // Multi-piece combination (legacy) — default to random
+  return DEFAULT_PIECE_SELECTION;
 }

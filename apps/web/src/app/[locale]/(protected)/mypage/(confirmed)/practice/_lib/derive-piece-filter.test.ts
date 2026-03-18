@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 
-import { DEFAULT_PIECE_FILTER, derivePieceFilterFromSessions } from './derive-piece-filter';
+import { DEFAULT_PIECE_SELECTION, derivePieceSelectionFromSessions } from './derive-piece-filter';
 
 // ---------------------------------------------------------------------------
 // Helpers to build test session data
@@ -52,131 +52,96 @@ function makeUnknownSession(id = 'unknown-1'): PracticeSessionRow {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('derivePieceFilterFromSessions', () => {
+describe('derivePieceSelectionFromSessions', () => {
   describe('when there are no sessions', () => {
-    it('returns DEFAULT_PIECE_FILTER (all true)', () => {
-      const result = derivePieceFilterFromSessions([]);
-      expect(result).toEqual(DEFAULT_PIECE_FILTER);
+    it('returns DEFAULT_PIECE_SELECTION (random)', () => {
+      const result = derivePieceSelectionFromSessions([]);
+      expect(result).toBe(DEFAULT_PIECE_SELECTION);
+      expect(result).toBe('random');
     });
   });
 
   describe('when there are no legal_moves sessions', () => {
-    it('returns DEFAULT_PIECE_FILTER for coordinate_quiz sessions only', () => {
+    it('returns random for coordinate_quiz sessions only', () => {
       const sessions = [makeCoordinateQuizSession('cq-1'), makeCoordinateQuizSession('cq-2')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns DEFAULT_PIECE_FILTER for square_colors sessions only', () => {
+    it('returns random for square_colors sessions only', () => {
       const sessions = [makeSquareColorsSession('sc-1'), makeSquareColorsSession('sc-2')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns DEFAULT_PIECE_FILTER for unknown session types', () => {
+    it('returns random for unknown session types', () => {
       const sessions = [makeUnknownSession('u-1')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
   describe('single legal_moves session', () => {
-    it('derives filter from a single session with one piece (knight)', () => {
+    it('returns the piece when session has a single piece (knight)', () => {
       const sessions = [makeLegalMovesSession(['n'])];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: false,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
-    it('derives filter from a single session with multiple pieces (knight + bishop)', () => {
-      const sessions = [makeLegalMovesSession(['n', 'b'])];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: true,
-        n: true,
-      });
-    });
-
-    it('derives filter from a single session with all pieces', () => {
+    it('returns random for a single session with all pieces', () => {
       const sessions = [makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'])];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: true,
-        q: true,
-        r: true,
-        b: true,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
+    });
+
+    it('returns random for a single session with a multi-piece combination (legacy)', () => {
+      const sessions = [makeLegalMovesSession(['n', 'b'])];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
   describe('multiple legal_moves sessions with same pieces', () => {
-    it('returns matching filter when all sessions have the same single piece', () => {
+    it('returns the piece when all sessions have the same single piece', () => {
       const sessions = [
         makeLegalMovesSession(['n'], 's-1'),
         makeLegalMovesSession(['n'], 's-2'),
         makeLegalMovesSession(['n'], 's-3'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: false,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
-    it('returns matching filter when all sessions have same multiple pieces', () => {
+    it('returns random when all sessions have same multi-piece legacy combination', () => {
       const sessions = [
         makeLegalMovesSession(['r', 'q'], 's-1'),
-        makeLegalMovesSession(['q', 'r'], 's-2'), // different order, same set
+        makeLegalMovesSession(['q', 'r'], 's-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: true,
-        r: true,
-        b: false,
-        n: false,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns all true when all sessions have all pieces', () => {
+    it('returns random when all sessions have all pieces', () => {
       const sessions = [
         makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-1'),
-        makeLegalMovesSession(['n', 'b', 'r', 'q', 'k'], 's-2'), // different order
+        makeLegalMovesSession(['n', 'b', 'r', 'q', 'k'], 's-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: true,
-        q: true,
-        r: true,
-        b: true,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
   describe('multiple legal_moves sessions with different pieces', () => {
-    it('returns DEFAULT_PIECE_FILTER when sessions have different piece configurations', () => {
+    it('returns random when sessions have different piece configurations', () => {
       const sessions = [makeLegalMovesSession(['n'], 's-1'), makeLegalMovesSession(['b'], 's-2')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns DEFAULT_PIECE_FILTER when one session is a subset of another', () => {
+    it('returns random when one session is a subset of another', () => {
       const sessions = [
         makeLegalMovesSession(['n', 'b'], 's-1'),
         makeLegalMovesSession(['n'], 's-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns DEFAULT_PIECE_FILTER when one session has all pieces and another has a subset', () => {
+    it('returns random when one session has all pieces and another has a subset', () => {
       const sessions = [
         makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-1'),
         makeLegalMovesSession(['k'], 's-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
@@ -188,99 +153,92 @@ describe('derivePieceFilterFromSessions', () => {
         makeLegalMovesSession(['n'], 's-2'),
         makeCoordinateQuizSession('cq-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: false,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
     it('only considers legal_moves sessions, ignores square_colors', () => {
-      const sessions = [makeSquareColorsSession('sc-1'), makeLegalMovesSession(['b', 'r'], 's-1')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: true,
-        b: true,
-        n: false,
-      });
+      const sessions = [makeSquareColorsSession('sc-1'), makeLegalMovesSession(['b'], 's-1')];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('b');
     });
 
     it('only considers legal_moves sessions, ignores unknown types', () => {
       const sessions = [
         makeUnknownSession('u-1'),
-        makeLegalMovesSession(['k', 'q'], 's-1'),
-        makeLegalMovesSession(['q', 'k'], 's-2'),
+        makeLegalMovesSession(['k'], 's-1'),
+        makeLegalMovesSession(['k'], 's-2'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: true,
-        q: true,
-        r: false,
-        b: false,
-        n: false,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('k');
     });
 
-    it('returns DEFAULT_PIECE_FILTER when only non-legal_moves sessions exist among mixed types', () => {
+    it('returns random when only non-legal_moves sessions exist among mixed types', () => {
       const sessions = [
         makeCoordinateQuizSession('cq-1'),
         makeSquareColorsSession('sc-1'),
         makeUnknownSession('u-1'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual(DEFAULT_PIECE_FILTER);
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
   describe('edge cases', () => {
-    it('handles empty selectedPieces array in a single session', () => {
+    it('returns random for empty selectedPieces array in a single session', () => {
       const sessions = [makeLegalMovesSession([])];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: false,
-        n: false,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('handles empty selectedPieces arrays in multiple sessions', () => {
+    it('returns random for empty selectedPieces arrays in multiple sessions', () => {
       const sessions = [makeLegalMovesSession([], 's-1'), makeLegalMovesSession([], 's-2')];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: false,
-        q: false,
-        r: false,
-        b: false,
-        n: false,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
     it('treats pieces in different order as the same configuration', () => {
+      const sessions = [makeLegalMovesSession(['k'], 's-1'), makeLegalMovesSession(['k'], 's-2')];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('k');
+    });
+
+    it('each piece type can be individually selected', () => {
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['k'])])).toBe('k');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['q'])])).toBe('q');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['r'])])).toBe('r');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['b'])])).toBe('b');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['n'])])).toBe('n');
+    });
+
+    it('returns random for sessions with duplicate pieces', () => {
+      const sessions = [makeLegalMovesSession(['n', 'n'])];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
+    });
+
+    it('returns random when all-5-pieces are in different order across sessions', () => {
       const sessions = [
-        makeLegalMovesSession(['b', 'n', 'k'], 's-1'),
-        makeLegalMovesSession(['k', 'b', 'n'], 's-2'),
-        makeLegalMovesSession(['n', 'k', 'b'], 's-3'),
+        makeLegalMovesSession(['n', 'b', 'r', 'q', 'k'], 's-1'),
+        makeLegalMovesSession(['k', 'b', 'n', 'q', 'r'], 's-2'),
+        makeLegalMovesSession(['r', 'q', 'k', 'n', 'b'], 's-3'),
       ];
-      expect(derivePieceFilterFromSessions(sessions)).toEqual({
-        k: true,
-        q: false,
-        r: false,
-        b: true,
-        n: true,
-      });
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns a new object (not the same reference as DEFAULT_PIECE_FILTER) for matching derived filter', () => {
-      const sessions = [makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'])];
-      const result = derivePieceFilterFromSessions(sessions);
-      expect(result).toEqual(DEFAULT_PIECE_FILTER);
-      expect(result).not.toBe(DEFAULT_PIECE_FILTER);
+    it('returns random for 3-piece legacy combination', () => {
+      const sessions = [makeLegalMovesSession(['n', 'b', 'r'])];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns DEFAULT_PIECE_FILTER reference for no sessions case', () => {
-      const result = derivePieceFilterFromSessions([]);
-      expect(result).toBe(DEFAULT_PIECE_FILTER);
+    it('returns random for 4-piece legacy combination', () => {
+      const sessions = [makeLegalMovesSession(['k', 'q', 'r', 'b'])];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
+    });
+
+    it('returns random when one session has single piece and another has all-5 pieces', () => {
+      const sessions = [
+        makeLegalMovesSession(['n'], 's-1'),
+        makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-2'),
+      ];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
+    });
+
+    it('returns random with a large number of consistent single-piece sessions', () => {
+      const sessions = Array.from({ length: 50 }, (_, i) => makeLegalMovesSession(['b'], `s-${i}`));
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('b');
     });
   });
 });

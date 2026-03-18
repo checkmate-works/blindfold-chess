@@ -1,9 +1,11 @@
 'use client';
 
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PieceType, PracticeMode } from '../_lib/types';
+import type { PracticeMode } from '../_lib/types';
 import { LegalMovesSetup } from './LegalMovesSetup';
 
 type Props = {
@@ -11,42 +13,26 @@ type Props = {
 };
 
 type LegalMovesLocalSettings = {
-  timeLimit: number;
-  selectedPieces: Record<PieceType, boolean>;
   mode: PracticeMode;
+  pieceSelection: PieceSelection;
 };
 
 const STORAGE_KEY = 'legalMoves_settings';
 const DEFAULTS: LegalMovesLocalSettings = {
-  timeLimit: 60,
-  selectedPieces: {
-    k: true,
-    q: true,
-    r: true,
-    b: true,
-    n: true,
-  },
   mode: 'training',
+  pieceSelection: 'random',
 };
 
 export function LegalMoves({ locale }: Props) {
   const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
 
-  const togglePiece = (piece: PieceType) => {
-    updateSettings({
-      selectedPieces: { ...settings.selectedPieces, [piece]: !settings.selectedPieces[piece] },
-    });
-  };
-
   return (
     <LegalMovesSetup
       locale={locale}
-      timeLimit={settings.timeLimit}
-      selectedPieces={settings.selectedPieces}
-      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
-      onPieceToggle={togglePiece}
       mode={settings.mode}
       onModeChange={(mode) => updateSettings({ mode })}
+      pieceSelection={settings.pieceSelection}
+      onPieceSelect={(pieceSelection) => updateSettings({ pieceSelection })}
     />
   );
 }

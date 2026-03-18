@@ -163,4 +163,115 @@ describe('LegalMovesTrainingSession logic', () => {
       expect(expectedUrl).toBe('/ja/practice/legal-moves');
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Single-piece selection for training mode (unified selector)
+  // ---------------------------------------------------------------------------
+
+  describe('single-piece selection for training mode', () => {
+    it.each(['k', 'q', 'r', 'b', 'n'] as const)(
+      'generates questions only for piece "%s" in training mode',
+      (piece) => {
+        const questions = generateBalancedMoveQuestions(BATCH_SIZE, [piece]);
+        expect(questions).toHaveLength(BATCH_SIZE);
+        for (const q of questions) {
+          expect(q.piece).toBe(piece);
+        }
+      }
+    );
+
+    it('validates answers for single-piece training questions', () => {
+      const questions = generateBalancedMoveQuestions(20, ['n']);
+      for (const q of questions) {
+        const result = isLegalMove(q.from, q.to, q.piece);
+        expect(typeof result).toBe('boolean');
+      }
+    });
+
+    it('regenerates single-piece questions correctly', () => {
+      let questions = generateBalancedMoveQuestions(BATCH_SIZE, ['r']);
+      const currentIndex = BATCH_SIZE - 10;
+
+      if (questions.length > 0 && currentIndex >= questions.length - 10) {
+        const newBatch = generateBalancedMoveQuestions(BATCH_SIZE, ['r']);
+        questions = [...questions, ...newBatch];
+      }
+
+      expect(questions).toHaveLength(BATCH_SIZE * 2);
+      // All questions should be for rook only
+      for (const q of questions) {
+        expect(q.piece).toBe('r');
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Training mode URL construction (mirrors LegalMovesSetup.handleStart)
+  // ---------------------------------------------------------------------------
+
+  describe('training mode URL construction', () => {
+    type PieceSelection = PieceType | 'random';
+
+    function buildTrainingUrl(locale: string, pieceSelection: PieceSelection): string {
+      const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+      const piecesParam = pieceSelection === 'random' ? pieces.join(',') : pieceSelection;
+      return `/${locale}/practice/legal-moves/training?pieces=${piecesParam}#legal-moves-training-session`;
+    }
+
+    it('constructs URL with single piece for specific piece selection', () => {
+      const url = buildTrainingUrl('en', 'k');
+      expect(url).toBe('/en/practice/legal-moves/training?pieces=k#legal-moves-training-session');
+    });
+
+    it('constructs URL with all pieces for random selection', () => {
+      const url = buildTrainingUrl('en', 'random');
+      expect(url).toBe(
+        '/en/practice/legal-moves/training?pieces=k,q,r,b,n#legal-moves-training-session'
+      );
+    });
+
+    it.each(['k', 'q', 'r', 'b', 'n'] as const)(
+      'constructs correct URL for piece "%s"',
+      (piece) => {
+        const url = buildTrainingUrl('ja', piece);
+        expect(url).toContain(`pieces=${piece}`);
+        expect(url.startsWith('/ja/')).toBe(true);
+      }
+    );
+  });
+
+  // ---------------------------------------------------------------------------
+  // Training mode URL parameter parsing (same logic as challenge mode)
+  // ---------------------------------------------------------------------------
+
+  describe('training mode URL parameter parsing', () => {
+    function parseSelectedPieces(piecesParam: string | undefined): PieceType[] {
+      const defaultPieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+      if (!piecesParam) return defaultPieces;
+      const parsed = piecesParam
+        .split(',')
+        .filter((p): p is PieceType => defaultPieces.includes(p as PieceType));
+      return parsed.length > 0 ? parsed : defaultPieces;
+    }
+
+    it.each(['k', 'q', 'r', 'b', 'n'] as const)('parses single piece "%s" from URL', (piece) => {
+      const result = parseSelectedPieces(piece);
+      expect(result).toEqual([piece]);
+    });
+
+    it('parses all 5 pieces from comma-separated URL param (random selection)', () => {
+      const result = parseSelectedPieces('k,q,r,b,n');
+      expect(result).toEqual(['k', 'q', 'r', 'b', 'n']);
+    });
+
+    it('returns default when param is undefined', () => {
+      const result = parseSelectedPieces(undefined);
+      expect(result).toEqual(ALL_PIECES);
+    });
+
+    it('filters out invalid piece types', () => {
+      const result = parseSelectedPieces('k,x,z,n');
+      expect(result).toEqual(['k', 'n']);
+    });
+  });
 });

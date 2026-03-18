@@ -529,14 +529,14 @@
       "timeLimit": "Time Limit",
       "seconds": "seconds",
       "pieceSelection": "Select Pieces",
-      "selectAtLeastOne": "Please select at least one piece",
       "selectedCount": "{count} selected",
       "pieces": {
         "b": "Bishop",
         "n": "Knight",
         "r": "Rook",
         "q": "Queen",
-        "k": "King"
+        "k": "King",
+        "random": "Random"
       },
       "start": "Start",
       "question": "Can piece move from {from} to {to}?",
@@ -1800,7 +1800,8 @@
         "q": "Queen",
         "r": "Rook",
         "b": "Bishop",
-        "n": "Knight"
+        "n": "Knight",
+        "random": "Random"
       }
     },
     "menuTypes": {

@@ -18,13 +18,15 @@ import {
   getPreviousPeriodStart,
 } from '../_lib/dashboard-utils';
 import {
-  DEFAULT_PIECE_FILTER,
+  DEFAULT_PIECE_SELECTION,
   PIECE_TYPES,
-  derivePieceFilterFromSessions,
+  type PieceSelection,
+  derivePieceSelectionFromSessions,
 } from '../_lib/derive-piece-filter';
 import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';
+export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
 type FilterContext = {
   boardOrientationFilter: string;
@@ -95,7 +97,7 @@ export function useDashboardData(locale: string) {
   const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
   const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
-  const [pieceFilter, setPieceFilter] = useState<Record<string, boolean>>(DEFAULT_PIECE_FILTER);
+  const [pieceFilter, setPieceFilter] = useState<PieceSelection>(DEFAULT_PIECE_SELECTION);
   const [isLoading, setIsLoading] = useState(true);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
 
@@ -125,7 +127,7 @@ export function useDashboardData(locale: string) {
   // Reset filters when menu changes
   useEffect(() => {
     setBoardOrientationFilter('all');
-    setPieceFilter(DEFAULT_PIECE_FILTER);
+    setPieceFilter(DEFAULT_PIECE_SELECTION);
     shouldDerivePieceFilter.current = true;
   }, [selectedMenu]);
 
@@ -153,7 +155,7 @@ export function useDashboardData(locale: string) {
         // Derive piece filter from session data only on initial load for the menu.
         // Subsequent period changes preserve the user's manual filter adjustments.
         if (selectedMenu === 'legal_moves' && shouldDerivePieceFilter.current) {
-          setPieceFilter(derivePieceFilterFromSessions(response.sessions));
+          setPieceFilter(derivePieceSelectionFromSessions(response.sessions));
           shouldDerivePieceFilter.current = false;
         }
       }
@@ -164,12 +166,12 @@ export function useDashboardData(locale: string) {
     };
   }, [selectedMenu, selectedPeriod]);
 
-  const handlePieceToggle = useCallback((piece: string) => {
-    setPieceFilter((prev) => ({ ...prev, [piece]: !prev[piece] }));
+  const handlePieceSelect = useCallback((piece: PieceSelection) => {
+    setPieceFilter(piece);
   }, []);
 
   const activePieces = useMemo(
-    () => PIECE_TYPES.filter((p) => pieceFilter[p]).sort(),
+    () => (pieceFilter === 'random' ? [...PIECE_TYPES].sort() : [pieceFilter]),
     [pieceFilter]
   );
   const filterCtx = useMemo<FilterContext>(
@@ -255,7 +257,7 @@ export function useDashboardData(locale: string) {
     boardOrientationFilter,
     setBoardOrientationFilter,
     pieceFilter,
-    handlePieceToggle,
+    handlePieceSelect,
     isLoading,
     availableMenuTypes,
 
