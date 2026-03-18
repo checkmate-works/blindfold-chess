@@ -22,6 +22,10 @@ vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
   ),
 }));
 
+vi.mock('@/app/[locale]/_components/LinkedText', () => ({
+  LinkedText: ({ text }: { text: string }) => <>{text}</>,
+}));
+
 const mockToggleLike = vi.fn();
 
 function makeReply(overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMeta {

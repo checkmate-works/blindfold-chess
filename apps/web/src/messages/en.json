@@ -2513,5 +2513,13 @@
     "message": "You have unsaved changes. Are you sure you want to leave?",
     "confirm": "Leave",
     "cancel": "Stay"
+  },
+  "redirect": {
+    "title": "External Link",
+    "warning": "You are about to visit an external website. This link was shared by a user and has not been verified.",
+    "destination": "You will be redirected to:",
+    "continue": "Continue",
+    "goBack": "Go Back",
+    "invalidUrl": "The provided URL is invalid."
   }
 }

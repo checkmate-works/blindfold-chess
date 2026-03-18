@@ -10,6 +10,7 @@ import { truncateContent } from '@/lib/truncate-content';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { LinkedText } from '@/app/[locale]/_components';
 
 import { toggleLike } from '../[square]/posts/[postId]/_actions/toggleLike';
 import type { PostWithReplyMeta } from '../_lib/queries';
@@ -61,7 +62,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
         <p
           className={`text-sm text-foreground whitespace-pre-wrap break-words${expanded ? '' : ' line-clamp-3'}`}
         >
-          {expanded ? post.content : contentPreview}
+          <LinkedText text={expanded ? post.content : contentPreview} locale={locale} />
         </p>
         {isTruncated && (
           <button

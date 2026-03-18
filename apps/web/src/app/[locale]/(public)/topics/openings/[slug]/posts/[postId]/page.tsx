@@ -11,7 +11,7 @@ import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButto
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
 import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -146,7 +146,7 @@ export default async function OpeningPostDetailPage({ params }: Props) {
           )}
 
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-            {post.content}
+            <LinkedText text={post.content} locale={locale} />
           </div>
 
           <div className="flex items-center gap-4">

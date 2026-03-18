@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { truncateContent } from '@/lib/truncate-content';
 
+import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+
 import type { PostWithReplyMeta } from '../_lib/queries';
 import { LikeButton } from './LikeButton';
 import { UserAvatar } from './UserAvatar';
@@ -24,7 +26,7 @@ type Props = {
   likeI18nNamespace: string;
 };
 
-function ReplyContent({ content }: { content: string }) {
+function ReplyContent({ content, locale }: { content: string; locale: string }) {
   const t = useTranslations('topics');
   const truncated = truncateContent(content);
   const isTruncated = truncated !== content;
@@ -33,7 +35,7 @@ function ReplyContent({ content }: { content: string }) {
   return (
     <>
       <div className="text-foreground whitespace-pre-wrap break-words text-sm leading-relaxed">
-        {expanded ? content : truncated}
+        <LinkedText text={expanded ? content : truncated} locale={locale} />
       </div>
       {isTruncated && !expanded && (
         <button
@@ -84,7 +86,7 @@ export function ReplyList({
                 })}
               </time>
             </UserAvatar>
-            <ReplyContent content={reply.content} />
+            <ReplyContent content={reply.content} locale={locale} />
             <LikeButton
               postId={reply.id}
               locale={locale}

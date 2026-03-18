@@ -18,6 +18,7 @@ import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
+import { LinkedText } from '@/app/[locale]/_components';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
 
@@ -83,7 +84,7 @@ export function TopicPostCard({ post, locale }: Props) {
           </span>
         )}
         <p className={`text-sm text-foreground break-words mt-3${expanded ? '' : ' line-clamp-3'}`}>
-          {expanded ? post.content : contentPreview}
+          <LinkedText text={expanded ? post.content : contentPreview} locale={locale} />
         </p>
         {isTruncated && (
           <button

@@ -11,6 +11,7 @@ import { truncateContent } from '@/lib/truncate-content';
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { LinkedText } from '@/app/[locale]/_components';
 
 import type { OpeningPostWithReplyMeta } from '../../_lib/queries';
 import { toggleLike } from '../posts/[postId]/_actions/toggleLike';
@@ -72,7 +73,7 @@ export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
           <p
             className={`text-sm text-foreground whitespace-pre-wrap break-words${expanded ? '' : ' line-clamp-3'}`}
           >
-            {expanded ? post.content : contentPreview}
+            <LinkedText text={expanded ? post.content : contentPreview} locale={locale} />
           </p>
         )}
         {hasContent && isTruncated && (

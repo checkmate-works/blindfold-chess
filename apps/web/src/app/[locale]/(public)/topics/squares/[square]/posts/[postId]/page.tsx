@@ -10,7 +10,7 @@ import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/Del
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
 import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -122,7 +122,7 @@ export default async function PostDetailPage({ params }: Props) {
           </UserAvatar>
 
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-            {post.content}
+            <LinkedText text={post.content} locale={locale} />
           </div>
 
           <div className="flex items-center gap-4">
