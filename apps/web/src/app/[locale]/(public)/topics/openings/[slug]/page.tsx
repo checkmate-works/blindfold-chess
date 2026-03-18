@@ -108,7 +108,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
       <PagePanel>
         <SectionTitle>{displayName}</SectionTitle>
 
-        <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
+        {currentPage === 1 && <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
 
         <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
 

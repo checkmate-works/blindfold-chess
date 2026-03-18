@@ -2275,6 +2275,8 @@
     "openings": {
       "title": "Openings",
       "description": "Explore and learn about chess openings and their key positions.",
+      "recentPosts": "Recent Posts",
+      "noRecentPosts": "No posts yet.",
       "sectionTitle": "{move} Openings",
       "categoryFilter": {
         "label": "Category",

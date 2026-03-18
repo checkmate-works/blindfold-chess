@@ -72,7 +72,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PageTitle>{t('squares.title')}</PageTitle>
 
       <PagePanel>
-        <SquareBoard locale={locale} />
+        {currentPage === 1 && <SquareBoard locale={locale} />}
 
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 

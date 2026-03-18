@@ -72,22 +72,24 @@ export default async function TopicsPage({ params, searchParams }: Props) {
       <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
-        <div className="space-y-4">
-          <CardLink
-            href="/topics/squares"
-            icon="♟"
-            title={t('categories.squares.title')}
-            description={t('categories.squares.description')}
-            locale={locale}
-          />
-          <CardLink
-            href="/topics/openings"
-            icon="♞"
-            title={t('categories.openings.title')}
-            description={t('categories.openings.description')}
-            locale={locale}
-          />
-        </div>
+        {currentPage === 1 && (
+          <div className="space-y-4">
+            <CardLink
+              href="/topics/squares"
+              icon="♟"
+              title={t('categories.squares.title')}
+              description={t('categories.squares.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/topics/openings"
+              icon="♞"
+              title={t('categories.openings.title')}
+              description={t('categories.openings.description')}
+              locale={locale}
+            />
+          </div>
+        )}
 
         <SectionTitle>{t('recentPosts')}</SectionTitle>
 
