@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import { eq, sql } from 'drizzle-orm';
 
 import {
@@ -91,127 +93,151 @@ async function fetchPositionsMap(
   return positionMap;
 }
 
-export async function getGlossaryTerms(locale: string): Promise<ChessTerm[]> {
-  const rows = await db
-    .select({
-      termId: glossaryTerms.id,
-      termEn: glossaryTerms.termEn,
-      category: glossaryTerms.category,
-      translatedTerm: glossaryTermTranslations.term,
-      definition: glossaryTermTranslations.definition,
-      reading: glossaryTermTranslations.reading,
-    })
-    .from(glossaryTerms)
-    .leftJoin(
-      glossaryTermTranslations,
-      sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-    )
-    .orderBy(glossaryTerms.termEn);
+export const getGlossaryTerms = unstable_cache(
+  async (locale: string): Promise<ChessTerm[]> => {
+    const rows = await db
+      .select({
+        termId: glossaryTerms.id,
+        termEn: glossaryTerms.termEn,
+        category: glossaryTerms.category,
+        translatedTerm: glossaryTermTranslations.term,
+        definition: glossaryTermTranslations.definition,
+        reading: glossaryTermTranslations.reading,
+      })
+      .from(glossaryTerms)
+      .leftJoin(
+        glossaryTermTranslations,
+        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
+      )
+      .orderBy(glossaryTerms.termEn);
 
-  const termIds = rows.map((r) => r.termId);
-  const aliasMap = await fetchAliasesMap(termIds);
-  const positionMap = await fetchPositionsMap(termIds);
+    const termIds = rows.map((r) => r.termId);
+    const aliasMap = await fetchAliasesMap(termIds);
+    const positionMap = await fetchPositionsMap(termIds);
 
-  return rows.map((row) =>
-    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-  );
-}
+    return rows.map((row) =>
+      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+    );
+  },
+  ['glossary-terms'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
 
-export async function getTermsByLetter(letter: string, locale: string): Promise<ChessTerm[]> {
-  const upperLetter = letter.toUpperCase();
+export const getTermsByLetter = unstable_cache(
+  async (letter: string, locale: string): Promise<ChessTerm[]> => {
+    const upperLetter = letter.toUpperCase();
 
-  const rows = await db
-    .select({
-      termId: glossaryTerms.id,
-      termEn: glossaryTerms.termEn,
-      category: glossaryTerms.category,
-      translatedTerm: glossaryTermTranslations.term,
-      definition: glossaryTermTranslations.definition,
-      reading: glossaryTermTranslations.reading,
-    })
-    .from(glossaryTerms)
-    .leftJoin(
-      glossaryTermTranslations,
-      sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-    )
-    .where(sql`upper(left(${glossaryTerms.termEn}, 1)) = ${upperLetter}`)
-    .orderBy(glossaryTerms.termEn);
+    const rows = await db
+      .select({
+        termId: glossaryTerms.id,
+        termEn: glossaryTerms.termEn,
+        category: glossaryTerms.category,
+        translatedTerm: glossaryTermTranslations.term,
+        definition: glossaryTermTranslations.definition,
+        reading: glossaryTermTranslations.reading,
+      })
+      .from(glossaryTerms)
+      .leftJoin(
+        glossaryTermTranslations,
+        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
+      )
+      .where(sql`upper(left(${glossaryTerms.termEn}, 1)) = ${upperLetter}`)
+      .orderBy(glossaryTerms.termEn);
 
-  const termIds = rows.map((r) => r.termId);
-  const aliasMap = await fetchAliasesMap(termIds);
-  const positionMap = await fetchPositionsMap(termIds);
+    const termIds = rows.map((r) => r.termId);
+    const aliasMap = await fetchAliasesMap(termIds);
+    const positionMap = await fetchPositionsMap(termIds);
 
-  return rows.map((row) =>
-    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-  );
-}
+    return rows.map((row) =>
+      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+    );
+  },
+  ['glossary-terms-by-letter'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
 
-export async function getTermsByCategory(category: string, locale: string): Promise<ChessTerm[]> {
-  const rows = await db
-    .select({
-      termId: glossaryTerms.id,
-      termEn: glossaryTerms.termEn,
-      category: glossaryTerms.category,
-      translatedTerm: glossaryTermTranslations.term,
-      definition: glossaryTermTranslations.definition,
-      reading: glossaryTermTranslations.reading,
-    })
-    .from(glossaryTerms)
-    .leftJoin(
-      glossaryTermTranslations,
-      sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-    )
-    .where(eq(glossaryTerms.category, category))
-    .orderBy(glossaryTerms.termEn);
+export const getTermsByCategory = unstable_cache(
+  async (category: string, locale: string): Promise<ChessTerm[]> => {
+    const rows = await db
+      .select({
+        termId: glossaryTerms.id,
+        termEn: glossaryTerms.termEn,
+        category: glossaryTerms.category,
+        translatedTerm: glossaryTermTranslations.term,
+        definition: glossaryTermTranslations.definition,
+        reading: glossaryTermTranslations.reading,
+      })
+      .from(glossaryTerms)
+      .leftJoin(
+        glossaryTermTranslations,
+        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
+      )
+      .where(eq(glossaryTerms.category, category))
+      .orderBy(glossaryTerms.termEn);
 
-  const termIds = rows.map((r) => r.termId);
-  const aliasMap = await fetchAliasesMap(termIds);
-  const positionMap = await fetchPositionsMap(termIds);
+    const termIds = rows.map((r) => r.termId);
+    const aliasMap = await fetchAliasesMap(termIds);
+    const positionMap = await fetchPositionsMap(termIds);
 
-  return rows.map((row) =>
-    toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-  );
-}
+    return rows.map((row) =>
+      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
+    );
+  },
+  ['glossary-terms-by-category'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
 
-export async function getUniqueLetters(): Promise<string[]> {
-  const rows = await db
-    .selectDistinct({
-      letter: sql<string>`upper(left(${glossaryTerms.termEn}, 1))`,
-    })
-    .from(glossaryTerms)
-    .orderBy(sql`upper(left(${glossaryTerms.termEn}, 1))`);
+export const getUniqueLetters = unstable_cache(
+  async (): Promise<string[]> => {
+    const rows = await db
+      .selectDistinct({
+        letter: sql<string>`upper(left(${glossaryTerms.termEn}, 1))`,
+      })
+      .from(glossaryTerms)
+      .orderBy(sql`upper(left(${glossaryTerms.termEn}, 1))`);
 
-  return rows.map((r) => r.letter);
-}
+    return rows.map((r) => r.letter);
+  },
+  ['glossary-unique-letters'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
 
-export async function getLetterCounts(): Promise<Record<string, number>> {
-  const rows = await db
-    .select({
-      letter: sql<string>`upper(left(${glossaryTerms.termEn}, 1))`,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(glossaryTerms)
-    .groupBy(sql`upper(left(${glossaryTerms.termEn}, 1))`);
+export const getLetterCounts = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const rows = await db
+      .select({
+        letter: sql<string>`upper(left(${glossaryTerms.termEn}, 1))`,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(glossaryTerms)
+      .groupBy(sql`upper(left(${glossaryTerms.termEn}, 1))`);
 
-  const counts: Record<string, number> = {};
-  for (const row of rows) {
-    counts[row.letter] = row.count;
-  }
-  return counts;
-}
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      counts[row.letter] = row.count;
+    }
+    return counts;
+  },
+  ['glossary-letter-counts'],
+  { tags: ['glossary'], revalidate: 3600 }
+);
 
-export async function getCategoryCounts(): Promise<Record<string, number>> {
-  const rows = await db
-    .select({
-      category: glossaryTerms.category,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(glossaryTerms)
-    .groupBy(glossaryTerms.category);
+export const getCategoryCounts = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const rows = await db
+      .select({
+        category: glossaryTerms.category,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(glossaryTerms)
+      .groupBy(glossaryTerms.category);
 
-  const counts: Record<string, number> = {};
-  for (const row of rows) {
-    counts[row.category] = row.count;
-  }
-  return counts;
-}
+    const counts: Record<string, number> = {};
+    for (const row of rows) {
+      counts[row.category] = row.count;
+    }
+    return counts;
+  },
+  ['glossary-category-counts'],
+  { tags: ['glossary'], revalidate: 3600 }
+);

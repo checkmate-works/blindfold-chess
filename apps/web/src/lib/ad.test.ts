@@ -60,6 +60,21 @@ describe('isAdsEnabled', () => {
     const result = await isAdsEnabled();
     expect(result).toBe(false);
   });
+
+  it('should return false when DB query exceeds timeout (withTimeout fallback)', async () => {
+    vi.useFakeTimers();
+    mockLimit.mockImplementation(
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve([{ value: { enabled: true } }]), 10000))
+    );
+
+    const resultPromise = isAdsEnabled();
+    await vi.advanceTimersByTimeAsync(5000);
+    const result = await resultPromise;
+
+    expect(result).toBe(false);
+    vi.useRealTimers();
+  });
 });
 
 describe('getAdBannerBySlot', () => {
@@ -117,6 +132,36 @@ describe('getAdBannerBySlot', () => {
 
     const result = await getAdBannerBySlot('header');
     expect(result).toBeNull();
+  });
+
+  it('should return null when DB query exceeds timeout (withTimeout fallback)', async () => {
+    vi.useFakeTimers();
+    mockLimit.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve([
+                {
+                  href: 'https://example.com',
+                  imagePath: '/images/ad.png',
+                  alt: 'Test Ad',
+                  width: 728,
+                  height: 90,
+                  isActive: true,
+                },
+              ]),
+            10000
+          )
+        )
+    );
+
+    const resultPromise = getAdBannerBySlot('header');
+    await vi.advanceTimersByTimeAsync(5000);
+    const result = await resultPromise;
+
+    expect(result).toBeNull();
+    vi.useRealTimers();
   });
 });
 

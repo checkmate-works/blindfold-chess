@@ -4,6 +4,15 @@ import { eq } from 'drizzle-orm';
 
 import { adBanners, db, siteSettings } from '@/lib/db';
 
+const DB_QUERY_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DB query timeout')), ms)),
+  ]);
+}
+
 export type AdBannerConfig = {
   href: string;
   imagePath: string;
@@ -15,11 +24,14 @@ export type AdBannerConfig = {
 export const isAdsEnabled = unstable_cache(
   async (): Promise<boolean> => {
     try {
-      const [row] = await db
-        .select({ value: siteSettings.value })
-        .from(siteSettings)
-        .where(eq(siteSettings.key, 'ads_enabled'))
-        .limit(1);
+      const [row] = await withTimeout(
+        db
+          .select({ value: siteSettings.value })
+          .from(siteSettings)
+          .where(eq(siteSettings.key, 'ads_enabled'))
+          .limit(1),
+        DB_QUERY_TIMEOUT_MS
+      );
 
       if (!row) return false;
 
@@ -37,7 +49,10 @@ export const isAdsEnabled = unstable_cache(
 export const getAdBannerBySlot = unstable_cache(
   async (slot: string): Promise<AdBannerConfig | null> => {
     try {
-      const [row] = await db.select().from(adBanners).where(eq(adBanners.slot, slot)).limit(1);
+      const [row] = await withTimeout(
+        db.select().from(adBanners).where(eq(adBanners.slot, slot)).limit(1),
+        DB_QUERY_TIMEOUT_MS
+      );
 
       if (!row || !row.isActive) return null;
 
