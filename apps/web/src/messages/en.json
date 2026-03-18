@@ -2257,6 +2257,8 @@
     "title": "Topics",
     "description": "Discuss and share insights about chess squares, positions, and strategies",
     "recentTopicPosts": "Recent Topics",
+    "recentPosts": "Recent Posts",
+    "noRecentPosts": "No posts yet.",
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "categories": {

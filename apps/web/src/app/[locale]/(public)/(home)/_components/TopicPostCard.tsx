@@ -3,34 +3,45 @@
 import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
+import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { truncateContent } from '@/lib/truncate-content';
 
-import { UserAvatar } from '../../topics/_components/UserAvatar';
-import type { PostWithReplyMeta } from '../../topics/_lib/queries';
-import { formatRelativeTime } from '../../topics/squares/_lib/relative-time';
+import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
+import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
+import { formatRelativeTime } from '@/app/[locale]/(public)/topics/squares/_lib/relative-time';
+
 import { TopicSquareBoard } from './TopicSquareBoard';
 
 type Props = {
-  post: PostWithReplyMeta;
+  post: ProfilePostWithReplyMeta;
   locale: string;
-  topicKey: string;
 };
 
-export function TopicPostCard({ post, locale, topicKey }: Props) {
+export function TopicPostCard({ post, locale }: Props) {
   const t = useTranslations('topics');
   const tSquares = useTranslations('topics.squares');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
+  const isOpening = post.topicType === 'opening';
+
+  const href = isOpening
+    ? `/topics/openings/${post.topicKey}/posts/${post.id}`
+    : `/topics/squares/${post.topicKey}/posts/${post.id}`;
 
   return (
     <Link
-      href={`/topics/squares/${topicKey}/posts/${post.id}`}
+      href={href}
       locale={locale}
       className="flex gap-4 p-4 rounded-lg border border-border bg-card hover:border-foreground/20 transition-colors"
     >
       <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-        <TopicSquareBoard square={topicKey} />
+        {isOpening ? (
+          <MiniBoard fen={post.openingFen ?? getStartingFen()} responsive />
+        ) : (
+          <TopicSquareBoard square={post.topicKey} />
+        )}
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -49,6 +60,17 @@ export function TopicPostCard({ post, locale, topicKey }: Props) {
             {formatRelativeTime(new Date(post.createdAt), locale, tSquares('justNow'))}
           </time>
         </div>
+        {isOpening ? (
+          post.openingName && (
+            <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
+              {post.openingName}
+            </span>
+          )
+        ) : (
+          <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
+            {post.topicKey}
+          </span>
+        )}
         <span className="text-sm text-link-primary mt-auto">{t('showMore')}</span>
       </div>
     </Link>

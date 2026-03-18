@@ -1,7 +1,14 @@
 import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
-import type { Profile, TopicPost } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  profiles,
+  topicPostLikes,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
+import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 export type TopicPostWithAuthor = TopicPost & {
   author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
@@ -27,6 +34,13 @@ export type LikeMeta = {
 export type PostWithReplyMeta = TopicPostWithAuthor & {
   replyMeta: ReplyMeta;
   likeMeta: LikeMeta;
+};
+
+export type ProfilePostWithReplyMeta = PostWithReplyMeta & {
+  topicKey: string;
+  rating: Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null;
+  openingName: string | null;
+  openingFen: string | null;
 };
 
 export type SortMode = 'new' | 'popular' | 'active';
@@ -201,4 +215,229 @@ export async function getRepliesByPostId(
   }));
 
   return attachPostMeta(posts, currentUserId);
+}
+
+/**
+ * Get the most recent top-level posts across all topic types (square + opening) with reply metadata.
+ */
+export async function getRecentPostsAcrossTopics(
+  limit = 5,
+  currentUserId?: string
+): Promise<ProfilePostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
+      },
+      rating: {
+        preferenceRating: topicPostRatings.preferenceRating,
+        proficiencyRating: topicPostRatings.proficiencyRating,
+      },
+      openingName: chessOpenings.name,
+      openingFen: chessOpenings.fen,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+    .where(
+      and(
+        inArray(topicPosts.topicType, ['square', 'opening']),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  const ratingMap = new Map(
+    results
+      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
+      .map((r) => [r.post.id, r.rating])
+  );
+
+  const openingNameMap = new Map(
+    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
+  );
+
+  const openingFenMap = new Map(
+    results.filter((r) => r.openingFen !== null).map((r) => [r.post.id, r.openingFen])
+  );
+
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  return postsWithMeta.map((p) => ({
+    ...p,
+    topicKey: p.topicKey,
+    rating: ratingMap.get(p.id) ?? null,
+    openingName: openingNameMap.get(p.id) ?? null,
+    openingFen: openingFenMap.get(p.id) ?? null,
+  }));
+}
+
+/**
+ * Get the count of top-level posts across all topic types (square + opening).
+ */
+export async function getPostCountAcrossTopics(): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPosts)
+    .where(
+      and(
+        inArray(topicPosts.topicType, ['square', 'opening']),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    );
+  return result.count;
+}
+
+/**
+ * Get top-level posts across all topic types (square + opening) with reply metadata, paginated.
+ */
+export async function getPostsAcrossTopicsPaginated(
+  limit: number,
+  offset: number,
+  currentUserId?: string
+): Promise<ProfilePostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
+      },
+      rating: {
+        preferenceRating: topicPostRatings.preferenceRating,
+        proficiencyRating: topicPostRatings.proficiencyRating,
+      },
+      openingName: chessOpenings.name,
+      openingFen: chessOpenings.fen,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+    .where(
+      and(
+        inArray(topicPosts.topicType, ['square', 'opening']),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  const ratingMap = new Map(
+    results
+      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
+      .map((r) => [r.post.id, r.rating])
+  );
+
+  const openingNameMap = new Map(
+    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
+  );
+
+  const openingFenMap = new Map(
+    results.filter((r) => r.openingFen !== null).map((r) => [r.post.id, r.openingFen])
+  );
+
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  return postsWithMeta.map((p) => ({
+    ...p,
+    topicKey: p.topicKey,
+    rating: ratingMap.get(p.id) ?? null,
+    openingName: openingNameMap.get(p.id) ?? null,
+    openingFen: openingFenMap.get(p.id) ?? null,
+  }));
+}
+
+/**
+ * Get top-level posts by a specific user, ordered by creation date (newest first).
+ * Returns posts with reply/like metadata, the topicKey, and optional rating for each post.
+ * Includes both 'square' and 'opening' topic types.
+ */
+export async function getPostsByUserId(
+  userId: string,
+  currentUserId?: string
+): Promise<ProfilePostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        flair: profiles.flair,
+        country: profiles.country,
+      },
+      rating: {
+        preferenceRating: topicPostRatings.preferenceRating,
+        proficiencyRating: topicPostRatings.proficiencyRating,
+      },
+      openingName: chessOpenings.name,
+      openingFen: chessOpenings.fen,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+    .where(
+      and(
+        eq(topicPosts.userId, userId),
+        inArray(topicPosts.topicType, ['square', 'opening']),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt));
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  const ratingMap = new Map(
+    results
+      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
+      .map((r) => [r.post.id, r.rating])
+  );
+
+  const openingNameMap = new Map(
+    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
+  );
+
+  const openingFenMap = new Map(
+    results.filter((r) => r.openingFen !== null).map((r) => [r.post.id, r.openingFen])
+  );
+
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  return postsWithMeta.map((p) => ({
+    ...p,
+    topicKey: p.topicKey,
+    rating: ratingMap.get(p.id) ?? null,
+    openingName: openingNameMap.get(p.id) ?? null,
+    openingFen: openingFenMap.get(p.id) ?? null,
+  }));
 }
