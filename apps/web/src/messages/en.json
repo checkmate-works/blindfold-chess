@@ -2440,7 +2440,8 @@
         "confirm": "Delete",
         "cancel": "Cancel",
         "deleting": "Deleting..."
-      }
+      },
+      "newGameFromHere": "New game from here"
     },
     "squares": {
       "title": "Squares",

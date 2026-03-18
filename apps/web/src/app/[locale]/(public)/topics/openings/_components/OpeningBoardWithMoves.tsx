@@ -2,7 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+
+import { Button } from '@/app/_components';
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
+import { FaPlusCircle } from 'react-icons/fa';
 
 import { MiniBoard } from './MiniBoard';
 
@@ -12,6 +17,9 @@ type Props = {
 };
 
 export function OpeningBoardWithMoves({ fen, pgn }: Props) {
+  const locale = useLocale();
+  const router = useRouter();
+  const t = useTranslations('topics.openings');
   const moves = useMemo(() => parsePgn(pgn), [pgn]);
 
   // -1 = starting position (before any move), 0..moves.length-1 = after that move
@@ -60,8 +68,16 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
     return pairs;
   }, [moves]);
 
+  const handleNewGameFromHere = useCallback(() => {
+    const movesToKeep = moves.slice(0, currentMoveIndex + 1);
+    const params = new URLSearchParams();
+    params.set('moves', JSON.stringify(movesToKeep));
+    router.push(`/${locale}/games/new/pgn?${params.toString()}`);
+  }, [moves, currentMoveIndex, locale, router]);
+
   const isPreviousDisabled = currentMoveIndex === -1;
   const isNextDisabled = currentMoveIndex === moves.length - 1;
+  const isAtStartingPosition = currentMoveIndex === -1;
 
   return (
     <div className="space-y-3">
@@ -147,6 +163,18 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
           </div>
         </div>
       )}
+
+      {/* New game from here button — always rendered to prevent CLS, disabled at starting position */}
+      <div className="flex justify-center">
+        <Button
+          variant="secondary"
+          icon={<FaPlusCircle className="w-3 h-3" />}
+          onClick={handleNewGameFromHere}
+          disabled={isAtStartingPosition}
+        >
+          {t('newGameFromHere')}
+        </Button>
+      </div>
     </div>
   );
 }

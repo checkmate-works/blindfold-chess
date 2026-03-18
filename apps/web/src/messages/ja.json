@@ -2418,7 +2418,8 @@
         "confirm": "削除する",
         "cancel": "キャンセル",
         "deleting": "削除中..."
-      }
+      },
+      "newGameFromHere": "ここから新規対局"
     },
     "squares": {
       "title": "マス目",
