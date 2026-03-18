@@ -2367,8 +2367,8 @@
       "detail": {
         "pageTitle": "Opening",
         "postCount": "{count, plural, one {# post} other {# posts}}",
-        "noPosts": "No posts yet. Be the first to share your thoughts!",
-        "newPost": "New Post",
+        "noPosts": "No posts yet.",
+        "newPost": "Share your thoughts",
         "ecoCode": "ECO Code",
         "moves": "Moves"
       },
@@ -2458,8 +2458,8 @@
       "description": "Select a square to view and share discussions",
       "pageTitle": "Squares",
       "postCount": "{count, plural, one {# post} other {# posts}}",
-      "noPosts": "No posts yet. Be the first to share your thoughts!",
-      "newPost": "New Post",
+      "noPosts": "No posts yet.",
+      "newPost": "Share your thoughts",
       "openingsLink": "Openings starting with {square}",
       "moreOpenings": "More openings",
       "backToSquares": "Back to Squares",

@@ -134,11 +134,11 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <p className="text-sm text-muted-foreground">
-          {t('squares.postCount', { count: totalCount })}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {t('squares.postCount', { count: totalCount })}
+          </p>
 
-        <div>
           <Link href={`/topics/squares/${square}/new`} locale={locale}>
             <Button variant="primary" asChild>
               {t('squares.newPost')}

@@ -110,17 +110,17 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
 
         {currentPage === 1 && <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
 
-        <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
 
-        {showNewPostButton && (
-          <div>
+          {showNewPostButton && (
             <Link href={`/topics/openings/${slug}/new`} locale={locale}>
               <Button variant="primary" asChild>
                 {dt('newPost')}
               </Button>
             </Link>
-          </div>
-        )}
+          )}
+        </div>
 
         <OpeningSortTabs slug={slug} locale={locale} />
 

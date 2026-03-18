@@ -2345,8 +2345,8 @@
       "detail": {
         "pageTitle": "Opening",
         "postCount": "{count}件の投稿",
-        "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
-        "newPost": "新規投稿",
+        "noPosts": "まだ投稿がありません。",
+        "newPost": "あなたの考えを投稿",
         "ecoCode": "ECOコード",
         "moves": "手順"
       },
@@ -2436,8 +2436,8 @@
       "description": "マス目を選んで議論を閲覧・共有しましょう",
       "pageTitle": "Squares",
       "postCount": "{count}件の投稿",
-      "noPosts": "まだ投稿がありません。最初の投稿をしてみましょう！",
-      "newPost": "新規投稿",
+      "noPosts": "まだ投稿がありません。",
+      "newPost": "あなたの考えを投稿",
       "openingsLink": "初手{square}のオープニング",
       "moreOpenings": "もっと見る",
       "backToSquares": "マス目一覧に戻る",
