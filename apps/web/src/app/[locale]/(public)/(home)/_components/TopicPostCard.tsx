@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -12,10 +14,10 @@ import { truncateContent } from '@/lib/truncate-content';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
-import { formatRelativeTime } from '@/app/[locale]/(public)/topics/squares/_lib/relative-time';
 
 import { TopicSquareBoard } from './TopicSquareBoard';
 
@@ -25,10 +27,13 @@ type Props = {
 };
 
 export function TopicPostCard({ post, locale }: Props) {
+  const tTopics = useTranslations('topics');
   const tSquares = useTranslations('topics.squares');
   const tOpenings = useTranslations('topics.openings');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
+  const isTruncated = contentPreview !== post.content;
+  const [expanded, setExpanded] = useState(false);
   const isOpening = post.topicType === 'opening';
 
   const href = isOpening
@@ -61,7 +66,6 @@ export function TopicPostCard({ post, locale }: Props) {
           flair={post.author?.flair}
           country={post.author?.country}
         />
-        <p className="text-sm text-foreground break-words line-clamp-3">{contentPreview}</p>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <time dateTime={post.createdAt.toISOString()}>
             {formatRelativeTime(new Date(post.createdAt), locale, tTopic('justNow'))}
@@ -77,6 +81,22 @@ export function TopicPostCard({ post, locale }: Props) {
           <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
             {post.topicKey}
           </span>
+        )}
+        <p className={`text-sm text-foreground break-words mt-3${expanded ? '' : ' line-clamp-3'}`}>
+          {expanded ? post.content : contentPreview}
+        </p>
+        {isTruncated && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setExpanded((prev) => !prev);
+            }}
+            className="text-sm text-link-primary hover:underline"
+          >
+            {expanded ? tTopics('showLess') : tTopics('showMore')}
+          </button>
         )}
 
         <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">

@@ -1,16 +1,16 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
-import { FaRegComment } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/truncate-content';
 
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
-import { formatRelativeTime } from '@/app/[locale]/(public)/topics/squares/_lib/relative-time';
+import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 
 import type { OpeningPostWithReplyMeta } from '../../_lib/queries';
 import { toggleLike } from '../posts/[postId]/_actions/toggleLike';
@@ -30,6 +30,8 @@ export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
   const hasContent = post.content.length > 0;
   const contentPreview = truncateContent(post.content);
+  const isTruncated = contentPreview !== post.content;
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <Link
@@ -46,13 +48,9 @@ export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
         flair={post.author?.flair}
         country={post.author?.country}
       >
-        <div className="text-sm text-muted-foreground mb-1">
+        <div className="text-sm text-muted-foreground mb-4">
           <time dateTime={post.createdAt.toISOString()}>
-            {post.createdAt.toLocaleDateString(locale, {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatRelativeTime(new Date(post.createdAt), locale, t('justNow'))}
           </time>
           {openingName && (
             <div className="mt-2">
@@ -71,72 +69,36 @@ export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
           </div>
         )}
         {hasContent && (
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
-            {contentPreview}
+          <p
+            className={`text-sm text-foreground whitespace-pre-wrap break-words${expanded ? '' : ' line-clamp-3'}`}
+          >
+            {expanded ? post.content : contentPreview}
           </p>
         )}
-        <span className="text-sm text-link-primary">{tTopics('showMore')}</span>
+        {hasContent && isTruncated && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setExpanded((prev) => !prev);
+            }}
+            className="text-sm text-link-primary hover:underline"
+          >
+            {expanded ? tTopics('showLess') : tTopics('showMore')}
+          </button>
+        )}
       </UserAvatar>
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-        <LikeButton
-          postId={post.id}
-          locale={locale}
-          topicKey={slug}
-          initialLikeCount={post.likeMeta.likeCount}
-          initialLikedByMe={post.likeMeta.likedByMe}
-          toggleLikeAction={toggleLike}
-          i18nNamespace="topics.openings"
-        />
-
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <FaRegComment className="w-4 h-4" />
-          {post.replyMeta.replyCount > 0 && <span>{post.replyMeta.replyCount}</span>}
-        </div>
-
-        {post.replyMeta.replyCount > 0 && (
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="flex -space-x-2">
-              {post.replyMeta.repliers.map((replier, i) =>
-                replier.avatarUrl ? (
-                  <Image
-                    key={i}
-                    src={replier.avatarUrl}
-                    alt={replier.displayName}
-                    width={24}
-                    height={24}
-                    className="rounded-full border-2 border-card"
-                    unoptimized
-                  />
-                ) : (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
-                  >
-                    <span className="text-[10px] text-muted-foreground">
-                      {replier.displayName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )
-              )}
-              {post.replyMeta.uniqueReplierCount > post.replyMeta.repliers.length && (
-                <div className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
-                  <span className="text-[10px] text-muted-foreground">
-                    +{post.replyMeta.uniqueReplierCount - post.replyMeta.repliers.length}
-                  </span>
-                </div>
-              )}
-            </div>
-            {post.replyMeta.latestReplyAt && (
-              <span className="text-xs text-muted-foreground">
-                {t('newReply', {
-                  time: formatRelativeTime(post.replyMeta.latestReplyAt, locale, t('justNow')),
-                })}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+      <PostFooter
+        postId={post.id}
+        locale={locale}
+        topicKey={slug}
+        likeMeta={post.likeMeta}
+        replyMeta={post.replyMeta}
+        toggleLikeAction={toggleLike}
+        i18nNamespace="topics.openings"
+      />
     </Link>
   );
 }
