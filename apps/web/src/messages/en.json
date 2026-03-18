@@ -528,7 +528,7 @@
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
       "seconds": "seconds",
-      "pieceSelection": "Select Pieces",
+      "pieceSelection": "Select a Piece",
       "selectedCount": "{count} selected",
       "pieces": {
         "b": "Bishop",
@@ -899,6 +899,8 @@
       "finalTarget": "(Auto-completed)",
       "distance": "Distance: {count}",
       "inputPlaceholder": "Enter next square...",
+      "pieceSelection": "Select Pieces",
+      "selectedCount": "{count} selected",
       "pieces": {
         "n": "Knight",
         "b": "Bishop",

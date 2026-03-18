@@ -48,7 +48,6 @@ export function RoutePlannerSettings({
   const t = useTranslations('practice.routePlanner');
   const tp = useTranslations('practice');
   const tSettings = useTranslations('practice.settings');
-  const tLegalMoves = useTranslations('practice.legalMoves');
   const router = useRouter();
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -127,7 +126,7 @@ export function RoutePlannerSettings({
         {/* Piece Selector */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-foreground mb-3 text-center">
-            {tLegalMoves('pieceSelection')}
+            {t('pieceSelection')}
           </label>
           <div className="flex justify-center gap-2">
             {PIECES.map((piece) => (
@@ -139,15 +138,15 @@ export function RoutePlannerSettings({
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border'
                 }`}
-                aria-label={tLegalMoves(`pieces.${piece}`)}
-                title={tLegalMoves(`pieces.${piece}`)}
+                aria-label={t(`pieces.${piece}`)}
+                title={t(`pieces.${piece}`)}
               >
                 <ChessPiece type={piece} color="w" size={28} />
               </button>
             ))}
           </div>
           <div className="mt-2 text-xs text-muted-foreground text-center animate-in fade-in duration-300">
-            {tLegalMoves('selectedCount', {
+            {t('selectedCount', {
               count: Object.values(selectedPieces).filter(Boolean).length,
             })}
           </div>

@@ -529,7 +529,7 @@
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "seconds": "秒",
-      "pieceSelection": "駒の選択",
+      "pieceSelection": "駒を選択",
       "selectedCount": "{count}個選択中",
       "pieces": {
         "b": "ビショップ",
@@ -900,6 +900,8 @@
       "finalTarget": "（自動補完）",
       "distance": "手数: {count}",
       "inputPlaceholder": "次のマスを入力...",
+      "pieceSelection": "駒の選択",
+      "selectedCount": "{count}個選択中",
       "pieces": {
         "n": "ナイト",
         "b": "ビショップ",

@@ -73,7 +73,7 @@
       "title": "合法手判定 設定",
       "timeLimit": "制限時間",
       "durationSeconds": "{{seconds}}秒",
-      "pieceSelection": "駒の選択",
+      "pieceSelection": "駒を選択",
       "selectAtLeastOne": "少なくとも1つの駒を選択してください",
       "start": "開始"
     },

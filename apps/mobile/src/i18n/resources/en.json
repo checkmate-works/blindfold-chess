@@ -73,7 +73,7 @@
       "title": "Legal Moves Settings",
       "timeLimit": "Time Limit",
       "durationSeconds": "{{seconds}}s",
-      "pieceSelection": "Select Pieces",
+      "pieceSelection": "Select a Piece",
       "selectAtLeastOne": "Please select at least one piece",
       "start": "Start"
     },
