@@ -45,7 +45,7 @@ export function UserAvatar({
       alt={displayName}
       width={px}
       height={px}
-      className="rounded-full flex-shrink-0"
+      className={`${className} rounded-full object-cover flex-shrink-0`}
       unoptimized
     />
   ) : (

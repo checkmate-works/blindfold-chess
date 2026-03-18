@@ -65,7 +65,7 @@ export function PostFooter({
                   alt={replier.displayName}
                   width={24}
                   height={24}
-                  className="rounded-full border-2 border-card"
+                  className="rounded-full border-2 border-card object-cover w-6 h-6"
                   unoptimized
                 />
               ) : (
