@@ -11,7 +11,7 @@ afterEach(() => {
 const mockGetUnreadCount = vi.fn();
 const mockUsePathname = vi.fn(() => '/en/mypage');
 const mockUseAuth = vi.fn(() => ({
-  user: { id: 'test-user' },
+  user: { id: 'test-user' } as { id: string } | null,
   isLoading: false,
   session: null,
   signOut: vi.fn(),
