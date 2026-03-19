@@ -19,7 +19,6 @@ import {
 } from '../_lib/dashboard-utils';
 import {
   DEFAULT_PIECE_SELECTION,
-  PIECE_TYPES,
   type PieceSelection,
   derivePieceSelectionFromSessions,
 } from '../_lib/derive-piece-filter';
@@ -28,9 +27,17 @@ import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';
 export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
+const PIECE_SHORT_TO_NAME: Record<string, string> = {
+  k: 'king',
+  q: 'queen',
+  r: 'rook',
+  b: 'bishop',
+  n: 'knight',
+};
+
 type FilterContext = {
   boardOrientationFilter: string;
-  activePieces: string[];
+  activePiece: string;
 };
 
 type SessionFilter = (session: PracticeSessionRow, ctx: FilterContext) => boolean;
@@ -56,11 +63,7 @@ const MENU_FILTERS: Partial<Record<PracticeMenuType, SessionFilter>> = {
   },
   legal_moves: (s, ctx) => {
     if (isTypedSession(s) && s.menuType === 'legal_moves') {
-      const sorted = [...s.settings.selectedPieces].sort();
-      return (
-        sorted.length === ctx.activePieces.length &&
-        sorted.every((p, i) => p === ctx.activePieces[i])
-      );
+      return s.settings.selectedPiece === ctx.activePiece;
     }
     return true;
   },
@@ -170,13 +173,13 @@ export function useDashboardData(locale: string) {
     setPieceFilter(piece);
   }, []);
 
-  const activePieces = useMemo(
-    () => (pieceFilter === 'random' ? [...PIECE_TYPES].sort() : [pieceFilter]),
+  const activePiece = useMemo(
+    () => (pieceFilter === 'random' ? 'random' : (PIECE_SHORT_TO_NAME[pieceFilter] ?? 'random')),
     [pieceFilter]
   );
   const filterCtx = useMemo<FilterContext>(
-    () => ({ boardOrientationFilter, activePieces: [...activePieces] }),
-    [boardOrientationFilter, activePieces]
+    () => ({ boardOrientationFilter, activePiece }),
+    [boardOrientationFilter, activePiece]
   );
 
   const filteredSessions = useMemo(

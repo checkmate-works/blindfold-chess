@@ -9,10 +9,10 @@ import type { SaveLegalMovesResultInput } from './save-result-logic';
  *
  * Covers:
  * - menuType is always 'legal_moves'
- * - settings shape: timeLimit, selectedPieces, mistakeAllowance
+ * - settings shape: timeLimit, selectedPiece, mistakeAllowance
  * - result shape: correctAnswers, incorrectAnswers, timeTaken
- * - Challenge-mode single-piece selection (e.g., selectedPieces: ['k'])
- * - Challenge-mode random/"?" selection (selectedPieces: ['k','q','r','b','n'])
+ * - Challenge-mode single-piece selection (e.g., selectedPiece: 'king')
+ * - Challenge-mode random selection (selectedPiece: 'random')
  * - Training-mode single-select
  */
 
@@ -26,7 +26,7 @@ function makeInput(overrides: Partial<SaveLegalMovesResultInput> = {}): SaveLega
     incorrectAnswers: 2,
     timeTaken: 45,
     timeLimit: 60,
-    selectedPieces: ['k', 'q', 'r', 'b', 'n'],
+    selectedPiece: 'random',
     mistakeAllowance: 3,
     ...overrides,
   };
@@ -50,9 +50,9 @@ describe('buildLegalMovesData', () => {
       expect(settings.timeLimit).toBe(90);
     });
 
-    it('stores selectedPieces from input', () => {
-      const { settings } = buildLegalMovesData(makeInput({ selectedPieces: ['n', 'b'] }));
-      expect(settings.selectedPieces).toEqual(['n', 'b']);
+    it('stores selectedPiece from input', () => {
+      const { settings } = buildLegalMovesData(makeInput({ selectedPiece: 'knight' }));
+      expect(settings.selectedPiece).toBe('knight');
     });
 
     it('stores mistakeAllowance from input', () => {
@@ -64,7 +64,7 @@ describe('buildLegalMovesData', () => {
       const { settings } = buildLegalMovesData(makeInput());
       expect(Object.keys(settings).sort()).toEqual([
         'mistakeAllowance',
-        'selectedPieces',
+        'selectedPiece',
         'timeLimit',
       ]);
     });
@@ -85,7 +85,7 @@ describe('buildLegalMovesData', () => {
       const { result } = buildLegalMovesData(makeInput());
 
       expect(result).not.toHaveProperty('timeLimit');
-      expect(result).not.toHaveProperty('selectedPieces');
+      expect(result).not.toHaveProperty('selectedPiece');
       expect(result).not.toHaveProperty('mistakeAllowance');
     });
 
@@ -113,54 +113,22 @@ describe('buildLegalMovesData', () => {
   // Challenge mode: single-piece selection
   // ---------------------------------------------------------------------------
   describe('challenge mode — single piece selection', () => {
-    it.each([['k'], ['q'], ['r'], ['b'], ['n']] as const)(
+    it.each(['king', 'queen', 'rook', 'bishop', 'knight'] as const)(
       'stores single piece "%s" correctly',
       (piece) => {
-        const { settings } = buildLegalMovesData(makeInput({ selectedPieces: [piece] }));
-        expect(settings.selectedPieces).toEqual([piece]);
-        expect(settings.selectedPieces).toHaveLength(1);
+        const { settings } = buildLegalMovesData(makeInput({ selectedPiece: piece }));
+        expect(settings.selectedPiece).toBe(piece);
       }
     );
-
-    it('preserves the array format for a single piece', () => {
-      const { settings } = buildLegalMovesData(makeInput({ selectedPieces: ['n'] }));
-      expect(Array.isArray(settings.selectedPieces)).toBe(true);
-      expect(settings.selectedPieces).toEqual(['n']);
-    });
   });
 
   // ---------------------------------------------------------------------------
-  // Challenge mode: random/"?" selection (all 5 pieces)
+  // Challenge mode: random selection
   // ---------------------------------------------------------------------------
-  describe('challenge mode — random selection (all pieces)', () => {
-    it('stores all 5 pieces when "?" (random) is selected', () => {
-      const allPieces = ['k', 'q', 'r', 'b', 'n'];
-      const { settings } = buildLegalMovesData(makeInput({ selectedPieces: allPieces }));
-      expect(settings.selectedPieces).toEqual(allPieces);
-      expect(settings.selectedPieces).toHaveLength(5);
-    });
-
-    it('preserves piece order as passed in', () => {
-      const { settings } = buildLegalMovesData(
-        makeInput({ selectedPieces: ['k', 'q', 'r', 'b', 'n'] })
-      );
-      expect(settings.selectedPieces).toEqual(['k', 'q', 'r', 'b', 'n']);
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // Training mode
-  // ---------------------------------------------------------------------------
-  describe('training mode', () => {
-    it('stores multiple selected pieces', () => {
-      const { settings } = buildLegalMovesData(makeInput({ selectedPieces: ['n', 'b', 'r'] }));
-      expect(settings.selectedPieces).toEqual(['n', 'b', 'r']);
-      expect(settings.selectedPieces).toHaveLength(3);
-    });
-
-    it('stores a subset of two pieces', () => {
-      const { settings } = buildLegalMovesData(makeInput({ selectedPieces: ['k', 'q'] }));
-      expect(settings.selectedPieces).toEqual(['k', 'q']);
+  describe('challenge mode — random selection', () => {
+    it('stores "random" when random is selected', () => {
+      const { settings } = buildLegalMovesData(makeInput({ selectedPiece: 'random' }));
+      expect(settings.selectedPiece).toBe('random');
     });
   });
 
@@ -174,7 +142,7 @@ describe('buildLegalMovesData', () => {
         incorrectAnswers: 3,
         timeTaken: 58,
         timeLimit: 60,
-        selectedPieces: ['r'],
+        selectedPiece: 'rook',
         mistakeAllowance: 3,
       });
 
@@ -182,20 +150,20 @@ describe('buildLegalMovesData', () => {
 
       expect(menuType).toBe('legal_moves');
       expect(settings.timeLimit).toBe(60);
-      expect(settings.selectedPieces).toEqual(['r']);
+      expect(settings.selectedPiece).toBe('rook');
       expect(settings.mistakeAllowance).toBe(3);
       expect(result.correctAnswers).toBe(30);
       expect(result.incorrectAnswers).toBe(3);
       expect(result.timeTaken).toBe(58);
     });
 
-    it('preserves all input fields correctly for an all-pieces (random) challenge', () => {
+    it('preserves all input fields correctly for a random challenge', () => {
       const input = makeInput({
         correctAnswers: 42,
         incorrectAnswers: 3,
         timeTaken: 60,
         timeLimit: 60,
-        selectedPieces: ['k', 'q', 'r', 'b', 'n'],
+        selectedPiece: 'random',
         mistakeAllowance: 3,
       });
 
@@ -203,7 +171,7 @@ describe('buildLegalMovesData', () => {
 
       expect(menuType).toBe('legal_moves');
       expect(settings.timeLimit).toBe(60);
-      expect(settings.selectedPieces).toEqual(['k', 'q', 'r', 'b', 'n']);
+      expect(settings.selectedPiece).toBe('random');
       expect(settings.mistakeAllowance).toBe(3);
       expect(result.correctAnswers).toBe(42);
       expect(result.incorrectAnswers).toBe(3);

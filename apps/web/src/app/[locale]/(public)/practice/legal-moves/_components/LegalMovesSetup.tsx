@@ -12,7 +12,8 @@ import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/S
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PieceType, PracticeMode } from '../_lib/types';
+import type { PracticeMode } from '../_lib/types';
+import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
 import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {
@@ -34,23 +35,22 @@ export function LegalMovesSetup({
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-
   const modeOptions: { value: PracticeMode; label: string }[] = [
     { value: 'training', label: tp('modeTraining') },
     { value: 'timed', label: tp('modeTimed') },
   ];
 
   const handleStart = () => {
-    const piecesParam = pieceSelection === 'random' ? pieces.join(',') : pieceSelection;
+    const pieceName =
+      pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
 
     if (mode === 'training') {
       router.push(
-        `/${locale}/practice/legal-moves/training?pieces=${piecesParam}#legal-moves-training-session`
+        `/${locale}/practice/legal-moves/training?piece=${pieceName}#legal-moves-training-session`
       );
     } else {
       router.push(
-        `/${locale}/practice/legal-moves/challenge?timeLimit=60&pieces=${piecesParam}#legal-moves-session`
+        `/${locale}/practice/legal-moves/challenge?timeLimit=60&piece=${pieceName}#legal-moves-session`
       );
     }
   };

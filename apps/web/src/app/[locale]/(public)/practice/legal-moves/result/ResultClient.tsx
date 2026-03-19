@@ -25,7 +25,7 @@ export function ResultClient({ locale }: Props) {
 
   // Params for retry
   const timeLimit = searchParams.get('timeLimit');
-  const pieces = searchParams.get('pieces');
+  const piece = searchParams.get('piece');
 
   // Calculate average time if total > 0
   const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
@@ -33,7 +33,7 @@ export function ResultClient({ locale }: Props) {
   // Construct retry URL
   const retryParams = new URLSearchParams();
   if (timeLimit) retryParams.set('timeLimit', timeLimit);
-  if (pieces) retryParams.set('pieces', pieces);
+  if (piece) retryParams.set('piece', piece);
 
   const retryUrl = `/${locale}/practice/legal-moves/challenge?${retryParams.toString()}`;
 

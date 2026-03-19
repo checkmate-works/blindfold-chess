@@ -31,7 +31,7 @@ describe('parsePracticeSession', () => {
       const row = {
         ...baseRow,
         menuType: 'legal_moves',
-        settings: { timeLimit: 90, selectedPieces: ['knight', 'bishop'], mistakeAllowance: null },
+        settings: { timeLimit: 90, selectedPiece: 'knight', mistakeAllowance: null },
         result: { correctAnswers: 15, incorrectAnswers: 1, timeTaken: 80 },
       };
 
@@ -129,7 +129,7 @@ describe('isTypedSession', () => {
       id: '2',
       startedAt: null,
       menuType: 'legal_moves',
-      settings: { timeLimit: 60, selectedPieces: ['pawn'], mistakeAllowance: null },
+      settings: { timeLimit: 60, selectedPiece: 'knight', mistakeAllowance: null },
       result: { correctAnswers: 5, incorrectAnswers: 2, timeTaken: 40 },
     };
     expect(isTypedSession(session)).toBe(true);
@@ -192,7 +192,7 @@ describe('getSessionScoreFields', () => {
       id: '2',
       startedAt: null,
       menuType: 'legal_moves',
-      settings: { timeLimit: 90, selectedPieces: ['knight'], mistakeAllowance: null },
+      settings: { timeLimit: 90, selectedPiece: 'knight', mistakeAllowance: null },
       result: { correctAnswers: 15, incorrectAnswers: 2, timeTaken: 80 },
     };
 

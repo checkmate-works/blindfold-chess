@@ -60,7 +60,7 @@ export type CoordinateQuizResult = {
 
 export type LegalMovesSettings = {
   timeLimit: number;
-  selectedPieces: string[];
+  selectedPiece: string;
   mistakeAllowance: number | null;
 };
 

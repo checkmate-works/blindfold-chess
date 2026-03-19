@@ -9,10 +9,19 @@ export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 
+/** Map from full piece name (stored in DB) to PieceType short code. */
+const PIECE_NAME_TO_SHORT: Record<string, string> = {
+  king: 'k',
+  queen: 'q',
+  rook: 'r',
+  bishop: 'b',
+  knight: 'n',
+};
+
 /**
  * Derive a piece selection from session data.
- * - If all legal_moves sessions use the same single piece, returns that piece.
- * - If all sessions use all 5 pieces, returns 'random'.
+ * - If all legal_moves sessions use the same selectedPiece, returns that piece.
+ * - If all sessions use 'random', returns 'random'.
  * - Otherwise (mixed or no data), returns 'random'.
  */
 export function derivePieceSelectionFromSessions(sessions: PracticeSessionRow[]): PieceSelection {
@@ -23,25 +32,18 @@ export function derivePieceSelectionFromSessions(sessions: PracticeSessionRow[])
 
   if (legalMovesSessions.length === 0) return DEFAULT_PIECE_SELECTION;
 
-  const firstPieces = [...legalMovesSessions[0].settings.selectedPieces].sort().join(',');
-  const allSame = legalMovesSessions.every(
-    (s) => [...s.settings.selectedPieces].sort().join(',') === firstPieces
-  );
+  const firstPiece = legalMovesSessions[0].settings.selectedPiece;
+  const allSame = legalMovesSessions.every((s) => s.settings.selectedPiece === firstPiece);
 
   if (!allSame) return DEFAULT_PIECE_SELECTION;
 
-  const pieces = [...legalMovesSessions[0].settings.selectedPieces].sort();
+  if (firstPiece === 'random') return 'random';
 
-  // All 5 pieces selected = random
-  if (pieces.length === PIECE_TYPES.length && pieces.every((p, i) => p === PIECE_TYPES[i])) {
-    return 'random';
+  // Convert full piece name to short code for PieceSelection
+  const shortCode = PIECE_NAME_TO_SHORT[firstPiece];
+  if (shortCode && (PIECE_TYPES as readonly string[]).includes(shortCode)) {
+    return shortCode as PieceSelection;
   }
 
-  // Single piece selected
-  if (pieces.length === 1 && (PIECE_TYPES as readonly string[]).includes(pieces[0])) {
-    return pieces[0] as PieceSelection;
-  }
-
-  // Multi-piece combination (legacy) — default to random
   return DEFAULT_PIECE_SELECTION;
 }

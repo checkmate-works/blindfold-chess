@@ -6,6 +6,24 @@ import { describe, expect, it } from 'vitest';
 const BATCH_SIZE = 100;
 const ALL_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
 
+const PIECE_NAME_TO_TYPE: Record<string, PieceType> = {
+  king: 'k',
+  queen: 'q',
+  rook: 'r',
+  bishop: 'b',
+  knight: 'n',
+};
+
+const PIECE_TYPE_TO_NAME: Record<string, string> = {
+  k: 'king',
+  q: 'queen',
+  r: 'rook',
+  b: 'bishop',
+  n: 'knight',
+};
+
+const VALID_PIECE_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
+
 describe('LegalMovesTrainingSession logic', () => {
   describe('question generation for training mode', () => {
     it('generates BATCH_SIZE questions initially', () => {
@@ -213,65 +231,71 @@ describe('LegalMovesTrainingSession logic', () => {
     type PieceSelection = PieceType | 'random';
 
     function buildTrainingUrl(locale: string, pieceSelection: PieceSelection): string {
-      const pieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-      const piecesParam = pieceSelection === 'random' ? pieces.join(',') : pieceSelection;
-      return `/${locale}/practice/legal-moves/training?pieces=${piecesParam}#legal-moves-training-session`;
+      const pieceName =
+        pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
+      return `/${locale}/practice/legal-moves/training?piece=${pieceName}#legal-moves-training-session`;
     }
 
-    it('constructs URL with single piece for specific piece selection', () => {
+    it('constructs URL with full piece name for specific piece selection', () => {
       const url = buildTrainingUrl('en', 'k');
-      expect(url).toBe('/en/practice/legal-moves/training?pieces=k#legal-moves-training-session');
+      expect(url).toBe('/en/practice/legal-moves/training?piece=king#legal-moves-training-session');
     });
 
-    it('constructs URL with all pieces for random selection', () => {
+    it('constructs URL with "random" for random selection', () => {
       const url = buildTrainingUrl('en', 'random');
       expect(url).toBe(
-        '/en/practice/legal-moves/training?pieces=k,q,r,b,n#legal-moves-training-session'
+        '/en/practice/legal-moves/training?piece=random#legal-moves-training-session'
       );
     });
 
-    it.each(['k', 'q', 'r', 'b', 'n'] as const)(
-      'constructs correct URL for piece "%s"',
-      (piece) => {
-        const url = buildTrainingUrl('ja', piece);
-        expect(url).toContain(`pieces=${piece}`);
-        expect(url.startsWith('/ja/')).toBe(true);
-      }
-    );
+    it.each([
+      ['k', 'king'],
+      ['q', 'queen'],
+      ['r', 'rook'],
+      ['b', 'bishop'],
+      ['n', 'knight'],
+    ] as const)('constructs correct URL for piece "%s" as "%s"', (piece, name) => {
+      const url = buildTrainingUrl('ja', piece);
+      expect(url).toContain(`piece=${name}`);
+      expect(url.startsWith('/ja/')).toBe(true);
+    });
   });
 
   // ---------------------------------------------------------------------------
-  // Training mode URL parameter parsing (same logic as challenge mode)
+  // Training mode URL parameter parsing
   // ---------------------------------------------------------------------------
 
   describe('training mode URL parameter parsing', () => {
-    function parseSelectedPieces(piecesParam: string | undefined): PieceType[] {
-      const defaultPieces: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-      if (!piecesParam) return defaultPieces;
-      const parsed = piecesParam
-        .split(',')
-        .filter((p): p is PieceType => defaultPieces.includes(p as PieceType));
-      return parsed.length > 0 ? parsed : defaultPieces;
+    function parseSelectedPiece(pieceParam: string | undefined): PieceType[] {
+      const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+      const validPieceName =
+        pieceParam && (VALID_PIECE_NAMES as readonly string[]).includes(pieceParam)
+          ? pieceParam
+          : 'random';
+      return validPieceName === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[validPieceName]];
     }
 
-    it.each(['k', 'q', 'r', 'b', 'n'] as const)('parses single piece "%s" from URL', (piece) => {
-      const result = parseSelectedPieces(piece);
-      expect(result).toEqual([piece]);
-    });
+    it.each(['king', 'queen', 'rook', 'bishop', 'knight'] as const)(
+      'parses piece name "%s" from URL',
+      (pieceName) => {
+        const result = parseSelectedPiece(pieceName);
+        expect(result).toEqual([PIECE_NAME_TO_TYPE[pieceName]]);
+      }
+    );
 
-    it('parses all 5 pieces from comma-separated URL param (random selection)', () => {
-      const result = parseSelectedPieces('k,q,r,b,n');
-      expect(result).toEqual(['k', 'q', 'r', 'b', 'n']);
-    });
-
-    it('returns default when param is undefined', () => {
-      const result = parseSelectedPieces(undefined);
+    it('parses "random" to all 5 pieces', () => {
+      const result = parseSelectedPiece('random');
       expect(result).toEqual(ALL_PIECES);
     });
 
-    it('filters out invalid piece types', () => {
-      const result = parseSelectedPieces('k,x,z,n');
-      expect(result).toEqual(['k', 'n']);
+    it('returns all pieces when param is undefined', () => {
+      const result = parseSelectedPiece(undefined);
+      expect(result).toEqual(ALL_PIECES);
+    });
+
+    it('returns all pieces when param is invalid', () => {
+      const result = parseSelectedPiece('pawn');
+      expect(result).toEqual(ALL_PIECES);
     });
   });
 });

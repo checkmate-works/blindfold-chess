@@ -20,11 +20,17 @@ type Props = {
   locale: Locale;
   initialTimeLimit: number;
   selectedPieces: PieceType[];
+  selectedPiece: string;
 };
 
 const MAX_MISTAKES = 3;
 
-export default function LegalMovesSession({ locale, initialTimeLimit, selectedPieces }: Props) {
+export default function LegalMovesSession({
+  locale,
+  initialTimeLimit,
+  selectedPieces,
+  selectedPiece,
+}: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('practice.legalMoves');
@@ -112,7 +118,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     params.set('total', total.toString());
     params.set('time', totalTime.toString());
     params.set('timeLimit', initialTimeLimit.toString());
-    params.set('pieces', selectedPieces.join(','));
+    params.set('piece', selectedPiece);
 
     const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
 
@@ -122,7 +128,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
         timeLimit: initialTimeLimit,
-        selectedPieces,
+        selectedPiece,
         mistakeAllowance: MAX_MISTAKES,
       })
         .catch(() => {
@@ -142,7 +148,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     locale,
     router,
     initialTimeLimit,
-    selectedPieces,
+    selectedPiece,
     totalTime,
     user,
   ]);

@@ -54,93 +54,73 @@ describe('PIECE_FILTER_MENUS', () => {
 });
 
 // ---------------------------------------------------------------------------
-// PieceSelection → activePieces mapping
+// PieceSelection -> activePiece mapping
 // ---------------------------------------------------------------------------
 // This mirrors the derivation logic in useDashboardData:
-//   pieceFilter === 'random' → [...PIECE_TYPES].sort() (all 5 sorted)
-//   pieceFilter === 'n'      → ['n']               (single piece)
-// The filter then does an exact match between session.selectedPieces (sorted)
-// and activePieces.
+//   pieceFilter === 'random' -> 'random'
+//   pieceFilter === 'n'      -> 'knight' (full name)
+// The filter then does an exact match between session.selectedPiece and activePiece.
 
-function deriveActivePieces(pieceFilter: PieceSelection): string[] {
-  return pieceFilter === 'random' ? [...PIECE_TYPES].sort() : [pieceFilter];
+const PIECE_SHORT_TO_NAME: Record<string, string> = {
+  k: 'king',
+  q: 'queen',
+  r: 'rook',
+  b: 'bishop',
+  n: 'knight',
+};
+
+function deriveActivePiece(pieceFilter: PieceSelection): string {
+  return pieceFilter === 'random' ? 'random' : (PIECE_SHORT_TO_NAME[pieceFilter] ?? 'random');
 }
 
-function sessionMatchesFilter(sessionPieces: string[], activePieces: string[]): boolean {
-  const sorted = [...sessionPieces].sort();
-  return sorted.length === activePieces.length && sorted.every((p, i) => p === activePieces[i]);
+function sessionMatchesFilter(sessionPiece: string, activePiece: string): boolean {
+  return sessionPiece === activePiece;
 }
 
 describe('PieceSelection filter matching', () => {
-  describe('activePieces derivation from PieceSelection', () => {
-    it('random produces all 5 pieces sorted', () => {
-      expect(deriveActivePieces('random')).toEqual(['b', 'k', 'n', 'q', 'r']);
+  describe('activePiece derivation from PieceSelection', () => {
+    it('random produces "random"', () => {
+      expect(deriveActivePiece('random')).toBe('random');
     });
 
-    it.each(['k', 'q', 'r', 'b', 'n'] as const)(
-      'single piece "%s" produces array with just that piece',
-      (piece) => {
-        expect(deriveActivePieces(piece)).toEqual([piece]);
-      }
-    );
+    it.each([
+      ['k', 'king'],
+      ['q', 'queen'],
+      ['r', 'rook'],
+      ['b', 'bishop'],
+      ['n', 'knight'],
+    ] as const)('single piece "%s" produces full name "%s"', (piece, name) => {
+      expect(deriveActivePiece(piece)).toBe(name);
+    });
   });
 
   describe('single piece selection matches single-piece sessions', () => {
-    it.each(['k', 'q', 'r', 'b', 'n'] as const)(
-      'filter "%s" matches session with ["%s"]',
-      (piece) => {
-        const activePieces = deriveActivePieces(piece);
-        expect(sessionMatchesFilter([piece], activePieces)).toBe(true);
-      }
-    );
+    it.each([
+      ['k', 'king'],
+      ['q', 'queen'],
+      ['r', 'rook'],
+      ['b', 'bishop'],
+      ['n', 'knight'],
+    ] as const)('filter "%s" matches session with "%s"', (piece, name) => {
+      const activePiece = deriveActivePiece(piece);
+      expect(sessionMatchesFilter(name, activePiece)).toBe(true);
+    });
 
-    it('filter "n" does not match session with ["b"]', () => {
-      const activePieces = deriveActivePieces('n');
-      expect(sessionMatchesFilter(['b'], activePieces)).toBe(false);
+    it('filter "n" does not match session with "bishop"', () => {
+      const activePiece = deriveActivePiece('n');
+      expect(sessionMatchesFilter('bishop', activePiece)).toBe(false);
     });
   });
 
-  describe('random selection matches all-5-pieces sessions', () => {
-    it('random filter matches session with all 5 pieces', () => {
-      const activePieces = deriveActivePieces('random');
-      expect(sessionMatchesFilter(['k', 'q', 'r', 'b', 'n'], activePieces)).toBe(true);
-    });
-
-    it('random filter matches session with all 5 pieces in different order', () => {
-      const activePieces = deriveActivePieces('random');
-      expect(sessionMatchesFilter(['n', 'b', 'r', 'q', 'k'], activePieces)).toBe(true);
+  describe('random selection matches random sessions', () => {
+    it('random filter matches session with "random"', () => {
+      const activePiece = deriveActivePiece('random');
+      expect(sessionMatchesFilter('random', activePiece)).toBe(true);
     });
 
     it('random filter does not match single-piece session', () => {
-      const activePieces = deriveActivePieces('random');
-      expect(sessionMatchesFilter(['n'], activePieces)).toBe(false);
+      const activePiece = deriveActivePiece('random');
+      expect(sessionMatchesFilter('knight', activePiece)).toBe(false);
     });
-  });
-
-  describe('legacy multi-piece records do not match any single-select filter', () => {
-    const legacyCombinations = [
-      ['n', 'b'],
-      ['k', 'q'],
-      ['r', 'b', 'n'],
-      ['k', 'q', 'r', 'b'],
-    ];
-
-    it.each(legacyCombinations)(
-      'legacy combination %j does not match any single-piece filter',
-      (...pieces) => {
-        for (const singlePiece of PIECE_TYPES) {
-          const activePieces = deriveActivePieces(singlePiece);
-          expect(sessionMatchesFilter(pieces, activePieces)).toBe(false);
-        }
-      }
-    );
-
-    it.each(legacyCombinations)(
-      'legacy combination %j does not match random filter either',
-      (...pieces) => {
-        const activePieces = deriveActivePieces('random');
-        expect(sessionMatchesFilter(pieces, activePieces)).toBe(false);
-      }
-    );
   });
 });

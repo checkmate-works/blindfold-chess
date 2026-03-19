@@ -5,7 +5,7 @@ export type SaveLegalMovesResultInput = {
   incorrectAnswers: number;
   timeTaken: number;
   timeLimit: number;
-  selectedPieces: string[];
+  selectedPiece: string;
   mistakeAllowance: number;
 };
 
@@ -16,7 +16,7 @@ export function buildLegalMovesData(input: SaveLegalMovesResultInput): {
 } {
   const settings: LegalMovesSettings = {
     timeLimit: input.timeLimit,
-    selectedPieces: input.selectedPieces,
+    selectedPiece: input.selectedPiece,
     mistakeAllowance: input.mistakeAllowance,
   };
 
