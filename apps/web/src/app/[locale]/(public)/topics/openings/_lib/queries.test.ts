@@ -38,6 +38,18 @@ vi.mock('@/lib/db', () => {
       deletedAt: 'topic_posts.deleted_at',
       createdAt: 'topic_posts.created_at',
     },
+    profiles: {
+      id: 'profiles.id',
+      username: 'profiles.username',
+      displayName: 'profiles.display_name',
+      avatarUrl: 'profiles.avatar_url',
+      flair: 'profiles.flair',
+      country: 'profiles.country',
+    },
+    topicPostRatings: {
+      preferenceRating: 'topic_post_ratings.preference_rating',
+      proficiencyRating: 'topic_post_ratings.proficiency_rating',
+    },
   };
 });
 

@@ -1,12 +1,14 @@
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
+import { db, profiles, topicPosts } from '@/lib/db';
 
 import {
   attachPostMeta,
+  authorSelect,
   getLikeMetaForPost,
   getPostsByUserId,
   getRepliesByPostId,
+  sortPosts,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import type {
   LikeMeta,
@@ -36,13 +38,7 @@ export async function getPostsForSquare(square: string): Promise<TopicPostWithAu
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
+      author: authorSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -72,13 +68,7 @@ export async function getPostById(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
+      author: authorSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -113,26 +103,7 @@ export async function getPostsWithReplyMeta(
   const posts = await getPostsForSquare(square);
   const postsWithMeta = await attachPostMeta(posts, currentUserId);
 
-  if (sortBy === 'popular') {
-    return postsWithMeta.sort((a, b) => {
-      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
-      if (likeDiff !== 0) return likeDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-
-  if (sortBy === 'active') {
-    return postsWithMeta.sort((a, b) => {
-      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
-      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
-      const replyDiff = bLatest - aLatest;
-      if (replyDiff !== 0) return replyDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-
-  // 'new' — already sorted by createdAt DESC from getPostsForSquare
-  return postsWithMeta;
+  return sortPosts(postsWithMeta, sortBy);
 }
 
 /**
@@ -145,13 +116,7 @@ export async function getRecentPostsAcrossSquares(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
+      author: authorSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -201,13 +166,7 @@ export async function getPostsAcrossSquaresPaginated(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
+      author: authorSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -228,66 +187,4 @@ export async function getPostsAcrossSquaresPaginated(
   }));
 
   return attachPostMeta(posts, currentUserId);
-}
-
-/**
- * Get the count of posts liked by a specific user.
- */
-export async function getLikedPostCountByUser(userId: string): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPostLikes)
-    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
-    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)));
-  return result.count;
-}
-
-/**
- * Get posts liked by a specific user, ordered by like date (newest first), paginated.
- * Returns posts with reply/like metadata and the topicKey for each post.
- */
-export async function getLikedPostsByUser(
-  userId: string,
-  limit?: number,
-  offset?: number
-): Promise<(PostWithReplyMeta & { topicKey: string })[]> {
-  let query = db
-    .select({
-      post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
-      likedAt: topicPostLikes.createdAt,
-    })
-    .from(topicPostLikes)
-    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPostLikes.createdAt))
-    .$dynamic();
-
-  if (limit !== undefined) {
-    query = query.limit(limit);
-  }
-  if (offset !== undefined) {
-    query = query.offset(offset);
-  }
-
-  const results = await query;
-
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
-
-  const postsWithMeta = await attachPostMeta(posts, userId);
-
-  return postsWithMeta.map((p) => ({
-    ...p,
-    topicKey: p.topicKey,
-  }));
 }

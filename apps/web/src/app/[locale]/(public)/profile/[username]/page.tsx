@@ -13,7 +13,7 @@ import { db, profiles, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/squares/_lib/queries';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { LinkedText, PagePanel, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

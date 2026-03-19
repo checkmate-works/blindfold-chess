@@ -1,109 +1,17 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
+import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 
-import { and, count, eq } from 'drizzle-orm';
+export type { ToggleLikeResult } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 
-import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
-import { db, topicPostLikes, topicPosts } from '@/lib/db';
-import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
-
-import { isValidOpening } from '../../../../_lib/queries';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
-
-export async function toggleLike(
-  postId: string,
-  locale: string,
-  slug: string
-): Promise<ToggleLikeResult> {
-  if (!UUID_RE.test(postId)) {
-    return { error: 'invalidPostId' };
-  }
-
-  if (!(await isValidOpening(slug))) {
-    return { error: 'invalidOpening' };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'signInRequired' };
-  }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.toggleLike);
-  if ('error' in rateLimitResult) {
-    return { error: rateLimitResult.error };
-  }
-
-  let liked: boolean;
-  try {
-    await db.insert(topicPostLikes).values({
-      userId: user.id,
-      postId,
-    });
-    liked = true;
-  } catch (err: unknown) {
-    const cause = err instanceof Error && err.cause;
-    const isUniqueViolation =
-      cause instanceof Error && 'code' in cause && (cause as { code: string }).code === '23505';
-    if (!isUniqueViolation) {
-      throw err;
-    }
-    await db
-      .delete(topicPostLikes)
-      .where(and(eq(topicPostLikes.userId, user.id), eq(topicPostLikes.postId, postId)));
-    liked = false;
-  }
-
-  logActivityEvent({
-    userId: user.id,
-    action: liked ? 'like' : 'unlike',
-    targetType: 'topic_post',
-    targetId: postId,
+export async function toggleLike(postId: string, locale: string, slug: string) {
+  return toggleLikeBase({
+    postId,
+    locale,
+    topicIdentifier: slug,
+    topicType: 'opening',
+    urlSegment: 'openings',
+    validateTopic: isValidOpening,
   });
-
-  if (liked) {
-    const [post] = await db
-      .select({ userId: topicPosts.userId })
-      .from(topicPosts)
-      .where(eq(topicPosts.id, postId))
-      .limit(1);
-
-    if (post && post.userId !== user.id) {
-      createNotification({
-        userId: post.userId,
-        actorId: user.id,
-        type: 'like',
-        targetType: 'topic_post',
-        targetId: postId,
-        metadata: { topicType: 'opening', topicKey: slug, postId },
-      });
-    }
-  }
-
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPostLikes)
-    .where(eq(topicPostLikes.postId, postId));
-
-  revalidatePath(`/${locale}/topics/openings/${slug}`);
-  revalidatePath(`/${locale}/topics/openings/${slug}/posts/${postId}`);
-
-  return {
-    liked,
-    likeCount: result.count,
-  };
 }

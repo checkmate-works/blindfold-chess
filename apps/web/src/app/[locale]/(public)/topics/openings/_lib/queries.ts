@@ -5,15 +5,18 @@ import type { ChessOpening, Profile, TopicPost, TopicPostRating } from '@/lib/db
 
 import {
   attachPostMeta,
+  attachProfilePostMeta,
+  authorSelect,
   getLikeMetaForPost,
   getRepliesByPostId,
+  ratingSelect,
+  sortPosts,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import type {
   LikeMeta,
   PostWithReplyMeta,
   ProfilePostWithReplyMeta,
   SortMode,
-  TopicPostWithAuthor,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 
 export { getLikeMetaForPost, getRepliesByPostId };
@@ -73,17 +76,8 @@ export async function getPostsForOpening(slug: string): Promise<OpeningPostWithA
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
-      rating: {
-        preferenceRating: topicPostRatings.preferenceRating,
-        proficiencyRating: topicPostRatings.proficiencyRating,
-      },
+      author: authorSelect,
+      rating: ratingSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -121,17 +115,8 @@ export async function getOpeningPostById(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
-      rating: {
-        preferenceRating: topicPostRatings.preferenceRating,
-        proficiencyRating: topicPostRatings.proficiencyRating,
-      },
+      author: authorSelect,
+      rating: ratingSelect,
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
@@ -178,26 +163,7 @@ export async function getOpeningPostsWithReplyMeta(
     rating: ratingMap.get(p.id) ?? null,
   }));
 
-  if (sortBy === 'popular') {
-    return merged.sort((a, b) => {
-      const likeDiff = b.likeMeta.likeCount - a.likeMeta.likeCount;
-      if (likeDiff !== 0) return likeDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-
-  if (sortBy === 'active') {
-    return merged.sort((a, b) => {
-      const aLatest = a.replyMeta.latestReplyAt ? new Date(a.replyMeta.latestReplyAt).getTime() : 0;
-      const bLatest = b.replyMeta.latestReplyAt ? new Date(b.replyMeta.latestReplyAt).getTime() : 0;
-      const replyDiff = bLatest - aLatest;
-      if (replyDiff !== 0) return replyDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-  }
-
-  // 'new' — already sorted by createdAt DESC from getPostsForOpening
-  return merged;
+  return sortPosts(merged, sortBy);
 }
 
 /**
@@ -229,17 +195,8 @@ export async function getPostsAcrossOpeningsPaginated(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
-      rating: {
-        preferenceRating: topicPostRatings.preferenceRating,
-        proficiencyRating: topicPostRatings.proficiencyRating,
-      },
+      author: authorSelect,
+      rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,
     })
@@ -258,34 +215,7 @@ export async function getPostsAcrossOpeningsPaginated(
     .limit(limit)
     .offset(offset);
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
-
-  const ratingMap = new Map(
-    results
-      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
-      .map((r) => [r.post.id, r.rating])
-  );
-
-  const openingNameMap = new Map(
-    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
-  );
-
-  const openingFenMap = new Map(
-    results.filter((r) => r.openingFen !== null).map((r) => [r.post.id, r.openingFen])
-  );
-
-  const postsWithMeta = await attachPostMeta(posts, currentUserId);
-
-  return postsWithMeta.map((p) => ({
-    ...p,
-    topicKey: p.topicKey,
-    rating: ratingMap.get(p.id) ?? null,
-    openingName: openingNameMap.get(p.id) ?? null,
-    openingFen: openingFenMap.get(p.id) ?? null,
-  }));
+  return attachProfilePostMeta(results, currentUserId);
 }
 
 /**
@@ -336,17 +266,8 @@ export async function getPostsByFirstMoveSquarePaginated(
   const results = await db
     .select({
       post: topicPosts,
-      author: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        flair: profiles.flair,
-        country: profiles.country,
-      },
-      rating: {
-        preferenceRating: topicPostRatings.preferenceRating,
-        proficiencyRating: topicPostRatings.proficiencyRating,
-      },
+      author: authorSelect,
+      rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,
     })
@@ -366,32 +287,5 @@ export async function getPostsByFirstMoveSquarePaginated(
     .limit(limit)
     .offset(offset);
 
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
-
-  const ratingMap = new Map(
-    results
-      .filter((r) => r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null)
-      .map((r) => [r.post.id, r.rating])
-  );
-
-  const openingNameMap = new Map(
-    results.filter((r) => r.openingName !== null).map((r) => [r.post.id, r.openingName])
-  );
-
-  const openingFenMap = new Map(
-    results.filter((r) => r.openingFen !== null).map((r) => [r.post.id, r.openingFen])
-  );
-
-  const postsWithMeta = await attachPostMeta(posts, currentUserId);
-
-  return postsWithMeta.map((p) => ({
-    ...p,
-    topicKey: p.topicKey,
-    rating: ratingMap.get(p.id) ?? null,
-    openingName: openingNameMap.get(p.id) ?? null,
-    openingFen: openingFenMap.get(p.id) ?? null,
-  }));
+  return attachProfilePostMeta(results, currentUserId);
 }

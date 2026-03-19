@@ -3,15 +3,14 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { and, eq } from 'drizzle-orm';
 
-import { db, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
 import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
+import { canUserReply } from '@/app/[locale]/(public)/topics/_lib/permissions';
 import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -76,27 +75,18 @@ export default async function PostDetailPage({ params }: Props) {
   ]);
 
   const isAuthor = user?.id === post.userId;
-  let canReply = true;
-  let replyRestrictionMessage: string | null = null;
-
-  if (!isAuthor && post.replyPermission === 'nobody') {
-    canReply = false;
-  } else if (!isAuthor && post.replyPermission === 'followers' && user) {
-    const [follow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, post.userId)));
-
-    if (!follow) {
-      canReply = false;
-    }
-  }
+  const canReply = await canUserReply({
+    userId: user?.id,
+    postUserId: post.userId,
+    replyPermission: post.replyPermission,
+  });
 
   const t = await getTranslations({ locale, namespace: 'topics' });
 
-  if (!isAuthor && post.replyPermission === 'followers' && !canReply) {
-    replyRestrictionMessage = t('squares.replies.followRequired');
-  }
+  const replyRestrictionMessage =
+    !isAuthor && post.replyPermission === 'followers' && !canReply
+      ? t('squares.replies.followRequired')
+      : null;
 
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const profileHref = post.author?.username ? `/@/${post.author.username}` : null;

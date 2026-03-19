@@ -35,6 +35,10 @@ vi.mock('@/lib/db', () => {
       postId: 'topic_post_likes.post_id',
       createdAt: 'topic_post_likes.created_at',
     },
+    topicPostRatings: {
+      preferenceRating: 'topic_post_ratings.preference_rating',
+      proficiencyRating: 'topic_post_ratings.proficiency_rating',
+    },
   };
 });
 

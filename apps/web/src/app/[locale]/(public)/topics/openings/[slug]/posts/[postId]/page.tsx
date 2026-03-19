@@ -3,9 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { and, eq } from 'drizzle-orm';
 
-import { db, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
@@ -13,6 +11,7 @@ import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButto
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
 import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
+import { canUserReply } from '@/app/[locale]/(public)/topics/_lib/permissions';
 import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -87,29 +86,20 @@ export default async function OpeningPostDetailPage({ params }: Props) {
   ]);
 
   const isAuthor = user?.id === post.userId;
-  let canReply = true;
-  let replyRestrictionMessage: string | null = null;
-
-  if (!isAuthor && post.replyPermission === 'nobody') {
-    canReply = false;
-  } else if (!isAuthor && post.replyPermission === 'followers' && user) {
-    const [follow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, post.userId)));
-
-    if (!follow) {
-      canReply = false;
-    }
-  }
+  const canReply = await canUserReply({
+    userId: user?.id,
+    postUserId: post.userId,
+    replyPermission: post.replyPermission,
+  });
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
-  if (!isAuthor && post.replyPermission === 'followers' && !canReply) {
-    replyRestrictionMessage = dt('replies.followRequired');
-  }
+  const replyRestrictionMessage =
+    !isAuthor && post.replyPermission === 'followers' && !canReply
+      ? dt('replies.followRequired')
+      : null;
 
   const translated = nameT(slug as never);
   const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
