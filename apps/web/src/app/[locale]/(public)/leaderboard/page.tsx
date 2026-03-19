@@ -11,7 +11,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
 import { PeriodSelector } from './_components/PeriodSelector';
 import type { LeaderboardPeriod } from './_lib/types';
-import { VALID_PERIODS } from './_lib/types';
+import { isValidPeriod } from './_lib/validators';
 
 type Props = {
   params: Promise<{
@@ -27,8 +27,8 @@ export function generateStaticParams() {
 }
 
 function parsePeriod(value: string | undefined): LeaderboardPeriod {
-  if (value && (VALID_PERIODS as readonly string[]).includes(value)) {
-    return value as LeaderboardPeriod;
+  if (value && isValidPeriod(value)) {
+    return value;
   }
   return 'all-time';
 }

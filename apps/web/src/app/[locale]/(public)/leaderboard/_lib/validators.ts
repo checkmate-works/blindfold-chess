@@ -2,7 +2,7 @@ import type { LeaderboardModule, LeaderboardPeriod } from './types';
 import { MODULES, MODULE_KEYS, VALID_PERIODS } from './types';
 
 export function isValidModule(value: string): value is LeaderboardModule {
-  return (MODULES as string[]).includes(value);
+  return (MODULES as readonly string[]).includes(value);
 }
 
 export function isValidPeriod(value: string): value is LeaderboardPeriod {
@@ -10,7 +10,7 @@ export function isValidPeriod(value: string): value is LeaderboardPeriod {
 }
 
 export function isValidKey(module: LeaderboardModule, key: string): boolean {
-  return MODULE_KEYS[module].includes(key);
+  return (MODULE_KEYS[module] as readonly string[]).includes(key);
 }
 
 export function isValidPage(page: number): boolean {

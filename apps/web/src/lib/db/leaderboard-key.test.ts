@@ -59,5 +59,58 @@ describe('deriveLeaderboardKey', () => {
       expect(deriveLeaderboardKey('position_memory', {})).toBeNull();
       expect(deriveLeaderboardKey('knight_tour', {})).toBeNull();
     });
+
+    it('returns null for unsupported menu types even when settings contain valid keys', () => {
+      expect(deriveLeaderboardKey('diagonal_quiz', { boardOrientation: 'white' })).toBeNull();
+      expect(deriveLeaderboardKey('route_planner', { selectedPiece: 'king' })).toBeNull();
+    });
+  });
+
+  describe('edge cases', () => {
+    it('coordinate_quiz ignores extra settings properties', () => {
+      expect(
+        deriveLeaderboardKey('coordinate_quiz', {
+          boardOrientation: 'white',
+          extra: 'value',
+          selectedPiece: 'king',
+        })
+      ).toBe('white');
+    });
+
+    it('legal_moves ignores extra settings properties', () => {
+      expect(
+        deriveLeaderboardKey('legal_moves', {
+          selectedPiece: 'rook',
+          boardOrientation: 'black',
+          extra: true,
+        })
+      ).toBe('rook');
+    });
+
+    it('coordinate_quiz returns empty string when boardOrientation is empty string', () => {
+      expect(deriveLeaderboardKey('coordinate_quiz', { boardOrientation: '' })).toBe('');
+    });
+
+    it('legal_moves returns empty string when selectedPiece is empty string', () => {
+      expect(deriveLeaderboardKey('legal_moves', { selectedPiece: '' })).toBe('');
+    });
+
+    it('coordinate_quiz returns null when boardOrientation is an array', () => {
+      expect(deriveLeaderboardKey('coordinate_quiz', { boardOrientation: ['white'] })).toBeNull();
+    });
+
+    it('coordinate_quiz returns null when boardOrientation is an object', () => {
+      expect(
+        deriveLeaderboardKey('coordinate_quiz', { boardOrientation: { value: 'white' } })
+      ).toBeNull();
+    });
+
+    it('legal_moves returns null when selectedPiece is an array', () => {
+      expect(deriveLeaderboardKey('legal_moves', { selectedPiece: ['king'] })).toBeNull();
+    });
+
+    it('returns null for empty string menu type', () => {
+      expect(deriveLeaderboardKey('' as never, {})).toBeNull();
+    });
   });
 });

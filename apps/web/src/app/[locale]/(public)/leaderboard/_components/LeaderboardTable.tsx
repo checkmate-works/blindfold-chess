@@ -3,10 +3,8 @@
 import { useTranslations } from 'next-intl';
 
 import type { LeaderboardRow } from '../_lib/types';
-import { formatTime } from '../_lib/utils';
+import { CurrentUserRankRow } from './CurrentUserRankRow';
 import { LeaderboardTableRow } from './LeaderboardTableRow';
-import { PlayerCell } from './PlayerCell';
-import { RankBadge } from './RankBadge';
 
 type Props = {
   rows: LeaderboardRow[];
@@ -62,39 +60,7 @@ export function LeaderboardTable({ rows, currentUserId, currentUserRank, locale 
         </table>
       </div>
 
-      {/* Current user rank footer */}
-      {currentUserRank && (
-        <div className="border-t-2 border-border mt-2">
-          <div className="bg-primary/5 dark:bg-primary/10 rounded-b-lg">
-            <table className="w-full">
-              <tbody>
-                <tr>
-                  <td className="py-3 px-3 text-center w-16">
-                    <span className="text-xs font-medium text-muted-foreground uppercase">
-                      {t('yourRank')}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-center w-16">
-                    <RankBadge rank={currentUserRank.rank} />
-                  </td>
-                  <td className="py-3 px-3">
-                    <PlayerCell row={currentUserRank} locale={locale} />
-                  </td>
-                  <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-20">
-                    {currentUserRank.score}
-                  </td>
-                  <td className="py-3 px-3 text-right tabular-nums text-muted-foreground w-24">
-                    {currentUserRank.incorrectAnswers}
-                  </td>
-                  <td className="py-3 px-3 text-right tabular-nums text-muted-foreground w-20">
-                    {formatTime(currentUserRank.timeTaken)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {currentUserRank && <CurrentUserRankRow row={currentUserRank} locale={locale} />}
     </div>
   );
 }

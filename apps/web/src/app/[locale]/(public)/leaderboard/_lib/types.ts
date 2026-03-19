@@ -25,15 +25,23 @@ export type UserRankInfo = {
   rank: number;
 };
 
-export const MODULES: LeaderboardModule[] = ['coordinate_quiz', 'legal_moves', 'square_colors'];
+export const MODULES = [
+  'coordinate_quiz',
+  'legal_moves',
+  'square_colors',
+] as const satisfies readonly LeaderboardModule[];
 
-export const MODULE_KEYS: Record<LeaderboardModule, string[]> = {
+export const MODULE_KEYS = {
   coordinate_quiz: ['white', 'black', 'random'],
   legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
   square_colors: ['default'],
-};
+} as const satisfies Record<LeaderboardModule, readonly string[]>;
 
-export const VALID_PERIODS: LeaderboardPeriod[] = ['all-time', 'weekly', 'monthly'];
+export const VALID_PERIODS = [
+  'all-time',
+  'weekly',
+  'monthly',
+] as const satisfies readonly LeaderboardPeriod[];
 
 export const PAGE_SIZE = 20;
 

@@ -14,6 +14,9 @@ const mockGetMonthlyRanking = vi.fn();
 const mockGetUserAllTimeRankedRow = vi.fn();
 const mockGetUserWeeklyRankedRow = vi.fn();
 const mockGetUserMonthlyRankedRow = vi.fn();
+const mockGetUserAllTimeRank = vi.fn();
+const mockGetUserWeeklyRank = vi.fn();
+const mockGetUserMonthlyRank = vi.fn();
 
 vi.mock('@/lib/db/challenge-queries', () => ({
   getAllTimeRanking: (...args: unknown[]) => mockGetAllTimeRanking(...args),
@@ -22,6 +25,9 @@ vi.mock('@/lib/db/challenge-queries', () => ({
   getUserAllTimeRankedRow: (...args: unknown[]) => mockGetUserAllTimeRankedRow(...args),
   getUserWeeklyRankedRow: (...args: unknown[]) => mockGetUserWeeklyRankedRow(...args),
   getUserMonthlyRankedRow: (...args: unknown[]) => mockGetUserMonthlyRankedRow(...args),
+  getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
+  getUserWeeklyRank: (...args: unknown[]) => mockGetUserWeeklyRank(...args),
+  getUserMonthlyRank: (...args: unknown[]) => mockGetUserMonthlyRank(...args),
 }));
 
 const mockGetUser = vi.fn();
