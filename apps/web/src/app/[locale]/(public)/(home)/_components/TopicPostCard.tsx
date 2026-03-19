@@ -15,6 +15,7 @@ import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButto
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
@@ -82,6 +83,14 @@ export function TopicPostCard({ post, locale }: Props) {
           <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
             {post.topicKey}
           </span>
+        )}
+        {isOpening && post.rating && (
+          <div className="mb-1">
+            <RatingDisplay
+              preferenceRating={post.rating.preferenceRating}
+              proficiencyRating={post.rating.proficiencyRating}
+            />
+          </div>
         )}
         <p className={`text-sm text-foreground break-words mt-3${expanded ? '' : ' line-clamp-3'}`}>
           <LinkedText text={expanded ? post.content : contentPreview} locale={locale} />
