@@ -5,19 +5,20 @@ import { SUPPORTED_LOCALES } from '@/config';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { getLeaderboard } from '../../../_actions/getLeaderboard';
-import { LeaderboardDetailContent } from '../../../_components/LeaderboardDetailContent';
+import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
+import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardDetailContent';
 import {
   ALL_LEADERBOARD_ENTRIES,
+  type LeaderboardModule,
+  type LeaderboardPeriod,
   VALID_PERIODS,
   moduleToSlug,
   slugToModule,
-} from '../../../_lib/types';
-import { isValidKey, isValidPeriod } from '../../../_lib/validators';
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
+import { Divider, PagePanel } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   params: Promise<{
@@ -30,6 +31,25 @@ type Props = {
     page?: string;
   }>;
 };
+
+type ValidatedParams = {
+  period: LeaderboardPeriod;
+  module: LeaderboardModule;
+  key: string;
+};
+
+function validateParams(
+  periodStr: string,
+  moduleSlug: string,
+  key: string
+): ValidatedParams | null {
+  if (!isValidPeriod(periodStr)) return null;
+
+  const resolvedModule = slugToModule(moduleSlug);
+  if (!resolvedModule || !isValidKey(resolvedModule, key)) return null;
+
+  return { period: periodStr, module: resolvedModule, key };
+}
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) =>
@@ -47,15 +67,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { locale, period, module: moduleSlug, key } = await params;
 
-  if (!isValidPeriod(period)) return {};
-
-  const resolvedModule = slugToModule(moduleSlug);
-  if (!resolvedModule || !isValidKey(resolvedModule, key)) return {};
+  const validated = validateParams(period, moduleSlug, key);
+  if (!validated) return {};
 
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
 
-  const title = t(`cardTitle.${resolvedModule}.${key}`);
-  const periodLabel = t(`period.${period}`);
+  const title = t(`cardTitle.${validated.module}.${validated.key}`);
+  const periodLabel = t(`period.${validated.period}`);
 
   return {
     title: `${title} (${periodLabel}) — ${t('title')}`,
@@ -66,10 +84,8 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
   const { locale, period, module: moduleSlug, key } = await params;
   const { page: pageParam } = await searchParams;
 
-  if (!isValidPeriod(period)) notFound();
-
-  const resolvedModule = slugToModule(moduleSlug);
-  if (!resolvedModule || !isValidKey(resolvedModule, key)) notFound();
+  const validated = validateParams(period, moduleSlug, key);
+  if (!validated) notFound();
 
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
 
@@ -79,17 +95,17 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
   } = await supabase.auth.getUser();
   const currentUserId = user?.id ?? null;
 
-  const data = await getLeaderboard(resolvedModule, key, period, page);
+  const data = await getLeaderboard(validated.module, validated.key, validated.period, page);
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
-  const detailTitle = t(`cardTitle.${resolvedModule}.${key}`);
+  const detailTitle = t(`cardTitle.${validated.module}.${validated.key}`);
 
   return (
     <PagePanel>
       <LeaderboardDetailContent
         locale={locale}
-        period={period}
-        module={resolvedModule}
-        settingKey={key}
+        period={validated.period}
+        module={validated.module}
+        settingKey={validated.key}
         currentUserId={currentUserId}
         data={data}
         currentPage={page}

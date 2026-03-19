@@ -3,8 +3,13 @@ import { createClient } from '@/lib/supabase/server';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { getUserRanks } from '../_actions/getUserRanks';
-import type { LeaderboardPeriod, UserRankInfo } from '../_lib/types';
-import { ALL_LEADERBOARD_ENTRIES, TOP_RANK_THRESHOLD } from '../_lib/types';
+import {
+  ALL_LEADERBOARD_ENTRIES,
+  type LeaderboardEntry,
+  type LeaderboardPeriod,
+  TOP_RANK_THRESHOLD,
+  type UserRankInfo,
+} from '../_lib/types';
 import { LeaderboardCard } from './LeaderboardCard';
 
 type Props = {
@@ -13,6 +18,10 @@ type Props = {
   yourRankedTitle: string;
   allLeaderboardsTitle: string;
 };
+
+function entryKey(entry: LeaderboardEntry): string {
+  return `${entry.module}:${entry.key}`;
+}
 
 export async function LeaderboardTopContent({
   locale,
@@ -31,46 +40,44 @@ export async function LeaderboardTopContent({
     userRanks = await getUserRanks(currentUserId, period);
   }
 
-  const rankMap = new Map(userRanks.map((r) => [`${r.module}:${r.key}`, r.rank]));
+  const rankMap = new Map(userRanks.map((r) => [entryKey(r), r.rank]));
 
   const rankedEntries = ALL_LEADERBOARD_ENTRIES.filter((entry) => {
-    const rank = rankMap.get(`${entry.module}:${entry.key}`);
+    const rank = rankMap.get(entryKey(entry));
     return rank !== undefined && rank <= TOP_RANK_THRESHOLD;
   });
 
   return (
     <div className="space-y-8">
-      {/* Section 1: Your Ranked Leaderboards (logged-in users only) */}
       {currentUserId && rankedEntries.length > 0 && (
         <section>
           <SectionTitle>{yourRankedTitle}</SectionTitle>
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {rankedEntries.map(({ module, key }) => (
+            {rankedEntries.map((entry) => (
               <LeaderboardCard
-                key={`${module}:${key}`}
+                key={entryKey(entry)}
                 locale={locale}
-                module={module}
-                settingKey={key}
+                module={entry.module}
+                settingKey={entry.key}
                 period={period}
-                rank={rankMap.get(`${module}:${key}`) ?? null}
+                rank={rankMap.get(entryKey(entry)) ?? null}
               />
             ))}
           </div>
         </section>
       )}
 
-      {/* Section 2: All Leaderboards */}
       <section>
         <SectionTitle>{allLeaderboardsTitle}</SectionTitle>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ALL_LEADERBOARD_ENTRIES.map(({ module, key }) => (
+          {ALL_LEADERBOARD_ENTRIES.map((entry) => (
             <LeaderboardCard
-              key={`${module}:${key}`}
+              key={entryKey(entry)}
               locale={locale}
-              module={module}
-              settingKey={key}
+              module={entry.module}
+              settingKey={entry.key}
               period={period}
-              rank={currentUserId ? (rankMap.get(`${module}:${key}`) ?? null) : null}
+              rank={currentUserId ? (rankMap.get(entryKey(entry)) ?? null) : null}
             />
           ))}
         </div>

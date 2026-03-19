@@ -3,13 +3,13 @@
 import { createClient } from '@/lib/supabase/server';
 
 import { getQueriesForPeriod } from '../_lib/period-queries';
-import type {
-  LeaderboardModule,
-  LeaderboardPeriod,
-  LeaderboardResult,
-  LeaderboardRow,
+import {
+  type LeaderboardModule,
+  type LeaderboardPeriod,
+  type LeaderboardResult,
+  type LeaderboardRow,
+  PAGE_SIZE,
 } from '../_lib/types';
-import { PAGE_SIZE } from '../_lib/types';
 import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../_lib/validators';
 
 // ---------------------------------------------------------------------------

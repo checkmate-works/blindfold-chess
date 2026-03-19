@@ -4,11 +4,15 @@ import { useCallback, useState, useTransition } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { SectionTitle, Skeleton } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 
 import { getLeaderboard } from '../_actions/getLeaderboard';
-import type { LeaderboardModule, LeaderboardPeriod, LeaderboardResult } from '../_lib/types';
-import { PAGE_SIZE } from '../_lib/types';
+import {
+  type LeaderboardModule,
+  type LeaderboardPeriod,
+  type LeaderboardResult,
+  PAGE_SIZE,
+} from '../_lib/types';
 import { LeaderboardPagination } from './LeaderboardPagination';
 import { LeaderboardTable } from './LeaderboardTable';
 
@@ -58,29 +62,21 @@ export function LeaderboardDetailContent({
         <span className="ml-2 text-sm font-normal text-muted-foreground">({periodLabel})</span>
       </SectionTitle>
 
-      <div className={`transition-opacity ${isPending ? 'opacity-50' : 'opacity-100'}`}>
-        {isPending ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        ) : (
-          <>
-            <LeaderboardTable
-              rows={data.rows}
-              currentUserId={currentUserId}
-              currentUserRank={data.currentUserRank}
-              locale={locale}
-            />
-            <LeaderboardPagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalCount={data.totalCount}
-              onPageChange={handlePageChange}
-            />
-          </>
-        )}
+      <div
+        className={`transition-opacity ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}
+      >
+        <LeaderboardTable
+          rows={data.rows}
+          currentUserId={currentUserId}
+          currentUserRank={data.currentUserRank}
+          locale={locale}
+        />
+        <LeaderboardPagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalCount={data.totalCount}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );
