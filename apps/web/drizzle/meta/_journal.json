@@ -33,8 +33,8 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1773912542702,
-      "tag": "20260319092902_create_leaderboard_tables",
+      "when": 1773949452595,
+      "tag": "20260319194412_restructure_scoring_into_challenge_tables",
       "breakpoints": true
     }
   ]

@@ -210,24 +210,6 @@ export const glossaryTermRelations = pgTable(
   (table) => [unique('uq_term_relation').on(table.termId, table.relatedTermId)]
 );
 
-// Practice sessions
-export const practiceSessions = pgTable(
-  'practice_sessions',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull(),
-    menuType: text('menu_type').notNull(),
-    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
-    settings: jsonb('settings').default({}),
-    result: jsonb('result').notNull(),
-  },
-  (table) => [
-    index('idx_practice_sessions_user').on(table.userId),
-    index('idx_practice_sessions_menu').on(table.userId, table.menuType),
-    index('idx_practice_sessions_recent').on(table.userId, table.startedAt),
-  ]
-);
-
 // Type exports for use in application code
 export type GlossaryTerm = typeof glossaryTerms.$inferSelect;
 export type NewGlossaryTerm = typeof glossaryTerms.$inferInsert;
@@ -239,8 +221,6 @@ export type GlossaryTermPosition = typeof glossaryTermPositions.$inferSelect;
 export type NewGlossaryTermPosition = typeof glossaryTermPositions.$inferInsert;
 export type GlossaryTermRelation = typeof glossaryTermRelations.$inferSelect;
 export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
-export type PracticeSession = typeof practiceSessions.$inferSelect;
-export type NewPracticeSession = typeof practiceSessions.$inferInsert;
 
 /**
  * Profiles
@@ -775,20 +755,24 @@ export type ChessOpening = typeof chessOpenings.$inferSelect;
 export type NewChessOpening = typeof chessOpenings.$inferInsert;
 
 /**
- * Leaderboard Entries — stores all challenge results for period-based rankings.
+ * Challenge Results — stores all challenge results for period-based rankings.
  *
  * @description
  * Every completed challenge session inserts a row here. This table serves as
  * the source of truth for weekly/monthly rankings (queried with `created_at`
  * filters using `DISTINCT ON` to extract each user's best score per period).
- * All-time rankings are served from `leaderboard_best_scores` instead.
+ * All-time rankings are served from `challenge_best_scores` instead.
+ *
+ * This table also replaces the former `practice_sessions` table — challenge
+ * results are now stored directly here instead of in a separate sessions table.
  *
  * @design Two-table architecture (Monkeytype-inspired)
  *
- * Leaderboard data is split into two tables with different responsibilities:
- * - `leaderboard_entries`: append-only log of all challenge results (INSERT only).
- *   Used for weekly/monthly rankings via `created_at` filtering.
- * - `leaderboard_best_scores`: materialized all-time best per user/menu/key,
+ * Challenge data is split into two tables with different responsibilities:
+ * - `challenge_results`: append-only log of all challenge results (INSERT only).
+ *   Used for weekly/monthly rankings via `created_at` filtering, and also
+ *   serves as the source for per-user history (mypage dashboard).
+ * - `challenge_best_scores`: materialized all-time best per user/menu/key,
  *   maintained via UPSERT on each new best score.
  *
  * This avoids expensive full-table scans for all-time rankings while keeping
@@ -809,7 +793,7 @@ export type NewChessOpening = typeof chessOpenings.$inferInsert;
  *
  * Three-tier tiebreaker: highest score wins; on tie, fewer mistakes wins;
  * on further tie, faster time wins. The UPSERT comparison in
- * `leaderboard_best_scores` uses the same ordering via tuple comparison.
+ * `challenge_best_scores` uses the same ordering via tuple comparison.
  *
  * @design Index sort order — manual DESC/ASC in migration SQL
  *
@@ -818,14 +802,11 @@ export type NewChessOpening = typeof chessOpenings.$inferInsert;
  * manually edited to specify the correct sort directions. When modifying these
  * indexes in the future, the migration SQL must be manually adjusted again.
  */
-export const leaderboardEntries = pgTable(
-  'leaderboard_entries',
+export const challengeResults = pgTable(
+  'challenge_results',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
-    sessionId: uuid('session_id')
-      .unique()
-      .references(() => practiceSessions.id, { onDelete: 'set null' }),
     menuType: varchar('menu_type', { length: 30 }).notNull(),
     leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
     score: integer('score').notNull(),
@@ -834,7 +815,7 @@ export const leaderboardEntries = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    index('idx_lb_entries_period_ranking').on(
+    index('idx_cr_period_ranking').on(
       table.menuType,
       table.leaderboardKey,
       table.createdAt,
@@ -842,15 +823,15 @@ export const leaderboardEntries = pgTable(
       table.incorrectAnswers,
       table.timeTaken
     ),
-    index('idx_lb_entries_user').on(table.userId, table.menuType),
+    index('idx_cr_user').on(table.userId, table.menuType),
   ]
 );
 
-export type LeaderboardEntry = typeof leaderboardEntries.$inferSelect;
-export type NewLeaderboardEntry = typeof leaderboardEntries.$inferInsert;
+export type ChallengeResult = typeof challengeResults.$inferSelect;
+export type NewChallengeResult = typeof challengeResults.$inferInsert;
 
 /**
- * Leaderboard Best Scores — all-time best score per user/menu/key combination.
+ * Challenge Best Scores — all-time best score per user/menu/key combination.
  *
  * @description
  * Maintains exactly one row per (userId, menuType, leaderboardKey) combination,
@@ -862,31 +843,25 @@ export type NewLeaderboardEntry = typeof leaderboardEntries.$inferInsert;
  * @design UPSERT with tuple comparison for atomicity
  *
  * ```sql
- * INSERT INTO leaderboard_best_scores (...) VALUES (...)
+ * INSERT INTO challenge_best_scores (...) VALUES (...)
  * ON CONFLICT (user_id, menu_type, leaderboard_key)
  * DO UPDATE SET ...
  * WHERE (EXCLUDED.score, -EXCLUDED.incorrect_answers, -EXCLUDED.time_taken)
- *     > (leaderboard_best_scores.score, -leaderboard_best_scores.incorrect_answers,
- *        -leaderboard_best_scores.time_taken);
+ *     > (challenge_best_scores.score, -challenge_best_scores.incorrect_answers,
+ *        -challenge_best_scores.time_taken);
  * ```
  *
  * PostgreSQL's row-level locking on `ON CONFLICT DO UPDATE` guarantees atomicity
  * even under concurrent UPSERTs for the same user/menu/key combination.
  *
- * @design Rebuildable from leaderboard_entries
+ * @design Rebuildable from challenge_results
  *
  * This table is a materialized cache. If data correction is needed (e.g.,
- * cheater removal), the best score can be recalculated from `leaderboard_entries`
+ * cheater removal), the best score can be recalculated from `challenge_results`
  * using `DISTINCT ON (user_id, menu_type, leaderboard_key)`.
- *
- * @design session_id nullable (ON DELETE SET NULL)
- *
- * Both tables reference `practice_sessions.session_id` with `ON DELETE SET NULL`
- * so that deleting a practice session does not cascade-delete leaderboard data.
- * The leaderboard record remains valid even if the originating session is removed.
  */
-export const leaderboardBestScores = pgTable(
-  'leaderboard_best_scores',
+export const challengeBestScores = pgTable(
+  'challenge_best_scores',
   {
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
     menuType: varchar('menu_type', { length: 30 }).notNull(),
@@ -894,13 +869,12 @@ export const leaderboardBestScores = pgTable(
     score: integer('score').notNull(),
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
     timeTaken: integer('time_taken').notNull(),
-    sessionId: uuid('session_id').references(() => practiceSessions.id, { onDelete: 'set null' }),
-    achievedAt: timestamp('achieved_at', { withTimezone: true }).notNull(),
+    achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.menuType, table.leaderboardKey] }),
-    index('idx_lb_best_ranking').on(
+    index('idx_cbs_ranking').on(
       table.menuType,
       table.leaderboardKey,
       table.score,
@@ -910,5 +884,5 @@ export const leaderboardBestScores = pgTable(
   ]
 );
 
-export type LeaderboardBestScore = typeof leaderboardBestScores.$inferSelect;
-export type NewLeaderboardBestScore = typeof leaderboardBestScores.$inferInsert;
+export type ChallengeBestScore = typeof challengeBestScores.$inferSelect;
+export type NewChallengeBestScore = typeof challengeBestScores.$inferInsert;

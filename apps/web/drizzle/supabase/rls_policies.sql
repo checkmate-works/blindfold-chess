@@ -11,23 +11,6 @@
 -- definitions, correcting any configuration drift.
 
 -- =============================================================================
--- practice_sessions
--- =============================================================================
-ALTER TABLE "practice_sessions" ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "practice_sessions_select" ON "practice_sessions";
-CREATE POLICY "practice_sessions_select" ON "practice_sessions"
-  FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "practice_sessions_insert" ON "practice_sessions";
-CREATE POLICY "practice_sessions_insert" ON "practice_sessions"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "practice_sessions_delete" ON "practice_sessions";
-CREATE POLICY "practice_sessions_delete" ON "practice_sessions"
-  FOR DELETE USING (auth.uid() = user_id);
-
--- =============================================================================
 -- user_roles
 -- =============================================================================
 ALTER TABLE "user_roles" ENABLE ROW LEVEL SECURITY;
@@ -213,31 +196,31 @@ CREATE POLICY "chess_openings_select" ON "chess_openings"
   FOR SELECT USING (true);
 
 -- =============================================================================
--- leaderboard_entries
+-- challenge_results
 -- =============================================================================
-ALTER TABLE "leaderboard_entries" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "challenge_results" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "leaderboard_entries_select" ON "leaderboard_entries";
-CREATE POLICY "leaderboard_entries_select" ON "leaderboard_entries"
+DROP POLICY IF EXISTS "challenge_results_select" ON "challenge_results";
+CREATE POLICY "challenge_results_select" ON "challenge_results"
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "leaderboard_entries_insert" ON "leaderboard_entries";
-CREATE POLICY "leaderboard_entries_insert" ON "leaderboard_entries"
+DROP POLICY IF EXISTS "challenge_results_insert" ON "challenge_results";
+CREATE POLICY "challenge_results_insert" ON "challenge_results"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
--- leaderboard_best_scores
+-- challenge_best_scores
 -- =============================================================================
-ALTER TABLE "leaderboard_best_scores" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "challenge_best_scores" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "leaderboard_best_scores_select" ON "leaderboard_best_scores";
-CREATE POLICY "leaderboard_best_scores_select" ON "leaderboard_best_scores"
+DROP POLICY IF EXISTS "challenge_best_scores_select" ON "challenge_best_scores";
+CREATE POLICY "challenge_best_scores_select" ON "challenge_best_scores"
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "leaderboard_best_scores_insert" ON "leaderboard_best_scores";
-CREATE POLICY "leaderboard_best_scores_insert" ON "leaderboard_best_scores"
+DROP POLICY IF EXISTS "challenge_best_scores_insert" ON "challenge_best_scores";
+CREATE POLICY "challenge_best_scores_insert" ON "challenge_best_scores"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "leaderboard_best_scores_update" ON "leaderboard_best_scores";
-CREATE POLICY "leaderboard_best_scores_update" ON "leaderboard_best_scores"
+DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
+CREATE POLICY "challenge_best_scores_update" ON "challenge_best_scores"
   FOR UPDATE USING (auth.uid() = user_id);
