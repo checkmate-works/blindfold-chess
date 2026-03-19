@@ -74,13 +74,22 @@ export async function PUT(request: Request) {
   if (fideId && fideId.length > 50) {
     return NextResponse.json({ error: 'fide_id_too_long' }, { status: 400 });
   }
+  if (fideId && !/^\d+$/.test(fideId)) {
+    return NextResponse.json({ error: 'fide_id_invalid_format' }, { status: 400 });
+  }
   const chesscomUsername = body.chesscomUsername?.trim() || null;
   if (chesscomUsername && chesscomUsername.length > 255) {
     return NextResponse.json({ error: 'chesscom_username_too_long' }, { status: 400 });
   }
+  if (chesscomUsername && !/^[a-zA-Z0-9_-]+$/.test(chesscomUsername)) {
+    return NextResponse.json({ error: 'chesscom_username_invalid_format' }, { status: 400 });
+  }
   const lichessUsername = body.lichessUsername?.trim() || null;
   if (lichessUsername && lichessUsername.length > 255) {
     return NextResponse.json({ error: 'lichess_username_too_long' }, { status: 400 });
+  }
+  if (lichessUsername && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername)) {
+    return NextResponse.json({ error: 'lichess_username_invalid_format' }, { status: 400 });
   }
 
   await db

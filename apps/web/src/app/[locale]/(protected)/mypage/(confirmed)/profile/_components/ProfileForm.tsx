@@ -44,6 +44,15 @@ export function ProfileForm({ locale, profile }: Props) {
     if (country && !/^[A-Za-z]{2}$/.test(country)) {
       return { message: t('countryInvalid'), field: 'country' };
     }
+    if (fideId.trim() && !/^\d+$/.test(fideId.trim())) {
+      return { message: t('fideIdInvalidFormat'), field: 'fideId' };
+    }
+    if (chesscomUsername.trim() && !/^[a-zA-Z0-9_-]+$/.test(chesscomUsername.trim())) {
+      return { message: t('chesscomUsernameInvalidFormat'), field: 'chesscomUsername' };
+    }
+    if (lichessUsername.trim() && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername.trim())) {
+      return { message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' };
+    }
     return null;
   };
 
@@ -88,6 +97,15 @@ export function ProfileForm({ locale, profile }: Props) {
             break;
           case 'invalid_country':
             setError({ message: t('countryInvalid'), field: 'country' });
+            break;
+          case 'fide_id_invalid_format':
+            setError({ message: t('fideIdInvalidFormat'), field: 'fideId' });
+            break;
+          case 'chesscom_username_invalid_format':
+            setError({ message: t('chesscomUsernameInvalidFormat'), field: 'chesscomUsername' });
+            break;
+          case 'lichess_username_invalid_format':
+            setError({ message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' });
             break;
           default:
             setError({ message: t('error') });
@@ -197,6 +215,9 @@ export function ProfileForm({ locale, profile }: Props) {
             maxLength={50}
             autoComplete="off"
           />
+          {error?.field === 'fideId' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
         </div>
 
         <div>
@@ -211,6 +232,9 @@ export function ProfileForm({ locale, profile }: Props) {
             maxLength={255}
             autoComplete="off"
           />
+          {error?.field === 'chesscomUsername' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
         </div>
 
         <div>
@@ -225,6 +249,9 @@ export function ProfileForm({ locale, profile }: Props) {
             maxLength={255}
             autoComplete="off"
           />
+          {error?.field === 'lichessUsername' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
         </div>
       </section>
 
