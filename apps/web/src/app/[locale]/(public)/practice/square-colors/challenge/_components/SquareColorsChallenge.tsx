@@ -101,8 +101,8 @@ export default function SquareColorsChallenge({ locale }: Props) {
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
       })
-        .catch(() => {
-          // Silently ignore save failures - result display is unaffected
+        .catch((error) => {
+          console.error('Failed to save square_colors result:', error);
         })
         .finally(() => {
           router.push(resultUrl);

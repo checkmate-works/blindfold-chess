@@ -115,8 +115,8 @@ export default function CoordinateQuizChallenge({
         timeTaken: totalTime,
         boardOrientation,
       })
-        .catch(() => {
-          // Silently ignore save failures - result display is unaffected
+        .catch((error) => {
+          console.error('Failed to save coordinate_quiz result:', error);
         })
         .finally(() => {
           router.push(resultUrl);

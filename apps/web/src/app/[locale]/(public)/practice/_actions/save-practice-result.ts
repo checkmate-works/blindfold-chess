@@ -58,13 +58,14 @@ export async function savePracticeResult(
       return { success: false };
     }
 
+    // Round to integers — DB columns are integer type, but timers may produce floats
     await saveChallengeResult({
       userId: user.id,
       menuType,
       leaderboardKey,
-      score: challengeFields.score,
-      incorrectAnswers: challengeFields.incorrectAnswers,
-      timeTaken: challengeFields.timeTaken,
+      score: Math.round(challengeFields.score),
+      incorrectAnswers: Math.round(challengeFields.incorrectAnswers),
+      timeTaken: Math.round(challengeFields.timeTaken),
     });
 
     return { success: true };

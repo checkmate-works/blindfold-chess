@@ -129,8 +129,8 @@ export default function LegalMovesSession({
         timeTaken: totalTime,
         selectedPiece,
       })
-        .catch(() => {
-          // Silently ignore save failures - result display is unaffected
+        .catch((error) => {
+          console.error('Failed to save legal_moves result:', error);
         })
         .finally(() => {
           router.push(resultUrl);
