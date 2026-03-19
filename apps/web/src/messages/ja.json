@@ -2589,6 +2589,29 @@
       "previous": "前へ",
       "next": "次へ",
       "total": "全 {count} 人"
-    }
+    },
+    "yourRankedSection": "ランクインしたランキング",
+    "allLeaderboardsSection": "すべてのランキング",
+    "rankLabel": "あなたの順位: 第{rank}位",
+    "notRanked": "ランク外",
+    "cardTitle": {
+      "coordinate_quiz": {
+        "white": "座標クイズ — 白",
+        "black": "座標クイズ — 黒",
+        "random": "座標クイズ — ランダム"
+      },
+      "legal_moves": {
+        "king": "合法手 — キング",
+        "queen": "合法手 — クイーン",
+        "rook": "合法手 — ルーク",
+        "bishop": "合法手 — ビショップ",
+        "knight": "合法手 — ナイト",
+        "random": "合法手 — ランダム"
+      },
+      "square_colors": {
+        "default": "マスの色"
+      }
+    },
+    "backToList": "ランキング一覧へ戻る"
   }
 }

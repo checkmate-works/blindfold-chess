@@ -219,7 +219,7 @@ async function getUserPeriodRank(
       FROM challenge_results
       WHERE menu_type = ${menuType}
         AND leaderboard_key = ${leaderboardKey}
-        AND created_at >= ${periodStart}
+        AND created_at >= ${periodStart.toISOString()}
       ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
     )
     SELECT rank::int FROM (
@@ -338,7 +338,7 @@ async function getUserPeriodRankedRow(
         FROM challenge_results
         WHERE menu_type = ${menuType}
           AND leaderboard_key = ${leaderboardKey}
-          AND created_at >= ${periodStart}
+          AND created_at >= ${periodStart.toISOString()}
         ORDER BY user_id, score DESC, incorrect_answers ASC, time_taken ASC
       ) best
     ) ranked

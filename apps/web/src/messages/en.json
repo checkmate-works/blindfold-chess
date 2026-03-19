@@ -2611,6 +2611,29 @@
       "previous": "Previous",
       "next": "Next",
       "total": "{count, plural, one {# player} other {# players}} total"
-    }
+    },
+    "yourRankedSection": "Your Ranked Leaderboards",
+    "allLeaderboardsSection": "All Leaderboards",
+    "rankLabel": "Your Rank: #{rank}",
+    "notRanked": "Not ranked",
+    "cardTitle": {
+      "coordinate_quiz": {
+        "white": "Coordinate Quiz — White",
+        "black": "Coordinate Quiz — Black",
+        "random": "Coordinate Quiz — Random"
+      },
+      "legal_moves": {
+        "king": "Legal Moves — King",
+        "queen": "Legal Moves — Queen",
+        "rook": "Legal Moves — Rook",
+        "bishop": "Legal Moves — Bishop",
+        "knight": "Legal Moves — Knight",
+        "random": "Legal Moves — Random"
+      },
+      "square_colors": {
+        "default": "Square Colors"
+      }
+    },
+    "backToList": "Back to Leaderboard"
   }
 }
