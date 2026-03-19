@@ -211,3 +211,33 @@ ALTER TABLE "chess_openings" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "chess_openings_select" ON "chess_openings";
 CREATE POLICY "chess_openings_select" ON "chess_openings"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- leaderboard_entries
+-- =============================================================================
+ALTER TABLE "leaderboard_entries" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "leaderboard_entries_select" ON "leaderboard_entries";
+CREATE POLICY "leaderboard_entries_select" ON "leaderboard_entries"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "leaderboard_entries_insert" ON "leaderboard_entries";
+CREATE POLICY "leaderboard_entries_insert" ON "leaderboard_entries"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- =============================================================================
+-- leaderboard_best_scores
+-- =============================================================================
+ALTER TABLE "leaderboard_best_scores" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "leaderboard_best_scores_select" ON "leaderboard_best_scores";
+CREATE POLICY "leaderboard_best_scores_select" ON "leaderboard_best_scores"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "leaderboard_best_scores_insert" ON "leaderboard_best_scores";
+CREATE POLICY "leaderboard_best_scores_insert" ON "leaderboard_best_scores"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "leaderboard_best_scores_update" ON "leaderboard_best_scores";
+CREATE POLICY "leaderboard_best_scores_update" ON "leaderboard_best_scores"
+  FOR UPDATE USING (auth.uid() = user_id);

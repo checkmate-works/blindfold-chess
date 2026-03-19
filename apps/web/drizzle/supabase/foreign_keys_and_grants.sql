@@ -288,3 +288,45 @@ $$;
 -- Grant necessary permissions
 GRANT SELECT, INSERT, DELETE ON TABLE public.topic_post_likes TO authenticated;
 GRANT SELECT ON TABLE public.topic_post_likes TO anon;
+
+-- =============================================================================
+-- leaderboard_entries
+-- =============================================================================
+
+-- FK constraint: leaderboard_entries.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'leaderboard_entries_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.leaderboard_entries
+      ADD CONSTRAINT leaderboard_entries_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read for leaderboard display)
+GRANT SELECT, INSERT ON TABLE public.leaderboard_entries TO authenticated;
+GRANT SELECT ON TABLE public.leaderboard_entries TO anon;
+
+-- =============================================================================
+-- leaderboard_best_scores
+-- =============================================================================
+
+-- FK constraint: leaderboard_best_scores.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'leaderboard_best_scores_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.leaderboard_best_scores
+      ADD CONSTRAINT leaderboard_best_scores_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read for leaderboard display, UPDATE for UPSERT)
+GRANT SELECT, INSERT, UPDATE ON TABLE public.leaderboard_best_scores TO authenticated;
+GRANT SELECT ON TABLE public.leaderboard_best_scores TO anon;
