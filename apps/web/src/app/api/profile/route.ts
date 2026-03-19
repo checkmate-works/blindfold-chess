@@ -36,6 +36,9 @@ export async function PUT(request: Request) {
     fideId?: string;
     chesscomUsername?: string;
     lichessUsername?: string;
+    xUsername?: string;
+    instagramUsername?: string;
+    youtubeHandle?: string;
   };
   try {
     body = await request.json();
@@ -74,13 +77,43 @@ export async function PUT(request: Request) {
   if (fideId && fideId.length > 50) {
     return NextResponse.json({ error: 'fide_id_too_long' }, { status: 400 });
   }
+  if (fideId && !/^\d+$/.test(fideId)) {
+    return NextResponse.json({ error: 'fide_id_invalid_format' }, { status: 400 });
+  }
   const chesscomUsername = body.chesscomUsername?.trim() || null;
   if (chesscomUsername && chesscomUsername.length > 255) {
     return NextResponse.json({ error: 'chesscom_username_too_long' }, { status: 400 });
   }
+  if (chesscomUsername && !/^[a-zA-Z0-9_-]+$/.test(chesscomUsername)) {
+    return NextResponse.json({ error: 'chesscom_username_invalid_format' }, { status: 400 });
+  }
   const lichessUsername = body.lichessUsername?.trim() || null;
   if (lichessUsername && lichessUsername.length > 255) {
     return NextResponse.json({ error: 'lichess_username_too_long' }, { status: 400 });
+  }
+  if (lichessUsername && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername)) {
+    return NextResponse.json({ error: 'lichess_username_invalid_format' }, { status: 400 });
+  }
+  const xUsername = body.xUsername?.trim() || null;
+  if (xUsername && xUsername.length > 15) {
+    return NextResponse.json({ error: 'x_username_too_long' }, { status: 400 });
+  }
+  if (xUsername && !/^[a-zA-Z0-9_]+$/.test(xUsername)) {
+    return NextResponse.json({ error: 'x_username_invalid_format' }, { status: 400 });
+  }
+  const instagramUsername = body.instagramUsername?.trim() || null;
+  if (instagramUsername && instagramUsername.length > 30) {
+    return NextResponse.json({ error: 'instagram_username_too_long' }, { status: 400 });
+  }
+  if (instagramUsername && !/^[a-zA-Z0-9._]+$/.test(instagramUsername)) {
+    return NextResponse.json({ error: 'instagram_username_invalid_format' }, { status: 400 });
+  }
+  const youtubeHandle = body.youtubeHandle?.trim() || null;
+  if (youtubeHandle && youtubeHandle.length > 30) {
+    return NextResponse.json({ error: 'youtube_handle_too_long' }, { status: 400 });
+  }
+  if (youtubeHandle && !/^[a-zA-Z0-9._-]+$/.test(youtubeHandle)) {
+    return NextResponse.json({ error: 'youtube_handle_invalid_format' }, { status: 400 });
   }
 
   await db
@@ -93,6 +126,9 @@ export async function PUT(request: Request) {
       fideId,
       chesscomUsername,
       lichessUsername,
+      xUsername,
+      instagramUsername,
+      youtubeHandle,
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, user.id));
