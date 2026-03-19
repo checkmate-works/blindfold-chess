@@ -2545,5 +2545,11 @@
     "continue": "Continue",
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
+  },
+  "authPrompt": {
+    "title": "Sign in to continue",
+    "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
+    "signUpButton": "Create Free Account",
+    "signInButton": "Already have an account? Sign in"
   }
 }

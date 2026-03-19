@@ -6,6 +6,9 @@ import { useTranslations } from 'next-intl';
 
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
+import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
+import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
+
 type ToggleLikeAction = (
   postId: string,
   locale: string,
@@ -33,6 +36,7 @@ export function LikeButton({
 }: Props) {
   const t = useTranslations(i18nNamespace);
   const [isPending, startTransition] = useTransition();
+  const { guardAction, isModalOpen, closeModal } = useAuthGuard();
   const [optimistic, setOptimistic] = useOptimistic(
     { liked: initialLikedByMe, count: initialLikeCount },
     (_current, newState: { liked: boolean; count: number }) => newState
@@ -42,29 +46,34 @@ export function LikeButton({
     e.preventDefault();
     e.stopPropagation();
 
-    startTransition(async () => {
-      const newLiked = !optimistic.liked;
-      const newCount = optimistic.count + (newLiked ? 1 : -1);
-      setOptimistic({ liked: newLiked, count: newCount });
+    guardAction(() => {
+      startTransition(async () => {
+        const newLiked = !optimistic.liked;
+        const newCount = optimistic.count + (newLiked ? 1 : -1);
+        setOptimistic({ liked: newLiked, count: newCount });
 
-      await toggleLikeAction(postId, locale, topicKey);
+        await toggleLikeAction(postId, locale, topicKey);
+      });
     });
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={isPending}
-      aria-label={optimistic.liked ? t('unlike') : t('like')}
-      className="flex items-center gap-1 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-    >
-      {optimistic.liked ? (
-        <AiFillHeart className="w-4 h-4 text-red-500" />
-      ) : (
-        <AiOutlineHeart className="w-4 h-4" />
-      )}
-      {optimistic.count > 0 && <span>{optimistic.count}</span>}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isPending}
+        aria-label={optimistic.liked ? t('unlike') : t('like')}
+        className="flex items-center gap-1 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+      >
+        {optimistic.liked ? (
+          <AiFillHeart className="w-4 h-4 text-red-500" />
+        ) : (
+          <AiOutlineHeart className="w-4 h-4" />
+        )}
+        {optimistic.count > 0 && <span>{optimistic.count}</span>}
+      </button>
+      <AuthPromptModal isOpen={isModalOpen} onClose={closeModal} />
+    </>
   );
 }

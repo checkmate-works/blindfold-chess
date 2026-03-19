@@ -1,6 +1,8 @@
 'use client';
 
-import { type ReactNode, useEffect, useId } from 'react';
+import { type ReactNode, useEffect, useId, useState } from 'react';
+
+import { createPortal } from 'react-dom';
 
 import { useScrollLock } from '../_hooks/use-scroll-lock';
 
@@ -24,8 +26,13 @@ export function Modal({
   'aria-describedby': ariaDescribedBy,
 }: Props) {
   const titleId = useId();
+  const [mounted, setMounted] = useState(false);
 
   useScrollLock(isOpen);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -43,16 +50,17 @@ export function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} aria-hidden="true" />
-
-      {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+  // Portal content is wrapped in a div with stopPropagation to prevent React synthetic
+  // events from bubbling through the component tree to parent elements (e.g., Link).
+  return createPortal(
+    <div onClick={(e) => e.stopPropagation()}>
+      {/* Backdrop + Modal container: clicking the overlay area closes the modal */}
+      <div className="fixed inset-0 bg-black/50 z-40" aria-hidden="true" />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4" onClick={onClose}>
         <div
+          onClick={(e) => e.stopPropagation()}
           className={`bg-card rounded-lg shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
           role="dialog"
           aria-modal="true"
@@ -82,6 +90,7 @@ export function Modal({
           <div className="p-6">{children}</div>
         </div>
       </div>
-    </>
+    </div>,
+    document.body
   );
 }

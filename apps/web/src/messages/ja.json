@@ -2523,5 +2523,11 @@
     "continue": "続行する",
     "goBack": "戻る",
     "invalidUrl": "指定されたURLは無効です。"
+  },
+  "authPrompt": {
+    "title": "サインインして続行",
+    "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
+    "signUpButton": "無料ユーザー登録",
+    "signInButton": "アカウントをお持ちの方はログイン"
   }
 }
