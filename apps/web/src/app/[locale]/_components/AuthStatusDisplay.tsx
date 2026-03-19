@@ -3,15 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { FaRegUser } from 'react-icons/fa';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
 import { useAuth } from '../_contexts/AuthContext';
 
-export function AuthStatusDisplay() {
+type Props = {
+  avatarUrl?: string | null;
+  displayName?: string | null;
+};
+
+export function AuthStatusDisplay({ avatarUrl, displayName }: Props = {}) {
   const { user, isLoading, signOut } = useAuth();
   const locale = useLocale();
   const router = useRouter();
@@ -39,13 +44,26 @@ export function AuthStatusDisplay() {
       <div ref={containerRef} className="relative">
         <button
           type="button"
-          className="flex items-center justify-center rounded-full border-2 border-muted-foreground text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground transition-colors p-[2px]"
+          className="flex items-center justify-center rounded-full hover:opacity-80 transition-opacity"
           aria-label={t('account')}
           aria-expanded={isOpen}
           aria-haspopup="true"
           onClick={() => setIsOpen((prev) => !prev)}
         >
-          <FaRegUser className="h-5 w-5" />
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt={displayName ?? ''}
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-full object-cover"
+              unoptimized
+            />
+          ) : (
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-muted-foreground text-xs">
+              {(displayName ?? user?.email ?? '?').charAt(0).toUpperCase()}
+            </span>
+          )}
         </button>
 
         {isOpen && (

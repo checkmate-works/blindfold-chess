@@ -11,6 +11,7 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { parseFenMeta } from '../_lib/fen-utils';
 import {
   parseUrlSearchParams,
   useAiMoveOrchestration,
@@ -277,8 +278,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       return;
     }
 
-    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
-    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
 
     const isAiMove = (index: number) => {
       const isStartingSideMove = index % 2 === 0;

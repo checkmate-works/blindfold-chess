@@ -26,6 +26,14 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+vi.mock('next/image', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default: ({ unoptimized: _, ...props }: any) => {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img {...props} />;
+  },
+}));
+
 const mockPush = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -90,6 +98,65 @@ describe('AuthStatusDisplay', () => {
     it('should display the account icon button', () => {
       render(<AuthStatusDisplay />);
       expect(screen.getByRole('button', { name: 'account' })).toBeInTheDocument();
+    });
+
+    describe('avatar display', () => {
+      it('should display the avatar image when avatarUrl is provided', () => {
+        render(
+          <AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName="John Doe" />
+        );
+        const img = screen.getByRole('img', { name: 'John Doe' });
+        expect(img).toBeInTheDocument();
+        expect(img).toHaveAttribute('src', 'https://example.com/avatar.png');
+      });
+
+      it('should use displayName as alt text for avatar image', () => {
+        render(
+          <AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName="Alice" />
+        );
+        const img = screen.getByRole('img', { name: 'Alice' });
+        expect(img).toBeInTheDocument();
+      });
+
+      it('should use empty alt text when displayName is null', () => {
+        render(<AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName={null} />);
+        const img = screen.getByAltText('');
+        expect(img).toBeInTheDocument();
+        expect(img).toHaveAttribute('src', 'https://example.com/avatar.png');
+      });
+
+      it('should display initial of displayName when avatarUrl is not provided', () => {
+        render(<AuthStatusDisplay displayName="John Doe" />);
+        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+        expect(screen.getByText('J')).toBeInTheDocument();
+      });
+
+      it('should display initial of displayName in uppercase', () => {
+        render(<AuthStatusDisplay displayName="alice" />);
+        expect(screen.getByText('A')).toBeInTheDocument();
+      });
+
+      it('should fall back to email initial when displayName is null', () => {
+        render(<AuthStatusDisplay displayName={null} />);
+        // user.email is 'test@example.com', so initial should be 'T'
+        expect(screen.getByText('T')).toBeInTheDocument();
+      });
+
+      it('should display "?" when displayName and email are both unavailable', () => {
+        mockUseAuth.mockReturnValue({
+          user: { id: 'user-1' },
+          isLoading: false,
+          signOut: vi.fn(),
+        });
+        render(<AuthStatusDisplay displayName={null} />);
+        expect(screen.getByText('?')).toBeInTheDocument();
+      });
+
+      it('should not display avatar image when avatarUrl is null', () => {
+        render(<AuthStatusDisplay avatarUrl={null} displayName="John" />);
+        expect(screen.queryByRole('img')).not.toBeInTheDocument();
+        expect(screen.getByText('J')).toBeInTheDocument();
+      });
     });
 
     it('should open the dropdown when the icon button is clicked', () => {

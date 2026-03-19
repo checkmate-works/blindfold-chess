@@ -9,6 +9,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -30,6 +31,7 @@ export default function QuadrantPlaying({
   const t = useTranslations('practice.quadrantAnchors');
   const tCommon = useTranslations('practice');
   const tQuiz = useTranslations('practice.coordinateQuiz');
+  const quitConfirmLabels = useQuitConfirmLabels();
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { showToast } = useToast();
@@ -227,12 +229,7 @@ export default function QuadrantPlaying({
           isOpen={showQuitModal}
           onConfirm={confirmQuit}
           onCancel={() => setShowQuitModal(false)}
-          labels={{
-            title: tCommon('quitConfirmModal.title'),
-            message: tCommon('quitConfirmModal.message'),
-            confirmButton: tCommon('quitConfirmModal.confirmButton'),
-            cancelButton: tCommon('quitConfirmModal.cancelButton'),
-          }}
+          labels={quitConfirmLabels}
         />
       )}
     </div>
