@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { db } from './index';
-import { leaderboardBestScores, leaderboardEntries, profiles } from './schema';
+import { challengeBestScores, challengeResults, profiles } from './schema';
 
 export type LeaderboardRow = {
   userId: string;
@@ -44,7 +44,7 @@ function startOfCurrentMonth(): Date {
 }
 
 // ---------------------------------------------------------------------------
-// All-time ranking (from leaderboard_best_scores)
+// All-time ranking (from challenge_best_scores)
 // ---------------------------------------------------------------------------
 
 export async function getAllTimeRanking(
@@ -55,39 +55,39 @@ export async function getAllTimeRanking(
 ): Promise<LeaderboardPage> {
   const rows = await db
     .select({
-      userId: leaderboardBestScores.userId,
+      userId: challengeBestScores.userId,
       username: profiles.username,
-      score: leaderboardBestScores.score,
-      incorrectAnswers: leaderboardBestScores.incorrectAnswers,
-      timeTaken: leaderboardBestScores.timeTaken,
+      score: challengeBestScores.score,
+      incorrectAnswers: challengeBestScores.incorrectAnswers,
+      timeTaken: challengeBestScores.timeTaken,
       displayName: profiles.displayName,
       avatarUrl: profiles.avatarUrl,
       country: profiles.country,
       flair: profiles.flair,
     })
-    .from(leaderboardBestScores)
-    .innerJoin(profiles, eq(leaderboardBestScores.userId, profiles.id))
+    .from(challengeBestScores)
+    .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
     .where(
       and(
-        eq(leaderboardBestScores.menuType, menuType),
-        eq(leaderboardBestScores.leaderboardKey, leaderboardKey)
+        eq(challengeBestScores.menuType, menuType),
+        eq(challengeBestScores.leaderboardKey, leaderboardKey)
       )
     )
     .orderBy(
-      desc(leaderboardBestScores.score),
-      asc(leaderboardBestScores.incorrectAnswers),
-      asc(leaderboardBestScores.timeTaken)
+      desc(challengeBestScores.score),
+      asc(challengeBestScores.incorrectAnswers),
+      asc(challengeBestScores.timeTaken)
     )
     .offset(offset)
     .limit(limit);
 
   const [countRow] = await db
     .select({ count: sql<number>`count(*)::int` })
-    .from(leaderboardBestScores)
+    .from(challengeBestScores)
     .where(
       and(
-        eq(leaderboardBestScores.menuType, menuType),
-        eq(leaderboardBestScores.leaderboardKey, leaderboardKey)
+        eq(challengeBestScores.menuType, menuType),
+        eq(challengeBestScores.leaderboardKey, leaderboardKey)
       )
     );
 
@@ -95,7 +95,7 @@ export async function getAllTimeRanking(
 }
 
 // ---------------------------------------------------------------------------
-// Period ranking (from leaderboard_entries with DISTINCT ON)
+// Period ranking (from challenge_results with DISTINCT ON)
 // ---------------------------------------------------------------------------
 
 async function getPeriodRanking(
@@ -108,25 +108,25 @@ async function getPeriodRanking(
   // Use a subquery with DISTINCT ON to get each user's best score in the period.
   // Best = highest score, then fewest incorrect answers, then fastest time.
   const bestPerUser = db
-    .selectDistinctOn([leaderboardEntries.userId], {
-      userId: leaderboardEntries.userId,
-      score: leaderboardEntries.score,
-      incorrectAnswers: leaderboardEntries.incorrectAnswers,
-      timeTaken: leaderboardEntries.timeTaken,
+    .selectDistinctOn([challengeResults.userId], {
+      userId: challengeResults.userId,
+      score: challengeResults.score,
+      incorrectAnswers: challengeResults.incorrectAnswers,
+      timeTaken: challengeResults.timeTaken,
     })
-    .from(leaderboardEntries)
+    .from(challengeResults)
     .where(
       and(
-        eq(leaderboardEntries.menuType, menuType),
-        eq(leaderboardEntries.leaderboardKey, leaderboardKey),
-        gte(leaderboardEntries.createdAt, periodStart)
+        eq(challengeResults.menuType, menuType),
+        eq(challengeResults.leaderboardKey, leaderboardKey),
+        gte(challengeResults.createdAt, periodStart)
       )
     )
     .orderBy(
-      leaderboardEntries.userId,
-      desc(leaderboardEntries.score),
-      asc(leaderboardEntries.incorrectAnswers),
-      asc(leaderboardEntries.timeTaken)
+      challengeResults.userId,
+      desc(challengeResults.score),
+      asc(challengeResults.incorrectAnswers),
+      asc(challengeResults.timeTaken)
     )
     .as('best_per_user');
 
@@ -191,7 +191,7 @@ export async function getUserAllTimeRank(
         ROW_NUMBER() OVER (
           ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
         ) AS rank
-      FROM leaderboard_best_scores
+      FROM challenge_best_scores
       WHERE menu_type = ${menuType}
         AND leaderboard_key = ${leaderboardKey}
     ) ranked
@@ -216,7 +216,7 @@ async function getUserPeriodRank(
     WITH best_per_user AS (
       SELECT DISTINCT ON (user_id)
         user_id, score, incorrect_answers, time_taken
-      FROM leaderboard_entries
+      FROM challenge_results
       WHERE menu_type = ${menuType}
         AND leaderboard_key = ${leaderboardKey}
         AND created_at >= ${periodStart}
@@ -305,7 +305,7 @@ export async function getUserAllTimeRankedRow(
         ROW_NUMBER() OVER (
           ORDER BY score DESC, incorrect_answers ASC, time_taken ASC
         ) AS rank
-      FROM leaderboard_best_scores
+      FROM challenge_best_scores
       WHERE menu_type = ${menuType}
         AND leaderboard_key = ${leaderboardKey}
     ) ranked
@@ -335,7 +335,7 @@ async function getUserPeriodRankedRow(
       FROM (
         SELECT DISTINCT ON (user_id)
           user_id, score, incorrect_answers, time_taken
-        FROM leaderboard_entries
+        FROM challenge_results
         WHERE menu_type = ${menuType}
           AND leaderboard_key = ${leaderboardKey}
           AND created_at >= ${periodStart}

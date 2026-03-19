@@ -1,4 +1,4 @@
-import type { RankedLeaderboardRow } from '@/lib/db/leaderboard-queries';
+import type { RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 
 export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 

@@ -7,8 +7,8 @@ import {
   getUserMonthlyRankedRow,
   getUserWeeklyRankedRow,
   getWeeklyRanking,
-} from '@/lib/db/leaderboard-queries';
-import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/leaderboard-queries';
+} from '@/lib/db/challenge-queries';
+import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 import { createClient } from '@/lib/supabase/server';
 
 import type {

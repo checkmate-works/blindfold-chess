@@ -1,11 +1,10 @@
 import { sql } from 'drizzle-orm';
 
 import { db } from './index';
-import { leaderboardBestScores, leaderboardEntries } from './schema';
+import { challengeBestScores, challengeResults } from './schema';
 
-export type LeaderboardRecordInput = {
+export type ChallengeResultInput = {
   userId: string;
-  sessionId: string;
   menuType: string;
   leaderboardKey: string;
   score: number;
@@ -14,23 +13,22 @@ export type LeaderboardRecordInput = {
 };
 
 /**
- * Writes leaderboard records after a practice session is saved.
+ * Writes challenge result records after a challenge session completes.
  *
  * Performs two operations:
- * 1. INSERT into leaderboard_entries (append-only log for weekly/monthly rankings)
- * 2. UPSERT into leaderboard_best_scores (all-time best per user/menu/key)
+ * 1. INSERT into challenge_results (append-only log for weekly/monthly rankings)
+ * 2. UPSERT into challenge_best_scores (all-time best per user/menu/key)
  *
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
  */
-export async function saveLeaderboardRecord(input: LeaderboardRecordInput): Promise<void> {
-  const { userId, sessionId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
+export async function saveChallengeResult(input: ChallengeResultInput): Promise<void> {
+  const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
-  // 1. Append to leaderboard_entries (all results, for period-based rankings)
-  await db.insert(leaderboardEntries).values({
+  // 1. Append to challenge_results (all results, for period-based rankings)
+  await db.insert(challengeResults).values({
     userId,
-    sessionId,
     menuType,
     leaderboardKey,
     score,
@@ -38,11 +36,11 @@ export async function saveLeaderboardRecord(input: LeaderboardRecordInput): Prom
     timeTaken,
   });
 
-  // 2. UPSERT into leaderboard_best_scores (all-time best per user/menu/key)
+  // 2. UPSERT into challenge_best_scores (all-time best per user/menu/key)
   //    Only updates when the new result is strictly better:
   //    (higher score, then fewer incorrect answers, then faster time)
   await db
-    .insert(leaderboardBestScores)
+    .insert(challengeBestScores)
     .values({
       userId,
       menuType,
@@ -50,20 +48,18 @@ export async function saveLeaderboardRecord(input: LeaderboardRecordInput): Prom
       score,
       incorrectAnswers,
       timeTaken,
-      sessionId,
       achievedAt: now,
     })
     .onConflictDoUpdate({
       target: [
-        leaderboardBestScores.userId,
-        leaderboardBestScores.menuType,
-        leaderboardBestScores.leaderboardKey,
+        challengeBestScores.userId,
+        challengeBestScores.menuType,
+        challengeBestScores.leaderboardKey,
       ],
       set: {
         score: sql`EXCLUDED.score`,
         incorrectAnswers: sql`EXCLUDED.incorrect_answers`,
         timeTaken: sql`EXCLUDED.time_taken`,
-        sessionId: sql`EXCLUDED.session_id`,
         achievedAt: sql`EXCLUDED.achieved_at`,
         updatedAt: sql`now()`,
       },
@@ -72,9 +68,9 @@ export async function saveLeaderboardRecord(input: LeaderboardRecordInput): Prom
         -EXCLUDED.incorrect_answers,
         -EXCLUDED.time_taken
       ) > (
-        ${leaderboardBestScores.score},
-        -${leaderboardBestScores.incorrectAnswers},
-        -${leaderboardBestScores.timeTaken}
+        ${challengeBestScores.score},
+        -${challengeBestScores.incorrectAnswers},
+        -${challengeBestScores.timeTaken}
       )`,
     });
 }

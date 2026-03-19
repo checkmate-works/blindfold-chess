@@ -1,50 +1,57 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
-
+import type { ChallengeResultRow } from '../_actions/get-practice-sessions';
 import { DEFAULT_PIECE_SELECTION, derivePieceSelectionFromSessions } from './derive-piece-filter';
 
 // ---------------------------------------------------------------------------
 // Helpers to build test session data
 // ---------------------------------------------------------------------------
 
-function makeLegalMovesSession(selectedPiece: string, id = 'session-1'): PracticeSessionRow {
+function makeLegalMovesSession(leaderboardKey: string, id = 'session-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'legal_moves',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, selectedPiece, mistakeAllowance: null },
-    result: { correctAnswers: 5, incorrectAnswers: 1, timeTaken: 30 },
+    leaderboardKey,
+    score: 5,
+    incorrectAnswers: 1,
+    timeTaken: 30,
+    createdAt: new Date(),
   };
 }
 
-function makeCoordinateQuizSession(id = 'cq-1'): PracticeSessionRow {
+function makeCoordinateQuizSession(id = 'cq-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'coordinate_quiz',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, boardOrientation: 'white', mistakeAllowance: null },
-    result: { correctAnswers: 10, incorrectAnswers: 2, timeTaken: 45 },
+    leaderboardKey: 'white',
+    score: 10,
+    incorrectAnswers: 2,
+    timeTaken: 45,
+    createdAt: new Date(),
   };
 }
 
-function makeSquareColorsSession(id = 'sc-1'): PracticeSessionRow {
+function makeSquareColorsSession(id = 'sc-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'square_colors',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, mistakeAllowance: null },
-    result: { correctAnswers: 8, incorrectAnswers: 3, timeTaken: 50 },
+    leaderboardKey: 'default',
+    score: 8,
+    incorrectAnswers: 3,
+    timeTaken: 50,
+    createdAt: new Date(),
   };
 }
 
-function makeUnknownSession(id = 'unknown-1'): PracticeSessionRow {
+function makeUnknownSession(id = 'unknown-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'some_future_type',
-    startedAt: new Date(),
-    settings: { foo: 'bar' },
-    result: { baz: 42 },
+    leaderboardKey: 'default',
+    score: 0,
+    incorrectAnswers: 0,
+    timeTaken: 0,
+    createdAt: new Date(),
   };
 }
 
@@ -171,7 +178,7 @@ describe('derivePieceSelectionFromSessions', () => {
       expect(derivePieceSelectionFromSessions([makeLegalMovesSession('knight')])).toBe('n');
     });
 
-    it('returns random with a large number of consistent single-piece sessions', () => {
+    it('returns bishop with a large number of consistent single-piece sessions', () => {
       const sessions = Array.from({ length: 50 }, (_, i) =>
         makeLegalMovesSession('bishop', `s-${i}`)
       );

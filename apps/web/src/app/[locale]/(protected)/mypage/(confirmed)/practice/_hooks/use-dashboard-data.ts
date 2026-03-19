@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { PracticeMenuType, PracticeSessionRow } from '@/lib/db/practice-session-types';
-import { getSessionScoreFields, isTypedSession } from '@/lib/db/practice-session-types';
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import {
+  type ChallengeResultRow,
   type DatePeriod,
   getAvailableMenuTypes,
   getPracticeSessions,
@@ -40,40 +41,33 @@ type FilterContext = {
   activePiece: string;
 };
 
-type SessionFilter = (session: PracticeSessionRow, ctx: FilterContext) => boolean;
+type SessionFilter = (session: ChallengeResultRow, ctx: FilterContext) => boolean;
 
 /** Menu types that support the board orientation filter UI. */
-export const ORIENTATION_FILTER_MENUS = new Set<PracticeMenuType>(['coordinate_quiz']);
+export const ORIENTATION_FILTER_MENUS = new Set<ChallengeMenuType>(['coordinate_quiz']);
 
 /** Menu types that support the piece selection filter UI. */
-export const PIECE_FILTER_MENUS = new Set<PracticeMenuType>(['legal_moves']);
+export const PIECE_FILTER_MENUS = new Set<ChallengeMenuType>(['legal_moves']);
 
 /**
- * Data-driven filter definitions per menu type.
- * To add filtering for a new menu type, add an entry here and expose the
- * corresponding UI controls in Dashboard.tsx.
+ * Derives the leaderboard key that corresponds to a board orientation filter value.
+ * coordinate_quiz uses boardOrientation as leaderboardKey directly.
  */
-const MENU_FILTERS: Partial<Record<PracticeMenuType, SessionFilter>> = {
+const MENU_FILTERS: Partial<Record<ChallengeMenuType, SessionFilter>> = {
   coordinate_quiz: (s, ctx) => {
     if (ctx.boardOrientationFilter === 'all') return true;
-    if (isTypedSession(s) && s.menuType === 'coordinate_quiz') {
-      return s.settings.boardOrientation === ctx.boardOrientationFilter;
-    }
-    return true;
+    return s.leaderboardKey === ctx.boardOrientationFilter;
   },
   legal_moves: (s, ctx) => {
-    if (isTypedSession(s) && s.menuType === 'legal_moves') {
-      return s.settings.selectedPiece === ctx.activePiece;
-    }
-    return true;
+    return s.leaderboardKey === ctx.activePiece;
   },
 };
 
 function applyFilters(
-  sessions: PracticeSessionRow[],
-  selectedMenu: PracticeMenuType | null,
+  sessions: ChallengeResultRow[],
+  selectedMenu: ChallengeMenuType | null,
   ctx: FilterContext
-): PracticeSessionRow[] {
+): ChallengeResultRow[] {
   const filter = selectedMenu ? MENU_FILTERS[selectedMenu] : undefined;
   if (!filter) return sessions;
   return sessions.filter((s) => filter(s, ctx));
@@ -82,8 +76,7 @@ function applyFilters(
 export type TableRow = {
   date: string;
   correctAnswers: string;
-  incorrectAnswers: number | null;
-  mistakeAllowance: number | null;
+  incorrectAnswers: number;
 };
 
 const TABLE_MAX_ROWS = 20;
@@ -95,14 +88,14 @@ export type ChartDataPoint = {
 };
 
 export function useDashboardData(locale: string) {
-  const [allSessions, setAllSessions] = useState<PracticeSessionRow[]>([]);
-  const [previousSessions, setPreviousSessions] = useState<PracticeSessionRow[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<PracticeMenuType | null>(null);
+  const [allSessions, setAllSessions] = useState<ChallengeResultRow[]>([]);
+  const [previousSessions, setPreviousSessions] = useState<ChallengeResultRow[]>([]);
+  const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
   const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
   const [pieceFilter, setPieceFilter] = useState<PieceSelection>(DEFAULT_PIECE_SELECTION);
   const [isLoading, setIsLoading] = useState(true);
-  const [availableMenuTypes, setAvailableMenuTypes] = useState<PracticeMenuType[] | null>(null);
+  const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
 
   // Fetch all menu types once on mount to populate dropdown
   useEffect(() => {
@@ -192,9 +185,12 @@ export function useDashboardData(locale: string) {
     [previousSessions, selectedMenu, filterCtx]
   );
 
-  const currentStats = useMemo(() => computeStats(filteredSessions), [filteredSessions]);
+  const currentStats = useMemo(
+    () => computeStats(filteredSessions, MISTAKE_LIMIT),
+    [filteredSessions]
+  );
   const prevStats = useMemo(
-    () => computeStats(filteredPreviousSessions),
+    () => computeStats(filteredPreviousSessions, MISTAKE_LIMIT),
     [filteredPreviousSessions]
   );
 
@@ -224,15 +220,11 @@ export function useDashboardData(locale: string) {
 
   // TODO: ページネーション対応
   const tableRows = useMemo((): TableRow[] => {
-    return filteredSessions.slice(0, TABLE_MAX_ROWS).map((s) => {
-      const fields = getSessionScoreFields(s);
-      return {
-        date: formatDate(s.startedAt, locale),
-        correctAnswers: fields ? `${fields.correctAnswers}` : '-',
-        incorrectAnswers: fields ? fields.incorrectAnswers : null,
-        mistakeAllowance: fields ? fields.mistakeAllowance : null,
-      };
-    });
+    return filteredSessions.slice(0, TABLE_MAX_ROWS).map((s) => ({
+      date: formatDate(s.createdAt, locale),
+      correctAnswers: s.score.toString(),
+      incorrectAnswers: s.incorrectAnswers,
+    }));
   }, [filteredSessions, locale]);
 
   const bestScoreComparison = useMemo(

@@ -1,33 +1,34 @@
 'use server';
 
 import { isUserBanned } from '@/lib/ban';
-import { db } from '@/lib/db';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
-import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-session-types';
-import type { PracticeMenuType } from '@/lib/db/practice-session-types';
-import { saveLeaderboardRecord } from '@/lib/db/save-leaderboard-record';
-import { practiceSessions } from '@/lib/db/schema';
+import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
+import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
+import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-const MAX_JSON_SIZE = 10_240;
-
 export type SaveResultResponse = {
   success: boolean;
-  id?: string;
 };
 
-export type LeaderboardFields = {
+export type ChallengeFields = {
   score: number;
   incorrectAnswers: number;
   timeTaken: number;
 };
 
+/**
+ * Saves a challenge result directly to challenge_results and challenge_best_scores.
+ *
+ * @param menuType - The practice menu type
+ * @param settings - Module settings (used to derive leaderboardKey)
+ * @param challengeFields - Score, incorrectAnswers, and timeTaken for the challenge
+ */
 export async function savePracticeResult(
   menuType: PracticeMenuType,
   settings: Record<string, unknown>,
-  result: Record<string, unknown>,
-  leaderboardFields?: LeaderboardFields
+  challengeFields: ChallengeFields
 ): Promise<SaveResultResponse> {
   try {
     const supabase = await createClient();
@@ -52,46 +53,21 @@ export async function savePracticeResult(
       return { success: false };
     }
 
-    if (JSON.stringify(settings).length > MAX_JSON_SIZE) {
+    const leaderboardKey = deriveLeaderboardKey(menuType, settings);
+    if (!leaderboardKey) {
       return { success: false };
     }
 
-    if (JSON.stringify(result).length > MAX_JSON_SIZE) {
-      return { success: false };
-    }
+    await saveChallengeResult({
+      userId: user.id,
+      menuType,
+      leaderboardKey,
+      score: challengeFields.score,
+      incorrectAnswers: challengeFields.incorrectAnswers,
+      timeTaken: challengeFields.timeTaken,
+    });
 
-    const [inserted] = await db
-      .insert(practiceSessions)
-      .values({
-        userId: user.id,
-        menuType,
-        settings,
-        result,
-      })
-      .returning({ id: practiceSessions.id });
-
-    // Write leaderboard records if fields are provided and a key can be derived
-    if (leaderboardFields) {
-      const leaderboardKey = deriveLeaderboardKey(menuType, settings);
-      if (leaderboardKey) {
-        try {
-          await saveLeaderboardRecord({
-            userId: user.id,
-            sessionId: inserted.id,
-            menuType,
-            leaderboardKey,
-            score: leaderboardFields.score,
-            incorrectAnswers: leaderboardFields.incorrectAnswers,
-            timeTaken: leaderboardFields.timeTaken,
-          });
-        } catch (leaderboardError) {
-          // Log but don't fail the overall save — the practice session is already persisted
-          console.error(`Failed to save leaderboard record for ${menuType}:`, leaderboardError);
-        }
-      }
-    }
-
-    return { success: true, id: inserted.id };
+    return { success: true };
   } catch (error) {
     console.error(`Failed to save ${menuType} result:`, error);
     return { success: false };

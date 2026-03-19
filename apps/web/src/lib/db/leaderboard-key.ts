@@ -1,4 +1,4 @@
-import type { PracticeMenuType } from './practice-session-types';
+import type { PracticeMenuType } from './practice-menu-types';
 
 /**
  * Derives the leaderboard segmentation key from module settings.

@@ -1,16 +1,23 @@
 'use server';
 
 import { savePracticeResult } from '../../_actions/save-practice-result';
-import { buildSquareColorsData } from './save-result-logic';
-import type { SaveSquareColorsResultInput } from './save-result-logic';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
+export type SaveSquareColorsResultInput = {
+  correctAnswers: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+};
+
 export async function saveSquareColorsResult(input: SaveSquareColorsResultInput) {
-  const { menuType, settings, result } = buildSquareColorsData(input);
-  return savePracticeResult(menuType, settings, result, {
-    score: input.correctAnswers,
-    incorrectAnswers: input.incorrectAnswers,
-    timeTaken: input.timeTaken,
-  });
+  return savePracticeResult(
+    'square_colors',
+    {},
+    {
+      score: input.correctAnswers,
+      incorrectAnswers: input.incorrectAnswers,
+      timeTaken: input.timeTaken,
+    }
+  );
 }

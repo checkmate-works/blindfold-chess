@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -25,7 +27,6 @@ type Props = {
 };
 
 const BATCH_SIZE = 100;
-const MAX_MISTAKES = 3;
 const TIME_LIMIT = 60;
 
 export default function SquareColorsChallenge({ locale }: Props) {
@@ -65,7 +66,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
   } = useTimedSession<string>({
     timeLimit: TIME_LIMIT,
     generateQuestion,
-    mistakeAllowance: MAX_MISTAKES,
+    mistakeAllowance: MISTAKE_LIMIT,
   });
 
   useScrollToElement('square-colors-challenge');
@@ -99,7 +100,6 @@ export default function SquareColorsChallenge({ locale }: Props) {
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-        mistakeAllowance: MAX_MISTAKES,
       })
         .catch(() => {
           // Silently ignore save failures - result display is unaffected
@@ -147,8 +147,8 @@ export default function SquareColorsChallenge({ locale }: Props) {
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
-        remainingLives={MAX_MISTAKES - incorrectCount}
-        maxLives={MAX_MISTAKES}
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
       />
     </div>
   );

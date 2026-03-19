@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -22,8 +24,6 @@ type Props = {
   selectedPieces: PieceType[];
   selectedPiece: string;
 };
-
-const MAX_MISTAKES = 3;
 
 export default function LegalMovesSession({
   locale,
@@ -80,7 +80,7 @@ export default function LegalMovesSession({
   } = useTimedSession<MoveQuestion>({
     timeLimit: initialTimeLimit,
     generateQuestion,
-    mistakeAllowance: MAX_MISTAKES,
+    mistakeAllowance: MISTAKE_LIMIT,
   });
 
   useScrollToElement('legal-moves-session');
@@ -127,9 +127,7 @@ export default function LegalMovesSession({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-        timeLimit: initialTimeLimit,
         selectedPiece,
-        mistakeAllowance: MAX_MISTAKES,
       })
         .catch(() => {
           // Silently ignore save failures - result display is unaffected
@@ -183,8 +181,8 @@ export default function LegalMovesSession({
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
-        remainingLives={MAX_MISTAKES - incorrectCount}
-        maxLives={MAX_MISTAKES}
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
       />
     </div>
   );

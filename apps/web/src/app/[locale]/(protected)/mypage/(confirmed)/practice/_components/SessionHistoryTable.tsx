@@ -1,8 +1,9 @@
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 type SessionRow = {
   date: string;
   correctAnswers: string;
-  incorrectAnswers: number | null;
-  mistakeAllowance: number | null;
+  incorrectAnswers: number;
 };
 
 type Props = {
@@ -15,12 +16,8 @@ type Props = {
   };
 };
 
-function getIncorrectAnswersClassName(
-  incorrectAnswers: number | null,
-  mistakeAllowance: number | null
-): string {
-  if (incorrectAnswers === null) return 'text-foreground';
-  if (mistakeAllowance !== null && incorrectAnswers >= mistakeAllowance) return 'text-destructive';
+function getIncorrectAnswersClassName(incorrectAnswers: number): string {
+  if (incorrectAnswers >= MISTAKE_LIMIT) return 'text-destructive';
   if (incorrectAnswers === 0) return 'text-success';
   return 'text-foreground';
 }
@@ -56,9 +53,9 @@ export function SessionHistoryTable({ sessions, emptyMessage, headers }: Props) 
               <td className="py-2 px-3 text-foreground whitespace-nowrap">{session.date}</td>
               <td className="py-2 px-3 text-right text-foreground">{session.correctAnswers}</td>
               <td
-                className={`py-2 px-3 text-right ${getIncorrectAnswersClassName(session.incorrectAnswers, session.mistakeAllowance)}`}
+                className={`py-2 px-3 text-right ${getIncorrectAnswersClassName(session.incorrectAnswers)}`}
               >
-                {session.incorrectAnswers !== null ? `${session.incorrectAnswers}` : '-'}
+                {session.incorrectAnswers}
               </td>
             </tr>
           ))}

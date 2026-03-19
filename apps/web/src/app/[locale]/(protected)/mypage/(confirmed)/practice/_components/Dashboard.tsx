@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { PieceSelector } from '@/app/_components';
 
-import type { PracticeMenuType } from '@/lib/db/practice-session-types';
+import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -74,7 +74,7 @@ export function Dashboard({ locale }: { locale: string }) {
       <div className="flex flex-col sm:flex-row gap-3">
         <select
           value={selectedMenu ?? ''}
-          onChange={(e) => setSelectedMenu(e.target.value as PracticeMenuType)}
+          onChange={(e) => setSelectedMenu(e.target.value as ChallengeMenuType)}
           className={`w-full sm:w-64 ${selectClassName}`}
         >
           {menuOptions.map((opt) => (
