@@ -1,3 +1,4 @@
+export { BaseTopicPostCard } from './BaseTopicPostCard';
 export { DeletePostButton } from './DeletePostButton';
 export { LikeButton } from './LikeButton';
 export { PostFooter } from './PostFooter';

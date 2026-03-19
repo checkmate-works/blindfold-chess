@@ -4,22 +4,15 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { createClient } from '@/lib/supabase/server';
-
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
-import { ReplyList } from '@/app/[locale]/(public)/topics/_components/ReplyList';
-import { canUserReply } from '@/app/[locale]/(public)/topics/_lib/permissions';
-import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { PostDetailContent } from '@/app/[locale]/(public)/topics/_components/PostDetailContent';
+import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
+import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { UserAvatar } from '../../../_components';
-import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_lib/queries';
+import { getPostById } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
 import { createReply } from './_actions/createReply';
@@ -65,21 +58,7 @@ export default async function PostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [replies, likeMeta] = await Promise.all([
-    getRepliesByPostId(postId, user?.id),
-    getLikeMetaForPost(postId, user?.id),
-  ]);
-
-  const isAuthor = user?.id === post.userId;
-  const canReply = await canUserReply({
-    userId: user?.id,
-    postUserId: post.userId,
-    replyPermission: post.replyPermission,
-  });
+  const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
 
   const t = await getTranslations({ locale, namespace: 'topics' });
 
@@ -89,7 +68,6 @@ export default async function PostDetailPage({ params }: Props) {
       : null;
 
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
 
   return (
     <div className="space-y-8">
@@ -112,98 +90,27 @@ export default async function PostDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        <div className="p-4 bg-card border border-border rounded-lg space-y-4">
-          <UserAvatar
-            profileHref={profileHref}
-            avatarUrl={post.author?.avatarUrl}
-            displayName={displayName}
-            locale={locale}
-            size="md"
-            flair={post.author?.flair}
-            country={post.author?.country}
-          >
-            <div className="text-sm text-muted-foreground">
-              <time dateTime={post.createdAt.toISOString()}>
-                {post.createdAt.toLocaleDateString(locale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </time>
-            </div>
-          </UserAvatar>
-
-          <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-            <LinkedText text={post.content} locale={locale} />
-          </div>
-
-          <div className="flex items-center gap-4">
-            <LikeButton
-              postId={post.id}
-              locale={locale}
-              topicKey={square}
-              initialLikeCount={likeMeta.likeCount}
-              initialLikedByMe={likeMeta.likedByMe}
-              toggleLikeAction={toggleLike}
-              i18nNamespace="topics.squares"
-            />
-            {user && user.id === post.userId && (
-              <DeletePostButton
-                postId={post.id}
-                locale={locale}
-                redirectPath={`/${locale}/topics/squares/${square}`}
-                deletePostAction={deletePost}
-                i18nNamespace="topics.squares.deletePost"
-              />
-            )}
-          </div>
-        </div>
-
-        <AdBanner slot="banner-wide" locale={locale} />
-
-        <SectionTitle>
-          {t('squares.replies.title')} ({t('squares.replies.count', { count: replies.length })})
-        </SectionTitle>
-
-        {replies.length > 0 ? (
-          <ReplyList
-            replies={replies}
-            locale={locale}
-            topicKey={square}
-            toggleLikeAction={toggleLike}
-            likeI18nNamespace="topics.squares"
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">{t('squares.replies.noReplies')}</p>
-        )}
-
-        {canReply ? (
-          user ? (
-            <ReplyForm
-              locale={locale}
-              topicKey={square}
-              postId={postId}
-              createReplyAction={createReply}
-              i18nNamespace="topics.squares.replies"
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              <Link
-                href="/sign-in"
-                locale={locale}
-                className="text-foreground underline hover:text-muted-foreground transition-colors"
-              >
-                {t('squares.replies.loginToReply')}
-              </Link>
-            </p>
-          )
-        ) : replyRestrictionMessage ? (
-          <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
-        ) : null}
-
-        <AdBanner slot="banner-standard" locale={locale} />
+        <PostDetailContent
+          post={post}
+          user={user}
+          locale={locale}
+          topicKey={square}
+          likeMeta={likeMeta}
+          replies={replies}
+          canReply={canReply}
+          replyRestrictionMessage={replyRestrictionMessage}
+          toggleLikeAction={toggleLike}
+          deletePostAction={deletePost}
+          createReplyAction={createReply}
+          redirectPath={`/${locale}/topics/squares/${square}`}
+          likeI18nNamespace="topics.squares"
+          deleteI18nNamespace="topics.squares.deletePost"
+          replyI18nNamespace="topics.squares.replies"
+          repliesTitle={t('squares.replies.title')}
+          repliesCount={t('squares.replies.count', { count: replies.length })}
+          noReplies={t('squares.replies.noReplies')}
+          loginToReply={t('squares.replies.loginToReply')}
+        />
 
         <Breadcrumb
           items={[

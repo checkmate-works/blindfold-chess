@@ -8,6 +8,11 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createClient } from '@/lib/supabase/server';
 
+import {
+  buildPaginationHref,
+  paginate,
+  validateSort,
+} from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import {
@@ -23,7 +28,6 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SortTabs } from '../_components';
-import type { SortMode } from '../_lib/queries';
 import { getPostsWithReplyMeta } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
@@ -64,8 +68,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   }
 
   const { page, sort } = await searchParamsCache.parse(searchParams);
-  const validSorts: SortMode[] = ['new', 'popular', 'active'];
-  const sortBy: SortMode = validSorts.includes(sort as SortMode) ? (sort as SortMode) : 'new';
+  const sortBy = validateSort(sort);
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
@@ -76,10 +79,12 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const allPosts = await getPostsWithReplyMeta(square, user?.id, sortBy);
   const openingsForSquare = await getOpeningsByFirstMoveSquare(square);
 
-  const totalCount = allPosts.length;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const {
+    totalCount,
+    totalPages,
+    currentPage,
+    paginatedItems: posts,
+  } = paginate(allPosts, PAGE_SIZE, page);
 
   const getDisplayName = (slug: string, fallback: string) => {
     const translated = nameT(slug as never);
@@ -90,13 +95,8 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
   const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (sortBy !== 'new') params.set('sort', sortBy);
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/topics/squares/${square}${qs ? `?${qs}` : ''}`;
-  };
+  const buildHref = (p: number) =>
+    buildPaginationHref(locale, `/topics/squares/${square}`, p, sortBy);
 
   return (
     <div className="space-y-8">

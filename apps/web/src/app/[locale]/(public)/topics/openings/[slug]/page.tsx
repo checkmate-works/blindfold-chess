@@ -10,6 +10,11 @@ import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import {
+  buildPaginationHref,
+  paginate,
+  validateSort,
+} from '@/app/[locale]/(public)/topics/_lib/pagination';
+import {
   Divider,
   PagePanel,
   PageTitle,
@@ -23,7 +28,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OpeningSortTabs } from '../_components';
 import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
-import type { SortMode } from '../_lib/queries';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
 
@@ -69,8 +73,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   }
 
   const { page, sort } = await searchParamsCache.parse(searchParams);
-  const validSorts: SortMode[] = ['new', 'popular', 'active'];
-  const sortBy: SortMode = validSorts.includes(sort as SortMode) ? (sort as SortMode) : 'new';
+  const sortBy = validateSort(sort);
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
@@ -85,19 +88,15 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   } = await supabase.auth.getUser();
 
   const allPosts = await getOpeningPostsWithReplyMeta(slug, user?.id, sortBy);
+  const {
+    totalCount,
+    totalPages,
+    currentPage,
+    paginatedItems: posts,
+  } = paginate(allPosts, PAGE_SIZE, page);
 
-  const totalCount = allPosts.length;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (sortBy !== 'new') params.set('sort', sortBy);
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/topics/openings/${slug}${qs ? `?${qs}` : ''}`;
-  };
+  const buildHref = (p: number) =>
+    buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
 
   const showNewPostButton =
     !user || !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/activity-log';
 
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { deletePost } from './deletePost';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
@@ -102,8 +102,8 @@ describe('deletePost', () => {
       {
         id: testPostId,
         userId: otherUserId,
-        topicType: 'square',
-        topicKey: 'e4',
+        topicType: 'opening',
+        topicKey: 'sicilian-defense',
         deletedAt: null,
       },
     ]);
@@ -119,8 +119,8 @@ describe('deletePost', () => {
       {
         id: testPostId,
         userId: testUserId,
-        topicType: 'square',
-        topicKey: 'e4',
+        topicType: 'opening',
+        topicKey: 'sicilian-defense',
         deletedAt: new Date('2025-01-01'),
       },
     ]);
@@ -137,8 +137,8 @@ describe('deletePost', () => {
       {
         id: testPostId,
         userId: testUserId,
-        topicType: 'square',
-        topicKey: 'e4',
+        topicType: 'opening',
+        topicKey: 'sicilian-defense',
         deletedAt: null,
       },
     ]);
@@ -155,8 +155,8 @@ describe('deletePost', () => {
       {
         id: testPostId,
         userId: testUserId,
-        topicType: 'square',
-        topicKey: 'e4',
+        topicType: 'opening',
+        topicKey: 'sicilian-defense',
         deletedAt: null,
       },
     ]);
@@ -167,7 +167,7 @@ describe('deletePost', () => {
       action: 'delete_post',
       targetType: 'topic_post',
       targetId: testPostId,
-      metadata: { topicType: 'square', topicKey: 'e4' },
+      metadata: { topicType: 'opening', topicKey: 'sicilian-defense' },
     });
   });
 
