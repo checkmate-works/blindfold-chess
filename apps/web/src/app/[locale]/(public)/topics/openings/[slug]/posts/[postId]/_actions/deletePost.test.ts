@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/activity-log';
 
-import { deletePost } from './deletePost';
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();

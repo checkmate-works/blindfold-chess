@@ -86,6 +86,29 @@ Route segment names use **singular or plural form depending on the nature of the
 - **Two or More Levels Up** - Use absolute imports with `@` alias: `import { Baz } from '@/app/[locale]/_components/Baz'`
 - **lib Directory** - Always use `@/lib/...` for shared utilities and types
 
+### Server Actions (`"use server"` files) Convention
+
+- **Only async function declarations may be exported** — Next.js requires that every export in a `"use server"` file is an async function. Re-exports (`export { fn } from '...'`) are **forbidden** because they are not async function declarations. This causes a build error: _"Only async functions are allowed to be exported in a 'use server' file."_
+- **`export type` is safe** — Type-only exports (`export type { T } from '...'`) are allowed because types are erased at build time and are not Server Actions.
+- **DRY pattern for shared actions** — When multiple routes share the same Server Action logic, extract the core logic into a base function (e.g., `toggleLikeBase`) and define a thin async wrapper in each route's `_actions/` file. Do NOT re-export the shared function directly.
+
+```typescript
+// ✗ Bad — re-export in "use server" file (build error)
+'use server';
+import { deletePostBase } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+// ✓ Also good — import the shared action directly in the consumer (page.tsx)
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+
+export { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+
+// ✓ Good — async wrapper delegates to shared base function
+('use server');
+
+export async function deletePost(postId: string, locale: string) {
+  return deletePostBase({ postId, locale, topicType: 'opening' });
+}
+```
+
 ### Barrel File (index.ts) Convention
 
 - **Keep barrel imports for client-safe components** - Components are re-exported from `_components/index.ts` barrel files. Use barrel imports (e.g., `from './_components'`) to keep import statements concise.

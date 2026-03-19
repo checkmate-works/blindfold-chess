@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
 
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { ReplyForm } from '@/app/[locale]/(public)/topics/_components/ReplyForm';
@@ -22,7 +23,6 @@ import { getLikeMetaForPost, getPostById, getRepliesByPostId } from '../../../_l
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
 import { createReply } from './_actions/createReply';
-import { deletePost } from './_actions/deletePost';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
