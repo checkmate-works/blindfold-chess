@@ -12,12 +12,9 @@ const mockDbInsertValues = vi.fn();
  * We track which table is queried via the from() argument.
  */
 
-let __selectCallCount = 0;
-
 vi.mock('./db', () => ({
   db: {
     select: () => {
-      __selectCallCount++;
       return {
         from: (table: unknown) => ({
           where: () => {
@@ -58,7 +55,6 @@ describe('notifyFollowersOfNewPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFollowers = [];
-    __selectCallCount = 0;
   });
 
   it('should insert a notification for each follower', async () => {
@@ -161,7 +157,6 @@ describe('notifyFollowersOfNewPost', () => {
 describe('createNotification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    __selectCallCount = 0;
   });
 
   it('should not throw when called (fire-and-forget)', () => {
