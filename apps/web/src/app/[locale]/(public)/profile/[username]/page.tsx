@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
-import { SiChessdotcom, SiLichess } from 'react-icons/si';
+import { SiChessdotcom, SiInstagram, SiLichess, SiX, SiYoutube } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
@@ -73,6 +73,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
       fideId: profiles.fideId,
       chesscomUsername: profiles.chesscomUsername,
       lichessUsername: profiles.lichessUsername,
+      xUsername: profiles.xUsername,
+      instagramUsername: profiles.instagramUsername,
+      youtubeHandle: profiles.youtubeHandle,
     })
     .from(profiles)
     .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
@@ -126,7 +129,13 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
-  const hasChessAccounts = profile.fideId || profile.chesscomUsername || profile.lichessUsername;
+  const hasExternalLinks =
+    profile.fideId ||
+    profile.chesscomUsername ||
+    profile.lichessUsername ||
+    profile.xUsername ||
+    profile.instagramUsername ||
+    profile.youtubeHandle;
 
   const allPosts = await getPostsByUserId(profile.id, user?.id);
 
@@ -226,9 +235,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           </Link>
         </p>
 
-        {/* Chess Account Links */}
-        {hasChessAccounts && (
-          <div className="flex items-center gap-4">
+        {/* External Links */}
+        {hasExternalLinks && (
+          <div className="flex items-center gap-3">
             {profile.fideId && (
               <a
                 href={`https://ratings.fide.com/profile/${profile.fideId}`}
@@ -241,8 +250,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                 <Image
                   src="/images/fide-favicon.ico"
                   alt="FIDE"
-                  width={24}
-                  height={24}
+                  width={20}
+                  height={20}
                   unoptimized
                 />
               </a>
@@ -256,7 +265,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                 title="Chess.com"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <SiChessdotcom size={24} />
+                <SiChessdotcom size={20} />
               </a>
             )}
             {profile.lichessUsername && (
@@ -268,7 +277,43 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                 title="Lichess"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <SiLichess size={24} />
+                <SiLichess size={20} />
+              </a>
+            )}
+            {profile.xUsername && (
+              <a
+                href={`https://x.com/${profile.xUsername}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X profile"
+                title="X"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <SiX size={20} />
+              </a>
+            )}
+            {profile.instagramUsername && (
+              <a
+                href={`https://www.instagram.com/${profile.instagramUsername}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram profile"
+                title="Instagram"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <SiInstagram size={20} />
+              </a>
+            )}
+            {profile.youtubeHandle && (
+              <a
+                href={`https://www.youtube.com/@${profile.youtubeHandle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube channel"
+                title="YouTube"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <SiYoutube size={20} />
               </a>
             )}
           </div>

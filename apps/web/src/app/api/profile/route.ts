@@ -36,6 +36,9 @@ export async function PUT(request: Request) {
     fideId?: string;
     chesscomUsername?: string;
     lichessUsername?: string;
+    xUsername?: string;
+    instagramUsername?: string;
+    youtubeHandle?: string;
   };
   try {
     body = await request.json();
@@ -91,6 +94,27 @@ export async function PUT(request: Request) {
   if (lichessUsername && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername)) {
     return NextResponse.json({ error: 'lichess_username_invalid_format' }, { status: 400 });
   }
+  const xUsername = body.xUsername?.trim() || null;
+  if (xUsername && xUsername.length > 15) {
+    return NextResponse.json({ error: 'x_username_too_long' }, { status: 400 });
+  }
+  if (xUsername && !/^[a-zA-Z0-9_]+$/.test(xUsername)) {
+    return NextResponse.json({ error: 'x_username_invalid_format' }, { status: 400 });
+  }
+  const instagramUsername = body.instagramUsername?.trim() || null;
+  if (instagramUsername && instagramUsername.length > 30) {
+    return NextResponse.json({ error: 'instagram_username_too_long' }, { status: 400 });
+  }
+  if (instagramUsername && !/^[a-zA-Z0-9._]+$/.test(instagramUsername)) {
+    return NextResponse.json({ error: 'instagram_username_invalid_format' }, { status: 400 });
+  }
+  const youtubeHandle = body.youtubeHandle?.trim() || null;
+  if (youtubeHandle && youtubeHandle.length > 30) {
+    return NextResponse.json({ error: 'youtube_handle_too_long' }, { status: 400 });
+  }
+  if (youtubeHandle && !/^[a-zA-Z0-9._-]+$/.test(youtubeHandle)) {
+    return NextResponse.json({ error: 'youtube_handle_invalid_format' }, { status: 400 });
+  }
 
   await db
     .update(profiles)
@@ -102,6 +126,9 @@ export async function PUT(request: Request) {
       fideId,
       chesscomUsername,
       lichessUsername,
+      xUsername,
+      instagramUsername,
+      youtubeHandle,
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, user.id));

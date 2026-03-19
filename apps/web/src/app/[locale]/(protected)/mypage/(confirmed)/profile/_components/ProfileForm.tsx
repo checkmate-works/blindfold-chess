@@ -31,6 +31,9 @@ export function ProfileForm({ locale, profile }: Props) {
   const [fideId, setFideId] = useState(profile.fideId ?? '');
   const [chesscomUsername, setChesscomUsername] = useState(profile.chesscomUsername ?? '');
   const [lichessUsername, setLichessUsername] = useState(profile.lichessUsername ?? '');
+  const [xUsername, setXUsername] = useState(profile.xUsername ?? '');
+  const [instagramUsername, setInstagramUsername] = useState(profile.instagramUsername ?? '');
+  const [youtubeHandle, setYoutubeHandle] = useState(profile.youtubeHandle ?? '');
   const [error, setError] = useState<{ message: string; field?: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,6 +55,15 @@ export function ProfileForm({ locale, profile }: Props) {
     }
     if (lichessUsername.trim() && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername.trim())) {
       return { message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' };
+    }
+    if (xUsername.trim() && !/^[a-zA-Z0-9_]+$/.test(xUsername.trim())) {
+      return { message: t('xUsernameInvalidFormat'), field: 'xUsername' };
+    }
+    if (instagramUsername.trim() && !/^[a-zA-Z0-9._]+$/.test(instagramUsername.trim())) {
+      return { message: t('instagramUsernameInvalidFormat'), field: 'instagramUsername' };
+    }
+    if (youtubeHandle.trim() && !/^[a-zA-Z0-9._-]+$/.test(youtubeHandle.trim())) {
+      return { message: t('youtubeHandleInvalidFormat'), field: 'youtubeHandle' };
     }
     return null;
   };
@@ -80,6 +92,9 @@ export function ProfileForm({ locale, profile }: Props) {
           fideId: fideId.trim() || undefined,
           chesscomUsername: chesscomUsername.trim() || undefined,
           lichessUsername: lichessUsername.trim() || undefined,
+          xUsername: xUsername.trim() || undefined,
+          instagramUsername: instagramUsername.trim() || undefined,
+          youtubeHandle: youtubeHandle.trim() || undefined,
         }),
       });
 
@@ -106,6 +121,15 @@ export function ProfileForm({ locale, profile }: Props) {
             break;
           case 'lichess_username_invalid_format':
             setError({ message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' });
+            break;
+          case 'x_username_invalid_format':
+            setError({ message: t('xUsernameInvalidFormat'), field: 'xUsername' });
+            break;
+          case 'instagram_username_invalid_format':
+            setError({ message: t('instagramUsernameInvalidFormat'), field: 'instagramUsername' });
+            break;
+          case 'youtube_handle_invalid_format':
+            setError({ message: t('youtubeHandleInvalidFormat'), field: 'youtubeHandle' });
             break;
           default:
             setError({ message: t('error') });
@@ -250,6 +274,62 @@ export function ProfileForm({ locale, profile }: Props) {
             autoComplete="off"
           />
           {error?.field === 'lichessUsername' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
+        </div>
+      </section>
+
+      {/* Social Media Section */}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">{t('socialAccounts')}</h2>
+
+        <div>
+          <label htmlFor="xUsername" className={labelClassName}>
+            {t('xUsernameLabel')}
+          </label>
+          <TextInput
+            id="xUsername"
+            value={xUsername}
+            onChange={(e) => setXUsername(e.target.value)}
+            placeholder={t('xUsernamePlaceholder')}
+            maxLength={15}
+            autoComplete="off"
+          />
+          {error?.field === 'xUsername' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="instagramUsername" className={labelClassName}>
+            {t('instagramUsernameLabel')}
+          </label>
+          <TextInput
+            id="instagramUsername"
+            value={instagramUsername}
+            onChange={(e) => setInstagramUsername(e.target.value)}
+            placeholder={t('instagramUsernamePlaceholder')}
+            maxLength={30}
+            autoComplete="off"
+          />
+          {error?.field === 'instagramUsername' && (
+            <p className="mt-2 text-sm text-destructive">{error.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="youtubeHandle" className={labelClassName}>
+            {t('youtubeHandleLabel')}
+          </label>
+          <TextInput
+            id="youtubeHandle"
+            value={youtubeHandle}
+            onChange={(e) => setYoutubeHandle(e.target.value)}
+            placeholder={t('youtubeHandlePlaceholder')}
+            maxLength={30}
+            autoComplete="off"
+          />
+          {error?.field === 'youtubeHandle' && (
             <p className="mt-2 text-sm text-destructive">{error.message}</p>
           )}
         </div>

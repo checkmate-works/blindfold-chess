@@ -49,6 +49,9 @@ vi.mock('@/lib/db', () => ({
     fideId: 'fide_id',
     chesscomUsername: 'chesscom_username',
     lichessUsername: 'lichess_username',
+    xUsername: 'x_username',
+    instagramUsername: 'instagram_username',
+    youtubeHandle: 'youtube_handle',
     updatedAt: 'updated_at',
   },
 }));
@@ -266,6 +269,164 @@ describe('PUT /api/profile', () => {
       expect(body).toEqual({ error: 'lichess_username_invalid_format' });
     });
 
+    it('should accept xUsername with valid characters', async () => {
+      const request = createRequest({ displayName: 'Valid', xUsername: 'user_123' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when xUsername contains invalid characters', async () => {
+      const request = createRequest({ displayName: 'Valid', xUsername: 'user.name' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'x_username_invalid_format' });
+    });
+
+    it('should return 400 when xUsername exceeds 15 characters', async () => {
+      const request = createRequest({ displayName: 'Valid', xUsername: 'a'.repeat(16) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'x_username_too_long' });
+    });
+
+    it('should accept xUsername at exactly 15 characters (max length)', async () => {
+      const request = createRequest({ displayName: 'Valid', xUsername: 'a'.repeat(15) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when xUsername contains path traversal', async () => {
+      const request = createRequest({ displayName: 'Valid', xUsername: '../etc' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'x_username_invalid_format' });
+    });
+
+    it('should accept instagramUsername with valid characters including periods', async () => {
+      const request = createRequest({ displayName: 'Valid', instagramUsername: 'user.name_123' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when instagramUsername contains invalid characters', async () => {
+      const request = createRequest({ displayName: 'Valid', instagramUsername: 'user-name!' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+    });
+
+    it('should return 400 when instagramUsername exceeds 30 characters', async () => {
+      const request = createRequest({ displayName: 'Valid', instagramUsername: 'a'.repeat(31) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'instagram_username_too_long' });
+    });
+
+    it('should accept instagramUsername at exactly 30 characters (max length)', async () => {
+      const request = createRequest({ displayName: 'Valid', instagramUsername: 'a'.repeat(30) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when instagramUsername contains path traversal', async () => {
+      const request = createRequest({ displayName: 'Valid', instagramUsername: '../etc' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+    });
+
+    it('should accept youtubeHandle with valid characters including periods and hyphens', async () => {
+      const request = createRequest({ displayName: 'Valid', youtubeHandle: 'my-channel.name_1' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when youtubeHandle contains invalid characters', async () => {
+      const request = createRequest({ displayName: 'Valid', youtubeHandle: 'channel@name!' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'youtube_handle_invalid_format' });
+    });
+
+    it('should return 400 when youtubeHandle exceeds 30 characters', async () => {
+      const request = createRequest({ displayName: 'Valid', youtubeHandle: 'a'.repeat(31) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'youtube_handle_too_long' });
+    });
+
+    it('should accept youtubeHandle at exactly 30 characters (max length)', async () => {
+      const request = createRequest({ displayName: 'Valid', youtubeHandle: 'a'.repeat(30) });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should return 400 when youtubeHandle contains path traversal', async () => {
+      const request = createRequest({ displayName: 'Valid', youtubeHandle: '../etc' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'youtube_handle_invalid_format' });
+    });
+
+    it('should accept empty/null social account values', async () => {
+      const request = createRequest({
+        displayName: 'Valid',
+        xUsername: '',
+        instagramUsername: '',
+        youtubeHandle: '',
+      });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
+    it('should accept undefined social account values', async () => {
+      const request = createRequest({ displayName: 'Valid' });
+      const response = await PUT(request);
+
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body).toEqual({ success: true });
+    });
+
     it('should accept empty/null chess account values', async () => {
       const request = createRequest({
         displayName: 'Valid',
@@ -287,6 +448,242 @@ describe('PUT /api/profile', () => {
       expect(response.status).toBe(200);
       const body = await response.json();
       expect(body).toEqual({ success: true });
+    });
+
+    describe('SNS account edge cases', () => {
+      it('should reject xUsername with hyphen (X does not allow hyphens)', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'user-name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'x_username_invalid_format' });
+      });
+
+      it('should reject instagramUsername with hyphen (Instagram does not allow hyphens)', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'user-name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+      });
+
+      it('should accept instagramUsername with only periods and alphanumerics', async () => {
+        const request = createRequest({
+          displayName: 'Valid',
+          instagramUsername: 'chess.player.99',
+        });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should accept youtubeHandle with both period and hyphen', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'my.channel-name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should reject xUsername with Unicode characters', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'ユーザー' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'x_username_invalid_format' });
+      });
+
+      it('should reject instagramUsername with emoji', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'player♟' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+      });
+
+      it('should reject youtubeHandle with Japanese characters', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'チャンネル名' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'youtube_handle_invalid_format' });
+      });
+
+      it('should reject xUsername containing null byte', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'user\x00name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'x_username_invalid_format' });
+      });
+
+      it('should reject instagramUsername containing null byte', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'user\x00name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+      });
+
+      it('should reject youtubeHandle containing null byte', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'user\x00name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'youtube_handle_invalid_format' });
+      });
+
+      it('should treat whitespace-only xUsername as null (accepted)', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: '   ' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should treat whitespace-only instagramUsername as null (accepted)', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: '   ' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should treat whitespace-only youtubeHandle as null (accepted)', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: '   ' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should accept all three SNS fields with valid values simultaneously', async () => {
+        const request = createRequest({
+          displayName: 'Valid',
+          xUsername: 'chess_player',
+          instagramUsername: 'chess.player_1',
+          youtubeHandle: 'chess-player.yt',
+        });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should accept single character xUsername (minimum valid)', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'a' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should accept single character instagramUsername (minimum valid)', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'a' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should accept single character youtubeHandle (minimum valid)', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'a' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
+
+      it('should reject xUsername at 16 characters (one over max)', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'a'.repeat(16) });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'x_username_too_long' });
+      });
+
+      it('should reject instagramUsername at 31 characters (one over max)', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'a'.repeat(31) });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'instagram_username_too_long' });
+      });
+
+      it('should reject youtubeHandle at 31 characters (one over max)', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'a'.repeat(31) });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'youtube_handle_too_long' });
+      });
+
+      it('should reject xUsername with URL-encoded characters', async () => {
+        const request = createRequest({ displayName: 'Valid', xUsername: 'user%20name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'x_username_invalid_format' });
+      });
+
+      it('should reject instagramUsername with URL-encoded characters', async () => {
+        const request = createRequest({ displayName: 'Valid', instagramUsername: 'user%2Fname' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'instagram_username_invalid_format' });
+      });
+
+      it('should reject youtubeHandle with URL-encoded characters', async () => {
+        const request = createRequest({ displayName: 'Valid', youtubeHandle: 'user%00name' });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(400);
+        const body = await response.json();
+        expect(body).toEqual({ error: 'youtube_handle_invalid_format' });
+      });
+
+      it('should accept all fields together (chess + SNS)', async () => {
+        const request = createRequest({
+          displayName: 'GrandMaster',
+          bio: 'FIDE rated player',
+          country: 'JP',
+          fideId: '12345678',
+          chesscomUsername: 'gm_player',
+          lichessUsername: 'gm-player',
+          xUsername: 'gm_chess',
+          instagramUsername: 'gm.chess_player',
+          youtubeHandle: 'gm-chess.channel',
+        });
+        const response = await PUT(request);
+
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toEqual({ success: true });
+      });
     });
 
     describe('edge cases: URL-encoded and special characters', () => {
