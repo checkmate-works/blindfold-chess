@@ -1643,17 +1643,23 @@
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in",
     "features": {
-      "sectionTitle": "🚀 We're actively building these features",
-      "sectionSubtitle": "✨ Early registration is now open",
+      "sectionTitle": "Unlock the Full Experience",
+      "sectionSubtitle": "Create a free account to access these features",
       "social": {
-        "title": "Social Features",
-        "description": "Connect with other players and discuss chess topics.",
-        "badge": "Coming Soon"
+        "title": "Community",
+        "description": "Discuss openings, share insights, and connect with players worldwide."
       },
       "leaderboard": {
-        "title": "Score Tracking & Leaderboard",
-        "description": "Track your practice scores and compete on the leaderboard.",
-        "badge": "Planning"
+        "title": "Leaderboard",
+        "description": "Compete for the top spot and see how you rank among other players."
+      },
+      "tracking": {
+        "title": "Score Tracking",
+        "description": "Save your practice results and track your improvement over time."
+      },
+      "profile": {
+        "title": "Your Profile",
+        "description": "Build your chess identity with a personalized profile and history."
       }
     }
   },

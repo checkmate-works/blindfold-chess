@@ -1644,17 +1644,23 @@
     "alreadyHaveAccount": "既にアカウントをお持ちですか？",
     "signIn": "ログイン",
     "features": {
-      "sectionTitle": "🚀 鋭意実装中です",
-      "sectionSubtitle": "✨ ただいま先行登録を受け付けています",
+      "sectionTitle": "すべての機能を使いこなそう",
+      "sectionSubtitle": "無料アカウントで以下の機能が利用できます",
       "social": {
-        "title": "ソーシャル機能",
-        "description": "チェスに関するトピックで他のプレイヤーと盛り上がれます。",
-        "badge": "Coming Soon"
+        "title": "コミュニティ",
+        "description": "オープニングの議論や知見の共有など、世界中のプレイヤーと交流できます。"
       },
       "leaderboard": {
-        "title": "スコア記録・リーダーボード",
-        "description": "練習機能のスコアを記録し、リーダーボードで競い合えます。",
-        "badge": "Planning"
+        "title": "リーダーボード",
+        "description": "ランキングに挑戦し、他のプレイヤーと競い合いましょう。"
+      },
+      "tracking": {
+        "title": "スコア記録",
+        "description": "練習結果を保存して、上達の軌跡を振り返れます。"
+      },
+      "profile": {
+        "title": "あなたのプロフィール",
+        "description": "プロフィールと履歴で、あなただけのチェスアイデンティティを築けます。"
       }
     }
   },
