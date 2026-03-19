@@ -12,6 +12,7 @@ import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_componen
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useCoordinateInput } from '../_hooks/use-coordinate-input';
@@ -40,6 +41,7 @@ export function RoutePlannerSession({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
+  const quitConfirmLabels = useQuitConfirmLabels();
 
   const [showQuitModal, setShowQuitModal] = useState(false);
 
@@ -263,12 +265,7 @@ export function RoutePlannerSession({
           isOpen={showQuitModal}
           onConfirm={confirmQuit}
           onCancel={() => setShowQuitModal(false)}
-          labels={{
-            title: tPractice('quitConfirmModal.title'),
-            message: tPractice('quitConfirmModal.message'),
-            confirmButton: tPractice('quitConfirmModal.confirmButton'),
-            cancelButton: tPractice('quitConfirmModal.cancelButton'),
-          }}
+          labels={quitConfirmLabels}
         />
       )}
     </div>
