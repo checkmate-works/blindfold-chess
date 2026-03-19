@@ -55,6 +55,13 @@ export async function Header({ locale }: Props) {
       label: t('glossary'),
       iconName: 'glossary',
     },
+    // TODO: Uncomment after testing is complete
+    // {
+    //   id: 'leaderboard',
+    //   href: `/${locale}/leaderboard`,
+    //   label: t('leaderboard'),
+    //   iconName: 'leaderboard',
+    // },
     {
       id: 'manual',
       href: `/${locale}/manual`,

@@ -122,6 +122,10 @@
     "games": {
       "title": "ゲーム一覧",
       "description": "目隠しチェスのゲームを管理"
+    },
+    "leaderboard": {
+      "title": "ランキング",
+      "description": "すべての練習モジュールのトッププレイヤーを確認"
     }
   },
   "Header": {
@@ -136,6 +140,7 @@
     "announcements": "お知らせ",
     "faq": "よくある質問",
     "glossary": "用語集",
+    "leaderboard": "ランキング",
     "contact": "お問い合わせ",
     "settings": "設定"
   },
@@ -2535,5 +2540,55 @@
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
     "signUpButton": "無料ユーザー登録",
     "signInButton": "アカウントをお持ちの方はログイン"
+  },
+  "leaderboard": {
+    "title": "ランキング",
+    "description": "すべての練習モジュールのトッププレイヤーを確認できます。",
+    "periodLabel": "期間",
+    "moduleLabel": "練習モジュール",
+    "settingLabel": "設定",
+    "period": {
+      "all-time": "総合",
+      "weekly": "週間",
+      "monthly": "月間"
+    },
+    "module": {
+      "coordinate_quiz": "座標クイズ",
+      "legal_moves": "合法手",
+      "square_colors": "マスの色"
+    },
+    "setting": {
+      "coordinate_quiz": {
+        "white": "白",
+        "black": "黒",
+        "random": "ランダム"
+      },
+      "legal_moves": {
+        "king": "キング",
+        "queen": "クイーン",
+        "rook": "ルーク",
+        "bishop": "ビショップ",
+        "knight": "ナイト",
+        "random": "ランダム"
+      },
+      "square_colors": {
+        "default": "デフォルト"
+      }
+    },
+    "table": {
+      "rank": "順位",
+      "player": "プレイヤー",
+      "score": "スコア",
+      "incorrect": "不正解",
+      "time": "時間"
+    },
+    "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
+    "yourRank": "あなた",
+    "pagination": {
+      "label": "ランキングページ送り",
+      "previous": "前へ",
+      "next": "次へ",
+      "total": "全 {count} 人"
+    }
   }
 }

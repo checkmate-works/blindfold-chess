@@ -9,6 +9,7 @@ import {
   FaNewspaper,
   FaQuestionCircle,
   FaRocket,
+  FaTrophy,
   FaUsers,
 } from 'react-icons/fa';
 
@@ -36,6 +37,8 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaQuestionCircle className="h-5 w-5" />;
     case 'glossary':
       return <FaList className="h-5 w-5" />;
+    case 'leaderboard':
+      return <FaTrophy className="h-5 w-5" />;
     case 'contact':
       return <FaEnvelope className="h-5 w-5" />;
     case 'settings':

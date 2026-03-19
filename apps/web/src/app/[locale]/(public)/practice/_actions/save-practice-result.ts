@@ -2,8 +2,10 @@
 
 import { isUserBanned } from '@/lib/ban';
 import { db } from '@/lib/db';
+import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-session-types';
 import type { PracticeMenuType } from '@/lib/db/practice-session-types';
+import { saveLeaderboardRecord } from '@/lib/db/save-leaderboard-record';
 import { practiceSessions } from '@/lib/db/schema';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
@@ -15,10 +17,17 @@ export type SaveResultResponse = {
   id?: string;
 };
 
+export type LeaderboardFields = {
+  score: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+};
+
 export async function savePracticeResult(
   menuType: PracticeMenuType,
   settings: Record<string, unknown>,
-  result: Record<string, unknown>
+  result: Record<string, unknown>,
+  leaderboardFields?: LeaderboardFields
 ): Promise<SaveResultResponse> {
   try {
     const supabase = await createClient();
@@ -60,6 +69,27 @@ export async function savePracticeResult(
         result,
       })
       .returning({ id: practiceSessions.id });
+
+    // Write leaderboard records if fields are provided and a key can be derived
+    if (leaderboardFields) {
+      const leaderboardKey = deriveLeaderboardKey(menuType, settings);
+      if (leaderboardKey) {
+        try {
+          await saveLeaderboardRecord({
+            userId: user.id,
+            sessionId: inserted.id,
+            menuType,
+            leaderboardKey,
+            score: leaderboardFields.score,
+            incorrectAnswers: leaderboardFields.incorrectAnswers,
+            timeTaken: leaderboardFields.timeTaken,
+          });
+        } catch (leaderboardError) {
+          // Log but don't fail the overall save — the practice session is already persisted
+          console.error(`Failed to save leaderboard record for ${menuType}:`, leaderboardError);
+        }
+      }
+    }
 
     return { success: true, id: inserted.id };
   } catch (error) {
