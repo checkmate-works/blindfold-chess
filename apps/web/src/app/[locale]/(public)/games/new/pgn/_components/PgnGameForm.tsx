@@ -19,12 +19,12 @@ import type { SkillLevel } from '@/lib/types';
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
+import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { useMoveNavigation } from '@/app/[locale]/(public)/games/play/_hooks/use-move-navigation';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -37,26 +37,13 @@ export function PgnGameForm({ locale }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { preferences } = useGamePreferences();
+  const { localSettings, handleSettingsChange } = useLocalGameSettings();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-
-  // Initialize local per-game settings from global preferences
-  const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
-    showBoardButtonInGame: preferences.showBoardButtonInGame,
-    highlightLastMove: preferences.highlightLastMove,
-    showOwnPieces: preferences.showOwnPieces,
-    showOpponentPieces: preferences.showOpponentPieces,
-    pieceShapeMode: preferences.pieceShapeMode,
-    pieceColors: preferences.pieceColors,
-  });
-
-  const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {
-    setLocalSettings((prev) => ({ ...prev, ...updates }));
-  };
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
