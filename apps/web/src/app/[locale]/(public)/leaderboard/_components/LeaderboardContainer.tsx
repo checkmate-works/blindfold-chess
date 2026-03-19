@@ -17,7 +17,7 @@ type Props = {
   initialData: LeaderboardResult;
   initialModule: LeaderboardModule;
   initialKey: string;
-  initialPeriod: LeaderboardPeriod;
+  period: LeaderboardPeriod;
 };
 
 export function LeaderboardContainer({
@@ -26,33 +26,23 @@ export function LeaderboardContainer({
   initialData,
   initialModule,
   initialKey,
-  initialPeriod,
+  period,
 }: Props) {
   const [isPending, startTransition] = useTransition();
 
-  const [period, setPeriod] = useState<LeaderboardPeriod>(initialPeriod);
   const [module, setModule] = useState<LeaderboardModule>(initialModule);
   const [settingKey, setSettingKey] = useState<string>(initialKey);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<LeaderboardResult>(initialData);
 
   const fetchData = useCallback(
-    (m: LeaderboardModule, k: string, p: LeaderboardPeriod, pg: number) => {
+    (m: LeaderboardModule, k: string, pg: number) => {
       startTransition(async () => {
-        const result = await getLeaderboard(m, k, p, pg);
+        const result = await getLeaderboard(m, k, period, pg);
         setData(result);
       });
     },
-    []
-  );
-
-  const handlePeriodChange = useCallback(
-    (p: LeaderboardPeriod) => {
-      setPeriod(p);
-      setPage(1);
-      fetchData(module, settingKey, p, 1);
-    },
-    [module, settingKey, fetchData]
+    [period]
   );
 
   const handleModuleChange = useCallback(
@@ -61,26 +51,26 @@ export function LeaderboardContainer({
       setModule(m);
       setSettingKey(newKey);
       setPage(1);
-      fetchData(m, newKey, period, 1);
+      fetchData(m, newKey, 1);
     },
-    [period, fetchData]
+    [fetchData]
   );
 
   const handleSettingKeyChange = useCallback(
     (k: string) => {
       setSettingKey(k);
       setPage(1);
-      fetchData(module, k, period, 1);
+      fetchData(module, k, 1);
     },
-    [module, period, fetchData]
+    [module, fetchData]
   );
 
   const handlePageChange = useCallback(
     (pg: number) => {
       setPage(pg);
-      fetchData(module, settingKey, period, pg);
+      fetchData(module, settingKey, pg);
     },
-    [module, settingKey, period, fetchData]
+    [module, settingKey, fetchData]
   );
 
   const totalPages = Math.ceil(data.totalCount / PAGE_SIZE);
@@ -88,10 +78,8 @@ export function LeaderboardContainer({
   return (
     <div className="space-y-6">
       <LeaderboardFilters
-        period={period}
         module={module}
         settingKey={settingKey}
-        onPeriodChange={handlePeriodChange}
         onModuleChange={handleModuleChange}
         onSettingKeyChange={handleSettingKeyChange}
       />

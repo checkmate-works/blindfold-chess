@@ -6,8 +6,8 @@ import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { PieceType } from '@blindfold-chess/types';
 import { FaQuestion } from 'react-icons/fa';
 
-import type { LeaderboardModule, LeaderboardPeriod } from '../_lib/types';
-import { MODULES, MODULE_KEYS, VALID_PERIODS } from '../_lib/types';
+import type { LeaderboardModule } from '../_lib/types';
+import { MODULES, MODULE_KEYS } from '../_lib/types';
 
 const LEGAL_MOVES_KEY_TO_PIECE: Record<string, PieceType> = {
   king: 'k',
@@ -18,19 +18,15 @@ const LEGAL_MOVES_KEY_TO_PIECE: Record<string, PieceType> = {
 };
 
 type Props = {
-  period: LeaderboardPeriod;
   module: LeaderboardModule;
   settingKey: string;
-  onPeriodChange: (period: LeaderboardPeriod) => void;
   onModuleChange: (module: LeaderboardModule) => void;
   onSettingKeyChange: (key: string) => void;
 };
 
 export function LeaderboardFilters({
-  period,
   module,
   settingKey,
-  onPeriodChange,
   onModuleChange,
   onSettingKeyChange,
 }: Props) {
@@ -40,29 +36,6 @@ export function LeaderboardFilters({
 
   return (
     <div className="space-y-4">
-      {/* Period Toggle */}
-      <div
-        className="flex rounded-lg bg-secondary p-1"
-        role="radiogroup"
-        aria-label={t('periodLabel')}
-      >
-        {VALID_PERIODS.map((p) => (
-          <button
-            key={p}
-            role="radio"
-            aria-checked={period === p}
-            onClick={() => onPeriodChange(p)}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              period === p
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t(`period.${p}`)}
-          </button>
-        ))}
-      </div>
-
       {/* Module Tabs */}
       <div className="flex gap-1 overflow-x-auto" role="tablist" aria-label={t('moduleLabel')}>
         {MODULES.map((m) => (
