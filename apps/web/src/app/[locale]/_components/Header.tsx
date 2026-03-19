@@ -2,6 +2,9 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { eq } from 'drizzle-orm';
+
+import { db, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import type { NavigationItem } from '../_lib/types';
@@ -21,6 +24,22 @@ export async function Header({ locale }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const isAuthenticated = !!user;
+
+  let avatarUrl: string | null = null;
+  let displayName: string | null = null;
+
+  if (user) {
+    const [profile] = await db
+      .select({ avatarUrl: profiles.avatarUrl, displayName: profiles.displayName })
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1);
+
+    if (profile) {
+      avatarUrl = profile.avatarUrl;
+      displayName = profile.displayName;
+    }
+  }
 
   const menuItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -101,7 +120,11 @@ export async function Header({ locale }: Props) {
           </div>
 
           {/* Right side: Notifications + Auth status */}
-          <HeaderRightSection isAuthenticated={isAuthenticated} />
+          <HeaderRightSection
+            isAuthenticated={isAuthenticated}
+            avatarUrl={avatarUrl}
+            displayName={displayName}
+          />
         </div>
       </div>
     </header>

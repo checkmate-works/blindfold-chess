@@ -7,9 +7,11 @@ import { Skeleton } from './Skeleton';
 
 type Props = {
   isAuthenticated: boolean;
+  avatarUrl: string | null;
+  displayName: string | null;
 };
 
-export function HeaderRightSection({ isAuthenticated }: Props) {
+export function HeaderRightSection({ isAuthenticated, avatarUrl, displayName }: Props) {
   const { user, isLoading } = useAuth();
 
   if (isLoading && isAuthenticated) {
@@ -24,7 +26,7 @@ export function HeaderRightSection({ isAuthenticated }: Props) {
   return (
     <div className="flex items-center space-x-4">
       {user && <NotificationBadge />}
-      <AuthStatusDisplay />
+      <AuthStatusDisplay avatarUrl={avatarUrl} displayName={displayName} />
     </div>
   );
 }
