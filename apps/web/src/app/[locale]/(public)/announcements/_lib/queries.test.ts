@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '@/lib/db';
 
 import {
+  getLatestBannerAnnouncement,
   getPublishedAnnouncement,
   getPublishedAnnouncementCount,
   getPublishedAnnouncements,
@@ -448,6 +449,123 @@ describe('announcements queries', () => {
 
       expect(result).toBe(3);
       expect(typeof result).toBe('number');
+    });
+  });
+
+  describe('getLatestBannerAnnouncement', () => {
+    it('should return the latest published public announcement within 1 week', async () => {
+      const recentAnnouncement = makeAnnouncement({
+        id: 'ann-recent',
+        slug: 'recent-news',
+        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      });
+      const chain = mockChain([recentAnnouncement]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe('ann-recent');
+    });
+
+    it('should return null when no announcements match', async () => {
+      const chain = mockChain([]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).toBeNull();
+    });
+
+    it('should deduplicate by slug and prefer the requested locale', async () => {
+      const enAnn = makeAnnouncement({
+        id: 'ann-en',
+        slug: 'update',
+        locale: 'en',
+        title: 'Update',
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      });
+      const jaAnn = makeAnnouncement({
+        id: 'ann-ja',
+        slug: 'update',
+        locale: 'ja',
+        title: 'アップデート',
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      });
+      const chain = mockChain([enAnn, jaAnn]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('ja');
+
+      expect(result).not.toBeNull();
+      expect(result!.locale).toBe('ja');
+    });
+
+    it('should fall back to default locale (en) when requested locale is unavailable', async () => {
+      const enAnn = makeAnnouncement({
+        id: 'ann-en',
+        slug: 'update',
+        locale: 'en',
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      });
+      const chain = mockChain([enAnn]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('ja');
+
+      expect(result).not.toBeNull();
+      expect(result!.locale).toBe('en');
+    });
+
+    it('should return the first announcement after deduplication (most recent by publishedAt)', async () => {
+      const newer = makeAnnouncement({
+        id: 'ann-newer',
+        slug: 'newer-news',
+        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      });
+      const older = makeAnnouncement({
+        id: 'ann-older',
+        slug: 'older-news',
+        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      });
+      // DB returns ordered by publishedAt DESC, so newer first
+      const chain = mockChain([newer, older]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe('ann-newer');
+    });
+
+    it('should return null when all announcements are older than 1 week', async () => {
+      // The DB query filters by gte(publishedAt, oneWeekAgo), so old ones won't be returned
+      const chain = mockChain([]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when announcements are draft status', async () => {
+      // The DB query filters by status='published', so drafts won't be returned
+      const chain = mockChain([]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when announcements are members_only visibility', async () => {
+      // The DB query filters by visibility='public', so members_only won't be returned
+      const chain = mockChain([]);
+      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+      const result = await getLatestBannerAnnouncement('en');
+
+      expect(result).toBeNull();
     });
   });
 });

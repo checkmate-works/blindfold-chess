@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
 
@@ -107,4 +107,30 @@ export async function getPublishedAnnouncement(
   if (results.length === 0) return null;
 
   return pickByLocale(results, locale);
+}
+
+/**
+ * Get the latest published public announcement for the top banner.
+ * Filters: status='published', visibility='public', publishedAt set, publishedAt within 1 week.
+ * Returns null if no matching announcement exists.
+ */
+export async function getLatestBannerAnnouncement(locale: string): Promise<Announcement | null> {
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const rows = await db
+    .select()
+    .from(announcements)
+    .where(
+      and(
+        eq(announcements.status, 'published'),
+        eq(announcements.visibility, 'public'),
+        isNotNull(announcements.publishedAt),
+        gte(announcements.publishedAt, oneWeekAgo)
+      )
+    )
+    .orderBy(desc(announcements.publishedAt));
+
+  if (rows.length === 0) return null;
+
+  return deduplicateBySlug(rows, locale)[0] ?? null;
 }
