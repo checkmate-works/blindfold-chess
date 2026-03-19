@@ -368,4 +368,53 @@ describe('getLeaderboard', () => {
       expect(result.totalCount).toBe(500);
     });
   });
+
+  // -----------------------------------------------------------------------
+  // DB error handling
+  // -----------------------------------------------------------------------
+
+  describe('DB error handling', () => {
+    it('returns empty result when ranking query throws', async () => {
+      mockGetAllTimeRanking.mockRejectedValue(new Error('DB connection failed'));
+
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
+
+      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+    });
+
+    it('returns empty result when user ranked row query throws', async () => {
+      const currentUserId = 'current-user';
+      setupAuthUser(currentUserId);
+
+      const rows = [makeLeaderboardRow({ userId: 'other-user', score: 100 })];
+      mockGetAllTimeRanking.mockResolvedValue(makeLeaderboardPage(rows, 100));
+      mockGetUserAllTimeRankedRow.mockRejectedValue(new Error('DB timeout'));
+
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', 1);
+
+      // The entire try-catch catches both ranking and user row errors
+      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Additional input validation edge cases
+  // -----------------------------------------------------------------------
+
+  describe('additional input validation', () => {
+    it('returns empty result for NaN page', async () => {
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', NaN);
+      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+    });
+
+    it('returns empty result for Infinity page', async () => {
+      const result = await getLeaderboard('coordinate_quiz', 'white', 'all-time', Infinity);
+      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+    });
+
+    it('returns empty result for empty key string', async () => {
+      const result = await getLeaderboard('coordinate_quiz', '', 'all-time', 1);
+      expect(result).toEqual({ rows: [], totalCount: 0, currentUserRank: null });
+    });
+  });
 });

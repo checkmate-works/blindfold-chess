@@ -168,6 +168,21 @@ describe('slugToModule', () => {
     expect(slugToModule('Coordinate-Quiz')).toBeNull();
     expect(slugToModule('LEGAL-MOVES')).toBeNull();
   });
+
+  it('returns null for slugs with extra segments', () => {
+    expect(slugToModule('coordinate-quiz-extra')).toBeNull();
+    expect(slugToModule('legal-moves-test')).toBeNull();
+  });
+
+  it('returns null for whitespace-only input', () => {
+    expect(slugToModule(' ')).toBeNull();
+    expect(slugToModule('  ')).toBeNull();
+  });
+
+  it('returns null for whitespace-padded valid slugs', () => {
+    expect(slugToModule(' coordinate-quiz')).toBeNull();
+    expect(slugToModule('legal-moves ')).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------

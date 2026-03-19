@@ -11,14 +11,13 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getLeaderboard } from '../../../_actions/getLeaderboard';
 import { LeaderboardDetailContent } from '../../../_components/LeaderboardDetailContent';
-import type { LeaderboardModule, LeaderboardPeriod } from '../../../_lib/types';
 import {
   ALL_LEADERBOARD_ENTRIES,
-  MODULE_KEYS,
   VALID_PERIODS,
   moduleToSlug,
   slugToModule,
 } from '../../../_lib/types';
+import { isValidKey, isValidPeriod } from '../../../_lib/validators';
 
 type Props = {
   params: Promise<{
@@ -31,14 +30,6 @@ type Props = {
     page?: string;
   }>;
 };
-
-function isValidPeriod(value: string): value is LeaderboardPeriod {
-  return (VALID_PERIODS as readonly string[]).includes(value);
-}
-
-function isValidKey(module: LeaderboardModule, key: string): boolean {
-  return MODULE_KEYS[module].includes(key);
-}
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.flatMap((locale) =>

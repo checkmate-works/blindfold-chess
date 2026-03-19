@@ -224,4 +224,35 @@ describe('getUserRanks', () => {
       });
     });
   });
+
+  // -----------------------------------------------------------------------
+  // Error handling
+  // -----------------------------------------------------------------------
+
+  describe('error handling', () => {
+    it('returns empty array when DB query throws', async () => {
+      mockGetUserAllTimeRank.mockRejectedValue(new Error('DB connection failed'));
+
+      const result = await getUserRanks(TEST_USER_ID, 'all-time');
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns empty array when Promise.all rejects due to any single entry failing', async () => {
+      // If any one of the 10 rankFn calls rejects, the Promise.all rejects,
+      // and the catch block returns []
+      let callCount = 0;
+      mockGetUserAllTimeRank.mockImplementation(() => {
+        callCount++;
+        if (callCount === 5) {
+          return Promise.reject(new Error('Intermittent failure'));
+        }
+        return Promise.resolve({ rank: callCount });
+      });
+
+      const result = await getUserRanks(TEST_USER_ID, 'all-time');
+
+      expect(result).toEqual([]);
+    });
+  });
 });

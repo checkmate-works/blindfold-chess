@@ -29,13 +29,18 @@ export async function getUserRanks(
       break;
   }
 
-  const results = await Promise.all(
-    ALL_LEADERBOARD_ENTRIES.map(async ({ module, key }) => {
-      const result = await rankFn(userId, module, key);
-      if (!result) return null;
-      return { module, key, rank: result.rank };
-    })
-  );
+  try {
+    const results = await Promise.all(
+      ALL_LEADERBOARD_ENTRIES.map(async ({ module, key }) => {
+        const result = await rankFn(userId, module, key);
+        if (!result) return null;
+        return { module, key, rank: result.rank };
+      })
+    );
 
-  return results.filter((r): r is UserRankInfo => r !== null);
+    return results.filter((r): r is UserRankInfo => r !== null);
+  } catch (error) {
+    console.error('[getUserRanks] DB query failed:', error);
+    return [];
+  }
 }

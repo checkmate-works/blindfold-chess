@@ -17,27 +17,8 @@ import type {
   LeaderboardResult,
   LeaderboardRow,
 } from '../_lib/types';
-import { MODULES, MODULE_KEYS, PAGE_SIZE, VALID_PERIODS } from '../_lib/types';
-
-// ---------------------------------------------------------------------------
-// Input validation
-// ---------------------------------------------------------------------------
-
-function isValidModule(value: string): value is LeaderboardModule {
-  return (MODULES as string[]).includes(value);
-}
-
-function isValidPeriod(value: string): value is LeaderboardPeriod {
-  return (VALID_PERIODS as string[]).includes(value);
-}
-
-function isValidKey(module: LeaderboardModule, key: string): boolean {
-  return MODULE_KEYS[module].includes(key);
-}
-
-function isValidPage(page: number): boolean {
-  return Number.isInteger(page) && page >= 1;
-}
+import { PAGE_SIZE } from '../_lib/types';
+import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../_lib/validators';
 
 // ---------------------------------------------------------------------------
 // Auth helper
@@ -108,19 +89,24 @@ export async function getLeaderboard(
       break;
   }
 
-  const { rows, total } = await rankingFn(module, key, offset, PAGE_SIZE);
+  try {
+    const { rows, total } = await rankingFn(module, key, offset, PAGE_SIZE);
 
-  // Map query rows to ranked rows for UI
-  const leaderboardRows: LeaderboardRow[] = rows.map((r, i) => ({
-    ...r,
-    rank: offset + i + 1,
-  }));
+    // Map query rows to ranked rows for UI
+    const leaderboardRows: LeaderboardRow[] = rows.map((r, i) => ({
+      ...r,
+      rank: offset + i + 1,
+    }));
 
-  // Fetch current user's rank if they're not on the current page
-  let currentUserRank: LeaderboardRow | null = null;
-  if (currentUserId && !leaderboardRows.some((r) => r.userId === currentUserId)) {
-    currentUserRank = await userRankedRowFn(currentUserId, module, key);
+    // Fetch current user's rank if they're not on the current page
+    let currentUserRank: LeaderboardRow | null = null;
+    if (currentUserId && !leaderboardRows.some((r) => r.userId === currentUserId)) {
+      currentUserRank = await userRankedRowFn(currentUserId, module, key);
+    }
+
+    return { rows: leaderboardRows, totalCount: total, currentUserRank };
+  } catch (error) {
+    console.error('[getLeaderboard] DB query failed:', error);
+    return EMPTY_RESULT;
   }
-
-  return { rows: leaderboardRows, totalCount: total, currentUserRank };
 }
