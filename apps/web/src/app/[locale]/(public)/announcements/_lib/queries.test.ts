@@ -538,8 +538,8 @@ describe('announcements queries', () => {
       expect(result!.id).toBe('ann-newer');
     });
 
-    it('should return null when all announcements are older than 1 week', async () => {
-      // The DB query filters by gte(publishedAt, oneWeekAgo), so old ones won't be returned
+    it('should return null when all announcements are older than the display period', async () => {
+      // The DB query filters by gte(publishedAt, cutoff), so old ones won't be returned
       const chain = mockChain([]);
       mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
 

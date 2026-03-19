@@ -3,6 +3,7 @@ import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 import { type Announcement, announcements, db } from '@/lib/db';
 
 const DEFAULT_LOCALE = 'en';
+const BANNER_DISPLAY_DAYS = 3;
 
 const pinnedFirstOrdering = [
   sql`${announcements.pinnedAt} DESC NULLS LAST`,
@@ -111,11 +112,11 @@ export async function getPublishedAnnouncement(
 
 /**
  * Get the latest published public announcement for the top banner.
- * Filters: status='published', visibility='public', publishedAt set, publishedAt within 1 week.
+ * Filters: status='published', visibility='public', publishedAt set, publishedAt within BANNER_DISPLAY_DAYS.
  * Returns null if no matching announcement exists.
  */
 export async function getLatestBannerAnnouncement(locale: string): Promise<Announcement | null> {
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const cutoff = new Date(Date.now() - BANNER_DISPLAY_DAYS * 24 * 60 * 60 * 1000);
 
   const rows = await db
     .select()
@@ -125,7 +126,7 @@ export async function getLatestBannerAnnouncement(locale: string): Promise<Annou
         eq(announcements.status, 'published'),
         eq(announcements.visibility, 'public'),
         isNotNull(announcements.publishedAt),
-        gte(announcements.publishedAt, oneWeekAgo)
+        gte(announcements.publishedAt, cutoff)
       )
     )
     .orderBy(desc(announcements.publishedAt));
