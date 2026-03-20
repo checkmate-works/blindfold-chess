@@ -2671,7 +2671,6 @@
       "legal_moves": "Legal Moves",
       "square_colors": "Square Colors"
     },
-    "yourRankedSection": "Your Ranked Leaderboards",
     "allLeaderboardsSection": "All Leaderboards",
     "rankLabel": "Your Rank: #{rank}",
     "notRanked": "Not ranked",

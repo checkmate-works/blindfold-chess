@@ -70,7 +70,6 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
           locale={locale}
           period={period}
           moduleFilter={moduleFilter}
-          yourRankedTitle={t('yourRankedSection')}
           allLeaderboardsTitle={t('allLeaderboardsSection')}
         />
       </Suspense>

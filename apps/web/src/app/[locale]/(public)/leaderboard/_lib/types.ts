@@ -54,8 +54,6 @@ export const VALID_MODULE_FILTERS = [
 
 export const PAGE_SIZE = 20;
 
-export const TOP_RANK_THRESHOLD = 100;
-
 /** All 10 leaderboard entries in display order */
 export const ALL_LEADERBOARD_ENTRIES: LeaderboardEntry[] = MODULES.flatMap((module) =>
   MODULE_KEYS[module].map((key) => ({ module, key }))

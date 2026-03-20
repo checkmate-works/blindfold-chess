@@ -2649,7 +2649,6 @@
       "legal_moves": "合法手",
       "square_colors": "マスの色"
     },
-    "yourRankedSection": "ランクインしたランキング",
     "allLeaderboardsSection": "すべてのランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
     "notRanked": "ランク外",

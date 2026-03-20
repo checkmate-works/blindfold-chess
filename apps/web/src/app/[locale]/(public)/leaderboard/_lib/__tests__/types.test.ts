@@ -5,7 +5,6 @@ import {
   MODULES,
   MODULE_KEYS,
   PAGE_SIZE,
-  TOP_RANK_THRESHOLD,
   VALID_PERIODS,
   buildDetailPath,
   moduleToSlug,
@@ -53,12 +52,6 @@ describe('VALID_PERIODS', () => {
 describe('PAGE_SIZE', () => {
   it('is 20', () => {
     expect(PAGE_SIZE).toBe(20);
-  });
-});
-
-describe('TOP_RANK_THRESHOLD', () => {
-  it('is 100', () => {
-    expect(TOP_RANK_THRESHOLD).toBe(100);
   });
 });
 
