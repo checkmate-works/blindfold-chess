@@ -29,19 +29,28 @@ describe('classifyEcoCode', () => {
     });
   });
 
-  describe('semi-open (B00-B99)', () => {
-    it('should classify B00 as semi-open (lower boundary)', () => {
+  describe('semi-open (B00-B99, C00-C19)', () => {
+    it('should classify B00 as semi-open (B-range lower boundary)', () => {
       expect(classifyEcoCode('B00')).toBe('semi-open');
     });
 
-    it('should classify B99 as semi-open (upper boundary)', () => {
+    it('should classify B99 as semi-open (B-range upper boundary)', () => {
       expect(classifyEcoCode('B99')).toBe('semi-open');
+    });
+
+    it('should classify C00 as semi-open (C-range lower boundary)', () => {
+      expect(classifyEcoCode('C00')).toBe('semi-open');
+    });
+
+    it('should classify C19 as semi-open (C-range upper boundary)', () => {
+      expect(classifyEcoCode('C19')).toBe('semi-open');
     });
 
     it('should classify representative semi-open codes', () => {
       expect(classifyEcoCode('B20')).toBe('semi-open');
       expect(classifyEcoCode('B50')).toBe('semi-open');
       expect(classifyEcoCode('B01')).toBe('semi-open');
+      expect(classifyEcoCode('C10')).toBe('semi-open');
     });
   });
 
@@ -60,13 +69,21 @@ describe('classifyEcoCode', () => {
     });
   });
 
-  describe('indian (A40-A99, E00-E99)', () => {
-    it('should classify A40 as indian (A-range lower boundary)', () => {
-      expect(classifyEcoCode('A40')).toBe('indian');
+  describe('indian (A45-A79, D70-D99, E00-E99)', () => {
+    it('should classify A45 as indian (A-range lower boundary)', () => {
+      expect(classifyEcoCode('A45')).toBe('indian');
     });
 
-    it('should classify A99 as indian (A-range upper boundary)', () => {
-      expect(classifyEcoCode('A99')).toBe('indian');
+    it('should classify A79 as indian (A-range upper boundary)', () => {
+      expect(classifyEcoCode('A79')).toBe('indian');
+    });
+
+    it('should classify D70 as indian (D-range lower boundary)', () => {
+      expect(classifyEcoCode('D70')).toBe('indian');
+    });
+
+    it('should classify D99 as indian (D-range upper boundary)', () => {
+      expect(classifyEcoCode('D99')).toBe('indian');
     });
 
     it('should classify E00 as indian (E-range lower boundary)', () => {
@@ -79,6 +96,7 @@ describe('classifyEcoCode', () => {
 
     it('should classify representative indian codes', () => {
       expect(classifyEcoCode('A60')).toBe('indian');
+      expect(classifyEcoCode('D85')).toBe('indian');
       expect(classifyEcoCode('E20')).toBe('indian');
       expect(classifyEcoCode('E62')).toBe('indian');
     });
@@ -100,34 +118,44 @@ describe('classifyEcoCode', () => {
     });
   });
 
-  describe('other (everything else)', () => {
-    it('should classify C00-C19 as other', () => {
-      expect(classifyEcoCode('C00')).toBe('other');
-      expect(classifyEcoCode('C19')).toBe('other');
-      expect(classifyEcoCode('C10')).toBe('other');
+  describe('other (A40-A44, A80-A99, everything else)', () => {
+    it('should classify A40-A44 as other', () => {
+      expect(classifyEcoCode('A40')).toBe('other');
+      expect(classifyEcoCode('A44')).toBe('other');
+      expect(classifyEcoCode('A42')).toBe('other');
     });
 
-    it('should classify D70-D99 as other', () => {
-      expect(classifyEcoCode('D70')).toBe('other');
-      expect(classifyEcoCode('D99')).toBe('other');
-      expect(classifyEcoCode('D85')).toBe('other');
+    it('should classify A80-A99 as other (Dutch Defense)', () => {
+      expect(classifyEcoCode('A80')).toBe('other');
+      expect(classifyEcoCode('A99')).toBe('other');
+      expect(classifyEcoCode('A90')).toBe('other');
     });
   });
 
   describe('boundary values between categories', () => {
-    it('should distinguish A39 (flank) from A40 (indian)', () => {
+    it('should distinguish A39 (flank) from A40 (other)', () => {
       expect(classifyEcoCode('A39')).toBe('flank');
-      expect(classifyEcoCode('A40')).toBe('indian');
+      expect(classifyEcoCode('A40')).toBe('other');
     });
 
-    it('should distinguish C19 (other) from C20 (open)', () => {
-      expect(classifyEcoCode('C19')).toBe('other');
+    it('should distinguish A44 (other) from A45 (indian)', () => {
+      expect(classifyEcoCode('A44')).toBe('other');
+      expect(classifyEcoCode('A45')).toBe('indian');
+    });
+
+    it('should distinguish A79 (indian) from A80 (other)', () => {
+      expect(classifyEcoCode('A79')).toBe('indian');
+      expect(classifyEcoCode('A80')).toBe('other');
+    });
+
+    it('should distinguish C19 (semi-open) from C20 (open)', () => {
+      expect(classifyEcoCode('C19')).toBe('semi-open');
       expect(classifyEcoCode('C20')).toBe('open');
     });
 
-    it('should distinguish D69 (closed) from D70 (other)', () => {
+    it('should distinguish D69 (closed) from D70 (indian)', () => {
       expect(classifyEcoCode('D69')).toBe('closed');
-      expect(classifyEcoCode('D70')).toBe('other');
+      expect(classifyEcoCode('D70')).toBe('indian');
     });
   });
 
