@@ -79,6 +79,10 @@
       "title": "チャレンジ記録",
       "description": "チャレンジセッションの履歴とスコアを確認できます"
     },
+    "mypageChallengeResults": {
+      "title": "チャレンジ結果一覧",
+      "description": "すべてのチャレンジ結果をフィルター付きで閲覧できます"
+    },
     "mypageNotifications": {
       "title": "通知",
       "description": "通知を確認できます"
@@ -1803,6 +1807,7 @@
     "scoreUnit": "平均スコア",
     "scoreTrend": "スコア推移",
     "sessionHistory": "セッション履歴",
+    "viewAllResults": "結果をもっと見る",
     "noData": "まだ記録がありません。",
     "tableDate": "日時",
     "tableCorrectAnswers": "正答数",
@@ -1866,6 +1871,19 @@
   "MypageChallenges": {
     "title": "チャレンジ記録",
     "breadcrumbMypage": "マイページ"
+  },
+  "MypageChallengeResults": {
+    "title": "チャレンジ記録",
+    "sectionTitle": "結果一覧",
+    "description": "すべてのチャレンジ結果を閲覧",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbChallenges": "チャレンジ記録",
+    "empty": "結果が見つかりません。",
+    "tableDate": "日時",
+    "tableMenu": "メニュー",
+    "tableCorrectAnswers": "正答数",
+    "tableIncorrectAnswers": "ミス",
+    "allMenuTypes": "すべてのメニュー"
   },
   "MypageNotifications": {
     "title": "通知",

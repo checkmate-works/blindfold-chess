@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -6,6 +8,17 @@ import {
   PIECE_TYPES,
   type PieceSelection,
 } from './use-dashboard-data';
+
+describe('DASHBOARD_TABLE_ROWS', () => {
+  it('is set to 5 (dashboard shows only recent 5 results)', () => {
+    // DASHBOARD_TABLE_ROWS is not exported, so we verify via source code inspection.
+    const sourcePath = resolve(__dirname, './use-dashboard-data.ts');
+    const source = readFileSync(sourcePath, 'utf-8');
+    const match = source.match(/const\s+DASHBOARD_TABLE_ROWS\s*=\s*(\d+)/);
+    expect(match).not.toBeNull();
+    expect(Number(match![1])).toBe(5);
+  });
+});
 
 describe('PIECE_TYPES', () => {
   it('contains exactly king, queen, rook, bishop, and knight', () => {

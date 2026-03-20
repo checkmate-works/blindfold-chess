@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { PieceSelector } from '@/app/_components';
+import { Link } from '@/i18n/routing';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
@@ -52,6 +53,7 @@ export function Dashboard({ locale }: { locale: string }) {
     avgScoreComparison,
     chartData,
     tableRows,
+    hasMoreResults,
   } = useDashboardData(locale);
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
@@ -199,6 +201,16 @@ export function Dashboard({ locale }: { locale: string }) {
                 }}
               />
             </div>
+            {hasMoreResults && (
+              <div className="text-center mt-3">
+                <Link
+                  href="/mypage/challenges/results"
+                  className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
+                >
+                  {t('viewAllResults')}
+                </Link>
+              </div>
+            )}
           </div>
         </>
       )}

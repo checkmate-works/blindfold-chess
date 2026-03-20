@@ -81,7 +81,7 @@ export type TableRow = {
   incorrectAnswers: number;
 };
 
-const TABLE_MAX_ROWS = 20;
+const DASHBOARD_TABLE_ROWS = 5;
 
 export type ChartDataPoint = {
   date: string;
@@ -242,9 +242,10 @@ export function useDashboardData(locale: string) {
     });
   }, [filteredSessions, filteredPreviousSessions, locale, selectedPeriod]);
 
-  // TODO: ページネーション対応
+  const hasMoreResults = filteredSessions.length > DASHBOARD_TABLE_ROWS;
+
   const tableRows = useMemo((): TableRow[] => {
-    return filteredSessions.slice(0, TABLE_MAX_ROWS).map((s) => ({
+    return filteredSessions.slice(0, DASHBOARD_TABLE_ROWS).map((s) => ({
       date: formatDate(s.createdAt, locale),
       correctAnswers: s.score.toString(),
       incorrectAnswers: s.incorrectAnswers,
@@ -280,5 +281,6 @@ export function useDashboardData(locale: string) {
     avgScoreComparison,
     chartData,
     tableRows,
+    hasMoreResults,
   };
 }

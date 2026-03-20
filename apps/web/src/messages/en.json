@@ -79,6 +79,10 @@
       "title": "Challenge Records",
       "description": "View your challenge session history and scores"
     },
+    "mypageChallengeResults": {
+      "title": "All Challenge Results",
+      "description": "Browse all your challenge results with filters"
+    },
     "mypageNotifications": {
       "title": "Notifications",
       "description": "View your notifications"
@@ -1802,6 +1806,7 @@
     "scoreUnit": "Avg. Score",
     "scoreTrend": "Score Trend",
     "sessionHistory": "Session History",
+    "viewAllResults": "More results",
     "noData": "No records yet.",
     "tableDate": "Date",
     "tableCorrectAnswers": "Correct",
@@ -1865,6 +1870,19 @@
   "MypageChallenges": {
     "title": "Challenge Records",
     "breadcrumbMypage": "My Page"
+  },
+  "MypageChallengeResults": {
+    "title": "Challenge Records",
+    "sectionTitle": "Results",
+    "description": "Browse all your challenge results",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbChallenges": "Challenge Records",
+    "empty": "No results found.",
+    "tableDate": "Date",
+    "tableMenu": "Menu",
+    "tableCorrectAnswers": "Correct",
+    "tableIncorrectAnswers": "Miss",
+    "allMenuTypes": "All Menu Types"
   },
   "MypageNotifications": {
     "title": "Notifications",
