@@ -20,16 +20,16 @@ function ScoreChartSkeleton() {
 function SessionHistoryTableSkeleton() {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm min-w-[28rem]">
+      <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-2 px-3">
+            <th className="text-left py-2 px-2 sm:px-3">
               <Skeleton className="h-4 w-16" />
             </th>
-            <th className="text-right py-2 px-3">
+            <th className="text-right py-2 px-2 sm:px-3">
               <Skeleton className="h-4 w-12 ml-auto" />
             </th>
-            <th className="text-right py-2 px-3">
+            <th className="text-right py-2 px-2 sm:px-3">
               <Skeleton className="h-4 w-12 ml-auto" />
             </th>
           </tr>
@@ -37,13 +37,13 @@ function SessionHistoryTableSkeleton() {
         <tbody>
           {Array.from({ length: 5 }, (_, i) => (
             <tr key={i} className="border-b border-border/50">
-              <td className="py-2 px-3">
+              <td className="py-2 px-2 sm:px-3">
                 <Skeleton className="h-4 w-32" />
               </td>
-              <td className="py-2 px-3">
+              <td className="py-2 px-2 sm:px-3">
                 <Skeleton className="h-4 w-8 ml-auto" />
               </td>
-              <td className="py-2 px-3">
+              <td className="py-2 px-2 sm:px-3">
                 <Skeleton className="h-4 w-8 ml-auto" />
               </td>
             </tr>
