@@ -23,9 +23,21 @@ type Props = {
   postId: string;
   createReplyAction: CreateReplyAction;
   i18nNamespace: string;
+  replyToId?: string;
+  replyToUsername?: string;
+  onCancelReply?: () => void;
 };
 
-export function ReplyForm({ locale, topicKey, postId, createReplyAction, i18nNamespace }: Props) {
+export function ReplyForm({
+  locale,
+  topicKey,
+  postId,
+  createReplyAction,
+  i18nNamespace,
+  replyToId,
+  replyToUsername,
+  onCancelReply,
+}: Props) {
   const t = useTranslations(i18nNamespace);
   const tUnsaved = useTranslations('unsavedChanges');
   const boundCreateReply = createReplyAction.bind(null, locale, topicKey, postId);
@@ -53,6 +65,23 @@ export function ReplyForm({ locale, topicKey, postId, createReplyAction, i18nNam
         <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
           {errorMessage}
         </div>
+      )}
+
+      {replyToId && replyToUsername && (
+        <>
+          <input type="hidden" name="replyToId" value={replyToId} />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>{t('replyingTo', { username: replyToUsername })}</span>
+            <button
+              type="button"
+              onClick={onCancelReply}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={t('cancelReply')}
+            >
+              &times;
+            </button>
+          </div>
+        </>
       )}
 
       <div className="space-y-2">

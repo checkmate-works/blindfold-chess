@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
 import {
   chessOpenings,
@@ -105,21 +105,23 @@ export async function attachPostMeta(
 
   const postIds = posts.map((p) => p.id);
 
-  // Batch query 1: reply counts and latest reply timestamp per parent
+  // Batch query 1: reply counts and latest reply timestamp per root post.
+  // Uses rootPostId so all replies in a flat thread (including reply-to-reply)
+  // are counted under the top-level post.
   const replyStats = await db
     .select({
-      parentId: topicPosts.parentId,
+      rootPostId: topicPosts.rootPostId,
       replyCount: count(),
       latestReplyAt: max(topicPosts.createdAt),
     })
     .from(topicPosts)
-    .where(and(inArray(topicPosts.parentId, postIds), isNull(topicPosts.deletedAt)))
-    .groupBy(topicPosts.parentId);
+    .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
+    .groupBy(topicPosts.rootPostId);
 
-  // Batch query 2: replies with author info for replier display
+  // Batch query 2: replies with author info for replier display (grouped by rootPostId)
   const repliesWithAuthors = await db
     .select({
-      parentId: topicPosts.parentId,
+      rootPostId: topicPosts.rootPostId,
       userId: topicPosts.userId,
       avatarUrl: profiles.avatarUrl,
       displayName: profiles.displayName,
@@ -128,7 +130,7 @@ export async function attachPostMeta(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(inArray(topicPosts.parentId, postIds), isNull(topicPosts.deletedAt)))
+    .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
     .orderBy(desc(topicPosts.createdAt));
 
   // Batch query 3: like counts per post
@@ -156,30 +158,30 @@ export async function attachPostMeta(
   // Build lookup maps
   const statsMap = new Map(
     replyStats.map((r) => [
-      r.parentId,
+      r.rootPostId,
       { replyCount: r.replyCount, latestReplyAt: r.latestReplyAt },
     ])
   );
 
   const likeCountMap = new Map(likeCounts.map((l) => [l.postId, l.likeCount]));
 
-  // Collect up to 3 unique repliers per post (most recent, deduplicated by userId)
+  // Collect up to 3 unique repliers per root post (most recent, deduplicated by userId)
   // while tracking ALL unique repliers for the +N overflow count
   const repliersMap = new Map<string, Replier[]>();
   const seenUsers = new Map<string, Set<string>>();
   for (const row of repliesWithAuthors) {
-    if (!row.parentId) continue;
-    const seen = seenUsers.get(row.parentId) ?? new Set();
+    if (!row.rootPostId) continue;
+    const seen = seenUsers.get(row.rootPostId) ?? new Set();
     if (seen.has(row.userId)) continue;
     seen.add(row.userId);
-    seenUsers.set(row.parentId, seen);
-    const existing = repliersMap.get(row.parentId) ?? [];
+    seenUsers.set(row.rootPostId, seen);
+    const existing = repliersMap.get(row.rootPostId) ?? [];
     if (existing.length < 3) {
       existing.push({
         avatarUrl: row.avatarUrl,
         displayName: row.displayName || row.username || 'Anonymous',
       });
-      repliersMap.set(row.parentId, existing);
+      repliersMap.set(row.rootPostId, existing);
     }
   }
 
@@ -290,8 +292,8 @@ export async function getRepliesByPostId(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(eq(topicPosts.parentId, postId), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPosts.createdAt));
+    .where(and(eq(topicPosts.rootPostId, postId), isNull(topicPosts.deletedAt)))
+    .orderBy(asc(topicPosts.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
     ...r.post,
