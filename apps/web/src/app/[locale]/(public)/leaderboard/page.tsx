@@ -9,9 +9,10 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
+import { ModuleFilter } from './_components/ModuleFilter';
 import { PeriodSelector } from './_components/PeriodSelector';
-import type { LeaderboardPeriod } from './_lib/types';
-import { isValidPeriod } from './_lib/validators';
+import type { LeaderboardPeriod, ModuleFilterValue } from './_lib/types';
+import { isValidModuleFilter, isValidPeriod } from './_lib/validators';
 
 type Props = {
   params: Promise<{
@@ -19,6 +20,7 @@ type Props = {
   }>;
   searchParams: Promise<{
     period?: string;
+    module?: string;
   }>;
 };
 
@@ -33,18 +35,27 @@ function parsePeriod(value: string | undefined): LeaderboardPeriod {
   return 'all-time';
 }
 
+function parseModuleFilter(value: string | undefined): ModuleFilterValue {
+  if (value && isValidModuleFilter(value)) {
+    return value;
+  }
+  return 'all';
+}
+
 export default async function LeaderboardIndexPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { period: periodParam } = await searchParams;
+  const { period: periodParam, module: moduleParam } = await searchParams;
   const period = parsePeriod(periodParam);
+  const moduleFilter = parseModuleFilter(moduleParam);
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
 
   return (
     <PagePanel>
       <PeriodSelector currentPeriod={period} />
+      <ModuleFilter currentModule={moduleFilter} />
 
       <Suspense
-        key={period}
+        key={`${period}:${moduleFilter}`}
         fallback={
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -58,6 +69,7 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
         <LeaderboardTopContent
           locale={locale}
           period={period}
+          moduleFilter={moduleFilter}
           yourRankedTitle={t('yourRankedSection')}
           allLeaderboardsTitle={t('allLeaderboardsSection')}
         />

@@ -7,6 +7,7 @@ import {
   ALL_LEADERBOARD_ENTRIES,
   type LeaderboardEntry,
   type LeaderboardPeriod,
+  type ModuleFilterValue,
   TOP_RANK_THRESHOLD,
   type UserRankInfo,
 } from '../_lib/types';
@@ -15,6 +16,7 @@ import { LeaderboardCard } from './LeaderboardCard';
 type Props = {
   locale: string;
   period: LeaderboardPeriod;
+  moduleFilter: ModuleFilterValue;
   yourRankedTitle: string;
   allLeaderboardsTitle: string;
 };
@@ -26,6 +28,7 @@ function entryKey(entry: LeaderboardEntry): string {
 export async function LeaderboardTopContent({
   locale,
   period,
+  moduleFilter,
   yourRankedTitle,
   allLeaderboardsTitle,
 }: Props) {
@@ -46,6 +49,11 @@ export async function LeaderboardTopContent({
     const rank = rankMap.get(entryKey(entry));
     return rank !== undefined && rank <= TOP_RANK_THRESHOLD;
   });
+
+  const filteredEntries =
+    moduleFilter === 'all'
+      ? ALL_LEADERBOARD_ENTRIES
+      : ALL_LEADERBOARD_ENTRIES.filter((entry) => entry.module === moduleFilter);
 
   return (
     <div className="space-y-8">
@@ -70,7 +78,7 @@ export async function LeaderboardTopContent({
       <section>
         <SectionTitle>{allLeaderboardsTitle}</SectionTitle>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ALL_LEADERBOARD_ENTRIES.map((entry) => (
+          {filteredEntries.map((entry) => (
             <LeaderboardCard
               key={entryKey(entry)}
               locale={locale}

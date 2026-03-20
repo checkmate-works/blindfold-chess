@@ -2603,6 +2603,13 @@
       "next": "次へ",
       "total": "全 {count} 人"
     },
+    "moduleFilterLabel": "モジュールフィルター",
+    "moduleFilter": {
+      "all": "すべて",
+      "coordinate_quiz": "座標クイズ",
+      "legal_moves": "合法手",
+      "square_colors": "マスの色"
+    },
     "yourRankedSection": "ランクインしたランキング",
     "allLeaderboardsSection": "すべてのランキング",
     "rankLabel": "あなたの順位: 第{rank}位",

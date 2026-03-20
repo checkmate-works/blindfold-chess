@@ -4,6 +4,8 @@ export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 
 export type LeaderboardModule = 'coordinate_quiz' | 'legal_moves' | 'square_colors';
 
+export type ModuleFilterValue = 'all' | LeaderboardModule;
+
 export type LeaderboardModuleSlug = 'coordinate-quiz' | 'legal-moves' | 'square-colors';
 
 export type LeaderboardRow = RankedLeaderboardRow;
@@ -42,6 +44,13 @@ export const VALID_PERIODS = [
   'weekly',
   'monthly',
 ] as const satisfies readonly LeaderboardPeriod[];
+
+export const VALID_MODULE_FILTERS = [
+  'all',
+  'coordinate_quiz',
+  'legal_moves',
+  'square_colors',
+] as const satisfies readonly ModuleFilterValue[];
 
 export const PAGE_SIZE = 20;
 

@@ -2625,6 +2625,13 @@
       "next": "Next",
       "total": "{count, plural, one {# player} other {# players}} total"
     },
+    "moduleFilterLabel": "Module filter",
+    "moduleFilter": {
+      "all": "All",
+      "coordinate_quiz": "Coordinate Quiz",
+      "legal_moves": "Legal Moves",
+      "square_colors": "Square Colors"
+    },
     "yourRankedSection": "Your Ranked Leaderboards",
     "allLeaderboardsSection": "All Leaderboards",
     "rankLabel": "Your Rank: #{rank}",
