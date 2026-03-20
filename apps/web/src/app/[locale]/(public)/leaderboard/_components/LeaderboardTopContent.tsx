@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import { LeaderboardCard } from '.';
 import { getUserRanks } from '../_actions/getUserRanks';
 import {
   ALL_LEADERBOARD_ENTRIES,
@@ -11,7 +12,6 @@ import {
   TOP_RANK_THRESHOLD,
   type UserRankInfo,
 } from '../_lib/types';
-import { LeaderboardCard } from './LeaderboardCard';
 
 type Props = {
   locale: string;

@@ -1,5 +1,7 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 
 import { getQueriesForPeriod } from '../_lib/period-queries';
@@ -29,6 +31,29 @@ async function getCurrentUserId(): Promise<string | null> {
 }
 
 // ---------------------------------------------------------------------------
+// Cached ranking data (shared across all users)
+// ---------------------------------------------------------------------------
+
+const REVALIDATE_SECONDS = 300; // 5 minutes
+
+function getCachedRanking(
+  module: LeaderboardModule,
+  key: string,
+  period: LeaderboardPeriod,
+  offset: number,
+  limit: number
+) {
+  return unstable_cache(
+    async () => {
+      const { getRanking } = getQueriesForPeriod(period);
+      return getRanking(module, key, offset, limit);
+    },
+    ['leaderboard-ranking', module, key, period, String(offset), String(limit)],
+    { revalidate: REVALIDATE_SECONDS, tags: ['leaderboard'] }
+  )();
+}
+
+// ---------------------------------------------------------------------------
 // Main entry point
 // ---------------------------------------------------------------------------
 
@@ -52,10 +77,9 @@ export async function getLeaderboard(
 
   const offset = (page - 1) * PAGE_SIZE;
   const currentUserId = await getCurrentUserId();
-  const { getRanking, getUserRankedRow } = getQueriesForPeriod(period);
 
   try {
-    const { rows, total } = await getRanking(module, key, offset, PAGE_SIZE);
+    const { rows, total } = await getCachedRanking(module, key, period, offset, PAGE_SIZE);
 
     // Map query rows to ranked rows for UI
     const leaderboardRows: LeaderboardRow[] = rows.map((r, i) => ({
@@ -66,6 +90,7 @@ export async function getLeaderboard(
     // Fetch current user's rank if they're not on the current page
     let currentUserRank: LeaderboardRow | null = null;
     if (currentUserId && !leaderboardRows.some((r) => r.userId === currentUserId)) {
+      const { getUserRankedRow } = getQueriesForPeriod(period);
       currentUserRank = await getUserRankedRow(currentUserId, module, key);
     }
 

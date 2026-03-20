@@ -8,9 +8,8 @@ import { Divider, PagePanel, Skeleton } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ModuleFilter, PeriodSelector } from './_components';
 import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
-import { ModuleFilter } from './_components/ModuleFilter';
-import { PeriodSelector } from './_components/PeriodSelector';
 import type { LeaderboardPeriod, ModuleFilterValue } from './_lib/types';
 import { isValidModuleFilter, isValidPeriod } from './_lib/validators';
 

@@ -7,6 +7,10 @@ import { ALL_LEADERBOARD_ENTRIES } from '../../_lib/types';
 // Mock the DB query functions
 // ---------------------------------------------------------------------------
 
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+}));
+
 const mockGetUserAllTimeRank = vi.fn();
 const mockGetUserWeeklyRank = vi.fn();
 const mockGetUserMonthlyRank = vi.fn();

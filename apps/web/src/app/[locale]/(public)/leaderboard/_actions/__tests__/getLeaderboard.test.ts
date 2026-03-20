@@ -8,6 +8,10 @@ import type { LeaderboardModule, LeaderboardPeriod } from '../../_lib/types';
 // Mocks
 // ---------------------------------------------------------------------------
 
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+}));
+
 const mockGetAllTimeRanking = vi.fn();
 const mockGetWeeklyRanking = vi.fn();
 const mockGetMonthlyRanking = vi.fn();

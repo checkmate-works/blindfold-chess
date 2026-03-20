@@ -41,20 +41,18 @@ describe('formatTime', () => {
   });
 
   it('handles negative values', () => {
-    // Math.floor(-1/60) = -1, but -1 > 0 is false, so it returns secs only
-    expect(formatTime(-1)).toBe('-1s');
+    expect(formatTime(-1)).toBe('0s');
   });
 
   it('handles NaN input', () => {
-    expect(formatTime(NaN)).toBe('NaNs');
+    expect(formatTime(NaN)).toBe('0s');
   });
 
   it('handles Infinity input', () => {
-    expect(formatTime(Infinity)).toBe('Infinitym NaNs');
+    expect(formatTime(Infinity)).toBe('0s');
   });
 
   it('handles -Infinity input', () => {
-    // Math.floor(-Infinity/60) = -Infinity, which is not > 0
-    expect(formatTime(-Infinity)).toBe('NaNs');
+    expect(formatTime(-Infinity)).toBe('0s');
   });
 });

@@ -6,7 +6,7 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
-import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardDetailContent';
+import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
 import {
   ALL_LEADERBOARD_ENTRIES,
   type LeaderboardModule,
