@@ -9,9 +9,7 @@ import {
 import { announcements, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
-
-const VALID_STATUSES = ['draft', 'published'] as const;
-const VALID_VISIBILITIES = ['public', 'members_only'] as const;
+import { validateAnnouncementData } from '../_lib/validation';
 
 type CreateData = {
   slug: string;
@@ -33,32 +31,9 @@ export async function createAnnouncement(data: CreateData): Promise<CreateResult
     return auth;
   }
 
-  if (!data.slug || data.slug.length > 255) {
-    return { error: 'invalid slug' };
-  }
-
-  if (!data.title || data.title.length > 255) {
-    return { error: 'invalid title' };
-  }
-
-  if (!data.content) {
-    return { error: 'invalid content' };
-  }
-
-  if (!data.locale || data.locale.length > 10) {
-    return { error: 'invalid locale' };
-  }
-
-  if (!VALID_STATUSES.includes(data.status as (typeof VALID_STATUSES)[number])) {
-    return { error: 'invalid status' };
-  }
-
-  if (!VALID_VISIBILITIES.includes(data.visibility as (typeof VALID_VISIBILITIES)[number])) {
-    return { error: 'invalid visibility' };
-  }
-
-  if (data.status === 'published' && !data.publishedAt) {
-    return { error: 'Published date is required when status is published' };
+  const validationError = validateAnnouncementData(data);
+  if (validationError) {
+    return { error: validationError };
   }
 
   const [inserted] = await db

@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
 
+import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditArticleForm } from '../../_components/EditArticleForm';
-import { formatDateTimeLocal } from '../../_lib/format';
 import { getArticleFormLabels } from '../../_lib/labels';
 import { getArticleCategories } from '../../_lib/queries';
 

@@ -29,16 +29,20 @@ vi.mock('@/lib/supabase/server', () => ({
 
 const generatedPostId = 'post-00000000-0000-0000-0000-000000000001';
 
+const mockTx = {
+  insert: () => ({
+    values: (...args: unknown[]) => {
+      mockInsertValues(...args);
+      return {
+        returning: () => mockInsertReturning(),
+      };
+    },
+  }),
+};
+
 vi.mock('@/lib/db', () => ({
   db: {
-    insert: () => ({
-      values: (...args: unknown[]) => {
-        mockInsertValues(...args);
-        return {
-          returning: () => mockInsertReturning(),
-        };
-      },
-    }),
+    transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
   },
   topicPosts: {
     id: 'id',

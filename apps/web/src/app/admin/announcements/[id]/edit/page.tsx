@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm';
 
 import { announcements, db } from '@/lib/db';
 
+import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditAnnouncementForm } from '../../_components/EditAnnouncementForm';
-import { formatDateTimeLocal } from '../../_lib/format';
 
 export default async function EditAnnouncementPage({
   params,

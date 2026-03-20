@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
 
+import { formatDateTimeLocal } from '../../../_lib/format';
 import { ArticlePublishForm } from '../../_components/ArticlePublishForm';
-import { formatDateTimeLocal } from '../../_lib/format';
 
 export default async function PublishArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -66,7 +66,7 @@ vi.mock('@/lib/rate-limit', () => ({
   }),
 }));
 
-vi.mock('../../../_lib/queries', () => ({
+vi.mock('@/app/[locale]/(public)/topics/openings/_lib/queries', () => ({
   isValidOpening: (...args: unknown[]) => mockIsValidOpening(...args),
 }));
 

@@ -7,8 +7,8 @@ import { announcements, db, notifications } from '@/lib/db';
 
 import { MarkdownRenderer } from '@/app/[locale]/_components';
 
+import { formatDateTimeLocal } from '../../../_lib/format';
 import { AnnouncementPreviewForm } from '../../_components/AnnouncementPreviewForm';
-import { formatDateTimeLocal } from '../../_lib/format';
 
 export default async function PreviewAnnouncementPage({
   params,
