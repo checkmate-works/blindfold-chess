@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { Props as LegendProps } from 'recharts/types/component/DefaultLegendContent';
 
 type DataPoint = {
   date: string;
@@ -23,9 +24,17 @@ type Props = {
   yAxisLabel: string;
   currentLabel: string;
   previousLabel: string;
+  onPreviousLabelClick?: () => void;
 };
 
-export function ScoreChart({ data, emptyMessage, yAxisLabel, currentLabel, previousLabel }: Props) {
+export function ScoreChart({
+  data,
+  emptyMessage,
+  yAxisLabel,
+  currentLabel,
+  previousLabel,
+  onPreviousLabelClick,
+}: Props) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
@@ -70,7 +79,47 @@ export function ScoreChart({ data, emptyMessage, yAxisLabel, currentLabel, previ
             return [num.toFixed(1), label];
           }}
         />
-        {hasPreviousData && <Legend />}
+        {hasPreviousData && (
+          <Legend
+            content={({ payload }: LegendProps) => {
+              if (!payload || payload.length === 0) return null;
+              return (
+                <div className="flex justify-center gap-6 text-xs mt-1">
+                  {payload.map((entry) => {
+                    const isClickable = entry.dataKey === 'previousScore' && !!onPreviousLabelClick;
+                    return (
+                      <span
+                        key={String(entry.dataKey)}
+                        role={isClickable ? 'button' : undefined}
+                        tabIndex={isClickable ? 0 : undefined}
+                        className={
+                          isClickable ? 'cursor-pointer hover:underline select-none' : 'select-none'
+                        }
+                        onClick={isClickable ? onPreviousLabelClick : undefined}
+                        onKeyDown={
+                          isClickable
+                            ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  onPreviousLabelClick?.();
+                                }
+                              }
+                            : undefined
+                        }
+                      >
+                        <span
+                          className="inline-block w-3 h-[2px] align-middle mr-1"
+                          style={{ backgroundColor: entry.color }}
+                        />
+                        {entry.value}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            }}
+          />
+        )}
         <Line
           type="monotone"
           dataKey="score"
@@ -89,7 +138,8 @@ export function ScoreChart({ data, emptyMessage, yAxisLabel, currentLabel, previ
             stroke="var(--color-muted-foreground)"
             strokeWidth={1.5}
             strokeDasharray="5 5"
-            dot={false}
+            dot={{ fill: 'var(--color-muted-foreground)', r: 2 }}
+            activeDot={{ fill: 'var(--color-muted-foreground)', r: 4 }}
             connectNulls
           />
         )}

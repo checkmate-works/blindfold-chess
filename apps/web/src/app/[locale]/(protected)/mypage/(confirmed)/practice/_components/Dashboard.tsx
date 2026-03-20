@@ -14,7 +14,11 @@ import {
   PIECE_FILTER_MENUS,
   useDashboardData,
 } from '../_hooks/use-dashboard-data';
-import { getComparisonLabel, getPreviousPeriodLabel } from '../_lib/dashboard-utils';
+import {
+  getComparisonLabel,
+  getNavigablePreviousPeriod,
+  getPreviousPeriodLabel,
+} from '../_lib/dashboard-utils';
 import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
@@ -51,6 +55,7 @@ export function Dashboard({ locale }: { locale: string }) {
   } = useDashboardData(locale);
 
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
+  const navigablePrevPeriod = getNavigablePreviousPeriod(selectedPeriod);
 
   if (availableMenuTypes === null || (isLoading && availableMenuTypes.length === 0)) {
     return <DashboardSkeleton />;
@@ -180,6 +185,9 @@ export function Dashboard({ locale }: { locale: string }) {
                 yAxisLabel={t('scoreUnit')}
                 currentLabel={t(`periods.${selectedPeriod}`)}
                 previousLabel={t(`periods.${getPreviousPeriodLabel(selectedPeriod)}`)}
+                onPreviousLabelClick={
+                  navigablePrevPeriod ? () => setSelectedPeriod(navigablePrevPeriod) : undefined
+                }
               />
             </div>
           </div>

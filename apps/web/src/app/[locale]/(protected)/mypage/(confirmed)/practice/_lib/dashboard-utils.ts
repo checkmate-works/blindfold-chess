@@ -67,6 +67,26 @@ export function getPreviousPeriodLabel(period: DatePeriod): string {
   }
 }
 
+/**
+ * Returns the DatePeriod that the previous-period legend label should navigate to,
+ * or null if the previous period is not a selectable option.
+ *
+ * thisWeek  → lastWeek  (selectable)
+ * thisMonth → lastMonth (selectable)
+ * lastWeek  → null      ("2 weeks ago" is not selectable)
+ * lastMonth → null      ("2 months ago" is not selectable)
+ */
+export function getNavigablePreviousPeriod(period: DatePeriod): DatePeriod | null {
+  switch (period) {
+    case 'thisWeek':
+      return 'lastWeek';
+    case 'thisMonth':
+      return 'lastMonth';
+    default:
+      return null;
+  }
+}
+
 export function computeStats(sessions: ChallengeResultRow[], mistakeLimit: number) {
   const scores = sessions.map((s) => s.score);
 

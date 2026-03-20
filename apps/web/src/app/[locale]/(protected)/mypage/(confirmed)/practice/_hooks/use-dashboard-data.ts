@@ -14,6 +14,7 @@ import {
   computePercentChange,
   computeStats,
   formatDate,
+  formatShortDate,
   getDayIndex,
   getPeriodStart,
   getPreviousPeriodStart,
@@ -83,7 +84,7 @@ const TABLE_MAX_ROWS = 20;
 
 export type ChartDataPoint = {
   date: string;
-  score: number;
+  score: number | null;
   previousScore: number | null;
 };
 
@@ -201,18 +202,40 @@ export function useDashboardData(locale: string) {
     const currentPeriodStart = getPeriodStart(selectedPeriod);
     const prevPeriodStart = getPreviousPeriodStart(selectedPeriod);
 
+    // Build maps keyed by day index (offset from period start)
+    const currentByDayIndex = new Map<number, { avgScore: number; dateLabel: string }>();
+    for (const cd of currentDaily) {
+      const idx = getDayIndex(cd.dateKey, currentPeriodStart);
+      currentByDayIndex.set(idx, { avgScore: cd.avgScore, dateLabel: cd.date });
+    }
+
     const prevByDayIndex = new Map<number, number>();
     for (const pd of previousDaily) {
       const idx = getDayIndex(pd.dateKey, prevPeriodStart);
       prevByDayIndex.set(idx, pd.avgScore);
     }
 
-    return currentDaily.map((cd) => {
-      const dayIdx = getDayIndex(cd.dateKey, currentPeriodStart);
+    // Union of day indices from both periods so previous-only days also appear
+    const allDayIndices = new Set([...currentByDayIndex.keys(), ...prevByDayIndex.keys()]);
+    const sortedIndices = Array.from(allDayIndices).sort((a, b) => a - b);
+
+    return sortedIndices.map((dayIdx) => {
+      const current = currentByDayIndex.get(dayIdx);
       const prevScore = prevByDayIndex.get(dayIdx) ?? null;
+
+      // Use existing date label when available, otherwise derive from day index
+      let dateLabel: string;
+      if (current) {
+        dateLabel = current.dateLabel;
+      } else {
+        const dateForLabel = new Date(currentPeriodStart);
+        dateForLabel.setDate(dateForLabel.getDate() + dayIdx);
+        dateLabel = formatShortDate(dateForLabel, locale);
+      }
+
       return {
-        date: cd.date,
-        score: cd.avgScore,
+        date: dateLabel,
+        score: current?.avgScore ?? null,
         previousScore: prevScore,
       };
     });
