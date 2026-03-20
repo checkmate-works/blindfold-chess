@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/activity-log';
+import { createNotification } from '@/lib/notification';
 
 import { createReplyBase } from './createReply';
 
@@ -15,6 +16,10 @@ const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/notification', () => ({
+  createNotification: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -53,6 +58,7 @@ vi.mock('@/lib/db', () => ({
     topicType: 'topic_type',
     topicKey: 'topic_key',
     parentId: 'parent_id',
+    rootPostId: 'root_post_id',
     content: 'content',
     deletedAt: 'deleted_at',
     replyPermission: 'reply_permission',
@@ -91,6 +97,8 @@ const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 const validPostId = '00000000-0000-0000-0000-000000000001';
 const generatedReplyId = 'reply-00000000-0000-0000-0000-000000000001';
 const otherUserId = 'user-00000000-0000-0000-0000-000000000002';
+const targetReplyId = '00000000-0000-0000-0000-000000000099';
+const targetReplyAuthorId = 'user-00000000-0000-0000-0000-000000000003';
 
 const baseParams = {
   locale: 'en',
@@ -103,9 +111,12 @@ const baseParams = {
   formData: makeFormData('hello'),
 };
 
-function makeFormData(content: string): FormData {
+function makeFormData(content: string, replyToId?: string): FormData {
   const fd = new FormData();
   fd.set('content', content);
+  if (replyToId) {
+    fd.set('replyToId', replyToId);
+  }
   return fd;
 }
 
@@ -310,6 +321,7 @@ describe('createReplyBase', () => {
         topicType: 'opening',
         topicKey: 'test-topic',
         parentId: validPostId,
+        rootPostId: validPostId,
         content: 'My reply',
       });
     });
@@ -457,6 +469,202 @@ describe('createReplyBase', () => {
 
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
+    });
+  });
+
+  describe('reply notification', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should create notification for post author when replying to another user post', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).toHaveBeenCalledWith({
+        userId: otherUserId,
+        actorId: testUserId,
+        type: 'reply',
+        targetType: 'topic_post',
+        targetId: validPostId,
+        metadata: {
+          topicType: 'opening',
+          topicKey: 'test-topic',
+          postId: validPostId,
+          replyId: generatedReplyId,
+        },
+      });
+    });
+
+    it('should not create notification when replying to own post', async () => {
+      setupParentPostExists({ userId: testUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('should pass correct metadata for square topic type', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          topicType: 'square',
+          topicKey: 'e4',
+          urlSegment: 'squares',
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).toHaveBeenCalledWith({
+        userId: otherUserId,
+        actorId: testUserId,
+        type: 'reply',
+        targetType: 'topic_post',
+        targetId: validPostId,
+        metadata: {
+          topicType: 'square',
+          topicKey: 'e4',
+          postId: validPostId,
+          replyId: generatedReplyId,
+        },
+      });
+    });
+
+    it('should not create notification when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createReplyBase(baseParams);
+
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('should still create the reply even if notification would fail (fire-and-forget)', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockInsertValues).toHaveBeenCalled();
+      expect(createNotification).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('reply to a reply (Case B)', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should insert reply with correct parentId and rootPostId when replying to a reply', async () => {
+      // First select: look up the target reply
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: targetReplyId, userId: targetReplyAuthorId, rootPostId: validPostId },
+      ]);
+      // Second select: look up the root post for permission check
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: validPostId, userId: otherUserId, replyPermission: 'everyone' },
+      ]);
+      mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          formData: makeFormData('replying to a reply', targetReplyId),
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockInsertValues).toHaveBeenCalledWith({
+        userId: testUserId,
+        topicType: 'opening',
+        topicKey: 'test-topic',
+        parentId: targetReplyId,
+        rootPostId: validPostId,
+        content: 'replying to a reply',
+      });
+    });
+
+    it('should propagate rootPostId from the target reply', async () => {
+      const deepRootPostId = '00000000-0000-0000-0000-000000000050';
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: targetReplyId, userId: targetReplyAuthorId, rootPostId: deepRootPostId },
+      ]);
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: deepRootPostId, userId: otherUserId, replyPermission: 'everyone' },
+      ]);
+      mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          formData: makeFormData('deep reply', targetReplyId),
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ rootPostId: deepRootPostId })
+      );
+    });
+
+    it('should check reply permission on the root post, not the target reply', async () => {
+      // Target reply exists
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: targetReplyId, userId: targetReplyAuthorId, rootPostId: validPostId },
+      ]);
+      // Root post has replies disabled
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: validPostId, userId: otherUserId, replyPermission: 'nobody' },
+      ]);
+
+      const result = await createReplyBase({
+        ...baseParams,
+        formData: makeFormData('should be blocked', targetReplyId),
+      });
+
+      expect(result).toEqual({ error: 'repliesDisabled' });
+      expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+
+    it('should notify the target reply author, not the root post author', async () => {
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: targetReplyId, userId: targetReplyAuthorId, rootPostId: validPostId },
+      ]);
+      mockSelectFromWhere.mockReturnValueOnce([
+        { id: validPostId, userId: otherUserId, replyPermission: 'everyone' },
+      ]);
+      mockInsertReturning.mockResolvedValue([{ id: generatedReplyId }]);
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          formData: makeFormData('notify target author', targetReplyId),
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: targetReplyAuthorId,
+          actorId: testUserId,
+        })
+      );
+    });
+
+    it('should fall back to Case A when replyToId is not a valid UUID', async () => {
+      setupParentPostExists();
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          formData: makeFormData('fallback reply', 'not-a-uuid'),
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      // Should use postId as parentId (Case A behavior)
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({
+          parentId: validPostId,
+          rootPostId: validPostId,
+        })
+      );
     });
   });
 });

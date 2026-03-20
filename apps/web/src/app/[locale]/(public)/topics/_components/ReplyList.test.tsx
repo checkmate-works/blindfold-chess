@@ -69,6 +69,7 @@ describe('ReplyList', () => {
         topicKey="e4"
         toggleLikeAction={mockToggleLike}
         likeI18nNamespace="topics.squares"
+        replyI18nNamespace="topics.squares.replies"
       />
     );
 
@@ -86,6 +87,7 @@ describe('ReplyList', () => {
         topicKey="e4"
         toggleLikeAction={mockToggleLike}
         likeI18nNamespace="topics.squares"
+        replyI18nNamespace="topics.squares.replies"
       />
     );
 
@@ -105,6 +107,7 @@ describe('ReplyList', () => {
         topicKey="e4"
         toggleLikeAction={mockToggleLike}
         likeI18nNamespace="topics.squares"
+        replyI18nNamespace="topics.squares.replies"
       />
     );
 
@@ -127,6 +130,7 @@ describe('ReplyList', () => {
         topicKey="e4"
         toggleLikeAction={mockToggleLike}
         likeI18nNamespace="topics.squares"
+        replyI18nNamespace="topics.squares.replies"
       />
     );
 
@@ -146,6 +150,7 @@ describe('ReplyList', () => {
         topicKey="e4"
         toggleLikeAction={mockToggleLike}
         likeI18nNamespace="topics.squares"
+        replyI18nNamespace="topics.squares.replies"
       />
     );
 

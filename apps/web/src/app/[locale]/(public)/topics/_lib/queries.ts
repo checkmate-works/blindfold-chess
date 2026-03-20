@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
   chessOpenings,
@@ -75,8 +75,8 @@ export async function getRepliesByPostId(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(eq(topicPosts.parentId, postId), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPosts.createdAt));
+    .where(and(eq(topicPosts.rootPostId, postId), isNull(topicPosts.deletedAt)))
+    .orderBy(asc(topicPosts.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
     ...r.post,

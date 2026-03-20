@@ -17,6 +17,7 @@ vi.mock('@/lib/db', () => {
       topicType: 'topic_posts.topic_type',
       topicKey: 'topic_posts.topic_key',
       parentId: 'topic_posts.parent_id',
+      rootPostId: 'topic_posts.root_post_id',
       content: 'topic_posts.content',
       createdAt: 'topic_posts.created_at',
       deletedAt: 'topic_posts.deleted_at',
@@ -364,7 +365,7 @@ describe('getPostsWithReplyMeta', () => {
 
   it('should return correct reply count', async () => {
     const statsRows = [
-      { parentId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
+      { rootPostId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
     ];
 
     setupMocks([postRow(testPostId)], statsRows, []);
@@ -376,7 +377,7 @@ describe('getPostsWithReplyMeta', () => {
 
   it('should return correct latestReplyAt', async () => {
     const latestDate = new Date('2025-02-15T10:30:00Z');
-    const statsRows = [{ parentId: testPostId, replyCount: 3, latestReplyAt: latestDate }];
+    const statsRows = [{ rootPostId: testPostId, replyCount: 3, latestReplyAt: latestDate }];
 
     setupMocks([postRow(testPostId)], statsRows, []);
 
@@ -387,11 +388,11 @@ describe('getPostsWithReplyMeta', () => {
 
   it('should return up to 3 unique repliers', async () => {
     const statsRows = [
-      { parentId: testPostId, replyCount: 4, latestReplyAt: new Date('2025-01-04T00:00:00Z') },
+      { rootPostId: testPostId, replyCount: 4, latestReplyAt: new Date('2025-01-04T00:00:00Z') },
     ];
     const avatarRows = [
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-a',
         avatarUrl: 'https://example.com/a.png',
         displayName: 'A',
@@ -399,7 +400,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-04T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-b',
         avatarUrl: 'https://example.com/b.png',
         displayName: 'B',
@@ -407,7 +408,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-03T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-c',
         avatarUrl: 'https://example.com/c.png',
         displayName: 'C',
@@ -415,7 +416,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-02T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-d',
         avatarUrl: 'https://example.com/d.png',
         displayName: 'D',
@@ -438,11 +439,11 @@ describe('getPostsWithReplyMeta', () => {
 
   it('should deduplicate repliers from the same user replying multiple times', async () => {
     const statsRows = [
-      { parentId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+      { rootPostId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
     ];
     const avatarRows = [
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-alice',
         avatarUrl: 'https://example.com/alice.png',
         displayName: 'Alice',
@@ -450,7 +451,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-03T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-alice',
         avatarUrl: 'https://example.com/alice.png',
         displayName: 'Alice',
@@ -458,7 +459,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-02T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-bob',
         avatarUrl: 'https://example.com/bob.png',
         displayName: 'Bob',
@@ -479,11 +480,11 @@ describe('getPostsWithReplyMeta', () => {
 
   it('should include repliers with no avatar URL (with displayName)', async () => {
     const statsRows = [
-      { parentId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-02T00:00:00Z') },
+      { rootPostId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-02T00:00:00Z') },
     ];
     const avatarRows = [
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-no-avatar',
         avatarUrl: null,
         displayName: 'NoAvatar',
@@ -491,7 +492,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-02T00:00:00Z'),
       },
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-bob',
         avatarUrl: 'https://example.com/bob.png',
         displayName: 'Bob',
@@ -513,12 +514,12 @@ describe('getPostsWithReplyMeta', () => {
   it('should handle multiple posts with different reply metadata', async () => {
     const postRows = [postRow(testPostId), postRow(otherPostId)];
     const statsRows = [
-      { parentId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
-      { parentId: otherPostId, replyCount: 1, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+      { rootPostId: testPostId, replyCount: 2, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+      { rootPostId: otherPostId, replyCount: 1, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
     ];
     const avatarRows = [
       {
-        parentId: testPostId,
+        rootPostId: testPostId,
         userId: 'user-a',
         avatarUrl: 'https://example.com/a.png',
         displayName: 'A',
@@ -526,7 +527,7 @@ describe('getPostsWithReplyMeta', () => {
         createdAt: new Date('2025-01-05T00:00:00Z'),
       },
       {
-        parentId: otherPostId,
+        rootPostId: otherPostId,
         userId: 'user-b',
         avatarUrl: 'https://example.com/b.png',
         displayName: 'B',
@@ -679,11 +680,11 @@ describe('getPostsWithReplyMeta', () => {
 
     it('should return uniqueReplierCount equal to repliers length when <= 3 unique repliers', async () => {
       const statsRows = [
-        { parentId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
+        { rootPostId: testPostId, replyCount: 3, latestReplyAt: new Date('2025-01-03T00:00:00Z') },
       ];
       const avatarRows = [
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-a',
           avatarUrl: 'https://example.com/a.png',
           displayName: 'A',
@@ -691,7 +692,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-03T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-b',
           avatarUrl: 'https://example.com/b.png',
           displayName: 'B',
@@ -699,7 +700,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-02T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-c',
           avatarUrl: 'https://example.com/c.png',
           displayName: 'C',
@@ -718,11 +719,11 @@ describe('getPostsWithReplyMeta', () => {
 
     it('should return uniqueReplierCount greater than repliers length when > 3 unique repliers', async () => {
       const statsRows = [
-        { parentId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+        { rootPostId: testPostId, replyCount: 5, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
       ];
       const avatarRows = [
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-a',
           avatarUrl: 'https://example.com/a.png',
           displayName: 'A',
@@ -730,7 +731,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-05T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-b',
           avatarUrl: 'https://example.com/b.png',
           displayName: 'B',
@@ -738,7 +739,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-04T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-c',
           avatarUrl: 'https://example.com/c.png',
           displayName: 'C',
@@ -746,7 +747,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-03T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-d',
           avatarUrl: 'https://example.com/d.png',
           displayName: 'D',
@@ -754,7 +755,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-02T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-e',
           avatarUrl: 'https://example.com/e.png',
           displayName: 'E',
@@ -774,12 +775,12 @@ describe('getPostsWithReplyMeta', () => {
 
     it('should not count duplicate users in uniqueReplierCount', async () => {
       const statsRows = [
-        { parentId: testPostId, replyCount: 6, latestReplyAt: new Date('2025-01-06T00:00:00Z') },
+        { rootPostId: testPostId, replyCount: 6, latestReplyAt: new Date('2025-01-06T00:00:00Z') },
       ];
       // 6 reply rows, but only 4 unique users (user-a and user-b reply twice each)
       const avatarRows = [
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-a',
           avatarUrl: 'https://example.com/a.png',
           displayName: 'A',
@@ -787,7 +788,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-06T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-b',
           avatarUrl: 'https://example.com/b.png',
           displayName: 'B',
@@ -795,7 +796,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-05T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-a',
           avatarUrl: 'https://example.com/a.png',
           displayName: 'A',
@@ -803,7 +804,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-04T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-c',
           avatarUrl: 'https://example.com/c.png',
           displayName: 'C',
@@ -811,7 +812,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-03T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-b',
           avatarUrl: 'https://example.com/b.png',
           displayName: 'B',
@@ -819,7 +820,7 @@ describe('getPostsWithReplyMeta', () => {
           createdAt: new Date('2025-01-02T00:00:00Z'),
         },
         {
-          parentId: testPostId,
+          rootPostId: testPostId,
           userId: 'user-d',
           avatarUrl: 'https://example.com/d.png',
           displayName: 'D',
@@ -943,9 +944,9 @@ describe('getPostsWithReplyMeta', () => {
         postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
       ];
       const statsRows = [
-        { parentId: postIdA, replyCount: 1, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
-        { parentId: postIdB, replyCount: 2, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
-        { parentId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-07T00:00:00Z') },
+        { rootPostId: postIdA, replyCount: 1, latestReplyAt: new Date('2025-01-05T00:00:00Z') },
+        { rootPostId: postIdB, replyCount: 2, latestReplyAt: new Date('2025-01-10T00:00:00Z') },
+        { rootPostId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-07T00:00:00Z') },
       ];
 
       setupMocks(postRows, statsRows, []);
@@ -964,7 +965,7 @@ describe('getPostsWithReplyMeta', () => {
       ];
       // Only postIdC has replies
       const statsRows = [
-        { parentId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-08T00:00:00Z') },
+        { rootPostId: postIdC, replyCount: 1, latestReplyAt: new Date('2025-01-08T00:00:00Z') },
       ];
 
       setupMocks(postRows, statsRows, []);
@@ -983,9 +984,9 @@ describe('getPostsWithReplyMeta', () => {
         postRowWithDate(postIdC, new Date('2025-01-01T00:00:00Z')),
       ];
       const statsRows = [
-        { parentId: postIdA, replyCount: 1, latestReplyAt: sameReplyDate },
-        { parentId: postIdB, replyCount: 1, latestReplyAt: sameReplyDate },
-        { parentId: postIdC, replyCount: 1, latestReplyAt: sameReplyDate },
+        { rootPostId: postIdA, replyCount: 1, latestReplyAt: sameReplyDate },
+        { rootPostId: postIdB, replyCount: 1, latestReplyAt: sameReplyDate },
+        { rootPostId: postIdC, replyCount: 1, latestReplyAt: sameReplyDate },
       ];
 
       setupMocks(postRows, statsRows, []);

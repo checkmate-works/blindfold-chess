@@ -1870,6 +1870,7 @@
     "markAllAsRead": "すべて既読にする",
     "followMessage": "{actor} があなたをフォローしました",
     "likeMessage": "{actor} があなたの投稿にいいねしました",
+    "replyMessage": "{actor} があなたの投稿に返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました"
@@ -2442,7 +2443,10 @@
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
-        "followRequired": "フォロワーのみ返信できます。"
+        "followRequired": "フォロワーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username}に返信中",
+        "cancelReply": "キャンセル"
       },
       "deletePost": {
         "button": "削除",
@@ -2517,7 +2521,10 @@
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
-        "followRequired": "フォロワーのみ返信できます。"
+        "followRequired": "フォロワーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username}に返信中",
+        "cancelReply": "キャンセル"
       },
       "deletePost": {
         "button": "削除",

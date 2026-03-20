@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -67,7 +66,6 @@ export function BaseTopicPostCard({
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const isTruncated = contentPreview !== content;
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <Link
@@ -92,24 +90,12 @@ export function BaseTopicPostCard({
         </div>
         {extraContent}
         {hasContent && (
-          <p
-            className={`text-sm text-foreground whitespace-pre-wrap break-words${expanded ? '' : ' line-clamp-3'}`}
-          >
-            <LinkedText text={expanded ? content : contentPreview} locale={locale} />
+          <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
+            <LinkedText text={contentPreview} locale={locale} />
           </p>
         )}
         {hasContent && isTruncated && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setExpanded((prev) => !prev);
-            }}
-            className="text-sm text-link-primary hover:underline"
-          >
-            {expanded ? tTopics('showLess') : tTopics('showMore')}
-          </button>
+          <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
         )}
       </UserAvatar>
 

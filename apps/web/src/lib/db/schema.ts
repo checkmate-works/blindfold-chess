@@ -365,6 +365,7 @@ export const topicPosts = pgTable(
     topicType: varchar('topic_type', { length: 50 }).notNull(),
     topicKey: varchar('topic_key', { length: 50 }).notNull(),
     parentId: uuid('parent_id'), // self-referencing FK defined in custom SQL
+    rootPostId: uuid('root_post_id'), // top-level post of the thread; NULL for top-level posts
     content: text('content').notNull(),
     replyPermission: varchar('reply_permission', { length: 20 }).notNull().default('everyone'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -375,6 +376,7 @@ export const topicPosts = pgTable(
     index('idx_topic_posts_topic').on(table.topicType, table.topicKey),
     index('idx_topic_posts_user').on(table.userId),
     index('idx_topic_posts_parent').on(table.parentId),
+    index('idx_topic_posts_root').on(table.rootPostId),
   ]
 );
 

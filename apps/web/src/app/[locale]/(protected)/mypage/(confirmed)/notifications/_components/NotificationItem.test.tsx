@@ -20,6 +20,7 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, params?: Record<string, string>) => {
     if (key === 'followMessage' && params) return `${params.actor} followed you`;
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
+    if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
     return key;
   },
@@ -195,6 +196,90 @@ describe('NotificationItem', () => {
       const link = screen.getByText('Alice shared a new post').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
+    });
+  });
+
+  describe('reply notification', () => {
+    it('should display the correct message for reply type', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: { topicType: 'opening', topicKey: 'sicilian-defense', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.getByText('Alice replied to your post')).toBeDefined();
+    });
+
+    it('should link to /topics/openings/{topicKey}/posts/{postId} for opening metadata', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: { topicType: 'opening', topicKey: 'sicilian-defense', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice replied to your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/openings/sicilian-defense/posts/post-1');
+    });
+
+    it('should link to /topics/squares/{topicKey}/posts/{postId} for square metadata', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-42' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice replied to your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
+    });
+
+    it('should link to post with #reply-{replyId} fragment when metadata includes replyId', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: {
+          topicType: 'opening',
+          topicKey: 'sicilian-defense',
+          postId: 'post-1',
+          replyId: 'reply-99',
+        },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice replied to your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe(
+        '/topics/openings/sicilian-defense/posts/post-1#reply-reply-99'
+      );
+    });
+
+    it('should link to square post with #reply-{replyId} fragment when metadata includes replyId', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-42', replyId: 'reply-7' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice replied to your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#reply-reply-7');
+    });
+
+    it('should render as button when metadata is missing', () => {
+      const notification = createNotification({
+        type: 'reply',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const button = screen.getByRole('button');
+      expect(button).toBeDefined();
     });
   });
 
