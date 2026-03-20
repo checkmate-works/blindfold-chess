@@ -6,8 +6,8 @@ import { chessOpenings } from './chess-openings';
 
 describe('chess-openings seed data integrity', () => {
   describe('data count', () => {
-    it('should contain 73 opening families', () => {
-      expect(chessOpenings).toHaveLength(73);
+    it('should contain 104 opening families', () => {
+      expect(chessOpenings).toHaveLength(104);
     });
   });
 
@@ -180,9 +180,9 @@ describe('chess-openings seed data integrity', () => {
       }
     });
 
-    it('should have exactly 15 child openings (with parentSlug)', () => {
+    it('should have exactly 46 child openings (with parentSlug)', () => {
       const childCount = chessOpenings.filter((o) => o.parentSlug).length;
-      expect(childCount).toBe(15);
+      expect(childCount).toBe(46);
     });
 
     it('should have exactly 58 root openings (without parentSlug)', () => {

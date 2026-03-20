@@ -129,6 +129,104 @@ export const chessOpenings: ChessOpeningSeed[] = [
     sortOrder: 220,
   },
 
+  // Ruy Lopez variations
+  {
+    slug: 'ruy-lopez-berlin',
+    name: 'Ruy Lopez: Berlin Defense',
+    ecoCode: 'C65',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6',
+    firstMoveSquare: 'e4',
+    sortOrder: 101,
+    parentSlug: 'ruy-lopez',
+  },
+  {
+    slug: 'ruy-lopez-morphy',
+    name: 'Ruy Lopez: Morphy Defense',
+    ecoCode: 'C78',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O b5 6. Bb3 d6',
+    firstMoveSquare: 'e4',
+    sortOrder: 102,
+    parentSlug: 'ruy-lopez',
+  },
+  {
+    slug: 'ruy-lopez-exchange',
+    name: 'Ruy Lopez: Exchange Variation',
+    ecoCode: 'C68',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Bxc6',
+    firstMoveSquare: 'e4',
+    sortOrder: 103,
+    parentSlug: 'ruy-lopez',
+  },
+  {
+    slug: 'ruy-lopez-closed',
+    name: 'Ruy Lopez: Closed Variation',
+    ecoCode: 'C84',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7',
+    firstMoveSquare: 'e4',
+    sortOrder: 104,
+    parentSlug: 'ruy-lopez',
+  },
+
+  // Scotch Game variations
+  {
+    slug: 'scotch-classical',
+    name: 'Scotch Game: Classical Variation',
+    ecoCode: 'C45',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Nxd4 Bc5',
+    firstMoveSquare: 'e4',
+    sortOrder: 121,
+    parentSlug: 'scotch-game',
+  },
+  {
+    slug: 'scotch-gambit',
+    name: 'Scotch Game: Scotch Gambit',
+    ecoCode: 'C44',
+    pgn: '1. e4 e5 2. Nf3 Nc6 3. d4 exd4 4. Bc4',
+    firstMoveSquare: 'e4',
+    sortOrder: 122,
+    parentSlug: 'scotch-game',
+  },
+
+  // Petrov's Defense variations
+  {
+    slug: 'petrovs-classical',
+    name: "Petrov's Defense: Classical Attack",
+    ecoCode: 'C42',
+    pgn: '1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4',
+    firstMoveSquare: 'e4',
+    sortOrder: 131,
+    parentSlug: 'petrovs-defense',
+  },
+  {
+    slug: 'petrovs-steinitz',
+    name: "Petrov's Defense: Steinitz Attack",
+    ecoCode: 'C43',
+    pgn: '1. e4 e5 2. Nf3 Nf6 3. d4',
+    firstMoveSquare: 'e4',
+    sortOrder: 132,
+    parentSlug: 'petrovs-defense',
+  },
+
+  // King's Gambit variations
+  {
+    slug: 'kings-gambit-accepted',
+    name: "King's Gambit Accepted",
+    ecoCode: 'C33',
+    pgn: '1. e4 e5 2. f4 exf4',
+    firstMoveSquare: 'e4',
+    sortOrder: 141,
+    parentSlug: 'kings-gambit',
+  },
+  {
+    slug: 'kings-gambit-declined',
+    name: "King's Gambit Declined",
+    ecoCode: 'C30',
+    pgn: '1. e4 e5 2. f4 Bc5',
+    firstMoveSquare: 'e4',
+    sortOrder: 142,
+    parentSlug: 'kings-gambit',
+  },
+
   // 1. e4 — Semi-Open Defenses
   {
     slug: 'sicilian-defense',
@@ -178,6 +276,57 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'e4',
     sortOrder: 350,
   },
+  // Pirc Defense variations
+  {
+    slug: 'pirc-classical',
+    name: 'Pirc Defense: Classical Variation',
+    ecoCode: 'B08',
+    pgn: '1. e4 d6 2. d4 Nf6 3. Nc3 g6 4. Nf3',
+    firstMoveSquare: 'e4',
+    sortOrder: 331,
+    parentSlug: 'pirc-defense',
+  },
+  {
+    slug: 'pirc-austrian-attack',
+    name: 'Pirc Defense: Austrian Attack',
+    ecoCode: 'B09',
+    pgn: '1. e4 d6 2. d4 Nf6 3. Nc3 g6 4. f4',
+    firstMoveSquare: 'e4',
+    sortOrder: 332,
+    parentSlug: 'pirc-defense',
+  },
+
+  // Alekhine's Defense variations
+  {
+    slug: 'alekhines-modern',
+    name: "Alekhine's Defense: Modern Variation",
+    ecoCode: 'B04',
+    pgn: '1. e4 Nf6 2. e5 Nd5 3. d4 d6 4. Nf3',
+    firstMoveSquare: 'e4',
+    sortOrder: 341,
+    parentSlug: 'alekhines-defense',
+  },
+  {
+    slug: 'alekhines-exchange',
+    name: "Alekhine's Defense: Exchange Variation",
+    ecoCode: 'B03',
+    pgn: '1. e4 Nf6 2. e5 Nd5 3. d4 d6 4. c4 Nb6 5. exd6',
+    firstMoveSquare: 'e4',
+    sortOrder: 342,
+    parentSlug: 'alekhines-defense',
+  },
+
+  // Scandinavian Defense variations
+  {
+    slug: 'scandinavian-modern',
+    name: 'Scandinavian Defense: Modern Variation',
+    ecoCode: 'B01',
+    pgn: '1. e4 d5 2. exd5 Nf6',
+    firstMoveSquare: 'e4',
+    sortOrder: 351,
+    parentSlug: 'scandinavian-defense',
+  },
+
   {
     slug: 'modern-defense',
     name: 'Modern Defense',
@@ -256,6 +405,64 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'd4',
     sortOrder: 540,
   },
+  // Queen's Gambit Declined variations
+  {
+    slug: 'qgd-orthodox',
+    name: "Queen's Gambit Declined: Orthodox Defense",
+    ecoCode: 'D60',
+    pgn: '1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3',
+    firstMoveSquare: 'd4',
+    sortOrder: 511,
+    parentSlug: 'queens-gambit-declined',
+  },
+  {
+    slug: 'qgd-lasker',
+    name: "Queen's Gambit Declined: Lasker Defense",
+    ecoCode: 'D56',
+    pgn: '1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7 5. e3 O-O 6. Nf3 h6',
+    firstMoveSquare: 'd4',
+    sortOrder: 512,
+    parentSlug: 'queens-gambit-declined',
+  },
+  {
+    slug: 'qgd-ragozin',
+    name: "Queen's Gambit Declined: Ragozin Defense",
+    ecoCode: 'D38',
+    pgn: '1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Nf3 Bb4',
+    firstMoveSquare: 'd4',
+    sortOrder: 513,
+    parentSlug: 'queens-gambit-declined',
+  },
+  {
+    slug: 'qgd-cambridge-springs',
+    name: "Queen's Gambit Declined: Cambridge Springs",
+    ecoCode: 'D52',
+    pgn: '1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Nbd7 5. e3 c6 6. Nf3 Qa5',
+    firstMoveSquare: 'd4',
+    sortOrder: 514,
+    parentSlug: 'queens-gambit-declined',
+  },
+
+  // Slav Defense variations
+  {
+    slug: 'slav-exchange',
+    name: 'Slav Defense: Exchange Variation',
+    ecoCode: 'D13',
+    pgn: '1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. cxd5 cxd5',
+    firstMoveSquare: 'd4',
+    sortOrder: 531,
+    parentSlug: 'slav-defense',
+  },
+  {
+    slug: 'slav-chebanenko',
+    name: 'Slav Defense: Chebanenko Variation',
+    ecoCode: 'D15',
+    pgn: '1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 a6',
+    firstMoveSquare: 'd4',
+    sortOrder: 532,
+    parentSlug: 'slav-defense',
+  },
+
   {
     slug: 'london-system',
     name: 'London System',
@@ -346,6 +553,55 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'd4',
     sortOrder: 720,
   },
+  // Nimzo-Indian Defense variations
+  {
+    slug: 'nimzo-indian-classical',
+    name: 'Nimzo-Indian Defense: Classical Variation',
+    ecoCode: 'E32',
+    pgn: '1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. Qc2',
+    firstMoveSquare: 'd4',
+    sortOrder: 711,
+    parentSlug: 'nimzo-indian-defense',
+  },
+  {
+    slug: 'nimzo-indian-samisch',
+    name: 'Nimzo-Indian Defense: Samisch Variation',
+    ecoCode: 'E25',
+    pgn: '1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. a3 Bxc3+ 5. bxc3 c5 6. f3',
+    firstMoveSquare: 'd4',
+    sortOrder: 712,
+    parentSlug: 'nimzo-indian-defense',
+  },
+  {
+    slug: 'nimzo-indian-rubinstein',
+    name: 'Nimzo-Indian Defense: Rubinstein Variation',
+    ecoCode: 'E40',
+    pgn: '1. d4 Nf6 2. c4 e6 3. Nc3 Bb4 4. e3',
+    firstMoveSquare: 'd4',
+    sortOrder: 713,
+    parentSlug: 'nimzo-indian-defense',
+  },
+
+  // Queen's Indian Defense variations
+  {
+    slug: 'queens-indian-petrosian',
+    name: "Queen's Indian Defense: Petrosian System",
+    ecoCode: 'E12',
+    pgn: '1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. a3',
+    firstMoveSquare: 'd4',
+    sortOrder: 721,
+    parentSlug: 'queens-indian-defense',
+  },
+  {
+    slug: 'queens-indian-classical',
+    name: "Queen's Indian Defense: Classical Variation",
+    ecoCode: 'E17',
+    pgn: '1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. g3 Bb7 5. Bg2 Be7',
+    firstMoveSquare: 'd4',
+    sortOrder: 722,
+    parentSlug: 'queens-indian-defense',
+  },
+
   {
     slug: 'grunfeld-defense',
     name: 'Grunfeld Defense',
@@ -370,6 +626,26 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'd4',
     sortOrder: 750,
   },
+  // Benoni Defense variations
+  {
+    slug: 'benoni-modern',
+    name: 'Benoni Defense: Modern Variation',
+    ecoCode: 'A70',
+    pgn: '1. d4 Nf6 2. c4 c5 3. d5 e6 4. Nc3 exd5 5. cxd5 d6',
+    firstMoveSquare: 'd4',
+    sortOrder: 751,
+    parentSlug: 'benoni-defense',
+  },
+  {
+    slug: 'benoni-czech',
+    name: 'Benoni Defense: Czech Variation',
+    ecoCode: 'A56',
+    pgn: '1. d4 Nf6 2. c4 c5 3. d5 e5',
+    firstMoveSquare: 'd4',
+    sortOrder: 752,
+    parentSlug: 'benoni-defense',
+  },
+
   {
     slug: 'bogo-indian-defense',
     name: 'Bogo-Indian Defense',
@@ -412,6 +688,35 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'd4',
     sortOrder: 800,
   },
+  // Dutch Defense variations
+  {
+    slug: 'dutch-leningrad',
+    name: 'Dutch Defense: Leningrad Variation',
+    ecoCode: 'A87',
+    pgn: '1. d4 f5 2. c4 Nf6 3. g3 g6 4. Bg2 Bg7 5. Nf3 O-O 6. O-O d6',
+    firstMoveSquare: 'd4',
+    sortOrder: 801,
+    parentSlug: 'dutch-defense',
+  },
+  {
+    slug: 'dutch-stonewall',
+    name: 'Dutch Defense: Stonewall Variation',
+    ecoCode: 'A90',
+    pgn: '1. d4 f5 2. c4 Nf6 3. g3 e6 4. Bg2 d5',
+    firstMoveSquare: 'd4',
+    sortOrder: 802,
+    parentSlug: 'dutch-defense',
+  },
+  {
+    slug: 'dutch-classical',
+    name: 'Dutch Defense: Classical Variation',
+    ecoCode: 'A84',
+    pgn: '1. d4 f5 2. c4 Nf6 3. Nc3 e6',
+    firstMoveSquare: 'd4',
+    sortOrder: 803,
+    parentSlug: 'dutch-defense',
+  },
+
   {
     slug: 'trompowsky-attack',
     name: 'Trompowsky Attack',
