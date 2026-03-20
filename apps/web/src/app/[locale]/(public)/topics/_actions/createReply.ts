@@ -48,6 +48,13 @@ export async function createReplyBase(params: {
     return { error: 'invalidPostId' };
   }
 
+  // replyToId: the specific post/reply being replied to.
+  // When replying to a reply, this differs from postId (the top-level post from the URL).
+  // When absent or equal to postId, this is a direct reply to the top-level post.
+  const replyToId = formData.get('replyToId');
+  const targetId =
+    replyToId && typeof replyToId === 'string' && UUID_RE.test(replyToId) ? replyToId : postId;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -66,31 +73,82 @@ export async function createReplyBase(params: {
     return { error: rateLimitResult.error };
   }
 
-  const [parentPost] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      replyPermission: topicPosts.replyPermission,
-    })
-    .from(topicPosts)
-    .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+  // Determine parentId, rootPostId, and which post to check permissions on.
+  let parentId: string;
+  let rootPostId: string;
+  let permissionPost: { userId: string; replyPermission: string };
+  let notifyUserId: string;
 
-  if (!parentPost) {
-    return { error: 'postNotFound' };
+  if (targetId === postId) {
+    // Case A: Reply to a top-level post (existing behavior)
+    const [topLevelPost] = await db
+      .select({
+        id: topicPosts.id,
+        userId: topicPosts.userId,
+        replyPermission: topicPosts.replyPermission,
+      })
+      .from(topicPosts)
+      .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+
+    if (!topLevelPost) {
+      return { error: 'postNotFound' };
+    }
+
+    parentId = postId;
+    rootPostId = postId;
+    permissionPost = topLevelPost;
+    notifyUserId = topLevelPost.userId;
+  } else {
+    // Case B: Reply to another reply
+    const [targetReply] = await db
+      .select({
+        id: topicPosts.id,
+        userId: topicPosts.userId,
+        rootPostId: topicPosts.rootPostId,
+      })
+      .from(topicPosts)
+      .where(and(eq(topicPosts.id, targetId), isNull(topicPosts.deletedAt)));
+
+    if (!targetReply) {
+      return { error: 'postNotFound' };
+    }
+
+    // The target reply's rootPostId tells us the top-level post.
+    // If rootPostId is null, the target is itself a top-level post (shouldn't happen
+    // in this branch since targetId != postId, but handle defensively).
+    rootPostId = targetReply.rootPostId ?? postId;
+    parentId = targetId;
+    notifyUserId = targetReply.userId;
+
+    // Permission check uses the root (top-level) post
+    const [rootPost] = await db
+      .select({
+        id: topicPosts.id,
+        userId: topicPosts.userId,
+        replyPermission: topicPosts.replyPermission,
+      })
+      .from(topicPosts)
+      .where(and(eq(topicPosts.id, rootPostId), isNull(topicPosts.deletedAt)));
+
+    if (!rootPost) {
+      return { error: 'postNotFound' };
+    }
+
+    permissionPost = rootPost;
   }
 
-  const isAuthor = parentPost.userId === user.id;
+  const isAuthor = permissionPost.userId === user.id;
 
-  if (!isAuthor && parentPost.replyPermission === 'nobody') {
+  if (!isAuthor && permissionPost.replyPermission === 'nobody') {
     return { error: 'repliesDisabled' };
   }
 
-  if (!isAuthor && parentPost.replyPermission === 'followers') {
+  if (!isAuthor && permissionPost.replyPermission === 'followers') {
     const [follow] = await db
       .select({ id: userFollows.id })
       .from(userFollows)
       .where(
-        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, parentPost.userId))
+        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, permissionPost.userId))
       );
 
     if (!follow) {
@@ -114,7 +172,8 @@ export async function createReplyBase(params: {
       userId: user.id,
       topicType,
       topicKey,
-      parentId: postId,
+      parentId,
+      rootPostId,
       content: content.trim(),
     })
     .returning({ id: topicPosts.id });
@@ -124,12 +183,12 @@ export async function createReplyBase(params: {
     action: 'create_reply',
     targetType: 'topic_post',
     targetId: inserted.id,
-    metadata: { parentId: postId, topicKey },
+    metadata: { parentId, topicKey },
   });
 
-  if (parentPost.userId !== user.id) {
+  if (notifyUserId !== user.id) {
     createNotification({
-      userId: parentPost.userId,
+      userId: notifyUserId,
       actorId: user.id,
       type: 'reply',
       targetType: 'topic_post',

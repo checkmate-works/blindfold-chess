@@ -18,6 +18,7 @@ vi.mock('@/lib/db', () => {
       topicType: 'topic_posts.topic_type',
       topicKey: 'topic_posts.topic_key',
       parentId: 'topic_posts.parent_id',
+      rootPostId: 'topic_posts.root_post_id',
       content: 'topic_posts.content',
       createdAt: 'topic_posts.created_at',
       deletedAt: 'topic_posts.deleted_at',
@@ -343,7 +344,7 @@ describe('getPostsByUserId', () => {
     const mainRows = [makePostRow('post-sq-1', 'square', 'e4', new Date('2025-06-01T00:00:00Z'))];
     const statsRows = [
       {
-        parentId: 'post-sq-1',
+        rootPostId: 'post-sq-1',
         replyCount: 3,
         latestReplyAt: new Date('2025-06-05T00:00:00Z'),
       },
