@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -35,7 +33,6 @@ export function TopicPostCard({ post, locale }: Props) {
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
   const isTruncated = contentPreview !== post.content;
-  const [expanded, setExpanded] = useState(false);
   const isOpening = post.topicType === 'opening';
 
   const href = isOpening
@@ -92,21 +89,11 @@ export function TopicPostCard({ post, locale }: Props) {
             />
           </div>
         )}
-        <p className={`text-sm text-foreground break-words mt-3${expanded ? '' : ' line-clamp-3'}`}>
-          <LinkedText text={expanded ? post.content : contentPreview} locale={locale} />
+        <p className="text-sm text-foreground break-words mt-3 line-clamp-3">
+          <LinkedText text={contentPreview} locale={locale} />
         </p>
         {isTruncated && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setExpanded((prev) => !prev);
-            }}
-            className="text-sm text-link-primary hover:underline"
-          >
-            {expanded ? tTopics('showLess') : tTopics('showMore')}
-          </button>
+          <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
         )}
 
         <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">
