@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { Divider, MarkdownRenderer, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -66,24 +66,24 @@ export default async function ManualArticlePage({ params }: Props) {
 
   return (
     <div className="space-y-12">
-      {/* Header */}
       <header>
         <PageTitle>{article.metadata.title}</PageTitle>
       </header>
 
-      {/* Content */}
-      <article className="prose prose-slate dark:prose-invert max-w-none">
-        <MarkdownRenderer content={article.content} skipFirstH1={true} />
-      </article>
+      <PagePanel>
+        <article className="prose prose-slate dark:prose-invert max-w-none">
+          <MarkdownRenderer content={article.content} skipFirstH1={true} />
+        </article>
 
-      <AdBanner slot="banner-standard" locale={locale} />
+        <AdBanner slot="banner-standard" locale={locale} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[{ label: t('title'), href: '/manual' }, { label: title }]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[{ label: t('title'), href: '/manual' }, { label: title }]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }
