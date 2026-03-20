@@ -1,6 +1,6 @@
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
-import type { ChallengeResultRow } from '../_actions/get-practice-sessions';
+import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 
 export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 

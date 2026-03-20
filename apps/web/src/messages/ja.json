@@ -75,9 +75,9 @@
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
     },
-    "mypagePractice": {
-      "title": "練習記録",
-      "description": "練習セッションの履歴とスコアを確認できます"
+    "mypageChallenges": {
+      "title": "チャレンジ記録",
+      "description": "チャレンジセッションの履歴とスコアを確認できます"
     },
     "mypageNotifications": {
       "title": "通知",
@@ -1782,12 +1782,12 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "practiceLink": "練習記録",
+    "challengeLink": "チャレンジ記録",
     "dashboard": {
       "viewProfile": "@{username} のプロフィール",
-      "practiceTitle": "練習記録",
-      "practiceSummary": "今週 {sessions} セッション / 最高スコア: {bestScore}",
-      "practiceEmpty": "今週はまだ記録がありません。",
+      "challengeTitle": "チャレンジ記録",
+      "challengeSummary": "今週 {sessions} セッション / 最高スコア: {bestScore}",
+      "challengeEmpty": "今週はまだ記録がありません。",
       "likesTitle": "いいねした投稿",
       "likesSummary": "{count} 件の投稿にいいね",
       "followingTitle": "フォロー中",
@@ -1864,8 +1864,8 @@
     "unfollowConfirmMessage": "{name} のフォローを解除しますか？",
     "cancel": "キャンセル"
   },
-  "MypagePractice": {
-    "title": "練習記録",
+  "MypageChallenges": {
+    "title": "チャレンジ記録",
     "breadcrumbMypage": "マイページ"
   },
   "MypageNotifications": {

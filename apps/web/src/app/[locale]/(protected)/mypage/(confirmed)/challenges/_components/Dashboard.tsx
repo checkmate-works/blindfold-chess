@@ -8,7 +8,7 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 
-import type { DatePeriod } from '../_actions/get-practice-sessions';
+import type { DatePeriod } from '../_actions/get-challenge-sessions';
 import {
   ORIENTATION_FILTER_MENUS,
   PIECE_FILTER_MENUS,

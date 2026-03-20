@@ -2,7 +2,7 @@ import type { MypageDashboardData } from './getMypageDashboardData';
 
 export type DashboardCard = {
   icon: string;
-  href: '/mypage/practice' | '/mypage/likes' | '/mypage/following' | '/mypage/profile';
+  href: '/mypage/challenges' | '/mypage/likes' | '/mypage/following' | '/mypage/profile';
   title: string;
   summary: string;
 };

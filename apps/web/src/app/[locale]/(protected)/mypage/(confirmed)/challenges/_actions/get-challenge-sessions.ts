@@ -20,7 +20,7 @@ export type ChallengeResultRow = {
   createdAt: Date;
 };
 
-export type GetPracticeSessionsResponse = {
+export type GetChallengeSessionsResponse = {
   success: boolean;
   sessions: ChallengeResultRow[];
   previousSessions: ChallengeResultRow[];
@@ -53,13 +53,13 @@ function querySessionsByRange(
     .orderBy(desc(challengeResults.createdAt));
 }
 
-export async function getPracticeSessions(
+export async function getChallengeSessions(
   menuType: ChallengeMenuType | undefined,
   currentRangeStart: string,
   currentRangeEnd: string,
   previousRangeStart: string,
   previousRangeEnd: string
-): Promise<GetPracticeSessionsResponse> {
+): Promise<GetChallengeSessionsResponse> {
   try {
     const supabase = await createClient();
     const {
@@ -79,7 +79,7 @@ export async function getPracticeSessions(
 
     return { success: true, sessions, previousSessions };
   } catch (error) {
-    console.error('Failed to fetch practice sessions:', error);
+    console.error('Failed to fetch challenge sessions:', error);
     return { success: false, sessions: [], previousSessions: [] };
   }
 }

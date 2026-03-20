@@ -7,8 +7,8 @@ import {
   type ChallengeResultRow,
   type DatePeriod,
   getAvailableMenuTypes,
-  getPracticeSessions,
-} from '../_actions/get-practice-sessions';
+  getChallengeSessions,
+} from '../_actions/get-challenge-sessions';
 import {
   aggregateByDay,
   computePercentChange,
@@ -138,7 +138,7 @@ export function useDashboardData(locale: string) {
       const currentRange = getPeriodRange(selectedPeriod);
       const previousRange = getPreviousPeriodRange(selectedPeriod);
 
-      const response = await getPracticeSessions(
+      const response = await getChallengeSessions(
         selectedMenu,
         currentRange.start.toISOString(),
         currentRange.end.toISOString(),

@@ -75,9 +75,9 @@
       "title": "Following",
       "description": "Users you are following"
     },
-    "mypagePractice": {
-      "title": "Practice Records",
-      "description": "View your practice session history and scores"
+    "mypageChallenges": {
+      "title": "Challenge Records",
+      "description": "View your challenge session history and scores"
     },
     "mypageNotifications": {
       "title": "Notifications",
@@ -1781,12 +1781,12 @@
   },
   "Mypage": {
     "title": "My Page",
-    "practiceLink": "Practice Records",
+    "challengeLink": "Challenge Records",
     "dashboard": {
       "viewProfile": "@{username}'s profile",
-      "practiceTitle": "Practice Records",
-      "practiceSummary": "{sessions} sessions this week / Best score: {bestScore}",
-      "practiceEmpty": "No records this week yet.",
+      "challengeTitle": "Challenge Records",
+      "challengeSummary": "{sessions} sessions this week / Best score: {bestScore}",
+      "challengeEmpty": "No records this week yet.",
       "likesTitle": "Liked Posts",
       "likesSummary": "{count, plural, one {# post} other {# posts}} liked",
       "followingTitle": "Following",
@@ -1863,8 +1863,8 @@
     "unfollowConfirmMessage": "Are you sure you want to unfollow {name}?",
     "cancel": "Cancel"
   },
-  "MypagePractice": {
-    "title": "Practice Records",
+  "MypageChallenges": {
+    "title": "Challenge Records",
     "breadcrumbMypage": "My Page"
   },
   "MypageNotifications": {

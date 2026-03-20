@@ -12,7 +12,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypagePractice' });
+  const t = await getTranslations({ locale, namespace: 'metadata.mypageChallenges' });
 
   return {
     title: t('title'),
@@ -21,9 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PracticePage({ params }: Props) {
+export default async function ChallengesPage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypagePractice' });
+  const t = await getTranslations({ locale, namespace: 'MypageChallenges' });
 
   return (
     <div className="space-y-8">

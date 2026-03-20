@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ChallengeResultRow } from '../_actions/get-practice-sessions';
+import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import { DEFAULT_PIECE_SELECTION, derivePieceSelectionFromSessions } from './derive-piece-filter';
 
 // ---------------------------------------------------------------------------
