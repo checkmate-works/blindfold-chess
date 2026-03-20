@@ -1,14 +1,18 @@
 const content = `# Caution Regarding Data Handling
 
-## Where Data Is Stored
+## Data Stored in the Browser
 
-The data saved on this web service is volatile.
-This means that the data is not persisted on the server-side (e.g., a database server across the network); rather, the actual data resides in the browser of your smartphone or computer.
-Consequently, there is no functionality to synchronize data between devices.
+The following data is stored in your browser (localStorage). It is not sent to the server and is not synchronized between devices.
 
-## Potential Data Loss
+- Game data (saved games, move history, etc.)
+- Game preferences (peek mode, show coordinates, etc.)
+- Practice settings (time limits, FEN settings, etc.)
+- Tutorial skip flags
+- Theme settings (dark/light mode)
 
-Data such as games and settings will not disappear when you close your browser.
+### Potential Data Loss
+
+Data stored in the browser will not disappear when you close your browser.
 However, it may be lost due to the following events:
 
 - Deleting browser history or site data through user action.
@@ -17,8 +21,22 @@ However, it may be lost due to the following events:
 - Browser updates or malfunctions.
 - Changes in data storage methods by the service provider.
 
+## Data Stored on the Server
+
+The following data is stored on the server and managed in association with your user account.
+
+- User profile (display name, avatar)
+- Authentication information
+- Leaderboard / rankings
+- Social features (topic posts, likes, follows, ratings)
+- Moderation records
+
+## Account Deletion
+
+Users can delete their account. When an account is deleted, data stored on the server will be removed. Data stored in the browser is not affected by account deletion, so please delete it manually from your browser if needed.
+
 ## Usage Notice
 
-When using this website, please keep the above in mind and use it as an impromptu practice environment for blindfold chess.`;
+This web service stores data both in the browser and on the server. Please be aware that data stored in the browser may be lost for the reasons described above.`;
 
 export default content;
