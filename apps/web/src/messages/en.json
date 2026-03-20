@@ -1792,7 +1792,8 @@
       "followingTitle": "Following",
       "followingSummary": "Following {count, plural, one {# user} other {# users}}",
       "profileTitle": "Edit Profile",
-      "profileSummary": "Edit your display name and avatar"
+      "profileSummary": "Edit your display name and avatar",
+      "challengeStaticSummary": "View your challenge records and track your progress"
     },
     "records": "Records",
     "bestScore": "Best Score",

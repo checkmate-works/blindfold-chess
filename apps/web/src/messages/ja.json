@@ -1793,7 +1793,8 @@
       "followingTitle": "フォロー中",
       "followingSummary": "{count} 人をフォロー中",
       "profileTitle": "プロフィール編集",
-      "profileSummary": "表示名やアバターを編集する"
+      "profileSummary": "表示名やアバターを編集する",
+      "challengeStaticSummary": "チャレンジの記録を確認し、上達を追跡しましょう"
     },
     "records": "レコード",
     "bestScore": "最高スコア",

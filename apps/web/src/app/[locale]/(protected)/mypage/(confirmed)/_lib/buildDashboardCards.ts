@@ -13,6 +13,12 @@ export function buildDashboardCards(
 ): DashboardCard[] {
   return [
     {
+      icon: '\uD83C\uDFC6',
+      href: '/mypage/challenges',
+      title: t('dashboard.challengeTitle'),
+      summary: t('dashboard.challengeStaticSummary'),
+    },
+    {
       icon: '\u2764\uFE0F',
       href: '/mypage/likes',
       title: t('dashboard.likesTitle'),
