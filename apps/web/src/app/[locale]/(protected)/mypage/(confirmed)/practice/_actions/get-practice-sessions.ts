@@ -3,19 +3,27 @@
 import { and, desc, eq, gte, lt } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
-import type { PracticeMenuType } from '@/lib/db/practice-session-types';
-import { PRACTICE_MENU_TYPES, parsePracticeSession } from '@/lib/db/practice-session-types';
-import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
-import { practiceSessions } from '@/lib/db/schema';
+import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
+import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
+import { challengeResults } from '@/lib/db/schema';
 import { createClient } from '@/lib/supabase/server';
 
-export type { PracticeSessionRow } from '@/lib/db/practice-session-types';
 export type { DatePeriod } from '../_lib/period-utils';
+
+export type ChallengeResultRow = {
+  id: string;
+  menuType: string;
+  leaderboardKey: string;
+  score: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+  createdAt: Date;
+};
 
 export type GetPracticeSessionsResponse = {
   success: boolean;
-  sessions: PracticeSessionRow[];
-  previousSessions: PracticeSessionRow[];
+  sessions: ChallengeResultRow[];
+  previousSessions: ChallengeResultRow[];
 };
 
 function querySessionsByRange(
@@ -23,28 +31,30 @@ function querySessionsByRange(
   menuType: string | null,
   range: { start: Date; end: Date }
 ) {
-  const conditions = [eq(practiceSessions.userId, userId)];
+  const conditions = [eq(challengeResults.userId, userId)];
   if (menuType) {
-    conditions.push(eq(practiceSessions.menuType, menuType));
+    conditions.push(eq(challengeResults.menuType, menuType));
   }
-  conditions.push(gte(practiceSessions.startedAt, range.start));
-  conditions.push(lt(practiceSessions.startedAt, range.end));
+  conditions.push(gte(challengeResults.createdAt, range.start));
+  conditions.push(lt(challengeResults.createdAt, range.end));
 
   return db
     .select({
-      id: practiceSessions.id,
-      menuType: practiceSessions.menuType,
-      startedAt: practiceSessions.startedAt,
-      settings: practiceSessions.settings,
-      result: practiceSessions.result,
+      id: challengeResults.id,
+      menuType: challengeResults.menuType,
+      leaderboardKey: challengeResults.leaderboardKey,
+      score: challengeResults.score,
+      incorrectAnswers: challengeResults.incorrectAnswers,
+      timeTaken: challengeResults.timeTaken,
+      createdAt: challengeResults.createdAt,
     })
-    .from(practiceSessions)
+    .from(challengeResults)
     .where(and(...conditions))
-    .orderBy(desc(practiceSessions.startedAt));
+    .orderBy(desc(challengeResults.createdAt));
 }
 
 export async function getPracticeSessions(
-  menuType: PracticeMenuType | undefined,
+  menuType: ChallengeMenuType | undefined,
   currentRangeStart: string,
   currentRangeEnd: string,
   previousRangeStart: string,
@@ -64,11 +74,8 @@ export async function getPracticeSessions(
     const currentRange = { start: new Date(currentRangeStart), end: new Date(currentRangeEnd) };
     const previousRange = { start: new Date(previousRangeStart), end: new Date(previousRangeEnd) };
 
-    const rows = await querySessionsByRange(user.id, menu, currentRange);
-    const sessions = rows.map(parsePracticeSession);
-
-    const prevRows = await querySessionsByRange(user.id, menu, previousRange);
-    const previousSessions = prevRows.map(parsePracticeSession);
+    const sessions = await querySessionsByRange(user.id, menu, currentRange);
+    const previousSessions = await querySessionsByRange(user.id, menu, previousRange);
 
     return { success: true, sessions, previousSessions };
   } catch (error) {
@@ -77,7 +84,7 @@ export async function getPracticeSessions(
   }
 }
 
-export async function getAvailableMenuTypes(): Promise<PracticeMenuType[]> {
+export async function getAvailableMenuTypes(): Promise<ChallengeMenuType[]> {
   try {
     const supabase = await createClient();
     const {
@@ -87,13 +94,13 @@ export async function getAvailableMenuTypes(): Promise<PracticeMenuType[]> {
     if (!user) return [];
 
     const rows = await db
-      .selectDistinct({ menuType: practiceSessions.menuType })
-      .from(practiceSessions)
-      .where(eq(practiceSessions.userId, user.id));
+      .selectDistinct({ menuType: challengeResults.menuType })
+      .from(challengeResults)
+      .where(eq(challengeResults.userId, user.id));
 
     return rows
       .map((r) => r.menuType)
-      .filter((m): m is PracticeMenuType => PRACTICE_MENU_TYPES.includes(m as PracticeMenuType));
+      .filter((m): m is ChallengeMenuType => CHALLENGE_MENU_TYPES.includes(m as ChallengeMenuType));
   } catch {
     return [];
   }

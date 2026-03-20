@@ -2,6 +2,8 @@
 import { generateSquareSequence, getSquareColor } from '@blindfold-chess/features/square-colors';
 import { describe, expect, it } from 'vitest';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 const BATCH_SIZE = 100;
 
 describe('SquareColorsChallenge timed mode logic', () => {
@@ -187,22 +189,19 @@ describe('SquareColorsChallenge timed mode logic', () => {
 
   describe('rush mode - remaining lives calculation', () => {
     it('calculates remaining lives correctly', () => {
-      const MAX_MISTAKES = 3;
       const incorrectCount = 0;
-      expect(MAX_MISTAKES - incorrectCount).toBe(3);
+      expect(MISTAKE_LIMIT - incorrectCount).toBe(3);
     });
 
     it('decreases remaining lives with each mistake', () => {
-      const MAX_MISTAKES = 3;
-      expect(MAX_MISTAKES - 1).toBe(2);
-      expect(MAX_MISTAKES - 2).toBe(1);
-      expect(MAX_MISTAKES - 3).toBe(0);
+      expect(MISTAKE_LIMIT - 1).toBe(2);
+      expect(MISTAKE_LIMIT - 2).toBe(1);
+      expect(MISTAKE_LIMIT - 3).toBe(0);
     });
 
     it('remaining lives reaches 0 when mistake allowance is reached', () => {
-      const MAX_MISTAKES = 3;
-      const incorrectCount = MAX_MISTAKES;
-      expect(MAX_MISTAKES - incorrectCount).toBe(0);
+      const incorrectCount = MISTAKE_LIMIT;
+      expect(MISTAKE_LIMIT - incorrectCount).toBe(0);
     });
   });
 });

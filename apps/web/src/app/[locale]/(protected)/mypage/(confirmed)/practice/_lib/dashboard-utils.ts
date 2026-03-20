@@ -1,16 +1,22 @@
 import { useTranslations } from 'next-intl';
 
-import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
-import { getSessionScoreFields } from '@/lib/db/practice-session-types';
+import type { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
+import type { ChallengeResultRow } from '../_actions/get-practice-sessions';
 import type { DatePeriod } from './period-utils';
 import { getPeriodRange, getPreviousPeriodRange } from './period-utils';
 
-/** 完走判定: incorrectAnswers < mistakeAllowance（3ミスに達せず時間切れで終了したセッション） */
-export function isCompletedSession(session: PracticeSessionRow): boolean {
-  const fields = getSessionScoreFields(session);
-  if (!fields || fields.mistakeAllowance === null) return false;
-  return fields.incorrectAnswers < fields.mistakeAllowance;
+/**
+ * 完走判定: incorrectAnswers < MISTAKE_LIMIT（ミス上限に達せず時間切れで終了したセッション）
+ *
+ * MISTAKE_LIMIT は @/lib/challenge-constants で一元管理されている。
+ * ここでは型レベルでのみ参照し、実際の値は呼び出し側から渡す。
+ */
+export function isCompletedSession(
+  session: ChallengeResultRow,
+  mistakeLimit: typeof MISTAKE_LIMIT
+): boolean {
+  return session.incorrectAnswers < mistakeLimit;
 }
 
 export function formatDate(date: Date | null, locale: string): string {
@@ -61,23 +67,14 @@ export function getPreviousPeriodLabel(period: DatePeriod): string {
   }
 }
 
-export function computeStats(sessions: PracticeSessionRow[]) {
-  const scores = sessions
-    .map((s) => {
-      const fields = getSessionScoreFields(s);
-      return fields ? fields.correctAnswers : null;
-    })
-    .filter((v): v is number => v !== null);
+export function computeStats(sessions: ChallengeResultRow[], mistakeLimit: number) {
+  const scores = sessions.map((s) => s.score);
 
   const bestScore = scores.length > 0 ? Math.max(...scores) : null;
 
   const completedScores = sessions
-    .filter(isCompletedSession)
-    .map((s) => {
-      const fields = getSessionScoreFields(s);
-      return fields ? fields.correctAnswers : null;
-    })
-    .filter((v): v is number => v !== null);
+    .filter((s) => s.incorrectAnswers < mistakeLimit)
+    .map((s) => s.score);
 
   const avgCompletionScore =
     completedScores.length > 0
@@ -101,25 +98,21 @@ export type DailyAggregation = {
   avgScore: number;
 };
 
-export function aggregateByDay(sessions: PracticeSessionRow[], locale: string): DailyAggregation[] {
+export function aggregateByDay(sessions: ChallengeResultRow[], locale: string): DailyAggregation[] {
   const dailyMap = new Map<string, { total: number; count: number; dateLabel: string }>();
 
   for (const s of sessions) {
-    if (!s.startedAt) continue;
-    const fields = getSessionScoreFields(s);
-    if (!fields) continue;
-
-    const d = new Date(s.startedAt);
+    const d = new Date(s.createdAt);
     const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const existing = dailyMap.get(dateKey);
     if (existing) {
-      existing.total += fields.correctAnswers;
+      existing.total += s.score;
       existing.count += 1;
     } else {
       dailyMap.set(dateKey, {
-        total: fields.correctAnswers,
+        total: s.score,
         count: 1,
-        dateLabel: formatShortDate(s.startedAt, locale),
+        dateLabel: formatShortDate(s.createdAt, locale),
       });
     }
   }

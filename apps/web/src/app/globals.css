@@ -43,6 +43,12 @@
   --color-accent-purple-soft: var(--color-accent-purple-soft);
   --color-accent-orange: var(--color-accent-orange);
   --color-accent-orange-soft: var(--color-accent-orange-soft);
+  --color-podium-gold: var(--color-podium-gold);
+  --color-podium-gold-foreground: var(--color-podium-gold-foreground);
+  --color-podium-silver: var(--color-podium-silver);
+  --color-podium-silver-foreground: var(--color-podium-silver-foreground);
+  --color-podium-bronze: var(--color-podium-bronze);
+  --color-podium-bronze-foreground: var(--color-podium-bronze-foreground);
   --color-border: var(--color-border);
   --color-input: var(--color-input);
   --color-ring: var(--color-ring);
