@@ -50,6 +50,13 @@
       "when": 1773968356353,
       "tag": "20260320005916_add_root_post_id_to_topic_posts",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1774054800000,
+      "tag": "20260320180000_ensure_parent_slug_on_chess_openings",
+      "breakpoints": true
     }
   ]
 }

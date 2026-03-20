@@ -41,6 +41,68 @@ export async function getOpeningsByFirstMoveSquare(square: string): Promise<Ches
     .orderBy(asc(chessOpenings.sortOrder));
 }
 
+export type OpeningWithChildren = ChessOpening & {
+  children: ChessOpening[];
+};
+
+/**
+ * Fetch all openings and build a tree structure in memory.
+ * Root openings (parentSlug is null) are returned with their children nested.
+ */
+export async function getOpeningsAsTree(): Promise<OpeningWithChildren[]> {
+  const all = await db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
+  return buildTree(all);
+}
+
+/**
+ * Same as getOpeningsAsTree but filtered by firstMoveSquare.
+ */
+export async function getOpeningsAsTreeByFirstMoveSquare(
+  square: string
+): Promise<OpeningWithChildren[]> {
+  const all = await db
+    .select()
+    .from(chessOpenings)
+    .where(eq(chessOpenings.firstMoveSquare, square))
+    .orderBy(asc(chessOpenings.sortOrder));
+  return buildTree(all);
+}
+
+/**
+ * Get children of a specific opening by its slug.
+ */
+export async function getChildOpenings(slug: string): Promise<ChessOpening[]> {
+  return db
+    .select()
+    .from(chessOpenings)
+    .where(eq(chessOpenings.parentSlug, slug))
+    .orderBy(asc(chessOpenings.sortOrder));
+}
+
+/**
+ * Build a tree from a flat list of openings.
+ * Roots are openings with parentSlug === null.
+ * Children are grouped under their parent.
+ */
+function buildTree(openings: ChessOpening[]): OpeningWithChildren[] {
+  const childrenByParent = new Map<string, ChessOpening[]>();
+
+  for (const opening of openings) {
+    if (opening.parentSlug) {
+      const siblings = childrenByParent.get(opening.parentSlug) ?? [];
+      siblings.push(opening);
+      childrenByParent.set(opening.parentSlug, siblings);
+    }
+  }
+
+  return openings
+    .filter((o) => o.parentSlug === null)
+    .map((root) => ({
+      ...root,
+      children: childrenByParent.get(root.slug) ?? [],
+    }));
+}
+
 /**
  * Get a single opening by its slug.
  * Returns null if the slug does not exist.

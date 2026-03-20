@@ -28,8 +28,8 @@ import {
   OpeningsListByCategory,
 } from './_components';
 import {
-  getOpenings,
-  getOpeningsByFirstMoveSquare,
+  getOpeningsAsTree,
+  getOpeningsAsTreeByFirstMoveSquare,
   getPostCountAcrossOpenings,
   getPostCountByFirstMoveSquare,
   getPostsAcrossOpeningsPaginated,
@@ -87,8 +87,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
     : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
 
   const openings = firstMoveSquare
-    ? await getOpeningsByFirstMoveSquare(firstMoveSquare)
-    : await getOpenings();
+    ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
+    : await getOpeningsAsTree();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -108,6 +108,24 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
       <PageTitle>{t('openings.title')}</PageTitle>
 
       <PagePanel>
+        {recentPosts.length > 0 && (
+          <>
+            <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+            <div className="space-y-3">
+              {recentPosts.map((post) => (
+                <TopicPostCard key={post.id} post={post} locale={locale} />
+              ))}
+            </div>
+            <PaginationNav
+              currentPage={currentPage}
+              totalPages={totalPages}
+              buildHref={buildHref}
+            />
+          </>
+        )}
+
+        <AdBanner slot="banner-wide" locale={locale} />
+
         {firstMoveSquare
           ? currentPage === 1 && (
               <>
@@ -116,12 +134,26 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                 </SectionTitle>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {openings.map((opening) => (
-                    <OpeningCard
-                      key={opening.id}
-                      opening={opening}
-                      displayName={getDisplayName(opening.slug, opening.name)}
-                      locale={locale}
-                    />
+                    <div key={opening.id}>
+                      <OpeningCard
+                        opening={opening}
+                        displayName={getDisplayName(opening.slug, opening.name)}
+                        locale={locale}
+                      />
+                      {opening.children.length > 0 && (
+                        <div className="border-l-2 border-border ml-4 pl-2 mt-1 space-y-1">
+                          {opening.children.map((child) => (
+                            <OpeningCard
+                              key={child.id}
+                              opening={child}
+                              displayName={getDisplayName(child.slug, child.name)}
+                              locale={locale}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>
@@ -134,23 +166,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
               </Suspense>
             )}
 
-        <AdBanner slot="banner-wide" locale={locale} />
-
-        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
-
-        {recentPosts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('openings.noRecentPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {recentPosts.map((post) => (
-              <TopicPostCard key={post.id} post={post} locale={locale} />
-            ))}
-          </div>
-        )}
-
         <AdBanner slot="banner-standard" locale={locale} />
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         <Divider />
 
