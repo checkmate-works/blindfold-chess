@@ -108,6 +108,24 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
       <PageTitle>{t('openings.title')}</PageTitle>
 
       <PagePanel>
+        {recentPosts.length > 0 && (
+          <>
+            <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+            <div className="space-y-3">
+              {recentPosts.map((post) => (
+                <TopicPostCard key={post.id} post={post} locale={locale} />
+              ))}
+            </div>
+            <PaginationNav
+              currentPage={currentPage}
+              totalPages={totalPages}
+              buildHref={buildHref}
+            />
+          </>
+        )}
+
+        <AdBanner slot="banner-wide" locale={locale} />
+
         {firstMoveSquare
           ? currentPage === 1 && (
               <>
@@ -148,23 +166,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
               </Suspense>
             )}
 
-        <AdBanner slot="banner-wide" locale={locale} />
-
-        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
-
-        {recentPosts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('openings.noRecentPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {recentPosts.map((post) => (
-              <TopicPostCard key={post.id} post={post} locale={locale} />
-            ))}
-          </div>
-        )}
-
         <AdBanner slot="banner-standard" locale={locale} />
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         <Divider />
 
