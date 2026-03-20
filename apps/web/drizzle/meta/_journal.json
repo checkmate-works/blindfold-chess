@@ -57,6 +57,13 @@
       "when": 1773986126878,
       "tag": "20260320055526_add_parent_slug_to_chess_openings",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774054800000,
+      "tag": "20260320180000_ensure_parent_slug_on_chess_openings",
+      "breakpoints": true
     }
   ]
 }
