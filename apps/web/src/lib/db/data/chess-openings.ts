@@ -393,6 +393,14 @@ export const chessOpenings: ChessOpeningSeed[] = [
     firstMoveSquare: 'd4',
     sortOrder: 780,
   },
+  {
+    slug: 'benko-gambit',
+    name: 'Benko Gambit',
+    ecoCode: 'A57',
+    pgn: '1. d4 Nf6 2. c4 c5 3. d5 b5',
+    firstMoveSquare: 'd4',
+    sortOrder: 790,
+  },
 
   // 1. d4 — Other Defenses
   {

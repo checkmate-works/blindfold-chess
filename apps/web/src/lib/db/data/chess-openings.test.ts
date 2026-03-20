@@ -6,8 +6,8 @@ import { chessOpenings } from './chess-openings';
 
 describe('chess-openings seed data integrity', () => {
   describe('data count', () => {
-    it('should contain 72 opening families', () => {
-      expect(chessOpenings).toHaveLength(72);
+    it('should contain 73 opening families', () => {
+      expect(chessOpenings).toHaveLength(73);
     });
   });
 
