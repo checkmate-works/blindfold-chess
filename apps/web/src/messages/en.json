@@ -122,6 +122,10 @@
     "games": {
       "title": "Your Games",
       "description": "View and manage your blindfold chess games"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "description": "See the top players across all practice modules"
     }
   },
   "Header": {
@@ -136,6 +140,7 @@
     "announcements": "Announcements",
     "faq": "FAQ",
     "glossary": "Glossary",
+    "leaderboard": "Leaderboard",
     "contact": "Contact",
     "settings": "Settings"
   },
@@ -1800,7 +1805,7 @@
     "noData": "No records yet.",
     "tableDate": "Date",
     "tableCorrectAnswers": "Correct",
-    "tableIncorrectAnswers": "Incorrect",
+    "tableIncorrectAnswers": "Miss",
     "periods": {
       "thisWeek": "This Week",
       "lastWeek": "Last Week",
@@ -2577,5 +2582,84 @@
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
     "signUpButton": "Create Free Account",
     "signInButton": "Already have an account? Sign in"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "description": "See the top players across all practice modules.",
+    "periodLabel": "Time period",
+    "moduleLabel": "Practice module",
+    "settingLabel": "Setting",
+    "period": {
+      "all-time": "All Time",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "module": {
+      "coordinate_quiz": "Coordinate Quiz",
+      "legal_moves": "Legal Moves",
+      "square_colors": "Square Colors"
+    },
+    "setting": {
+      "coordinate_quiz": {
+        "white": "White",
+        "black": "Black",
+        "random": "Random"
+      },
+      "legal_moves": {
+        "king": "King",
+        "queen": "Queen",
+        "rook": "Rook",
+        "bishop": "Bishop",
+        "knight": "Knight",
+        "random": "Random"
+      },
+      "square_colors": {
+        "default": "Default"
+      }
+    },
+    "table": {
+      "rank": "Rank",
+      "player": "Player",
+      "score": "Score",
+      "miss": "Miss"
+    },
+    "emptyState": "No scores recorded yet. Be the first to set a record!",
+    "yourRank": "You",
+    "pagination": {
+      "label": "Leaderboard pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count, plural, one {# player} other {# players}} total"
+    },
+    "moduleFilterLabel": "Module filter",
+    "moduleFilter": {
+      "all": "All",
+      "coordinate_quiz": "Coordinate Quiz",
+      "legal_moves": "Legal Moves",
+      "square_colors": "Square Colors"
+    },
+    "yourRankedSection": "Your Ranked Leaderboards",
+    "allLeaderboardsSection": "All Leaderboards",
+    "rankLabel": "Your Rank: #{rank}",
+    "notRanked": "Not ranked",
+    "cardTitle": {
+      "coordinate_quiz": {
+        "white": "Coordinate Quiz — White",
+        "black": "Coordinate Quiz — Black",
+        "random": "Coordinate Quiz — Random"
+      },
+      "legal_moves": {
+        "king": "Legal Moves — King",
+        "queen": "Legal Moves — Queen",
+        "rook": "Legal Moves — Rook",
+        "bishop": "Legal Moves — Bishop",
+        "knight": "Legal Moves — Knight",
+        "random": "Legal Moves — Random"
+      },
+      "square_colors": {
+        "default": "Square Colors"
+      }
+    },
+    "backToList": "Back to Leaderboard"
   }
 }

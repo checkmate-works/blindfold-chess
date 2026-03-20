@@ -18,13 +18,13 @@ import {
   PositionSettings,
 } from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
+import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { buildFenFromParts } from '@/app/[locale]/(public)/games/new/_lib/build-fen-from-parts';
 import { getCastlingAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-castling-availability';
 import { getEnPassantAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-en-passant-availability';
 import { validatePosition } from '@/app/[locale]/(public)/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/_components/EditableChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -39,24 +39,11 @@ export function PositionGameForm({ locale }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { preferences, isLoaded } = useGamePreferences();
+  const { localSettings, handleSettingsChange } = useLocalGameSettings();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [isLoading, setIsLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
-
-  // Initialize local per-game settings from global preferences
-  const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
-    showBoardButtonInGame: preferences.showBoardButtonInGame,
-    highlightLastMove: preferences.highlightLastMove,
-    showOwnPieces: preferences.showOwnPieces,
-    showOpponentPieces: preferences.showOpponentPieces,
-    pieceShapeMode: preferences.pieceShapeMode,
-    pieceColors: preferences.pieceColors,
-  });
-
-  const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {
-    setLocalSettings((prev) => ({ ...prev, ...updates }));
-  };
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);

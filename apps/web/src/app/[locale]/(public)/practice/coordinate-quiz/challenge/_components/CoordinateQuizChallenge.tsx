@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import type { Square } from '@blindfold-chess/types';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -24,8 +26,6 @@ type Props = {
   initialBoardOrientation: string;
   initialFeedbackSpeed: string;
 };
-
-const MAX_MISTAKES = 3;
 
 export default function CoordinateQuizChallenge({
   locale,
@@ -69,7 +69,7 @@ export default function CoordinateQuizChallenge({
     timeLimit: initialTimeLimit,
     generateQuestion,
     feedbackDuration,
-    mistakeAllowance: MAX_MISTAKES,
+    mistakeAllowance: MISTAKE_LIMIT,
   });
 
   useScrollToElement('quiz-session', !!currentQuestion);
@@ -113,12 +113,10 @@ export default function CoordinateQuizChallenge({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-        timeLimit: initialTimeLimit,
         boardOrientation,
-        mistakeAllowance: MAX_MISTAKES,
       })
-        .catch(() => {
-          // Silently ignore save failures - result display is unaffected
+        .catch((error) => {
+          console.error('Failed to save coordinate_quiz result:', error);
         })
         .finally(() => {
           router.push(resultUrl);
@@ -164,8 +162,8 @@ export default function CoordinateQuizChallenge({
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={togglePause}
-        remainingLives={MAX_MISTAKES - incorrectCount}
-        maxLives={MAX_MISTAKES}
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
       />
     </div>
   );

@@ -15,9 +15,10 @@ import type { QuestionResult } from '../_components/DiagonalQuizProblemList';
 
 type Props = {
   locale: Locale;
+  adBanner?: React.ReactNode;
 };
 
-export function ResultClient({ locale }: Props) {
+export function ResultClient({ locale, adBanner }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -90,6 +91,7 @@ export function ResultClient({ locale }: Props) {
           averageTime: tPractice('averageTime'),
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
+        beforeRelatedContent={adBanner}
         relatedModule={{
           href: '/learn/moves/bishop-movement',
           icon: '♗',

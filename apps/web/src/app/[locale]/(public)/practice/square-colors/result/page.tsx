@@ -29,7 +29,7 @@ export default async function SquareColorsResultPage(props: Props) {
   return (
     <>
       <Suspense>
-        <ResultClient locale={locale} />
+        <ResultClient locale={locale} adBanner={<AdBanner slot="banner-wide" locale={locale} />} />
       </Suspense>
       <AdBanner slot="banner-standard" locale={locale} />
     </>

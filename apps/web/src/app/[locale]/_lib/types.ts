@@ -9,6 +9,7 @@ export type NavigationIconName =
   | 'learn'
   | 'practice'
   | 'topics'
+  | 'leaderboard'
   | 'manual'
   | 'announcements'
   | 'faq'

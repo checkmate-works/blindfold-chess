@@ -1,50 +1,57 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PracticeSessionRow } from '@/lib/db/practice-session-types';
-
+import type { ChallengeResultRow } from '../_actions/get-practice-sessions';
 import { DEFAULT_PIECE_SELECTION, derivePieceSelectionFromSessions } from './derive-piece-filter';
 
 // ---------------------------------------------------------------------------
 // Helpers to build test session data
 // ---------------------------------------------------------------------------
 
-function makeLegalMovesSession(selectedPieces: string[], id = 'session-1'): PracticeSessionRow {
+function makeLegalMovesSession(leaderboardKey: string, id = 'session-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'legal_moves',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, selectedPieces, mistakeAllowance: null },
-    result: { correctAnswers: 5, incorrectAnswers: 1, timeTaken: 30 },
+    leaderboardKey,
+    score: 5,
+    incorrectAnswers: 1,
+    timeTaken: 30,
+    createdAt: new Date(),
   };
 }
 
-function makeCoordinateQuizSession(id = 'cq-1'): PracticeSessionRow {
+function makeCoordinateQuizSession(id = 'cq-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'coordinate_quiz',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, boardOrientation: 'white', mistakeAllowance: null },
-    result: { correctAnswers: 10, incorrectAnswers: 2, timeTaken: 45 },
+    leaderboardKey: 'white',
+    score: 10,
+    incorrectAnswers: 2,
+    timeTaken: 45,
+    createdAt: new Date(),
   };
 }
 
-function makeSquareColorsSession(id = 'sc-1'): PracticeSessionRow {
+function makeSquareColorsSession(id = 'sc-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'square_colors',
-    startedAt: new Date(),
-    settings: { timeLimit: 60, mistakeAllowance: null },
-    result: { correctAnswers: 8, incorrectAnswers: 3, timeTaken: 50 },
+    leaderboardKey: 'default',
+    score: 8,
+    incorrectAnswers: 3,
+    timeTaken: 50,
+    createdAt: new Date(),
   };
 }
 
-function makeUnknownSession(id = 'unknown-1'): PracticeSessionRow {
+function makeUnknownSession(id = 'unknown-1'): ChallengeResultRow {
   return {
     id,
     menuType: 'some_future_type',
-    startedAt: new Date(),
-    settings: { foo: 'bar' },
-    result: { baz: 42 },
+    leaderboardKey: 'default',
+    score: 0,
+    incorrectAnswers: 0,
+    timeTaken: 0,
+    createdAt: new Date(),
   };
 }
 
@@ -79,44 +86,31 @@ describe('derivePieceSelectionFromSessions', () => {
   });
 
   describe('single legal_moves session', () => {
-    it('returns the piece when session has a single piece (knight)', () => {
-      const sessions = [makeLegalMovesSession(['n'])];
+    it('returns the piece short code when session has a specific piece (knight)', () => {
+      const sessions = [makeLegalMovesSession('knight')];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
-    it('returns random for a single session with all pieces', () => {
-      const sessions = [makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'])];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random for a single session with a multi-piece combination (legacy)', () => {
-      const sessions = [makeLegalMovesSession(['n', 'b'])];
+    it('returns random for a single session with "random"', () => {
+      const sessions = [makeLegalMovesSession('random')];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 
-  describe('multiple legal_moves sessions with same pieces', () => {
+  describe('multiple legal_moves sessions with same piece', () => {
     it('returns the piece when all sessions have the same single piece', () => {
       const sessions = [
-        makeLegalMovesSession(['n'], 's-1'),
-        makeLegalMovesSession(['n'], 's-2'),
-        makeLegalMovesSession(['n'], 's-3'),
+        makeLegalMovesSession('knight', 's-1'),
+        makeLegalMovesSession('knight', 's-2'),
+        makeLegalMovesSession('knight', 's-3'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
-    it('returns random when all sessions have same multi-piece legacy combination', () => {
+    it('returns random when all sessions have "random"', () => {
       const sessions = [
-        makeLegalMovesSession(['r', 'q'], 's-1'),
-        makeLegalMovesSession(['q', 'r'], 's-2'),
-      ];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random when all sessions have all pieces', () => {
-      const sessions = [
-        makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-1'),
-        makeLegalMovesSession(['n', 'b', 'r', 'q', 'k'], 's-2'),
+        makeLegalMovesSession('random', 's-1'),
+        makeLegalMovesSession('random', 's-2'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
@@ -124,22 +118,17 @@ describe('derivePieceSelectionFromSessions', () => {
 
   describe('multiple legal_moves sessions with different pieces', () => {
     it('returns random when sessions have different piece configurations', () => {
-      const sessions = [makeLegalMovesSession(['n'], 's-1'), makeLegalMovesSession(['b'], 's-2')];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random when one session is a subset of another', () => {
       const sessions = [
-        makeLegalMovesSession(['n', 'b'], 's-1'),
-        makeLegalMovesSession(['n'], 's-2'),
+        makeLegalMovesSession('knight', 's-1'),
+        makeLegalMovesSession('bishop', 's-2'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
 
-    it('returns random when one session has all pieces and another has a subset', () => {
+    it('returns random when one session has a specific piece and another has random', () => {
       const sessions = [
-        makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-1'),
-        makeLegalMovesSession(['k'], 's-2'),
+        makeLegalMovesSession('knight', 's-1'),
+        makeLegalMovesSession('random', 's-2'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
@@ -149,23 +138,23 @@ describe('derivePieceSelectionFromSessions', () => {
     it('only considers legal_moves sessions, ignores coordinate_quiz', () => {
       const sessions = [
         makeCoordinateQuizSession('cq-1'),
-        makeLegalMovesSession(['n'], 's-1'),
-        makeLegalMovesSession(['n'], 's-2'),
+        makeLegalMovesSession('knight', 's-1'),
+        makeLegalMovesSession('knight', 's-2'),
         makeCoordinateQuizSession('cq-2'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('n');
     });
 
     it('only considers legal_moves sessions, ignores square_colors', () => {
-      const sessions = [makeSquareColorsSession('sc-1'), makeLegalMovesSession(['b'], 's-1')];
+      const sessions = [makeSquareColorsSession('sc-1'), makeLegalMovesSession('bishop', 's-1')];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('b');
     });
 
     it('only considers legal_moves sessions, ignores unknown types', () => {
       const sessions = [
         makeUnknownSession('u-1'),
-        makeLegalMovesSession(['k'], 's-1'),
-        makeLegalMovesSession(['k'], 's-2'),
+        makeLegalMovesSession('king', 's-1'),
+        makeLegalMovesSession('king', 's-2'),
       ];
       expect(derivePieceSelectionFromSessions(sessions)).toBe('k');
     });
@@ -181,64 +170,24 @@ describe('derivePieceSelectionFromSessions', () => {
   });
 
   describe('edge cases', () => {
-    it('returns random for empty selectedPieces array in a single session', () => {
-      const sessions = [makeLegalMovesSession([])];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random for empty selectedPieces arrays in multiple sessions', () => {
-      const sessions = [makeLegalMovesSession([], 's-1'), makeLegalMovesSession([], 's-2')];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('treats pieces in different order as the same configuration', () => {
-      const sessions = [makeLegalMovesSession(['k'], 's-1'), makeLegalMovesSession(['k'], 's-2')];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('k');
-    });
-
     it('each piece type can be individually selected', () => {
-      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['k'])])).toBe('k');
-      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['q'])])).toBe('q');
-      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['r'])])).toBe('r');
-      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['b'])])).toBe('b');
-      expect(derivePieceSelectionFromSessions([makeLegalMovesSession(['n'])])).toBe('n');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession('king')])).toBe('k');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession('queen')])).toBe('q');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession('rook')])).toBe('r');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession('bishop')])).toBe('b');
+      expect(derivePieceSelectionFromSessions([makeLegalMovesSession('knight')])).toBe('n');
     });
 
-    it('returns random for sessions with duplicate pieces', () => {
-      const sessions = [makeLegalMovesSession(['n', 'n'])];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random when all-5-pieces are in different order across sessions', () => {
-      const sessions = [
-        makeLegalMovesSession(['n', 'b', 'r', 'q', 'k'], 's-1'),
-        makeLegalMovesSession(['k', 'b', 'n', 'q', 'r'], 's-2'),
-        makeLegalMovesSession(['r', 'q', 'k', 'n', 'b'], 's-3'),
-      ];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random for 3-piece legacy combination', () => {
-      const sessions = [makeLegalMovesSession(['n', 'b', 'r'])];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random for 4-piece legacy combination', () => {
-      const sessions = [makeLegalMovesSession(['k', 'q', 'r', 'b'])];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random when one session has single piece and another has all-5 pieces', () => {
-      const sessions = [
-        makeLegalMovesSession(['n'], 's-1'),
-        makeLegalMovesSession(['k', 'q', 'r', 'b', 'n'], 's-2'),
-      ];
-      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
-    });
-
-    it('returns random with a large number of consistent single-piece sessions', () => {
-      const sessions = Array.from({ length: 50 }, (_, i) => makeLegalMovesSession(['b'], `s-${i}`));
+    it('returns bishop with a large number of consistent single-piece sessions', () => {
+      const sessions = Array.from({ length: 50 }, (_, i) =>
+        makeLegalMovesSession('bishop', `s-${i}`)
+      );
       expect(derivePieceSelectionFromSessions(sessions)).toBe('b');
+    });
+
+    it('returns random for unknown piece name', () => {
+      const sessions = [makeLegalMovesSession('pawn')];
+      expect(derivePieceSelectionFromSessions(sessions)).toBe('random');
     });
   });
 });

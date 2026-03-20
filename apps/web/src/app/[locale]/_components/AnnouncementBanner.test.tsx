@@ -34,13 +34,13 @@ describe('AnnouncementBanner', () => {
   it('should render the announcement title', () => {
     render(<AnnouncementBanner {...defaultProps} />);
 
-    expect(screen.getByText('New feature released!')).toBeInTheDocument();
+    expect(screen.getByText(/New feature released!/)).toBeInTheDocument();
   });
 
   it('should render a link with the correct href', () => {
     render(<AnnouncementBanner {...defaultProps} />);
 
-    const link = screen.getByText('New feature released!');
+    const link = screen.getByRole('link', { name: /New feature released!/ });
     expect(link.tagName).toBe('A');
     expect(link).toHaveAttribute('href', '/en/announcements/new-feature');
   });
@@ -112,7 +112,7 @@ describe('AnnouncementBanner', () => {
       />
     );
 
-    const link = screen.getByText('Important update');
+    const link = screen.getByRole('link', { name: /Important update/ });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/ja/announcements/important-update');
   });

@@ -1,3 +1,4 @@
+import { shuffleArray } from '@/app/[locale]/(public)/practice/_lib/shuffle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FEN_STRINGS } from '../_data/positions';
@@ -14,15 +15,7 @@ const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {
 });
 
 export function getRandomPositions(count: number, shuffle: boolean = true): PositionData[] {
-  const positions = [...PRACTICE_POSITIONS];
-
-  if (shuffle) {
-    // Fisher-Yates shuffle algorithm
-    for (let i = positions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [positions[i], positions[j]] = [positions[j], positions[i]];
-    }
-  }
+  const positions = shuffle ? shuffleArray(PRACTICE_POSITIONS) : [...PRACTICE_POSITIONS];
 
   return positions.slice(0, Math.min(count, positions.length));
 }
@@ -32,19 +25,13 @@ export function getCustomPositions(
   count: number,
   shuffle: boolean = true
 ): PositionData[] {
-  const positions = fenStrings.map((fen) => {
+  const parsed = fenStrings.map((fen) => {
     const parts = fen.trim().split(' ');
     const isBlackToMove = parts[1] === 'b';
     return { fen: fen.trim(), isBlackToMove };
   });
 
-  if (shuffle) {
-    // Fisher-Yates shuffle algorithm
-    for (let i = positions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [positions[i], positions[j]] = [positions[j], positions[i]];
-    }
-  }
+  const positions = shuffle ? shuffleArray(parsed) : parsed;
 
   return positions.slice(0, Math.min(count, positions.length));
 }

@@ -6,8 +6,11 @@ import { useTranslations } from 'next-intl';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/_hooks/use-piece-accuracy';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
+import { aggregateResults } from '@/app/[locale]/(public)/practice/_lib/aggregate-results';
+import { shuffleArray } from '@/app/[locale]/(public)/practice/_lib/shuffle';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -29,16 +32,6 @@ type Props = {
   fens?: string[];
 };
 
-// Fisher-Yates shuffle
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
 export function FenSession({
   locale,
   problemCount,
@@ -48,6 +41,11 @@ export function FenSession({
   fens,
 }: Props) {
   const t = useTranslations('practice.fen');
+  const quitModalLabels = useQuitConfirmLabels({
+    message: t('quitConfirmMessage'),
+    confirmButton: t('quitConfirmYes'),
+    cancelButton: t('quitConfirmNo'),
+  });
 
   const { preferences, isLoaded } = useGamePreferences();
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
@@ -182,17 +180,6 @@ export function FenSession({
     setShowQuitModal(false);
   }, []);
 
-  // Labels for QuitConfirmModal
-  const quitModalLabels = useMemo(
-    () => ({
-      title: t('quitConfirmTitle'),
-      message: t('quitConfirmMessage'),
-      confirmButton: t('quitConfirmYes'),
-      cancelButton: t('quitConfirmNo'),
-    }),
-    [t]
-  );
-
   // Wait for positions to be initialized and preferences to be loaded
   if (!hasMounted || !isLoaded || positions.length === 0) {
     return null;
@@ -262,15 +249,8 @@ export function FenSession({
       return <PracticeResultSkeleton />;
     }
 
-    const totalAccuracy =
-      resultsArray.length > 0
-        ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
-        : 0;
-    const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
-    const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
-    const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
-    const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
-    const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
+    const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
+      aggregateResults(resultsArray);
 
     const individualResults = positions.map((position, index) => {
       const result = problemResults.get(index);

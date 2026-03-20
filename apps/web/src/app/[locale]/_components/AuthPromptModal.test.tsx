@@ -38,11 +38,11 @@ vi.mock('../_hooks/use-scroll-lock', () => ({
 }));
 
 describe('AuthPromptModal', () => {
-  let onClose: ReturnType<typeof vi.fn>;
+  let onClose: () => void;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    onClose = vi.fn();
+    onClose = vi.fn<() => void>();
   });
 
   describe('when isOpen is false', () => {

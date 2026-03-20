@@ -6,6 +6,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 
+import { parseFenMeta } from '../../_lib/fen-utils';
 import type { EvaluationFilters, MoveLogEntry } from '../_lib';
 import { clearEvaluationCache, formatMovesToPgn, getCurrentEvaluationMark } from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
@@ -113,12 +114,8 @@ export function usePostmortemGame({
   const [showEvaluation, setShowEvaluation] = useState(false);
 
   // Pre-compute starting position info from FEN
-  const startsAsBlack = useMemo(
-    () => (startingFen ? startingFen.split(' ')[1] === 'b' : false),
-    [startingFen]
-  );
-  const startMoveNumber = useMemo(
-    () => (startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1),
+  const { startsAsBlack, startMoveNumber } = useMemo(
+    () => parseFenMeta(startingFen),
     [startingFen]
   );
 

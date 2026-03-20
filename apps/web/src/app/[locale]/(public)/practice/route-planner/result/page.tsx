@@ -31,7 +31,7 @@ export default async function RoutePlannerResultPage(props: Props) {
   return (
     <>
       <Suspense>
-        <ResultClient locale={locale} />
+        <ResultClient locale={locale} adBanner={<AdBanner slot="banner-wide" locale={locale} />} />
       </Suspense>
       <AdBanner slot="banner-standard" locale={locale} />
     </>

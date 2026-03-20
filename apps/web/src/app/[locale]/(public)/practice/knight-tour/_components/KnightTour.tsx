@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 
 import {
@@ -37,7 +38,7 @@ export default function KnightTour({
   isTutorial = false,
 }: Props) {
   const locale = useLocale();
-  const tQuit = useTranslations('practice.quitConfirmModal');
+  const quitConfirmLabels = useQuitConfirmLabels();
 
   // Settings
   const [startingSquareOption, setStartingSquareOption] = useState(() => {
@@ -226,12 +227,7 @@ export default function KnightTour({
         isOpen={showQuitModal}
         onConfirm={confirmQuit}
         onCancel={cancelQuit}
-        labels={{
-          title: tQuit('title'),
-          message: tQuit('message'),
-          confirmButton: tQuit('confirmButton'),
-          cancelButton: tQuit('cancelButton'),
-        }}
+        labels={quitConfirmLabels}
       />
     </>
   );

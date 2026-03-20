@@ -33,12 +33,19 @@
     {
       "idx": 4,
       "version": "7",
+      "when": 1774000000000,
+      "tag": "20260319194412_restructure_scoring_into_challenge_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
       "when": 1773961215115,
       "tag": "20260319230015_add_social_links_to_profiles",
       "breakpoints": true
     },
     {
-      "idx": 5,
+      "idx": 6,
       "version": "7",
       "when": 1773968356353,
       "tag": "20260320005916_add_root_post_id_to_topic_posts",

@@ -9,7 +9,9 @@ import { useMachine } from '@xstate/react';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/_hooks/use-piece-accuracy';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { aggregateResults } from '@/app/[locale]/(public)/practice/_lib/aggregate-results';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -53,6 +55,11 @@ export function PositionMemorySession({
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
+  const quitModalLabels = useQuitConfirmLabels({
+    message: t('quitConfirmMessage'),
+    confirmButton: t('quitConfirmYes'),
+    cancelButton: t('quitConfirmNo'),
+  });
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
@@ -145,16 +152,8 @@ export function PositionMemorySession({
       const resultsArray = Array.from(problemResults.values());
 
       // Calculate stats
-      const totalAccuracy =
-        resultsArray.length > 0
-          ? resultsArray.reduce((sum, r) => sum + r.accuracy, 0) / resultsArray.length
-          : 0;
-
-      const totalCorrect = resultsArray.reduce((sum, r) => sum + r.correctPieces, 0);
-      const totalPieces = resultsArray.reduce((sum, r) => sum + r.totalPieces, 0);
-      const totalIncorrect = resultsArray.reduce((sum, r) => sum + r.incorrectPieces, 0);
-      const totalMissing = resultsArray.reduce((sum, r) => sum + r.missingPieces, 0);
-      const totalExtra = resultsArray.reduce((sum, r) => sum + r.extraPieces, 0);
+      const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
+        aggregateResults(resultsArray);
 
       // Serialize data
       // f=fen, r=recreatedFen, b=isBlackToMove, a=accuracy, c=correctPieces
@@ -270,17 +269,6 @@ export function PositionMemorySession({
       send({ type: 'UPDATE_POSITION', fen });
     },
     [send]
-  );
-
-  // Labels for QuitConfirmModal
-  const quitModalLabels = useMemo(
-    () => ({
-      title: t('quitConfirmTitle'),
-      message: t('quitConfirmMessage'),
-      confirmButton: t('quitConfirmYes'),
-      cancelButton: t('quitConfirmNo'),
-    }),
-    [t]
   );
 
   // Check if tutorial mode

@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -20,11 +22,15 @@ type Props = {
   locale: Locale;
   initialTimeLimit: number;
   selectedPieces: PieceType[];
+  selectedPiece: string;
 };
 
-const MAX_MISTAKES = 3;
-
-export default function LegalMovesSession({ locale, initialTimeLimit, selectedPieces }: Props) {
+export default function LegalMovesSession({
+  locale,
+  initialTimeLimit,
+  selectedPieces,
+  selectedPiece,
+}: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('practice.legalMoves');
@@ -74,7 +80,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
   } = useTimedSession<MoveQuestion>({
     timeLimit: initialTimeLimit,
     generateQuestion,
-    mistakeAllowance: MAX_MISTAKES,
+    mistakeAllowance: MISTAKE_LIMIT,
   });
 
   useScrollToElement('legal-moves-session');
@@ -112,7 +118,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     params.set('total', total.toString());
     params.set('time', totalTime.toString());
     params.set('timeLimit', initialTimeLimit.toString());
-    params.set('pieces', selectedPieces.join(','));
+    params.set('piece', selectedPiece);
 
     const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
 
@@ -121,12 +127,10 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-        timeLimit: initialTimeLimit,
-        selectedPieces,
-        mistakeAllowance: MAX_MISTAKES,
+        selectedPiece,
       })
-        .catch(() => {
-          // Silently ignore save failures - result display is unaffected
+        .catch((error) => {
+          console.error('Failed to save legal_moves result:', error);
         })
         .finally(() => {
           router.push(resultUrl);
@@ -142,7 +146,7 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
     locale,
     router,
     initialTimeLimit,
-    selectedPieces,
+    selectedPiece,
     totalTime,
     user,
   ]);
@@ -177,8 +181,8 @@ export default function LegalMovesSession({ locale, initialTimeLimit, selectedPi
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
-        remainingLives={MAX_MISTAKES - incorrectCount}
-        maxLives={MAX_MISTAKES}
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
       />
     </div>
   );

@@ -14,6 +14,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -104,6 +105,8 @@ export default async function TopicsPage({ params, searchParams }: Props) {
         )}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 

@@ -7,6 +7,7 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import { parseFenMeta } from '../_lib/fen-utils';
 import type { FormattedPgnMove } from '../_lib/pgn-parser';
 
 type UseNotationOptions = {
@@ -75,8 +76,7 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
       return '';
     }
 
-    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
-    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
 
     const formattedMoves: string[] = [];
 
@@ -116,8 +116,7 @@ export function useNotation(initialMovesOrOptions: AlgebraicNotation[] | UseNota
       return [];
     }
 
-    const startsAsBlack = startingFen ? startingFen.split(' ')[1] === 'b' : false;
-    const startMoveNumber = startingFen ? parseInt(startingFen.split(' ')[5]) || 1 : 1;
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
 
     const formattedMoves: FormattedPgnMove[] = [];
 
