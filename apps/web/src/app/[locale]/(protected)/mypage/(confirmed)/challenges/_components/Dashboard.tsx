@@ -6,6 +6,7 @@ import { PieceSelector } from '@/app/_components';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
+import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import type { DatePeriod } from '../_actions/get-challenge-sessions';
@@ -49,7 +50,6 @@ export function Dashboard({ locale }: { locale: string }) {
     currentStats,
     bestScoreComparison,
     avgScoreComparison,
-    totalSessionsChange,
     chartData,
     tableRows,
   } = useDashboardData(locale);
@@ -75,49 +75,51 @@ export function Dashboard({ locale }: { locale: string }) {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <select
-          value={selectedMenu ?? ''}
-          onChange={(e) => setSelectedMenu(e.target.value as ChallengeMenuType)}
-          className={`w-full sm:w-64 ${selectClassName}`}
-        >
-          {menuOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+    <div className="space-y-6 overflow-x-hidden">
+      <SectionTitle>{t('records')}</SectionTitle>
 
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value as DatePeriod)}
-          className={`w-full sm:w-48 ${selectClassName}`}
-        >
-          {DATE_PERIODS.map((period) => (
-            <option key={period} value={period}>
-              {t(`periods.${period}`)}
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        value={selectedPeriod}
+        onChange={(e) => setSelectedPeriod(e.target.value as DatePeriod)}
+        className={`block w-full sm:w-48 ${selectClassName}`}
+      >
+        {DATE_PERIODS.map((period) => (
+          <option key={period} value={period}>
+            {t(`periods.${period}`)}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={selectedMenu ?? ''}
+        onChange={(e) => setSelectedMenu(e.target.value as ChallengeMenuType)}
+        className={`block w-full sm:w-64 ${selectClassName}`}
+      >
+        {menuOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
 
       {selectedMenu && ORIENTATION_FILTER_MENUS.has(selectedMenu) && (
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
           <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
             {t('filters.boardOrientation')}
           </label>
-          <select
+          <BoardOrientationSelector
             value={boardOrientationFilter}
-            onChange={(e) => setBoardOrientationFilter(e.target.value)}
-            className={`w-full sm:w-48 ${selectClassName}`}
-          >
-            {['all', 'white', 'black', 'random'].map((opt) => (
-              <option key={opt} value={opt}>
-                {t(`filters.${opt}`)}
-              </option>
-            ))}
-          </select>
+            onChange={setBoardOrientationFilter}
+            labels={{
+              title: t('filters.boardOrientation'),
+              white: t('filters.white'),
+              black: t('filters.black'),
+              random: t('filters.random'),
+            }}
+            size="compact"
+            hideLabel
+            hideOptionLabels
+          />
         </div>
       )}
 
@@ -138,46 +140,36 @@ export function Dashboard({ locale }: { locale: string }) {
         <DashboardContentSkeleton />
       ) : (
         <>
-          <div>
-            <SectionTitle>{t('records')}</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-              <StatsCard
-                label={t('bestScore')}
-                value={currentStats.bestScore !== null ? currentStats.bestScore.toString() : '-'}
-                comparison={{
-                  percentChange: bestScoreComparison,
-                  absoluteChange: null,
-                  label: comparisonLabel,
-                }}
-              />
-              <StatsCard
-                label={t('avgScore')}
-                value={
-                  currentStats.avgCompletionScore !== null
-                    ? currentStats.avgCompletionScore.toFixed(1)
-                    : '-'
-                }
-                tooltip={t('avgScoreTooltip')}
-                comparison={{
-                  percentChange: avgScoreComparison,
-                  absoluteChange: null,
-                  label: comparisonLabel,
-                }}
-              />
-              <StatsCard
-                label={t('totalSessions')}
-                value={currentStats.totalSessions.toString()}
-                comparison={{
-                  percentChange: null,
-                  absoluteChange: totalSessionsChange,
-                  label: comparisonLabel,
-                }}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <StatsCard
+              label={t('bestScore')}
+              value={currentStats.bestScore !== null ? currentStats.bestScore.toString() : '-'}
+              comparison={{
+                percentChange: bestScoreComparison,
+                absoluteChange: null,
+                label: comparisonLabel,
+              }}
+            />
+            <StatsCard
+              label={t('avgScore')}
+              value={
+                currentStats.avgCompletionScore !== null
+                  ? currentStats.avgCompletionScore.toFixed(1)
+                  : '-'
+              }
+              tooltip={t('avgScoreTooltip')}
+              comparison={{
+                percentChange: avgScoreComparison,
+                absoluteChange: null,
+                label: comparisonLabel,
+              }}
+            />
           </div>
 
-          <div className="min-w-0">
-            <SectionTitle>{t('scoreTrend')}</SectionTitle>
+          <div className="min-w-0 overflow-hidden">
+            <h3 className="text-sm md:text-base font-medium text-muted-foreground">
+              {t('scoreTrend')}
+            </h3>
             <div className="mt-4">
               <ScoreChart
                 data={chartData}
@@ -193,7 +185,9 @@ export function Dashboard({ locale }: { locale: string }) {
           </div>
 
           <div>
-            <SectionTitle>{t('sessionHistory')}</SectionTitle>
+            <h3 className="text-sm md:text-base font-medium text-muted-foreground">
+              {t('sessionHistory')}
+            </h3>
             <div className="mt-4">
               <SessionHistoryTable
                 sessions={tableRows}

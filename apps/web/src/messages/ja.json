@@ -1800,7 +1800,6 @@
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",
     "avgScoreTooltip": "制限時間を最後まで使い切ったセッションの平均スコアです。",
-    "totalSessions": "総セッション数",
     "scoreUnit": "平均スコア",
     "scoreTrend": "スコア推移",
     "sessionHistory": "セッション履歴",
@@ -1822,7 +1821,6 @@
     "vs2MonthsAgo": "2ヶ月前比",
     "filters": {
       "boardOrientation": "ボード方向",
-      "all": "すべて",
       "white": "白",
       "black": "黒",
       "random": "ランダム",

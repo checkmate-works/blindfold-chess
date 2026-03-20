@@ -17,6 +17,7 @@ function makePost(
     topicType: 'square',
     topicKey: 'e4',
     parentId: null,
+    rootPostId: null,
     content: 'test',
     replyPermission: 'everyone',
     createdAt: overrides.createdAt ?? new Date('2025-01-01'),

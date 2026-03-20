@@ -37,8 +37,10 @@ const PIECE_SHORT_TO_NAME: Record<string, string> = {
   n: 'knight',
 };
 
+type BoardOrientation = 'white' | 'black' | 'random';
+
 type FilterContext = {
-  boardOrientationFilter: string;
+  boardOrientationFilter: BoardOrientation;
   activePiece: string;
 };
 
@@ -56,7 +58,6 @@ export const PIECE_FILTER_MENUS = new Set<ChallengeMenuType>(['legal_moves']);
  */
 const MENU_FILTERS: Partial<Record<ChallengeMenuType, SessionFilter>> = {
   coordinate_quiz: (s, ctx) => {
-    if (ctx.boardOrientationFilter === 'all') return true;
     return s.leaderboardKey === ctx.boardOrientationFilter;
   },
   legal_moves: (s, ctx) => {
@@ -93,7 +94,7 @@ export function useDashboardData(locale: string) {
   const [previousSessions, setPreviousSessions] = useState<ChallengeResultRow[]>([]);
   const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
-  const [boardOrientationFilter, setBoardOrientationFilter] = useState<string>('all');
+  const [boardOrientationFilter, setBoardOrientationFilter] = useState<BoardOrientation>('white');
   const [pieceFilter, setPieceFilter] = useState<PieceSelection>(DEFAULT_PIECE_SELECTION);
   const [isLoading, setIsLoading] = useState(true);
   const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
@@ -123,7 +124,7 @@ export function useDashboardData(locale: string) {
 
   // Reset filters when menu changes
   useEffect(() => {
-    setBoardOrientationFilter('all');
+    setBoardOrientationFilter('white');
     setPieceFilter(DEFAULT_PIECE_SELECTION);
     shouldDerivePieceFilter.current = true;
   }, [selectedMenu]);
@@ -260,12 +261,6 @@ export function useDashboardData(locale: string) {
     [currentStats.avgCompletionScore, prevStats.avgCompletionScore]
   );
 
-  const totalSessionsChange = useMemo(
-    () =>
-      prevStats.totalSessions > 0 ? currentStats.totalSessions - prevStats.totalSessions : null,
-    [currentStats.totalSessions, prevStats.totalSessions]
-  );
-
   return {
     // State
     selectedMenu,
@@ -283,7 +278,6 @@ export function useDashboardData(locale: string) {
     currentStats,
     bestScoreComparison,
     avgScoreComparison,
-    totalSessionsChange,
     chartData,
     tableRows,
   };

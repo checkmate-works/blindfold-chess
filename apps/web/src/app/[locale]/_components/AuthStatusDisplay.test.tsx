@@ -28,7 +28,7 @@ vi.mock('next-intl', () => ({
 
 vi.mock('next/image', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default: ({ unoptimized: _, ...props }: any) => {
+  default: (props: any) => {
     // eslint-disable-next-line @next/next/no-img-element
     return <img {...props} />;
   },

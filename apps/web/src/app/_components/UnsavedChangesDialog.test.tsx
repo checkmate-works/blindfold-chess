@@ -63,10 +63,9 @@ describe('UnsavedChangesDialog', () => {
     const onCancel = vi.fn();
     render(<UnsavedChangesDialog open={true} onConfirm={vi.fn()} onCancel={onCancel} />);
 
-    // The backdrop is the first element with aria-hidden="true"
-    const backdrop = document.querySelector('[aria-hidden="true"]');
-    expect(backdrop).not.toBeNull();
-    fireEvent.click(backdrop!);
+    // The overlay container (parent of dialog) has the onClick={onClose} handler
+    const dialog = screen.getByRole('dialog');
+    fireEvent.click(dialog.parentElement!);
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });

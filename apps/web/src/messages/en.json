@@ -1799,7 +1799,6 @@
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
     "avgScoreTooltip": "Average score of sessions that lasted the full 60 seconds.",
-    "totalSessions": "Total Sessions",
     "scoreUnit": "Avg. Score",
     "scoreTrend": "Score Trend",
     "sessionHistory": "Session History",
@@ -1821,7 +1820,6 @@
     "vs2MonthsAgo": "vs 2 months ago",
     "filters": {
       "boardOrientation": "Board Orientation",
-      "all": "All",
       "white": "White",
       "black": "Black",
       "random": "Random",
