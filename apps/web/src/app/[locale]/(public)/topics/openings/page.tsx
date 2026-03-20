@@ -28,8 +28,8 @@ import {
   OpeningsListByCategory,
 } from './_components';
 import {
-  getOpenings,
-  getOpeningsByFirstMoveSquare,
+  getOpeningsAsTree,
+  getOpeningsAsTreeByFirstMoveSquare,
   getPostCountAcrossOpenings,
   getPostCountByFirstMoveSquare,
   getPostsAcrossOpeningsPaginated,
@@ -87,8 +87,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
     : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
 
   const openings = firstMoveSquare
-    ? await getOpeningsByFirstMoveSquare(firstMoveSquare)
-    : await getOpenings();
+    ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
+    : await getOpeningsAsTree();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -116,12 +116,26 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                 </SectionTitle>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {openings.map((opening) => (
-                    <OpeningCard
-                      key={opening.id}
-                      opening={opening}
-                      displayName={getDisplayName(opening.slug, opening.name)}
-                      locale={locale}
-                    />
+                    <div key={opening.id}>
+                      <OpeningCard
+                        opening={opening}
+                        displayName={getDisplayName(opening.slug, opening.name)}
+                        locale={locale}
+                      />
+                      {opening.children.length > 0 && (
+                        <div className="border-l-2 border-border ml-4 pl-2 mt-1 space-y-1">
+                          {opening.children.map((child) => (
+                            <OpeningCard
+                              key={child.id}
+                              opening={child}
+                              displayName={getDisplayName(child.slug, child.name)}
+                              locale={locale}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>
