@@ -197,6 +197,22 @@ export async function createReplyBase(params: {
     });
   }
 
+  // Case B: Also notify the root post author (thread owner) if different
+  if (parentId !== rootPostId) {
+    // This is a reply-to-reply; notify the thread owner too
+    const rootPostAuthorId = permissionPost.userId;
+    if (rootPostAuthorId !== user.id && rootPostAuthorId !== notifyUserId) {
+      createNotification({
+        userId: rootPostAuthorId,
+        actorId: user.id,
+        type: 'reply',
+        targetType: 'topic_post',
+        targetId: postId,
+        metadata: { topicType, topicKey, postId, replyId: inserted.id },
+      });
+    }
+  }
+
   revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
 
   redirect(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`);
