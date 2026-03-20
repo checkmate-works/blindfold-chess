@@ -12,17 +12,17 @@ type Props = {
 export function LeaderboardRowCells({ row, locale }: Props) {
   return (
     <>
-      <td className="py-3 px-3 text-center">
+      <td className="py-3 px-3 text-center w-16">
         <RankBadge rank={row.rank} />
       </td>
       <td className="py-3 px-3">
         <PlayerCell row={row} locale={locale} />
       </td>
-      <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground">
+      <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-20">
         {row.score}
       </td>
       <td
-        className={`py-3 px-3 text-right tabular-nums ${getMissColorClass(row.incorrectAnswers)}`}
+        className={`py-3 px-3 text-right tabular-nums w-24 ${getMissColorClass(row.incorrectAnswers)}`}
       >
         {row.incorrectAnswers}
       </td>

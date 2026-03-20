@@ -16,7 +16,7 @@ export function CurrentUserRankRow({ row, locale }: Props) {
   return (
     <div className="border-t-2 border-border mt-2">
       <div className="bg-primary/5 dark:bg-primary/10 rounded-b-lg">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <tbody>
             <tr>
               <td className="py-3 px-3 text-center w-16">

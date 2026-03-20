@@ -26,8 +26,8 @@ export function LeaderboardTable({ rows, currentUserId, currentUserRank, locale 
 
   return (
     <div className="space-y-0">
-      <div className="overflow-x-auto">
-        <table className="w-full" aria-label={t('title')}>
+      <div>
+        <table className="w-full table-fixed" aria-label={t('title')}>
           <thead>
             <tr className="border-b-2 border-border">
               <th className="py-3 px-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">

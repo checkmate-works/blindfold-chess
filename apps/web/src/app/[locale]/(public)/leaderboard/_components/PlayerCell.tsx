@@ -30,12 +30,6 @@ export function PlayerCell({ row, locale }: Props) {
       <div className="min-w-0">
         <span className="text-sm font-medium text-foreground truncate block">{name}</span>
       </div>
-      {row.country && (
-        <span className="text-xs text-muted-foreground flex-shrink-0" title={row.country}>
-          {row.country}
-        </span>
-      )}
-      {row.flair && <span className="text-xs flex-shrink-0">{row.flair}</span>}
     </Link>
   );
 }
