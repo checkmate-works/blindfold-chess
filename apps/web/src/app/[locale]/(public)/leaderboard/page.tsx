@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PagePanel, Skeleton } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -73,6 +74,8 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
           allLeaderboardsTitle={t('allLeaderboardsSection')}
         />
       </Suspense>
+
+      <AdBanner slot="banner-standard" locale={locale} />
 
       <Divider />
 

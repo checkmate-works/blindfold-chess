@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, MarkdownRenderer, PageTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -74,6 +75,8 @@ export default async function ManualArticlePage({ params }: Props) {
       <article className="prose prose-slate dark:prose-invert max-w-none">
         <MarkdownRenderer content={article.content} skipFirstH1={true} />
       </article>
+
+      <AdBanner slot="banner-standard" locale={locale} />
 
       <Divider />
 

@@ -16,9 +16,10 @@ import type { MoveSequenceSessionResult } from '../_lib/types';
 
 type Props = {
   locale: Locale;
+  adBanner?: React.ReactNode;
 };
 
-export function ResultClient({ locale }: Props) {
+export function ResultClient({ locale, adBanner }: Props) {
   const t = useTranslations('practice.moveSequence');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -105,6 +106,8 @@ export function ResultClient({ locale }: Props) {
         onChangeSettings={handleChangeSettings}
         onFinishTutorial={handleFinishTutorial}
       />
+
+      {adBanner}
 
       {relatedLinks.length > 0 && !isTutorial && (
         <PracticeLayout>

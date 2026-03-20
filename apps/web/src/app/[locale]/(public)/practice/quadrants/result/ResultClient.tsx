@@ -15,9 +15,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
+  adBanner?: React.ReactNode;
 };
 
-export function ResultClient({ locale }: Props) {
+export function ResultClient({ locale, adBanner }: Props) {
   const t = useTranslations('practice.quadrantAnchors');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -86,6 +87,8 @@ export function ResultClient({ locale }: Props) {
           label: tPractice('doOtherPractice'),
         }}
       />
+
+      {adBanner}
 
       <PracticeLayout>
         <PracticePanel className="p-6 mt-8 space-y-3">

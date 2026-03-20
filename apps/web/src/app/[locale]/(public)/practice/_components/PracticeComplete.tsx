@@ -41,6 +41,7 @@ type Props = {
     href: string;
     label: string;
   };
+  beforeRelatedContent?: React.ReactNode;
 };
 
 export function PracticeComplete({
@@ -56,6 +57,7 @@ export function PracticeComplete({
   onExit,
   children,
   otherPracticeLink,
+  beforeRelatedContent,
 }: Props) {
   const router = useRouter();
 
@@ -109,6 +111,9 @@ export function PracticeComplete({
           )}
         </div>
       </PracticePanel>
+
+      {/* Ad banner before related content */}
+      {beforeRelatedContent && <div className="mt-12">{beforeRelatedContent}</div>}
 
       {/* Related learning module */}
       {relatedModule && (
