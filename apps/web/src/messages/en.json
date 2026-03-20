@@ -1869,6 +1869,7 @@
     "markAllAsRead": "Mark all as read",
     "followMessage": "{actor} started following you",
     "likeMessage": "{actor} liked your post",
+    "replyMessage": "{actor} replied to your post",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post"

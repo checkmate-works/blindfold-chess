@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/activity-log';
+import { createNotification } from '@/lib/notification';
 
 import { createReplyBase } from './createReply';
 
@@ -15,6 +16,10 @@ const mockCheckRateLimit = vi.fn();
 
 vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
+}));
+
+vi.mock('@/lib/notification', () => ({
+  createNotification: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -457,6 +462,84 @@ describe('createReplyBase', () => {
 
       await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
+    });
+  });
+
+  describe('reply notification', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+    });
+
+    it('should create notification for post author when replying to another user post', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).toHaveBeenCalledWith({
+        userId: otherUserId,
+        actorId: testUserId,
+        type: 'reply',
+        targetType: 'topic_post',
+        targetId: validPostId,
+        metadata: {
+          topicType: 'opening',
+          topicKey: 'test-topic',
+          postId: validPostId,
+          replyId: generatedReplyId,
+        },
+      });
+    });
+
+    it('should not create notification when replying to own post', async () => {
+      setupParentPostExists({ userId: testUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('should pass correct metadata for square topic type', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          topicType: 'square',
+          topicKey: 'e4',
+          urlSegment: 'squares',
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(createNotification).toHaveBeenCalledWith({
+        userId: otherUserId,
+        actorId: testUserId,
+        type: 'reply',
+        targetType: 'topic_post',
+        targetId: validPostId,
+        metadata: {
+          topicType: 'square',
+          topicKey: 'e4',
+          postId: validPostId,
+          replyId: generatedReplyId,
+        },
+      });
+    });
+
+    it('should not create notification when validation fails', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      await createReplyBase(baseParams);
+
+      expect(createNotification).not.toHaveBeenCalled();
+    });
+
+    it('should still create the reply even if notification would fail (fire-and-forget)', async () => {
+      setupParentPostExists({ userId: otherUserId });
+
+      await expect(createReplyBase(baseParams)).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockInsertValues).toHaveBeenCalled();
+      expect(createNotification).toHaveBeenCalledTimes(1);
     });
   });
 });

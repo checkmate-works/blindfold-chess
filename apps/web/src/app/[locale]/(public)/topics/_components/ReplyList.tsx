@@ -64,7 +64,11 @@ export function ReplyList({
         const profileHref = reply.author?.username ? `/@/${reply.author.username}` : null;
 
         return (
-          <div key={reply.id} className="p-4 bg-card border border-border rounded-lg space-y-3">
+          <div
+            key={reply.id}
+            id={`reply-${reply.id}`}
+            className="scroll-mt-20 p-4 bg-card border border-border rounded-lg space-y-3"
+          >
             <UserAvatar
               profileHref={profileHref}
               avatarUrl={reply.author?.avatarUrl}

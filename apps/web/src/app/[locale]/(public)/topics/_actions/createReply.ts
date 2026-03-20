@@ -8,6 +8,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts, userFollows } from '@/lib/db';
+import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -125,6 +126,17 @@ export async function createReplyBase(params: {
     targetId: inserted.id,
     metadata: { parentId: postId, topicKey },
   });
+
+  if (parentPost.userId !== user.id) {
+    createNotification({
+      userId: parentPost.userId,
+      actorId: user.id,
+      type: 'reply',
+      targetType: 'topic_post',
+      targetId: postId,
+      metadata: { topicType, topicKey, postId, replyId: inserted.id },
+    });
+  }
 
   revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
 

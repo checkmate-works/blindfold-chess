@@ -7,6 +7,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
 import { DeletePostButton } from './DeletePostButton';
+import { HashScrollTarget } from './HashScrollTarget';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
 import { ReplyList } from './ReplyList';
@@ -177,6 +178,8 @@ export function PostDetailContent({
       ) : null}
 
       <AdBanner slot="banner-standard" locale={locale} />
+
+      <HashScrollTarget />
     </>
   );
 }

@@ -16,10 +16,19 @@ import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
 
 type PostMetadata = { topicType: string; topicKey: string; postId: string };
+type ReplyMetadata = PostMetadata & { replyId: string };
 
 function isPostMetadata(m: unknown): m is PostMetadata {
   return (
     typeof m === 'object' && m !== null && 'topicType' in m && 'topicKey' in m && 'postId' in m
+  );
+}
+
+function isReplyMetadata(m: unknown): m is ReplyMetadata {
+  return (
+    isPostMetadata(m) &&
+    'replyId' in m &&
+    typeof (m as Record<string, unknown>).replyId === 'string'
   );
 }
 
@@ -48,6 +57,8 @@ export function NotificationItem({ notification }: Props) {
         return t('followMessage', { actor: actorName });
       case 'like':
         return t('likeMessage', { actor: actorName });
+      case 'reply':
+        return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
       case 'announcement':
@@ -70,11 +81,17 @@ export function NotificationItem({ notification }: Props) {
       return `/@/${actor.username}`;
     }
     if (
-      (notification.type === 'like' || notification.type === 'new_post') &&
+      (notification.type === 'like' ||
+        notification.type === 'reply' ||
+        notification.type === 'new_post') &&
       isPostMetadata(notification.metadata)
     ) {
       const segment = getTopicSegment(notification.metadata.topicType);
-      return `/topics/${segment}/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
+      const base = `/topics/${segment}/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
+      if (notification.type === 'reply' && isReplyMetadata(notification.metadata)) {
+        return `${base}#reply-${notification.metadata.replyId}`;
+      }
+      return base;
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;
