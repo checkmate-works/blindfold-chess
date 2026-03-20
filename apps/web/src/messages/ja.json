@@ -1806,7 +1806,7 @@
     "noData": "まだ記録がありません。",
     "tableDate": "日時",
     "tableCorrectAnswers": "正答数",
-    "tableIncorrectAnswers": "ミス数",
+    "tableIncorrectAnswers": "ミス",
     "periods": {
       "thisWeek": "今週",
       "lastWeek": "先週",
@@ -2592,8 +2592,7 @@
       "rank": "順位",
       "player": "プレイヤー",
       "score": "スコア",
-      "incorrect": "不正解",
-      "time": "時間"
+      "miss": "ミス"
     },
     "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
     "yourRank": "あなた",

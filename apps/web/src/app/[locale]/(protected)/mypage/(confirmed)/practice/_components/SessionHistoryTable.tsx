@@ -1,4 +1,4 @@
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { getMissColorClass } from '@/lib/challenge-constants';
 
 type SessionRow = {
   date: string;
@@ -15,12 +15,6 @@ type Props = {
     incorrectAnswers: string;
   };
 };
-
-function getIncorrectAnswersClassName(incorrectAnswers: number): string {
-  if (incorrectAnswers >= MISTAKE_LIMIT) return 'text-destructive';
-  if (incorrectAnswers === 0) return 'text-success';
-  return 'text-foreground';
-}
 
 export function SessionHistoryTable({ sessions, emptyMessage, headers }: Props) {
   if (sessions.length === 0) {
@@ -52,9 +46,7 @@ export function SessionHistoryTable({ sessions, emptyMessage, headers }: Props) 
             <tr key={i} className="border-b border-border/50">
               <td className="py-2 px-3 text-foreground whitespace-nowrap">{session.date}</td>
               <td className="py-2 px-3 text-right text-foreground">{session.correctAnswers}</td>
-              <td
-                className={`py-2 px-3 text-right ${getIncorrectAnswersClassName(session.incorrectAnswers)}`}
-              >
+              <td className={`py-2 px-3 text-right ${getMissColorClass(session.incorrectAnswers)}`}>
                 {session.incorrectAnswers}
               </td>
             </tr>
