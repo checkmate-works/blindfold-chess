@@ -35,9 +35,12 @@ export function TopicPostCard({ post, locale }: Props) {
   const isTruncated = contentPreview !== post.content;
   const isOpening = post.topicType === 'opening';
 
+  const isReply = post.rootPostId != null;
+  const postId = isReply ? post.rootPostId : post.id;
+  const anchor = isReply ? `#reply-${post.id}` : '';
   const href = isOpening
-    ? `/topics/openings/${post.topicKey}/posts/${post.id}`
-    : `/topics/squares/${post.topicKey}/posts/${post.id}`;
+    ? `/topics/openings/${post.topicKey}/posts/${postId}${anchor}`
+    : `/topics/squares/${post.topicKey}/posts/${postId}${anchor}`;
 
   const tTopic = isOpening ? tOpenings : tSquares;
 
