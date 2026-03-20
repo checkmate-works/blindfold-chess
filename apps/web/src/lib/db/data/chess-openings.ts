@@ -15,6 +15,7 @@ export type ChessOpeningSeed = {
   pgn: string;
   firstMoveSquare: string;
   sortOrder: number;
+  parentSlug?: string;
 };
 
 export const chessOpenings: ChessOpeningSeed[] = [
@@ -454,6 +455,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. c4 c5',
     firstMoveSquare: 'c4',
     sortOrder: 910,
+    parentSlug: 'english-opening',
   },
   {
     slug: 'english-opening-reversed-sicilian',
@@ -462,6 +464,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. c4 e5',
     firstMoveSquare: 'c4',
     sortOrder: 920,
+    parentSlug: 'english-opening',
   },
 
   // =========================================================================
@@ -502,6 +505,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. f4 d5',
     firstMoveSquare: 'f4',
     sortOrder: 1110,
+    parentSlug: 'birds-opening',
   },
 
   // =========================================================================
@@ -562,6 +566,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6',
     firstMoveSquare: 'e4',
     sortOrder: 301,
+    parentSlug: 'sicilian-defense',
   },
   {
     slug: 'sicilian-dragon',
@@ -570,6 +575,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6',
     firstMoveSquare: 'e4',
     sortOrder: 302,
+    parentSlug: 'sicilian-defense',
   },
   {
     slug: 'sicilian-scheveningen',
@@ -578,6 +584,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e6',
     firstMoveSquare: 'e4',
     sortOrder: 303,
+    parentSlug: 'sicilian-defense',
   },
   {
     slug: 'sicilian-sveshnikov',
@@ -586,6 +593,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e5',
     firstMoveSquare: 'e4',
     sortOrder: 304,
+    parentSlug: 'sicilian-defense',
   },
   {
     slug: 'french-winawer',
@@ -594,6 +602,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 e6 2. d4 d5 3. Nc3 Bb4',
     firstMoveSquare: 'e4',
     sortOrder: 311,
+    parentSlug: 'french-defense',
   },
   {
     slug: 'french-tarrasch',
@@ -602,6 +611,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 e6 2. d4 d5 3. Nd2',
     firstMoveSquare: 'e4',
     sortOrder: 312,
+    parentSlug: 'french-defense',
   },
   {
     slug: 'french-advance',
@@ -610,6 +620,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 e6 2. d4 d5 3. e5',
     firstMoveSquare: 'e4',
     sortOrder: 313,
+    parentSlug: 'french-defense',
   },
   {
     slug: 'caro-kann-advance',
@@ -618,6 +629,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c6 2. d4 d5 3. e5',
     firstMoveSquare: 'e4',
     sortOrder: 321,
+    parentSlug: 'caro-kann-defense',
   },
   {
     slug: 'caro-kann-classical',
@@ -626,6 +638,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5',
     firstMoveSquare: 'e4',
     sortOrder: 322,
+    parentSlug: 'caro-kann-defense',
   },
 
   // =========================================================================
@@ -638,6 +651,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2',
     firstMoveSquare: 'd4',
     sortOrder: 701,
+    parentSlug: 'kings-indian-defense',
   },
   {
     slug: 'kings-indian-samisch',
@@ -646,6 +660,7 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. f3',
     firstMoveSquare: 'd4',
     sortOrder: 702,
+    parentSlug: 'kings-indian-defense',
   },
   {
     slug: 'grunfeld-exchange',
@@ -654,5 +669,6 @@ export const chessOpenings: ChessOpeningSeed[] = [
     pgn: '1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. cxd5 Nxd5 5. e4',
     firstMoveSquare: 'd4',
     sortOrder: 731,
+    parentSlug: 'grunfeld-defense',
   },
 ];

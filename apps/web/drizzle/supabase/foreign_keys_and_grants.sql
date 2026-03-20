@@ -264,6 +264,20 @@ GRANT SELECT ON TABLE public.user_roles TO authenticated;
 -- chess_openings (master data — no FK to auth.users, public read)
 -- =============================================================================
 
+-- FK constraint: chess_openings.parent_slug → chess_openings(slug) (self-reference for tree)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'fk_chess_openings_parent_slug'
+  ) THEN
+    ALTER TABLE public.chess_openings
+      ADD CONSTRAINT fk_chess_openings_parent_slug
+      FOREIGN KEY (parent_slug) REFERENCES public.chess_openings(slug)
+      ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END;
+$$;
+
 -- Grant read permissions (master data is publicly readable)
 GRANT SELECT ON TABLE public.chess_openings TO authenticated;
 GRANT SELECT ON TABLE public.chess_openings TO anon;

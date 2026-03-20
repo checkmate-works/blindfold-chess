@@ -14,7 +14,7 @@
  * for master data seeding.
  */
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
-import { not, sql } from 'drizzle-orm';
+import { eq, not, sql } from 'drizzle-orm';
 
 import { chessOpenings as chessOpeningsData } from './data/chess-openings';
 import { chessTerms } from './data/chess-terms';
@@ -254,8 +254,9 @@ async function seedChessOpenings() {
 
   const validSlugs: string[] = [];
 
+  // Pass 1: Upsert all openings with parentSlug set to null.
+  // This ensures all parent rows exist before children reference them via FK.
   for (const opening of chessOpeningsData) {
-    // Compute FEN from PGN at seed time
     const moves = parsePgn(opening.pgn);
     const fen = getFenAfterMoves(getStartingFen(), moves);
 
@@ -268,6 +269,7 @@ async function seedChessOpenings() {
         pgn: opening.pgn,
         fen,
         firstMoveSquare: opening.firstMoveSquare,
+        parentSlug: null,
         sortOrder: opening.sortOrder,
       })
       .onConflictDoUpdate({
@@ -278,6 +280,7 @@ async function seedChessOpenings() {
           pgn: opening.pgn,
           fen,
           firstMoveSquare: opening.firstMoveSquare,
+          parentSlug: null,
           sortOrder: opening.sortOrder,
           updatedAt: new Date(),
         },
@@ -286,7 +289,17 @@ async function seedChessOpenings() {
     validSlugs.push(opening.slug);
   }
 
-  // Clean up openings removed from code data source
+  // Pass 2: Set parentSlug for openings that have a parent.
+  // All parent rows are guaranteed to exist after Pass 1.
+  const childOpenings = chessOpeningsData.filter((o) => o.parentSlug);
+  for (const opening of childOpenings) {
+    await db
+      .update(chessOpenings)
+      .set({ parentSlug: opening.parentSlug!, updatedAt: new Date() })
+      .where(eq(chessOpenings.slug, opening.slug));
+  }
+
+  // Pass 3: Clean up openings removed from code data source
   if (validSlugs.length > 0) {
     const slugValues = validSlugs.map((s) => sql`${s}`);
     await db
