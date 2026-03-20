@@ -46,6 +46,7 @@ export async function LeaderboardTopContent({
   const rankMap = new Map(userRanks.map((r) => [entryKey(r), r.rank]));
 
   const rankedEntries = ALL_LEADERBOARD_ENTRIES.filter((entry) => {
+    if (moduleFilter !== 'all' && entry.module !== moduleFilter) return false;
     const rank = rankMap.get(entryKey(entry));
     return rank !== undefined && rank <= TOP_RANK_THRESHOLD;
   });
