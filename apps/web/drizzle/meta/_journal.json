@@ -52,7 +52,7 @@
       "breakpoints": true
     },
     {
-      "idx": 6,
+      "idx": 7,
       "version": "7",
       "when": 1773986126878,
       "tag": "20260320055526_add_parent_slug_to_chess_openings",
