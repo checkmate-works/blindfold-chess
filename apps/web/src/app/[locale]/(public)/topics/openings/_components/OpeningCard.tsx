@@ -12,6 +12,7 @@ type Props = {
   opening: ChessOpening;
   displayName: string;
   locale: string;
+  compact?: boolean;
 };
 
 const BOARD_SIZE = 96;
@@ -37,8 +38,24 @@ function BoardSkeleton() {
   );
 }
 
-export function OpeningCard({ opening, displayName, locale }: Props) {
+export function OpeningCard({ opening, displayName, locale, compact }: Props) {
   const { ref, inView } = useInView({ rootMargin: '200px' });
+
+  if (compact) {
+    return (
+      <Link
+        href={`/topics/openings/${opening.slug}`}
+        locale={locale}
+        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 transition-colors"
+      >
+        <span className="text-xs text-muted-foreground font-mono shrink-0">{opening.ecoCode}</span>
+        <span className="text-sm text-foreground truncate">{displayName}</span>
+        <span className="text-xs text-muted-foreground truncate ml-auto hidden sm:inline">
+          {opening.pgn}
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <div ref={ref}>

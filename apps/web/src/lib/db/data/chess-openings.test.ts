@@ -6,8 +6,8 @@ import { chessOpenings } from './chess-openings';
 
 describe('chess-openings seed data integrity', () => {
   describe('data count', () => {
-    it('should contain 73 opening families', () => {
-      expect(chessOpenings).toHaveLength(73);
+    it('should contain 104 opening families', () => {
+      expect(chessOpenings).toHaveLength(104);
     });
   });
 
@@ -121,6 +121,73 @@ describe('chess-openings seed data integrity', () => {
         expect(opening.sortOrder).toBeGreaterThan(0);
         expect(Number.isInteger(opening.sortOrder)).toBe(true);
       }
+    });
+  });
+
+  describe('parentSlug integrity', () => {
+    it('should have all parentSlug values reference an existing slug in the data', () => {
+      const slugs = new Set(chessOpenings.map((o) => o.slug));
+      const withParent = chessOpenings.filter((o) => o.parentSlug);
+      for (const opening of withParent) {
+        expect(
+          slugs.has(opening.parentSlug!),
+          `parentSlug "${opening.parentSlug}" for "${opening.name}" does not reference an existing slug`
+        ).toBe(true);
+      }
+    });
+
+    it('should have no circular references', () => {
+      const parentMap = new Map<string, string>();
+      for (const opening of chessOpenings) {
+        if (opening.parentSlug) {
+          parentMap.set(opening.slug, opening.parentSlug);
+        }
+      }
+
+      for (const [slug] of parentMap) {
+        const visited = new Set<string>();
+        let current: string | undefined = slug;
+        while (current && parentMap.has(current)) {
+          expect(visited.has(current), `Circular reference detected involving "${current}"`).toBe(
+            false
+          );
+          visited.add(current);
+          current = parentMap.get(current);
+        }
+      }
+    });
+
+    it('should not have a parentSlug that references itself', () => {
+      for (const opening of chessOpenings) {
+        if (opening.parentSlug) {
+          expect(
+            opening.parentSlug !== opening.slug,
+            `Opening "${opening.slug}" references itself as parent`
+          ).toBe(true);
+        }
+      }
+    });
+
+    it('should enforce max depth of 2 (parentSlug must not reference another child)', () => {
+      const childSlugs = new Set(chessOpenings.filter((o) => o.parentSlug).map((o) => o.slug));
+      for (const opening of chessOpenings) {
+        if (opening.parentSlug) {
+          expect(
+            childSlugs.has(opening.parentSlug),
+            `Opening "${opening.slug}" has parentSlug "${opening.parentSlug}" which is itself a child — max depth exceeded`
+          ).toBe(false);
+        }
+      }
+    });
+
+    it('should have exactly 46 child openings (with parentSlug)', () => {
+      const childCount = chessOpenings.filter((o) => o.parentSlug).length;
+      expect(childCount).toBe(46);
+    });
+
+    it('should have exactly 58 root openings (without parentSlug)', () => {
+      const rootCount = chessOpenings.filter((o) => !o.parentSlug).length;
+      expect(rootCount).toBe(58);
     });
   });
 

@@ -82,6 +82,17 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   const translated = nameT(slug as never);
   const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
 
+  // Fetch parent opening for breadcrumb if this is a child variation
+  const parentOpening = opening.parentSlug ? await getOpeningBySlug(opening.parentSlug) : null;
+  const parentDisplayName = parentOpening
+    ? (() => {
+        const translated = nameT(parentOpening.slug as never);
+        return translated === `topics.openings.names.${parentOpening.slug}`
+          ? parentOpening.name
+          : translated;
+      })()
+    : null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -146,6 +157,14 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           items={[
             { label: t('title'), href: '/topics' },
             { label: t('openings.title'), href: '/topics/openings' },
+            ...(parentOpening && parentDisplayName
+              ? [
+                  {
+                    label: parentDisplayName,
+                    href: `/topics/openings/${parentOpening.slug}`,
+                  },
+                ]
+              : []),
             { label: displayName },
           ]}
           locale={locale}

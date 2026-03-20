@@ -746,6 +746,7 @@ export const chessOpenings = pgTable(
     pgn: text('pgn').notNull(),
     fen: varchar('fen', { length: 100 }).notNull(),
     firstMoveSquare: varchar('first_move_square', { length: 2 }).notNull(),
+    parentSlug: varchar('parent_slug', { length: 100 }),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -753,6 +754,7 @@ export const chessOpenings = pgTable(
   (table) => [
     index('idx_chess_openings_first_move_square').on(table.firstMoveSquare),
     index('idx_chess_openings_eco_code').on(table.ecoCode),
+    index('idx_chess_openings_parent_slug').on(table.parentSlug),
   ]
 );
 
