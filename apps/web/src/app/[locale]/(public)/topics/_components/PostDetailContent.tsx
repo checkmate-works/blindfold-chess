@@ -9,8 +9,7 @@ import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/q
 import { DeletePostButton } from './DeletePostButton';
 import { HashScrollTarget } from './HashScrollTarget';
 import { LikeButton } from './LikeButton';
-import { ReplyForm } from './ReplyForm';
-import { ReplyList } from './ReplyList';
+import { ReplySection } from './ReplySection';
 import { UserAvatar } from './UserAvatar';
 
 type CreateReplyState = { error?: string };
@@ -141,41 +140,67 @@ export function PostDetailContent({
         {repliesTitle} ({repliesCount})
       </SectionTitle>
 
-      {replies.length > 0 ? (
-        <ReplyList
-          replies={replies}
-          locale={locale}
-          topicKey={topicKey}
-          toggleLikeAction={toggleLikeAction}
-          likeI18nNamespace={likeI18nNamespace}
-        />
-      ) : (
-        <p className="text-sm text-muted-foreground">{noReplies}</p>
-      )}
+      {replies.length === 0 && <p className="text-sm text-muted-foreground">{noReplies}</p>}
 
       {canReply ? (
         user ? (
-          <ReplyForm
+          <ReplySection
+            replies={replies}
             locale={locale}
             topicKey={topicKey}
             postId={post.id}
+            toggleLikeAction={toggleLikeAction}
             createReplyAction={createReplyAction}
-            i18nNamespace={replyI18nNamespace}
+            likeI18nNamespace={likeI18nNamespace}
+            replyI18nNamespace={replyI18nNamespace}
+            showForm
           />
         ) : (
-          <p className="text-sm text-muted-foreground">
-            <Link
-              href="/sign-in"
-              locale={locale}
-              className="text-foreground underline hover:text-muted-foreground transition-colors"
-            >
-              {loginToReply}
-            </Link>
-          </p>
+          <>
+            {replies.length > 0 && (
+              <ReplySection
+                replies={replies}
+                locale={locale}
+                topicKey={topicKey}
+                postId={post.id}
+                toggleLikeAction={toggleLikeAction}
+                createReplyAction={createReplyAction}
+                likeI18nNamespace={likeI18nNamespace}
+                replyI18nNamespace={replyI18nNamespace}
+                showForm={false}
+              />
+            )}
+            <p className="text-sm text-muted-foreground">
+              <Link
+                href="/sign-in"
+                locale={locale}
+                className="text-foreground underline hover:text-muted-foreground transition-colors"
+              >
+                {loginToReply}
+              </Link>
+            </p>
+          </>
         )
-      ) : replyRestrictionMessage ? (
-        <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
-      ) : null}
+      ) : (
+        <>
+          {replies.length > 0 && (
+            <ReplySection
+              replies={replies}
+              locale={locale}
+              topicKey={topicKey}
+              postId={post.id}
+              toggleLikeAction={toggleLikeAction}
+              createReplyAction={createReplyAction}
+              likeI18nNamespace={likeI18nNamespace}
+              replyI18nNamespace={replyI18nNamespace}
+              showForm={false}
+            />
+          )}
+          {replyRestrictionMessage && (
+            <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
+          )}
+        </>
+      )}
 
       <AdBanner slot="banner-standard" locale={locale} />
 

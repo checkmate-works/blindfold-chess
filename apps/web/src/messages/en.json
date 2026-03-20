@@ -2465,7 +2465,10 @@
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this post.",
-        "followRequired": "Only followers of the author can reply to this post."
+        "followRequired": "Only followers of the author can reply to this post.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
       },
       "deletePost": {
         "button": "Delete",
@@ -2540,7 +2543,10 @@
         "loginToReply": "Sign in to reply",
         "rateLimited": "Too many replies. Please try again later.",
         "repliesDisabled": "The author has disabled replies on this post.",
-        "followRequired": "Only followers of the author can reply to this post."
+        "followRequired": "Only followers of the author can reply to this post.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
       },
       "deletePost": {
         "button": "Delete",

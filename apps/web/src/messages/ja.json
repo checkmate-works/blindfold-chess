@@ -2443,7 +2443,10 @@
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
-        "followRequired": "フォロワーのみ返信できます。"
+        "followRequired": "フォロワーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username}に返信中",
+        "cancelReply": "キャンセル"
       },
       "deletePost": {
         "button": "削除",
@@ -2518,7 +2521,10 @@
         "loginToReply": "サインインして返信する",
         "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
         "repliesDisabled": "投稿者が返信を無効にしています。",
-        "followRequired": "フォロワーのみ返信できます。"
+        "followRequired": "フォロワーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username}に返信中",
+        "cancelReply": "キャンセル"
       },
       "deletePost": {
         "button": "削除",
