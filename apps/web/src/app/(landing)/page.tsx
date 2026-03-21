@@ -7,8 +7,6 @@ import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
 
-import { Footer as AppFooter } from '@/app/[locale]/_components/Footer';
-
 import {
   AiBattleSection,
   DashboardPlaceholder,
@@ -16,6 +14,7 @@ import {
   LearnSection,
   TrainingSection,
 } from './_components';
+import { DashboardFooter } from './_components/DashboardFooter';
 import { Footer } from './_components/Footer';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -59,7 +58,7 @@ export default async function RootPage() {
           displayName={displayName}
           avatarUrl={avatarUrl}
         />
-        <AppFooter locale={locale} />
+        <DashboardFooter locale={locale} />
       </>
     );
   }
