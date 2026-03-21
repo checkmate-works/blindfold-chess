@@ -38,14 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabaseRef.current = supabase;
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      // Also fetch session for token access
-      supabase.auth.getSession().then(({ data: { session } }) => {
+    Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]).then(
+      ([
+        {
+          data: { user },
+        },
+        {
+          data: { session },
+        },
+      ]) => {
+        setUser(user);
         setSession(session);
         setIsLoading(false);
-      });
-    });
+      }
+    );
 
     const {
       data: { subscription },
