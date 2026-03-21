@@ -31,7 +31,7 @@ export default async function RootPage() {
   ]);
 
   if (user) {
-    return <DashboardPlaceholder t={t} />;
+    return <DashboardPlaceholder t={t} locale={locale} siteName={metaT('siteName')} />;
   }
 
   return (

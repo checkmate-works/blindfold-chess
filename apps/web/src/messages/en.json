@@ -1632,7 +1632,10 @@
     },
     "dashboard": {
       "title": "Dashboard",
-      "comingSoon": "Coming soon..."
+      "comingSoon": "Coming soon...",
+      "myGames": "My Games",
+      "newGame": "New Game",
+      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}"
     }
   },
   "AuthStatusDisplay": {

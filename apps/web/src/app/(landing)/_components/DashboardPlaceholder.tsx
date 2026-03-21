@@ -1,16 +1,27 @@
 import type { getTranslations } from 'next-intl/server';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { DashboardHero } from './DashboardHero';
+import { GameShortcutCard } from './GameShortcutCard';
+import { NewGameCard } from './NewGameCard';
+
 type Props = {
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
+  locale: string;
+  siteName: string;
 };
 
-export function DashboardPlaceholder({ t }: Props) {
+export function DashboardPlaceholder({ t, locale, siteName }: Props) {
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
-        <p className="text-muted-foreground text-lg">{t('dashboard.comingSoon')}</p>
-      </div>
+    <main className="min-h-screen bg-background text-foreground">
+      <DashboardHero t={t} siteName={siteName} locale={locale as Locale} />
+      <section className="flex justify-center px-6 py-12">
+        <div className="flex flex-row items-center gap-4">
+          <GameShortcutCard locale={locale} label={t('dashboard.myGames')} />
+          <NewGameCard locale={locale} label={t('dashboard.newGame')} />
+        </div>
+      </section>
     </main>
   );
 }

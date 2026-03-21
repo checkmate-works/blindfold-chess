@@ -1,6 +1,9 @@
 export { AiBattleSection } from './AiBattleSection';
+export { DashboardHero } from './DashboardHero';
 export { DashboardPlaceholder } from './DashboardPlaceholder';
+export { GameShortcutCard } from './GameShortcutCard';
 export { HeroSection } from './HeroSection';
+export { NewGameCard } from './NewGameCard';
 export { LanguageSelector } from './LanguageSelector';
 export { LearnSection } from './LearnSection';
 export { ScrollIndicator } from './ScrollIndicator';
