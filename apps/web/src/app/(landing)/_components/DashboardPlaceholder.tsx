@@ -1,4 +1,5 @@
 import type { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -23,7 +24,18 @@ export function DashboardPlaceholder({ t, locale, siteName }: Props) {
           <GameShortcutCard locale={locale} label={t('dashboard.myGames')} />
           <NewGameCard locale={locale} label={t('dashboard.newGame')} />
         </GameSectionCard>
-        <GameSectionCard label={t('dashboard.challenge')} backgroundImage="/images/challenge.webp">
+        <GameSectionCard
+          label={t('dashboard.challenge')}
+          backgroundImage="/images/challenge.webp"
+          footer={
+            <Link
+              href={`/${locale}/leaderboard`}
+              className="block text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors rounded-full bg-card/90 backdrop-blur-sm py-1.5 px-4 border border-border/50"
+            >
+              {t('dashboard.viewLeaderboard')}
+            </Link>
+          }
+        >
           <ChallengeCard
             locale={locale}
             href="/practice/square-colors?mode=timed"

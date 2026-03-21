@@ -3,12 +3,14 @@ import type { ReactNode } from 'react';
 type Props = {
   label: string;
   backgroundImage?: string;
+  footer?: ReactNode;
   children: ReactNode;
 };
 
 export function GameSectionCard({
   label,
   backgroundImage = '/images/chessboard.webp',
+  footer,
   children,
 }: Props) {
   return (
@@ -30,6 +32,7 @@ export function GameSectionCard({
       <div className="relative">
         <h3 className="text-sm font-semibold text-muted-foreground mb-4">{label}</h3>
         <div className="flex flex-row items-center justify-center gap-4">{children}</div>
+        {footer && <div className="mt-4">{footer}</div>}
       </div>
     </div>
   );

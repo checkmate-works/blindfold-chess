@@ -1641,7 +1641,8 @@
       "challenge": "🏆 チャレンジ",
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
-      "legalMoves": "合法手"
+      "legalMoves": "合法手",
+      "viewLeaderboard": "リーダーボードを見る →"
     }
   },
   "AuthStatusDisplay": {
