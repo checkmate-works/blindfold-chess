@@ -1629,6 +1629,10 @@
       "deGrootLink": "de Groot experiment",
       "descriptionSuffix": ".",
       "cta": "Read All Articles"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "comingSoon": "Coming soon..."
     }
   },
   "AuthStatusDisplay": {

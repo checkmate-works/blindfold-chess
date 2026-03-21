@@ -1630,6 +1630,10 @@
       "deGrootLink": "デ・グロートのチェスに関する実験結果の紹介",
       "descriptionSuffix": "など、目隠しチェスのヒントとなる知識が収集できます。",
       "cta": "記事一覧を読む"
+    },
+    "dashboard": {
+      "title": "ダッシュボード",
+      "comingSoon": "準備中..."
     }
   },
   "AuthStatusDisplay": {

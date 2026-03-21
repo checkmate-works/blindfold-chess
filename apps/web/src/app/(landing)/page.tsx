@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { getLocaleFromRequest } from '@/lib/locale';
 
-import { AiBattleSection, HeroSection, LearnSection, TrainingSection } from './_components';
+import {
+  AiBattleSection,
+  DashboardPlaceholder,
+  HeroSection,
+  LearnSection,
+  TrainingSection,
+} from './_components';
 import { Footer } from './_components/Footer';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,10 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootPage() {
   const locale = await getLocaleFromRequest();
-  const [t, metaT] = await Promise.all([
+  const [t, metaT, user] = await Promise.all([
     getTranslations({ locale, namespace: 'landing' }),
     getTranslations({ locale, namespace: 'metadata' }),
+    getOptionalUser(),
   ]);
+
+  if (user) {
+    return <DashboardPlaceholder t={t} />;
+  }
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col">
