@@ -11,3 +11,4 @@ export { NewGameCard } from './NewGameCard';
 export { ScrollIndicator } from './ScrollIndicator';
 export { TrainingCard } from './TrainingCard';
 export { TrainingSection } from './TrainingSection';
+export { WelcomeCard } from './WelcomeCard';

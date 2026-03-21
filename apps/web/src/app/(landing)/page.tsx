@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { eq } from 'drizzle-orm';
+
 import { getOptionalUser } from '@/lib/auth';
+import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
 
 import { Footer as AppFooter } from '@/app/[locale]/_components/Footer';
@@ -33,9 +36,29 @@ export default async function RootPage() {
   ]);
 
   if (user) {
+    let displayName: string | null = null;
+    let avatarUrl: string | null = null;
+
+    const [profile] = await db
+      .select({ displayName: profiles.displayName, avatarUrl: profiles.avatarUrl })
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1);
+
+    if (profile) {
+      displayName = profile.displayName;
+      avatarUrl = profile.avatarUrl;
+    }
+
     return (
       <>
-        <DashboardPlaceholder t={t} locale={locale} siteName={metaT('siteName')} />
+        <DashboardPlaceholder
+          t={t}
+          locale={locale}
+          siteName={metaT('siteName')}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+        />
         <AppFooter locale={locale} />
       </>
     );

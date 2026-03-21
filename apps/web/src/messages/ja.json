@@ -1645,7 +1645,10 @@
       "viewLeaderboard": "リーダーボードを見る →",
       "topics": "💬 トピック",
       "topicSquares": "マス目",
-      "topicOpenings": "オープニング"
+      "topicOpenings": "オープニング",
+      "welcomeGreeting": "こんにちは、{name} さん",
+      "welcomeDefaultName": "プレイヤー",
+      "viewMypage": "マイページ"
     }
   },
   "AuthStatusDisplay": {

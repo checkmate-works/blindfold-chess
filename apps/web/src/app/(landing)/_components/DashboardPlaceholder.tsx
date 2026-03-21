@@ -6,18 +6,24 @@ import { DashboardHero } from './DashboardHero';
 import { GameSectionCard } from './GameSectionCard';
 import { GameShortcutCard } from './GameShortcutCard';
 import { NewGameCard } from './NewGameCard';
+import { WelcomeCard } from './WelcomeCard';
 
 type Props = {
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
   locale: string;
   siteName: string;
+  displayName: string | null;
+  avatarUrl: string | null;
 };
 
-export function DashboardPlaceholder({ t, locale, siteName }: Props) {
+export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarUrl }: Props) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <DashboardHero t={t} siteName={siteName} />
       <section className="flex flex-wrap justify-center gap-6 px-6 py-12">
+        <div className="basis-full flex justify-center">
+          <WelcomeCard t={t} locale={locale} displayName={displayName} avatarUrl={avatarUrl} />
+        </div>
         <GameSectionCard label={t('dashboard.vsAi')}>
           <GameShortcutCard locale={locale} label={t('dashboard.myGames')} />
           <NewGameCard locale={locale} label={t('dashboard.newGame')} />

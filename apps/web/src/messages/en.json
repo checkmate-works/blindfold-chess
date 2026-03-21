@@ -1644,7 +1644,10 @@
       "viewLeaderboard": "View Leaderboard →",
       "topics": "💬 Topics",
       "topicSquares": "Squares",
-      "topicOpenings": "Openings"
+      "topicOpenings": "Openings",
+      "welcomeGreeting": "Hello, {name}!",
+      "welcomeDefaultName": "Player",
+      "viewMypage": "My Page"
     }
   },
   "AuthStatusDisplay": {
