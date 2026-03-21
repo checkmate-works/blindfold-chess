@@ -134,6 +134,7 @@
   },
   "Header": {
     "title": "Shingan Chess",
+    "dashboard": "Dashboard",
     "home": "Home",
     "gettingStarted": "Getting Started",
     "learn": "Learn",
