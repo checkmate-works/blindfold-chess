@@ -21,6 +21,21 @@ vi.mock('next-navigation-guard', () => ({
   }),
 }));
 
+vi.mock('next/dynamic', () => ({
+  default: (loader: () => Promise<{ default: React.ComponentType }>) => {
+    let Resolved: React.ComponentType | null = null;
+    const promise = loader();
+    promise.then((mod) => {
+      Resolved = mod.default;
+    });
+    // In test, vi.mock makes the promise resolve synchronously
+    return function DynamicWrapper(props: Record<string, unknown>) {
+      if (!Resolved) return null;
+      return <Resolved {...props} />;
+    };
+  },
+}));
+
 vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
   MarkdownRenderer: ({ content }: { content: string }) => (
     <div data-testid="markdown-preview">{content}</div>
