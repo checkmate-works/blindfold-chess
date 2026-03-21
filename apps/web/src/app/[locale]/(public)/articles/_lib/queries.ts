@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 
 import { type Article, articles, db } from '@/lib/db';
@@ -99,24 +101,29 @@ export async function getPublishedArticles(): Promise<Article[]> {
  * Uses SQL ROW_NUMBER() to deduplicate and paginate in the database,
  * avoiding fetching all articles into application memory.
  */
-export async function getLatestPublishedArticles(
-  locale: string,
-  limit: number
-): Promise<Article[]> {
-  return getDeduplicatedArticles(locale, limit, 0);
-}
+export const getLatestPublishedArticles = unstable_cache(
+  async (locale: string, limit: number): Promise<Article[]> => {
+    return getDeduplicatedArticles(locale, limit, 0);
+  },
+  ['latest-published-articles'],
+  { tags: ['articles'], revalidate: 300 }
+);
 
 /**
  * Count published articles deduplicated by slug.
  */
-export async function getPublishedArticleCount(): Promise<number> {
-  const [result] = await db
-    .select({ count: sql<number>`COUNT(DISTINCT ${articles.slug})` })
-    .from(articles)
-    .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)));
+export const getPublishedArticleCount = unstable_cache(
+  async (): Promise<number> => {
+    const [result] = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${articles.slug})` })
+      .from(articles)
+      .where(and(eq(articles.status, 'published'), isNotNull(articles.publishedAt)));
 
-  return Number(result.count);
-}
+    return Number(result.count);
+  },
+  ['published-article-count'],
+  { tags: ['articles'], revalidate: 300 }
+);
 
 /**
  * Get paginated articles for the listing page, deduplicated by slug.

@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import { and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
@@ -25,9 +27,13 @@ export type { LikeMeta, PostWithReplyMeta, SortMode };
 /**
  * Get all chess openings ordered by sort_order.
  */
-export async function getOpenings(): Promise<ChessOpening[]> {
-  return db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
-}
+export const getOpenings = unstable_cache(
+  async (): Promise<ChessOpening[]> => {
+    return db.select().from(chessOpenings).orderBy(asc(chessOpenings.sortOrder));
+  },
+  ['chess-openings'],
+  { tags: ['openings'], revalidate: 3600 }
+);
 
 /**
  * Get openings whose first move targets a specific square.
