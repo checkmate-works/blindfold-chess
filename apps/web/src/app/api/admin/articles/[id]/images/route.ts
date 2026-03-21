@@ -4,7 +4,8 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
 import { articleImages, articles, db } from '@/lib/db';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
+import { createClient } from '@/lib/supabase/server';
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -51,6 +52,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
+  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
+  }
+
   const { id: articleId } = await params;
 
   // Verify article exists
@@ -94,7 +100,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const timestamp = Date.now();
   const storagePath = `${articleId}/${timestamp}.${ext}`;
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { error: uploadError } = await supabase.storage
     .from('article-images')
@@ -168,7 +174,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   // If Storage deletion fails, the orphan file can be cleaned up later.
   await db.delete(articleImages).where(eq(articleImages.id, body.imageId));
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   const { error: storageError } = await supabase.storage
     .from('article-images')

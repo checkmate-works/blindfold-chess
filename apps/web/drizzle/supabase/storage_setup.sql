@@ -51,9 +51,13 @@ CREATE POLICY "avatars_select_public" ON storage.objects
 -- =============================================================================
 
 -- Create the article-images bucket (public so image URLs are accessible without auth)
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('article-images', 'article-images', true)
-ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
+-- file_size_limit: 5MB, allowed_mime_types: JPEG, PNG, WebP, SVG
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('article-images', 'article-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- Allow anyone to read article images (public bucket)
 DROP POLICY IF EXISTS "article_images_select_public" ON storage.objects;
