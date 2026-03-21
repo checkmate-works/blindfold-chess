@@ -1,8 +1,6 @@
 import type { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
 import { ChallengeCard } from './ChallengeCard';
 import { DashboardHero } from './DashboardHero';
 import { GameSectionCard } from './GameSectionCard';
@@ -18,7 +16,7 @@ type Props = {
 export function DashboardPlaceholder({ t, locale, siteName }: Props) {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <DashboardHero t={t} siteName={siteName} locale={locale as Locale} />
+      <DashboardHero t={t} siteName={siteName} />
       <section className="flex flex-wrap justify-center gap-6 px-6 py-12">
         <GameSectionCard label={t('dashboard.vsAi')}>
           <GameShortcutCard locale={locale} label={t('dashboard.myGames')} />

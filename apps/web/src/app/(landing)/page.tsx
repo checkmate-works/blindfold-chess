@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server';
 import { getOptionalUser } from '@/lib/auth';
 import { getLocaleFromRequest } from '@/lib/locale';
 
+import { Footer as AppFooter } from '@/app/[locale]/_components/Footer';
+
 import {
   AiBattleSection,
   DashboardPlaceholder,
@@ -31,7 +33,12 @@ export default async function RootPage() {
   ]);
 
   if (user) {
-    return <DashboardPlaceholder t={t} locale={locale} siteName={metaT('siteName')} />;
+    return (
+      <>
+        <DashboardPlaceholder t={t} locale={locale} siteName={metaT('siteName')} />
+        <AppFooter locale={locale} />
+      </>
+    );
   }
 
   return (
