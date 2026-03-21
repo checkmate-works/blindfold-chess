@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
@@ -10,6 +12,7 @@ import { LegalMovesSetup } from './LegalMovesSetup';
 
 type Props = {
   locale: Locale;
+  initialMode?: PracticeMode;
 };
 
 type LegalMovesLocalSettings = {
@@ -23,8 +26,16 @@ const DEFAULTS: LegalMovesLocalSettings = {
   pieceSelection: 'random',
 };
 
-export function LegalMoves({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+export function LegalMoves({ locale, initialMode }: Props) {
+  const { settings, updateSettings, isLoaded } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const appliedInitialMode = useRef(false);
+
+  useEffect(() => {
+    if (isLoaded && initialMode && !appliedInitialMode.current) {
+      appliedInitialMode.current = true;
+      updateSettings({ mode: initialMode });
+    }
+  }, [isLoaded, initialMode, updateSettings]);
 
   return (
     <LegalMovesSetup
