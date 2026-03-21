@@ -11,11 +11,13 @@ type Props = {
 };
 
 export async function Footer({ locale }: Props) {
-  const tPrivacy = await getTranslations({ locale, namespace: 'privacy' });
-  const tTerms = await getTranslations({ locale, namespace: 'terms' });
-  const tCompany = await getTranslations({ locale, namespace: 'company' });
-  const tContact = await getTranslations({ locale, namespace: 'contact' });
-  const tAffiliate = await getTranslations({ locale, namespace: 'affiliateDisclosure' });
+  const [tPrivacy, tTerms, tCompany, tContact, tAffiliate] = await Promise.all([
+    getTranslations({ locale, namespace: 'privacy' }),
+    getTranslations({ locale, namespace: 'terms' }),
+    getTranslations({ locale, namespace: 'company' }),
+    getTranslations({ locale, namespace: 'contact' }),
+    getTranslations({ locale, namespace: 'affiliateDisclosure' }),
+  ]);
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
 
