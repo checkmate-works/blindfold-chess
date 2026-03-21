@@ -53,6 +53,20 @@ export function DashboardPlaceholder({ t, locale, siteName }: Props) {
             icon="♟️"
           />
         </GameSectionCard>
+        <GameSectionCard label={t('dashboard.topics')} backgroundImage="/images/topic.webp">
+          <ChallengeCard
+            locale={locale}
+            href="/topics/squares"
+            label={t('dashboard.topicSquares')}
+            icon="🔲"
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/topics/openings"
+            label={t('dashboard.topicOpenings')}
+            icon="📖"
+          />
+        </GameSectionCard>
       </section>
     </main>
   );

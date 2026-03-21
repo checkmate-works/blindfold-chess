@@ -1641,7 +1641,10 @@
       "squareColors": "Square Colors",
       "coordinateQuiz": "Coordinate Quiz",
       "legalMoves": "Legal Moves",
-      "viewLeaderboard": "View Leaderboard →"
+      "viewLeaderboard": "View Leaderboard →",
+      "topics": "💬 Topics",
+      "topicSquares": "Squares",
+      "topicOpenings": "Openings"
     }
   },
   "AuthStatusDisplay": {

@@ -1642,7 +1642,10 @@
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
       "legalMoves": "合法手",
-      "viewLeaderboard": "リーダーボードを見る →"
+      "viewLeaderboard": "リーダーボードを見る →",
+      "topics": "💬 トピック",
+      "topicSquares": "マス目",
+      "topicOpenings": "オープニング"
     }
   },
   "AuthStatusDisplay": {
