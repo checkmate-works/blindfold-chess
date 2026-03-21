@@ -509,4 +509,60 @@ describe('updateArticle', () => {
       })
     );
   });
+
+  // --- Unique constraint violation handling ---
+
+  it('should return friendly error on unique violation (code on error)', async () => {
+    setupAdminWithArticle();
+
+    const pgError = new Error(
+      'duplicate key value violates unique constraint "articles_slug_locale_unique"'
+    );
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    const result = await updateArticle(articleId, validData);
+    expect(result).toEqual({ error: 'An article with this slug and locale already exists' });
+  });
+
+  it('should return friendly error on unique violation (code on cause)', async () => {
+    setupAdminWithArticle();
+
+    const cause = new Error(
+      'duplicate key value violates unique constraint "articles_slug_locale_unique"'
+    );
+    (cause as unknown as Record<string, string>).code = '23505';
+    const wrappedError = new Error('Failed query: update "articles"...', { cause });
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw wrappedError;
+    });
+
+    const result = await updateArticle(articleId, validData);
+    expect(result).toEqual({ error: 'An article with this slug and locale already exists' });
+  });
+
+  it('should rethrow non-unique-violation errors', async () => {
+    setupAdminWithArticle();
+
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw new Error('Connection failed');
+    });
+
+    await expect(updateArticle(articleId, validData)).rejects.toThrow('Connection failed');
+  });
+
+  it('should not call revalidatePath on unique violation', async () => {
+    setupAdminWithArticle();
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
 });

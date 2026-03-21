@@ -45,3 +45,49 @@ DROP POLICY IF EXISTS "avatars_select_public" ON storage.objects;
 CREATE POLICY "avatars_select_public" ON storage.objects
   FOR SELECT
   USING (bucket_id = 'avatars');
+
+-- =============================================================================
+-- Article Images Storage Bucket Setup
+-- =============================================================================
+
+-- Create the article-images bucket (public so image URLs are accessible without auth)
+-- file_size_limit: 5MB, allowed_mime_types: JPEG, PNG, WebP, SVG
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('article-images', 'article-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- Allow anyone to read article images (public bucket)
+DROP POLICY IF EXISTS "article_images_select_public" ON storage.objects;
+CREATE POLICY "article_images_select_public" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'article-images');
+
+-- Allow admin users to upload article images
+DROP POLICY IF EXISTS "article_images_insert_admin" ON storage.objects;
+CREATE POLICY "article_images_insert_admin" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'article-images'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );
+
+-- Allow admin users to update article images
+DROP POLICY IF EXISTS "article_images_update_admin" ON storage.objects;
+CREATE POLICY "article_images_update_admin" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (
+    bucket_id = 'article-images'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );
+
+-- Allow admin users to delete article images
+DROP POLICY IF EXISTS "article_images_delete_admin" ON storage.objects;
+CREATE POLICY "article_images_delete_admin" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'article-images'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  );

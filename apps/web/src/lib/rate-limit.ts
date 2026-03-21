@@ -39,6 +39,7 @@ export const RATE_LIMITS = {
   setupUsername: { action: 'setup_username', maxAttempts: 5, windowMs: 600_000 },
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
+  uploadArticleImage: { action: 'upload_article_image', maxAttempts: 20, windowMs: 600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**

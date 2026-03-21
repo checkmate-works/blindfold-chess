@@ -110,6 +110,24 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           }
           if (!src || typeof src !== 'string') return null;
 
+          // External images (e.g. Supabase Storage): use unoptimized to skip
+          // Next.js Image Optimization which rejects private IPs during local dev.
+          const isExternal = src.startsWith('http://') || src.startsWith('https://');
+          if (isExternal) {
+            return (
+              <span className="block relative w-full max-w-2xl mx-auto my-8 aspect-video">
+                <Image
+                  src={src}
+                  alt={alt || ''}
+                  fill
+                  unoptimized
+                  className="rounded-md object-contain"
+                  sizes="(max-width: 768px) 100vw, 672px"
+                />
+              </span>
+            );
+          }
+
           const isSvg = src.endsWith('.svg');
 
           // SVG images: use explicit dimensions with fixed container
@@ -127,7 +145,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
             );
           }
 
-          // PNG/JPG images: use responsive container with fill
+          // PNG/JPG images (local/static): use responsive container with fill
           return (
             <span className="block relative w-full max-w-2xl mx-auto my-8 aspect-video">
               <Image

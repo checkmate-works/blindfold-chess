@@ -75,6 +75,27 @@ export const articles = pgTable(
 export type Article = typeof articles.$inferSelect;
 export type NewArticle = typeof articles.$inferInsert;
 
+// Article Images (intermediate table for Supabase Storage managed images)
+export const articleImages = pgTable(
+  'article_images',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    articleId: uuid('article_id')
+      .notNull()
+      .references(() => articles.id, { onDelete: 'cascade' }),
+    storagePath: varchar('storage_path', { length: 1024 }).notNull(),
+    publicUrl: varchar('public_url', { length: 2048 }).notNull(),
+    altText: varchar('alt_text', { length: 255 }),
+    contentType: varchar('content_type', { length: 50 }).notNull(),
+    fileSize: integer('file_size').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_article_images_article').on(table.articleId)]
+);
+
+export type ArticleImage = typeof articleImages.$inferSelect;
+export type NewArticleImage = typeof articleImages.$inferInsert;
+
 // Tags
 export const tags = pgTable('tags', {
   id: uuid('id').primaryKey().defaultRandom(),

@@ -1,5 +1,7 @@
 'use client';
 
+import type { ArticleImage } from '@/lib/db';
+
 import { updateArticle } from '../_actions/updateArticle';
 import { ArticleForm } from './ArticleForm';
 
@@ -19,12 +21,20 @@ type EditArticleFormProps = {
     icon: string;
   };
   categories: { id: string; name: string }[];
+  images?: ArticleImage[];
   labels: React.ComponentProps<typeof ArticleForm>['labels'];
 };
 
-export function EditArticleForm({ id, defaultValues, categories, labels }: EditArticleFormProps) {
+export function EditArticleForm({
+  id,
+  defaultValues,
+  categories,
+  images,
+  labels,
+}: EditArticleFormProps) {
   return (
     <ArticleForm
+      articleId={id}
       defaultValues={{
         slug: defaultValues.slug,
         title: defaultValues.title,
@@ -36,6 +46,7 @@ export function EditArticleForm({ id, defaultValues, categories, labels }: EditA
         icon: defaultValues.icon,
       }}
       categories={categories}
+      initialImages={images}
       onSaveDraft={(data) =>
         updateArticle(id, {
           ...data,

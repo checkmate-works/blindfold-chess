@@ -224,3 +224,24 @@ CREATE POLICY "challenge_best_scores_insert" ON "challenge_best_scores"
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
 CREATE POLICY "challenge_best_scores_update" ON "challenge_best_scores"
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- article_images (admin-only write, public read)
+-- =============================================================================
+ALTER TABLE "article_images" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "article_images_select" ON "article_images";
+CREATE POLICY "article_images_select" ON "article_images"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "article_images_insert_admin" ON "article_images";
+CREATE POLICY "article_images_insert_admin" ON "article_images"
+  FOR INSERT WITH CHECK (
+    (auth.jwt() ->> 'user_role') = 'admin'
+  );
+
+DROP POLICY IF EXISTS "article_images_delete_admin" ON "article_images";
+CREATE POLICY "article_images_delete_admin" ON "article_images"
+  FOR DELETE USING (
+    (auth.jwt() ->> 'user_role') = 'admin'
+  );
