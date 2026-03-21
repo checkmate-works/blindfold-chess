@@ -36,7 +36,10 @@ vi.mock('@/lib/db', () => ({
       values: (data: unknown) => ({
         returning: () => {
           mockInsertValuesReturning(data);
-          return [{ id: generatedId }];
+          return (
+            mockInsertValuesReturning.mock.results[mockInsertValuesReturning.mock.calls.length - 1]
+              ?.value ?? [{ id: generatedId }]
+          );
         },
       }),
     }),
@@ -550,5 +553,65 @@ describe('createArticle', () => {
     const result = await createArticle({ ...validData, icon: '♟' });
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockInsertValuesReturning).toHaveBeenCalledWith(expect.objectContaining({ icon: '♟' }));
+  });
+
+  // --- Unique constraint violation handling ---
+
+  it('should return friendly error on unique violation (code on error)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const pgError = new Error(
+      'duplicate key value violates unique constraint "articles_slug_locale_unique"'
+    );
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw pgError;
+    });
+
+    const result = await createArticle(validData);
+    expect(result).toEqual({ error: 'An article with this slug and locale already exists' });
+  });
+
+  it('should return friendly error on unique violation (code on cause)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const cause = new Error(
+      'duplicate key value violates unique constraint "articles_slug_locale_unique"'
+    );
+    (cause as unknown as Record<string, string>).code = '23505';
+    const wrappedError = new Error('Failed query: insert into "articles"...', { cause });
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw wrappedError;
+    });
+
+    const result = await createArticle(validData);
+    expect(result).toEqual({ error: 'An article with this slug and locale already exists' });
+  });
+
+  it('should rethrow non-unique-violation errors', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw new Error('Connection failed');
+    });
+
+    await expect(createArticle(validData)).rejects.toThrow('Connection failed');
+  });
+
+  it('should not call revalidatePath on unique violation', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await createArticle(validData);
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 });
