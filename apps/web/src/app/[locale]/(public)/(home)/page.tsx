@@ -29,6 +29,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { GameListClient, LatestTopicPostsSkeleton } from './_components';
 import { LatestTopicPostsList } from './_components/LatestTopicPostsList';
 import { NewGameButton } from './_components/NewGameButton';
+import { YourRankings } from './_components/YourRankings';
 
 type Props = {
   params: Promise<{
@@ -77,6 +78,10 @@ export default async function HomePage({ params }: Props) {
             <LatestTopicPostsList locale={locale} title={tTopics('recentTopicPosts')} />
           </Suspense>
         </ErrorBoundary>
+
+        <Suspense fallback={null}>
+          <YourRankings locale={locale} />
+        </Suspense>
       </div>
     </>
   );

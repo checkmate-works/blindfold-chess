@@ -1189,6 +1189,11 @@
       "gamesDeletedToast": "{count} games deleted successfully",
       "deleteFailedToast": "Failed to delete game",
       "moreGames": "All games"
+    },
+    "yourRankings": {
+      "title": "Your Rankings",
+      "noRanks": "You haven't ranked in any leaderboard yet. Try some practice modules!",
+      "viewAll": "View all leaderboards"
     }
   },
   "gamesPage": {
@@ -2708,6 +2713,11 @@
         "default": "Square Colors"
       }
     },
-    "backToList": "Back to Leaderboard"
+    "backToList": "Back to Leaderboard",
+    "signUpBanner": {
+      "message": "Join the leaderboard!",
+      "description": "Create a free account to track your scores and compete with other players.",
+      "cta": "Sign Up Free"
+    }
   }
 }

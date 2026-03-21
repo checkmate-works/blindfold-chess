@@ -1190,6 +1190,11 @@
       "gamesDeletedToast": "{count}個のゲームを削除しました",
       "deleteFailedToast": "ゲームの削除に失敗しました",
       "moreGames": "すべてのゲーム"
+    },
+    "yourRankings": {
+      "title": "あなたのランキング",
+      "noRanks": "まだランキングに参加していません。練習モジュールに挑戦してみましょう！",
+      "viewAll": "すべてのランキングを見る"
     }
   },
   "gamesPage": {
@@ -2686,6 +2691,11 @@
         "default": "マスの色"
       }
     },
-    "backToList": "ランキング一覧へ戻る"
+    "backToList": "ランキング一覧へ戻る",
+    "signUpBanner": {
+      "message": "ランキングに参加しよう！",
+      "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
+      "cta": "無料登録"
+    }
   }
 }
