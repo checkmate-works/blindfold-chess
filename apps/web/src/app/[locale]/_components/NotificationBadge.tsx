@@ -16,14 +16,8 @@ export function NotificationBadge() {
   const locale = useLocale();
   const { user } = useAuth();
   const pathname = usePathname();
-  const previousPathname = useRef(pathname);
+  const previousPathname = useRef<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    getUnreadCount()
-      .then(setUnreadCount)
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!user) return;

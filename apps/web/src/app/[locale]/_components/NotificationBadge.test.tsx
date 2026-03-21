@@ -279,23 +279,22 @@ describe('NotificationBadge', () => {
     expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
   });
 
-  it('should not refetch on route change when user is not authenticated', async () => {
+  it('should not refetch on route change when user is not authenticated', () => {
     mockUseAuth.mockReturnValue({ user: null, isLoading: false, session: null, signOut: vi.fn() });
     mockUsePathname.mockReturnValue('/en/mypage');
     mockGetUnreadCount.mockResolvedValueOnce(0);
 
     const { rerender } = render(<NotificationBadge />);
 
-    await waitFor(() => {
-      expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
-    });
+    // User guard blocks all fetches when user is null
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(0);
 
     mockUsePathname.mockReturnValue('/en/mypage/notifications');
 
     rerender(<NotificationBadge />);
 
-    // Should still be 1 (only the initial mount call, no route change refetch)
-    expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
+    // Still 0 — no fetch when unauthenticated
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(0);
   });
 
   it('should refetch on multiple consecutive route changes', async () => {
@@ -388,13 +387,11 @@ describe('NotificationBadge', () => {
   it('should refetch on route change after user becomes authenticated', async () => {
     mockUseAuth.mockReturnValue({ user: null, isLoading: false, session: null, signOut: vi.fn() });
     mockUsePathname.mockReturnValue('/en/login');
-    mockGetUnreadCount.mockResolvedValueOnce(0);
 
     const { rerender } = render(<NotificationBadge />);
 
-    await waitFor(() => {
-      expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
-    });
+    // User guard blocks fetch when user is null
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(0);
 
     // User logs in and navigates to mypage
     mockUseAuth.mockReturnValue({
@@ -412,7 +409,7 @@ describe('NotificationBadge', () => {
       expect(screen.getByText('4')).toBeInTheDocument();
     });
 
-    expect(mockGetUnreadCount).toHaveBeenCalledTimes(2);
+    expect(mockGetUnreadCount).toHaveBeenCalledTimes(1);
   });
 
   it('should handle route change combined with event dispatch correctly', async () => {
