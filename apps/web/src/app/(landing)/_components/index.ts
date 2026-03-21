@@ -1,4 +1,5 @@
 export { AiBattleSection } from './AiBattleSection';
+export { ChallengeCard } from './ChallengeCard';
 export { DashboardHero } from './DashboardHero';
 export { DashboardPlaceholder } from './DashboardPlaceholder';
 export { GameSectionCard } from './GameSectionCard';

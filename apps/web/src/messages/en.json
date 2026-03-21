@@ -1633,10 +1633,14 @@
     "dashboard": {
       "title": "Dashboard",
       "comingSoon": "Coming soon...",
-      "vsAi": "VS AI",
+      "vsAi": "🤖 VS AI",
       "myGames": "My Games",
       "newGame": "New Game",
-      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}"
+      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}",
+      "challenge": "🏆 Challenge",
+      "squareColors": "Square Colors",
+      "coordinateQuiz": "Coordinate Quiz",
+      "legalMoves": "Legal Moves"
     }
   },
   "AuthStatusDisplay": {

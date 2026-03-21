@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -8,6 +10,7 @@ import { CoordinateQuizSetup } from './CoordinateQuizSetup';
 
 type Props = {
   locale: Locale;
+  initialMode?: PracticeMode;
 };
 
 type CoordinateQuizLocalSettings = {
@@ -25,8 +28,16 @@ const DEFAULTS: CoordinateQuizLocalSettings = {
   mode: 'training',
 };
 
-export default function CoordinateQuiz({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+export default function CoordinateQuiz({ locale, initialMode }: Props) {
+  const { settings, updateSettings, isLoaded } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const appliedInitialMode = useRef(false);
+
+  useEffect(() => {
+    if (isLoaded && initialMode && !appliedInitialMode.current) {
+      appliedInitialMode.current = true;
+      updateSettings({ mode: initialMode });
+    }
+  }, [isLoaded, initialMode, updateSettings]);
 
   return (
     <CoordinateQuizSetup

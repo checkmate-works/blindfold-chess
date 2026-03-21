@@ -9,10 +9,11 @@ import { SquareColorsSetup } from './SquareColorsSetup';
 
 type Props = {
   locale: Locale;
+  initialMode?: PracticeMode;
 };
 
-export default function SquareColors({ locale }: Props) {
-  const [mode, setMode] = useState<PracticeMode>('training');
+export default function SquareColors({ locale, initialMode = 'training' }: Props) {
+  const [mode, setMode] = useState<PracticeMode>(initialMode);
 
   return <SquareColorsSetup locale={locale} mode={mode} onModeChange={setMode} />;
 }

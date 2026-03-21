@@ -2,17 +2,22 @@ import type { ReactNode } from 'react';
 
 type Props = {
   label: string;
+  backgroundImage?: string;
   children: ReactNode;
 };
 
-export function GameSectionCard({ label, children }: Props) {
+export function GameSectionCard({
+  label,
+  backgroundImage = '/images/chessboard.webp',
+  children,
+}: Props) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-card border border-border shadow-sm p-6 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-[0.4] pointer-events-none dark:opacity-[0.4]"
+        className="absolute inset-0 opacity-[0.6] pointer-events-none dark:opacity-[0.4]"
         style={{
-          backgroundImage: 'url("/images/chessboard.webp")',
+          backgroundImage: `url("${backgroundImage}")`,
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'right bottom',
