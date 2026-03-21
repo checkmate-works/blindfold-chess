@@ -50,51 +50,20 @@ export async function Header({ locale }: Props) {
     }
   }
 
-  const menuItems: NavigationItem[] = [
+  const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
-    {
-      id: 'getting-started',
-      href: `/${locale}/getting-started`,
-      label: t('gettingStarted'),
-      iconName: 'getting-started',
-    },
     { id: 'learn', href: `/${locale}/learn`, label: t('learn'), iconName: 'learn' },
-    {
-      id: 'practice',
-      href: `/${locale}/practice`,
-      label: t('practice'),
-      iconName: 'practice',
-    },
-    {
-      id: 'topics',
-      href: `/${locale}/topics`,
-      label: t('topics'),
-      iconName: 'topics',
-    },
-    {
-      id: 'articles',
-      href: `/${locale}/articles`,
-      label: t('articles'),
-      iconName: 'articles',
-    },
-    {
-      id: 'glossary',
-      href: `/${locale}/glossary`,
-      label: t('glossary'),
-      iconName: 'glossary',
-    },
+    { id: 'practice', href: `/${locale}/practice`, label: t('practice'), iconName: 'practice' },
+    { id: 'topics', href: `/${locale}/topics`, label: t('topics'), iconName: 'topics' },
+    { id: 'articles', href: `/${locale}/articles`, label: t('articles'), iconName: 'articles' },
+    { id: 'glossary', href: `/${locale}/glossary`, label: t('glossary'), iconName: 'glossary' },
     {
       id: 'leaderboard',
       href: `/${locale}/leaderboard`,
       label: t('leaderboard'),
       iconName: 'leaderboard',
     },
-    {
-      id: 'manual',
-      href: `/${locale}/manual`,
-      label: t('manual'),
-      iconName: 'manual',
-    },
+    { id: 'manual', href: `/${locale}/manual`, label: t('manual'), iconName: 'manual' },
     {
       id: 'announcements',
       href: `/${locale}/announcements`,
@@ -104,6 +73,19 @@ export async function Header({ locale }: Props) {
     { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
     { id: 'settings', href: `/${locale}/preferences`, label: t('settings'), iconName: 'settings' },
   ];
+
+  const menuItems: NavigationItem[] = isAuthenticated
+    ? [{ id: 'dashboard', href: '/', label: t('dashboard'), iconName: 'dashboard' }, ...commonItems]
+    : [
+        commonItems[0],
+        {
+          id: 'getting-started',
+          href: `/${locale}/getting-started`,
+          label: t('gettingStarted'),
+          iconName: 'getting-started',
+        },
+        ...commonItems.slice(1),
+      ];
 
   return (
     <>

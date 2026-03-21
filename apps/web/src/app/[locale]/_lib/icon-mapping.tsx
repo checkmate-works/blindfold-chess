@@ -9,6 +9,7 @@ import {
   FaNewspaper,
   FaQuestionCircle,
   FaRocket,
+  FaTachometerAlt,
   FaTrophy,
   FaUsers,
 } from 'react-icons/fa';
@@ -19,6 +20,8 @@ export const getIcon = (iconName: NavigationIconName) => {
   switch (iconName) {
     case 'home':
       return null;
+    case 'dashboard':
+      return <FaTachometerAlt className="h-5 w-5" />;
     case 'articles':
       return <FaNewspaper className="h-5 w-5" />;
     case 'getting-started':
