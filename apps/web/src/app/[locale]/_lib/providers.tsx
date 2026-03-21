@@ -10,7 +10,6 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { ToastContainer } from '../_components/ToastContainer';
 import { AuthProvider } from '../_contexts/AuthContext';
-import { GamePreferencesProvider } from '../_contexts/GamePreferencesContext';
 import { ToastProvider } from '../_contexts/ToastContext';
 
 type Props = {
@@ -26,14 +25,12 @@ export function Providers({ children, locale, messages }: Props) {
         <NavigationGuardProvider>
           <NuqsAdapter>
             <AuthProvider>
-              <GamePreferencesProvider>
-                <ToastProvider>
-                  {children}
-                  <Suspense>
-                    <ToastContainer />
-                  </Suspense>
-                </ToastProvider>
-              </GamePreferencesProvider>
+              <ToastProvider>
+                {children}
+                <Suspense>
+                  <ToastContainer />
+                </Suspense>
+              </ToastProvider>
             </AuthProvider>
           </NuqsAdapter>
         </NavigationGuardProvider>
