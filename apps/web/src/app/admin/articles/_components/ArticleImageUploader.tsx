@@ -6,6 +6,10 @@ import { LuCopy, LuImage, LuTrash2 } from 'react-icons/lu';
 
 import type { ArticleImage } from '@/lib/db';
 
+function toImageMarkdown(image: Pick<ArticleImage, 'altText' | 'publicUrl'>): string {
+  return `![${image.altText ?? ''}](${image.publicUrl})`;
+}
+
 // UI strings are hardcoded in English. The admin UI is English-only and not
 // part of the public i18n surface. If admin i18n is added in the future,
 // extract these into a labels prop following the ArticleForm pattern.
@@ -48,7 +52,7 @@ export function ArticleImageUploader({
 
         const image: ArticleImage = await res.json();
         setImages((prev) => [...prev, image]);
-        onInsertMarkdown(`![${image.altText ?? ''}](${image.publicUrl})`);
+        onInsertMarkdown(toImageMarkdown(image));
       } catch {
         setError('Upload failed');
       } finally {
@@ -97,7 +101,7 @@ export function ArticleImageUploader({
 
   const handleCopyMarkdown = useCallback(
     (image: ArticleImage) => {
-      onInsertMarkdown(`![${image.altText ?? ''}](${image.publicUrl})`);
+      onInsertMarkdown(toImageMarkdown(image));
     },
     [onInsertMarkdown]
   );

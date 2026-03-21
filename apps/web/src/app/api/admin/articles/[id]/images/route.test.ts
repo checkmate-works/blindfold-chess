@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateBinarySignature } from './route';
+import { validateBinarySignature } from './image-validation';
 
 describe('validateBinarySignature', () => {
   it('should validate JPEG binary signature', () => {

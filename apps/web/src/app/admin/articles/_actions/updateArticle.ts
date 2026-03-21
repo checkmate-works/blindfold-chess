@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
 import { requireAdmin } from '../../_lib/auth';
 import type { ArticleMutationData } from '../_lib/types';
@@ -49,16 +50,7 @@ export async function updateArticle(id: string, data: ArticleMutationData): Prom
       })
       .where(eq(articles.id, id));
   } catch (err: unknown) {
-    // Drizzle wraps the original PostgresError in a generic Error.
-    // Check both the error itself and its cause for the PG unique violation code.
-    const pgCode =
-      (err instanceof Error &&
-        (('code' in err && (err as { code: string }).code) ||
-          (err.cause instanceof Error &&
-            'code' in err.cause &&
-            (err.cause as { code: string }).code))) ||
-      undefined;
-    if (pgCode === '23505') {
+    if (extractPgErrorCode(err) === '23505') {
       return { error: 'An article with this slug and locale already exists' };
     }
     throw err;

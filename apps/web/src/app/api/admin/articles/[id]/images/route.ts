@@ -7,44 +7,13 @@ import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
-const EXTENSION_MAP: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/svg+xml': 'svg',
-};
-
-/**
- * Validate file binary signature matches the declared MIME type.
- * Returns true if the binary content matches one of the allowed types.
- */
-export function validateBinarySignature(buffer: ArrayBuffer, declaredType: string): boolean {
-  const header = new Uint8Array(buffer.slice(0, 12));
-
-  if (declaredType === 'image/jpeg') {
-    return header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
-  }
-  if (declaredType === 'image/png') {
-    return header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47;
-  }
-  if (declaredType === 'image/webp') {
-    return header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
-  }
-  if (declaredType === 'image/svg+xml') {
-    // SVG files can contain embedded scripts (XSS vector). Currently this is
-    // acceptable because: (1) only admins can upload, and (2) Supabase Storage
-    // serves files from a separate domain, isolating cookies/JS context.
-    // If uploads are ever opened to non-admin users, SVG sanitization
-    // (e.g. DOMPurify) must be added before allowing SVG uploads.
-    const text = new TextDecoder().decode(new Uint8Array(buffer.slice(0, 256)));
-    return text.trimStart().startsWith('<') && (text.includes('<svg') || text.includes('<?xml'));
-  }
-
-  return false;
-}
+import {
+  ALLOWED_MIME_TYPES,
+  ARTICLE_IMAGES_BUCKET,
+  MAX_FILE_SIZE,
+  MIME_TO_EXTENSION,
+  validateBinarySignature,
+} from './image-validation';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
@@ -96,14 +65,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
-  const ext = EXTENSION_MAP[file.type];
+  const ext = MIME_TO_EXTENSION[file.type];
   const timestamp = Date.now();
   const storagePath = `${articleId}/${timestamp}.${ext}`;
 
   const supabase = await createClient();
 
   const { error: uploadError } = await supabase.storage
-    .from('article-images')
+    .from(ARTICLE_IMAGES_BUCKET)
     .upload(storagePath, buffer, {
       contentType: file.type,
       upsert: false,
@@ -113,7 +82,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'upload_failed' }, { status: 500 });
   }
 
-  const { data: urlData } = supabase.storage.from('article-images').getPublicUrl(storagePath);
+  const { data: urlData } = supabase.storage.from(ARTICLE_IMAGES_BUCKET).getPublicUrl(storagePath);
 
   const altText = (formData.get('altText') as string) || null;
 
@@ -132,7 +101,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .returning();
   } catch (err) {
     // DB insert failed after Storage upload succeeded — clean up the orphan file
-    await supabase.storage.from('article-images').remove([storagePath]);
+    await supabase.storage.from(ARTICLE_IMAGES_BUCKET).remove([storagePath]);
     console.warn('article-images: DB insert failed, cleaned up storage file', storagePath, err);
     return NextResponse.json({ error: 'insert_failed' }, { status: 500 });
   }
@@ -177,7 +146,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   const supabase = await createClient();
 
   const { error: storageError } = await supabase.storage
-    .from('article-images')
+    .from(ARTICLE_IMAGES_BUCKET)
     .remove([image.storagePath]);
 
   if (storageError) {
