@@ -1,20 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
-import {
-  CardLink,
-  Divider,
-  MarkdownRenderer,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -33,6 +27,14 @@ import {
   getCategoryCounts,
   getPracticeModulesForArticle,
 } from '../../_lib/utils';
+
+const MarkdownRenderer = dynamic(
+  () =>
+    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+      default: m.MarkdownRenderer,
+    })),
+  { ssr: true }
+);
 
 type Props = {
   params: Promise<{

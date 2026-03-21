@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -15,8 +17,13 @@ type Props = {
   }>;
 };
 
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'practice' });
 
   return {
@@ -27,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function QuadrantAnchorsResultPage(props: Props) {
   const { locale } = await props.params;
+  setRequestLocale(locale);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { SUPPORTED_LOCALES } from '@/config';
 import { Link } from '@/i18n/routing';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
@@ -18,8 +19,13 @@ type Props = {
   params: Promise<{ locale: Locale }>;
 };
 
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'faq' });
 
   return {
@@ -31,6 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FAQPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'faq' });
 
   // Plain text answers for JSON-LD (strip XML-like tags for plain text)

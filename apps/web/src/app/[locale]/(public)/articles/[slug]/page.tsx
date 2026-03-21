@@ -1,18 +1,27 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
-import { Divider, MarkdownRenderer, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticle, getPublishedArticles } from '../_lib/queries';
+
+const MarkdownRenderer = dynamic(
+  () =>
+    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+      default: m.MarkdownRenderer,
+    })),
+  { ssr: true }
+);
 
 type Props = {
   params: Promise<{

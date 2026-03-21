@@ -25,7 +25,9 @@
  * - Warnsdorff's Rule: Heuristic that prioritizes squares with fewer unvisited neighbors
  */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -40,8 +42,13 @@ type Props = {
   }>;
 };
 
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return {
@@ -53,6 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function KnightTourPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return (

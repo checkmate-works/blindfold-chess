@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
@@ -10,10 +11,16 @@ import { LuSettings, LuX } from 'react-icons/lu';
 
 import type { ArticleImage } from '@/lib/db';
 
-import { MarkdownRenderer } from '@/app/[locale]/_components/MarkdownRenderer';
-
 import type { ArticleEditData } from '../_lib/types';
 import { ArticleImageUploader } from './ArticleImageUploader';
+
+const MarkdownRenderer = dynamic(
+  () =>
+    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+      default: m.MarkdownRenderer,
+    })),
+  { ssr: true }
+);
 
 type ArticleFormProps = {
   articleId?: string;

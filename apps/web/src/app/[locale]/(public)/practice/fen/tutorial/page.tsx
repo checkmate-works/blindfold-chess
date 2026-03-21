@@ -1,5 +1,7 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
+
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -18,8 +20,13 @@ type Props = {
   }>;
 };
 
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/fen/tutorial' }),
@@ -30,6 +37,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function FenTutorialPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return (

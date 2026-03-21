@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button, ChessBoard } from '@/app/_components';
+import { SUPPORTED_LOCALES } from '@/config';
 import {
   FaBrain,
   FaChess,
@@ -34,6 +34,10 @@ type Props = {
     locale: Locale;
   }>;
 };
+
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
