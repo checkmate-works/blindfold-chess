@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -8,13 +8,18 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
 import { LuSettings, LuX } from 'react-icons/lu';
 
+import type { ArticleImage } from '@/lib/db';
+
 import { MarkdownRenderer } from '@/app/[locale]/_components/MarkdownRenderer';
 
 import type { ArticleEditData } from '../_lib/types';
+import { ArticleImageUploader } from './ArticleImageUploader';
 
 type ArticleFormProps = {
+  articleId?: string;
   defaultValues?: ArticleEditData;
   categories?: { id: string; name: string }[];
+  initialImages?: ArticleImage[];
   onSaveDraft: (
     data: ArticleEditData
   ) => Promise<{ success: true; id: string } | { error: string }>;
@@ -51,8 +56,10 @@ type ArticleFormProps = {
 };
 
 export function ArticleForm({
+  articleId,
   defaultValues,
   categories = [],
+  initialImages,
   onSaveDraft,
   labels,
 }: ArticleFormProps) {
@@ -62,6 +69,7 @@ export function ArticleForm({
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [slug, setSlug] = useState(defaultValues?.slug ?? '');
   const [title, setTitle] = useState(defaultValues?.title ?? '');
@@ -111,6 +119,31 @@ export function ArticleForm({
     categoryId,
     icon,
   });
+
+  const handleInsertMarkdown = useCallback((markdown: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      // Fallback: append to end
+      setContent((prev) => prev + '\n' + markdown);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    setContent((prev) => {
+      const before = prev.slice(0, start);
+      const after = prev.slice(end);
+      return before + markdown + after;
+    });
+
+    // Restore focus and set cursor after inserted text
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const newPos = start + markdown.length;
+      textarea.setSelectionRange(newPos, newPos);
+    });
+  }, []);
 
   const handleSaveDraft = () => {
     setError(null);
@@ -265,13 +298,23 @@ export function ArticleForm({
 
           {/* Content area: edit or preview */}
           {activeTab === 'edit' ? (
-            <div className="flex-1 px-6 pb-4">
+            <div className="flex-1 px-6 pb-4 flex flex-col">
+              {articleId && (
+                <div className="pb-2">
+                  <ArticleImageUploader
+                    articleId={articleId}
+                    initialImages={initialImages}
+                    onInsertMarkdown={handleInsertMarkdown}
+                  />
+                </div>
+              )}
               <textarea
+                ref={textareaRef}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder={labels.contentPlaceholder}
                 aria-label={labels.content}
-                className="w-full h-full bg-card border-none outline-none resize-none text-sm font-mono leading-relaxed placeholder:text-muted-foreground/50 rounded px-3 py-2"
+                className="w-full flex-1 bg-card border-none outline-none resize-none text-sm font-mono leading-relaxed placeholder:text-muted-foreground/50 rounded px-3 py-2"
               />
             </div>
           ) : (
