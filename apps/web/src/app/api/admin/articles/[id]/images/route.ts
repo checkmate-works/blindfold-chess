@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 import {
   ALLOWED_MIME_TYPES,
@@ -15,20 +15,15 @@ import {
   validateBinarySignature,
 } from './image-validation';
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
+  return auth;
+}
 
-  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
-
-  const { id: articleId } = await params;
-
-  // Verify article exists
+async function verifyArticleExists(articleId: string): Promise<NextResponse | null> {
   const [article] = await db
     .select({ id: articles.id })
     .from(articles)
@@ -38,38 +33,65 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!article) {
     return NextResponse.json({ error: 'article_not_found' }, { status: 404 });
   }
+  return null;
+}
 
+async function parseAndValidateFile(request: Request) {
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: 'invalid_form_data' }, { status: 400 });
+    return { error: NextResponse.json({ error: 'invalid_form_data' }, { status: 400 }) } as const;
   }
 
   const file = formData.get('file');
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: 'file_required' }, { status: 400 });
+    return { error: NextResponse.json({ error: 'file_required' }, { status: 400 }) } as const;
   }
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
+    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: 'file_too_large' }, { status: 400 });
+    return { error: NextResponse.json({ error: 'file_too_large' }, { status: 400 }) } as const;
   }
 
   const buffer = await file.arrayBuffer();
 
   if (!validateBinarySignature(buffer, file.type)) {
-    return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
+    return { error: NextResponse.json({ error: 'invalid_file_type' }, { status: 400 }) } as const;
   }
+
+  const altText = (formData.get('altText') as string) || null;
+
+  return { file, buffer, altText } as const;
+}
+
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await authenticateAdmin();
+  if (auth instanceof NextResponse) return auth;
+
+  const rateLimitResult = await checkRateLimit(auth.userId, RATE_LIMITS.uploadArticleImage);
+  if ('error' in rateLimitResult) {
+    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
+  }
+
+  const { id: articleId } = await params;
+
+  const articleError = await verifyArticleExists(articleId);
+  if (articleError) return articleError;
+
+  const fileResult = await parseAndValidateFile(request);
+  if ('error' in fileResult) return fileResult.error;
+
+  const { file, buffer, altText } = fileResult;
 
   const ext = MIME_TO_EXTENSION[file.type];
   const timestamp = Date.now();
   const storagePath = `${articleId}/${timestamp}.${ext}`;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error: uploadError } = await supabase.storage
     .from(ARTICLE_IMAGES_BUCKET)
@@ -83,8 +105,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const { data: urlData } = supabase.storage.from(ARTICLE_IMAGES_BUCKET).getPublicUrl(storagePath);
-
-  const altText = (formData.get('altText') as string) || null;
 
   let inserted;
   try {
@@ -110,10 +130,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  const auth = await authenticateAdmin();
+  if (auth instanceof NextResponse) return auth;
 
   const { id: articleId } = await params;
 
@@ -143,7 +161,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   // If Storage deletion fails, the orphan file can be cleaned up later.
   await db.delete(articleImages).where(eq(articleImages.id, body.imageId));
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error: storageError } = await supabase.storage
     .from(ARTICLE_IMAGES_BUCKET)
