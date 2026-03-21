@@ -1,3 +1,7 @@
+import { cache } from 'react';
+
+import { unstable_cache } from 'next/cache';
+
 import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
@@ -114,24 +118,33 @@ export async function getPublishedAnnouncement(
  * Get the latest published public announcement for the top banner.
  * Filters: status='published', visibility='public', publishedAt set, publishedAt within BANNER_DISPLAY_DAYS.
  * Returns null if no matching announcement exists.
+ *
+ * Wrapped with unstable_cache (cross-request, 300s revalidation) and
+ * React.cache (per-request deduplication).
  */
-export async function getLatestBannerAnnouncement(locale: string): Promise<Announcement | null> {
-  const cutoff = new Date(Date.now() - BANNER_DISPLAY_DAYS * 24 * 60 * 60 * 1000);
+export const getLatestBannerAnnouncement = cache(
+  unstable_cache(
+    async (locale: string): Promise<Announcement | null> => {
+      const cutoff = new Date(Date.now() - BANNER_DISPLAY_DAYS * 24 * 60 * 60 * 1000);
 
-  const rows = await db
-    .select()
-    .from(announcements)
-    .where(
-      and(
-        eq(announcements.status, 'published'),
-        eq(announcements.visibility, 'public'),
-        isNotNull(announcements.publishedAt),
-        gte(announcements.publishedAt, cutoff)
-      )
-    )
-    .orderBy(desc(announcements.publishedAt));
+      const rows = await db
+        .select()
+        .from(announcements)
+        .where(
+          and(
+            eq(announcements.status, 'published'),
+            eq(announcements.visibility, 'public'),
+            isNotNull(announcements.publishedAt),
+            gte(announcements.publishedAt, cutoff)
+          )
+        )
+        .orderBy(desc(announcements.publishedAt));
 
-  if (rows.length === 0) return null;
+      if (rows.length === 0) return null;
 
-  return deduplicateBySlug(rows, locale)[0] ?? null;
-}
+      return deduplicateBySlug(rows, locale)[0] ?? null;
+    },
+    ['latest-banner-announcement'],
+    { tags: ['announcements'], revalidate: 300 }
+  )
+);
