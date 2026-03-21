@@ -1629,6 +1629,25 @@
       "deGrootLink": "de Groot experiment",
       "descriptionSuffix": ".",
       "cta": "Read All Articles"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "comingSoon": "Coming soon...",
+      "vsAi": "🤖 VS AI",
+      "myGames": "My Games",
+      "newGame": "New Game",
+      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}",
+      "challenge": "🏆 Challenge",
+      "squareColors": "Square Colors",
+      "coordinateQuiz": "Coordinate Quiz",
+      "legalMoves": "Legal Moves",
+      "viewLeaderboard": "View Leaderboard →",
+      "topics": "💬 Topics",
+      "topicSquares": "Squares",
+      "topicOpenings": "Openings",
+      "welcomeGreeting": "Hello, {name}!",
+      "welcomeDefaultName": "Player",
+      "viewMypage": "My Page"
     }
   },
   "AuthStatusDisplay": {

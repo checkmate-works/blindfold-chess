@@ -1,0 +1,79 @@
+import type { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+
+import { ChallengeCard } from './ChallengeCard';
+import { DashboardHero } from './DashboardHero';
+import { GameSectionCard } from './GameSectionCard';
+import { GameShortcutCard } from './GameShortcutCard';
+import { NewGameCard } from './NewGameCard';
+import { WelcomeCard } from './WelcomeCard';
+
+type Props = {
+  t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
+  locale: string;
+  siteName: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
+export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarUrl }: Props) {
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <DashboardHero t={t} siteName={siteName} />
+      <section className="flex flex-wrap justify-center gap-6 px-6 py-12">
+        <div className="basis-full flex justify-center">
+          <WelcomeCard t={t} locale={locale} displayName={displayName} avatarUrl={avatarUrl} />
+        </div>
+        <GameSectionCard label={t('dashboard.vsAi')}>
+          <GameShortcutCard locale={locale} label={t('dashboard.myGames')} />
+          <NewGameCard locale={locale} label={t('dashboard.newGame')} />
+        </GameSectionCard>
+        <GameSectionCard
+          label={t('dashboard.challenge')}
+          backgroundImage="/images/challenge.webp"
+          footer={
+            <Link
+              href={`/${locale}/leaderboard`}
+              className="block text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors rounded-full bg-card/90 backdrop-blur-sm py-1.5 px-4 border border-border/50"
+            >
+              {t('dashboard.viewLeaderboard')}
+            </Link>
+          }
+        >
+          <ChallengeCard
+            locale={locale}
+            href="/practice/square-colors?mode=timed"
+            label={t('dashboard.squareColors')}
+            icon="🎨"
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/practice/coordinate-quiz?mode=timed"
+            label={t('dashboard.coordinateQuiz')}
+            icon="🎯"
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/practice/legal-moves?mode=timed"
+            label={t('dashboard.legalMoves')}
+            icon="♟️"
+          />
+        </GameSectionCard>
+        <GameSectionCard label={t('dashboard.topics')} backgroundImage="/images/topic.webp">
+          <ChallengeCard
+            locale={locale}
+            href="/topics/squares"
+            label={t('dashboard.topicSquares')}
+            icon="🔲"
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/topics/openings"
+            label={t('dashboard.topicOpenings')}
+            icon="📖"
+          />
+        </GameSectionCard>
+      </section>
+    </main>
+  );
+}
