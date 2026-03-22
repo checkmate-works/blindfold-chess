@@ -2788,5 +2788,12 @@
       "description": "Create a free account to track your scores and compete with other players.",
       "cta": "Sign Up Free"
     }
+  },
+  "validation": {
+    "password": {
+      "tooShort": "Password must be at least {minLength} characters.",
+      "missingLetter": "Password must contain at least one letter.",
+      "missingDigit": "Password must contain at least one digit."
+    }
   }
 }

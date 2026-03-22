@@ -6,12 +6,15 @@ import { useTranslations } from 'next-intl';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
+import { passwordSchema } from '@/lib/validations/password';
+
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { changePassword } from '../_actions/changePassword';
 
 export function ChangePasswordForm() {
   const t = useTranslations('profile.changePassword');
+  const tPassword = useTranslations('validation.password');
   const { showToast } = useToast();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,8 +31,10 @@ export function ChangePasswordForm() {
       return;
     }
 
-    if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(t('passwordTooShort'));
+    const result = passwordSchema.safeParse(newPassword);
+    if (!result.success) {
+      const key = result.error.issues[0].message as 'tooShort' | 'missingLetter' | 'missingDigit';
+      setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 
@@ -47,9 +52,6 @@ export function ChangePasswordForm() {
         switch (result.error) {
           case 'currentPasswordIncorrect':
             setError(t('currentPasswordIncorrect'));
-            break;
-          case 'passwordTooShort':
-            setError(t('passwordTooShort'));
             break;
           case 'passwordSameAsCurrent':
             setError(t('passwordSameAsCurrent'));

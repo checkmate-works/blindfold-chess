@@ -72,16 +72,58 @@ describe('EmailSignUpForm', () => {
       target: { value: 'test@example.com' },
     });
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'short' },
+      target: { value: 'short1' },
     });
     fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'short' },
+      target: { value: 'short1' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
 
     await waitFor(() => {
-      expect(screen.getByText('passwordTooShort')).toBeInTheDocument();
+      expect(screen.getByText('tooShort')).toBeInTheDocument();
+    });
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
+  it('should show missingLetter error when password has no letters', async () => {
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: '12345678' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: '12345678' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingLetter')).toBeInTheDocument();
+    });
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
+  it('should show missingDigit error when password has no digits', async () => {
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'abcdefgh' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'abcdefgh' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingDigit')).toBeInTheDocument();
     });
     expect(mockSignUp).not.toHaveBeenCalled();
   });

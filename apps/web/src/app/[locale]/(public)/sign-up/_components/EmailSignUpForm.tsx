@@ -8,9 +8,11 @@ import { useRouter } from 'next/navigation';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
 import { createClient } from '@/lib/supabase/client';
+import { passwordSchema } from '@/lib/validations/password';
 
 export function EmailSignUpForm() {
   const t = useTranslations('signUp');
+  const tPassword = useTranslations('validation.password');
   const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -28,8 +30,10 @@ export function EmailSignUpForm() {
       return;
     }
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(t('passwordTooShort'));
+    const result = passwordSchema.safeParse(password);
+    if (!result.success) {
+      const key = result.error.issues[0].message as 'tooShort' | 'missingLetter' | 'missingDigit';
+      setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 

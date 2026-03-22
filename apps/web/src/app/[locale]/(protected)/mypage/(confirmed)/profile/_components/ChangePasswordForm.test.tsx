@@ -67,16 +67,58 @@ describe('ChangePasswordForm', () => {
       target: { value: 'currentpass123' },
     });
     fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'short' },
+      target: { value: 'short1' },
     });
     fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'short' },
+      target: { value: 'short1' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
-      expect(screen.getByText('passwordTooShort')).toBeInTheDocument();
+      expect(screen.getByText('tooShort')).toBeInTheDocument();
+    });
+    expect(mockChangePassword).not.toHaveBeenCalled();
+  });
+
+  it('should show missingLetter error when new password has no letters', async () => {
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: '12345678' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: '12345678' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingLetter')).toBeInTheDocument();
+    });
+    expect(mockChangePassword).not.toHaveBeenCalled();
+  });
+
+  it('should show missingDigit error when new password has no digits', async () => {
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: 'abcdefgh' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'abcdefgh' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingDigit')).toBeInTheDocument();
     });
     expect(mockChangePassword).not.toHaveBeenCalled();
   });
@@ -200,7 +242,7 @@ describe('ChangePasswordForm', () => {
     expect(mockShowToast).not.toHaveBeenCalled();
   });
 
-  it('should show passwordTooShort error from Server Action', async () => {
+  it('should show generic error for passwordTooShort from Server Action (unrecognized code)', async () => {
     mockChangePassword.mockResolvedValue({ error: 'passwordTooShort' });
 
     render(<ChangePasswordForm />);
@@ -218,7 +260,7 @@ describe('ChangePasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
-      expect(screen.getByText('passwordTooShort')).toBeInTheDocument();
+      expect(screen.getByText('error')).toBeInTheDocument();
     });
   });
 

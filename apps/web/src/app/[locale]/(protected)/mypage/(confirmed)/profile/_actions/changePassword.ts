@@ -1,11 +1,11 @@
 'use server';
 
-import { MIN_PASSWORD_LENGTH } from '@/config';
 import { createClient } from '@supabase/supabase-js';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { passwordSchema } from '@/lib/validations/password';
 
 export type ChangePasswordResult = {
   success?: boolean;
@@ -27,8 +27,9 @@ export async function changePassword(
     return { error: 'notEmailAuth' };
   }
 
-  if (newPassword.length < MIN_PASSWORD_LENGTH) {
-    return { error: 'passwordTooShort' };
+  const validation = passwordSchema.safeParse(newPassword);
+  if (!validation.success) {
+    return { error: 'passwordInvalid' };
   }
 
   if (currentPassword === newPassword) {
