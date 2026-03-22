@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
@@ -39,7 +41,9 @@ export default async function ContactPage({ params }: Props) {
       <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
-        <ContactForm locale={locale} />
+        <Suspense>
+          <ContactForm locale={locale} />
+        </Suspense>
       </PagePanel>
     </div>
   );

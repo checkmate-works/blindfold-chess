@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
@@ -38,7 +40,9 @@ export default async function PreferencesPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        <PreferencesTabs locale={locale} />
+        <Suspense>
+          <PreferencesTabs locale={locale} />
+        </Suspense>
         <Divider />
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </PagePanel>

@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
@@ -41,7 +43,9 @@ export default async function ResultPage({ params }: Props) {
       <div className="mb-8">
         <PageTitle>{t('title')}</PageTitle>
       </div>
-      <ResultClient locale={locale} brandName={tMetadata('siteName')} />
+      <Suspense>
+        <ResultClient locale={locale} brandName={tMetadata('siteName')} />
+      </Suspense>
     </>
   );
 }

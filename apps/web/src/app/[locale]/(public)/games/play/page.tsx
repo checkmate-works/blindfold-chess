@@ -15,6 +15,8 @@
  * 3. Game End: Win/loss/draw result displayed, option to start new game
  *    or proceed to postmortem (game review)
  */
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
@@ -50,5 +52,9 @@ export default async function PlayPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <PlayPageClient locale={locale} />;
+  return (
+    <Suspense>
+      <PlayPageClient locale={locale} />
+    </Suspense>
+  );
 }
