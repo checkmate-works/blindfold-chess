@@ -41,6 +41,7 @@ type Props = {
     href: string;
     label: string;
   };
+  afterActions?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;
 };
 
@@ -57,6 +58,7 @@ export function PracticeComplete({
   onExit,
   children,
   otherPracticeLink,
+  afterActions,
   beforeRelatedContent,
 }: Props) {
   const router = useRouter();
@@ -109,6 +111,8 @@ export function PracticeComplete({
               </Link>
             </div>
           )}
+
+          {afterActions}
         </div>
       </PracticePanel>
 

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -69,6 +70,7 @@ export function ResultClient({ locale }: Props) {
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
+        afterActions={<SignUpBanner locale={locale} />}
       />
     </PracticeResultPage>
   );

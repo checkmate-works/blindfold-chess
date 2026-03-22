@@ -411,6 +411,11 @@
       "confirmButton": "Quit",
       "cancelButton": "Continue"
     },
+    "signUpBanner": {
+      "message": "Sign up for free to record your scores!",
+      "description": "Save your scores and track your improvement",
+      "cta": "Sign Up Free"
+    },
     "settings": {
       "title": "Practice Settings",
       "timeLimit": "Time Limit",

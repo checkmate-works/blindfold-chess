@@ -412,6 +412,11 @@
       "confirmButton": "終了する",
       "cancelButton": "続ける"
     },
+    "signUpBanner": {
+      "message": "無料登録するとスコアを記録できます！",
+      "description": "スコアを保存して上達を確認しましょう",
+      "cta": "無料登録"
+    },
     "settings": {
       "title": "練習設定",
       "timeLimit": "制限時間",
