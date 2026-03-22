@@ -332,6 +332,12 @@
         "title": "Try It Now",
         "cta": "Play This Position",
         "startFromInitial": "Start from initial position"
+      },
+      "community": {
+        "title": "Community",
+        "description": "Exchange ideas with other players and improve together",
+        "cta": "Browse Topics",
+        "signUp": "Free sign up"
       }
     }
   },

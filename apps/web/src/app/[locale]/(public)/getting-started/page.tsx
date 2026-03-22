@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button, ChessBoard } from '@/app/_components';
 import { SUPPORTED_LOCALES } from '@/config';
 import { Link } from '@/i18n/routing';
-import { FaChess, FaDumbbell } from 'react-icons/fa';
+import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -47,7 +47,7 @@ export default async function GettingStartedPage({ params }: Props) {
       <PagePanel className="space-y-8">
         <p className="text-center text-lg text-muted-foreground">{t('headline')}</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Try */}
           <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
             <div className="text-primary text-3xl">
@@ -103,6 +103,28 @@ export default async function GettingStartedPage({ params }: Props) {
                 className="text-sm text-muted-foreground hover:text-foreground underline"
               >
                 {t('cards.train.viewOtherMenus')}
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 3: Community */}
+          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+            <div className="text-primary text-3xl">
+              <FaComments />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">{t('cards.community.title')}</h2>
+            <p className="text-sm text-muted-foreground">{t('cards.community.description')}</p>
+            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+              <Link href="/topics">
+                <Button asChild variant="primary" size="lg">
+                  {t('cards.community.cta')}
+                </Button>
+              </Link>
+              <Link
+                href="/sign-up"
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                {t('cards.community.signUp')}
               </Link>
             </div>
           </div>
