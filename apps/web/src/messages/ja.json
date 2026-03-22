@@ -2066,7 +2066,22 @@
     "breadcrumbMypage": "マイページ",
     "viewPublicProfile": "@{username} のプロフィール",
     "profileUpdated": "プロフィールを更新しました",
-    "deleteAccountLink": "退会"
+    "deleteAccountLink": "退会",
+    "changePassword": {
+      "title": "パスワード変更",
+      "currentPasswordLabel": "現在のパスワード",
+      "newPasswordLabel": "新しいパスワード",
+      "confirmPasswordLabel": "新しいパスワード（確認）",
+      "submit": "パスワードを変更",
+      "submitLoading": "変更中...",
+      "passwordMismatch": "新しいパスワードが一致しません。",
+      "passwordTooShort": "パスワードは8文字以上で入力してください。",
+      "passwordSameAsCurrent": "新しいパスワードは現在のパスワードと異なるものにしてください。",
+      "currentPasswordIncorrect": "現在のパスワードが正しくありません。",
+      "rateLimited": "試行回数の上限に達しました。しばらくしてからお試しください。",
+      "error": "エラーが発生しました。もう一度お試しください。",
+      "success": "パスワードを変更しました。"
+    }
   },
   "Admin": {
     "title": "Admin",

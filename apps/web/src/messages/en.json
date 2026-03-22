@@ -2065,7 +2065,22 @@
     "breadcrumbMypage": "My Page",
     "viewPublicProfile": "@{username}'s profile",
     "profileUpdated": "Profile updated",
-    "deleteAccountLink": "Delete Account"
+    "deleteAccountLink": "Delete Account",
+    "changePassword": {
+      "title": "Change Password",
+      "currentPasswordLabel": "Current Password",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm New Password",
+      "submit": "Change Password",
+      "submitLoading": "Changing...",
+      "passwordMismatch": "New passwords do not match.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordSameAsCurrent": "New password must be different from the current password.",
+      "currentPasswordIncorrect": "Current password is incorrect.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "error": "An error occurred. Please try again.",
+      "success": "Password changed successfully."
+    }
   },
   "Admin": {
     "title": "Admin",

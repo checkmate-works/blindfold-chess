@@ -12,7 +12,7 @@ import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
-import { ProfileForm } from './_components';
+import { ChangePasswordForm, ProfileForm } from './_components';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -57,6 +57,13 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         <ProfileForm locale={locale} profile={profile} />
+
+        {user.app_metadata.providers?.includes('email') && (
+          <>
+            <Divider />
+            <ChangePasswordForm />
+          </>
+        )}
 
         <Divider />
 
