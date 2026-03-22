@@ -8,9 +8,14 @@ import { getLocaleFromRequest } from '@/lib/locale';
 import { createClient } from '@/lib/supabase/server';
 
 /**
- * OAuth callback handler.
+ * Auth callback handler.
  *
- * Note: The login session is established here (via exchangeCodeForSession)
+ * Handles three types of callbacks:
+ * 1. OAuth `code` — exchanges authorization code for session (existing flow)
+ * 2. `token_hash` + `type=signup` — verifies signup email confirmation OTP (PKCE flow)
+ * 3. `token_hash` + `type=recovery` — redirects to password reset page
+ *
+ * Note: The login session is established here (via exchangeCodeForSession or verifyOtp)
  * BEFORE the user sets their username. This is because the OAuth
  * authorization code is single-use and short-lived — if we don't
  * exchange it immediately, we lose the user's identity entirely.
@@ -22,13 +27,65 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const tokenHash = searchParams.get('token_hash');
+  const type = searchParams.get('type');
   const locale = await getLocaleFromRequest();
   const defaultNext = `/${locale}/mypage`;
   const next = searchParams.get('next') ?? defaultNext;
   const safeNext = next.startsWith('/') && !next.startsWith('//') ? next : defaultNext;
 
+  const supabase = await createClient();
+
+  // Handle signup email confirmation (PKCE flow)
+  if (tokenHash && type === 'signup') {
+    const { error, data } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'signup',
+    });
+
+    if (!error && data.session) {
+      const userId = data.session.user.id;
+
+      logActivityEvent({
+        userId,
+        action: 'login',
+      });
+
+      const [profile] = await db
+        .select({ username: profiles.username })
+        .from(profiles)
+        .where(eq(profiles.id, userId))
+        .limit(1);
+
+      if (!profile) {
+        const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
+        return NextResponse.redirect(setupUrl);
+      }
+
+      const redirectUrl = new URL(safeNext, origin);
+      redirectUrl.searchParams.set('toast', 'login_success');
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
+  }
+
+  // Handle password recovery
+  if (tokenHash && type === 'recovery') {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: 'recovery',
+    });
+
+    if (!error) {
+      return NextResponse.redirect(`${origin}/${locale}/reset-password`);
+    }
+
+    return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
+  }
+
+  // Handle OAuth code exchange (existing flow)
   if (code) {
-    const supabase = await createClient();
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
