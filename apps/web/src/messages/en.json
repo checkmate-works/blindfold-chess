@@ -1666,7 +1666,16 @@
     "googleOAuthLoading": "Signing in...",
     "authError": "Sign-in failed. Please try again.",
     "noAccount": "Don't have an account?",
-    "signUp": "Register"
+    "signUp": "Register",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "emailSignIn": "Sign in with email",
+    "emailSignInLoading": "Signing in...",
+    "emailSignInError": "Invalid email or password. Please try again.",
+    "forgotPassword": "Forgot your password?"
   },
   "signUp": {
     "title": "Register",
@@ -1676,6 +1685,18 @@
     "authError": "Registration failed. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "emailSignUp": "Register with email",
+    "emailSignUpLoading": "Registering...",
+    "emailSignUpError": "Registration failed. Please try again.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 8 characters.",
     "features": {
       "sectionTitle": "Unlock the Full Experience",
       "sectionSubtitle": "Create a free account to access these features",
@@ -1696,6 +1717,41 @@
         "description": "Build your chess identity with a personalized profile and history."
       }
     }
+  },
+  "verifyEmail": {
+    "title": "Check Your Email",
+    "description": "We've sent a confirmation link to your email address.",
+    "checkInbox": "Please check your inbox and click the link to verify your account.",
+    "resendButton": "Resend confirmation email",
+    "resendLoading": "Sending...",
+    "resendSuccess": "Confirmation email resent. Please check your inbox.",
+    "resendError": "Failed to resend email. Please try again later.",
+    "breadcrumbSignUp": "Register"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your email address and we'll send you a link to reset your password.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send reset link",
+    "submitLoading": "Sending...",
+    "error": "Failed to send reset email. Please try again.",
+    "sentDescription": "We've sent a password reset link to your email address.",
+    "checkInbox": "Please check your inbox and click the link to reset your password.",
+    "backToSignIn": "Back to Sign In"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter your new password below.",
+    "passwordLabel": "New password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPasswordLabel": "Confirm new password",
+    "confirmPasswordPlaceholder": "Re-enter your new password",
+    "submit": "Reset password",
+    "submitLoading": "Resetting...",
+    "error": "Failed to reset password. Please try again.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 8 characters."
   },
   "articles": {
     "pageTitle": "Articles",
