@@ -23,6 +23,8 @@ export async function LatestTopicPostsList({ locale, title }: Props) {
   } = await supabase.auth.getUser();
   const posts = await getRecentPostsAcrossTopics(DISPLAY_COUNT + 1, user?.id);
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
 
   if (posts.length === 0) {
     return null;
@@ -35,9 +37,19 @@ export async function LatestTopicPostsList({ locale, title }: Props) {
     <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
       <SectionTitle>{title}</SectionTitle>
       <div className="space-y-3">
-        {displayPosts.map((post) => (
-          <TopicPostCard key={post.id} post={post} locale={locale} />
-        ))}
+        {displayPosts.map((post) => {
+          const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+          return (
+            <TopicPostCard
+              key={post.id}
+              post={post}
+              locale={locale}
+              showMoreLabel={t('showMore')}
+              justNowLabel={tTopic('justNow')}
+              newReplyTemplate={tTopic('newReply', { time: '{time}' })}
+            />
+          );
+        })}
       </div>
       {hasMore && (
         <div className="text-center">

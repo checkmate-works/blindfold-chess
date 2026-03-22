@@ -63,6 +63,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { page, first_move } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const supabase = await createClient();
   const {
@@ -112,9 +114,19 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
           <>
             <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
             <div className="space-y-3">
-              {recentPosts.map((post) => (
-                <TopicPostCard key={post.id} post={post} locale={locale} />
-              ))}
+              {recentPosts.map((post) => {
+                const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+                return (
+                  <TopicPostCard
+                    key={post.id}
+                    post={post}
+                    locale={locale}
+                    showMoreLabel={t('showMore')}
+                    justNowLabel={tTopic('justNow')}
+                    newReplyTemplate={tTopic('newReply', { time: '{time}' })}
+                  />
+                );
+              })}
             </div>
             <PaginationNav
               currentPage={currentPage}

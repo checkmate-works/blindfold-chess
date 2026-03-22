@@ -38,6 +38,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LikesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageLikes' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
+  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
 
   const user = await getAuthenticatedUser();
 
@@ -61,9 +64,19 @@ export default async function LikesPage({ params, searchParams }: Props) {
           <p className="text-muted-foreground">{t('empty')}</p>
         ) : (
           <div className="space-y-4">
-            {posts.map((post) => (
-              <TopicPostCard key={post.id} post={post} locale={locale} />
-            ))}
+            {posts.map((post) => {
+              const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+              return (
+                <TopicPostCard
+                  key={post.id}
+                  post={post}
+                  locale={locale}
+                  showMoreLabel={tTopics('showMore')}
+                  justNowLabel={tTopic('justNow')}
+                  newReplyTemplate={tTopic('newReply', { time: '{time}' })}
+                />
+              );
+            })}
           </div>
         )}
 

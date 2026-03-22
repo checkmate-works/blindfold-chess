@@ -128,6 +128,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   }
 
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
+  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
 
   const hasExternalLinks =
     profile.fideId ||
@@ -342,7 +345,19 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
           <div className="mt-4 space-y-3">
             {posts.length > 0 ? (
-              posts.map((post) => <TopicPostCard key={post.id} post={post} locale={locale} />)
+              posts.map((post) => {
+                const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+                return (
+                  <TopicPostCard
+                    key={post.id}
+                    post={post}
+                    locale={locale}
+                    showMoreLabel={tTopics('showMore')}
+                    justNowLabel={tTopic('justNow')}
+                    newReplyTemplate={tTopic('newReply', { time: '{time}' })}
+                  />
+                );
+              })
             ) : (
               <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
             )}

@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
@@ -24,12 +23,18 @@ import { TopicSquareBoard } from './TopicSquareBoard';
 type Props = {
   post: ProfilePostWithReplyMeta;
   locale: string;
+  showMoreLabel: string;
+  justNowLabel: string;
+  newReplyTemplate: string;
 };
 
-export function TopicPostCard({ post, locale }: Props) {
-  const tTopics = useTranslations('topics');
-  const tSquares = useTranslations('topics.squares');
-  const tOpenings = useTranslations('topics.openings');
+export function TopicPostCard({
+  post,
+  locale,
+  showMoreLabel,
+  justNowLabel,
+  newReplyTemplate,
+}: Props) {
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
   const isTruncated = contentPreview !== post.content;
@@ -41,8 +46,6 @@ export function TopicPostCard({ post, locale }: Props) {
   const href = isOpening
     ? `/topics/openings/${post.topicKey}/posts/${postId}${anchor}`
     : `/topics/squares/${post.topicKey}/posts/${postId}${anchor}`;
-
-  const tTopic = isOpening ? tOpenings : tSquares;
 
   return (
     <Link
@@ -70,7 +73,7 @@ export function TopicPostCard({ post, locale }: Props) {
         />
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <time dateTime={post.createdAt.toISOString()}>
-            {formatRelativeTime(new Date(post.createdAt), locale, tTopic('justNow'))}
+            {formatRelativeTime(new Date(post.createdAt), locale, justNowLabel)}
           </time>
         </div>
         {isOpening ? (
@@ -96,7 +99,7 @@ export function TopicPostCard({ post, locale }: Props) {
           <LinkedText text={contentPreview} locale={locale} />
         </p>
         {isTruncated && (
-          <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
+          <span className="text-sm text-link-primary hover:underline">{showMoreLabel}</span>
         )}
 
         <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">
@@ -150,13 +153,10 @@ export function TopicPostCard({ post, locale }: Props) {
               </div>
               {post.replyMeta.latestReplyAt && (
                 <span className="text-xs text-muted-foreground">
-                  {tTopic('newReply', {
-                    time: formatRelativeTime(
-                      post.replyMeta.latestReplyAt,
-                      locale,
-                      tTopic('justNow')
-                    ),
-                  })}
+                  {newReplyTemplate.replace(
+                    '{time}',
+                    formatRelativeTime(post.replyMeta.latestReplyAt, locale, justNowLabel)
+                  )}
                 </span>
               )}
             </div>
