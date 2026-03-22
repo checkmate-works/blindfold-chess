@@ -1,30 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
 
 import { Button, ChessBoard } from '@/app/_components';
 import { SUPPORTED_LOCALES } from '@/config';
-import {
-  FaBrain,
-  FaChess,
-  FaChessBoard,
-  FaChessKnight,
-  FaCrosshairs,
-  FaLightbulb,
-  FaRoute,
-  FaSignal,
-  FaSlidersH,
-  FaUndo,
-} from 'react-icons/fa';
+import { Link } from '@/i18n/routing';
+import { FaChess, FaDumbbell } from 'react-icons/fa';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-  SubsectionTitle,
-} from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -51,14 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const trainingCategories = [
-  { key: 'positionMemory' as const, icon: <FaBrain /> },
-  { key: 'knightTour' as const, icon: <FaChessKnight /> },
-  { key: 'coordinateQuiz' as const, icon: <FaCrosshairs /> },
-  { key: 'squareColors' as const, icon: <FaChessBoard /> },
-  { key: 'legalMoves' as const, icon: <FaChess /> },
-  { key: 'routePlanner' as const, icon: <FaRoute /> },
-];
+const SIMPLE_FEN = '6k1/8/8/3KQ3/8/8/8/8 w - - 0 1';
 
 export default async function GettingStartedPage({ params }: Props) {
   const { locale } = await params;
@@ -69,147 +44,69 @@ export default async function GettingStartedPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
 
-      <PagePanel className="space-y-8 lg:space-y-12">
-        {/* Why Blindfold Chess? */}
-        <section className="space-y-4">
-          <SectionTitle>{t('whyBlindfoldChess.title')}</SectionTitle>
-          <p className="text-foreground font-semibold">{t('whyBlindfoldChess.intro')}</p>
-          <p className="text-muted-foreground">{t('whyBlindfoldChess.explanation')}</p>
-          <p className="text-muted-foreground">{t('whyBlindfoldChess.abilitiesIntro')}</p>
-          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-            <li>{t('whyBlindfoldChess.ability1')}</li>
-            <li>{t('whyBlindfoldChess.ability2')}</li>
-            <li>{t('whyBlindfoldChess.ability3')}</li>
-          </ul>
-          <p className="text-muted-foreground">{t('whyBlindfoldChess.conclusion')}</p>
-        </section>
+      <PagePanel className="space-y-8">
+        <p className="text-center text-lg text-muted-foreground">{t('headline')}</p>
 
-        {/* What You Can Do Here */}
-        <section className="space-y-6">
-          <SectionTitle>{t('whatYouCanDo.title')}</SectionTitle>
-
-          {/* Play Against Stockfish */}
-          <div className="space-y-4">
-            <SubsectionTitle>{t('whatYouCanDo.stockfish.title')}</SubsectionTitle>
-            <p className="text-muted-foreground">{t('whatYouCanDo.stockfish.description')}</p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-info text-xl flex justify-center">
-                  <FaSignal />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  {t('whatYouCanDo.stockfish.featureDifficulty')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('whatYouCanDo.stockfish.featureDifficultyDesc')}
-                </p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-success text-xl flex justify-center">
-                  <FaUndo />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  {t('whatYouCanDo.stockfish.featureUndo')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('whatYouCanDo.stockfish.featureUndoDesc')}
-                </p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center space-y-2">
-                <div className="text-warning text-xl flex justify-center">
-                  <FaLightbulb />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  {t('whatYouCanDo.stockfish.featureHelp')}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('whatYouCanDo.stockfish.featureHelpDesc')}
-                </p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card 1: Try */}
+          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+            <div className="text-primary text-3xl">
+              <FaChess />
             </div>
-
-            {/* Onboarding Banner */}
-            <Link
-              href={`/${locale}/onboarding`}
-              className="block rounded-lg border border-primary/20 bg-primary/5 p-5 transition-colors hover:bg-primary/10"
-            >
-              <div className="flex items-start gap-4">
-                <div className="mt-0.5 text-xl text-primary">
-                  <FaSlidersH />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-base font-semibold text-foreground">
-                    {t('onboardingBanner.title')}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('onboardingBanner.description')}
-                  </p>
-                  <span className="inline-flex items-center text-sm font-medium text-primary">
-                    {t('onboardingBanner.cta')} &rarr;
-                  </span>
-                </div>
-              </div>
-            </Link>
-
-            <div className="flex justify-center pt-2">
-              <Link href={`/${locale}/games/new`}>
+            <h2 className="text-lg font-semibold text-foreground">{t('cards.try.title')}</h2>
+            <div className="w-48">
+              <ChessBoard fen={SIMPLE_FEN} showCoordinates={false} />
+            </div>
+            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+              <Link href={`/games/new/position?fen=${encodeURIComponent(SIMPLE_FEN)}`}>
                 <Button asChild variant="primary" size="lg">
-                  {t('whatYouCanDo.stockfish.cta')}
+                  {t('cards.try.cta')}
                 </Button>
               </Link>
-            </div>
-
-            {/* Try a Simple Position */}
-            <p className="text-muted-foreground">
-              {t('whatYouCanDo.stockfish.trySimpleDescription')}
-            </p>
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-64 sm:w-72">
-                <ChessBoard fen="6k1/8/8/3KQ3/8/8/8/8 w - - 0 1" showCoordinates={false} />
-              </div>
               <Link
-                href={`/${locale}/games/new/position?fen=${encodeURIComponent('6k1/8/8/3KQ3/8/8/8/8 w - - 0 1')}`}
+                href="/games/new/standard"
+                className="text-sm text-muted-foreground hover:text-foreground underline"
               >
-                <Button asChild variant="primary" size="lg">
-                  {t('whatYouCanDo.stockfish.trySimpleCta')}
-                </Button>
+                {t('cards.try.startFromInitial')}
               </Link>
             </div>
           </div>
 
-          {/* Rich Training Menu */}
-          <div className="space-y-4">
-            <SubsectionTitle>{t('whatYouCanDo.training.title')}</SubsectionTitle>
-            <p className="text-muted-foreground">{t('whatYouCanDo.training.description')}</p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {trainingCategories.map(({ key, icon }) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-2 rounded-lg border border-border bg-card p-3"
-                >
-                  <span className="text-primary text-lg">{icon}</span>
-                  <span className="text-sm text-foreground">
-                    {t(`whatYouCanDo.training.categories.${key}`)}
-                  </span>
+          {/* Card 2: Train */}
+          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+            <div className="text-primary text-3xl">
+              <FaDumbbell />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
+            <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
+              <p className="text-sm font-bold text-foreground">
+                {t('cards.train.previewQuestion')}
+              </p>
+              <div className="text-6xl">{'\u2658'}</div>
+              <div className="grid grid-cols-2 gap-2 w-full">
+                <div className="px-2 py-1 bg-success/10 text-success border border-success/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
+                  <span>○</span>
                 </div>
-              ))}
+                <div className="px-2 py-1 bg-destructive/10 text-destructive border border-destructive/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
+                  <span>×</span>
+                </div>
+              </div>
             </div>
-
-            <div className="flex justify-center pt-2">
-              <Link href={`/${locale}/practice`}>
+            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+              <Link href="/practice/legal-moves?mode=timed">
                 <Button asChild variant="primary" size="lg">
-                  {t('whatYouCanDo.training.cta')}
+                  {t('cards.train.cta')}
                 </Button>
+              </Link>
+              <Link
+                href="/practice"
+                className="text-sm text-muted-foreground hover:text-foreground underline"
+              >
+                {t('cards.train.viewOtherMenus')}
               </Link>
             </div>
           </div>
-        </section>
-
-        <AdBanner slot="banner-standard" locale={locale} />
-
-        <Divider />
+        </div>
 
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </PagePanel>

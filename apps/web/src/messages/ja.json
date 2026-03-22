@@ -319,50 +319,20 @@
     "gettingStarted": "はじめに"
   },
   "gettingStarted": {
-    "title": "はじめに",
+    "title": "始めよう！",
     "description": "目隠しチェスのトレーニングを始めて、ビジュアライゼーションスキルを向上させる方法を学びましょう。",
-    "onboardingBanner": {
-      "title": "初めての方へ",
-      "description": "初めてプレイする方は、まず設定をカスタマイズしましょう。",
-      "cta": "設定をカスタマイズ"
-    },
-    "whyBlindfoldChess": {
-      "title": "なぜ目隠しチェスが必要なのか？",
-      "intro": "目隠しチェスは、チェスにおけるビジュアライゼーションスキルを養うための最良の方法です。",
-      "explanation": "強いプレイヤーは、頭の中で数手先を「見る」ことができます。この能力は生まれつきのものではなく、意図的な練習によって身につけられるスキルです。",
-      "abilitiesIntro": "目隠しチェスは以下の能力を直接的に鍛えます：",
-      "ability1": "盤面を見ずに駒の位置を想像する力",
-      "ability2": "頭の中で変化を計算する力",
-      "ability3": "パターンや構造を認識する力",
-      "conclusion": "結果的に、総合的なチェスの実力が向上します。"
-    },
-    "whatYouCanDo": {
-      "title": "このサービスでできること",
-      "stockfish": {
-        "title": "Stockfish と対戦",
-        "description": "世界で最も利用者数が多いチェスエンジンである Stockfish と目隠しチェスで対戦できます。",
-        "featureDifficulty": "20段階の難易度",
-        "featureDifficultyDesc": "初心者からグランドマスターまで",
-        "featureUndo": "Undo対応",
-        "featureUndoDesc": "自由に手を戻せます",
-        "featureHelp": "ヘルプ機能",
-        "featureHelpDesc": "困ったときにヒントを表示",
-        "cta": "対局を始める",
-        "trySimpleDescription": "簡単なポジションから試してみることもできます。駒が少ない局面なら頭の中でイメージしやすく、はじめての目隠しチェスに最適です。",
-        "trySimpleCta": "このポジションで開始"
+    "headline": "目隠しチェスをやってみましょう",
+    "cards": {
+      "train": {
+        "title": "スキルを鍛える",
+        "previewQuestion": "d5からe7へ移動できますか？",
+        "cta": "やってみる",
+        "viewOtherMenus": "他のメニューを見る"
       },
-      "training": {
-        "title": "豊富な訓練メニュー",
-        "description": "体系的なトレーニングでビジュアライゼーションスキルを高めることができます。",
-        "cta": "すべての訓練メニューを見る",
-        "categories": {
-          "positionMemory": "ポジションの記憶",
-          "knightTour": "ナイトツアー",
-          "coordinateQuiz": "座標クイズ",
-          "squareColors": "マスの色",
-          "legalMoves": "合法手",
-          "routePlanner": "ルートプランナー"
-        }
+      "try": {
+        "title": "まずは体験",
+        "cta": "このポジションで試す",
+        "startFromInitial": "初期ポジションから開始"
       }
     }
   },
