@@ -9,6 +9,7 @@ import { GET } from './route';
 const mockUserId = 'test-user-id-12345678';
 
 const mockExchangeCodeForSession = vi.fn();
+const mockVerifyOtp = vi.fn();
 
 vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -19,6 +20,7 @@ vi.mock('@/lib/supabase/server', () => ({
     Promise.resolve({
       auth: {
         exchangeCodeForSession: mockExchangeCodeForSession,
+        verifyOtp: mockVerifyOtp,
       },
     }),
 }));
@@ -298,6 +300,142 @@ describe('Auth callback route', () => {
       await GET(request);
 
       expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('signup email confirmation (token_hash + type=signup)', () => {
+    it('should verify OTP and redirect to mypage with toast on success', async () => {
+      mockVerifyOtp.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=abc123&type=signup'
+      );
+      await GET(request);
+
+      expect(mockVerifyOtp).toHaveBeenCalledWith({
+        token_hash: 'abc123',
+        type: 'signup',
+      });
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage');
+      expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+    });
+
+    it('should redirect to setup-username when new user has no profile', async () => {
+      mockDbSelect.mockResolvedValue([]);
+      mockVerifyOtp.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=abc123&type=signup'
+      );
+      await GET(request);
+
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage/setup-username');
+    });
+
+    it('should log activity event on successful signup verification', async () => {
+      mockVerifyOtp.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=abc123&type=signup'
+      );
+      await GET(request);
+
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: mockUserId,
+        action: 'login',
+      });
+    });
+
+    it('should redirect to sign-in with error when signup verification fails', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid OTP') });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=invalid&type=signup'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/sign-in?error=auth_callback_error'
+      );
+    });
+
+    it('should use locale for signup verification redirect', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockVerifyOtp.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=abc123&type=signup'
+      );
+      await GET(request);
+
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/ja/mypage');
+    });
+
+    it('should not call exchangeCodeForSession when token_hash is present', async () => {
+      mockVerifyOtp.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=abc123&type=signup'
+      );
+      await GET(request);
+
+      expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('password recovery (token_hash + type=recovery)', () => {
+    it('should verify OTP and redirect to reset-password page on success', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=recovery123&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockVerifyOtp).toHaveBeenCalledWith({
+        token_hash: 'recovery123',
+        type: 'recovery',
+      });
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/en/reset-password');
+    });
+
+    it('should use locale for recovery redirect', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=recovery123&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/ja/reset-password');
+    });
+
+    it('should redirect to sign-in with error when recovery verification fails', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: new Error('Invalid token') });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=invalid&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/sign-in?error=auth_callback_error'
+      );
+    });
+
+    it('should not call exchangeCodeForSession for recovery flow', async () => {
+      mockVerifyOtp.mockResolvedValue({ error: null });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?token_hash=recovery123&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockExchangeCodeForSession).not.toHaveBeenCalled();
     });
   });
 });

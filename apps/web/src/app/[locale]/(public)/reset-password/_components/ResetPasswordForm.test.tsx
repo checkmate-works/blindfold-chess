@@ -1,0 +1,151 @@
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { ResetPasswordForm } from './ResetPasswordForm';
+
+expect.extend(matchers);
+
+afterEach(() => {
+  cleanup();
+});
+
+const mockUpdateUser = vi.fn();
+const mockPush = vi.fn();
+
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    auth: {
+      updateUser: mockUpdateUser,
+    },
+  }),
+}));
+
+describe('ResetPasswordForm', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render the form with password and confirm password fields', () => {
+    render(<ResetPasswordForm />);
+
+    expect(screen.getByLabelText('passwordLabel')).toBeInTheDocument();
+    expect(screen.getByLabelText('confirmPasswordLabel')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'submit' })).toBeInTheDocument();
+  });
+
+  it('should show password mismatch error when passwords do not match', async () => {
+    render(<ResetPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'differentpassword' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('passwordMismatch')).toBeInTheDocument();
+    });
+    expect(mockUpdateUser).not.toHaveBeenCalled();
+  });
+
+  it('should show password too short error when password is less than MIN_PASSWORD_LENGTH', async () => {
+    render(<ResetPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'short' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'short' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('passwordTooShort')).toBeInTheDocument();
+    });
+    expect(mockUpdateUser).not.toHaveBeenCalled();
+  });
+
+  it('should call updateUser with valid password and redirect on success', async () => {
+    mockUpdateUser.mockResolvedValue({ error: null });
+
+    render(<ResetPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(mockUpdateUser).toHaveBeenCalledWith({
+        password: 'validpassword123',
+      });
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=password_reset_success');
+  });
+
+  it('should show error message when updateUser fails', async () => {
+    mockUpdateUser.mockResolvedValue({ error: new Error('Update failed') });
+
+    render(<ResetPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('error')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show loading state while submitting', async () => {
+    let resolveUpdate: (value: unknown) => void;
+    mockUpdateUser.mockReturnValue(
+      new Promise((resolve) => {
+        resolveUpdate = resolve;
+      })
+    );
+
+    render(<ResetPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeDisabled();
+      expect(screen.getByText('submitLoading')).toBeInTheDocument();
+    });
+
+    resolveUpdate!({ error: null });
+  });
+});
