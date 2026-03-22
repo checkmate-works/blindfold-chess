@@ -64,13 +64,24 @@ export default async function SignUpPage({ params, searchParams }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+      <PageTitle>
+        {t('title')}
+        <span className="ml-2 inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success align-middle">
+          {t('freeBadge')}
+        </span>
+      </PageTitle>
 
       <PagePanel>
         {error && <AuthErrorMessage namespace="signUp" />}
         <div>
           <GoogleOAuthButton namespace="signUp" />
         </div>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          <span aria-hidden="true" className="text-success">
+            &#x2713;
+          </span>{' '}
+          {t('freeAssurance')}
+        </p>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('alreadyHaveAccount')}{' '}
           <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">

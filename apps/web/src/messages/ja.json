@@ -1653,6 +1653,8 @@
     "authError": "登録に失敗しました。もう一度お試しください。",
     "alreadyHaveAccount": "既にアカウントをお持ちですか？",
     "signIn": "ログイン",
+    "freeBadge": "無料",
+    "freeAssurance": "完全無料 ・ クレジットカード不要",
     "features": {
       "sectionTitle": "すべての機能を使いこなそう",
       "sectionSubtitle": "無料アカウントで以下の機能が利用できます",

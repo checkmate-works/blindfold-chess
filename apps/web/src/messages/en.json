@@ -1652,6 +1652,8 @@
     "authError": "Registration failed. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in",
+    "freeBadge": "FREE",
+    "freeAssurance": "Completely free \u00b7 No credit card required",
     "features": {
       "sectionTitle": "Unlock the Full Experience",
       "sectionSubtitle": "Create a free account to access these features",
