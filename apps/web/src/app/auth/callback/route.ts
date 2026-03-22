@@ -10,10 +10,11 @@ import { createClient } from '@/lib/supabase/server';
 /**
  * Auth callback handler.
  *
- * Handles three types of callbacks:
+ * Handles four types of callbacks:
  * 1. OAuth `code` — exchanges authorization code for session (existing flow)
- * 2. `token_hash` + `type=signup` — verifies signup email confirmation OTP (PKCE flow)
- * 3. `token_hash` + `type=recovery` — redirects to password reset page
+ * 2. `code` + `type=recovery` — PKCE recovery flow, exchanges code and redirects to password reset
+ * 3. `token_hash` + `type=signup` — verifies signup email confirmation OTP (PKCE flow)
+ * 4. `token_hash` + `type=recovery` — redirects to password reset page (non-PKCE flow)
  *
  * Note: The login session is established here (via exchangeCodeForSession or verifyOtp)
  * BEFORE the user sets their username. This is because the OAuth
@@ -84,11 +85,16 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
   }
 
-  // Handle OAuth code exchange (existing flow)
+  // Handle OAuth / PKCE code exchange
   if (code) {
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // PKCE recovery flow: redirectTo included ?type=recovery
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/${locale}/reset-password`);
+      }
+
       const userId = data.session.user.id;
 
       logActivityEvent({

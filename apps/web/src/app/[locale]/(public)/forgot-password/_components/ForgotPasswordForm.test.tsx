@@ -50,7 +50,7 @@ describe('ForgotPasswordForm', () => {
 
     await waitFor(() => {
       expect(mockResetPasswordForEmail).toHaveBeenCalledWith('test@example.com', {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       });
     });
   });

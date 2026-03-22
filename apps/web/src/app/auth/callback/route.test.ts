@@ -386,6 +386,98 @@ describe('Auth callback route', () => {
     });
   });
 
+  describe('PKCE recovery flow (code + type=recovery)', () => {
+    it('should redirect to reset-password when code exchange succeeds with type=recovery', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=pkce-recovery-code&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockExchangeCodeForSession).toHaveBeenCalledWith('pkce-recovery-code');
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/en/reset-password');
+    });
+
+    it('should use locale for PKCE recovery redirect', async () => {
+      mockGetLocaleFromRequest.mockResolvedValue('ja');
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=pkce-recovery-code&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith('http://localhost:3000/ja/reset-password');
+    });
+
+    it('should not log activity event for PKCE recovery flow', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=pkce-recovery-code&type=recovery'
+      );
+      await GET(request);
+
+      expect(logActivityEvent).not.toHaveBeenCalled();
+    });
+
+    it('should not check profile for PKCE recovery flow', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=pkce-recovery-code&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockDbSelect).not.toHaveBeenCalled();
+    });
+
+    it('should redirect to sign-in with error when PKCE recovery code exchange fails', async () => {
+      mockExchangeCodeForSession.mockResolvedValue({ error: new Error('Invalid code') });
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=bad-recovery-code&type=recovery'
+      );
+      await GET(request);
+
+      expect(mockRedirect).toHaveBeenCalledWith(
+        'http://localhost:3000/en/sign-in?error=auth_callback_error'
+      );
+    });
+  });
+
+  describe('code with unknown type parameter', () => {
+    it('should treat code with unknown type as normal OAuth flow', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=oauth-code&type=foo');
+      await GET(request);
+
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage');
+      expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: mockUserId,
+        action: 'login',
+      });
+    });
+
+    it('should treat code with type=signup as normal OAuth flow (not token_hash signup)', async () => {
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request(
+        'http://localhost:3000/auth/callback?code=oauth-code&type=signup'
+      );
+      await GET(request);
+
+      expect(mockVerifyOtp).not.toHaveBeenCalled();
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage');
+      expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+    });
+  });
+
   describe('password recovery (token_hash + type=recovery)', () => {
     it('should verify OTP and redirect to reset-password page on success', async () => {
       mockVerifyOtp.mockResolvedValue({ error: null });
