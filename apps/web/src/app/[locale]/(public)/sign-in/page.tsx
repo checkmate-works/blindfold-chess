@@ -60,7 +60,9 @@ export default async function SignInPage({ params, searchParams }: Props) {
       <PagePanel>
         {error && <AuthErrorMessage namespace="signIn" />}
 
-        <EmailPasswordForm />
+        <div>
+          <GoogleOAuthButton namespace="signIn" />
+        </div>
 
         <div className="flex items-center gap-4 max-w-sm mx-auto">
           <Divider className="flex-1" />
@@ -68,9 +70,7 @@ export default async function SignInPage({ params, searchParams }: Props) {
           <Divider className="flex-1" />
         </div>
 
-        <div>
-          <GoogleOAuthButton namespace="signIn" />
-        </div>
+        <EmailPasswordForm />
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('noAccount')}{' '}

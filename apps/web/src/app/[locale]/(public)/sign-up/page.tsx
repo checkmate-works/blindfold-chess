@@ -74,14 +74,6 @@ export default async function SignUpPage({ params, searchParams }: Props) {
       <PagePanel>
         {error && <AuthErrorMessage namespace="signUp" />}
 
-        <EmailSignUpForm />
-
-        <div className="flex items-center gap-4 max-w-sm mx-auto">
-          <Divider className="flex-1" />
-          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
-          <Divider className="flex-1" />
-        </div>
-
         <div>
           <GoogleOAuthButton namespace="signUp" />
         </div>
@@ -92,6 +84,14 @@ export default async function SignUpPage({ params, searchParams }: Props) {
           </span>{' '}
           {t('freeAssurance')}
         </p>
+
+        <div className="flex items-center gap-4 max-w-sm mx-auto">
+          <Divider className="flex-1" />
+          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
+          <Divider className="flex-1" />
+        </div>
+
+        <EmailSignUpForm />
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('alreadyHaveAccount')}{' '}
           <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
