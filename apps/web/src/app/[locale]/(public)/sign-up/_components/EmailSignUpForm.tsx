@@ -7,7 +7,10 @@ import { useRouter } from 'next/navigation';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
-import { getPasswordValidationError } from '@/lib/validations/password';
+import {
+  getPasswordValidationError,
+  isPasswordValidationErrorKey,
+} from '@/lib/validations/password';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 
@@ -45,12 +48,22 @@ export function EmailSignUpForm() {
       const result = await signUp(email, password);
 
       if ('error' in result) {
-        switch (result.error) {
-          case 'rateLimited':
-            setError(t('rateLimited'));
-            break;
-          default:
+        const serverError = result.error;
+        if (serverError.startsWith('password:')) {
+          const key = serverError.slice('password:'.length);
+          if (isPasswordValidationErrorKey(key)) {
+            setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+          } else {
             setError(t('emailSignUpError'));
+          }
+        } else {
+          switch (serverError) {
+            case 'rateLimited':
+              setError(t('rateLimited'));
+              break;
+            default:
+              setError(t('emailSignUpError'));
+          }
         }
         setIsLoading(false);
         return;

@@ -2803,7 +2803,8 @@
     "password": {
       "tooShort": "Password must be at least {minLength} characters.",
       "missingLetter": "Password must contain at least one letter.",
-      "missingDigit": "Password must contain at least one digit."
+      "missingDigit": "Password must contain at least one digit.",
+      "weak": "Password is too weak. Please choose a stronger password."
     }
   }
 }

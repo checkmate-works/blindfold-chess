@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { passwordSchema } from './password';
+import {
+  getPasswordValidationError,
+  isPasswordValidationErrorKey,
+  passwordSchema,
+} from './password';
 
 describe('passwordSchema', () => {
   describe('valid passwords', () => {
@@ -84,6 +88,58 @@ describe('passwordSchema', () => {
         const messages = result.error.issues.map((i) => i.message);
         expect(messages).toContain('missingDigit');
       }
+    });
+  });
+
+  describe('getPasswordValidationError', () => {
+    it('should return null for a valid password', () => {
+      expect(getPasswordValidationError('abcdef1')).toBeNull();
+    });
+
+    it('should return tooShort for a short password', () => {
+      expect(getPasswordValidationError('ab1')).toBe('tooShort');
+    });
+
+    it('should return missingLetter for digits-only password of valid length', () => {
+      expect(getPasswordValidationError('123456')).toBe('missingLetter');
+    });
+
+    it('should return missingDigit for letters-only password of valid length', () => {
+      expect(getPasswordValidationError('abcdef')).toBe('missingDigit');
+    });
+
+    it('should return tooShort as the first error when multiple validations fail', () => {
+      expect(getPasswordValidationError('1')).toBe('tooShort');
+    });
+  });
+
+  describe('isPasswordValidationErrorKey', () => {
+    it('should return true for tooShort', () => {
+      expect(isPasswordValidationErrorKey('tooShort')).toBe(true);
+    });
+
+    it('should return true for missingLetter', () => {
+      expect(isPasswordValidationErrorKey('missingLetter')).toBe(true);
+    });
+
+    it('should return true for missingDigit', () => {
+      expect(isPasswordValidationErrorKey('missingDigit')).toBe(true);
+    });
+
+    it('should return true for weak', () => {
+      expect(isPasswordValidationErrorKey('weak')).toBe(true);
+    });
+
+    it('should return false for an unknown key', () => {
+      expect(isPasswordValidationErrorKey('unknownKey')).toBe(false);
+    });
+
+    it('should return false for an empty string', () => {
+      expect(isPasswordValidationErrorKey('')).toBe(false);
+    });
+
+    it('should return false for a key with similar but incorrect name', () => {
+      expect(isPasswordValidationErrorKey('tooLong')).toBe(false);
     });
   });
 

@@ -6,7 +6,10 @@ import { useTranslations } from 'next-intl';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
-import { getPasswordValidationError } from '@/lib/validations/password';
+import {
+  getPasswordValidationError,
+  isPasswordValidationErrorKey,
+} from '@/lib/validations/password';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -49,18 +52,28 @@ export function ChangePasswordForm() {
       const changeResult = await changePassword(currentPassword, newPassword);
 
       if ('error' in changeResult) {
-        switch (changeResult.error) {
-          case 'currentPasswordIncorrect':
-            setError(t('currentPasswordIncorrect'));
-            break;
-          case 'passwordSameAsCurrent':
-            setError(t('passwordSameAsCurrent'));
-            break;
-          case 'rateLimited':
-            setError(t('rateLimited'));
-            break;
-          default:
+        const serverError = changeResult.error;
+        if (serverError.startsWith('password:')) {
+          const key = serverError.slice('password:'.length);
+          if (isPasswordValidationErrorKey(key)) {
+            setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+          } else {
             setError(t('error'));
+          }
+        } else {
+          switch (serverError) {
+            case 'currentPasswordIncorrect':
+              setError(t('currentPasswordIncorrect'));
+              break;
+            case 'passwordSameAsCurrent':
+              setError(t('passwordSameAsCurrent'));
+              break;
+            case 'rateLimited':
+              setError(t('rateLimited'));
+              break;
+            default:
+              setError(t('error'));
+          }
         }
         setIsLoading(false);
         return;

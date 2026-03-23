@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { passwordSchema } from '@/lib/validations/password';
+import { getPasswordValidationError } from '@/lib/validations/password';
 
 export type ChangePasswordResult = { success: true } | { error: string };
 
@@ -24,9 +24,9 @@ export async function changePassword(
     return { error: 'notEmailAuth' };
   }
 
-  const validation = passwordSchema.safeParse(newPassword);
-  if (!validation.success) {
-    return { error: 'passwordInvalid' };
+  const passwordError = getPasswordValidationError(newPassword);
+  if (passwordError) {
+    return { error: `password:${passwordError}` };
   }
 
   if (currentPassword === newPassword) {
@@ -61,6 +61,9 @@ export async function changePassword(
   });
 
   if (updateError) {
+    if (updateError.code === 'weak_password') {
+      return { error: 'password:weak' };
+    }
     return { error: 'updateFailed' };
   }
 

@@ -148,6 +148,121 @@ describe('EmailSignUpForm', () => {
     expect(mockPush).toHaveBeenCalledWith('/en/sign-up/verify-email?email=test%40example.com');
   });
 
+  it('should show password validation error for password:tooShort from Server Action', async () => {
+    mockSignUp.mockResolvedValue({ error: 'password:tooShort' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('tooShort')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show password validation error for password:missingLetter from Server Action', async () => {
+    mockSignUp.mockResolvedValue({ error: 'password:missingLetter' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingLetter')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show password validation error for password:missingDigit from Server Action', async () => {
+    mockSignUp.mockResolvedValue({ error: 'password:missingDigit' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingDigit')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show password validation error for password:weak from Server Action', async () => {
+    mockSignUp.mockResolvedValue({ error: 'password:weak' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('weak')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show generic error for unknown password: prefixed key from Server Action', async () => {
+    mockSignUp.mockResolvedValue({ error: 'password:unknownKey' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('emailSignUpError')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('should show error message when signUp fails', async () => {
     mockSignUp.mockResolvedValue({ error: 'signUpFailed' });
 

@@ -5,7 +5,7 @@ import { SITE_URL } from '@/config';
 import { getClientIp } from '@/lib/client-ip';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
-import { passwordSchema } from '@/lib/validations/password';
+import { getPasswordValidationError } from '@/lib/validations/password';
 
 export type SignUpResult = { success: true } | { error: string };
 
@@ -18,9 +18,9 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
     }
   }
 
-  const validation = passwordSchema.safeParse(password);
-  if (!validation.success) {
-    return { error: 'passwordInvalid' };
+  const passwordError = getPasswordValidationError(password);
+  if (passwordError) {
+    return { error: `password:${passwordError}` };
   }
 
   const supabase = await createClient();
@@ -33,6 +33,9 @@ export async function signUp(email: string, password: string): Promise<SignUpRes
   });
 
   if (error) {
+    if (error.code === 'weak_password') {
+      return { error: 'password:weak' };
+    }
     return { error: 'signUpFailed' };
   }
 

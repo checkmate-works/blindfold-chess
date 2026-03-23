@@ -242,8 +242,96 @@ describe('ChangePasswordForm', () => {
     expect(mockShowToast).not.toHaveBeenCalled();
   });
 
-  it('should show generic error for passwordTooShort from Server Action (unrecognized code)', async () => {
-    mockChangePassword.mockResolvedValue({ error: 'passwordTooShort' });
+  it('should show password validation error for password:tooShort from Server Action', async () => {
+    mockChangePassword.mockResolvedValue({ error: 'password:tooShort' });
+
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('tooShort')).toBeInTheDocument();
+    });
+  });
+
+  it('should show password validation error for password:missingLetter from Server Action', async () => {
+    mockChangePassword.mockResolvedValue({ error: 'password:missingLetter' });
+
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingLetter')).toBeInTheDocument();
+    });
+  });
+
+  it('should show password validation error for password:missingDigit from Server Action', async () => {
+    mockChangePassword.mockResolvedValue({ error: 'password:missingDigit' });
+
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('missingDigit')).toBeInTheDocument();
+    });
+  });
+
+  it('should show password validation error for password:weak from Server Action', async () => {
+    mockChangePassword.mockResolvedValue({ error: 'password:weak' });
+
+    render(<ChangePasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('currentPasswordLabel'), {
+      target: { value: 'currentpass123' },
+    });
+    fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'newpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('weak')).toBeInTheDocument();
+    });
+  });
+
+  it('should show generic error for unknown password: prefixed key from Server Action', async () => {
+    mockChangePassword.mockResolvedValue({ error: 'password:unknownKey' });
 
     render(<ChangePasswordForm />);
 

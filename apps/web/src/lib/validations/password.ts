@@ -11,7 +11,18 @@ export const passwordSchema = z
 
 export type Password = z.infer<typeof passwordSchema>;
 
-export type PasswordValidationErrorKey = 'tooShort' | 'missingLetter' | 'missingDigit';
+export const PASSWORD_VALIDATION_ERROR_KEYS = [
+  'tooShort',
+  'missingLetter',
+  'missingDigit',
+  'weak', // Supabase-side rejection (e.g. HIBP, or requirements stricter than local schema)
+] as const;
+
+export type PasswordValidationErrorKey = (typeof PASSWORD_VALIDATION_ERROR_KEYS)[number];
+
+export function isPasswordValidationErrorKey(key: string): key is PasswordValidationErrorKey {
+  return (PASSWORD_VALIDATION_ERROR_KEYS as readonly string[]).includes(key);
+}
 
 export function getPasswordValidationError(password: string): PasswordValidationErrorKey | null {
   const result = passwordSchema.safeParse(password);
