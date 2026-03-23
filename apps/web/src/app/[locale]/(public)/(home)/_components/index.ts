@@ -1,4 +1,7 @@
 export { EmptyGameList } from './EmptyGameList';
+export { FeedCard } from './FeedCard';
+export { FeedClient } from './FeedClient';
+export { FeedSkeleton } from './FeedSkeleton';
 export { GameList } from './GameList';
 export { GameListClient } from './GameListClient';
 export { GameListItem } from './GameListItem';

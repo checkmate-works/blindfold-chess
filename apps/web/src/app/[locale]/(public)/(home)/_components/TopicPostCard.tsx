@@ -51,7 +51,7 @@ export function TopicPostCard({
     <Link
       href={href}
       locale={locale}
-      className="flex gap-4 p-4 rounded-lg border border-border bg-card hover:border-foreground/20 transition-colors"
+      className="flex gap-4 p-4 hover:bg-muted/50 transition-colors"
     >
       <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
         {isOpening ? (

@@ -2,34 +2,29 @@
  * Home Page (ホーム)
  *
  * @description
- * The main landing page for authenticated users. Provides quick access to
- * start new blindfold chess games and manage existing game history.
+ * The main landing page. Displays a timeline feed of topic posts with
+ * cursor-based infinite scrolling. Initial data is fetched server-side
+ * for SEO; additional pages are loaded client-side via Server Action.
  *
  * @flow
- * - New Game Button: Navigate to game setup to start a new blindfold chess game
- * - Game List: View, resume, or delete past games stored in localStorage
- *   - Each game item shows: status (win/loss/draw/in-progress), player color,
- *     last move, and skill level
- *   - Trash icon button allows deletion of individual games
+ * - Timeline Feed: Chronological feed of topic posts across all topic types
+ * - Infinite scroll: Loads more items when the user scrolls near the bottom
  */
-import { Suspense } from 'react';
-
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
-
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
+import { createClient } from '@/lib/supabase/server';
 
-import { PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { GameListClient, LatestTopicPostsSkeleton } from './_components';
-import { LatestTopicPostsList } from './_components/LatestTopicPostsList';
-import { NewGameButton } from './_components/NewGameButton';
-import { YourRankings } from './_components/YourRankings';
+import { FeedClient } from './_components/FeedClient';
+import { getFeedData } from './_lib/queries';
+
+const INITIAL_FEED_SIZE = 10;
 
 type Props = {
   params: Promise<{
@@ -53,6 +48,14 @@ export default async function HomePage({ params }: Props) {
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
   const tHome = await getTranslations({ locale, namespace: 'home' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
+  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const initialFeed = await getFeedData(undefined, INITIAL_FEED_SIZE, user?.id);
 
   return (
     <>
@@ -63,25 +66,19 @@ export default async function HomePage({ params }: Props) {
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
-          <SectionTitle>{tHome('gameList.title')}</SectionTitle>
-
-          <NewGameButton locale={locale} />
-
-          <GameListClient locale={locale} />
-        </div>
-
         <AdBanner slot="banner-wide" locale={locale} />
 
-        <ErrorBoundary>
-          <Suspense fallback={<LatestTopicPostsSkeleton title={tTopics('recentTopicPosts')} />}>
-            <LatestTopicPostsList locale={locale} title={tTopics('recentTopicPosts')} />
-          </Suspense>
-        </ErrorBoundary>
-
-        <Suspense fallback={null}>
-          <YourRankings locale={locale} />
-        </Suspense>
+        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+          <FeedClient
+            initialItems={initialFeed.items}
+            initialCursor={initialFeed.nextCursor}
+            locale={locale}
+            showMoreLabel={tTopics('showMore')}
+            justNowLabel={tSquares('justNow')}
+            newReplyTemplate={tSquares('newReply', { time: '{time}' })}
+            noItemsLabel={tHome('feed.noItems')}
+          />
+        </div>
       </div>
     </>
   );
