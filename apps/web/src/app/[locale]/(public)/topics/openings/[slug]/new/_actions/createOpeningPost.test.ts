@@ -49,6 +49,7 @@ vi.mock('@/lib/db', () => ({
     id: 'id',
   },
   topicPostRatings: {},
+  feedItems: {},
 }));
 
 vi.mock('@/lib/ban', () => ({
@@ -189,7 +190,8 @@ describe('createOpeningPost', () => {
         createOpeningPost('en', 'french-defense', {}, makeFormData({ preferenceRating: '4' }))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(mockInsertValues).toHaveBeenCalledTimes(2);
+      // topic_posts + feed_items + topic_post_ratings = 3
+      expect(mockInsertValues).toHaveBeenCalledTimes(3);
     });
 
     it('should accept content without ratings', async () => {
@@ -197,8 +199,8 @@ describe('createOpeningPost', () => {
         createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'Great opening!' }))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      // Only topic_posts insert, no ratings insert
-      expect(mockInsertValues).toHaveBeenCalledTimes(1);
+      // topic_posts + feed_items, no ratings insert
+      expect(mockInsertValues).toHaveBeenCalledTimes(2);
     });
 
     it('should accept both content and ratings', async () => {
@@ -215,7 +217,8 @@ describe('createOpeningPost', () => {
         )
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(mockInsertValues).toHaveBeenCalledTimes(2);
+      // topic_posts + feed_items + topic_post_ratings = 3
+      expect(mockInsertValues).toHaveBeenCalledTimes(3);
     });
 
     it('should ignore invalid rating values', async () => {
@@ -283,8 +286,16 @@ describe('createOpeningPost', () => {
         replyPermission: 'everyone',
       });
 
-      // Second call: topic_post_ratings
+      // Second call: feed_items
       expect(mockInsertValues).toHaveBeenNthCalledWith(2, {
+        entityType: 'topic_post',
+        entityId: generatedPostId,
+        actorId: testUserId,
+        metadata: { topicType: 'opening', topicKey: 'french-defense' },
+      });
+
+      // Third call: topic_post_ratings
+      expect(mockInsertValues).toHaveBeenNthCalledWith(3, {
         postId: generatedPostId,
         preferenceRating: 4,
         proficiencyRating: 2,

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
-import { db, topicPosts } from '@/lib/db';
+import { db, feedItems, topicPosts } from '@/lib/db';
 import { notifyFollowersOfNewPost } from '@/lib/notification';
 import type { RateLimitConfig } from '@/lib/rate-limit';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -95,6 +95,13 @@ export async function createPostBase(params: {
         replyPermission,
       })
       .returning({ id: topicPosts.id });
+
+    await tx.insert(feedItems).values({
+      entityType: 'topic_post',
+      entityId: post.id,
+      actorId: user.id,
+      metadata: { topicType, topicKey },
+    });
 
     if (afterInsert) {
       await afterInsert(tx, post.id);
