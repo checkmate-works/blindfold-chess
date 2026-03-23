@@ -25,6 +25,34 @@ import { createClient } from '@/lib/supabase/server';
  * and the protected layout guard prevents access to other pages
  * until onboarding is complete.
  */
+
+async function handleSuccessfulAuth(
+  userId: string,
+  locale: string,
+  origin: string,
+  safeNext: string
+): Promise<NextResponse> {
+  logActivityEvent({
+    userId,
+    action: 'login',
+  });
+
+  const [profile] = await db
+    .select({ username: profiles.username })
+    .from(profiles)
+    .where(eq(profiles.id, userId))
+    .limit(1);
+
+  if (!profile) {
+    const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
+    return NextResponse.redirect(setupUrl);
+  }
+
+  const redirectUrl = new URL(safeNext, origin);
+  redirectUrl.searchParams.set('toast', 'login_success');
+  return NextResponse.redirect(redirectUrl);
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
@@ -45,27 +73,7 @@ export async function GET(request: Request) {
     });
 
     if (!error && data.session) {
-      const userId = data.session.user.id;
-
-      logActivityEvent({
-        userId,
-        action: 'login',
-      });
-
-      const [profile] = await db
-        .select({ username: profiles.username })
-        .from(profiles)
-        .where(eq(profiles.id, userId))
-        .limit(1);
-
-      if (!profile) {
-        const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
-        return NextResponse.redirect(setupUrl);
-      }
-
-      const redirectUrl = new URL(safeNext, origin);
-      redirectUrl.searchParams.set('toast', 'login_success');
-      return NextResponse.redirect(redirectUrl);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
     }
 
     return NextResponse.redirect(`${origin}/${locale}/sign-in?error=auth_callback_error`);
@@ -95,27 +103,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/${locale}/reset-password`);
       }
 
-      const userId = data.session.user.id;
-
-      logActivityEvent({
-        userId,
-        action: 'login',
-      });
-
-      const [profile] = await db
-        .select({ username: profiles.username })
-        .from(profiles)
-        .where(eq(profiles.id, userId))
-        .limit(1);
-
-      if (!profile) {
-        const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
-        return NextResponse.redirect(setupUrl);
-      }
-
-      const redirectUrl = new URL(safeNext, origin);
-      redirectUrl.searchParams.set('toast', 'login_success');
-      return NextResponse.redirect(redirectUrl);
+      return handleSuccessfulAuth(data.session.user.id, locale, origin, safeNext);
     }
   }
 

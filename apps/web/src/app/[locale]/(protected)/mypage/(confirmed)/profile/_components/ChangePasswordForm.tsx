@@ -6,8 +6,9 @@ import { useTranslations } from 'next-intl';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
-import { passwordSchema } from '@/lib/validations/password';
+import { getPasswordValidationError } from '@/lib/validations/password';
 
+import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { changePassword } from '../_actions/changePassword';
@@ -31,10 +32,9 @@ export function ChangePasswordForm() {
       return;
     }
 
-    const result = passwordSchema.safeParse(newPassword);
-    if (!result.success) {
-      const key = result.error.issues[0].message as 'tooShort' | 'missingLetter' | 'missingDigit';
-      setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+    const passwordError = getPasswordValidationError(newPassword);
+    if (passwordError) {
+      setError(tPassword(passwordError, { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 
@@ -46,10 +46,10 @@ export function ChangePasswordForm() {
     setIsLoading(true);
 
     try {
-      const result = await changePassword(currentPassword, newPassword);
+      const changeResult = await changePassword(currentPassword, newPassword);
 
-      if (result.error) {
-        switch (result.error) {
+      if ('error' in changeResult) {
+        switch (changeResult.error) {
           case 'currentPasswordIncorrect':
             setError(t('currentPasswordIncorrect'));
             break;
@@ -82,11 +82,7 @@ export function ChangePasswordForm() {
       <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
-        )}
+        {error && <FormErrorMessage message={error} />}
 
         <div>
           <label

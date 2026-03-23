@@ -7,10 +7,7 @@ import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { passwordSchema } from '@/lib/validations/password';
 
-export type ChangePasswordResult = {
-  success?: boolean;
-  error?: string;
-};
+export type ChangePasswordResult = { success: true } | { error: string };
 
 export async function changePassword(
   currentPassword: string,

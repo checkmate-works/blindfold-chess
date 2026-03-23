@@ -10,3 +10,11 @@ export const passwordSchema = z
   .regex(/\d/, 'missingDigit'); // letters_digits: requires at least one digit
 
 export type Password = z.infer<typeof passwordSchema>;
+
+export type PasswordValidationErrorKey = 'tooShort' | 'missingLetter' | 'missingDigit';
+
+export function getPasswordValidationError(password: string): PasswordValidationErrorKey | null {
+  const result = passwordSchema.safeParse(password);
+  if (result.success) return null;
+  return result.error.issues[0].message as PasswordValidationErrorKey;
+}

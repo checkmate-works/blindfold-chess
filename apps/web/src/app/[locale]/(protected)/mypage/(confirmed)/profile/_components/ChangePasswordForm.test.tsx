@@ -67,10 +67,10 @@ describe('ChangePasswordForm', () => {
       target: { value: 'currentpass123' },
     });
     fireEvent.change(screen.getByLabelText('newPasswordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
     fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));

@@ -65,10 +65,10 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm />);
 
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
     fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));

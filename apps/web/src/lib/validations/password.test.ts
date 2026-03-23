@@ -4,24 +4,24 @@ import { passwordSchema } from './password';
 
 describe('passwordSchema', () => {
   describe('valid passwords', () => {
-    it('should accept a password with letters and digits (8 chars)', () => {
-      expect(passwordSchema.safeParse('abcdefg1').success).toBe(true);
+    it('should accept a password with letters and digits (6 chars)', () => {
+      expect(passwordSchema.safeParse('abcde1').success).toBe(true);
     });
 
-    it('should accept a password with letters and digits (longer than 8 chars)', () => {
+    it('should accept a password with letters and digits (longer than 6 chars)', () => {
       expect(passwordSchema.safeParse('securePassword123').success).toBe(true);
     });
 
     it('should accept a password with uppercase letters and digits', () => {
-      expect(passwordSchema.safeParse('ABCDEFG1').success).toBe(true);
+      expect(passwordSchema.safeParse('ABCDE1').success).toBe(true);
     });
 
     it('should accept a password with mixed case letters and digits', () => {
-      expect(passwordSchema.safeParse('AbCdEfG1').success).toBe(true);
+      expect(passwordSchema.safeParse('AbCdE1').success).toBe(true);
     });
 
     it('should accept a password with special characters, letters, and digits', () => {
-      expect(passwordSchema.safeParse('p@ssw0rd!').success).toBe(true);
+      expect(passwordSchema.safeParse('p@ss0!').success).toBe(true);
     });
   });
 
@@ -34,22 +34,22 @@ describe('passwordSchema', () => {
       }
     });
 
-    it('should reject a password with 7 characters', () => {
-      const result = passwordSchema.safeParse('abcdef1');
+    it('should reject a password with 5 characters', () => {
+      const result = passwordSchema.safeParse('abcd1');
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('tooShort');
       }
     });
 
-    it('should accept a password with exactly 8 characters', () => {
-      expect(passwordSchema.safeParse('abcdefg1').success).toBe(true);
+    it('should accept a password with exactly 6 characters', () => {
+      expect(passwordSchema.safeParse('abcde1').success).toBe(true);
     });
   });
 
   describe('missingLetter', () => {
     it('should reject a password with only digits', () => {
-      const result = passwordSchema.safeParse('12345678');
+      const result = passwordSchema.safeParse('123456');
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message);
@@ -58,7 +58,7 @@ describe('passwordSchema', () => {
     });
 
     it('should reject a password with digits and special characters but no letters', () => {
-      const result = passwordSchema.safeParse('1234!@#$');
+      const result = passwordSchema.safeParse('123!@#');
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message);
@@ -69,7 +69,7 @@ describe('passwordSchema', () => {
 
   describe('missingDigit', () => {
     it('should reject a password with only letters', () => {
-      const result = passwordSchema.safeParse('abcdefgh');
+      const result = passwordSchema.safeParse('abcdef');
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message);
@@ -78,7 +78,7 @@ describe('passwordSchema', () => {
     });
 
     it('should reject a password with letters and special characters but no digits', () => {
-      const result = passwordSchema.safeParse('abcdef!@');
+      const result = passwordSchema.safeParse('abc!@#');
       expect(result.success).toBe(false);
       if (!result.success) {
         const messages = result.error.issues.map((i) => i.message);

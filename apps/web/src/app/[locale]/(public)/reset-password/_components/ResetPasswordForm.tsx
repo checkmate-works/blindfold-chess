@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
 import { createClient } from '@/lib/supabase/client';
-import { passwordSchema } from '@/lib/validations/password';
+import { getPasswordValidationError } from '@/lib/validations/password';
+
+import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 
 export function ResetPasswordForm() {
   const t = useTranslations('resetPassword');
@@ -29,10 +31,9 @@ export function ResetPasswordForm() {
       return;
     }
 
-    const result = passwordSchema.safeParse(password);
-    if (!result.success) {
-      const key = result.error.issues[0].message as 'tooShort' | 'missingLetter' | 'missingDigit';
-      setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+    const passwordError = getPasswordValidationError(password);
+    if (passwordError) {
+      setError(tPassword(passwordError, { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 
@@ -59,11 +60,7 @@ export function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
+      {error && <FormErrorMessage message={error} />}
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
