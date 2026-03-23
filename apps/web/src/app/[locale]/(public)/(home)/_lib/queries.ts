@@ -8,6 +8,22 @@ import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/
 
 import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
 
+/** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
+const FEED_RANK_THRESHOLD = 10;
+
+/**
+ * Fetch a page of feed items with their full entity data.
+ *
+ * @design Cursor-based pagination
+ * The cursor is the ISO 8601 `createdAt` timestamp of the last item on the
+ * previous page. The query uses `WHERE created_at < cursor ORDER BY
+ * created_at DESC LIMIT N+1` (the +1 detects whether a next page exists).
+ *
+ * @design Batch entity fetching (avoid N+1)
+ * After fetching feed_items rows, entity data is loaded in bulk per
+ * entityType (e.g. all topic_post IDs in one query). Items whose source
+ * entity was deleted are silently dropped from the result.
+ */
 export async function getFeedData(
   cursor: string | undefined,
   limit: number,
@@ -108,13 +124,15 @@ export async function getFeedData(
       const actor = rankUpdateActorMap.get(row.actorId);
       if (actor) {
         const metadata = row.metadata as Record<string, unknown>;
+        const rank = metadata.rank as number;
+        if (rank > FEED_RANK_THRESHOLD) continue;
         const data: ChallengeRankUpdateData = {
           menuType: metadata.menuType as string,
           leaderboardKey: metadata.leaderboardKey as string,
           score: metadata.score as number,
           incorrectAnswers: metadata.incorrectAnswers as number,
           timeTaken: metadata.timeTaken as number,
-          rank: metadata.rank as number,
+          rank,
           isNewEntry: metadata.isNewEntry as boolean,
           actor,
         };

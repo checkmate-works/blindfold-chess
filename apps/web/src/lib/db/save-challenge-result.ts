@@ -4,6 +4,9 @@ import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
+/** Only insert feed items for ranks at or above this threshold. */
+const FEED_RANK_THRESHOLD = 10;
+
 export type ChallengeResultInput = {
   userId: string;
   menuType: string;
@@ -111,20 +114,22 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
       const rankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey);
       const rank = rankResult?.rank ?? 1;
 
-      await tx.insert(feedItems).values({
-        entityType: 'challenge_rank_update',
-        entityId: challengeResult.id,
-        actorId: userId,
-        metadata: {
-          menuType,
-          leaderboardKey,
-          score,
-          incorrectAnswers,
-          timeTaken,
-          rank,
-          isNewEntry,
-        },
-      });
+      if (rank <= FEED_RANK_THRESHOLD) {
+        await tx.insert(feedItems).values({
+          entityType: 'challenge_rank_update',
+          entityId: challengeResult.id,
+          actorId: userId,
+          metadata: {
+            menuType,
+            leaderboardKey,
+            score,
+            incorrectAnswers,
+            timeTaken,
+            rank,
+            isNewEntry,
+          },
+        });
+      }
     }
   });
 }

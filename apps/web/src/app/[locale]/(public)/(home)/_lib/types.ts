@@ -1,3 +1,24 @@
+/**
+ * Timeline Feed Type Definitions
+ *
+ * @design Polymorphic entity pattern (entityType + entityId)
+ * Feed items use a discriminated union keyed by `entityType`. Each variant
+ * carries a `data` payload whose shape differs per entity type. This mirrors
+ * the polymorphic target pattern used by `user_activity_log` and
+ * `moderation_actions` elsewhere in the codebase.
+ *
+ * @design Adding a new entity type
+ * 1. Define a new `data` type (e.g. `GameResultData`)
+ * 2. Create a variant type extending `FeedItemBase` with a literal `entityType`
+ * 3. Add the variant to the `FeedItem` union
+ * 4. Add batch-fetch logic in `queries.ts` (see existing patterns)
+ * 5. Add a card component and a `case` in `FeedCard.tsx`
+ * 6. INSERT into `feed_items` transactionally alongside entity creation
+ *
+ * @design isNewEntry (challenge_rank_update)
+ * `true` when the user's first-ever score for a leaderboard key is recorded;
+ * `false` when an existing best score is surpassed.
+ */
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 type FeedItemBase = {
@@ -20,6 +41,7 @@ export type ChallengeRankUpdateData = {
   incorrectAnswers: number;
   timeTaken: number;
   rank: number;
+  /** true = first submission for this leaderboard key; false = improved existing best */
   isNewEntry: boolean;
   actor: {
     username: string;

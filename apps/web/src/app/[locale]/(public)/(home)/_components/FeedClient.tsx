@@ -10,7 +10,14 @@ import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { NativeAdCard } from './NativeAdCard';
 
-/** Number of feed items between each native ad insertion. */
+/**
+ * Number of feed items between each native ad insertion.
+ *
+ * @design Native ads (NativeAdCard) are interleaved client-side rather than
+ * stored in feed_items because ad display is presentation logic, not user
+ * activity. Ads cycle through the `adBanners` array via modulo indexing.
+ * When `adBanners` is empty (ads disabled or none active), no ads appear.
+ */
 const AD_INTERVAL = 3;
 
 type Props = {

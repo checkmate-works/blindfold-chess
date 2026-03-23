@@ -1183,7 +1183,7 @@
       "noItems": "No posts yet. Be the first to share your thoughts!",
       "loading": "Loading...",
       "rankUpdate": {
-        "newEntry": "Entered the leaderboard!",
+        "newEntry": "Entered the leaderboard",
         "improved": "Improved rank!",
         "rank": "Rank",
         "score": "Score"

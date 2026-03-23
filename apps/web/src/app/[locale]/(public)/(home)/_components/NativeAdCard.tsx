@@ -1,3 +1,12 @@
+/**
+ * Native ad card that blends with organic feed cards.
+ *
+ * Uses the same layout (image left, text right) and UserAvatar as other
+ * feed cards so the ad integrates visually. The timestamp slot shows
+ * "Sponsored Link" instead of a time value (same pattern as X/Twitter
+ * promoted posts). Sponsor identity is currently a hardcoded i18n label
+ * (案C); can be migrated to a dedicated advertiser table if needed.
+ */
 'use client';
 
 import Image from 'next/image';
