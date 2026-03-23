@@ -1,6 +1,7 @@
 'use client';
 
 import type { FeedItem } from '../_lib/types';
+import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 import { TopicPostCard } from './TopicPostCard';
 
 type Props = {
@@ -21,6 +22,15 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTe
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
           newReplyTemplate={newReplyTemplate}
+        />
+      );
+    case 'challenge_rank_update':
+      return (
+        <ChallengeRankUpdateCard
+          data={item.data}
+          createdAt={item.createdAt}
+          locale={locale}
+          justNowLabel={justNowLabel}
         />
       );
     default:

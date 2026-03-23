@@ -1,3 +1,4 @@
+export { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 export { EmptyGameList } from './EmptyGameList';
 export { FeedCard } from './FeedCard';
 export { FeedClient } from './FeedClient';

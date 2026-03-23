@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { FeedItem, TopicPostFeedItem } from '../_lib/types';
+import type { ChallengeRankUpdateFeedItem, FeedItem, TopicPostFeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 
 afterEach(() => {
@@ -11,6 +11,12 @@ afterEach(() => {
 vi.mock('./TopicPostCard', () => ({
   TopicPostCard: ({ post }: { post: unknown }) => (
     <div data-testid="topic-post-card">{JSON.stringify(post)}</div>
+  ),
+}));
+
+vi.mock('./ChallengeRankUpdateCard', () => ({
+  ChallengeRankUpdateCard: ({ data }: { data: unknown }) => (
+    <div data-testid="challenge-rank-update-card">{JSON.stringify(data)}</div>
   ),
 }));
 
@@ -30,9 +36,11 @@ function createTopicPostFeedItem(overrides: Partial<TopicPostFeedItem> = {}): To
       topicKey: 'sicilian-defense',
       createdAt: new Date('2025-01-15T10:00:00.000Z'),
       userId: 'user-1',
+      parentId: null,
       rootPostId: null,
+      replyPermission: 'everyone',
       deletedAt: null,
-      updatedAt: null,
+      updatedAt: new Date('2025-01-15T10:00:00.000Z'),
       author: {
         username: 'testuser',
         displayName: 'Test User',
@@ -88,6 +96,36 @@ describe('FeedCard', () => {
     const card = screen.getByTestId('topic-post-card');
     expect(card.textContent).toContain('Test content');
     expect(card.textContent).toContain('sicilian-defense');
+  });
+
+  it('should render ChallengeRankUpdateCard for challenge_rank_update entityType', () => {
+    const item: ChallengeRankUpdateFeedItem = {
+      id: 'feed-2',
+      entityType: 'challenge_rank_update',
+      entityId: 'result-1',
+      actorId: 'user-1',
+      createdAt: '2025-01-15T10:00:00.000Z',
+      data: {
+        menuType: 'coordinate_quiz',
+        leaderboardKey: 'white',
+        score: 25,
+        incorrectAnswers: 3,
+        timeTaken: 45,
+        rank: 5,
+        isNewEntry: true,
+        actor: {
+          username: 'testuser',
+          displayName: 'Test User',
+          avatarUrl: null,
+          country: null,
+          flair: null,
+        },
+      },
+    };
+
+    render(<FeedCard item={item} {...defaultProps} />);
+
+    expect(screen.getByTestId('challenge-rank-update-card')).toBeInTheDocument();
   });
 
   it('should return null for unknown entityType', () => {

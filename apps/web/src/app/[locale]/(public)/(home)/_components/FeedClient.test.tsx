@@ -57,9 +57,11 @@ function createTopicPostFeedItem(id: string): TopicPostFeedItem {
       topicKey: 'sicilian-defense',
       createdAt: new Date('2025-01-15T10:00:00.000Z'),
       userId: 'user-1',
+      parentId: null,
       rootPostId: null,
+      replyPermission: 'everyone',
       deletedAt: null,
-      updatedAt: null,
+      updatedAt: new Date('2025-01-15T10:00:00.000Z'),
       author: {
         username: 'testuser',
         displayName: 'Test User',
