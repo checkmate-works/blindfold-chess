@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 
 import { Link } from '@/i18n/routing';
 
@@ -26,16 +27,20 @@ export function EmailPasswordForm() {
     try {
       const result = await signIn(email, password);
 
-      switch (result.error) {
-        case 'rateLimited':
-          setError(t('rateLimited'));
-          break;
-        default:
-          setError(t('emailSignInError'));
+      if (result?.error) {
+        switch (result.error) {
+          case 'rateLimited':
+            setError(t('rateLimited'));
+            break;
+          default:
+            setError(t('emailSignInError'));
+        }
       }
       setIsLoading(false);
-    } catch {
-      setError(t('emailSignInError'));
+    } catch (err) {
+      if (!isRedirectError(err)) {
+        setError(t('emailSignInError'));
+      }
       setIsLoading(false);
     }
   };

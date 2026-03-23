@@ -33,6 +33,12 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
+const mockIsRedirectError = vi.fn();
+
+vi.mock('next/dist/client/components/redirect-error', () => ({
+  isRedirectError: (...args: unknown[]) => mockIsRedirectError(...args),
+}));
+
 vi.mock('../_actions/signIn', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
 }));
@@ -55,6 +61,7 @@ describe('EmailPasswordForm', () => {
     // In tests, we simulate this by having signIn throw.
     const redirectError = new Error('NEXT_REDIRECT');
     mockSignIn.mockRejectedValue(redirectError);
+    mockIsRedirectError.mockReturnValue(true);
 
     render(<EmailPasswordForm />);
 
@@ -147,6 +154,7 @@ describe('EmailPasswordForm', () => {
 
   it('should show error when Server Action throws', async () => {
     mockSignIn.mockRejectedValue(new Error('Network error'));
+    mockIsRedirectError.mockReturnValue(false);
 
     render(<EmailPasswordForm />);
 
@@ -162,5 +170,72 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('emailSignInError')).toBeInTheDocument();
     });
+  });
+
+  it('should not show error message when signIn succeeds (result is undefined)', async () => {
+    mockSignIn.mockResolvedValue(undefined);
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+    });
+
+    expect(screen.queryByText('emailSignInError')).not.toBeInTheDocument();
+    expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
+  });
+
+  it('should not show error message when redirect error is thrown', async () => {
+    const redirectError = new Error('NEXT_REDIRECT');
+    mockSignIn.mockRejectedValue(redirectError);
+    mockIsRedirectError.mockReturnValue(true);
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+    });
+
+    expect(screen.queryByText('emailSignInError')).not.toBeInTheDocument();
+    expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
+  });
+
+  it('should show error when non-redirect exception is thrown', async () => {
+    mockSignIn.mockRejectedValue(new TypeError('fetch failed'));
+    mockIsRedirectError.mockReturnValue(false);
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('emailSignInError')).toBeInTheDocument();
+    });
+    expect(mockIsRedirectError).toHaveBeenCalled();
   });
 });
