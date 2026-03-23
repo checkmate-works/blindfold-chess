@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
@@ -14,7 +13,6 @@ import { signIn } from '../_actions/signIn';
 export function EmailPasswordForm() {
   const t = useTranslations('signIn');
   const locale = useLocale();
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,20 +26,14 @@ export function EmailPasswordForm() {
     try {
       const result = await signIn(email, password);
 
-      if ('error' in result) {
-        switch (result.error) {
-          case 'rateLimited':
-            setError(t('rateLimited'));
-            break;
-          default:
-            setError(t('emailSignInError'));
-        }
-        setIsLoading(false);
-        return;
+      switch (result.error) {
+        case 'rateLimited':
+          setError(t('rateLimited'));
+          break;
+        default:
+          setError(t('emailSignInError'));
       }
-
-      router.refresh();
-      router.push(`/${locale}/mypage?toast=login_success`);
+      setIsLoading(false);
     } catch {
       setError(t('emailSignInError'));
       setIsLoading(false);

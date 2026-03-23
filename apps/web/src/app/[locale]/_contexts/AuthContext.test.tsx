@@ -107,66 +107,6 @@ describe('AuthContext', () => {
     });
   });
 
-  describe('refreshUser', () => {
-    it('calls getUser and getSession and updates state', async () => {
-      // Start with no user
-      mockGetUser.mockResolvedValue({ data: { user: null } });
-      mockGetSession.mockResolvedValue({ data: { session: null } });
-
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      expect(result.current.user).toBeNull();
-      expect(result.current.session).toBeNull();
-
-      // Now simulate a user becoming available
-      const newUser = { id: 'user-2', email: 'new@example.com' };
-      const newSession = { access_token: 'new-token', user: newUser };
-      mockGetUser.mockResolvedValue({ data: { user: newUser } });
-      mockGetSession.mockResolvedValue({ data: { session: newSession } });
-
-      await act(async () => {
-        await result.current.refreshUser();
-      });
-
-      expect(result.current.user).toEqual(newUser);
-      expect(result.current.session).toEqual(newSession);
-      // getUser/getSession were called during init and during refreshUser
-      // (exact count may vary due to React Strict Mode double-invoking effects)
-      expect(mockGetUser.mock.calls.length).toBeGreaterThanOrEqual(2);
-      expect(mockGetSession.mock.calls.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it('rejects when getUser throws, allowing caller to handle the error', async () => {
-      mockGetUser.mockResolvedValue({ data: { user: null } });
-      mockGetSession.mockResolvedValue({ data: { session: null } });
-
-      const { result } = renderHook(() => useAuth(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      // Make refreshUser fail
-      mockGetUser.mockRejectedValue(new Error('Auth error'));
-
-      let caughtError: Error | undefined;
-      await act(async () => {
-        try {
-          await result.current.refreshUser();
-        } catch (err) {
-          caughtError = err as Error;
-        }
-      });
-
-      expect(caughtError).toBeDefined();
-      expect(caughtError!.message).toBe('Auth error');
-    });
-  });
-
   describe('signOut', () => {
     it('calls supabase.auth.signOut', async () => {
       mockGetUser.mockResolvedValue({ data: { user: { id: '1', email: 'a@b.com' } } });

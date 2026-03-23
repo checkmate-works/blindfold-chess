@@ -11,16 +11,10 @@ afterEach(() => {
 });
 
 const mockSignIn = vi.fn();
-const mockPush = vi.fn();
-const mockRefresh = vi.fn();
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
   useLocale: () => 'en',
-}));
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
 }));
 
 vi.mock('@/i18n/routing', () => ({
@@ -56,8 +50,11 @@ describe('EmailPasswordForm', () => {
     expect(screen.getByRole('button', { name: 'emailSignIn' })).toBeInTheDocument();
   });
 
-  it('should call signIn Server Action with valid input', async () => {
-    mockSignIn.mockResolvedValue({ success: true });
+  it('should call signIn Server Action with valid input (redirect happens server-side)', async () => {
+    // On success, the server action calls redirect() which throws NEXT_REDIRECT.
+    // In tests, we simulate this by having signIn throw.
+    const redirectError = new Error('NEXT_REDIRECT');
+    mockSignIn.mockRejectedValue(redirectError);
 
     render(<EmailPasswordForm />);
 
@@ -73,38 +70,6 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
     });
-
-    expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=login_success');
-    expect(mockRefresh).toHaveBeenCalled();
-  });
-
-  it('should call router.refresh() before router.push() on successful sign-in', async () => {
-    mockSignIn.mockResolvedValue({ success: true });
-
-    const callOrder: string[] = [];
-    mockRefresh.mockImplementation(() => {
-      callOrder.push('refresh');
-    });
-    mockPush.mockImplementation(() => {
-      callOrder.push('push');
-    });
-
-    render(<EmailPasswordForm />);
-
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalled();
-    });
-
-    expect(callOrder).toEqual(['refresh', 'push']);
   });
 
   it('should show error message when signIn fails', async () => {
@@ -124,7 +89,6 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('emailSignInError')).toBeInTheDocument();
     });
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('should show rate limited error', async () => {
@@ -144,7 +108,6 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('rateLimited')).toBeInTheDocument();
     });
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('should render a forgot password link', () => {
@@ -179,7 +142,7 @@ describe('EmailPasswordForm', () => {
       expect(screen.getByText('emailSignInLoading')).toBeInTheDocument();
     });
 
-    resolveSignIn!({ success: true });
+    resolveSignIn!({ error: 'invalidCredentials' });
   });
 
   it('should show error when Server Action throws', async () => {
@@ -199,6 +162,5 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('emailSignInError')).toBeInTheDocument();
     });
-    expect(mockPush).not.toHaveBeenCalled();
   });
 });

@@ -51,30 +51,16 @@ describe('AuthStatusDisplay', () => {
     mockPush.mockClear();
   });
 
-  describe('when loading', () => {
-    it('should render nothing while loading', () => {
-      mockUseAuth.mockReturnValue({
-        user: null,
-        isLoading: true,
-        signOut: vi.fn(),
-      });
-
-      const { container } = render(<AuthStatusDisplay />);
-      expect(container.innerHTML).toBe('');
-    });
-  });
-
-  describe('when not signed in', () => {
+  describe('when not authenticated (isAuthenticated=false)', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
         user: null,
-        isLoading: false,
         signOut: vi.fn(),
       });
     });
 
     it('should display sign-up and sign-in links', () => {
-      render(<AuthStatusDisplay />);
+      render(<AuthStatusDisplay isAuthenticated={false} />);
       const signUpLink = screen.getByText('signUp').closest('a');
       const signInLink = screen.getByText('signIn').closest('a');
       expect(signUpLink).toHaveAttribute('href', '/en/sign-up');
@@ -82,7 +68,7 @@ describe('AuthStatusDisplay', () => {
     });
   });
 
-  describe('when signed in', () => {
+  describe('when authenticated (isAuthenticated=true)', () => {
     let mockSignOut: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
@@ -90,20 +76,23 @@ describe('AuthStatusDisplay', () => {
       mockShowToast.mockClear();
       mockUseAuth.mockReturnValue({
         user: { id: 'user-1', email: 'test@example.com' },
-        isLoading: false,
         signOut: mockSignOut,
       });
     });
 
     it('should display the account icon button', () => {
-      render(<AuthStatusDisplay />);
+      render(<AuthStatusDisplay isAuthenticated={true} />);
       expect(screen.getByRole('button', { name: 'account' })).toBeInTheDocument();
     });
 
     describe('avatar display', () => {
       it('should display the avatar image when avatarUrl is provided', () => {
         render(
-          <AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName="John Doe" />
+          <AuthStatusDisplay
+            isAuthenticated={true}
+            avatarUrl="https://example.com/avatar.png"
+            displayName="John Doe"
+          />
         );
         const img = screen.getByRole('img', { name: 'John Doe' });
         expect(img).toBeInTheDocument();
@@ -112,32 +101,42 @@ describe('AuthStatusDisplay', () => {
 
       it('should use displayName as alt text for avatar image', () => {
         render(
-          <AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName="Alice" />
+          <AuthStatusDisplay
+            isAuthenticated={true}
+            avatarUrl="https://example.com/avatar.png"
+            displayName="Alice"
+          />
         );
         const img = screen.getByRole('img', { name: 'Alice' });
         expect(img).toBeInTheDocument();
       });
 
       it('should use empty alt text when displayName is null', () => {
-        render(<AuthStatusDisplay avatarUrl="https://example.com/avatar.png" displayName={null} />);
+        render(
+          <AuthStatusDisplay
+            isAuthenticated={true}
+            avatarUrl="https://example.com/avatar.png"
+            displayName={null}
+          />
+        );
         const img = screen.getByAltText('');
         expect(img).toBeInTheDocument();
         expect(img).toHaveAttribute('src', 'https://example.com/avatar.png');
       });
 
       it('should display initial of displayName when avatarUrl is not provided', () => {
-        render(<AuthStatusDisplay displayName="John Doe" />);
+        render(<AuthStatusDisplay isAuthenticated={true} displayName="John Doe" />);
         expect(screen.queryByRole('img')).not.toBeInTheDocument();
         expect(screen.getByText('J')).toBeInTheDocument();
       });
 
       it('should display initial of displayName in uppercase', () => {
-        render(<AuthStatusDisplay displayName="alice" />);
+        render(<AuthStatusDisplay isAuthenticated={true} displayName="alice" />);
         expect(screen.getByText('A')).toBeInTheDocument();
       });
 
       it('should fall back to email initial when displayName is null', () => {
-        render(<AuthStatusDisplay displayName={null} />);
+        render(<AuthStatusDisplay isAuthenticated={true} displayName={null} />);
         // user.email is 'test@example.com', so initial should be 'T'
         expect(screen.getByText('T')).toBeInTheDocument();
       });
@@ -145,22 +144,30 @@ describe('AuthStatusDisplay', () => {
       it('should display "?" when displayName and email are both unavailable', () => {
         mockUseAuth.mockReturnValue({
           user: { id: 'user-1' },
-          isLoading: false,
           signOut: vi.fn(),
         });
-        render(<AuthStatusDisplay displayName={null} />);
+        render(<AuthStatusDisplay isAuthenticated={true} displayName={null} />);
+        expect(screen.getByText('?')).toBeInTheDocument();
+      });
+
+      it('should display "?" when user is null (client not yet synced) and no displayName', () => {
+        mockUseAuth.mockReturnValue({
+          user: null,
+          signOut: vi.fn(),
+        });
+        render(<AuthStatusDisplay isAuthenticated={true} displayName={null} />);
         expect(screen.getByText('?')).toBeInTheDocument();
       });
 
       it('should not display avatar image when avatarUrl is null', () => {
-        render(<AuthStatusDisplay avatarUrl={null} displayName="John" />);
+        render(<AuthStatusDisplay isAuthenticated={true} avatarUrl={null} displayName="John" />);
         expect(screen.queryByRole('img')).not.toBeInTheDocument();
         expect(screen.getByText('J')).toBeInTheDocument();
       });
     });
 
     it('should open the dropdown when the icon button is clicked', () => {
-      render(<AuthStatusDisplay />);
+      render(<AuthStatusDisplay isAuthenticated={true} />);
       const button = screen.getByRole('button', { name: 'account' });
 
       expect(screen.queryByText('settings')).not.toBeInTheDocument();
@@ -174,7 +181,7 @@ describe('AuthStatusDisplay', () => {
 
     describe('dropdown menu', () => {
       beforeEach(() => {
-        render(<AuthStatusDisplay />);
+        render(<AuthStatusDisplay isAuthenticated={true} />);
         fireEvent.click(screen.getByRole('button', { name: 'account' }));
       });
 

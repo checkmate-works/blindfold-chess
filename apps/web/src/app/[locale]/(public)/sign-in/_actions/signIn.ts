@@ -1,10 +1,13 @@
 'use server';
 
+import { redirect } from 'next/navigation';
+
 import { getClientIp } from '@/lib/client-ip';
+import { getLocaleFromRequest } from '@/lib/locale';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 
-export type SignInResult = { success: true } | { error: string };
+export type SignInResult = { error: string };
 
 export async function signIn(email: string, password: string): Promise<SignInResult> {
   const ip = await getClientIp();
@@ -22,5 +25,6 @@ export async function signIn(email: string, password: string): Promise<SignInRes
     return { error: 'invalidCredentials' };
   }
 
-  return { success: true };
+  const locale = await getLocaleFromRequest();
+  redirect(`/${locale}/mypage?toast=login_success`);
 }
