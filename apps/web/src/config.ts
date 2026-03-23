@@ -8,6 +8,9 @@ export const SUPPORTED_LOCALES = ['en', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
+// Keep in sync with Supabase Dashboard: Authentication > Settings > Password > "Minimum password length"
+export const MIN_PASSWORD_LENGTH = 6;
+
 export const MAX_GAMES = 20;
 
 export const GAME_UPDATED_EVENT = 'blindfold-chess:game-updated';

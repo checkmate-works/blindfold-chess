@@ -1648,7 +1648,16 @@
     "googleOAuthLoading": "サインイン中...",
     "authError": "サインインに失敗しました。もう一度お試しください。",
     "noAccount": "アカウントをお持ちでないですか？",
-    "signUp": "登録はこちら"
+    "signUp": "登録はこちら",
+    "orDivider": "または",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "パスワードを入力",
+    "emailSignIn": "メールでサインイン",
+    "emailSignInLoading": "サインイン中...",
+    "emailSignInError": "メールアドレスまたはパスワードが正しくありません。",
+    "forgotPassword": "パスワードをお忘れですか？"
   },
   "signUp": {
     "title": "アカウント登録",
@@ -1658,6 +1667,18 @@
     "authError": "登録に失敗しました。もう一度お試しください。",
     "alreadyHaveAccount": "既にアカウントをお持ちですか？",
     "signIn": "ログイン",
+    "orDivider": "または",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "8文字以上",
+    "confirmPasswordLabel": "パスワード（確認）",
+    "confirmPasswordPlaceholder": "パスワードを再入力",
+    "emailSignUp": "メールで登録",
+    "emailSignUpLoading": "登録中...",
+    "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
+    "passwordMismatch": "パスワードが一致しません。",
+    "passwordTooShort": "パスワードは8文字以上で入力してください。",
     "freeBadge": "無料",
     "freeAssurance": "完全無料 ・ クレジットカード不要",
     "features": {
@@ -1680,6 +1701,41 @@
         "description": "プロフィールと履歴で、あなただけのチェスアイデンティティを築けます。"
       }
     }
+  },
+  "verifyEmail": {
+    "title": "メールをご確認ください",
+    "description": "確認リンクをメールアドレスに送信しました。",
+    "checkInbox": "受信トレイを確認し、リンクをクリックしてアカウントを認証してください。",
+    "resendButton": "確認メールを再送",
+    "resendLoading": "送信中...",
+    "resendSuccess": "確認メールを再送しました。受信トレイをご確認ください。",
+    "resendError": "メールの再送に失敗しました。しばらくしてからもう一度お試しください。",
+    "breadcrumbSignUp": "アカウント登録"
+  },
+  "forgotPassword": {
+    "title": "パスワードをお忘れの方",
+    "description": "メールアドレスを入力してください。パスワードリセット用のリンクを送信します。",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "submit": "リセットリンクを送信",
+    "submitLoading": "送信中...",
+    "error": "リセットメールの送信に失敗しました。もう一度お試しください。",
+    "sentDescription": "パスワードリセット用のリンクをメールアドレスに送信しました。",
+    "checkInbox": "受信トレイを確認し、リンクをクリックしてパスワードをリセットしてください。",
+    "backToSignIn": "サインインに戻る"
+  },
+  "resetPassword": {
+    "title": "パスワードのリセット",
+    "description": "新しいパスワードを入力してください。",
+    "passwordLabel": "新しいパスワード",
+    "passwordPlaceholder": "8文字以上",
+    "confirmPasswordLabel": "新しいパスワード（確認）",
+    "confirmPasswordPlaceholder": "新しいパスワードを再入力",
+    "submit": "パスワードをリセット",
+    "submitLoading": "リセット中...",
+    "error": "パスワードのリセットに失敗しました。もう一度お試しください。",
+    "passwordMismatch": "パスワードが一致しません。",
+    "passwordTooShort": "パスワードは8文字以上で入力してください。"
   },
   "articles": {
     "pageTitle": "記事",
@@ -2015,7 +2071,22 @@
     "breadcrumbMypage": "マイページ",
     "viewPublicProfile": "@{username} のプロフィール",
     "profileUpdated": "プロフィールを更新しました",
-    "deleteAccountLink": "退会"
+    "deleteAccountLink": "退会",
+    "changePassword": {
+      "title": "パスワード変更",
+      "currentPasswordLabel": "現在のパスワード",
+      "newPasswordLabel": "新しいパスワード",
+      "confirmPasswordLabel": "新しいパスワード（確認）",
+      "submit": "パスワードを変更",
+      "submitLoading": "変更中...",
+      "passwordMismatch": "新しいパスワードが一致しません。",
+      "passwordTooShort": "パスワードは8文字以上で入力してください。",
+      "passwordSameAsCurrent": "新しいパスワードは現在のパスワードと異なるものにしてください。",
+      "currentPasswordIncorrect": "現在のパスワードが正しくありません。",
+      "rateLimited": "試行回数の上限に達しました。しばらくしてからお試しください。",
+      "error": "エラーが発生しました。もう一度お試しください。",
+      "success": "パスワードを変更しました。"
+    }
   },
   "Admin": {
     "title": "Admin",
@@ -2699,6 +2770,13 @@
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
       "cta": "無料登録"
+    }
+  },
+  "validation": {
+    "password": {
+      "tooShort": "パスワードは{minLength}文字以上で入力してください。",
+      "missingLetter": "パスワードには英字を1文字以上含めてください。",
+      "missingDigit": "パスワードには数字を1文字以上含めてください。"
     }
   }
 }

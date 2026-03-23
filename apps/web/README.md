@@ -118,6 +118,12 @@ User authentication via Supabase Auth with Google Sign-In (Apple Sign-In planned
 
 See [docs/authentication-setup.md](docs/authentication-setup.md) for setup instructions.
 
+## Email (SMTP)
+
+Production email delivery for Supabase Auth using Resend as the custom SMTP provider. Covers domain verification, SMTP credentials, Dashboard configuration, and email template setup.
+
+See [docs/resend-smtp-setup.md](docs/resend-smtp-setup.md) for setup instructions.
+
 ## Admin Panel
 
 Internal admin dashboard at `/admin` with Role-Based Access Control (RBAC). Requires Supabase Auth, a `user_roles` database table, and a Custom Access Token Hook.
