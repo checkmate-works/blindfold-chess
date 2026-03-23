@@ -41,6 +41,12 @@ vi.mock('./FeedSkeleton', () => ({
   FeedSkeleton: () => <div data-testid="feed-skeleton">Loading...</div>,
 }));
 
+vi.mock('./NativeAdCard', () => ({
+  NativeAdCard: ({ adLabel }: { adLabel: string }) => (
+    <div data-testid="native-ad-card">{adLabel}</div>
+  ),
+}));
+
 // --- Helpers ---
 
 function createTopicPostFeedItem(id: string): TopicPostFeedItem {
@@ -137,6 +143,91 @@ describe('FeedClient', () => {
 
       expect(screen.getByTestId('feed-card-1')).toBeInTheDocument();
       expect(screen.queryByText('No items yet')).toBeNull();
+    });
+  });
+
+  describe('native ads', () => {
+    const adBanners = [
+      {
+        href: 'https://example.com/ad1',
+        imagePath: '/images/ad1.webp',
+        alt: 'Test Ad 1',
+        width: 400,
+        height: 400,
+      },
+    ];
+
+    it('should insert a native ad card after every AD_INTERVAL items', () => {
+      const items = [
+        createTopicPostFeedItem('1'),
+        createTopicPostFeedItem('2'),
+        createTopicPostFeedItem('3'),
+      ];
+
+      render(
+        <FeedClient
+          initialItems={items}
+          initialCursor={null}
+          {...defaultProps}
+          adBanners={adBanners}
+          adLabel="Ad"
+        />
+      );
+
+      // 3 feed cards + 1 ad card (after every 3 items)
+      expect(screen.getAllByTestId(/feed-card-/)).toHaveLength(3);
+      expect(screen.getAllByTestId('native-ad-card')).toHaveLength(1);
+    });
+
+    it('should not insert ads when adBanners is empty', () => {
+      const items = [
+        createTopicPostFeedItem('1'),
+        createTopicPostFeedItem('2'),
+        createTopicPostFeedItem('3'),
+      ];
+
+      render(
+        <FeedClient initialItems={items} initialCursor={null} {...defaultProps} adBanners={[]} />
+      );
+
+      expect(screen.queryByTestId('native-ad-card')).toBeNull();
+    });
+
+    it('should not insert ads when fewer items than AD_INTERVAL', () => {
+      const items = [createTopicPostFeedItem('1'), createTopicPostFeedItem('2')];
+
+      render(
+        <FeedClient
+          initialItems={items}
+          initialCursor={null}
+          {...defaultProps}
+          adBanners={adBanners}
+          adLabel="Ad"
+        />
+      );
+
+      expect(screen.queryByTestId('native-ad-card')).toBeNull();
+    });
+
+    it('should cycle through multiple ad banners', () => {
+      const multipleAds = [
+        { ...adBanners[0], alt: 'Ad A' },
+        { ...adBanners[0], alt: 'Ad B' },
+      ];
+      const items = Array.from({ length: 6 }, (_, i) => createTopicPostFeedItem(String(i + 1)));
+
+      render(
+        <FeedClient
+          initialItems={items}
+          initialCursor={null}
+          {...defaultProps}
+          adBanners={multipleAds}
+          adLabel="Ad"
+        />
+      );
+
+      // 6 items → ads at positions 3 and 6 → 2 ad cards
+      expect(screen.getAllByTestId('native-ad-card')).toHaveLength(2);
     });
   });
 

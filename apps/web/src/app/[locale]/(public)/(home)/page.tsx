@@ -13,11 +13,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { getAdBannersForFeed, isAdsEnabled } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
 import { PageTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -49,13 +49,19 @@ export default async function HomePage({ params }: Props) {
   const tHome = await getTranslations({ locale, namespace: 'home' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tCommon = await getTranslations({ locale, namespace: 'Common' });
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const initialFeed = await getFeedData(undefined, INITIAL_FEED_SIZE, user?.id);
+  const [initialFeed, adsEnabled] = await Promise.all([
+    getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
+    isAdsEnabled(),
+  ]);
+
+  const adBanners = adsEnabled ? await getAdBannersForFeed() : [];
 
   return (
     <>
@@ -66,8 +72,6 @@ export default async function HomePage({ params }: Props) {
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
-        <AdBanner slot="banner-wide" locale={locale} />
-
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <FeedClient
             initialItems={initialFeed.items}
@@ -77,6 +81,10 @@ export default async function HomePage({ params }: Props) {
             justNowLabel={tSquares('justNow')}
             newReplyTemplate={tSquares('newReply', { time: '{time}' })}
             noItemsLabel={tHome('feed.noItems')}
+            adBanners={adBanners}
+            adLabel={tCommon('adLabel')}
+            sponsorLabel={tCommon('sponsor')}
+            sponsoredLinkLabel={tCommon('sponsoredLink')}
           />
         </div>
       </div>

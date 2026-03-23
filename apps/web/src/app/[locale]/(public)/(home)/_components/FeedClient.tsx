@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { AdBannerConfig } from '@/lib/ad';
+
 import { getFeed } from '../_actions/getFeed';
 import type { FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
+import { NativeAdCard } from './NativeAdCard';
+
+/** Number of feed items between each native ad insertion. */
+const AD_INTERVAL = 3;
 
 type Props = {
   initialItems: FeedItem[];
@@ -15,6 +21,10 @@ type Props = {
   justNowLabel: string;
   newReplyTemplate: string;
   noItemsLabel: string;
+  adBanners?: AdBannerConfig[];
+  adLabel?: string;
+  sponsorLabel?: string;
+  sponsoredLinkLabel?: string;
 };
 
 export function FeedClient({
@@ -25,6 +35,10 @@ export function FeedClient({
   justNowLabel,
   newReplyTemplate,
   noItemsLabel,
+  adBanners = [],
+  adLabel = '',
+  sponsorLabel = '',
+  sponsoredLinkLabel = '',
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
@@ -66,18 +80,36 @@ export function FeedClient({
     return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
   }
 
+  const elements: React.ReactNode[] = [];
+  items.forEach((item, index) => {
+    elements.push(
+      <FeedCard
+        key={item.id}
+        item={item}
+        locale={locale}
+        showMoreLabel={showMoreLabel}
+        justNowLabel={justNowLabel}
+        newReplyTemplate={newReplyTemplate}
+      />
+    );
+    if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
+      const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
+      elements.push(
+        <NativeAdCard
+          key={`ad-${index}`}
+          ad={adBanners[adIndex]}
+          adLabel={adLabel}
+          sponsorLabel={sponsorLabel}
+          sponsoredLinkLabel={sponsoredLinkLabel}
+          locale={locale}
+        />
+      );
+    }
+  });
+
   return (
     <div className="divide-y divide-border">
-      {items.map((item) => (
-        <FeedCard
-          key={item.id}
-          item={item}
-          locale={locale}
-          showMoreLabel={showMoreLabel}
-          justNowLabel={justNowLabel}
-          newReplyTemplate={newReplyTemplate}
-        />
-      ))}
+      {elements}
       {cursor && <div ref={observerRef}>{isLoading && <FeedSkeleton />}</div>}
     </div>
   );

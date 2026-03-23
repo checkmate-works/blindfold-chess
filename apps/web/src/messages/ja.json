@@ -236,7 +236,8 @@
   "Common": {
     "sponsoredLink": "スポンサーリンク",
     "testAd": "テスト広告",
-    "adLabel": "広告"
+    "adLabel": "広告",
+    "sponsor": "スポンサー"
   },
   "faq": {
     "title": "よくある質問",
