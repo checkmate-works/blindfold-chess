@@ -1656,7 +1656,8 @@
     "emailSignIn": "Sign in with email",
     "emailSignInLoading": "Signing in...",
     "emailSignInError": "Invalid email or password. Please try again.",
-    "forgotPassword": "Forgot your password?"
+    "forgotPassword": "Forgot your password?",
+    "rateLimited": "Too many sign-in attempts. Please try again later."
   },
   "signUp": {
     "title": "Register",
@@ -1676,6 +1677,7 @@
     "emailSignUp": "Register with email",
     "emailSignUpLoading": "Registering...",
     "emailSignUpError": "Registration failed. Please try again.",
+    "rateLimited": "Too many sign-up attempts. Please try again later.",
     "passwordMismatch": "Passwords do not match.",
     "passwordTooShort": "Password must be at least 8 characters.",
     "freeBadge": "FREE",
@@ -1709,6 +1711,8 @@
     "resendLoading": "Sending...",
     "resendSuccess": "Confirmation email resent. Please check your inbox.",
     "resendError": "Failed to resend email. Please try again later.",
+    "rateLimited": "Too many email resend requests. Please try again later.",
+    "resendCooldown": "Resend available in {seconds}s",
     "breadcrumbSignUp": "Register"
   },
   "forgotPassword": {
@@ -1719,6 +1723,7 @@
     "submit": "Send reset link",
     "submitLoading": "Sending...",
     "error": "Failed to send reset email. Please try again.",
+    "rateLimited": "Too many password reset requests. Please try again later.",
     "sentDescription": "We've sent a password reset link to your email address.",
     "checkInbox": "Please check your inbox and click the link to reset your password.",
     "backToSignIn": "Back to Sign In"

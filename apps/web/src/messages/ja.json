@@ -1657,7 +1657,8 @@
     "emailSignIn": "メールでサインイン",
     "emailSignInLoading": "サインイン中...",
     "emailSignInError": "メールアドレスまたはパスワードが正しくありません。",
-    "forgotPassword": "パスワードをお忘れですか？"
+    "forgotPassword": "パスワードをお忘れですか？",
+    "rateLimited": "サインイン試行回数が多すぎます。しばらくしてからお試しください。"
   },
   "signUp": {
     "title": "アカウント登録",
@@ -1677,6 +1678,7 @@
     "emailSignUp": "メールで登録",
     "emailSignUpLoading": "登録中...",
     "emailSignUpError": "登録に失敗しました。もう一度お試しください。",
+    "rateLimited": "サインアップ試行回数が多すぎます。しばらくしてからお試しください。",
     "passwordMismatch": "パスワードが一致しません。",
     "passwordTooShort": "パスワードは8文字以上で入力してください。",
     "freeBadge": "無料",
@@ -1710,6 +1712,8 @@
     "resendLoading": "送信中...",
     "resendSuccess": "確認メールを再送しました。受信トレイをご確認ください。",
     "resendError": "メールの再送に失敗しました。しばらくしてからもう一度お試しください。",
+    "rateLimited": "メール再送のリクエスト回数が多すぎます。しばらくしてからお試しください。",
+    "resendCooldown": "{seconds}秒後に再送可能",
     "breadcrumbSignUp": "アカウント登録"
   },
   "forgotPassword": {
@@ -1720,6 +1724,7 @@
     "submit": "リセットリンクを送信",
     "submitLoading": "送信中...",
     "error": "リセットメールの送信に失敗しました。もう一度お試しください。",
+    "rateLimited": "パスワードリセットのリクエスト回数が多すぎます。しばらくしてからお試しください。",
     "sentDescription": "パスワードリセット用のリンクをメールアドレスに送信しました。",
     "checkInbox": "受信トレイを確認し、リンクをクリックしてパスワードをリセットしてください。",
     "backToSignIn": "サインインに戻る"

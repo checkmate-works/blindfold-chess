@@ -7,7 +7,9 @@ import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { createClient } from '@/lib/supabase/client';
+import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+
+import { signIn } from '../_actions/signIn';
 
 export function EmailPasswordForm() {
   const t = useTranslations('signIn');
@@ -23,34 +25,32 @@ export function EmailPasswordForm() {
     setError('');
     setIsLoading(true);
 
-    const supabase = createClient();
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
+    try {
+      const result = await signIn(email, password);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      if ('error' in result) {
+        switch (result.error) {
+          case 'rateLimited':
+            setError(t('rateLimited'));
+            break;
+          default:
+            setError(t('emailSignInError'));
+        }
+        setIsLoading(false);
+        return;
+      }
 
-    if (signInError) {
+      router.push(`/${locale}/mypage?toast=login_success`);
+      router.refresh();
+    } catch {
       setError(t('emailSignInError'));
       setIsLoading(false);
-      return;
     }
-
-    router.push(`/${locale}/mypage?toast=login_success`);
-    router.refresh();
   };
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
+      {error && <FormErrorMessage message={error} />}
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">

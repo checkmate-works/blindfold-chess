@@ -10,18 +10,14 @@ afterEach(() => {
   cleanup();
 });
 
-const mockResetPasswordForEmail = vi.fn();
+const mockForgotPassword = vi.fn();
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      resetPasswordForEmail: mockResetPasswordForEmail,
-    },
-  }),
+vi.mock('../_actions/forgotPassword', () => ({
+  forgotPassword: (...args: unknown[]) => mockForgotPassword(...args),
 }));
 
 describe('ForgotPasswordForm', () => {
@@ -37,8 +33,8 @@ describe('ForgotPasswordForm', () => {
     expect(screen.getByText('description')).toBeInTheDocument();
   });
 
-  it('should call resetPasswordForEmail with the entered email', async () => {
-    mockResetPasswordForEmail.mockResolvedValue({ error: null });
+  it('should call forgotPassword Server Action with the entered email', async () => {
+    mockForgotPassword.mockResolvedValue({ success: true });
 
     render(<ForgotPasswordForm />);
 
@@ -49,14 +45,12 @@ describe('ForgotPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
-      expect(mockResetPasswordForEmail).toHaveBeenCalledWith('test@example.com', {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-      });
+      expect(mockForgotPassword).toHaveBeenCalledWith('test@example.com');
     });
   });
 
   it('should show sent confirmation message after successful submission', async () => {
-    mockResetPasswordForEmail.mockResolvedValue({ error: null });
+    mockForgotPassword.mockResolvedValue({ success: true });
 
     render(<ForgotPasswordForm />);
 
@@ -72,10 +66,8 @@ describe('ForgotPasswordForm', () => {
     });
   });
 
-  it('should show error message when resetPasswordForEmail fails', async () => {
-    mockResetPasswordForEmail.mockResolvedValue({
-      error: new Error('Reset failed'),
-    });
+  it('should show error message when forgotPassword fails', async () => {
+    mockForgotPassword.mockResolvedValue({ error: 'resetFailed' });
 
     render(<ForgotPasswordForm />);
 
@@ -90,11 +82,27 @@ describe('ForgotPasswordForm', () => {
     });
   });
 
+  it('should show rate limited error', async () => {
+    mockForgotPassword.mockResolvedValue({ error: 'rateLimited' });
+
+    render(<ForgotPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('rateLimited')).toBeInTheDocument();
+    });
+  });
+
   it('should show loading state while submitting', async () => {
-    let resolveReset: (value: unknown) => void;
-    mockResetPasswordForEmail.mockReturnValue(
+    let resolveForgotPassword: (value: unknown) => void;
+    mockForgotPassword.mockReturnValue(
       new Promise((resolve) => {
-        resolveReset = resolve;
+        resolveForgotPassword = resolve;
       })
     );
 
@@ -111,6 +119,22 @@ describe('ForgotPasswordForm', () => {
       expect(screen.getByText('submitLoading')).toBeInTheDocument();
     });
 
-    resolveReset!({ error: null });
+    resolveForgotPassword!({ success: true });
+  });
+
+  it('should show error when Server Action throws', async () => {
+    mockForgotPassword.mockRejectedValue(new Error('Network error'));
+
+    render(<ForgotPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('error')).toBeInTheDocument();
+    });
   });
 });

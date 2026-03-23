@@ -7,8 +7,11 @@ import { useRouter } from 'next/navigation';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
 
-import { createClient } from '@/lib/supabase/client';
-import { passwordSchema } from '@/lib/validations/password';
+import { getPasswordValidationError } from '@/lib/validations/password';
+
+import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+
+import { signUp } from '../_actions/signUp';
 
 export function EmailSignUpForm() {
   const t = useTranslations('signUp');
@@ -30,45 +33,39 @@ export function EmailSignUpForm() {
       return;
     }
 
-    const result = passwordSchema.safeParse(password);
-    if (!result.success) {
-      const key = result.error.issues[0].message as 'tooShort' | 'missingLetter' | 'missingDigit';
-      setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+    const passwordError = getPasswordValidationError(password);
+    if (passwordError) {
+      setError(tPassword(passwordError, { minLength: MIN_PASSWORD_LENGTH }));
       return;
     }
 
     setIsLoading(true);
 
-    const supabase = createClient();
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
+    try {
+      const result = await signUp(email, password);
 
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+      if ('error' in result) {
+        switch (result.error) {
+          case 'rateLimited':
+            setError(t('rateLimited'));
+            break;
+          default:
+            setError(t('emailSignUpError'));
+        }
+        setIsLoading(false);
+        return;
+      }
 
-    if (signUpError) {
+      router.push(`/${locale}/sign-up/verify-email?email=${encodeURIComponent(email)}`);
+    } catch {
       setError(t('emailSignUpError'));
       setIsLoading(false);
-      return;
     }
-
-    router.push(`/${locale}/sign-up/verify-email?email=${encodeURIComponent(email)}`);
   };
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
+      {error && <FormErrorMessage message={error} />}
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">

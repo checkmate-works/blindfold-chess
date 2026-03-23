@@ -10,7 +10,7 @@ afterEach(() => {
   cleanup();
 });
 
-const mockSignInWithPassword = vi.fn();
+const mockSignIn = vi.fn();
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 
@@ -39,12 +39,8 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      signInWithPassword: mockSignInWithPassword,
-    },
-  }),
+vi.mock('../_actions/signIn', () => ({
+  signIn: (...args: unknown[]) => mockSignIn(...args),
 }));
 
 describe('EmailPasswordForm', () => {
@@ -60,8 +56,8 @@ describe('EmailPasswordForm', () => {
     expect(screen.getByRole('button', { name: 'emailSignIn' })).toBeInTheDocument();
   });
 
-  it('should call signInWithPassword with valid input', async () => {
-    mockSignInWithPassword.mockResolvedValue({ error: null });
+  it('should call signIn Server Action with valid input', async () => {
+    mockSignIn.mockResolvedValue({ success: true });
 
     render(<EmailPasswordForm />);
 
@@ -75,10 +71,7 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(mockSignInWithPassword).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password123',
-      });
+      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
     });
 
     expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=login_success');
@@ -86,9 +79,7 @@ describe('EmailPasswordForm', () => {
   });
 
   it('should show error message when signIn fails', async () => {
-    mockSignInWithPassword.mockResolvedValue({
-      error: new Error('Invalid credentials'),
-    });
+    mockSignIn.mockResolvedValue({ error: 'invalidCredentials' });
 
     render(<EmailPasswordForm />);
 
@@ -107,6 +98,26 @@ describe('EmailPasswordForm', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it('should show rate limited error', async () => {
+    mockSignIn.mockResolvedValue({ error: 'rateLimited' });
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('rateLimited')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('should render a forgot password link', () => {
     render(<EmailPasswordForm />);
 
@@ -117,7 +128,7 @@ describe('EmailPasswordForm', () => {
 
   it('should show loading state while submitting', async () => {
     let resolveSignIn: (value: unknown) => void;
-    mockSignInWithPassword.mockReturnValue(
+    mockSignIn.mockReturnValue(
       new Promise((resolve) => {
         resolveSignIn = resolve;
       })
@@ -139,6 +150,26 @@ describe('EmailPasswordForm', () => {
       expect(screen.getByText('emailSignInLoading')).toBeInTheDocument();
     });
 
-    resolveSignIn!({ error: null });
+    resolveSignIn!({ success: true });
+  });
+
+  it('should show error when Server Action throws', async () => {
+    mockSignIn.mockRejectedValue(new Error('Network error'));
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('emailSignInError')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

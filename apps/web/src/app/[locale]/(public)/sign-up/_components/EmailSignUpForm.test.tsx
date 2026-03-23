@@ -22,12 +22,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      signUp: mockSignUp,
-    },
-  }),
+vi.mock('../_actions/signUp', () => ({
+  signUp: (...args: unknown[]) => mockSignUp(...args),
 }));
 
 describe('EmailSignUpForm', () => {
@@ -72,10 +68,10 @@ describe('EmailSignUpForm', () => {
       target: { value: 'test@example.com' },
     });
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
     fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
-      target: { value: 'short1' },
+      target: { value: 'ab1' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
@@ -128,8 +124,8 @@ describe('EmailSignUpForm', () => {
     expect(mockSignUp).not.toHaveBeenCalled();
   });
 
-  it('should call signUp with valid input and redirect to verify-email page', async () => {
-    mockSignUp.mockResolvedValue({ error: null });
+  it('should call signUp Server Action with valid input and redirect to verify-email page', async () => {
+    mockSignUp.mockResolvedValue({ success: true });
 
     render(<EmailSignUpForm />);
 
@@ -146,20 +142,14 @@ describe('EmailSignUpForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
 
     await waitFor(() => {
-      expect(mockSignUp).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'validpassword123',
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+      expect(mockSignUp).toHaveBeenCalledWith('test@example.com', 'validpassword123');
     });
 
     expect(mockPush).toHaveBeenCalledWith('/en/sign-up/verify-email?email=test%40example.com');
   });
 
   it('should show error message when signUp fails', async () => {
-    mockSignUp.mockResolvedValue({ error: new Error('Sign up failed') });
+    mockSignUp.mockResolvedValue({ error: 'signUpFailed' });
 
     render(<EmailSignUpForm />);
 
@@ -177,6 +167,29 @@ describe('EmailSignUpForm', () => {
 
     await waitFor(() => {
       expect(screen.getByText('emailSignUpError')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should show rate limited error', async () => {
+    mockSignUp.mockResolvedValue({ error: 'rateLimited' });
+
+    render(<EmailSignUpForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('confirmPasswordLabel'), {
+      target: { value: 'validpassword123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignUp' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('rateLimited')).toBeInTheDocument();
     });
     expect(mockPush).not.toHaveBeenCalled();
   });
@@ -208,6 +221,6 @@ describe('EmailSignUpForm', () => {
       expect(screen.getByText('emailSignUpLoading')).toBeInTheDocument();
     });
 
-    resolveSignUp!({ error: null });
+    resolveSignUp!({ success: true });
   });
 });

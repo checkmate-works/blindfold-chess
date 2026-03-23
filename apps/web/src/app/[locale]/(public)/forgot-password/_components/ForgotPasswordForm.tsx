@@ -4,7 +4,9 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { createClient } from '@/lib/supabase/client';
+import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+
+import { forgotPassword } from '../_actions/forgotPassword';
 
 export function ForgotPasswordForm() {
   const t = useTranslations('forgotPassword');
@@ -18,24 +20,27 @@ export function ForgotPasswordForm() {
     setError('');
     setIsLoading(true);
 
-    const supabase = createClient();
-    if (!supabase) {
+    try {
+      const result = await forgotPassword(email);
+
+      if ('error' in result) {
+        switch (result.error) {
+          case 'rateLimited':
+            setError(t('rateLimited'));
+            break;
+          default:
+            setError(t('error'));
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      setIsSent(true);
       setIsLoading(false);
-      return;
-    }
-
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-    });
-
-    if (resetError) {
+    } catch {
       setError(t('error'));
       setIsLoading(false);
-      return;
     }
-
-    setIsSent(true);
-    setIsLoading(false);
   };
 
   if (isSent) {
@@ -49,11 +54,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
+      {error && <FormErrorMessage message={error} />}
 
       <p className="text-sm text-muted-foreground">{t('description')}</p>
 
