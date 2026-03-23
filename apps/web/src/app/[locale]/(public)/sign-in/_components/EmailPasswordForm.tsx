@@ -40,8 +40,8 @@ export function EmailPasswordForm() {
         return;
       }
 
-      router.push(`/${locale}/mypage?toast=login_success`);
       router.refresh();
+      router.push(`/${locale}/mypage?toast=login_success`);
     } catch {
       setError(t('emailSignInError'));
       setIsLoading(false);

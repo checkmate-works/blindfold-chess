@@ -78,6 +78,35 @@ describe('EmailPasswordForm', () => {
     expect(mockRefresh).toHaveBeenCalled();
   });
 
+  it('should call router.refresh() before router.push() on successful sign-in', async () => {
+    mockSignIn.mockResolvedValue({ success: true });
+
+    const callOrder: string[] = [];
+    mockRefresh.mockImplementation(() => {
+      callOrder.push('refresh');
+    });
+    mockPush.mockImplementation(() => {
+      callOrder.push('push');
+    });
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalled();
+    });
+
+    expect(callOrder).toEqual(['refresh', 'push']);
+  });
+
   it('should show error message when signIn fails', async () => {
     mockSignIn.mockResolvedValue({ error: 'invalidCredentials' });
 

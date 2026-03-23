@@ -22,6 +22,7 @@ type AuthContextValue = {
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -34,6 +35,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const locale = useLocale();
 
+  const refreshUser = useCallback(async () => {
+    const supabase = supabaseRef.current ?? createClient();
+    if (!supabase) return;
+    const [
+      {
+        data: { user },
+      },
+      {
+        data: { session },
+      },
+    ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]);
+    setUser(user);
+    setSession(session);
+  }, []);
+
   useEffect(() => {
     const supabase = createClient();
     if (!supabase) {
@@ -43,20 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabaseRef.current = supabase;
 
-    Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]).then(
-      ([
-        {
-          data: { user },
-        },
-        {
-          data: { session },
-        },
-      ]) => {
-        setUser(user);
-        setSession(session);
-        setIsLoading(false);
-      }
-    );
+    refreshUser().finally(() => setIsLoading(false));
 
     const {
       data: { subscription },
@@ -70,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [router, locale]);
+  }, [router, locale, refreshUser]);
 
   const signOut = useCallback(async () => {
     const supabase = supabaseRef.current ?? createClient();
@@ -79,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isLoading, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
