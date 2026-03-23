@@ -13,8 +13,30 @@ export type TopicPostFeedItem = FeedItemBase & {
   data: ProfilePostWithReplyMeta;
 };
 
+export type ChallengeRankUpdateData = {
+  menuType: string;
+  leaderboardKey: string;
+  score: number;
+  incorrectAnswers: number;
+  timeTaken: number;
+  rank: number;
+  isNewEntry: boolean;
+  actor: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    country: string | null;
+    flair: string | null;
+  };
+};
+
+export type ChallengeRankUpdateFeedItem = FeedItemBase & {
+  entityType: 'challenge_rank_update';
+  data: ChallengeRankUpdateData;
+};
+
 // Discriminated union — extend with new entity types here
-export type FeedItem = TopicPostFeedItem;
+export type FeedItem = TopicPostFeedItem | ChallengeRankUpdateFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];

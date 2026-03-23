@@ -10,18 +10,33 @@ import { saveChallengeResult } from './save-challenge-result';
 const mockInsertValues = vi.fn();
 const mockOnConflictDoUpdate = vi.fn();
 const mockTransaction = vi.fn();
+const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
+
+const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
+
+vi.mock('./challenge-queries', () => ({
+  getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
+}));
 
 vi.mock('./index', () => {
+  const challengeResultId = 'result-00000000-0000-0000-0000-000000000001';
+
   const makeDbOps = () => ({
     insert: () => ({
       values: (...args: unknown[]) => {
         mockInsertValues(...args);
         return {
+          returning: () => [{ id: challengeResultId }],
           onConflictDoUpdate: (...conflictArgs: unknown[]) => {
             mockOnConflictDoUpdate(...conflictArgs);
           },
         };
       },
+    }),
+    select: () => ({
+      from: () => ({
+        where: () => mockSelectResult(),
+      }),
     }),
   });
 
@@ -34,6 +49,7 @@ vi.mock('./index', () => {
       },
     },
     challengeResults: {
+      id: 'id',
       userId: 'user_id',
       menuType: 'menu_type',
       leaderboardKey: 'leaderboard_key',
@@ -50,6 +66,12 @@ vi.mock('./index', () => {
       timeTaken: 'time_taken',
       achievedAt: 'achieved_at',
       updatedAt: 'updated_at',
+    },
+    feedItems: {
+      entityType: 'entity_type',
+      entityId: 'entity_id',
+      actorId: 'actor_id',
+      metadata: 'metadata',
     },
   };
 });
@@ -74,24 +96,17 @@ const validInput: ChallengeResultInput = {
 describe('saveChallengeResult', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSelectResult.mockReturnValue([]);
   });
 
   // -------------------------------------------------------------------------
-  // Transaction behavior (the fix under test)
+  // Transaction behavior
   // -------------------------------------------------------------------------
 
-  it('should use db.transaction to wrap both writes atomically', async () => {
+  it('should use db.transaction to wrap all writes atomically', async () => {
     await saveChallengeResult(validInput);
 
     expect(mockTransaction).toHaveBeenCalledTimes(1);
-  });
-
-  it('should perform two insert operations within the transaction', async () => {
-    await saveChallengeResult(validInput);
-
-    // First insert: challenge_results (append-only log)
-    // Second insert: challenge_best_scores (upsert)
-    expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 
   // -------------------------------------------------------------------------
@@ -150,6 +165,103 @@ describe('saveChallengeResult', () => {
         ]),
       })
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // Feed item insertion on new entry
+  // -------------------------------------------------------------------------
+
+  it('should insert feed_item when user has no previous best score (new entry)', async () => {
+    mockSelectResult.mockReturnValue([]);
+
+    await saveChallengeResult(validInput);
+
+    // 3 inserts: challenge_results, challenge_best_scores, feed_items
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        entityType: 'challenge_rank_update',
+        actorId: validInput.userId,
+        metadata: expect.objectContaining({
+          menuType: validInput.menuType,
+          leaderboardKey: validInput.leaderboardKey,
+          score: validInput.score,
+          isNewEntry: true,
+        }),
+      })
+    );
+  });
+
+  it('should insert feed_item when score improves', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        entityType: 'challenge_rank_update',
+        metadata: expect.objectContaining({
+          isNewEntry: false,
+          score: validInput.score,
+        }),
+      })
+    );
+  });
+
+  it('should NOT insert feed_item when score does not improve', async () => {
+    mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should insert feed_item when incorrectAnswers improves with same score', async () => {
+    mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 5, timeTaken: 45 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+  });
+
+  it('should insert feed_item when timeTaken improves with same score and incorrectAnswers', async () => {
+    mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 3, timeTaken: 60 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+  });
+
+  it('should NOT insert feed_item when all values are equal (no improvement)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 3, timeTaken: 45 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should call getUserAllTimeRank when improvement detected', async () => {
+    mockSelectResult.mockReturnValue([]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockGetUserAllTimeRank).toHaveBeenCalledWith(
+      validInput.userId,
+      validInput.menuType,
+      validInput.leaderboardKey
+    );
+  });
+
+  it('should NOT call getUserAllTimeRank when no improvement', async () => {
+    mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockGetUserAllTimeRank).not.toHaveBeenCalled();
   });
 
   // -------------------------------------------------------------------------
