@@ -15,10 +15,11 @@ vi.mock('next-intl', () => ({
 }));
 
 const mockPush = vi.fn();
+const mockRefresh = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
-    refresh: vi.fn(),
+    refresh: mockRefresh,
     replace: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
@@ -233,6 +234,100 @@ describe('AuthContext', () => {
 
       expect(result.current.session).toBeNull();
       expect(result.current.user).toBeNull();
+    });
+
+    it('calls router.refresh on SIGNED_OUT event to sync server state', async () => {
+      const initialUser = { id: 'user-6', email: 'signout@example.com' };
+      mockGetUser.mockResolvedValue({ data: { user: initialUser } });
+      mockGetSession.mockResolvedValue({
+        data: { session: { access_token: 'tok', user: initialUser } },
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.user).toEqual(initialUser);
+      });
+
+      const callback = mockOnAuthStateChange.mock.calls[0][0];
+      act(() => {
+        callback('SIGNED_OUT', null);
+      });
+
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it('does not call router.refresh on SIGNED_IN event', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      mockGetSession.mockResolvedValue({ data: { session: null } });
+
+      renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(mockGetUser).toHaveBeenCalled();
+      });
+
+      mockRefresh.mockClear();
+
+      const callback = mockOnAuthStateChange.mock.calls[0][0];
+      const newUser = { id: 'user-si', email: 'signin@example.com' };
+      const newSession = { access_token: 'si-token', user: newUser };
+
+      act(() => {
+        callback('SIGNED_IN', newSession);
+      });
+
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('does not call router.refresh on TOKEN_REFRESHED event', async () => {
+      const initialUser = { id: 'user-tr', email: 'tokenrefresh@example.com' };
+      const initialSession = { access_token: 'old-token', user: initialUser };
+      mockGetUser.mockResolvedValue({ data: { user: initialUser } });
+      mockGetSession.mockResolvedValue({ data: { session: initialSession } });
+
+      renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(mockGetUser).toHaveBeenCalled();
+      });
+
+      mockRefresh.mockClear();
+
+      const callback = mockOnAuthStateChange.mock.calls[0][0];
+      const refreshedSession = { access_token: 'new-token', user: initialUser };
+
+      act(() => {
+        callback('TOKEN_REFRESHED', refreshedSession);
+      });
+
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('does not call router.refresh on USER_UPDATED event', async () => {
+      const initialUser = { id: 'user-uu', email: 'userupdate@example.com' };
+      mockGetUser.mockResolvedValue({ data: { user: initialUser } });
+      mockGetSession.mockResolvedValue({
+        data: { session: { access_token: 'tok', user: initialUser } },
+      });
+
+      renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(mockGetUser).toHaveBeenCalled();
+      });
+
+      mockRefresh.mockClear();
+
+      const callback = mockOnAuthStateChange.mock.calls[0][0];
+      const updatedUser = { ...initialUser, email: 'updated@example.com' };
+      const updatedSession = { access_token: 'tok', user: updatedUser };
+
+      act(() => {
+        callback('USER_UPDATED', updatedSession);
+      });
+
+      expect(mockRefresh).not.toHaveBeenCalled();
     });
 
     it('navigates to reset-password page on PASSWORD_RECOVERY event', async () => {

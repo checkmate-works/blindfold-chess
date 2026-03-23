@@ -67,6 +67,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
 
+      if (event === 'SIGNED_OUT') {
+        router.refresh();
+      }
+
       if (event === 'PASSWORD_RECOVERY') {
         router.push(`/${locale}/reset-password`);
       }

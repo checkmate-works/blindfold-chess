@@ -171,6 +171,48 @@ describe('HeaderRightSection', () => {
     });
   });
 
+  describe('when server isAuthenticated=false and client user transitions from present to null (logout)', () => {
+    it('shows AuthStatusDisplay without skeleton when isAuthenticated=false and user becomes null', () => {
+      // After logout, server will set isAuthenticated=false and user becomes null
+      // This should show the normal unauthenticated view, not skeleton
+      mockUser = null;
+      mockIsLoading = false;
+
+      render(<HeaderRightSection isAuthenticated={false} avatarUrl={null} displayName={null} />);
+
+      expect(screen.getByTestId('auth-status-display')).toBeInTheDocument();
+      expect(screen.queryAllByTestId('skeleton')).toHaveLength(0);
+      expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
+    });
+
+    it('transitions from authenticated view to unauthenticated view on rerender', () => {
+      // Initially logged in
+      mockUser = { id: 'user-1', email: 'test@example.com' };
+      mockIsLoading = false;
+
+      const { rerender } = render(
+        <HeaderRightSection
+          isAuthenticated={true}
+          avatarUrl="https://example.com/avatar.jpg"
+          displayName="TestUser"
+        />
+      );
+
+      expect(screen.getByTestId('notification-badge')).toBeInTheDocument();
+      expect(screen.getByTestId('auth-status-display')).toBeInTheDocument();
+      expect(screen.queryAllByTestId('skeleton')).toHaveLength(0);
+
+      // After logout: server says not authenticated, client user is null
+      mockUser = null;
+
+      rerender(<HeaderRightSection isAuthenticated={false} avatarUrl={null} displayName={null} />);
+
+      expect(screen.getByTestId('auth-status-display')).toBeInTheDocument();
+      expect(screen.queryAllByTestId('skeleton')).toHaveLength(0);
+      expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
+    });
+  });
+
   describe('when isLoading=true and not authenticated', () => {
     it('returns null (nothing rendered)', () => {
       mockUser = null;
