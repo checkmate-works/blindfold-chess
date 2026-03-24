@@ -40,70 +40,77 @@ export async function getFeedData(
   const rows = hasMore ? feedRows.slice(0, limit) : feedRows;
   const nextCursor = hasMore ? rows[rows.length - 1].createdAt.toISOString() : null;
 
-  // Batch fetch topic_post entities
+  // Batch fetch topic_post entities and challenge_rank_update actor profiles in parallel
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
-
-  const topicPostMap = new Map<string, ProfilePostWithReplyMeta>();
-
-  if (topicPostIds.length > 0) {
-    const results = await db
-      .select({
-        post: topicPosts,
-        author: authorSelect,
-        rating: ratingSelect,
-        openingName: chessOpenings.name,
-        openingFen: chessOpenings.fen,
-      })
-      .from(topicPosts)
-      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-      .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-      .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
-      .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));
-
-    const postsWithMeta = await attachProfilePostMeta(results, currentUserId);
-    for (const post of postsWithMeta) {
-      topicPostMap.set(post.id, post);
-    }
-  }
-
-  // Batch fetch challenge_rank_update actor profiles
   const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
   const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
 
-  const rankUpdateActorMap = new Map<
-    string,
-    {
-      username: string;
-      displayName: string | null;
-      avatarUrl: string | null;
-      country: string | null;
-      flair: string | null;
-    }
-  >();
+  const [topicPostMap, rankUpdateActorMap] = await Promise.all([
+    (async () => {
+      const map = new Map<string, ProfilePostWithReplyMeta>();
 
-  if (rankUpdateActorIds.length > 0) {
-    const actorRows = await db
-      .select({
-        id: profiles.id,
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-        country: profiles.country,
-        flair: profiles.flair,
-      })
-      .from(profiles)
-      .where(inArray(profiles.id, rankUpdateActorIds));
+      if (topicPostIds.length > 0) {
+        const results = await db
+          .select({
+            post: topicPosts,
+            author: authorSelect,
+            rating: ratingSelect,
+            openingName: chessOpenings.name,
+            openingFen: chessOpenings.fen,
+          })
+          .from(topicPosts)
+          .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+          .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+          .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+          .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));
 
-    for (const actor of actorRows) {
-      rankUpdateActorMap.set(actor.id, {
-        username: actor.username,
-        displayName: actor.displayName,
-        avatarUrl: actor.avatarUrl,
-        country: actor.country,
-        flair: actor.flair,
-      });
-    }
-  }
+        const postsWithMeta = await attachProfilePostMeta(results, currentUserId);
+        for (const post of postsWithMeta) {
+          map.set(post.id, post);
+        }
+      }
+
+      return map;
+    })(),
+    (async () => {
+      const map = new Map<
+        string,
+        {
+          username: string;
+          displayName: string | null;
+          avatarUrl: string | null;
+          country: string | null;
+          flair: string | null;
+        }
+      >();
+
+      if (rankUpdateActorIds.length > 0) {
+        const actorRows = await db
+          .select({
+            id: profiles.id,
+            username: profiles.username,
+            displayName: profiles.displayName,
+            avatarUrl: profiles.avatarUrl,
+            country: profiles.country,
+            flair: profiles.flair,
+          })
+          .from(profiles)
+          .where(inArray(profiles.id, rankUpdateActorIds));
+
+        for (const actor of actorRows) {
+          map.set(actor.id, {
+            username: actor.username,
+            displayName: actor.displayName,
+            avatarUrl: actor.avatarUrl,
+            country: actor.country,
+            flair: actor.flair,
+          });
+        }
+      }
+
+      return map;
+    })(),
+  ]);
 
   // Build FeedItem array, filtering out items whose entity data was not found
   const items: FeedItem[] = [];
