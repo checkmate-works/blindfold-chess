@@ -18,7 +18,7 @@ import { NativeAdCard } from './NativeAdCard';
  * activity. Ads cycle through the `adBanners` array via modulo indexing.
  * When `adBanners` is empty (ads disabled or none active), no ads appear.
  */
-const AD_INTERVAL = 3;
+const AD_INTERVAL = 5;
 
 type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
 
