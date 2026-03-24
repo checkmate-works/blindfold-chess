@@ -8,7 +8,6 @@ import { FaPlay, FaPlus } from 'react-icons/fa';
 
 import type { Game } from '@/lib/types';
 
-import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
 
 import { useGameList } from '../_hooks/use-game-list';
@@ -19,14 +18,10 @@ type Props = {
 
 function ResumeGameInfo({
   game,
-  locale,
-  justNowLabel,
   movesLabel,
   levelLabel,
 }: {
   game: Game;
-  locale: string;
-  justNowLabel: string;
   movesLabel: string;
   levelLabel: string;
 }) {
@@ -40,12 +35,6 @@ function ResumeGameInfo({
       <span>
         {game.moves.length} {movesLabel}
       </span>
-      {game.lastPlayed && (
-        <>
-          <span aria-hidden="true">&middot;</span>
-          <span>{formatRelativeTime(new Date(game.lastPlayed), locale, justNowLabel)}</span>
-        </>
-      )}
     </div>
   );
 }
@@ -65,6 +54,10 @@ export function VsAiCard({ locale }: Props) {
             </div>
             <div className="h-9 w-32 rounded-md bg-muted" />
           </div>
+          <div className="flex items-center gap-2 mt-3">
+            <div className="h-3 w-10 rounded bg-muted" />
+            <div className="flex-1 h-px bg-muted" />
+          </div>
         </div>
       </div>
     );
@@ -76,25 +69,44 @@ export function VsAiCard({ locale }: Props) {
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
       <div className="p-4 sm:p-6">
-        <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <ChessPieceIcon type="p" color="w" size={20} />
             <h2 className="text-base font-semibold text-foreground">{t('title')}</h2>
           </div>
 
-          {latestGame && (
-            <ResumeGameInfo
-              game={latestGame}
+          <div className="flex items-center gap-2">
+            {!latestGame && (
+              <Link
+                href="/games/new/standard"
+                locale={locale}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                <FaPlus className="w-3 h-3" />
+                {t('startGame')}
+              </Link>
+            )}
+            <Link
+              href="/games"
               locale={locale}
-              justNowLabel={t('justNow')}
-              movesLabel={t('moves')}
-              levelLabel={t('level')}
-            />
-          )}
+              className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
+            >
+              {t('allGames')}
+            </Link>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2 ml-auto">
-            {latestGame ? (
-              <>
+        {latestGame && (
+          <>
+            <div className="flex items-center gap-2 my-2">
+              <span className="text-xs text-muted-foreground">{t('recent')}</span>
+              <div className="flex-1 border-t border-border" />
+            </div>
+
+            <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+              <ResumeGameInfo game={latestGame} movesLabel={t('moves')} levelLabel={t('level')} />
+
+              <div className="flex items-center gap-2 ml-auto">
                 <Link
                   href="/games/play"
                   locale={locale}
@@ -111,29 +123,10 @@ export function VsAiCard({ locale }: Props) {
                   <FaPlus className="w-3 h-3" />
                   {t('newGame')}
                 </Link>
-              </>
-            ) : (
-              <Link
-                href="/games/new/standard"
-                locale={locale}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                <FaPlus className="w-3 h-3" />
-                {t('startGame')}
-              </Link>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-2 text-right">
-          <Link
-            href="/games"
-            locale={locale}
-            className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
-          >
-            {t('allGames')}
-          </Link>
-        </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

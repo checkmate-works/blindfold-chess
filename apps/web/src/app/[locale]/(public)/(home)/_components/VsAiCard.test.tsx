@@ -55,10 +55,6 @@ vi.mock('@/lib/chess/elo', () => ({
   },
 }));
 
-vi.mock('@/app/[locale]/(public)/topics/_lib/relative-time', () => ({
-  formatRelativeTime: () => '2 hours ago',
-}));
-
 // --- Helpers ---
 
 function createMockGame(overrides: Partial<Game> & { id: string }): Game {
@@ -131,6 +127,12 @@ describe('VsAiCard', () => {
       const allGamesLink = screen.getByText('allGames').closest('a');
       expect(allGamesLink).toHaveAttribute('href', '/games');
     });
+
+    it('should not show "Recent" label when no games', () => {
+      render(<VsAiCard locale="en" />);
+
+      expect(screen.queryByText('recent')).not.toBeInTheDocument();
+    });
   });
 
   describe('has in-progress games state', () => {
@@ -157,8 +159,18 @@ describe('VsAiCard', () => {
       expect(screen.getByText('3 moves')).toBeInTheDocument();
       // Color icon
       expect(screen.getByTestId('color-icon')).toHaveTextContent('white');
-      // Relative time
-      expect(screen.getByText('2 hours ago')).toBeInTheDocument();
+    });
+
+    it('should show "Recent" label when in-progress game exists', () => {
+      const game = createMockGame({ id: 'game-1', status: 'in_progress' });
+      mockUseGameList.mockReturnValue({
+        games: [game],
+        isLoading: false,
+      });
+
+      render(<VsAiCard locale="en" />);
+
+      expect(screen.getByText('recent')).toBeInTheDocument();
     });
 
     it('should link resume button to /games/play', () => {
@@ -258,22 +270,19 @@ describe('VsAiCard', () => {
       expect(screen.queryByText('resume')).not.toBeInTheDocument();
     });
 
-    it('should handle game with no lastPlayed timestamp', () => {
-      const game = createMockGame({
+    it('should not show "Recent" label when all games are completed', () => {
+      const completedGame = createMockGame({
         id: 'game-1',
-        status: 'in_progress',
-        lastPlayed: undefined,
+        status: 'win',
       });
       mockUseGameList.mockReturnValue({
-        games: [game],
+        games: [completedGame],
         isLoading: false,
       });
 
       render(<VsAiCard locale="en" />);
 
-      // Should still render without crashing; no relative time shown
-      expect(screen.getByText('resume')).toBeInTheDocument();
-      expect(screen.queryByText('2 hours ago')).not.toBeInTheDocument();
+      expect(screen.queryByText('recent')).not.toBeInTheDocument();
     });
 
     it('should handle game with empty moves array', () => {
