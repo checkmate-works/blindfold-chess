@@ -8,23 +8,6 @@ afterEach(() => {
   cleanup();
 });
 
-// --- IntersectionObserver stub (not available in jsdom) ---
-
-const mockObserve = vi.fn();
-const mockDisconnect = vi.fn();
-
-beforeEach(() => {
-  vi.stubGlobal(
-    'IntersectionObserver',
-    class {
-      observe = mockObserve;
-      disconnect = mockDisconnect;
-      unobserve = vi.fn();
-      constructor() {}
-    }
-  );
-});
-
 // --- Mocks ---
 
 vi.mock('../_actions/getFeed', () => ({
@@ -44,6 +27,25 @@ vi.mock('./FeedSkeleton', () => ({
 vi.mock('./NativeAdCard', () => ({
   NativeAdCard: ({ adLabel }: { adLabel: string }) => (
     <div data-testid="native-ad-card">{adLabel}</div>
+  ),
+}));
+
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: ({
+    data,
+    itemContent,
+    components,
+  }: {
+    data: Array<unknown>;
+    itemContent: (index: number, item: unknown) => React.ReactNode;
+    components?: { Footer?: () => React.ReactNode | null };
+  }) => (
+    <div data-testid="virtuoso">
+      {data.map((item, index) => (
+        <div key={index}>{itemContent(index, item)}</div>
+      ))}
+      {components?.Footer && <components.Footer />}
+    </div>
   ),
 }));
 
@@ -231,11 +233,11 @@ describe('FeedClient', () => {
     });
   });
 
-  describe('infinite scroll sentinel', () => {
-    it('should render sentinel div when cursor exists', () => {
+  describe('virtualized list', () => {
+    it('should render Virtuoso component when items exist', () => {
       const items = [createTopicPostFeedItem('1')];
 
-      const { container } = render(
+      render(
         <FeedClient
           initialItems={items}
           initialCursor="2025-01-15T09:00:00.000Z"
@@ -243,17 +245,14 @@ describe('FeedClient', () => {
         />
       );
 
-      // The sentinel div is the last child in the divide-y container
-      const divideContainer = container.querySelector('.divide-y');
-      expect(divideContainer?.lastElementChild?.tagName).toBe('DIV');
+      expect(screen.getByTestId('virtuoso')).toBeInTheDocument();
     });
 
-    it('should not render sentinel div when cursor is null', () => {
+    it('should not render loading skeleton when not loading', () => {
       const items = [createTopicPostFeedItem('1')];
 
       render(<FeedClient initialItems={items} initialCursor={null} {...defaultProps} />);
 
-      // Only the feed cards should be rendered, no sentinel
       expect(screen.queryByTestId('feed-skeleton')).toBeNull();
     });
   });
