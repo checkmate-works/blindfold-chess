@@ -16,7 +16,7 @@ type Props = {
 const renderSquare = () => null;
 
 export function TopicSquareBoard({ square }: Props) {
-  const { preferences, isLoaded } = useGamePreferences();
+  const { preferences } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   const squareProps = useCallback(
@@ -25,22 +25,6 @@ export function TopicSquareBoard({ square }: Props) {
     }),
     [square]
   );
-
-  if (!isLoaded) {
-    return (
-      <div className="grid grid-cols-8 rounded-sm overflow-hidden aspect-square w-full animate-pulse">
-        {Array.from({ length: 64 }, (_, i) => {
-          const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
-          return (
-            <div
-              key={i}
-              className={`aspect-square ${isLight ? 'bg-muted' : 'bg-muted-foreground/30'}`}
-            />
-          );
-        })}
-      </div>
-    );
-  }
 
   return (
     <BoardLayout

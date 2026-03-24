@@ -30,25 +30,6 @@ vi.mock('./NativeAdCard', () => ({
   ),
 }));
 
-vi.mock('react-virtuoso', () => ({
-  Virtuoso: ({
-    data,
-    itemContent,
-    components,
-  }: {
-    data: Array<unknown>;
-    itemContent: (index: number, item: unknown) => React.ReactNode;
-    components?: { Footer?: () => React.ReactNode | null };
-  }) => (
-    <div data-testid="virtuoso">
-      {data.map((item, index) => (
-        <div key={index}>{itemContent(index, item)}</div>
-      ))}
-      {components?.Footer && <components.Footer />}
-    </div>
-  ),
-}));
-
 // --- Helpers ---
 
 function createTopicPostFeedItem(id: string): TopicPostFeedItem {
@@ -233,21 +214,7 @@ describe('FeedClient', () => {
     });
   });
 
-  describe('virtualized list', () => {
-    it('should render Virtuoso component when items exist', () => {
-      const items = [createTopicPostFeedItem('1')];
-
-      render(
-        <FeedClient
-          initialItems={items}
-          initialCursor="2025-01-15T09:00:00.000Z"
-          {...defaultProps}
-        />
-      );
-
-      expect(screen.getByTestId('virtuoso')).toBeInTheDocument();
-    });
-
+  describe('loading state', () => {
     it('should not render loading skeleton when not loading', () => {
       const items = [createTopicPostFeedItem('1')];
 

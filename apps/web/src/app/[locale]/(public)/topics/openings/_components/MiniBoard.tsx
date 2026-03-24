@@ -40,27 +40,11 @@ type Props = {
 };
 
 export function MiniBoard({ fen, size = 120, responsive = false }: Props) {
-  const { preferences, isLoaded } = useGamePreferences();
+  const { preferences } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
   const board = parseFenPlacement(fen);
 
   if (responsive) {
-    if (!isLoaded) {
-      return (
-        <div className="grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full animate-pulse">
-          {Array.from({ length: 64 }, (_, i) => {
-            const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
-            return (
-              <div
-                key={i}
-                className={`aspect-square ${isLight ? 'bg-muted' : 'bg-muted-foreground/30'}`}
-              />
-            );
-          })}
-        </div>
-      );
-    }
-
     return (
       <div className="grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full">
         {board.map((rank, rankIdx) =>
@@ -89,26 +73,6 @@ export function MiniBoard({ fen, size = 120, responsive = false }: Props) {
 
   const squareSize = size / 8;
   const pieceSize = Math.round(squareSize * 0.8);
-
-  if (!isLoaded) {
-    return (
-      <div
-        className="grid grid-cols-8 border border-border rounded-sm overflow-hidden shrink-0 animate-pulse"
-        style={{ width: size, height: size }}
-      >
-        {Array.from({ length: 64 }, (_, i) => {
-          const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
-          return (
-            <div
-              key={i}
-              className={isLight ? 'bg-muted' : 'bg-muted-foreground/30'}
-              style={{ width: squareSize, height: squareSize }}
-            />
-          );
-        })}
-      </div>
-    );
-  }
 
   return (
     <div

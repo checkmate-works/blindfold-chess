@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Virtuoso } from 'react-virtuoso';
-
 import type { AdBannerConfig } from '@/lib/ad';
 
 import { getFeed } from '../_actions/getFeed';
@@ -55,14 +53,10 @@ export function FeedClient({
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
   const isLoadingRef = useRef(false);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // 広告を含む表示要素の構築
-  // feed items と ad items を仮想リスト内で交互に配置するため、
+  // feed items と ad items を交互に配置するため、
   // 統一的なインデックスで管理する
   const getDisplayItems = useCallback(() => {
     const displayItems: DisplayItem[] = [];
@@ -130,31 +124,32 @@ export function FeedClient({
     }
   }, [cursor]);
 
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !cursor) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '400px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cursor, loadMore]);
+
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
   }
 
-  if (!isHydrated) {
-    return (
-      <div>{displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}</div>
-    );
-  }
-
   return (
-    <Virtuoso
-      useWindowScroll
-      data={displayItems}
-      // initialItemCount: Virtuoso マウント直後に全アイテムを描画し、
-      // 静的リストからの切り替え時に空白フラッシュを防止する
-      initialItemCount={displayItems.length}
-      endReached={() => {
-        if (cursor) loadMore();
-      }}
-      overscan={400}
-      itemContent={renderDisplayItem}
-      components={{
-        Footer: () => (isLoading ? <FeedSkeleton /> : null),
-      }}
-    />
+    <div>
+      {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
+      {isLoading && <FeedSkeleton />}
+      {cursor && !isLoading && <div ref={sentinelRef} />}
+    </div>
   );
 }
