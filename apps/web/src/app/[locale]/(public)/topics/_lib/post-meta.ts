@@ -25,55 +25,55 @@ export async function attachPostMeta(
 
   const postIds = posts.map((p) => p.id);
 
-  // Batch query 1: reply counts and latest reply timestamp per root post.
-  // Uses rootPostId so all replies in a flat thread (including reply-to-reply)
-  // are counted under the top-level post.
-  const replyStats = await db
-    .select({
-      rootPostId: topicPosts.rootPostId,
-      replyCount: count(),
-      latestReplyAt: max(topicPosts.createdAt),
-    })
-    .from(topicPosts)
-    .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
-    .groupBy(topicPosts.rootPostId);
-
-  // Batch query 2: replies with author info for replier display (grouped by rootPostId)
-  const repliesWithAuthors = await db
-    .select({
-      rootPostId: topicPosts.rootPostId,
-      userId: topicPosts.userId,
-      avatarUrl: profiles.avatarUrl,
-      displayName: profiles.displayName,
-      username: profiles.username,
-      createdAt: topicPosts.createdAt,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPosts.createdAt));
-
-  // Batch query 3: like counts per post
-  const likeCounts = await db
-    .select({
-      postId: topicPostLikes.postId,
-      likeCount: count(),
-    })
-    .from(topicPostLikes)
-    .where(inArray(topicPostLikes.postId, postIds))
-    .groupBy(topicPostLikes.postId);
-
-  // Batch query 4: which posts the current user has liked
-  let userLikedPostIds = new Set<string>();
-  if (currentUserId) {
-    const userLikes = await db
-      .select({ postId: topicPostLikes.postId })
+  // Batch queries 1–4 have no interdependencies; run them in parallel.
+  const [replyStats, repliesWithAuthors, likeCounts, userLikes] = await Promise.all([
+    // Batch query 1: reply counts and latest reply timestamp per root post.
+    // Uses rootPostId so all replies in a flat thread (including reply-to-reply)
+    // are counted under the top-level post.
+    db
+      .select({
+        rootPostId: topicPosts.rootPostId,
+        replyCount: count(),
+        latestReplyAt: max(topicPosts.createdAt),
+      })
+      .from(topicPosts)
+      .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
+      .groupBy(topicPosts.rootPostId),
+    // Batch query 2: replies with author info for replier display (grouped by rootPostId)
+    db
+      .select({
+        rootPostId: topicPosts.rootPostId,
+        userId: topicPosts.userId,
+        avatarUrl: profiles.avatarUrl,
+        displayName: profiles.displayName,
+        username: profiles.username,
+        createdAt: topicPosts.createdAt,
+      })
+      .from(topicPosts)
+      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .where(and(inArray(topicPosts.rootPostId, postIds), isNull(topicPosts.deletedAt)))
+      .orderBy(desc(topicPosts.createdAt)),
+    // Batch query 3: like counts per post
+    db
+      .select({
+        postId: topicPostLikes.postId,
+        likeCount: count(),
+      })
       .from(topicPostLikes)
-      .where(
-        and(eq(topicPostLikes.userId, currentUserId), inArray(topicPostLikes.postId, postIds))
-      );
-    userLikedPostIds = new Set(userLikes.map((l) => l.postId));
-  }
+      .where(inArray(topicPostLikes.postId, postIds))
+      .groupBy(topicPostLikes.postId),
+    // Batch query 4: which posts the current user has liked
+    currentUserId
+      ? db
+          .select({ postId: topicPostLikes.postId })
+          .from(topicPostLikes)
+          .where(
+            and(eq(topicPostLikes.userId, currentUserId), inArray(topicPostLikes.postId, postIds))
+          )
+      : Promise.resolve([]),
+  ]);
+
+  const userLikedPostIds = new Set(userLikes.map((l) => l.postId));
 
   // Build lookup maps
   const statsMap = new Map(

@@ -72,6 +72,35 @@ export const getAdBannerBySlot = unstable_cache(
   { tags: ['ads-config'], revalidate: 60 }
 );
 
+export const getAdBannersForFeed = unstable_cache(
+  async (): Promise<AdBannerConfig[]> => {
+    try {
+      const banner = await withTimeout(
+        db.select().from(adBanners).where(eq(adBanners.slot, 'native-ad')).limit(1),
+        DB_QUERY_TIMEOUT_MS
+      );
+
+      const row = banner[0];
+      if (!row || !row.isActive) return [];
+
+      return [
+        {
+          href: row.href,
+          imagePath: row.imagePath,
+          alt: row.alt,
+          width: row.width,
+          height: row.height,
+        },
+      ];
+    } catch (error) {
+      console.warn('Failed to fetch ad banners for feed:', error);
+      return [];
+    }
+  },
+  ['ad-banners-feed'],
+  { tags: ['ads-config'], revalidate: 60 }
+);
+
 // No-cache versions for admin pages (always show latest data)
 export async function getAdsEnabledDirect(): Promise<boolean> {
   try {

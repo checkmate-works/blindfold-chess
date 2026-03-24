@@ -64,6 +64,13 @@
       "when": 1774056932374,
       "tag": "20260321013532_create_article_images_table",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1774219244015,
+      "tag": "20260322224044_create_feed_items_table",
+      "breakpoints": true
     }
   ]
 }

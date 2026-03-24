@@ -324,3 +324,24 @@ $$;
 -- Grant necessary permissions (public read for leaderboard display, UPDATE for UPSERT)
 GRANT SELECT, INSERT, UPDATE ON TABLE public.challenge_best_scores TO authenticated;
 GRANT SELECT ON TABLE public.challenge_best_scores TO anon;
+
+-- =============================================================================
+-- feed_items
+-- =============================================================================
+
+-- FK constraint: feed_items.actor_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'feed_items_actor_id_fkey'
+  ) THEN
+    ALTER TABLE public.feed_items
+      ADD CONSTRAINT feed_items_actor_id_fkey
+      FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read for timeline, server-side INSERT)
+GRANT SELECT, INSERT ON TABLE public.feed_items TO authenticated;
+GRANT SELECT ON TABLE public.feed_items TO anon;

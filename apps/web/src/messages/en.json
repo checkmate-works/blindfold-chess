@@ -235,7 +235,8 @@
   "Common": {
     "sponsoredLink": "Sponsored Link",
     "testAd": "Test Ad",
-    "adLabel": "Ad"
+    "adLabel": "Ad",
+    "sponsor": "Sponsor"
   },
   "faq": {
     "title": "Frequently Asked Questions",
@@ -1184,6 +1185,26 @@
       "title": "Your Rankings",
       "noRanks": "You haven't ranked in any leaderboard yet. Try some practice modules!",
       "viewAll": "View all leaderboards"
+    },
+    "feed": {
+      "title": "Timeline",
+      "loading": "Loading...",
+      "rankUpdate": {
+        "newEntry": "Entered the leaderboard",
+        "improved": "Improved rank!",
+        "rank": "Rank",
+        "score": "Score"
+      }
+    },
+    "vsAi": {
+      "title": "VS AI",
+      "startGame": "Start VS AI",
+      "resume": "Resume",
+      "newGame": "New Game",
+      "allGames": "All games \u2192",
+      "level": "Lv",
+      "moves": "moves",
+      "recent": "Recent"
     }
   },
   "gamesPage": {
@@ -2365,7 +2386,20 @@
       "saving": "Saving...",
       "active": "Active",
       "inactive": "Inactive",
-      "noBanners": "No ad banners found."
+      "noBanners": "No ad banners found.",
+      "newBanner": "New Banner",
+      "createTitle": "Create Ad Banner",
+      "slotPlaceholder": "e.g. native-ad",
+      "hrefPlaceholder": "https://example.com",
+      "imagePathPlaceholder": "/images/ads/banner.png",
+      "altPlaceholder": "Advertisement",
+      "width": "Width",
+      "height": "Height",
+      "sortOrder": "Sort Order",
+      "startAt": "Start At",
+      "endAt": "End At",
+      "create": "Create",
+      "creating": "Creating..."
     }
   },
   "publicProfile": {

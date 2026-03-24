@@ -1,0 +1,153 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import type { AdBannerConfig } from '@/lib/ad';
+
+import { getFeed } from '../_actions/getFeed';
+import type { FeedItem } from '../_lib/types';
+import { FeedCard } from './FeedCard';
+import { FeedSkeleton } from './FeedSkeleton';
+import { NativeAdCard } from './NativeAdCard';
+
+/**
+ * Number of feed items between each native ad insertion.
+ *
+ * @design Native ads (NativeAdCard) are interleaved client-side rather than
+ * stored in feed_items because ad display is presentation logic, not user
+ * activity. Ads cycle through the `adBanners` array via modulo indexing.
+ * When `adBanners` is empty (ads disabled or none active), no ads appear.
+ */
+const AD_INTERVAL = 5;
+
+type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
+
+type Props = {
+  initialItems: FeedItem[];
+  initialCursor: string | null;
+  locale: string;
+  showMoreLabel: string;
+  justNowLabel: string;
+  newReplyTemplate: string;
+  adBanners?: AdBannerConfig[];
+  adLabel?: string;
+  sponsorLabel?: string;
+  sponsoredLinkLabel?: string;
+};
+
+export function FeedClient({
+  initialItems,
+  initialCursor,
+  locale,
+  showMoreLabel,
+  justNowLabel,
+  newReplyTemplate,
+  adBanners = [],
+  adLabel = '',
+  sponsorLabel = '',
+  sponsoredLinkLabel = '',
+}: Props) {
+  const [items, setItems] = useState<FeedItem[]>(initialItems);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // 広告を含む表示要素の構築
+  // feed items と ad items を交互に配置するため、
+  // 統一的なインデックスで管理する
+  const getDisplayItems = useCallback(() => {
+    const displayItems: DisplayItem[] = [];
+    items.forEach((item, index) => {
+      displayItems.push({ type: 'feed', item });
+      if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
+        const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
+        displayItems.push({ type: 'ad', ad: adBanners[adIndex] });
+      }
+    });
+    return displayItems;
+  }, [items, adBanners]);
+
+  const displayItems = getDisplayItems();
+
+  const renderDisplayItem = useCallback(
+    (index: number, displayItem: DisplayItem) => {
+      if (displayItem.type === 'ad') {
+        return (
+          <div key={`ad-${index}`} className="border-b border-border">
+            <NativeAdCard
+              ad={displayItem.ad}
+              adLabel={adLabel}
+              sponsorLabel={sponsorLabel}
+              sponsoredLinkLabel={sponsoredLinkLabel}
+              locale={locale}
+            />
+          </div>
+        );
+      }
+      return (
+        <div key={displayItem.item.id} className="border-b border-border">
+          <FeedCard
+            item={displayItem.item}
+            locale={locale}
+            showMoreLabel={showMoreLabel}
+            justNowLabel={justNowLabel}
+            newReplyTemplate={newReplyTemplate}
+          />
+        </div>
+      );
+    },
+    [
+      adLabel,
+      sponsorLabel,
+      sponsoredLinkLabel,
+      locale,
+      showMoreLabel,
+      justNowLabel,
+      newReplyTemplate,
+    ]
+  );
+
+  const loadMore = useCallback(async () => {
+    if (!cursor || isLoadingRef.current) return;
+    isLoadingRef.current = true;
+    setIsLoading(true);
+    try {
+      const result = await getFeed(cursor);
+      setItems((prev) => [...prev, ...result.items]);
+      setCursor(result.nextCursor);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoading(false);
+    }
+  }, [cursor]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !cursor) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '400px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cursor, loadMore]);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <div>
+      {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
+      {isLoading && <FeedSkeleton />}
+      {cursor && !isLoading && <div ref={sentinelRef} />}
+    </div>
+  );
+}

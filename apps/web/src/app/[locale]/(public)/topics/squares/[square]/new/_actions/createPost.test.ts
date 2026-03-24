@@ -47,6 +47,7 @@ vi.mock('@/lib/db', () => ({
   topicPosts: {
     id: 'id',
   },
+  feedItems: {},
 }));
 
 vi.mock('@/lib/ban', () => ({

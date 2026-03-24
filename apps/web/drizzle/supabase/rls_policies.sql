@@ -245,3 +245,16 @@ CREATE POLICY "article_images_delete_admin" ON "article_images"
   FOR DELETE USING (
     (auth.jwt() ->> 'user_role') = 'admin'
   );
+
+-- =============================================================================
+-- feed_items (public timeline — public read, authenticated insert)
+-- =============================================================================
+ALTER TABLE "feed_items" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "feed_items_select" ON "feed_items";
+CREATE POLICY "feed_items_select" ON "feed_items"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "feed_items_insert" ON "feed_items";
+CREATE POLICY "feed_items_insert" ON "feed_items"
+  FOR INSERT WITH CHECK (auth.uid() = actor_id);

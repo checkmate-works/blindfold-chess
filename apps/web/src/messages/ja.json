@@ -236,7 +236,8 @@
   "Common": {
     "sponsoredLink": "スポンサーリンク",
     "testAd": "テスト広告",
-    "adLabel": "広告"
+    "adLabel": "広告",
+    "sponsor": "スポンサー"
   },
   "faq": {
     "title": "よくある質問",
@@ -1185,6 +1186,26 @@
       "title": "あなたのランキング",
       "noRanks": "まだランキングに参加していません。練習モジュールに挑戦してみましょう！",
       "viewAll": "すべてのランキングを見る"
+    },
+    "feed": {
+      "title": "タイムライン",
+      "loading": "読み込み中...",
+      "rankUpdate": {
+        "newEntry": "リーダーボードにランクイン",
+        "improved": "ランクアップ！",
+        "rank": "順位",
+        "score": "スコア"
+      }
+    },
+    "vsAi": {
+      "title": "VS AI",
+      "startGame": "AI対局を始める",
+      "resume": "再開する",
+      "newGame": "新しいゲーム",
+      "allGames": "すべてのゲーム \u2192",
+      "level": "Lv",
+      "moves": "手",
+      "recent": "直近"
     }
   },
   "gamesPage": {
