@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -39,8 +39,8 @@ export function CoordinateQuizSetup({
   };
 
   return (
-    <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+    <div>
+      <PracticePanel className="p-6">
         <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
@@ -63,9 +63,9 @@ export function CoordinateQuizSetup({
         >
           {tp('startTraining')}
         </Button>
-      </div>
+      </PracticePanel>
 
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
+      <PracticePanel className="mt-8 p-6 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink
@@ -90,7 +90,7 @@ export function CoordinateQuizSetup({
             locale={locale}
           />
         </div>
-      </div>
-    </PracticeLayout>
+      </PracticePanel>
+    </div>
   );
 }
