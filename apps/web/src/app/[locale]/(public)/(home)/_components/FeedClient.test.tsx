@@ -80,7 +80,6 @@ const defaultProps = {
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
   newReplyTemplate: 'New reply {time}',
-  noItemsLabel: 'No items yet',
 };
 
 // --- Tests ---
@@ -91,10 +90,12 @@ describe('FeedClient', () => {
   });
 
   describe('empty state', () => {
-    it('should show noItemsLabel when there are no items', () => {
-      render(<FeedClient initialItems={[]} initialCursor={null} {...defaultProps} />);
+    it('should render nothing when there are no items', () => {
+      const { container } = render(
+        <FeedClient initialItems={[]} initialCursor={null} {...defaultProps} />
+      );
 
-      expect(screen.getByText('No items yet')).toBeInTheDocument();
+      expect(container.innerHTML).toBe('');
     });
 
     it('should not render any feed cards when items are empty', () => {
@@ -125,7 +126,6 @@ describe('FeedClient', () => {
       render(<FeedClient initialItems={items} initialCursor={null} {...defaultProps} />);
 
       expect(screen.getByTestId('feed-card-1')).toBeInTheDocument();
-      expect(screen.queryByText('No items yet')).toBeNull();
     });
   });
 

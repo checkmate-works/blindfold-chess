@@ -1188,7 +1188,6 @@
     },
     "feed": {
       "title": "Timeline",
-      "noItems": "No posts yet. Be the first to share your thoughts!",
       "loading": "Loading...",
       "rankUpdate": {
         "newEntry": "Entered the leaderboard",

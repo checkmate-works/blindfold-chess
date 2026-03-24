@@ -82,7 +82,6 @@ export default async function HomePage({ params }: Props) {
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
             newReplyTemplate={tSquares('newReply', { time: '{time}' })}
-            noItemsLabel={tHome('feed.noItems')}
             adBanners={adBanners}
             adLabel={tCommon('adLabel')}
             sponsorLabel={tCommon('sponsor')}

@@ -29,7 +29,6 @@ type Props = {
   showMoreLabel: string;
   justNowLabel: string;
   newReplyTemplate: string;
-  noItemsLabel: string;
   adBanners?: AdBannerConfig[];
   adLabel?: string;
   sponsorLabel?: string;
@@ -43,7 +42,6 @@ export function FeedClient({
   showMoreLabel,
   justNowLabel,
   newReplyTemplate,
-  noItemsLabel,
   adBanners = [],
   adLabel = '',
   sponsorLabel = '',
@@ -142,7 +140,7 @@ export function FeedClient({
   }, [cursor, loadMore]);
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
+    return null;
   }
 
   return (
