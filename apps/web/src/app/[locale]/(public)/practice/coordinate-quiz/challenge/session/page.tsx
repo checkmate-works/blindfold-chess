@@ -1,25 +1,14 @@
-/**
- * Coordinate Quiz Training (座標クイズトレーニング)
- *
- * @description
- * Untimed training mode for coordinate identification.
- * Questions continue infinitely until the user explicitly ends the session.
- * No timer, no result page -- navigates back to setup with a toast notification on end.
- *
- * @flow
- * Setup (training selected) -> Countdown -> Infinite Q&A -> End button -> Setup + toast
- */
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
+
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-const CoordinateQuizTrainingSession = dynamic(
-  () => import('./_components/CoordinateQuizTrainingSession')
-);
+const CoordinateQuizChallenge = dynamic(() => import('../_components/CoordinateQuizChallenge'));
 
 type Props = {
   params: Promise<{
@@ -31,21 +20,30 @@ type Props = {
   }>;
 };
 
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz/training' }),
-    title: `${t('practice.coordinateQuiz.title')} - ${t('practice.modeTraining')}`,
+    ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz/challenge/session' }),
+    title: `${t('practice.coordinateQuiz.title')} - ${t('practice.coordinateQuiz.session')}`,
     description: t('practice.coordinateQuiz.description'),
   };
 }
 
-export default async function CoordinateQuizTrainingPage({ params, searchParams }: Props) {
+export default async function CoordinateQuizChallengeSessionPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const { orientation, feedbackSpeed } = await searchParams;
   const t = await getTranslations({ locale });
+
+  const orientationValue = orientation || 'white';
+  const feedbackSpeedValue = feedbackSpeed || 'normal';
 
   return (
     <PracticeSessionPage
@@ -54,13 +52,14 @@ export default async function CoordinateQuizTrainingPage({ params, searchParams 
       breadcrumbItems={[
         { label: t('navigation.practice'), href: '/practice' },
         { label: t('practice.coordinateQuiz.title'), href: '/practice/coordinate-quiz' },
-        { label: t('practice.modeTraining') },
+        { label: t('practice.modeTimed'), href: '/practice/coordinate-quiz/challenge' },
+        { label: t('practice.coordinateQuiz.session') },
       ]}
     >
-      <CoordinateQuizTrainingSession
+      <CoordinateQuizChallenge
         locale={locale}
-        boardOrientation={orientation || 'white'}
-        feedbackSpeed={feedbackSpeed || 'normal'}
+        initialBoardOrientation={orientationValue}
+        initialFeedbackSpeed={feedbackSpeedValue}
       />
     </PracticeSessionPage>
   );

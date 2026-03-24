@@ -403,6 +403,14 @@
     "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
+    "startChallenge": "Start Challenge",
+    "challengeSetup": {
+      "title": "Challenge Rules",
+      "timeLimit": "Answer as many questions as you can within {seconds} seconds.",
+      "mistakeLimit": "The game ends after {count} incorrect answers.",
+      "noMistakeLimit": "There is no limit on incorrect answers.",
+      "leaderboard": "Your score will be recorded on the leaderboard."
+    },
     "endTraining": "End",
     "trainingEnded": "Training ended",
     "quitConfirmModal": {
@@ -1629,7 +1637,8 @@
       "topicOpenings": "Openings",
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
-      "viewMypage": "My Page"
+      "viewMypage": "My Page",
+      "viewHome": "Home"
     }
   },
   "AuthStatusDisplay": {
@@ -2792,7 +2801,10 @@
         "default": "Square Colors"
       }
     },
+    "tryChallenge": "Try This Challenge",
     "backToList": "Back to Leaderboard",
+    "viewMore": "View Full Leaderboard",
+    "weeklyRanking": "Weekly Ranking",
     "signUpBanner": {
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",

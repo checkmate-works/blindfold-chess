@@ -1,4 +1,3 @@
-export type { PracticeMode } from '@blindfold-chess/features/common';
 export {
   BOARD_ORIENTATIONS,
   FEEDBACK_SPEEDS,

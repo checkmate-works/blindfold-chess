@@ -404,6 +404,14 @@
     "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
+    "startChallenge": "チャレンジ開始",
+    "challengeSetup": {
+      "title": "チャレンジルール",
+      "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
+      "mistakeLimit": "{count}回ミスするとゲームオーバーです。",
+      "noMistakeLimit": "ミス回数の制限はありません。",
+      "leaderboard": "スコアはリーダーボードに記録されます。"
+    },
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
     "quitConfirmModal": {
@@ -1630,7 +1638,8 @@
       "topicOpenings": "オープニング",
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
-      "viewMypage": "マイページ"
+      "viewMypage": "マイページ",
+      "viewHome": "ホーム"
     }
   },
   "AuthStatusDisplay": {
@@ -2770,7 +2779,10 @@
         "default": "マスの色"
       }
     },
+    "tryChallenge": "この種目にチャレンジ",
     "backToList": "ランキング一覧へ戻る",
+    "viewMore": "ランキングをもっと見る",
+    "weeklyRanking": "週間ランキング",
     "signUpBanner": {
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",

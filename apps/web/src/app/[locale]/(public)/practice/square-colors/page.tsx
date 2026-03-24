@@ -1,27 +1,29 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { SUPPORTED_LOCALES } from '@/config';
+
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import SquareColors from './_components/SquareColors';
-import type { PracticeMode } from './_lib/types';
+import { SquareColorsSetup } from './_components/SquareColorsSetup';
 
 type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-  searchParams: Promise<{
-    mode?: string;
-  }>;
 };
 
-const VALID_MODES: PracticeMode[] = ['training', 'timed', 'rush'];
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return {
@@ -31,29 +33,43 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SquareColorsPage({ params, searchParams }: Props) {
+export default async function SquareColorsPage({ params }: Props) {
   const { locale } = await params;
-  const { mode } = await searchParams;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
-  const initialMode = VALID_MODES.includes(mode as PracticeMode)
-    ? (mode as PracticeMode)
-    : undefined;
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.squareColors.title')}</PageTitle>
 
-      <SquareColors locale={locale} initialMode={initialMode} />
+      <PagePanel>
+        <SquareColorsSetup locale={locale} />
 
-      <Divider />
+        <AdBanner slot="banner-wide" locale={locale} />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.squareColors.title') },
-        ]}
-        locale={locale}
-      />
+        <div className="mt-8 space-y-3">
+          <SectionTitle>{t('practice.squareColors.requiredKnowledge')}</SectionTitle>
+          <CardLink
+            href="/learn/coordinates/square-colors"
+            icon="🎨"
+            title={t('practice.squareColors.viewArticle')}
+            description={t('practice.squareColors.articleDescription')}
+            locale={locale}
+          />
+        </div>
+
+        <AdBanner slot="banner-standard" locale={locale} />
+
+        <Divider />
+
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.squareColors.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
+import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -15,6 +17,7 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateStaticParams() {
@@ -36,12 +39,21 @@ export default async function LegalMovesResultPage(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
 
+  const sp = await props.searchParams;
+  const piece = typeof sp.piece === 'string' ? sp.piece : 'random';
+
+  const leaderboardResult = await getLeaderboard('legal_moves', piece, 'weekly', 1);
+  const leaderboardRows = leaderboardResult.rows.slice(0, 3);
+  const leaderboardDetailPath = buildDetailPath('weekly', 'legal_moves', piece);
+
   return (
-    <>
-      <Suspense>
-        <ResultClient locale={locale} />
-      </Suspense>
-      <AdBanner slot="banner-standard" locale={locale} />
-    </>
+    <Suspense>
+      <ResultClient
+        locale={locale}
+        adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+        leaderboardRows={leaderboardRows}
+        leaderboardDetailPath={leaderboardDetailPath}
+      />
+    </Suspense>
   );
 }

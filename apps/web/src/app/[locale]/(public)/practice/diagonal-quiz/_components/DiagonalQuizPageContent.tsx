@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import type { PracticeMode } from '@blindfold-chess/features/common';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizSetup } from './DiagonalQuizSetup';
@@ -13,19 +11,9 @@ import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLi
 
 type Props = {
   locale: Locale;
-  timeLimit: number;
-  onTimeLimitChange: (value: number) => void;
-  mode: PracticeMode;
-  onModeChange: (mode: PracticeMode) => void;
 };
 
-export function DiagonalQuizPageContent({
-  locale,
-  timeLimit,
-  onTimeLimitChange,
-  mode,
-  onModeChange,
-}: Props) {
+export function DiagonalQuizPageContent({ locale }: Props) {
   const router = useRouter();
   const [tutorialSkipped, setTutorialSkipped] = useState<boolean | null>(null);
 
@@ -44,13 +32,5 @@ export function DiagonalQuizPageContent({
     return null;
   }
 
-  return (
-    <DiagonalQuizSetup
-      locale={locale}
-      timeLimit={timeLimit}
-      onTimeLimitChange={onTimeLimitChange}
-      mode={mode}
-      onModeChange={onModeChange}
-    />
-  );
+  return <DiagonalQuizSetup locale={locale} />;
 }

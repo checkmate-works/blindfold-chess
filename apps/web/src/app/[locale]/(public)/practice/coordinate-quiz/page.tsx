@@ -1,26 +1,29 @@
-import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { SUPPORTED_LOCALES } from '@/config';
+
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import CoordinateQuiz from './_components/CoordinateQuiz';
-import type { PracticeMode } from './_lib/types';
 
 type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-  searchParams: Promise<{
-    mode?: string;
-  }>;
 };
 
-const VALID_MODES: PracticeMode[] = ['training', 'timed', 'rush'];
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz' }),
@@ -29,29 +32,59 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function CoordinateQuizPage({ params, searchParams }: Props) {
+export default async function CoordinateQuizPage({ params }: Props) {
   const { locale } = await params;
-  const { mode } = await searchParams;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
-  const initialMode = VALID_MODES.includes(mode as PracticeMode)
-    ? (mode as PracticeMode)
-    : undefined;
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
 
-      <CoordinateQuiz locale={locale} initialMode={initialMode} />
+      <PagePanel>
+        <CoordinateQuiz locale={locale} />
 
-      <Divider />
+        <AdBanner slot="banner-wide" locale={locale} />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.coordinateQuiz.title') },
-        ]}
-        locale={locale}
-      />
+        <div className="mt-8 space-y-4">
+          <SectionTitle>{t('practice.coordinateQuiz.relatedArticles')}</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardLink
+              href="/learn/coordinates/coordinate-confusion"
+              icon="🔄"
+              title={t('practice.coordinateQuiz.articles.coordinateConfusion.title')}
+              description={t('practice.coordinateQuiz.articles.coordinateConfusion.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/coordinates/anchor-squares"
+              icon="⚓"
+              title={t('practice.coordinateQuiz.articles.anchorSquares.title')}
+              description={t('practice.coordinateQuiz.articles.anchorSquares.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/notation/algebraic-notation"
+              icon="🔤"
+              title={t('practice.coordinateQuiz.articles.algebraicNotation.title')}
+              description={t('practice.coordinateQuiz.articles.algebraicNotation.description')}
+              locale={locale}
+            />
+          </div>
+        </div>
+
+        <AdBanner slot="banner-standard" locale={locale} />
+
+        <Divider />
+
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.coordinateQuiz.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

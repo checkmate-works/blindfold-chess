@@ -8,7 +8,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import DiagonalQuiz from './_components/DiagonalQuiz';
+import { DiagonalQuizPageContent } from './_components/DiagonalQuizPageContent';
 
 type Props = {
   params: Promise<{
@@ -41,7 +41,7 @@ export default async function DiagonalQuizPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.diagonalQuiz.title')}</PageTitle>
 
-      <DiagonalQuiz locale={locale} />
+      <DiagonalQuizPageContent locale={locale} />
 
       <Divider />
 

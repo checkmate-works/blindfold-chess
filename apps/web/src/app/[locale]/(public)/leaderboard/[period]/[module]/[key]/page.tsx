@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
+import { ChallengeLink } from '@/app/[locale]/(public)/leaderboard/_components/ChallengeLink';
 import {
   ALL_LEADERBOARD_ENTRIES,
   type LeaderboardModule,
@@ -111,6 +112,8 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
         data={data}
         currentPage={page}
       />
+
+      <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
 
       <AdBanner slot="banner-standard" locale={locale} />
 

@@ -1,39 +1,40 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import dynamic from 'next/dynamic';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+
+import { SUPPORTED_LOCALES } from '@/config';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-const DiagonalQuizSession = dynamic(() => import('./_components/DiagonalQuizSession'));
+import { DiagonalQuizChallengeSetup } from './_components/DiagonalQuizChallengeSetup';
 
 type Props = {
   params: Promise<{
     locale: Locale;
   }>;
-  searchParams: Promise<{
-    timeLimit?: string;
-  }>;
 };
+
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz/challenge' }),
-    title: `${t('practice.diagonalQuiz.title')} - ${t('practice.diagonalQuiz.session')}`,
+    title: `${t('practice.diagonalQuiz.title')} - ${t('practice.modeTimed')}`,
     description: t('practice.diagonalQuiz.description'),
   };
 }
 
-export default async function DiagonalQuizChallengePage({ params, searchParams }: Props) {
+export default async function DiagonalQuizChallengePage({ params }: Props) {
   const { locale } = await params;
-  const { timeLimit } = await searchParams;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
-
-  const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
 
   return (
     <PracticeSessionPage
@@ -42,10 +43,10 @@ export default async function DiagonalQuizChallengePage({ params, searchParams }
       breadcrumbItems={[
         { label: t('navigation.practice'), href: '/practice' },
         { label: t('practice.diagonalQuiz.title'), href: '/practice/diagonal-quiz' },
-        { label: t('practice.diagonalQuiz.session') },
+        { label: t('practice.modeTimed') },
       ]}
     >
-      <DiagonalQuizSession locale={locale} initialTimeLimit={timeLimitValue} />
+      <DiagonalQuizChallengeSetup locale={locale} />
     </PracticeSessionPage>
   );
 }

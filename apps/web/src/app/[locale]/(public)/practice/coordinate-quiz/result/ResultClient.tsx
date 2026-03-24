@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
@@ -11,10 +13,19 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerWide?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
+  leaderboardRows?: LeaderboardRow[];
+  leaderboardDetailPath?: string;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({
+  locale,
+  adBannerWide,
+  adBannerStandard,
+  leaderboardRows,
+  leaderboardDetailPath,
+}: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -24,16 +35,20 @@ export function ResultClient({ locale, adBanner }: Props) {
   const total = parseInt(searchParams.get('total') || '0', 10);
   const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
 
-  const timeLimit = searchParams.get('timeLimit');
   const orientation = searchParams.get('orientation');
   const speed = searchParams.get('speed');
 
-  // Construct URL for retrying with same settings
-  const tryAgainParams = new URLSearchParams();
-  if (timeLimit) tryAgainParams.set('timeLimit', timeLimit);
-  if (orientation) tryAgainParams.set('boardOrientation', orientation);
-  if (speed) tryAgainParams.set('feedbackSpeed', speed);
-  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge?${tryAgainParams.toString()}`;
+  // Try Again: 同じ設定でセッションを即座にやり直す
+  const sessionParams = new URLSearchParams();
+  if (orientation) sessionParams.set('orientation', orientation);
+  if (speed) sessionParams.set('feedbackSpeed', speed);
+  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge/session?${sessionParams.toString()}`;
+
+  // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
+  const settingsParams = new URLSearchParams();
+  if (orientation) settingsParams.set('orientation', orientation);
+  if (speed) settingsParams.set('feedbackSpeed', speed);
+  const changeSettingsUrl = `/${locale}/practice/coordinate-quiz/challenge?${settingsParams.toString()}`;
 
   // Calculate average time if total > 0
   const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
@@ -52,7 +67,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         score={score}
         total={total}
         onTryAgain={() => router.push(tryAgainUrl)}
-        onExit={() => router.push(`/${locale}/practice/coordinate-quiz`)}
+        onExit={() => router.push(changeSettingsUrl)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),
@@ -63,19 +78,21 @@ export function ResultClient({ locale, adBanner }: Props) {
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBanner}
-        relatedModule={{
-          href: '/learn/coordinates/coordinate-confusion',
-          icon: '🔄',
-          title: t('articles.coordinateConfusion.title'),
-          description: t('articles.coordinateConfusion.description'),
-        }}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
         afterActions={<SignUpBanner locale={locale} />}
+        beforeRelatedContent={adBannerWide}
       />
+      {leaderboardRows && leaderboardDetailPath && (
+        <LeaderboardPreview
+          rows={leaderboardRows}
+          detailPath={leaderboardDetailPath}
+          locale={locale}
+        />
+      )}
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }
