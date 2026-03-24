@@ -3,7 +3,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -47,7 +46,7 @@ export default async function LegalMovesPage({ params }: Props) {
 
         <AdBanner slot="banner-wide" locale={locale} />
 
-        <PracticePanel className="mt-8 p-6 space-y-4">
+        <div className="mt-8 space-y-4">
           <SectionTitle>{t('practice.legalMoves.relatedArticles')}</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <CardLink
@@ -79,7 +78,7 @@ export default async function LegalMovesPage({ params }: Props) {
               locale={locale}
             />
           </div>
-        </PracticePanel>
+        </div>
 
         <AdBanner slot="banner-standard" locale={locale} />
 

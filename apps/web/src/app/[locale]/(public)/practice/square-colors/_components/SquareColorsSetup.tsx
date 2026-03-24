@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -25,32 +24,30 @@ export function SquareColorsSetup({ locale }: Props) {
 
   return (
     <div>
-      <PracticePanel className="p-6">
-        <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
+      <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-        </div>
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+      </div>
 
-        <Button
-          onClick={handleStart}
-          variant="secondary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full"
-        >
-          {tp('startTraining')}
-        </Button>
-        <Button
-          onClick={() => router.push(`/${locale}/practice/square-colors/challenge/session`)}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full mt-3"
-        >
-          {tp('startChallenge')}
-        </Button>
-      </PracticePanel>
+      <Button
+        onClick={handleStart}
+        variant="secondary"
+        size="lg"
+        icon={<FaPlay />}
+        className="w-full"
+      >
+        {tp('startTraining')}
+      </Button>
+      <Button
+        onClick={() => router.push(`/${locale}/practice/square-colors/challenge/session`)}
+        variant="primary"
+        size="lg"
+        icon={<FaPlay />}
+        className="w-full mt-3"
+      >
+        {tp('startChallenge')}
+      </Button>
     </div>
   );
 }

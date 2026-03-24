@@ -7,7 +7,6 @@ import { Button } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -39,35 +38,33 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
   };
 
   return (
-    <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
-        <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
+    <div>
+      <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
 
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-        </div>
-
-        <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
-
-        <Button
-          onClick={handleStartTraining}
-          variant="secondary"
-          size="lg"
-          className="w-full mt-6"
-          icon={<FaPlay />}
-        >
-          {tp('startTraining')}
-        </Button>
-        <Button
-          onClick={handleStartChallenge}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full mt-3"
-        >
-          {tp('startChallenge')}
-        </Button>
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
       </div>
-    </PracticeLayout>
+
+      <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
+
+      <Button
+        onClick={handleStartTraining}
+        variant="secondary"
+        size="lg"
+        className="w-full mt-6"
+        icon={<FaPlay />}
+      >
+        {tp('startTraining')}
+      </Button>
+      <Button
+        onClick={handleStartChallenge}
+        variant="primary"
+        size="lg"
+        icon={<FaPlay />}
+        className="w-full mt-3"
+      >
+        {tp('startChallenge')}
+      </Button>
+    </div>
   );
 }

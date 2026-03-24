@@ -3,7 +3,6 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -48,7 +47,7 @@ export default async function SquareColorsPage({ params }: Props) {
 
         <AdBanner slot="banner-wide" locale={locale} />
 
-        <PracticePanel className="mt-8 p-6 space-y-3">
+        <div className="mt-8 space-y-3">
           <SectionTitle>{t('practice.squareColors.requiredKnowledge')}</SectionTitle>
           <CardLink
             href="/learn/coordinates/square-colors"
@@ -57,7 +56,7 @@ export default async function SquareColorsPage({ params }: Props) {
             description={t('practice.squareColors.articleDescription')}
             locale={locale}
           />
-        </PracticePanel>
+        </div>
 
         <AdBanner slot="banner-standard" locale={locale} />
 

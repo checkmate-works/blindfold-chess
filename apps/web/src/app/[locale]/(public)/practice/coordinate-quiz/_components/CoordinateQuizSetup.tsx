@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -46,39 +45,37 @@ export function CoordinateQuizSetup({
 
   return (
     <div>
-      <PracticePanel className="p-6">
-        <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
+      <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
 
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-        </div>
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+      </div>
 
-        <CoordinateQuizSettings
-          boardOrientation={boardOrientation}
-          feedbackSpeed={feedbackSpeed}
-          onBoardOrientationChange={onBoardOrientationChange}
-          onFeedbackSpeedChange={onFeedbackSpeedChange}
-        />
+      <CoordinateQuizSettings
+        boardOrientation={boardOrientation}
+        feedbackSpeed={feedbackSpeed}
+        onBoardOrientationChange={onBoardOrientationChange}
+        onFeedbackSpeedChange={onFeedbackSpeedChange}
+      />
 
-        <Button
-          onClick={handleStartTraining}
-          variant="secondary"
-          size="lg"
-          className="w-full mt-6"
-          icon={<FaPlay />}
-        >
-          {tp('startTraining')}
-        </Button>
-        <Button
-          onClick={handleStartChallenge}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full mt-3"
-        >
-          {tp('startChallenge')}
-        </Button>
-      </PracticePanel>
+      <Button
+        onClick={handleStartTraining}
+        variant="secondary"
+        size="lg"
+        className="w-full mt-6"
+        icon={<FaPlay />}
+      >
+        {tp('startTraining')}
+      </Button>
+      <Button
+        onClick={handleStartChallenge}
+        variant="primary"
+        size="lg"
+        icon={<FaPlay />}
+        className="w-full mt-3"
+      >
+        {tp('startChallenge')}
+      </Button>
     </div>
   );
 }
