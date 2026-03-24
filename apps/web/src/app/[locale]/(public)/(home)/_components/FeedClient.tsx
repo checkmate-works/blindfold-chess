@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Virtuoso } from 'react-virtuoso';
 
@@ -21,6 +21,8 @@ import { NativeAdCard } from './NativeAdCard';
  * When `adBanners` is empty (ads disabled or none active), no ads appear.
  */
 const AD_INTERVAL = 3;
+
+type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
 
 type Props = {
   initialItems: FeedItem[];
@@ -53,14 +55,17 @@ export function FeedClient({
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
   const isLoadingRef = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // 広告を含む表示要素の構築
   // feed items と ad items を仮想リスト内で交互に配置するため、
   // 統一的なインデックスで管理する
   const getDisplayItems = useCallback(() => {
-    const displayItems: Array<
-      { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig }
-    > = [];
+    const displayItems: DisplayItem[] = [];
     items.forEach((item, index) => {
       displayItems.push({ type: 'feed', item });
       if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
@@ -72,6 +77,44 @@ export function FeedClient({
   }, [items, adBanners]);
 
   const displayItems = getDisplayItems();
+
+  const renderDisplayItem = useCallback(
+    (index: number, displayItem: DisplayItem) => {
+      if (displayItem.type === 'ad') {
+        return (
+          <div key={`ad-${index}`} className="border-b border-border">
+            <NativeAdCard
+              ad={displayItem.ad}
+              adLabel={adLabel}
+              sponsorLabel={sponsorLabel}
+              sponsoredLinkLabel={sponsoredLinkLabel}
+              locale={locale}
+            />
+          </div>
+        );
+      }
+      return (
+        <div key={displayItem.item.id} className="border-b border-border">
+          <FeedCard
+            item={displayItem.item}
+            locale={locale}
+            showMoreLabel={showMoreLabel}
+            justNowLabel={justNowLabel}
+            newReplyTemplate={newReplyTemplate}
+          />
+        </div>
+      );
+    },
+    [
+      adLabel,
+      sponsorLabel,
+      sponsoredLinkLabel,
+      locale,
+      showMoreLabel,
+      justNowLabel,
+      newReplyTemplate,
+    ]
+  );
 
   const loadMore = useCallback(async () => {
     if (!cursor || isLoadingRef.current) return;
@@ -91,41 +134,24 @@ export function FeedClient({
     return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
   }
 
+  if (!isHydrated) {
+    return (
+      <div>{displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}</div>
+    );
+  }
+
   return (
     <Virtuoso
       useWindowScroll
       data={displayItems}
+      // initialItemCount: Virtuoso マウント直後に全アイテムを描画し、
+      // 静的リストからの切り替え時に空白フラッシュを防止する
       initialItemCount={displayItems.length}
       endReached={() => {
         if (cursor) loadMore();
       }}
       overscan={400}
-      itemContent={(index, displayItem) => {
-        if (displayItem.type === 'ad') {
-          return (
-            <div className="border-b border-border">
-              <NativeAdCard
-                ad={displayItem.ad}
-                adLabel={adLabel}
-                sponsorLabel={sponsorLabel}
-                sponsoredLinkLabel={sponsoredLinkLabel}
-                locale={locale}
-              />
-            </div>
-          );
-        }
-        return (
-          <div className="border-b border-border">
-            <FeedCard
-              item={displayItem.item}
-              locale={locale}
-              showMoreLabel={showMoreLabel}
-              justNowLabel={justNowLabel}
-              newReplyTemplate={newReplyTemplate}
-            />
-          </div>
-        );
-      }}
+      itemContent={renderDisplayItem}
       components={{
         Footer: () => (isLoading ? <FeedSkeleton /> : null),
       }}
