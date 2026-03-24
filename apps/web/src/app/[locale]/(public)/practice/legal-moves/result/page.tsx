@@ -37,11 +37,11 @@ export default async function LegalMovesResultPage(props: Props) {
   setRequestLocale(locale);
 
   return (
-    <>
-      <Suspense>
-        <ResultClient locale={locale} />
-      </Suspense>
-      <AdBanner slot="banner-standard" locale={locale} />
-    </>
+    <Suspense>
+      <ResultClient
+        locale={locale}
+        adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+      />
+    </Suspense>
   );
 }

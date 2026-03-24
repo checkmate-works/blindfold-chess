@@ -15,8 +15,6 @@ import type {
   ScoreStats,
 } from '../_lib/practice-complete-types';
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
-import { PracticeLayout } from './PracticeLayout';
-import { PracticePanel } from './PracticePanel';
 import { ProblemResultList } from './ProblemResultList';
 
 type Props = {
@@ -64,64 +62,62 @@ export function PracticeComplete({
   const router = useRouter();
 
   return (
-    <PracticeLayout>
-      <PracticePanel className="p-8">
-        <PracticeCompleteSummary
-          score={score}
-          total={total}
-          labels={labels}
-          averageTimeText={averageTimeText}
-          scoreStats={scoreStats}
-        />
+    <>
+      <PracticeCompleteSummary
+        score={score}
+        total={total}
+        labels={labels}
+        averageTimeText={averageTimeText}
+        scoreStats={scoreStats}
+      />
 
-        {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
+      {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 
-        {/* Custom children (e.g. Route Planner results) */}
-        {children}
+      {/* Custom children (e.g. Route Planner results) */}
+      {children}
 
-        <div className="space-y-4 mt-6">
-          <Button
-            onClick={onTryAgain}
-            variant="primary"
-            size="lg"
-            fullWidth
-            icon={<FaRedo />}
-            className="rounded-lg"
-          >
-            {labels.tryAgain}
-          </Button>
+      <div className="space-y-4 mt-6">
+        <Button
+          onClick={onTryAgain}
+          variant="primary"
+          size="lg"
+          fullWidth
+          icon={<FaRedo />}
+          className="rounded-lg"
+        >
+          {labels.tryAgain}
+        </Button>
 
-          <Button
-            onClick={onExit ? onExit : () => router.push(`/${locale}/practice`)}
-            variant="secondary"
-            size="lg"
-            fullWidth
-            className="rounded-lg"
-          >
-            {labels.morePractice}
-          </Button>
+        <Button
+          onClick={onExit ? onExit : () => router.push(`/${locale}/practice`)}
+          variant="secondary"
+          size="lg"
+          fullWidth
+          className="rounded-lg"
+        >
+          {labels.morePractice}
+        </Button>
 
-          {otherPracticeLink && (
-            <div className="text-center pt-2">
-              <Link
-                href={otherPracticeLink.href}
-                className="text-primary hover:underline text-sm font-medium"
-              >
-                {otherPracticeLink.label}
-              </Link>
-            </div>
-          )}
+        {otherPracticeLink && (
+          <div className="text-center pt-2">
+            <Link
+              href={otherPracticeLink.href}
+              className="text-primary hover:underline text-sm font-medium"
+            >
+              {otherPracticeLink.label}
+            </Link>
+          </div>
+        )}
 
-          {afterActions}
-        </div>
-      </PracticePanel>
+        {afterActions}
+      </div>
 
       {/* Ad banner before related content */}
       {beforeRelatedContent && <div className="mt-12">{beforeRelatedContent}</div>}
 
       {/* Related learning module */}
       {relatedModule && (
-        <PracticePanel className="mt-12 p-6 space-y-3">
+        <div className="mt-12 space-y-3">
           <SectionTitle>
             {relatedModule.sectionTitle || labels.relatedLearning || 'Related Learning'}
           </SectionTitle>
@@ -132,8 +128,8 @@ export function PracticeComplete({
             description={relatedModule.description}
             locale={locale}
           />
-        </PracticePanel>
+        </div>
       )}
-    </PracticeLayout>
+    </>
   );
 }

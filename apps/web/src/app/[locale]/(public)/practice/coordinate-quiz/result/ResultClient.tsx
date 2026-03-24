@@ -11,10 +11,11 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerWide?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -67,7 +68,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBanner}
+        beforeRelatedContent={adBannerWide}
         relatedModule={{
           href: '/learn/coordinates/coordinate-confusion',
           icon: '🔄',
@@ -80,6 +81,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         }}
         afterActions={<SignUpBanner locale={locale} />}
       />
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }

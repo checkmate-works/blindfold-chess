@@ -11,9 +11,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
+  adBannerStandard?: React.ReactNode;
 };
 
-export function ResultClient({ locale }: Props) {
+export function ResultClient({ locale, adBannerStandard }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tPractice = useTranslations('practice');
   const tNavigation = useTranslations('navigation');
@@ -74,6 +75,7 @@ export function ResultClient({ locale }: Props) {
         }}
         afterActions={<SignUpBanner locale={locale} />}
       />
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }

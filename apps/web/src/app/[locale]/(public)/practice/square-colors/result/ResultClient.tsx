@@ -11,10 +11,11 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerWide?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) {
   const router = useRouter();
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
@@ -37,7 +38,6 @@ export function ResultClient({ locale, adBanner }: Props) {
   // Prepare labels
   const labels = {
     ...getCommonPracticeCompleteLabels(tPractice),
-    score: t('accuracy'), // Reuse existing "Accuracy" label which maps to "正解率" in JA
     recreationProgress: t('accuracy'),
     averageTime: t('averageTime'),
     correct: t('correct'),
@@ -78,7 +78,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         locale={locale}
         labels={labels}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBanner}
+        beforeRelatedContent={adBannerWide}
         relatedModule={relatedModule}
         averageTimeText={averageTimeText}
         otherPracticeLink={{
@@ -87,6 +87,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         }}
         afterActions={<SignUpBanner locale={locale} />}
       />
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }
