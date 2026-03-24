@@ -87,7 +87,6 @@ describe('VsAiCard', () => {
 
       const skeleton = container.querySelector('.animate-pulse');
       expect(skeleton).toBeInTheDocument();
-      // Should not render any links while loading
       expect(screen.queryAllByRole('link')).toHaveLength(0);
     });
   });
@@ -337,12 +336,11 @@ describe('VsAiCard', () => {
   });
 
   describe('"all games" link is always present', () => {
-    it('should show "all games" link in loading state', () => {
+    it('should show skeleton in loading state (no links)', () => {
       mockUseGameList.mockReturnValue({ games: [], isLoading: true });
 
       const { container } = render(<VsAiCard locale="en" />);
 
-      // In loading state the skeleton is shown, not the full card with links
       const skeleton = container.querySelector('.animate-pulse');
       expect(skeleton).toBeInTheDocument();
     });

@@ -73,9 +73,8 @@ export default async function HomePage({ params }: Props) {
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
-        <VsAiCard locale={locale} />
-
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+          <VsAiCard locale={locale} />
           <FeedClient
             initialItems={initialFeed.items}
             initialCursor={initialFeed.nextCursor}
