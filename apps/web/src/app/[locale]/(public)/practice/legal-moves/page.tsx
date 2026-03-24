@@ -1,6 +1,11 @@
-import { getTranslations } from 'next-intl/server';
+import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { SUPPORTED_LOCALES } from '@/config';
+
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -13,8 +18,13 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata({ params }: Props) {
+export async function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/legal-moves' }),
@@ -25,6 +35,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function LegalMovesPage({ params }: Props) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
   return (
@@ -33,6 +44,44 @@ export default async function LegalMovesPage({ params }: Props) {
 
       <PagePanel>
         <LegalMoves locale={locale} />
+
+        <AdBanner slot="banner-wide" locale={locale} />
+
+        <PracticePanel className="mt-8 p-6 space-y-4">
+          <SectionTitle>{t('practice.legalMoves.relatedArticles')}</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardLink
+              href="/learn/moves/king-movement"
+              icon="♔"
+              title={t('practice.legalMoves.articles.king.title')}
+              description={t('practice.legalMoves.articles.king.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/moves/knight-movement"
+              icon="♘"
+              title={t('practice.legalMoves.articles.knight.title')}
+              description={t('practice.legalMoves.articles.knight.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/moves/rook-movement"
+              icon="♜"
+              title={t('practice.legalMoves.articles.rook.title')}
+              description={t('practice.legalMoves.articles.rook.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/moves/bishop-movement"
+              icon="♗"
+              title={t('practice.legalMoves.articles.bishop.title')}
+              description={t('practice.legalMoves.articles.bishop.description')}
+              locale={locale}
+            />
+          </div>
+        </PracticePanel>
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 

@@ -7,7 +7,7 @@ import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
@@ -56,40 +56,22 @@ export function CoordinateQuizSetup({
 
         <Button
           onClick={handleStart}
-          variant="primary"
+          variant="secondary"
           size="lg"
           className="w-full mt-6"
           icon={<FaPlay />}
         >
           {tp('startTraining')}
         </Button>
-      </PracticePanel>
-
-      <PracticePanel className="mt-8 p-6 space-y-4">
-        <SectionTitle>{t('relatedArticles')}</SectionTitle>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <CardLink
-            href="/learn/coordinates/coordinate-confusion"
-            icon="🔄"
-            title={t('articles.coordinateConfusion.title')}
-            description={t('articles.coordinateConfusion.description')}
-            locale={locale}
-          />
-          <CardLink
-            href="/learn/coordinates/anchor-squares"
-            icon="⚓"
-            title={t('articles.anchorSquares.title')}
-            description={t('articles.anchorSquares.description')}
-            locale={locale}
-          />
-          <CardLink
-            href="/learn/notation/algebraic-notation"
-            icon="🔤"
-            title={t('articles.algebraicNotation.title')}
-            description={t('articles.algebraicNotation.description')}
-            locale={locale}
-          />
-        </div>
+        <Button
+          onClick={() => router.push(`/${locale}/practice/coordinate-quiz/challenge/session`)}
+          variant="primary"
+          size="lg"
+          icon={<FaPlay />}
+          className="w-full mt-3"
+        >
+          {tp('startChallenge')}
+        </Button>
       </PracticePanel>
     </div>
   );

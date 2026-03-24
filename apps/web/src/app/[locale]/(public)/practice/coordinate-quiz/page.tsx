@@ -3,7 +3,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
+import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -42,6 +44,37 @@ export default async function CoordinateQuizPage({ params }: Props) {
 
       <PagePanel>
         <CoordinateQuiz locale={locale} />
+
+        <AdBanner slot="banner-wide" locale={locale} />
+
+        <PracticePanel className="mt-8 p-6 space-y-4">
+          <SectionTitle>{t('practice.coordinateQuiz.relatedArticles')}</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <CardLink
+              href="/learn/coordinates/coordinate-confusion"
+              icon="🔄"
+              title={t('practice.coordinateQuiz.articles.coordinateConfusion.title')}
+              description={t('practice.coordinateQuiz.articles.coordinateConfusion.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/coordinates/anchor-squares"
+              icon="⚓"
+              title={t('practice.coordinateQuiz.articles.anchorSquares.title')}
+              description={t('practice.coordinateQuiz.articles.anchorSquares.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/learn/notation/algebraic-notation"
+              icon="🔤"
+              title={t('practice.coordinateQuiz.articles.algebraicNotation.title')}
+              description={t('practice.coordinateQuiz.articles.algebraicNotation.description')}
+              locale={locale}
+            />
+          </div>
+        </PracticePanel>
+
+        <AdBanner slot="banner-standard" locale={locale} />
 
         <Divider />
 
