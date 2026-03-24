@@ -31,7 +31,7 @@ export function CoordinateQuizSetup({
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const settingsQuery = `boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
+  const settingsQuery = `orientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
 
   const handleStartTraining = () => {
     router.push(

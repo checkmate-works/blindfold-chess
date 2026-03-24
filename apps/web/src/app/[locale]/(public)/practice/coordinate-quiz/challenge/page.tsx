@@ -14,7 +14,7 @@ type Props = {
     locale: Locale;
   }>;
   searchParams: Promise<{
-    boardOrientation?: string;
+    orientation?: string;
     feedbackSpeed?: string;
   }>;
 };
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CoordinateQuizChallengePage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { boardOrientation, feedbackSpeed } = await searchParams;
+  const { orientation, feedbackSpeed } = await searchParams;
   const t = await getTranslations({ locale });
 
   return (
@@ -53,7 +53,7 @@ export default async function CoordinateQuizChallengePage({ params, searchParams
     >
       <CoordinateQuizChallengeSetup
         locale={locale}
-        boardOrientation={boardOrientation || 'white'}
+        boardOrientation={orientation || 'white'}
         feedbackSpeed={feedbackSpeed || 'normal'}
       />
     </PracticeSessionPage>

@@ -40,13 +40,13 @@ export function ResultClient({
 
   // Try Again: 同じ設定でセッションを即座にやり直す
   const sessionParams = new URLSearchParams();
-  if (orientation) sessionParams.set('boardOrientation', orientation);
+  if (orientation) sessionParams.set('orientation', orientation);
   if (speed) sessionParams.set('feedbackSpeed', speed);
   const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge/session?${sessionParams.toString()}`;
 
   // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
   const settingsParams = new URLSearchParams();
-  if (orientation) settingsParams.set('boardOrientation', orientation);
+  if (orientation) settingsParams.set('orientation', orientation);
   if (speed) settingsParams.set('feedbackSpeed', speed);
   const changeSettingsUrl = `/${locale}/practice/coordinate-quiz/challenge?${settingsParams.toString()}`;
 

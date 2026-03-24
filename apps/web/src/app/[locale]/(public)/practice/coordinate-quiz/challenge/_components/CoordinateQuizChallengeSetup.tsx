@@ -53,7 +53,7 @@ export function CoordinateQuizChallengeSetup({
 
   const handleStart = () => {
     const params = new URLSearchParams({
-      boardOrientation,
+      orientation: boardOrientation,
       feedbackSpeed,
     });
     router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${params.toString()}`);

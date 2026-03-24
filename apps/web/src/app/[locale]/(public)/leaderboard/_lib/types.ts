@@ -90,3 +90,23 @@ export function buildDetailPath(
 ): string {
   return `/leaderboard/${period}/${moduleToSlug(module)}/${key}`;
 }
+
+/**
+ * Build the challenge page path for a given module and key.
+ *
+ * - coordinate_quiz + key → /practice/coordinate-quiz/challenge?orientation={key}
+ * - legal_moves + key     → /practice/legal-moves/challenge?piece={key}
+ * - square_colors + key   → /practice/square-colors/challenge
+ */
+export function buildChallengePath(module: LeaderboardModule, key: string): string {
+  const slug = moduleToSlug(module);
+
+  switch (module) {
+    case 'coordinate_quiz':
+      return `/practice/${slug}/challenge?orientation=${key}`;
+    case 'legal_moves':
+      return `/practice/${slug}/challenge?piece=${key}`;
+    case 'square_colors':
+      return `/practice/${slug}/challenge`;
+  }
+}
