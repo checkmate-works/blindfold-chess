@@ -172,7 +172,7 @@ describe('VsAiCard', () => {
       expect(screen.getByText('recent')).toBeInTheDocument();
     });
 
-    it('should link resume button to /games/play', () => {
+    it('should link resume button to /games/play with gameId query parameter', () => {
       const game = createMockGame({ id: 'game-1', status: 'in_progress' });
       mockUseGameList.mockReturnValue({
         games: [game],
@@ -182,7 +182,7 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1');
     });
 
     it('should link new game button to /games/new/standard', () => {
@@ -249,6 +249,10 @@ describe('VsAiCard', () => {
       expect(screen.getByText('level 10')).toBeInTheDocument();
       expect(screen.getByText('2 moves')).toBeInTheDocument();
       expect(screen.getByTestId('color-icon')).toHaveTextContent('white');
+
+      // Resume link should point to the latest in-progress game's id
+      const resumeLink = screen.getByText('resume').closest('a');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-new');
     });
   });
 
@@ -322,6 +326,10 @@ describe('VsAiCard', () => {
       // Should show inProgressGame info (skillLevel 8)
       expect(screen.getByText('level 8')).toBeInTheDocument();
       expect(screen.getByText('4 moves')).toBeInTheDocument();
+
+      // Resume link should use the in-progress game's id, not the completed one
+      const resumeLink = screen.getByText('resume').closest('a');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-active');
     });
   });
 
