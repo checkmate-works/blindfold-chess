@@ -7,35 +7,21 @@ import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PracticeMode } from '../_lib/types';
-
 type Props = {
   locale: Locale;
-  mode: PracticeMode;
-  onModeChange: (mode: PracticeMode) => void;
 };
 
-export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
+export function SquareColorsSetup({ locale }: Props) {
   const t = useTranslations('practice.squareColors');
   const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleStart = () => {
-    if (mode === 'training') {
-      router.push(`/${locale}/practice/square-colors/training#square-colors-training-session`);
-    } else {
-      router.push(`/${locale}/practice/square-colors/challenge#square-colors-challenge`);
-    }
+    router.push(`/${locale}/practice/square-colors/training#square-colors-training-session`);
   };
-
-  const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'training', label: tp('modeTraining') },
-    { value: 'timed', label: tp('modeTimed') },
-  ];
 
   return (
     <div>
@@ -43,20 +29,8 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
-          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+          <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
         </div>
-
-        {mode === 'training' && (
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-          </div>
-        )}
-
-        {mode === 'timed' && (
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">{tp('challengeDescription')}</p>
-          </div>
-        )}
 
         <Button
           onClick={handleStart}
@@ -65,7 +39,7 @@ export function SquareColorsSetup({ locale, mode, onModeChange }: Props) {
           icon={<FaPlay />}
           className="w-full"
         >
-          {mode === 'training' ? tp('startTraining') : t('start')}
+          {tp('startTraining')}
         </Button>
       </PracticePanel>
 

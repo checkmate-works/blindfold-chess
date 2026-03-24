@@ -404,6 +404,14 @@
     "trainingDescription": "問題が終了するまで出続けます。終了ボタンで終了できます。",
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
+    "startChallenge": "チャレンジ開始",
+    "challengeSetup": {
+      "title": "チャレンジルール",
+      "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
+      "mistakeLimit": "{count}回ミスするとゲームオーバーです。",
+      "noMistakeLimit": "ミス回数の制限はありません。",
+      "leaderboard": "スコアはリーダーボードに記録されます。"
+    },
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
     "quitConfirmModal": {

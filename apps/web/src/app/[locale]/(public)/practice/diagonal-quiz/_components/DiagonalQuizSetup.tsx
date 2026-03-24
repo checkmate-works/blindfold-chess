@@ -4,12 +4,9 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
-import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -17,42 +14,21 @@ import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLi
 
 type Props = {
   locale: Locale;
-  timeLimit: number;
-  onTimeLimitChange: (value: number) => void;
-  mode: PracticeMode;
-  onModeChange: (mode: PracticeMode) => void;
 };
 
-export function DiagonalQuizSetup({
-  locale,
-  timeLimit,
-  onTimeLimitChange,
-  mode,
-  onModeChange,
-}: Props) {
+export function DiagonalQuizSetup({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleStart = () => {
-    if (mode === 'training') {
-      router.push(`/${locale}/practice/diagonal-quiz/training#diagonal-quiz-training-session`);
-    } else {
-      router.push(
-        `/${locale}/practice/diagonal-quiz/challenge?timeLimit=${timeLimit}#diagonal-quiz-session`
-      );
-    }
+    router.push(`/${locale}/practice/diagonal-quiz/training#diagonal-quiz-training-session`);
   };
 
   const handleViewTutorial = () => {
     localStorage.removeItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY);
     router.push(`/${locale}/practice/diagonal-quiz/tutorial`);
   };
-
-  const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'timed', label: tp('modeTimed') },
-    { value: 'training', label: tp('modeTraining') },
-  ];
 
   return (
     <div>
@@ -64,27 +40,8 @@ export function DiagonalQuizSetup({
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
-          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
+          <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
         </div>
-
-        {mode === 'timed' && (
-          <div className="mb-6">
-            <TimeSlider
-              timeLimit={timeLimit}
-              onTimeLimitChange={onTimeLimitChange}
-              labels={{
-                timeLimit: t('timeLimit'),
-                seconds: t('seconds'),
-              }}
-            />
-          </div>
-        )}
-
-        {mode === 'training' && (
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-          </div>
-        )}
 
         <Button
           onClick={handleStart}
@@ -93,7 +50,7 @@ export function DiagonalQuizSetup({
           icon={<FaPlay />}
           className="w-full"
         >
-          {mode === 'training' ? tp('startTraining') : t('start')}
+          {tp('startTraining')}
         </Button>
 
         <div className="flex justify-center mt-6">

@@ -1,8 +1,5 @@
 'use client';
 
-import type { PracticeMode } from '@blindfold-chess/features/common';
-
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizPageContent } from './DiagonalQuizPageContent';
@@ -11,24 +8,6 @@ type Props = {
   locale: Locale;
 };
 
-type DiagonalQuizLocalSettings = {
-  timeLimit: number;
-  mode: PracticeMode;
-};
-
-const STORAGE_KEY = 'diagonalQuiz_settings';
-const DEFAULTS: DiagonalQuizLocalSettings = { timeLimit: 60, mode: 'timed' };
-
 export default function DiagonalQuiz({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
-
-  return (
-    <DiagonalQuizPageContent
-      locale={locale}
-      timeLimit={settings.timeLimit}
-      onTimeLimitChange={(timeLimit) => updateSettings({ timeLimit })}
-      mode={settings.mode}
-      onModeChange={(mode) => updateSettings({ mode })}
-    />
-  );
+  return <DiagonalQuizPageContent locale={locale} />;
 }
