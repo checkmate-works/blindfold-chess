@@ -42,19 +42,19 @@ export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarU
         >
           <ChallengeCard
             locale={locale}
-            href="/practice/square-colors?mode=timed"
+            href="/practice/square-colors/challenge"
             label={t('dashboard.squareColors')}
             icon="🎨"
           />
           <ChallengeCard
             locale={locale}
-            href="/practice/coordinate-quiz?mode=timed"
+            href="/practice/coordinate-quiz/challenge"
             label={t('dashboard.coordinateQuiz')}
             icon="🎯"
           />
           <ChallengeCard
             locale={locale}
-            href="/practice/legal-moves?mode=timed"
+            href="/practice/legal-moves/challenge"
             label={t('dashboard.legalMoves')}
             icon="♟️"
           />
