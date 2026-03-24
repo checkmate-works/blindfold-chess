@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
@@ -13,9 +15,17 @@ type Props = {
   locale: Locale;
   adBannerWide?: React.ReactNode;
   adBannerStandard?: React.ReactNode;
+  leaderboardRows?: LeaderboardRow[];
+  leaderboardDetailPath?: string;
 };
 
-export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) {
+export function ResultClient({
+  locale,
+  adBannerWide,
+  adBannerStandard,
+  leaderboardRows,
+  leaderboardDetailPath,
+}: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -68,19 +78,20 @@ export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) 
         }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBannerWide}
-        relatedModule={{
-          href: '/learn/coordinates/coordinate-confusion',
-          icon: '🔄',
-          title: t('articles.coordinateConfusion.title'),
-          description: t('articles.coordinateConfusion.description'),
-        }}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
         afterActions={<SignUpBanner locale={locale} />}
+        beforeRelatedContent={adBannerWide}
       />
+      {leaderboardRows && leaderboardDetailPath && (
+        <LeaderboardPreview
+          rows={leaderboardRows}
+          detailPath={leaderboardDetailPath}
+          locale={locale}
+        />
+      )}
       {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );

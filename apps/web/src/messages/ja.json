@@ -2780,6 +2780,8 @@
       }
     },
     "backToList": "ランキング一覧へ戻る",
+    "viewMore": "ランキングをもっと見る",
+    "weeklyRanking": "週間ランキング",
     "signUpBanner": {
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",

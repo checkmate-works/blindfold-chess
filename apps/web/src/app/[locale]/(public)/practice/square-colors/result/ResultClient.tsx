@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
+import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
@@ -13,9 +15,17 @@ type Props = {
   locale: Locale;
   adBannerWide?: React.ReactNode;
   adBannerStandard?: React.ReactNode;
+  leaderboardRows?: LeaderboardRow[];
+  leaderboardDetailPath?: string;
 };
 
-export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) {
+export function ResultClient({
+  locale,
+  adBannerWide,
+  adBannerStandard,
+  leaderboardRows,
+  leaderboardDetailPath,
+}: Props) {
   const router = useRouter();
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
@@ -44,15 +54,6 @@ export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) 
     incorrect: t('incorrect'),
   };
 
-  // Define related module
-  const relatedModule = {
-    href: '/learn/coordinates/square-colors',
-    icon: '🎨',
-    title: t('viewArticle'),
-    description: t('articleDescription'),
-    sectionTitle: t('requiredKnowledge'),
-  };
-
   // Format average time text
   const averageTimeText =
     total > 0 ? tPractice('secondsFormat', { seconds: timePerQuestion.toFixed(1) }) : undefined;
@@ -78,15 +79,21 @@ export function ResultClient({ locale, adBannerWide, adBannerStandard }: Props) 
         locale={locale}
         labels={labels}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBannerWide}
-        relatedModule={relatedModule}
         averageTimeText={averageTimeText}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
         afterActions={<SignUpBanner locale={locale} />}
+        beforeRelatedContent={adBannerWide}
       />
+      {leaderboardRows && leaderboardDetailPath && (
+        <LeaderboardPreview
+          rows={leaderboardRows}
+          detailPath={leaderboardDetailPath}
+          locale={locale}
+        />
+      )}
       {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );

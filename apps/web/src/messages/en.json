@@ -2802,6 +2802,8 @@
       }
     },
     "backToList": "Back to Leaderboard",
+    "viewMore": "View Full Leaderboard",
+    "weeklyRanking": "Weekly Ranking",
     "signUpBanner": {
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",

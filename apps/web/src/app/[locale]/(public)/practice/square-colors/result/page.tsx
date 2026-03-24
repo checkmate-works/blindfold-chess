@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
+import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -34,12 +36,18 @@ export default async function SquareColorsResultPage(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
 
+  const leaderboardResult = await getLeaderboard('square_colors', 'default', 'weekly', 1);
+  const leaderboardRows = leaderboardResult.rows.slice(0, 3);
+  const leaderboardDetailPath = buildDetailPath('weekly', 'square_colors', 'default');
+
   return (
     <Suspense>
       <ResultClient
         locale={locale}
         adBannerWide={<AdBanner slot="banner-wide" locale={locale} />}
         adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+        leaderboardRows={leaderboardRows}
+        leaderboardDetailPath={leaderboardDetailPath}
       />
     </Suspense>
   );
