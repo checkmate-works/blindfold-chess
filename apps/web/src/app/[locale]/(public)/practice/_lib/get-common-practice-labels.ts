@@ -14,7 +14,7 @@ export function getCommonPracticeCompleteLabels(
 > {
   return {
     practiceComplete: tPractice('practiceComplete'),
-    score: tPractice('score'),
+    score: tPractice('result'),
     tryAgain: tPractice('tryAgain'),
     morePractice: tPractice('changeSettings'),
     relatedLearning: tPractice('relatedLearning'),

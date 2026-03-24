@@ -23,7 +23,7 @@ export function PracticeCompleteSummary({
     <>
       {/* Score display */}
       {scoreStats && labels.recreationProgress ? (
-        <SectionTitle className="text-2xl font-bold text-center mb-6">{labels.score}</SectionTitle>
+        <SectionTitle className="text-2xl font-bold mb-6">{labels.score}</SectionTitle>
       ) : (
         <div className="mb-6 text-center">
           <p className="text-3xl font-bold text-foreground mb-2">

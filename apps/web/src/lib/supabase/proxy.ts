@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
-import { type User } from '@supabase/supabase-js';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -12,7 +11,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    return { response: supabaseResponse, user: null };
+    return { response: supabaseResponse, authenticated: false };
   }
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
@@ -32,9 +31,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Use getClaims() instead of getUser() for better performance.
+  // getClaims() validates the JWT locally via JWKS (cached) and triggers
+  // session refresh when called without a jwt parameter, avoiding a
+  // round-trip to the Auth server on every request.
+  const { data, error } = await supabase.auth.getClaims();
 
-  return { response: supabaseResponse, user: user as User | null };
+  return { response: supabaseResponse, authenticated: !error && !!data };
 }

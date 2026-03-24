@@ -50,22 +50,22 @@ export async function proxy(request: NextRequest) {
     return NextResponse.json(null, { status: 404 });
   }
 
-  const { response, user } = await updateSession(request);
+  const { response, authenticated } = await updateSession(request);
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
-  if (isAdminPath(pathname) && !user) {
+  if (isAdminPath(pathname) && !authenticated) {
     return new NextResponse(null, { status: 404 });
   }
 
   // Redirect unauthenticated users away from auth-required pages
-  if (isAuthRequiredPath(pathname) && !user) {
+  if (isAuthRequiredPath(pathname) && !authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const signInUrl = new URL(`/${locale}/sign-in`, request.url);
     return NextResponse.redirect(signInUrl);
   }
 
   // Redirect authenticated users away from the sign-in page
-  if (isSignInPath(pathname) && user) {
+  if (isSignInPath(pathname) && authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
     return NextResponse.redirect(mypageUrl);

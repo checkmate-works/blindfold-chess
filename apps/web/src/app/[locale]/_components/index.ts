@@ -4,6 +4,7 @@ export { CardLink } from './CardLink';
 export { ChessBoardDemo } from './ChessBoardDemo';
 export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
+export { FormErrorMessage } from './FormErrorMessage';
 export { GameListItemBase } from './GameListItemBase';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { LinkedText } from './LinkedText';

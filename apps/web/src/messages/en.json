@@ -404,6 +404,14 @@
     "trainingDescription": "Questions will keep appearing until you stop. Press the End button to finish.",
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
+    "startChallenge": "Start Challenge",
+    "challengeSetup": {
+      "title": "Challenge Rules",
+      "timeLimit": "Answer as many questions as you can within {seconds} seconds.",
+      "mistakeLimit": "The game ends after {count} incorrect answers.",
+      "noMistakeLimit": "There is no limit on incorrect answers.",
+      "leaderboard": "Your score will be recorded on the leaderboard."
+    },
     "endTraining": "End",
     "trainingEnded": "Training ended",
     "quitConfirmModal": {
@@ -1651,7 +1659,8 @@
       "topicOpenings": "Openings",
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
-      "viewMypage": "My Page"
+      "viewMypage": "My Page",
+      "viewHome": "Home"
     }
   },
   "AuthStatusDisplay": {
@@ -1669,7 +1678,17 @@
     "googleOAuthLoading": "Signing in...",
     "authError": "Sign-in failed. Please try again.",
     "noAccount": "Don't have an account?",
-    "signUp": "Register"
+    "signUp": "Register",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "emailSignIn": "Sign in with email",
+    "emailSignInLoading": "Signing in...",
+    "emailSignInError": "Invalid email or password. Please try again.",
+    "forgotPassword": "Forgot your password?",
+    "rateLimited": "Too many sign-in attempts. Please try again later."
   },
   "signUp": {
     "title": "Register",
@@ -1679,6 +1698,19 @@
     "authError": "Registration failed. Please try again.",
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in",
+    "orDivider": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "emailSignUp": "Register with email",
+    "emailSignUpLoading": "Registering...",
+    "emailSignUpError": "Registration failed. Please try again.",
+    "rateLimited": "Too many sign-up attempts. Please try again later.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 8 characters.",
     "freeBadge": "FREE",
     "freeAssurance": "Completely free \u00b7 No credit card required",
     "features": {
@@ -1701,6 +1733,44 @@
         "description": "Build your chess identity with a personalized profile and history."
       }
     }
+  },
+  "verifyEmail": {
+    "title": "Check Your Email",
+    "description": "We've sent a confirmation link to your email address.",
+    "checkInbox": "Please check your inbox and click the link to verify your account.",
+    "resendButton": "Resend confirmation email",
+    "resendLoading": "Sending...",
+    "resendSuccess": "Confirmation email resent. Please check your inbox.",
+    "resendError": "Failed to resend email. Please try again later.",
+    "rateLimited": "Too many email resend requests. Please try again later.",
+    "resendCooldown": "Resend available in {seconds}s",
+    "breadcrumbSignUp": "Register"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your email address and we'll send you a link to reset your password.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "submit": "Send reset link",
+    "submitLoading": "Sending...",
+    "error": "Failed to send reset email. Please try again.",
+    "rateLimited": "Too many password reset requests. Please try again later.",
+    "sentDescription": "We've sent a password reset link to your email address.",
+    "checkInbox": "Please check your inbox and click the link to reset your password.",
+    "backToSignIn": "Back to Sign In"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter your new password below.",
+    "passwordLabel": "New password",
+    "passwordPlaceholder": "At least 8 characters",
+    "confirmPasswordLabel": "Confirm new password",
+    "confirmPasswordPlaceholder": "Re-enter your new password",
+    "submit": "Reset password",
+    "submitLoading": "Resetting...",
+    "error": "Failed to reset password. Please try again.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordTooShort": "Password must be at least 8 characters."
   },
   "articles": {
     "pageTitle": "Articles",
@@ -2036,7 +2106,22 @@
     "breadcrumbMypage": "My Page",
     "viewPublicProfile": "@{username}'s profile",
     "profileUpdated": "Profile updated",
-    "deleteAccountLink": "Delete Account"
+    "deleteAccountLink": "Delete Account",
+    "changePassword": {
+      "title": "Change Password",
+      "currentPasswordLabel": "Current Password",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm New Password",
+      "submit": "Change Password",
+      "submitLoading": "Changing...",
+      "passwordMismatch": "New passwords do not match.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordSameAsCurrent": "New password must be different from the current password.",
+      "currentPasswordIncorrect": "Current password is incorrect.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "error": "An error occurred. Please try again.",
+      "success": "Password changed successfully."
+    }
   },
   "Admin": {
     "title": "Admin",
@@ -2751,11 +2836,22 @@
         "default": "Square Colors"
       }
     },
+    "tryChallenge": "Try This Challenge",
     "backToList": "Back to Leaderboard",
+    "viewMore": "View Full Leaderboard",
+    "weeklyRanking": "Weekly Ranking",
     "signUpBanner": {
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",
       "cta": "Sign Up Free"
+    }
+  },
+  "validation": {
+    "password": {
+      "tooShort": "Password must be at least {minLength} characters.",
+      "missingLetter": "Password must contain at least one letter.",
+      "missingDigit": "Password must contain at least one digit.",
+      "weak": "Password is too weak. Please choose a stronger password."
     }
   }
 }

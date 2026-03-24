@@ -1,4 +1,4 @@
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -46,11 +46,13 @@ export function PracticeSessionPage({
     <div className={containerClassName}>
       <PageTitle>{title}</PageTitle>
 
-      {children}
+      <PagePanel>
+        {children}
 
-      {showDivider && <Divider className={dividerClassName} />}
+        {showDivider && <Divider className={dividerClassName} />}
 
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
+        <Breadcrumb items={breadcrumbItems} locale={locale} />
+      </PagePanel>
     </div>
   );
 }

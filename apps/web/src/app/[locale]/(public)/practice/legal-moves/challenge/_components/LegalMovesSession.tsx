@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -20,17 +20,11 @@ import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {
   locale: Locale;
-  initialTimeLimit: number;
   selectedPieces: PieceType[];
   selectedPiece: string;
 };
 
-export default function LegalMovesSession({
-  locale,
-  initialTimeLimit,
-  selectedPieces,
-  selectedPiece,
-}: Props) {
+export default function LegalMovesSession({ locale, selectedPieces, selectedPiece }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('practice.legalMoves');
@@ -78,7 +72,7 @@ export default function LegalMovesSession({
     togglePause,
     totalCount,
   } = useTimedSession<MoveQuestion>({
-    timeLimit: initialTimeLimit,
+    timeLimit: CHALLENGE_TIME_LIMIT,
     generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
   });
@@ -117,7 +111,6 @@ export default function LegalMovesSession({
     params.set('score', correctCount.toString());
     params.set('total', total.toString());
     params.set('time', totalTime.toString());
-    params.set('timeLimit', initialTimeLimit.toString());
     params.set('piece', selectedPiece);
 
     const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
@@ -145,7 +138,6 @@ export default function LegalMovesSession({
     totalCount,
     locale,
     router,
-    initialTimeLimit,
     selectedPiece,
     totalTime,
     user,
@@ -170,7 +162,7 @@ export default function LegalMovesSession({
       <LegalMovesPlaying
         currentQuestion={currentQuestion}
         timeRemaining={timeRemaining}
-        timeLimit={initialTimeLimit}
+        timeLimit={CHALLENGE_TIME_LIMIT}
         timeElapsed={timeElapsed}
         showResult={showFeedback}
         lastAnswer={lastAnswer}

@@ -18,7 +18,7 @@ describe('getCommonPracticeCompleteLabels', () => {
     getCommonPracticeCompleteLabels(mockT);
     expect(mockT).toHaveBeenCalledTimes(5);
     expect(mockT).toHaveBeenCalledWith('practiceComplete');
-    expect(mockT).toHaveBeenCalledWith('score');
+    expect(mockT).toHaveBeenCalledWith('result');
     expect(mockT).toHaveBeenCalledWith('tryAgain');
     expect(mockT).toHaveBeenCalledWith('changeSettings');
     expect(mockT).toHaveBeenCalledWith('relatedLearning');
@@ -33,7 +33,7 @@ describe('getCommonPracticeCompleteLabels', () => {
     const result = getCommonPracticeCompleteLabels(mockT);
     expect(result).toEqual({
       practiceComplete: 'translated_practiceComplete',
-      score: 'translated_score',
+      score: 'translated_result',
       tryAgain: 'translated_tryAgain',
       morePractice: 'translated_changeSettings',
       relatedLearning: 'translated_relatedLearning',
@@ -44,7 +44,7 @@ describe('getCommonPracticeCompleteLabels', () => {
     const customT = (key: string) => {
       const translations: Record<string, string> = {
         practiceComplete: 'Practice Complete!',
-        score: 'Score',
+        result: 'Result',
         tryAgain: 'Try Again',
         changeSettings: 'More Practice',
         relatedLearning: 'Related Learning',
@@ -53,7 +53,7 @@ describe('getCommonPracticeCompleteLabels', () => {
     };
     const result = getCommonPracticeCompleteLabels(customT);
     expect(result.practiceComplete).toBe('Practice Complete!');
-    expect(result.score).toBe('Score');
+    expect(result.score).toBe('Result');
     expect(result.tryAgain).toBe('Try Again');
     expect(result.morePractice).toBe('More Practice');
     expect(result.relatedLearning).toBe('Related Learning');

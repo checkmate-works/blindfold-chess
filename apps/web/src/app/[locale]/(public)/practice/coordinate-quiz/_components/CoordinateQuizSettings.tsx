@@ -3,48 +3,27 @@
 import { useTranslations } from 'next-intl';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
-import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 
 import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
 import { FEEDBACK_SPEEDS } from '../_lib/types';
-import { formatTime } from '../_lib/utils';
 
 type Props = {
-  timeLimit: number;
   boardOrientation: BoardOrientation;
   feedbackSpeed: FeedbackSpeed;
-  onTimeLimitChange: (time: number) => void;
   onBoardOrientationChange: (orientation: BoardOrientation) => void;
   onFeedbackSpeedChange: (speed: FeedbackSpeed) => void;
-  showTimeSlider?: boolean;
 };
 
 export function CoordinateQuizSettings({
-  timeLimit,
   boardOrientation,
   feedbackSpeed,
-  onTimeLimitChange,
   onBoardOrientationChange,
   onFeedbackSpeedChange,
-  showTimeSlider = true,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Time Limit */}
-      {showTimeSlider && (
-        <TimeSlider
-          timeLimit={timeLimit}
-          onTimeLimitChange={onTimeLimitChange}
-          labels={{
-            timeLimit: t('timeLimit'),
-          }}
-          showSeconds={false}
-          formatTime={formatTime}
-        />
-      )}
-
       {/* Board Orientation */}
       <BoardOrientationSelector
         value={boardOrientation}

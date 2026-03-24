@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Square } from '@blindfold-chess/types';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -22,14 +22,12 @@ import { CoordinateQuizChallengePlaying } from './CoordinateQuizChallengePlaying
 
 type Props = {
   locale: Locale;
-  initialTimeLimit: number;
   initialBoardOrientation: string;
   initialFeedbackSpeed: string;
 };
 
 export default function CoordinateQuizChallenge({
   locale,
-  initialTimeLimit,
   initialBoardOrientation,
   initialFeedbackSpeed,
 }: Props) {
@@ -66,7 +64,7 @@ export default function CoordinateQuizChallenge({
     handleAnswer,
     togglePause,
   } = useTimedSession<CoordinateQuestion>({
-    timeLimit: initialTimeLimit,
+    timeLimit: CHALLENGE_TIME_LIMIT,
     generateQuestion,
     feedbackDuration,
     mistakeAllowance: MISTAKE_LIMIT,
@@ -102,7 +100,6 @@ export default function CoordinateQuizChallenge({
       score: correctCount.toString(),
       total: totalCount.toString(),
       time: totalTime.toString(),
-      timeLimit: initialTimeLimit.toString(),
       orientation: boardOrientation,
       speed: feedbackSpeed,
     });
@@ -132,7 +129,6 @@ export default function CoordinateQuizChallenge({
     locale,
     router,
     totalTime,
-    initialTimeLimit,
     boardOrientation,
     feedbackSpeed,
     user,
@@ -151,7 +147,7 @@ export default function CoordinateQuizChallenge({
       <CoordinateQuizChallengePlaying
         currentQuestion={currentQuestion}
         timeRemaining={timeRemaining}
-        timeLimit={initialTimeLimit}
+        timeLimit={CHALLENGE_TIME_LIMIT}
         timeElapsed={timeElapsed}
         correctAnswers={correctCount}
         wrongAnswers={incorrectCount}

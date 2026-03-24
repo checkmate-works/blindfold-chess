@@ -14,7 +14,7 @@ export function generateCanonicalMetadata({
   locale: string;
   path: string;
 }): Metadata {
-  const baseUrl = SITE_URL.replace(/\/$/, '');
+  const baseUrl = SITE_URL;
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
 
   const canonical = `${baseUrl}/${locale}${cleanPath ? `/${cleanPath}` : ''}`;

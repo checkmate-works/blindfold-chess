@@ -12,12 +12,13 @@ import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 import { useAuth } from '../_contexts/AuthContext';
 
 type Props = {
+  isAuthenticated: boolean;
   avatarUrl?: string | null;
   displayName?: string | null;
 };
 
-export function AuthStatusDisplay({ avatarUrl, displayName }: Props = {}) {
-  const { user, isLoading, signOut } = useAuth();
+export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: Props) {
+  const { user, signOut } = useAuth();
   const locale = useLocale();
   const router = useRouter();
   const t = useTranslations('AuthStatusDisplay');
@@ -35,11 +36,7 @@ export function AuthStatusDisplay({ avatarUrl, displayName }: Props = {}) {
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, []);
 
-  if (isLoading) {
-    return null;
-  }
-
-  if (user) {
+  if (isAuthenticated) {
     return (
       <div ref={containerRef} className="relative">
         <button

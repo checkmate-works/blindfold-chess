@@ -2,7 +2,7 @@
  * Sign Up Page (アカウント登録)
  *
  * @description
- * Registration page using Google OAuth.
+ * Registration page using Google OAuth or email/password.
  * Since OAuth treats sign-up and sign-in as the same operation (signInWithOAuth),
  * existing users authenticating from this page are silently logged in.
  * This is industry-standard behavior and also prevents account enumeration attacks.
@@ -22,7 +22,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AuthErrorMessage } from '../_components/AuthErrorMessage';
 import { GoogleOAuthButton } from '../_components/GoogleOAuthButton';
-import { FeatureCardsSection } from './_components';
+import { EmailSignUpForm, FeatureCardsSection } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -73,15 +73,25 @@ export default async function SignUpPage({ params, searchParams }: Props) {
 
       <PagePanel>
         {error && <AuthErrorMessage namespace="signUp" />}
+
         <div>
           <GoogleOAuthButton namespace="signUp" />
         </div>
+
         <p className="mt-2 text-center text-xs text-muted-foreground">
           <span aria-hidden="true" className="text-success">
             &#x2713;
           </span>{' '}
           {t('freeAssurance')}
         </p>
+
+        <div className="flex items-center gap-4 max-w-sm mx-auto">
+          <Divider className="flex-1" />
+          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
+          <Divider className="flex-1" />
+        </div>
+
+        <EmailSignUpForm />
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('alreadyHaveAccount')}{' '}
           <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">

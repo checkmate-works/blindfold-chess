@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Increase timeout for SSG pages with heavy DB queries (e.g., glossary category pages)
+  staticPageGenerationTimeout: 120,
+
   // Optimize images from external sources (Supabase Storage avatars, etc.)
   images: {
     formats: ['image/avif', 'image/webp'],

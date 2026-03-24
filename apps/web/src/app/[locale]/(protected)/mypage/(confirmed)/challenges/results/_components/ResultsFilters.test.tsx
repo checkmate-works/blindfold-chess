@@ -1,5 +1,7 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { ResultsFilters } from './ResultsFilters';
 
@@ -13,6 +15,10 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<GamePreferencesProvider>{ui}</GamePreferencesProvider>);
+}
+
 describe('ResultsFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -23,9 +29,11 @@ describe('ResultsFilters', () => {
   });
 
   it('renders the menu select with all available menu types', () => {
-    render(<ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />);
+    renderWithProviders(
+      <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
+    );
 
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox');
     expect(select).toBeDefined();
 
     // "allMenuTypes" option + 2 menu types
@@ -33,16 +41,18 @@ describe('ResultsFilters', () => {
     expect(options).toHaveLength(3);
   });
 
-  it('renders without leaderboard key select when no menu is selected', () => {
-    render(<ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />);
+  it('renders without orientation/piece selector when no menu is selected', () => {
+    renderWithProviders(
+      <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
+    );
 
-    // Only one select (menu type)
+    // Only one combobox (menu type select)
     const selects = screen.getAllByRole('combobox');
     expect(selects).toHaveLength(1);
   });
 
-  it('renders leaderboard key select for coordinate_quiz', () => {
-    render(
+  it('renders board orientation selector for coordinate_quiz', async () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -50,16 +60,16 @@ describe('ResultsFilters', () => {
       />
     );
 
-    const selects = screen.getAllByRole('combobox');
-    expect(selects).toHaveLength(2);
-
-    // "allVariants" option + white, black, random
-    const keyOptions = selects[1].querySelectorAll('option');
-    expect(keyOptions).toHaveLength(4);
+    // BoardOrientationSelector renders buttons after isLoaded becomes true
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      // white, black, random orientation buttons
+      expect(buttons).toHaveLength(3);
+    });
   });
 
-  it('renders leaderboard key select for legal_moves', () => {
-    render(
+  it('renders piece selector for legal_moves', async () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -67,16 +77,15 @@ describe('ResultsFilters', () => {
       />
     );
 
-    const selects = screen.getAllByRole('combobox');
-    expect(selects).toHaveLength(2);
-
-    // "allVariants" option + king, queen, rook, bishop, knight, random
-    const keyOptions = selects[1].querySelectorAll('option');
-    expect(keyOptions).toHaveLength(7);
+    // PieceSelector renders buttons: king, queen, rook, bishop, knight, random
+    await waitFor(() => {
+      const buttons = screen.getAllByRole('button');
+      expect(buttons).toHaveLength(6);
+    });
   });
 
-  it('does not render leaderboard key select for menu types without keys', () => {
-    render(
+  it('does not render orientation/piece selector for menu types without keys', () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -86,19 +95,37 @@ describe('ResultsFilters', () => {
 
     const selects = screen.getAllByRole('combobox');
     expect(selects).toHaveLength(1);
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 
-  it('navigates to correct URL when menu is changed', () => {
-    render(<ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />);
+  it('navigates to correct URL with default key when menu is changed to coordinate_quiz', () => {
+    renderWithProviders(
+      <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
+    );
 
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'coordinate_quiz' } });
 
-    expect(mockPush).toHaveBeenCalledWith('/en/mypage/challenges/results?menu=coordinate_quiz');
+    expect(mockPush).toHaveBeenCalledWith(
+      '/en/mypage/challenges/results?menu=coordinate_quiz&key=white'
+    );
+  });
+
+  it('navigates to correct URL with default key when menu is changed to legal_moves', () => {
+    renderWithProviders(
+      <ResultsFilters locale="en" availableMenuTypes={['coordinate_quiz', 'legal_moves']} />
+    );
+
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'legal_moves' } });
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/en/mypage/challenges/results?menu=legal_moves&key=random'
+    );
   });
 
   it('navigates to URL without params when menu is cleared', () => {
-    render(
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -106,14 +133,14 @@ describe('ResultsFilters', () => {
       />
     );
 
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: '' } });
 
     expect(mockPush).toHaveBeenCalledWith('/en/mypage/challenges/results');
   });
 
-  it('navigates to correct URL when leaderboard key is changed', () => {
-    render(
+  it('navigates to correct URL when board orientation is changed', async () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -121,41 +148,22 @@ describe('ResultsFilters', () => {
       />
     );
 
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: 'black' } });
+    // Wait for BoardOrientationSelector to render
+    await waitFor(() => {
+      expect(screen.getAllByRole('button')).toHaveLength(3);
+    });
+
+    // Click the "black" orientation button
+    const blackButton = screen.getByTitle('filters.black');
+    fireEvent.click(blackButton);
 
     expect(mockPush).toHaveBeenCalledWith(
       '/en/mypage/challenges/results?menu=coordinate_quiz&key=black'
     );
   });
 
-  it('navigates to URL without key param when leaderboard key is cleared', () => {
-    render(
-      <ResultsFilters
-        locale="en"
-        availableMenuTypes={['coordinate_quiz', 'legal_moves']}
-        currentMenu="coordinate_quiz"
-        currentKey="white"
-      />
-    );
-
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '' } });
-
-    expect(mockPush).toHaveBeenCalledWith('/en/mypage/challenges/results?menu=coordinate_quiz');
-  });
-
-  it('uses locale in the URL path', () => {
-    render(<ResultsFilters locale="ja" availableMenuTypes={['coordinate_quiz']} />);
-
-    const select = screen.getAllByRole('combobox')[0];
-    fireEvent.change(select, { target: { value: 'coordinate_quiz' } });
-
-    expect(mockPush).toHaveBeenCalledWith('/ja/mypage/challenges/results?menu=coordinate_quiz');
-  });
-
-  it('sets current menu as selected value', () => {
-    render(
+  it('navigates to correct URL when piece is selected', async () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
         availableMenuTypes={['coordinate_quiz', 'legal_moves']}
@@ -163,29 +171,48 @@ describe('ResultsFilters', () => {
       />
     );
 
-    const select = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
-    expect(select.value).toBe('legal_moves');
+    // Wait for PieceSelector to render
+    await waitFor(() => {
+      expect(screen.getAllByRole('button')).toHaveLength(6);
+    });
+
+    // Click the queen button (using aria-label from getLabel)
+    const queenButton = screen.getByTitle('filters.pieces.q');
+    fireEvent.click(queenButton);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/en/mypage/challenges/results?menu=legal_moves&key=queen'
+    );
   });
 
-  it('sets current key as selected value', () => {
-    render(
+  it('uses locale in the URL path', () => {
+    renderWithProviders(<ResultsFilters locale="ja" availableMenuTypes={['coordinate_quiz']} />);
+
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'coordinate_quiz' } });
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/ja/mypage/challenges/results?menu=coordinate_quiz&key=white'
+    );
+  });
+
+  it('sets current menu as selected value', () => {
+    renderWithProviders(
       <ResultsFilters
         locale="en"
-        availableMenuTypes={['coordinate_quiz']}
-        currentMenu="coordinate_quiz"
-        currentKey="black"
+        availableMenuTypes={['coordinate_quiz', 'legal_moves']}
+        currentMenu="legal_moves"
       />
     );
 
-    const selects = screen.getAllByRole('combobox');
-    const keySelect = selects[1] as HTMLSelectElement;
-    expect(keySelect.value).toBe('black');
+    const select = screen.getByRole('combobox') as HTMLSelectElement;
+    expect(select.value).toBe('legal_moves');
   });
 
   it('renders empty state with no available menu types', () => {
-    render(<ResultsFilters locale="en" availableMenuTypes={[]} />);
+    renderWithProviders(<ResultsFilters locale="en" availableMenuTypes={[]} />);
 
-    const select = screen.getAllByRole('combobox')[0];
+    const select = screen.getByRole('combobox');
     // Only the "allMenuTypes" option
     const options = select.querySelectorAll('option');
     expect(options).toHaveLength(1);

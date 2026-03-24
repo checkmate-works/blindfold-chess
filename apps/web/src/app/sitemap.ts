@@ -8,8 +8,7 @@ import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
 import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
 
-// Remove trailing slash from BASE_URL if present to avoid double slashes
-const BASE_URL = SITE_URL.replace(/\/$/, '');
+const BASE_URL = SITE_URL;
 
 /**
  * Generate alternates object for hreflang cross-references.

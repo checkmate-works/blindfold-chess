@@ -9,7 +9,9 @@ import {
   getTermsByCategory,
   getTermsByLetter,
   getUniqueLetters,
+  mergeTermRows,
 } from './queries';
+import type { TermWithAliasRow, TermWithPositionRow } from './queries';
 import type { ChessTerm } from './types';
 
 vi.mock('next/cache', () => ({
@@ -68,32 +70,587 @@ function mockChain(rows: unknown[]) {
   return chain;
 }
 
-function setupMockQueries(
-  termRows: unknown[],
-  aliasRows: unknown[] = [],
-  positionRows: unknown[] = []
-) {
-  const chain1 = mockChain(termRows);
-  const chain2 = mockChain(aliasRows);
-  const chain3 = mockChain(positionRows);
-
-  let callCount = 0;
-  mockDb.select.mockImplementation((() => {
-    callCount++;
-    if (callCount === 1) return chain1;
-    if (callCount === 2) return chain2;
-    return chain3;
-  }) as unknown as typeof mockDb.select);
+/**
+ * Sets up mock for two parallel queries (alias query + position query).
+ * Each call to db.select() returns the corresponding rows.
+ */
+function setupMockParallelQueries(aliasRows: unknown[], positionRows: unknown[]) {
+  const aliasChain = mockChain(aliasRows);
+  const positionChain = mockChain(positionRows);
+  mockDb.select
+    .mockReturnValueOnce(aliasChain as unknown as ReturnType<typeof mockDb.select>)
+    .mockReturnValueOnce(positionChain as unknown as ReturnType<typeof mockDb.select>);
 }
 
-describe('queries', () => {
+describe('mergeTermRows', () => {
+  it('should group multiple rows for the same term correctly', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Fork',
+        category: 'tactics',
+        translatedTerm: 'フォーク',
+        definition: 'フォークの説明',
+        reading: 'ふぉーく',
+        alias: 'Double Attack',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Fork',
+        category: 'tactics',
+        translatedTerm: 'フォーク',
+        definition: 'フォークの説明',
+        reading: 'ふぉーく',
+        alias: 'Family Fork',
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Fork',
+        category: 'tactics',
+        translatedTerm: 'フォーク',
+        definition: 'フォークの説明',
+        reading: 'ふぉーく',
+        positionFen: 'fen-1',
+        positionSortOrder: 1,
+        positionCaption: 'Example 1',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Fork',
+        category: 'tactics',
+        translatedTerm: 'フォーク',
+        definition: 'フォークの説明',
+        reading: 'ふぉーく',
+        positionFen: 'fen-2',
+        positionSortOrder: 2,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].term).toBe('Fork');
+    expect(result[0].aliases).toEqual(['Double Attack', 'Family Fork']);
+    expect(result[0].positions).toEqual([
+      { fen: 'fen-1', sortOrder: 1, caption: 'Example 1' },
+      { fen: 'fen-2', sortOrder: 2, caption: undefined },
+    ]);
+  });
+
+  it('should deduplicate aliases by value', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Castling',
+        category: 'general',
+        translatedTerm: 'キャスリング',
+        definition: 'キャスリングの説明',
+        reading: null,
+        alias: 'Castle',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Castling',
+        category: 'general',
+        translatedTerm: 'キャスリング',
+        definition: 'キャスリングの説明',
+        reading: null,
+        alias: 'Castle',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Castling',
+        category: 'general',
+        translatedTerm: 'キャスリング',
+        definition: 'キャスリングの説明',
+        reading: null,
+        alias: 'O-O',
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Castling',
+        category: 'general',
+        translatedTerm: 'キャスリング',
+        definition: 'キャスリングの説明',
+        reading: null,
+        positionFen: 'fen-a',
+        positionSortOrder: 1,
+        positionCaption: null,
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Castling',
+        category: 'general',
+        translatedTerm: 'キャスリング',
+        definition: 'キャスリングの説明',
+        reading: null,
+        positionFen: 'fen-b',
+        positionSortOrder: 2,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].aliases).toEqual(['Castle', 'O-O']);
+    expect(result[0].positions).toEqual([
+      { fen: 'fen-a', sortOrder: 1, caption: undefined },
+      { fen: 'fen-b', sortOrder: 2, caption: undefined },
+    ]);
+  });
+
+  it('should deduplicate positions by fen via Map', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Pin',
+        category: 'tactics',
+        translatedTerm: 'ピン',
+        definition: 'ピンの説明',
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Pin',
+        category: 'tactics',
+        translatedTerm: 'ピン',
+        definition: 'ピンの説明',
+        reading: null,
+        positionFen: 'same-fen',
+        positionSortOrder: 1,
+        positionCaption: 'Caption A',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Pin',
+        category: 'tactics',
+        translatedTerm: 'ピン',
+        definition: 'ピンの説明',
+        reading: null,
+        positionFen: 'same-fen',
+        positionSortOrder: 1,
+        positionCaption: 'Caption A',
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].aliases).toBeUndefined();
+    // Only one position despite two rows with the same fen
+    expect(result[0].positions).toEqual([{ fen: 'same-fen', sortOrder: 1, caption: 'Caption A' }]);
+  });
+
+  it('should return undefined aliases when all alias values are null', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Tempo',
+        category: 'general',
+        translatedTerm: 'テンポ',
+        definition: 'テンポの説明',
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Tempo',
+        category: 'general',
+        translatedTerm: 'テンポ',
+        definition: 'テンポの説明',
+        reading: null,
+        positionFen: null,
+        positionSortOrder: null,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].aliases).toBeUndefined();
+  });
+
+  it('should return undefined positions when all position fields are null', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Tempo',
+        category: 'general',
+        translatedTerm: 'テンポ',
+        definition: 'テンポの説明',
+        reading: null,
+        alias: 'Time',
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Tempo',
+        category: 'general',
+        translatedTerm: 'テンポ',
+        definition: 'テンポの説明',
+        reading: null,
+        positionFen: null,
+        positionSortOrder: null,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].aliases).toEqual(['Time']);
+    expect(result[0].positions).toBeUndefined();
+  });
+
+  it('should handle null values for alias, positionFen, etc.', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Zugzwang',
+        category: 'strategy',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Zugzwang',
+        category: 'strategy',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: null,
+        positionSortOrder: null,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual<ChessTerm>({
+      term: 'Zugzwang',
+      termJa: undefined,
+      reading: undefined,
+      definition: 'Zugzwang',
+      definitionEn: 'Zugzwang',
+      aliases: undefined,
+      positions: undefined,
+      category: 'strategy',
+    });
+  });
+
+  it('should sort positions by sortOrder', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Discovery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Discovery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'fen-step-3',
+        positionSortOrder: 3,
+        positionCaption: 'Step 3',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Discovery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'fen-step-1',
+        positionSortOrder: 1,
+        positionCaption: 'Step 1',
+      },
+      {
+        termId: 'id-1',
+        termEn: 'Discovery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'fen-step-2',
+        positionSortOrder: 2,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result[0].positions).toEqual([
+      { fen: 'fen-step-1', sortOrder: 1, caption: 'Step 1' },
+      { fen: 'fen-step-2', sortOrder: 2, caption: undefined },
+      { fen: 'fen-step-3', sortOrder: 3, caption: 'Step 3' },
+    ]);
+  });
+
+  it('should default sortOrder to 0 when null', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Battery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Battery',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'battery-fen',
+        positionSortOrder: null,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result[0].positions).toEqual([{ fen: 'battery-fen', sortOrder: 0, caption: undefined }]);
+  });
+
+  it('should separate rows for different terms correctly', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Bishop',
+        category: 'general',
+        translatedTerm: 'ビショップ',
+        definition: 'ビショップの説明',
+        reading: 'びしょっぷ',
+        alias: 'B',
+      },
+      {
+        termId: 'id-2',
+        termEn: 'Knight',
+        category: 'general',
+        translatedTerm: 'ナイト',
+        definition: 'ナイトの説明',
+        reading: 'ないと',
+        alias: 'N',
+      },
+      {
+        termId: 'id-2',
+        termEn: 'Knight',
+        category: 'general',
+        translatedTerm: 'ナイト',
+        definition: 'ナイトの説明',
+        reading: 'ないと',
+        alias: 'Kt',
+      },
+    ];
+
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Bishop',
+        category: 'general',
+        translatedTerm: 'ビショップ',
+        definition: 'ビショップの説明',
+        reading: 'びしょっぷ',
+        positionFen: null,
+        positionSortOrder: null,
+        positionCaption: null,
+      },
+      {
+        termId: 'id-2',
+        termEn: 'Knight',
+        category: 'general',
+        translatedTerm: 'ナイト',
+        definition: 'ナイトの説明',
+        reading: 'ないと',
+        positionFen: 'knight-fen',
+        positionSortOrder: 1,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, positionRows);
+
+    expect(result).toHaveLength(2);
+    expect(result[0].term).toBe('Bishop');
+    expect(result[0].aliases).toEqual(['B']);
+    expect(result[0].positions).toBeUndefined();
+
+    expect(result[1].term).toBe('Knight');
+    expect(result[1].aliases).toEqual(['N', 'Kt']);
+    expect(result[1].positions).toEqual([{ fen: 'knight-fen', sortOrder: 1, caption: undefined }]);
+  });
+
+  it('should return empty array for empty input', () => {
+    const result = mergeTermRows([], []);
+    expect(result).toEqual([]);
+  });
+
+  it('should use definition from translation when available', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Check',
+        category: 'tactics',
+        translatedTerm: 'チェック',
+        definition: 'チェックの説明',
+        reading: 'ちぇっく',
+        alias: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, []);
+
+    expect(result[0].definition).toBe('チェックの説明');
+    expect(result[0].definitionEn).toBe('チェックの説明');
+  });
+
+  it('should fall back to termEn for definition when translation definition is null', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Zugzwang',
+        category: 'strategy',
+        translatedTerm: 'ツークツヴァンク',
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, []);
+
+    expect(result[0].definition).toBe('Zugzwang');
+    expect(result[0].definitionEn).toBe('Zugzwang');
+  });
+
+  it('should set caption to undefined when positionCaption is null', () => {
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Pin',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'pin-fen',
+        positionSortOrder: 1,
+        positionCaption: null,
+      },
+    ];
+
+    const result = mergeTermRows([], positionRows);
+
+    expect(result[0].positions![0].caption).toBeUndefined();
+  });
+
+  it('should preserve caption when positionCaption is provided', () => {
+    const positionRows: TermWithPositionRow[] = [
+      {
+        termId: 'id-1',
+        termEn: 'Pin',
+        category: 'tactics',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        positionFen: 'pin-fen',
+        positionSortOrder: 1,
+        positionCaption: 'A classic pin',
+      },
+    ];
+
+    const result = mergeTermRows([], positionRows);
+
+    expect(result[0].positions![0].caption).toBe('A classic pin');
+  });
+
+  it('should maintain insertion order of terms from alias rows', () => {
+    const aliasRows: TermWithAliasRow[] = [
+      {
+        termId: 'id-a',
+        termEn: 'Alpha',
+        category: 'general',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+      {
+        termId: 'id-b',
+        termEn: 'Beta',
+        category: 'general',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+      {
+        termId: 'id-c',
+        termEn: 'Charlie',
+        category: 'general',
+        translatedTerm: null,
+        definition: null,
+        reading: null,
+        alias: null,
+      },
+    ];
+
+    const result = mergeTermRows(aliasRows, []);
+
+    expect(result).toHaveLength(3);
+    expect(result[0].term).toBe('Alpha');
+    expect(result[1].term).toBe('Beta');
+    expect(result[2].term).toBe('Charlie');
+  });
+});
+
+describe('queries (integration with DB mock)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('getGlossaryTerms', () => {
     it('should return all terms with full translations and aliases', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'Checkmate',
@@ -101,6 +658,16 @@ describe('queries', () => {
           translatedTerm: 'チェックメイト',
           definition: '王手詰み',
           reading: 'ちぇっくめいと',
+          alias: 'Mate',
+        },
+        {
+          termId: 'id-1',
+          termEn: 'Checkmate',
+          category: 'tactics',
+          translatedTerm: 'チェックメイト',
+          definition: '王手詰み',
+          reading: 'ちぇっくめいと',
+          alias: '#',
         },
         {
           termId: 'id-2',
@@ -109,15 +676,36 @@ describe('queries', () => {
           translatedTerm: 'キャスリング',
           definition: 'キャスリングの説明',
           reading: 'きゃすりんぐ',
+          alias: null,
         },
       ];
 
-      const aliasRows = [
-        { termId: 'id-1', alias: 'Mate' },
-        { termId: 'id-1', alias: '#' },
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Checkmate',
+          category: 'tactics',
+          translatedTerm: 'チェックメイト',
+          definition: '王手詰み',
+          reading: 'ちぇっくめいと',
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+        {
+          termId: 'id-2',
+          termEn: 'Castling',
+          category: 'general',
+          translatedTerm: 'キャスリング',
+          definition: 'キャスリングの説明',
+          reading: 'きゃすりんぐ',
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
       ];
 
-      setupMockQueries(termRows, aliasRows, []);
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -130,6 +718,7 @@ describe('queries', () => {
         definition: '王手詰み',
         definitionEn: '王手詰み',
         aliases: ['Mate', '#'],
+        positions: undefined,
         category: 'tactics',
       });
 
@@ -140,12 +729,13 @@ describe('queries', () => {
         definition: 'キャスリングの説明',
         definitionEn: 'キャスリングの説明',
         aliases: undefined,
+        positions: undefined,
         category: 'general',
       });
     });
 
     it('should return terms with termEn as definition when translation definition is null', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'Zugzwang',
@@ -153,10 +743,25 @@ describe('queries', () => {
           translatedTerm: 'ツークツヴァンク',
           definition: null,
           reading: null,
+          alias: null,
         },
       ];
 
-      setupMockQueries(termRows, [], []);
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Zugzwang',
+          category: 'strategy',
+          translatedTerm: 'ツークツヴァンク',
+          definition: null,
+          reading: null,
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -167,17 +772,16 @@ describe('queries', () => {
     });
 
     it('should handle empty result set', async () => {
-      const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
+      setupMockParallelQueries([], []);
 
       const result = await getGlossaryTerms('ja');
 
       expect(result).toEqual([]);
-      expect(mockDb.select).toHaveBeenCalledTimes(1);
+      expect(mockDb.select).toHaveBeenCalledTimes(2);
     });
 
     it('should handle terms with no translation (translatedTerm is null)', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'En Passant',
@@ -185,10 +789,25 @@ describe('queries', () => {
           translatedTerm: null,
           definition: null,
           reading: null,
+          alias: null,
         },
       ];
 
-      setupMockQueries(termRows, [], []);
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'En Passant',
+          category: 'tactics',
+          translatedTerm: null,
+          definition: null,
+          reading: null,
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getGlossaryTerms('fr');
 
@@ -198,7 +817,7 @@ describe('queries', () => {
     });
 
     it('should map aliases correctly when term has empty aliases', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'Fork',
@@ -206,10 +825,25 @@ describe('queries', () => {
           translatedTerm: 'フォーク',
           definition: 'フォークの説明',
           reading: 'ふぉーく',
+          alias: null,
         },
       ];
 
-      setupMockQueries(termRows, [], []);
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Fork',
+          category: 'tactics',
+          translatedTerm: 'フォーク',
+          definition: 'フォークの説明',
+          reading: 'ふぉーく',
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getGlossaryTerms('ja');
 
@@ -219,7 +853,7 @@ describe('queries', () => {
 
   describe('getTermsByLetter', () => {
     it('should return terms filtered by letter', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'Check',
@@ -227,10 +861,25 @@ describe('queries', () => {
           translatedTerm: 'チェック',
           definition: 'チェックの説明',
           reading: 'ちぇっく',
+          alias: null,
         },
       ];
 
-      setupMockQueries(termRows, [], []);
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Check',
+          category: 'tactics',
+          translatedTerm: 'チェック',
+          definition: 'チェックの説明',
+          reading: 'ちぇっく',
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getTermsByLetter('c', 'ja');
 
@@ -239,8 +888,7 @@ describe('queries', () => {
     });
 
     it('should handle uppercase letter input', async () => {
-      const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
+      setupMockParallelQueries([], []);
 
       const result = await getTermsByLetter('Z', 'en');
 
@@ -248,18 +896,53 @@ describe('queries', () => {
     });
 
     it('should return empty array when no terms match the letter', async () => {
-      const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
+      setupMockParallelQueries([], []);
 
       const result = await getTermsByLetter('x', 'ja');
 
       expect(result).toEqual([]);
     });
+
+    it('should return positions when fetching terms by letter', async () => {
+      const aliasRows: TermWithAliasRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Fork',
+          category: 'tactics',
+          translatedTerm: 'フォーク',
+          definition: 'フォークの説明',
+          reading: 'ふぉーく',
+          alias: null,
+        },
+      ];
+
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Fork',
+          category: 'tactics',
+          translatedTerm: 'フォーク',
+          definition: 'フォークの説明',
+          reading: 'ふぉーく',
+          positionFen: 'fork-fen',
+          positionSortOrder: 1,
+          positionCaption: 'Fork position',
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
+
+      const result = await getTermsByLetter('f', 'ja');
+
+      expect(result[0].positions).toEqual([
+        { fen: 'fork-fen', sortOrder: 1, caption: 'Fork position' },
+      ]);
+    });
   });
 
   describe('getTermsByCategory', () => {
     it('should return terms filtered by category', async () => {
-      const termRows = [
+      const aliasRows: TermWithAliasRow[] = [
         {
           termId: 'id-1',
           termEn: 'Pin',
@@ -267,6 +950,7 @@ describe('queries', () => {
           translatedTerm: 'ピン',
           definition: 'ピンの説明',
           reading: 'ぴん',
+          alias: null,
         },
         {
           termId: 'id-2',
@@ -275,10 +959,36 @@ describe('queries', () => {
           translatedTerm: 'スキュアー',
           definition: 'スキュアーの説明',
           reading: null,
+          alias: null,
         },
       ];
 
-      setupMockQueries(termRows, [], []);
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Pin',
+          category: 'tactics',
+          translatedTerm: 'ピン',
+          definition: 'ピンの説明',
+          reading: 'ぴん',
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+        {
+          termId: 'id-2',
+          termEn: 'Skewer',
+          category: 'tactics',
+          translatedTerm: 'スキュアー',
+          definition: 'スキュアーの説明',
+          reading: null,
+          positionFen: null,
+          positionSortOrder: null,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
 
       const result = await getTermsByCategory('tactics', 'ja');
 
@@ -289,12 +999,45 @@ describe('queries', () => {
     });
 
     it('should return empty array for non-existent category', async () => {
-      const chain1 = mockChain([]);
-      mockDb.select.mockReturnValue(chain1 as unknown as ReturnType<typeof mockDb.select>);
+      setupMockParallelQueries([], []);
 
       const result = await getTermsByCategory('nonexistent', 'ja');
 
       expect(result).toEqual([]);
+    });
+
+    it('should return positions when fetching terms by category', async () => {
+      const aliasRows: TermWithAliasRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Pin',
+          category: 'tactics',
+          translatedTerm: 'ピン',
+          definition: 'ピンの説明',
+          reading: 'ぴん',
+          alias: null,
+        },
+      ];
+
+      const positionRows: TermWithPositionRow[] = [
+        {
+          termId: 'id-1',
+          termEn: 'Pin',
+          category: 'tactics',
+          translatedTerm: 'ピン',
+          definition: 'ピンの説明',
+          reading: 'ぴん',
+          positionFen: 'pin-fen',
+          positionSortOrder: 1,
+          positionCaption: null,
+        },
+      ];
+
+      setupMockParallelQueries(aliasRows, positionRows);
+
+      const result = await getTermsByCategory('tactics', 'ja');
+
+      expect(result[0].positions).toEqual([{ fen: 'pin-fen', sortOrder: 1, caption: undefined }]);
     });
   });
 
@@ -373,320 +1116,6 @@ describe('queries', () => {
       const result = await getCategoryCounts();
 
       expect(result).toEqual({});
-    });
-  });
-
-  describe('toChessTerm (tested via getGlossaryTerms)', () => {
-    it('should set definitionEn equal to definition (from translation or fallback)', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Stalemate',
-          category: 'endgame',
-          translatedTerm: 'ステイルメイト',
-          definition: 'ステイルメイトの説明',
-          reading: 'すているめいと',
-        },
-      ];
-
-      setupMockQueries(termRows, [], []);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].definitionEn).toBe('ステイルメイトの説明');
-      expect(result[0].definition).toBe('ステイルメイトの説明');
-    });
-
-    it('should handle all nullable fields being null', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Tempo',
-          category: 'general',
-          translatedTerm: null,
-          definition: null,
-          reading: null,
-        },
-      ];
-
-      setupMockQueries(termRows, [], []);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0]).toEqual<ChessTerm>({
-        term: 'Tempo',
-        termJa: undefined,
-        reading: undefined,
-        definition: 'Tempo',
-        definitionEn: 'Tempo',
-        aliases: undefined,
-        category: 'general',
-      });
-    });
-
-    it('should handle multiple aliases for different terms', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Bishop',
-          category: 'general',
-          translatedTerm: 'ビショップ',
-          definition: 'ビショップの説明',
-          reading: 'びしょっぷ',
-        },
-        {
-          termId: 'id-2',
-          termEn: 'Knight',
-          category: 'general',
-          translatedTerm: 'ナイト',
-          definition: 'ナイトの説明',
-          reading: 'ないと',
-        },
-      ];
-
-      const aliasRows = [
-        { termId: 'id-1', alias: 'B' },
-        { termId: 'id-2', alias: 'N' },
-        { termId: 'id-2', alias: 'Kt' },
-      ];
-
-      setupMockQueries(termRows, aliasRows, []);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].aliases).toEqual(['B']);
-      expect(result[1].aliases).toEqual(['N', 'Kt']);
-    });
-  });
-
-  describe('positions (tested via getGlossaryTerms)', () => {
-    it('should return positions for terms that have them', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Fork',
-          category: 'tactics',
-          translatedTerm: 'フォーク',
-          definition: 'フォークの説明',
-          reading: 'ふぉーく',
-        },
-      ];
-
-      const aliasRows: { termId: string; alias: string }[] = [];
-
-      const positionRows = [
-        {
-          termId: 'id-1',
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-          sortOrder: 1,
-          caption: 'Starting position',
-        },
-      ];
-
-      setupMockQueries(termRows, aliasRows, positionRows);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result).toHaveLength(1);
-      expect(result[0].positions).toEqual([
-        {
-          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-          sortOrder: 1,
-          caption: 'Starting position',
-        },
-      ]);
-    });
-
-    it('should return undefined positions for terms without positions', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Tempo',
-          category: 'general',
-          translatedTerm: 'テンポ',
-          definition: 'テンポの説明',
-          reading: 'てんぽ',
-        },
-      ];
-
-      setupMockQueries(termRows, [], []);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result).toHaveLength(1);
-      expect(result[0].positions).toBeUndefined();
-    });
-
-    it('should sort positions by sortOrder', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Discovered Attack',
-          category: 'tactics',
-          translatedTerm: 'ディスカバードアタック',
-          definition: 'ディスカバードアタックの説明',
-          reading: 'でぃすかばーどあたっく',
-        },
-      ];
-
-      // Return positions in non-sorted order to verify sorting
-      const positionRows = [
-        { termId: 'id-1', fen: 'fen-step-3', sortOrder: 3, caption: 'Step 3' },
-        { termId: 'id-1', fen: 'fen-step-1', sortOrder: 1, caption: 'Step 1' },
-        { termId: 'id-1', fen: 'fen-step-2', sortOrder: 2, caption: null },
-      ];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].positions).toEqual([
-        { fen: 'fen-step-1', sortOrder: 1, caption: 'Step 1' },
-        { fen: 'fen-step-2', sortOrder: 2, caption: undefined },
-        { fen: 'fen-step-3', sortOrder: 3, caption: 'Step 3' },
-      ]);
-    });
-
-    it('should include caption when present and set undefined when absent', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Pin',
-          category: 'tactics',
-          translatedTerm: 'ピン',
-          definition: 'ピンの説明',
-          reading: 'ぴん',
-        },
-      ];
-
-      const positionRows = [
-        {
-          termId: 'id-1',
-          fen: 'fen-with-caption',
-          sortOrder: 1,
-          caption: 'A classic pin example',
-        },
-        { termId: 'id-1', fen: 'fen-without-caption', sortOrder: 2, caption: null },
-      ];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].positions![0].caption).toBe('A classic pin example');
-      expect(result[0].positions![1].caption).toBeUndefined();
-    });
-
-    it('should handle positions for multiple terms correctly', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Fork',
-          category: 'tactics',
-          translatedTerm: 'フォーク',
-          definition: 'フォークの説明',
-          reading: 'ふぉーく',
-        },
-        {
-          termId: 'id-2',
-          termEn: 'Skewer',
-          category: 'tactics',
-          translatedTerm: 'スキュアー',
-          definition: 'スキュアーの説明',
-          reading: 'すきゅあー',
-        },
-      ];
-
-      const positionRows = [
-        { termId: 'id-1', fen: 'fork-fen-1', sortOrder: 1, caption: null },
-        { termId: 'id-2', fen: 'skewer-fen-1', sortOrder: 1, caption: 'Skewer example' },
-        { termId: 'id-2', fen: 'skewer-fen-2', sortOrder: 2, caption: null },
-      ];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].positions).toEqual([
-        { fen: 'fork-fen-1', sortOrder: 1, caption: undefined },
-      ]);
-      expect(result[1].positions).toEqual([
-        { fen: 'skewer-fen-1', sortOrder: 1, caption: 'Skewer example' },
-        { fen: 'skewer-fen-2', sortOrder: 2, caption: undefined },
-      ]);
-    });
-
-    it('should default sortOrder to 0 when null', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Battery',
-          category: 'tactics',
-          translatedTerm: 'バッテリー',
-          definition: 'バッテリーの説明',
-          reading: 'ばってりー',
-        },
-      ];
-
-      const positionRows = [{ termId: 'id-1', fen: 'battery-fen', sortOrder: null, caption: null }];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getGlossaryTerms('ja');
-
-      expect(result[0].positions).toEqual([
-        { fen: 'battery-fen', sortOrder: 0, caption: undefined },
-      ]);
-    });
-  });
-
-  describe('positions (tested via getTermsByLetter)', () => {
-    it('should return positions when fetching terms by letter', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Fork',
-          category: 'tactics',
-          translatedTerm: 'フォーク',
-          definition: 'フォークの説明',
-          reading: 'ふぉーく',
-        },
-      ];
-
-      const positionRows = [
-        { termId: 'id-1', fen: 'fork-fen', sortOrder: 1, caption: 'Fork position' },
-      ];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getTermsByLetter('f', 'ja');
-
-      expect(result[0].positions).toEqual([
-        { fen: 'fork-fen', sortOrder: 1, caption: 'Fork position' },
-      ]);
-    });
-  });
-
-  describe('positions (tested via getTermsByCategory)', () => {
-    it('should return positions when fetching terms by category', async () => {
-      const termRows = [
-        {
-          termId: 'id-1',
-          termEn: 'Pin',
-          category: 'tactics',
-          translatedTerm: 'ピン',
-          definition: 'ピンの説明',
-          reading: 'ぴん',
-        },
-      ];
-
-      const positionRows = [{ termId: 'id-1', fen: 'pin-fen', sortOrder: 1, caption: null }];
-
-      setupMockQueries(termRows, [], positionRows);
-
-      const result = await getTermsByCategory('tactics', 'ja');
-
-      expect(result[0].positions).toEqual([{ fen: 'pin-fen', sortOrder: 1, caption: undefined }]);
     });
   });
 });

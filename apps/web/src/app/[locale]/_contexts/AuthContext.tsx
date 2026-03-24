@@ -10,6 +10,9 @@ import {
   useState,
 } from 'react';
 
+import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
+
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 import { createClient } from '@/lib/supabase/client';
@@ -28,6 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const supabaseRef = useRef<SupabaseClient | null>(null);
+  const router = useRouter();
+  const locale = useLocale();
+
+  const refreshUser = useCallback(async () => {
+    const supabase = supabaseRef.current ?? createClient();
+    if (!supabase) return;
+    const [
+      {
+        data: { user },
+      },
+      {
+        data: { session },
+      },
+    ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]);
+    setUser(user);
+    setSession(session);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -38,30 +58,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabaseRef.current = supabase;
 
-    Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]).then(
-      ([
-        {
-          data: { user },
-        },
-        {
-          data: { session },
-        },
-      ]) => {
-        setUser(user);
-        setSession(session);
-        setIsLoading(false);
-      }
-    );
+    refreshUser().finally(() => setIsLoading(false));
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_OUT') {
+        router.refresh();
+      }
+
+      if (event === 'PASSWORD_RECOVERY') {
+        router.push(`/${locale}/reset-password`);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [router, locale, refreshUser]);
 
   const signOut = useCallback(async () => {
     const supabase = supabaseRef.current ?? createClient();

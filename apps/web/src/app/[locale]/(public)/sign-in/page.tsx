@@ -13,6 +13,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AuthErrorMessage } from '../_components/AuthErrorMessage';
 import { GoogleOAuthButton } from '../_components/GoogleOAuthButton';
+import { EmailPasswordForm } from './_components';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -58,9 +59,19 @@ export default async function SignInPage({ params, searchParams }: Props) {
 
       <PagePanel>
         {error && <AuthErrorMessage namespace="signIn" />}
+
         <div>
           <GoogleOAuthButton namespace="signIn" />
         </div>
+
+        <div className="flex items-center gap-4 max-w-sm mx-auto">
+          <Divider className="flex-1" />
+          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
+          <Divider className="flex-1" />
+        </div>
+
+        <EmailPasswordForm />
+
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('noAccount')}{' '}
           <Link href="/sign-up" locale={locale} className="text-link-primary hover:underline">

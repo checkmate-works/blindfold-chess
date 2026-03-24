@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
+import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
@@ -11,10 +13,19 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerWide?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
+  leaderboardRows?: LeaderboardRow[];
+  leaderboardDetailPath?: string;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({
+  locale,
+  adBannerWide,
+  adBannerStandard,
+  leaderboardRows,
+  leaderboardDetailPath,
+}: Props) {
   const router = useRouter();
   const t = useTranslations('practice.squareColors');
   const tPractice = useTranslations('practice');
@@ -37,20 +48,10 @@ export function ResultClient({ locale, adBanner }: Props) {
   // Prepare labels
   const labels = {
     ...getCommonPracticeCompleteLabels(tPractice),
-    score: t('accuracy'), // Reuse existing "Accuracy" label which maps to "正解率" in JA
     recreationProgress: t('accuracy'),
     averageTime: t('averageTime'),
     correct: t('correct'),
     incorrect: t('incorrect'),
-  };
-
-  // Define related module
-  const relatedModule = {
-    href: '/learn/coordinates/square-colors',
-    icon: '🎨',
-    title: t('viewArticle'),
-    description: t('articleDescription'),
-    sectionTitle: t('requiredKnowledge'),
   };
 
   // Format average time text
@@ -72,21 +73,28 @@ export function ResultClient({ locale, adBanner }: Props) {
         score={score}
         total={total}
         onTryAgain={() => {
-          router.push(`/${locale}/practice/square-colors/challenge`);
+          router.push(`/${locale}/practice/square-colors/challenge/session`);
         }}
-        onExit={() => router.push(`/${locale}/practice/square-colors`)}
+        onExit={() => router.push(`/${locale}/practice/square-colors/challenge`)}
         locale={locale}
         labels={labels}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBanner}
-        relatedModule={relatedModule}
         averageTimeText={averageTimeText}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
         afterActions={<SignUpBanner locale={locale} />}
+        beforeRelatedContent={adBannerWide}
       />
+      {leaderboardRows && leaderboardDetailPath && (
+        <LeaderboardPreview
+          rows={leaderboardRows}
+          detailPath={leaderboardDetailPath}
+          locale={locale}
+        />
+      )}
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }
