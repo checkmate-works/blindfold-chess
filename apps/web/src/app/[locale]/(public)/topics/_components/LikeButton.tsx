@@ -73,7 +73,7 @@ export function LikeButton({
         )}
         {optimistic.count > 0 && <span>{optimistic.count}</span>}
       </button>
-      <AuthPromptModal isOpen={isModalOpen} onClose={closeModal} />
+      {isModalOpen && <AuthPromptModal isOpen={isModalOpen} onClose={closeModal} />}
     </>
   );
 }

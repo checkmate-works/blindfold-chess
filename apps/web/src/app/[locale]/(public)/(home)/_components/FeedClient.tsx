@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { AdBannerConfig } from '@/lib/ad';
 
@@ -86,36 +86,49 @@ export function FeedClient({
     return () => observer.disconnect();
   }, [cursor, loadMore]);
 
+  const elements = useMemo(() => {
+    const result: React.ReactNode[] = [];
+    items.forEach((item, index) => {
+      result.push(
+        <FeedCard
+          key={item.id}
+          item={item}
+          locale={locale}
+          showMoreLabel={showMoreLabel}
+          justNowLabel={justNowLabel}
+          newReplyTemplate={newReplyTemplate}
+        />
+      );
+      if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
+        const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
+        result.push(
+          <NativeAdCard
+            key={`ad-${index}`}
+            ad={adBanners[adIndex]}
+            adLabel={adLabel}
+            sponsorLabel={sponsorLabel}
+            sponsoredLinkLabel={sponsoredLinkLabel}
+            locale={locale}
+          />
+        );
+      }
+    });
+    return result;
+  }, [
+    items,
+    adBanners,
+    locale,
+    showMoreLabel,
+    justNowLabel,
+    newReplyTemplate,
+    adLabel,
+    sponsorLabel,
+    sponsoredLinkLabel,
+  ]);
+
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
   }
-
-  const elements: React.ReactNode[] = [];
-  items.forEach((item, index) => {
-    elements.push(
-      <FeedCard
-        key={item.id}
-        item={item}
-        locale={locale}
-        showMoreLabel={showMoreLabel}
-        justNowLabel={justNowLabel}
-        newReplyTemplate={newReplyTemplate}
-      />
-    );
-    if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
-      const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
-      elements.push(
-        <NativeAdCard
-          key={`ad-${index}`}
-          ad={adBanners[adIndex]}
-          adLabel={adLabel}
-          sponsorLabel={sponsorLabel}
-          sponsoredLinkLabel={sponsoredLinkLabel}
-          locale={locale}
-        />
-      );
-    }
-  });
 
   return (
     <div className="divide-y divide-border">
