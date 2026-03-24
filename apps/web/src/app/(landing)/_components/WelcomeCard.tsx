@@ -2,7 +2,7 @@ import type { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { FiUser } from 'react-icons/fi';
+import { FiHome, FiUser } from 'react-icons/fi';
 
 type Props = {
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
@@ -15,10 +15,7 @@ export function WelcomeCard({ t, locale, displayName, avatarUrl }: Props) {
   const initial = (displayName ?? '?').charAt(0).toUpperCase();
 
   return (
-    <Link
-      href={`/${locale}/mypage`}
-      className="flex items-center gap-4 rounded-2xl bg-card border border-border shadow-sm p-4 hover:bg-accent transition-colors w-full sm:w-auto sm:min-w-[28rem] max-w-full"
-    >
+    <div className="flex items-center gap-4 rounded-2xl bg-card border border-border shadow-sm p-4 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
       {avatarUrl ? (
         <Image
           src={avatarUrl}
@@ -39,11 +36,26 @@ export function WelcomeCard({ t, locale, displayName, avatarUrl }: Props) {
             name: displayName ?? t('dashboard.welcomeDefaultName'),
           })}
         </p>
-        <p className="text-sm text-muted-foreground flex items-center gap-1">
-          <FiUser className="w-3.5 h-3.5" />
-          {t('dashboard.viewMypage')}
-        </p>
+        <nav
+          className="mt-2 text-sm text-muted-foreground flex items-center gap-5"
+          aria-label="Quick links"
+        >
+          <Link
+            href={`/${locale}`}
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            <FiHome className="w-3.5 h-3.5" />
+            {t('dashboard.viewHome')}
+          </Link>
+          <Link
+            href={`/${locale}/mypage`}
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            <FiUser className="w-3.5 h-3.5" />
+            {t('dashboard.viewMypage')}
+          </Link>
+        </nav>
       </div>
-    </Link>
+    </div>
   );
 }

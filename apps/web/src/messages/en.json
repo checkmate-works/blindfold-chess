@@ -1637,7 +1637,8 @@
       "topicOpenings": "Openings",
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
-      "viewMypage": "My Page"
+      "viewMypage": "My Page",
+      "viewHome": "Home"
     }
   },
   "AuthStatusDisplay": {

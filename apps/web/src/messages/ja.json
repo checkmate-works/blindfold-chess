@@ -1638,7 +1638,8 @@
       "topicOpenings": "オープニング",
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
-      "viewMypage": "マイページ"
+      "viewMypage": "マイページ",
+      "viewHome": "ホーム"
     }
   },
   "AuthStatusDisplay": {
