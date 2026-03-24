@@ -12,112 +12,162 @@ import {
 
 import type { ChessTerm, GlossaryCategory } from './types';
 
-function toChessTerm(
-  row: {
-    termEn: string;
-    category: string;
-    translatedTerm: string | null;
-    definition: string | null;
-    reading: string | null;
-  },
-  aliases: string[],
-  positions: { fen: string; sortOrder: number; caption?: string }[]
-): ChessTerm {
-  const definition = row.definition ?? row.termEn;
-  return {
-    term: row.termEn,
-    termJa: row.translatedTerm ?? undefined,
-    reading: row.reading ?? undefined,
-    definition,
-    definitionEn: definition,
-    aliases: aliases.length > 0 ? aliases : undefined,
-    positions: positions.length > 0 ? positions : undefined,
-    category: row.category as GlossaryCategory,
-  };
+export type TermWithAliasRow = {
+  termId: string;
+  termEn: string;
+  category: string;
+  translatedTerm: string | null;
+  definition: string | null;
+  reading: string | null;
+  alias: string | null;
+};
+
+export type TermWithPositionRow = {
+  termId: string;
+  termEn: string;
+  category: string;
+  translatedTerm: string | null;
+  definition: string | null;
+  reading: string | null;
+  positionFen: string | null;
+  positionSortOrder: number | null;
+  positionCaption: string | null;
+};
+
+const termBaseFields = {
+  termId: glossaryTerms.id,
+  termEn: glossaryTerms.termEn,
+  category: glossaryTerms.category,
+  translatedTerm: glossaryTermTranslations.term,
+  definition: glossaryTermTranslations.definition,
+  reading: glossaryTermTranslations.reading,
+};
+
+function buildAliasQuery(locale: string) {
+  return db
+    .select({
+      ...termBaseFields,
+      alias: glossaryTermAliases.alias,
+    })
+    .from(glossaryTerms)
+    .leftJoin(
+      glossaryTermTranslations,
+      sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
+    )
+    .leftJoin(glossaryTermAliases, eq(glossaryTermAliases.termId, glossaryTerms.id));
 }
 
-async function fetchAliasesMap(termIds: string[]): Promise<Map<string, string[]>> {
-  const aliasRows =
-    termIds.length > 0
-      ? await db
-          .select({
-            termId: glossaryTermAliases.termId,
-            alias: glossaryTermAliases.alias,
-          })
-          .from(glossaryTermAliases)
-          .where(sql`${glossaryTermAliases.termId} IN ${termIds}`)
-      : [];
+function buildPositionQuery(locale: string) {
+  return db
+    .select({
+      ...termBaseFields,
+      positionFen: glossaryTermPositions.fen,
+      positionSortOrder: glossaryTermPositions.sortOrder,
+      positionCaption: glossaryTermPositions.caption,
+    })
+    .from(glossaryTerms)
+    .leftJoin(
+      glossaryTermTranslations,
+      sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
+    )
+    .leftJoin(glossaryTermPositions, eq(glossaryTermPositions.termId, glossaryTerms.id));
+}
 
-  const aliasMap = new Map<string, string[]>();
+/**
+ * Merges alias rows and position rows into ChessTerm[] by grouping on termId.
+ * Deduplicates aliases (by value) and positions (by fen).
+ * Preserves insertion order from the alias rows (which share the same orderBy).
+ */
+export function mergeTermRows(
+  aliasRows: TermWithAliasRow[],
+  positionRows: TermWithPositionRow[]
+): ChessTerm[] {
+  const termMap = new Map<
+    string,
+    {
+      termEn: string;
+      category: string;
+      translatedTerm: string | null;
+      definition: string | null;
+      reading: string | null;
+      aliases: Set<string>;
+      positions: Map<string, { fen: string; sortOrder: number; caption?: string }>;
+    }
+  >();
+
   for (const row of aliasRows) {
-    const existing = aliasMap.get(row.termId) || [];
-    existing.push(row.alias);
-    aliasMap.set(row.termId, existing);
+    let entry = termMap.get(row.termId);
+    if (!entry) {
+      entry = {
+        termEn: row.termEn,
+        category: row.category,
+        translatedTerm: row.translatedTerm,
+        definition: row.definition,
+        reading: row.reading,
+        aliases: new Set(),
+        positions: new Map(),
+      };
+      termMap.set(row.termId, entry);
+    }
+
+    if (row.alias !== null) {
+      entry.aliases.add(row.alias);
+    }
   }
 
-  return aliasMap;
-}
-
-async function fetchPositionsMap(
-  termIds: string[]
-): Promise<Map<string, { fen: string; sortOrder: number; caption?: string }[]>> {
-  const positionRows =
-    termIds.length > 0
-      ? await db
-          .select({
-            termId: glossaryTermPositions.termId,
-            fen: glossaryTermPositions.fen,
-            sortOrder: glossaryTermPositions.sortOrder,
-            caption: glossaryTermPositions.caption,
-          })
-          .from(glossaryTermPositions)
-          .where(sql`${glossaryTermPositions.termId} IN ${termIds}`)
-      : [];
-
-  const positionMap = new Map<string, { fen: string; sortOrder: number; caption?: string }[]>();
   for (const row of positionRows) {
-    const existing = positionMap.get(row.termId) || [];
-    existing.push({
-      fen: row.fen,
-      sortOrder: row.sortOrder ?? 0,
-      caption: row.caption ?? undefined,
+    let entry = termMap.get(row.termId);
+    if (!entry) {
+      entry = {
+        termEn: row.termEn,
+        category: row.category,
+        translatedTerm: row.translatedTerm,
+        definition: row.definition,
+        reading: row.reading,
+        aliases: new Set(),
+        positions: new Map(),
+      };
+      termMap.set(row.termId, entry);
+    }
+
+    if (row.positionFen !== null && !entry.positions.has(row.positionFen)) {
+      entry.positions.set(row.positionFen, {
+        fen: row.positionFen,
+        sortOrder: row.positionSortOrder ?? 0,
+        caption: row.positionCaption ?? undefined,
+      });
+    }
+  }
+
+  const results: ChessTerm[] = [];
+  for (const entry of termMap.values()) {
+    const definition = entry.definition ?? entry.termEn;
+    const aliases = [...entry.aliases];
+    const positions = [...entry.positions.values()].sort((a, b) => a.sortOrder - b.sortOrder);
+
+    results.push({
+      term: entry.termEn,
+      termJa: entry.translatedTerm ?? undefined,
+      reading: entry.reading ?? undefined,
+      definition,
+      definitionEn: definition,
+      aliases: aliases.length > 0 ? aliases : undefined,
+      positions: positions.length > 0 ? positions : undefined,
+      category: entry.category as GlossaryCategory,
     });
-    positionMap.set(row.termId, existing);
   }
 
-  // Sort positions by sortOrder
-  for (const positions of positionMap.values()) {
-    positions.sort((a, b) => a.sortOrder - b.sortOrder);
-  }
-
-  return positionMap;
+  return results;
 }
 
 export const getGlossaryTerms = unstable_cache(
   async (locale: string): Promise<ChessTerm[]> => {
-    const rows = await db
-      .select({
-        termId: glossaryTerms.id,
-        termEn: glossaryTerms.termEn,
-        category: glossaryTerms.category,
-        translatedTerm: glossaryTermTranslations.term,
-        definition: glossaryTermTranslations.definition,
-        reading: glossaryTermTranslations.reading,
-      })
-      .from(glossaryTerms)
-      .leftJoin(
-        glossaryTermTranslations,
-        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-      )
-      .orderBy(glossaryTerms.termEn);
+    const [aliasRows, positionRows] = await Promise.all([
+      buildAliasQuery(locale).orderBy(glossaryTerms.termEn),
+      buildPositionQuery(locale).orderBy(glossaryTerms.termEn),
+    ]);
 
-    const termIds = rows.map((r) => r.termId);
-    const aliasMap = await fetchAliasesMap(termIds);
-    const positionMap = await fetchPositionsMap(termIds);
-
-    return rows.map((row) =>
-      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-    );
+    return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms'],
   { tags: ['glossary'], revalidate: 3600 }
@@ -126,31 +176,14 @@ export const getGlossaryTerms = unstable_cache(
 export const getTermsByLetter = unstable_cache(
   async (letter: string, locale: string): Promise<ChessTerm[]> => {
     const upperLetter = letter.toUpperCase();
+    const whereClause = sql`upper(left(${glossaryTerms.termEn}, 1)) = ${upperLetter}`;
 
-    const rows = await db
-      .select({
-        termId: glossaryTerms.id,
-        termEn: glossaryTerms.termEn,
-        category: glossaryTerms.category,
-        translatedTerm: glossaryTermTranslations.term,
-        definition: glossaryTermTranslations.definition,
-        reading: glossaryTermTranslations.reading,
-      })
-      .from(glossaryTerms)
-      .leftJoin(
-        glossaryTermTranslations,
-        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-      )
-      .where(sql`upper(left(${glossaryTerms.termEn}, 1)) = ${upperLetter}`)
-      .orderBy(glossaryTerms.termEn);
+    const [aliasRows, positionRows] = await Promise.all([
+      buildAliasQuery(locale).where(whereClause).orderBy(glossaryTerms.termEn),
+      buildPositionQuery(locale).where(whereClause).orderBy(glossaryTerms.termEn),
+    ]);
 
-    const termIds = rows.map((r) => r.termId);
-    const aliasMap = await fetchAliasesMap(termIds);
-    const positionMap = await fetchPositionsMap(termIds);
-
-    return rows.map((row) =>
-      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-    );
+    return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-letter'],
   { tags: ['glossary'], revalidate: 3600 }
@@ -158,30 +191,16 @@ export const getTermsByLetter = unstable_cache(
 
 export const getTermsByCategory = unstable_cache(
   async (category: string, locale: string): Promise<ChessTerm[]> => {
-    const rows = await db
-      .select({
-        termId: glossaryTerms.id,
-        termEn: glossaryTerms.termEn,
-        category: glossaryTerms.category,
-        translatedTerm: glossaryTermTranslations.term,
-        definition: glossaryTermTranslations.definition,
-        reading: glossaryTermTranslations.reading,
-      })
-      .from(glossaryTerms)
-      .leftJoin(
-        glossaryTermTranslations,
-        sql`${glossaryTermTranslations.termId} = ${glossaryTerms.id} AND ${glossaryTermTranslations.locale} = ${locale}`
-      )
-      .where(eq(glossaryTerms.category, category))
-      .orderBy(glossaryTerms.termEn);
+    const [aliasRows, positionRows] = await Promise.all([
+      buildAliasQuery(locale)
+        .where(eq(glossaryTerms.category, category))
+        .orderBy(glossaryTerms.termEn),
+      buildPositionQuery(locale)
+        .where(eq(glossaryTerms.category, category))
+        .orderBy(glossaryTerms.termEn),
+    ]);
 
-    const termIds = rows.map((r) => r.termId);
-    const aliasMap = await fetchAliasesMap(termIds);
-    const positionMap = await fetchPositionsMap(termIds);
-
-    return rows.map((row) =>
-      toChessTerm(row, aliasMap.get(row.termId) || [], positionMap.get(row.termId) || [])
-    );
+    return mergeTermRows(aliasRows, positionRows);
   },
   ['glossary-terms-by-category'],
   { tags: ['glossary'], revalidate: 3600 }
