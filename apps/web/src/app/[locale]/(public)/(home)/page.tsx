@@ -22,6 +22,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FeedClient } from './_components/FeedClient';
+import { VsAiCard } from './_components/VsAiCard';
 import { getFeedData } from './_lib/queries';
 
 const INITIAL_FEED_SIZE = 10;
@@ -71,6 +72,8 @@ export default async function HomePage({ params }: Props) {
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
+
+        <VsAiCard locale={locale} />
 
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <FeedClient

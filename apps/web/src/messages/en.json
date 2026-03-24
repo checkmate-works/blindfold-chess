@@ -1188,6 +1188,18 @@
         "rank": "Rank",
         "score": "Score"
       }
+    },
+    "vsAi": {
+      "title": "VS AI",
+      "startDescription": "Challenge Stockfish to a blindfold chess match. Choose your difficulty and play without seeing the board.",
+      "resumeDescription": "You have a game in progress. Pick up where you left off!",
+      "startGame": "Start VS AI",
+      "resume": "Resume",
+      "newGame": "New Game",
+      "allGames": "All games \u2192",
+      "level": "Lv",
+      "moves": "moves",
+      "justNow": "just now"
     }
   },
   "gamesPage": {

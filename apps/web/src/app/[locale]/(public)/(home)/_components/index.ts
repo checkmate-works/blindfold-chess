@@ -11,3 +11,4 @@ export { LatestArticlesSkeleton } from './LatestArticlesSkeleton';
 export { LatestTopicPostsSkeleton } from './LatestTopicPostsSkeleton';
 export { TopicPostCard } from './TopicPostCard';
 export { TopicSquareBoard } from './TopicSquareBoard';
+export { VsAiCard } from './VsAiCard';
