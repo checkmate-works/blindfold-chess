@@ -9,6 +9,8 @@
  */
 'use client';
 
+import { memo } from 'react';
+
 import Image from 'next/image';
 
 import type { AdBannerConfig } from '@/lib/ad';
@@ -25,7 +27,13 @@ type Props = {
   locale: string;
 };
 
-export function NativeAdCard({ ad, adLabel, sponsorLabel, sponsoredLinkLabel, locale }: Props) {
+export const NativeAdCard = memo(function NativeAdCard({
+  ad,
+  adLabel,
+  sponsorLabel,
+  sponsoredLinkLabel,
+  locale,
+}: Props) {
   return (
     <FeedItemCard
       href={ad.href}
@@ -60,4 +68,4 @@ export function NativeAdCard({ ad, adLabel, sponsorLabel, sponsoredLinkLabel, lo
       <p className="text-sm text-foreground mt-1">{ad.alt}</p>
     </FeedItemCard>
   );
-}
+});

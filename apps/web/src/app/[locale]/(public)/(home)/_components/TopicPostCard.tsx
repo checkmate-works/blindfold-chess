@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 import Image from 'next/image';
 
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
@@ -28,7 +30,7 @@ type Props = {
   newReplyTemplate: string;
 };
 
-export function TopicPostCard({
+export const TopicPostCard = memo(function TopicPostCard({
   post,
   locale,
   showMoreLabel,
@@ -161,4 +163,4 @@ export function TopicPostCard({
       </div>
     </FeedItemCard>
   );
-}
+});

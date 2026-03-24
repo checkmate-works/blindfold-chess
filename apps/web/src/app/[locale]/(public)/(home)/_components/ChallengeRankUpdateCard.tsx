@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 import { useTranslations } from 'next-intl';
 
 import {
@@ -44,7 +46,12 @@ type Props = {
   justNowLabel: string;
 };
 
-export function ChallengeRankUpdateCard({ data, createdAt, locale, justNowLabel }: Props) {
+export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
+  data,
+  createdAt,
+  locale,
+  justNowLabel,
+}: Props) {
   const tFeed = useTranslations('home.feed.rankUpdate');
   const tLeaderboard = useTranslations('leaderboard');
   const displayName = data.actor.displayName || data.actor.username;
@@ -89,4 +96,4 @@ export function ChallengeRankUpdateCard({ data, createdAt, locale, justNowLabel 
       </p>
     </FeedItemCard>
   );
-}
+});

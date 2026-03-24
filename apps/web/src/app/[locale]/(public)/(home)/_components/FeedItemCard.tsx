@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
@@ -13,7 +14,7 @@ type Props = {
   children: ReactNode;
 };
 
-export function FeedItemCard({
+export const FeedItemCard = memo(function FeedItemCard({
   href,
   locale,
   external,
@@ -45,4 +46,4 @@ export function FeedItemCard({
       {content}
     </Link>
   );
-}
+});
