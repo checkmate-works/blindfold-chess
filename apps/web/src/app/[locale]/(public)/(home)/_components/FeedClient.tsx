@@ -51,21 +51,24 @@ export function FeedClient({
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
 
   const loadMore = useCallback(async () => {
-    if (!cursor || isLoading) return;
+    if (!cursor || isLoadingRef.current) return;
+    isLoadingRef.current = true;
     setIsLoading(true);
     try {
       const result = await getFeed(cursor);
       setItems((prev) => [...prev, ...result.items]);
       setCursor(result.nextCursor);
     } finally {
+      isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [cursor, isLoading]);
+  }, [cursor]);
 
   useEffect(() => {
-    if (!cursor || isLoading) return;
+    if (!cursor) return;
 
     const target = observerRef.current;
     if (!target) return;
@@ -81,7 +84,7 @@ export function FeedClient({
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [cursor, isLoading, loadMore]);
+  }, [cursor, loadMore]);
 
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-8">{noItemsLabel}</p>;
