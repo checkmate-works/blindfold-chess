@@ -19,7 +19,6 @@ type Props = {
     locale: Locale;
   }>;
   searchParams: Promise<{
-    timeLimit?: string;
     piece?: string;
   }>;
 };
@@ -43,10 +42,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LegalMovesChallengeSessionPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { timeLimit, piece } = await searchParams;
+  const { piece } = await searchParams;
   const t = await getTranslations({ locale });
-
-  const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
 
   // Parse selected piece from URL (full name: king, queen, rook, bishop, knight, random)
   const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
@@ -68,7 +65,6 @@ export default async function LegalMovesChallengeSessionPage({ params, searchPar
     >
       <LegalMovesSession
         locale={locale}
-        initialTimeLimit={timeLimitValue}
         selectedPieces={selectedPieces}
         selectedPiece={validPieceName}
       />

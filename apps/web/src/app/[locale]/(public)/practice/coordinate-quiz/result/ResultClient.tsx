@@ -24,13 +24,11 @@ export function ResultClient({ locale, adBanner }: Props) {
   const total = parseInt(searchParams.get('total') || '0', 10);
   const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
 
-  const timeLimit = searchParams.get('timeLimit');
   const orientation = searchParams.get('orientation');
   const speed = searchParams.get('speed');
 
   // Try Again: 同じ設定でセッションを即座にやり直す
   const sessionParams = new URLSearchParams();
-  if (timeLimit) sessionParams.set('timeLimit', timeLimit);
   if (orientation) sessionParams.set('boardOrientation', orientation);
   if (speed) sessionParams.set('feedbackSpeed', speed);
   const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge/session?${sessionParams.toString()}`;

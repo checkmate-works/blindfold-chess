@@ -15,7 +15,6 @@ type Props = {
     locale: Locale;
   }>;
   searchParams: Promise<{
-    timeLimit?: string;
     boardOrientation?: string;
     feedbackSpeed?: string;
   }>;
@@ -40,10 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CoordinateQuizChallengeSessionPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { timeLimit, boardOrientation, feedbackSpeed } = await searchParams;
+  const { boardOrientation, feedbackSpeed } = await searchParams;
   const t = await getTranslations({ locale });
 
-  const timeLimitValue = timeLimit ? parseInt(timeLimit, 10) : 60;
   const orientationValue = boardOrientation || 'white';
   const feedbackSpeedValue = feedbackSpeed || 'normal';
 
@@ -60,7 +58,6 @@ export default async function CoordinateQuizChallengeSessionPage({ params, searc
     >
       <CoordinateQuizChallenge
         locale={locale}
-        initialTimeLimit={timeLimitValue}
         initialBoardOrientation={orientationValue}
         initialFeedbackSpeed={feedbackSpeedValue}
       />

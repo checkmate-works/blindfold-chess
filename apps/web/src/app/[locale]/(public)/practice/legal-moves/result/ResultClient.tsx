@@ -25,7 +25,6 @@ export function ResultClient({ locale }: Props) {
   const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
 
   // Params for retry
-  const timeLimit = searchParams.get('timeLimit');
   const piece = searchParams.get('piece');
 
   // Calculate average time if total > 0
@@ -33,7 +32,6 @@ export function ResultClient({ locale }: Props) {
 
   // Try Again: 同じ設定でセッションを即座にやり直す
   const sessionParams = new URLSearchParams();
-  if (timeLimit) sessionParams.set('timeLimit', timeLimit);
   if (piece) sessionParams.set('piece', piece);
   const tryAgainUrl = `/${locale}/practice/legal-moves/challenge/session?${sessionParams.toString()}`;
 

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -17,8 +17,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { CoordinateQuizSettings } from '../../_components/CoordinateQuizSettings';
 import type { BoardOrientation, FeedbackSpeed } from '../../_lib/types';
 import { BOARD_ORIENTATIONS, FEEDBACK_SPEEDS } from '../../_lib/types';
-
-const DEFAULT_TIME_LIMIT = 60;
 
 type Props = {
   locale: Locale;
@@ -55,7 +53,6 @@ export function CoordinateQuizChallengeSetup({
 
   const handleStart = () => {
     const params = new URLSearchParams({
-      timeLimit: DEFAULT_TIME_LIMIT.toString(),
       boardOrientation,
       feedbackSpeed,
     });
@@ -67,7 +64,7 @@ export function CoordinateQuizChallengeSetup({
       <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
 
       <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
-        <li>{t('challengeSetup.timeLimit', { seconds: DEFAULT_TIME_LIMIT })}</li>
+        <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
         <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
         <li>{t('challengeSetup.leaderboard')}</li>
       </ul>

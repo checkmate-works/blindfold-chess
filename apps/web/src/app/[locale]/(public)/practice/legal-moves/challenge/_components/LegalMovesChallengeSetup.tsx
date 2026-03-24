@@ -9,7 +9,7 @@ import { Button } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { FaPlay } from 'react-icons/fa';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -17,8 +17,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesSettings } from '../../_components/LegalMovesSettings';
 import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/utils';
-
-const DEFAULT_TIME_LIMIT = 60;
 
 type Props = {
   locale: Locale;
@@ -38,7 +36,6 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
     const pieceName =
       pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
     const params = new URLSearchParams({
-      timeLimit: DEFAULT_TIME_LIMIT.toString(),
       piece: pieceName,
     });
     router.push(`/${locale}/practice/legal-moves/challenge/session?${params.toString()}`);
@@ -49,7 +46,7 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
       <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
 
       <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
-        <li>{t('challengeSetup.timeLimit', { seconds: DEFAULT_TIME_LIMIT })}</li>
+        <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
         <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
         <li>{t('challengeSetup.leaderboard')}</li>
       </ul>

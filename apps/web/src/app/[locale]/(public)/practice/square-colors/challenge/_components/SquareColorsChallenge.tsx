@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -27,7 +27,6 @@ type Props = {
 };
 
 const BATCH_SIZE = 100;
-const TIME_LIMIT = 60;
 
 export default function SquareColorsChallenge({ locale }: Props) {
   const router = useRouter();
@@ -64,7 +63,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
     handleAnswer,
     togglePause,
   } = useTimedSession<string>({
-    timeLimit: TIME_LIMIT,
+    timeLimit: CHALLENGE_TIME_LIMIT,
     generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
   });
@@ -135,7 +134,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
       <SquareColorsPlaying
         currentSquare={currentSquare}
         timeRemaining={timeRemaining}
-        timeLimit={TIME_LIMIT}
+        timeLimit={CHALLENGE_TIME_LIMIT}
         showResult={showFeedback}
         lastAnswer={
           lastAnswerCorrect !== null ? { correct: lastAnswerCorrect, square: currentSquare } : null
