@@ -2,8 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Link } from '@/i18n/routing';
-
 import {
   type LeaderboardModule,
   moduleToSlug,
@@ -12,6 +10,7 @@ import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvata
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
+import { FeedItemCard } from './FeedItemCard';
 
 // ---------------------------------------------------------------------------
 // Rank → Emoji mapping
@@ -61,38 +60,33 @@ export function ChallengeRankUpdateCard({ data, createdAt, locale, justNowLabel 
   const rankEmoji = getRankEmoji(data.rank);
 
   return (
-    <Link
+    <FeedItemCard
       href={href}
       locale={locale}
-      className="flex gap-4 p-4 hover:bg-muted/50 transition-colors"
+      thumbnail={'\u{1F3C6}'}
+      thumbnailClassName="flex items-center justify-center text-4xl sm:text-5xl"
     >
-      <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center text-4xl sm:text-5xl">
-        {'\u{1F3C6}'}
+      <UserAvatar
+        profileHref={null}
+        avatarUrl={data.actor.avatarUrl}
+        displayName={displayName}
+        locale={locale}
+        size="sm"
+        flair={data.actor.flair}
+        country={data.actor.country}
+      />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <time dateTime={createdAt}>
+          {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
+        </time>
       </div>
-
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        <UserAvatar
-          profileHref={null}
-          avatarUrl={data.actor.avatarUrl}
-          displayName={displayName}
-          locale={locale}
-          size="sm"
-          flair={data.actor.flair}
-          country={data.actor.country}
-        />
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <time dateTime={createdAt}>
-            {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
-          </time>
-        </div>
-        <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
-          {label}
-        </span>
-        <p className="text-sm text-foreground mt-1">
-          {data.isNewEntry ? tFeed('newEntry') : tFeed('improved')}
-          {rankEmoji && <span className="mr-1">{rankEmoji}</span>}
-        </p>
-      </div>
-    </Link>
+      <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
+        {label}
+      </span>
+      <p className="text-sm text-foreground mt-1">
+        {data.isNewEntry ? tFeed('newEntry') : tFeed('improved')}
+        {rankEmoji && <span className="mr-1">{rankEmoji}</span>}
+      </p>
+    </FeedItemCard>
   );
 }
