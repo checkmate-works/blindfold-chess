@@ -102,22 +102,18 @@ function buildChallengeUrl(locale: string, pieceSelection: PieceSelection): stri
   const pieceName =
     pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
 
-  return `/${locale}/practice/legal-moves/challenge?timeLimit=60&piece=${pieceName}#legal-moves-session`;
+  return `/${locale}/practice/legal-moves/challenge?piece=${pieceName}`;
 }
 
 describe('challenge mode navigation URL construction', () => {
   it('constructs URL with full piece name for specific piece selection', () => {
     const url = buildChallengeUrl('en', 'k');
-    expect(url).toBe(
-      '/en/practice/legal-moves/challenge?timeLimit=60&piece=king#legal-moves-session'
-    );
+    expect(url).toBe('/en/practice/legal-moves/challenge?piece=king');
   });
 
   it('constructs URL with "random" for random selection', () => {
     const url = buildChallengeUrl('en', 'random');
-    expect(url).toBe(
-      '/en/practice/legal-moves/challenge?timeLimit=60&piece=random#legal-moves-session'
-    );
+    expect(url).toBe('/en/practice/legal-moves/challenge?piece=random');
   });
 
   it.each([
