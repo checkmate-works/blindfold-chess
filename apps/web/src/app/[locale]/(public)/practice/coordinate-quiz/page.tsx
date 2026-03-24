@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -40,17 +40,19 @@ export default async function CoordinateQuizPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.coordinateQuiz.title')}</PageTitle>
 
-      <CoordinateQuiz locale={locale} />
+      <PagePanel>
+        <CoordinateQuiz locale={locale} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.coordinateQuiz.title') },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.coordinateQuiz.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

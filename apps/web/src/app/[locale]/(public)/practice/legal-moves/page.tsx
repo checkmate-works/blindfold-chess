@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -41,17 +41,19 @@ export default async function LegalMovesPage({ params, searchParams }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.legalMoves.title')}</PageTitle>
 
-      <LegalMoves locale={locale} initialMode={initialMode} />
+      <PagePanel>
+        <LegalMoves locale={locale} initialMode={initialMode} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.legalMoves.title') },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.legalMoves.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }
