@@ -143,6 +143,10 @@ Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm tes
 - `pnpm test:e2e` - Run E2E tests in headless mode (auto-starts dev server)
 - `pnpm capture-screenshots` - Capture practice page thumbnails for the practice menu
 
+## Data Backfill
+
+- `scripts/backfill-feed-items.sql` - Backfill `feed_items` from existing `topic_posts` for the home timeline. Run manually in Supabase SQL Editor after deploying the `feed_items` table migration. Idempotent (safe to run multiple times).
+
 ## Tech Stack
 
 - Next.js 16 (App Router)
