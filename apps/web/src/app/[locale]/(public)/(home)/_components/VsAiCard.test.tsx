@@ -38,6 +38,12 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
+vi.mock('@blindfold-chess/icons', () => ({
+  ChessPieceIcon: ({ type, color, size }: { type: string; color: string; size: number }) => (
+    <span data-testid="chess-piece-icon" data-type={type} data-color={color} data-size={size} />
+  ),
+}));
+
 vi.mock('@/app/[locale]/_components/ColorIcon', () => ({
   ColorIcon: ({ color }: { color: string }) => <span data-testid="color-icon">{color}</span>,
 }));
@@ -98,11 +104,10 @@ describe('VsAiCard', () => {
       });
     });
 
-    it('should render start CTA with description text', () => {
+    it('should render start CTA', () => {
       render(<VsAiCard locale="en" />);
 
       expect(screen.getByText('title')).toBeInTheDocument();
-      expect(screen.getByText('startDescription')).toBeInTheDocument();
       expect(screen.getByText('startGame')).toBeInTheDocument();
     });
 
@@ -118,7 +123,6 @@ describe('VsAiCard', () => {
 
       expect(screen.queryByText('resume')).not.toBeInTheDocument();
       expect(screen.queryByText('newGame')).not.toBeInTheDocument();
-      expect(screen.queryByText('resumeDescription')).not.toBeInTheDocument();
     });
 
     it('should show the "all games" link pointing to /games', () => {
@@ -146,10 +150,9 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       expect(screen.getByText('title')).toBeInTheDocument();
-      expect(screen.getByText('resumeDescription')).toBeInTheDocument();
       expect(screen.getByText('resume')).toBeInTheDocument();
-      // Skill level and ELO: level 5 -> 700 + 5*100 = 1200 ELO
-      expect(screen.getByText('level 5 (1200 ELO)')).toBeInTheDocument();
+      // Skill level: level 5
+      expect(screen.getByText('level 5')).toBeInTheDocument();
       // Move count
       expect(screen.getByText('3 moves')).toBeInTheDocument();
       // Color icon
@@ -194,7 +197,6 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       expect(screen.queryByText('startGame')).not.toBeInTheDocument();
-      expect(screen.queryByText('startDescription')).not.toBeInTheDocument();
     });
 
     it('should show the "all games" link pointing to /games', () => {
@@ -233,8 +235,7 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       // Should show info from newerGame (first in-progress game)
-      // level 10 -> 700 + 10*100 = 1700 ELO
-      expect(screen.getByText('level 10 (1700 ELO)')).toBeInTheDocument();
+      expect(screen.getByText('level 10')).toBeInTheDocument();
       expect(screen.getByText('2 moves')).toBeInTheDocument();
       expect(screen.getByTestId('color-icon')).toHaveTextContent('white');
     });
@@ -253,7 +254,6 @@ describe('VsAiCard', () => {
 
       render(<VsAiCard locale="en" />);
 
-      expect(screen.getByText('startDescription')).toBeInTheDocument();
       expect(screen.getByText('startGame')).toBeInTheDocument();
       expect(screen.queryByText('resume')).not.toBeInTheDocument();
     });
@@ -311,8 +311,8 @@ describe('VsAiCard', () => {
 
       render(<VsAiCard locale="en" />);
 
-      // Should show inProgressGame info (skillLevel 8 -> 700 + 8*100 = 1500 ELO)
-      expect(screen.getByText('level 8 (1500 ELO)')).toBeInTheDocument();
+      // Should show inProgressGame info (skillLevel 8)
+      expect(screen.getByText('level 8')).toBeInTheDocument();
       expect(screen.getByText('4 moves')).toBeInTheDocument();
     });
   });

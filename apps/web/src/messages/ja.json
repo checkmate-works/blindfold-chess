@@ -1192,8 +1192,6 @@
     },
     "vsAi": {
       "title": "VS AI",
-      "startDescription": "Stockfishと目隠しチェスで対局しましょう。難易度を選んで、盤面を見ずにプレイできます。",
-      "resumeDescription": "進行中のゲームがあります。続きからプレイしましょう！",
       "startGame": "AI対局を始める",
       "resume": "再開する",
       "newGame": "新しいゲーム",
