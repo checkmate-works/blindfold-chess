@@ -13,38 +13,13 @@ This guide covers configuring [Resend](https://resend.com/) as the custom SMTP p
 
 ## 1. Verify Your Domain in Resend
 
-Before Resend can send emails on behalf of your domain, you need to verify ownership by adding DNS records.
+> **⚠️ Domain verification is mandatory.** You must verify your domain at [resend.com/domains](https://resend.com/domains) **before** Supabase Auth can send any emails through Resend. Without a verified domain, all authentication emails (signup confirmation, password reset, email change) will fail with **500 errors**. Do not skip this step.
 
-1. Go to [resend.com/domains](https://resend.com/domains)
-2. Click **Add Domain** and enter your domain (e.g., `yourdomain.com`)
-3. Resend will provide DNS records to add:
-   - **SPF** (TXT record) — authorizes Resend to send emails for your domain
-   - **DKIM** (CNAME records) — cryptographically signs emails to prevent spoofing
-   - **DMARC** (TXT record) — defines policy for handling failed authentication
-4. Add these records in your domain's DNS settings (e.g., Cloudflare, Route 53, Vercel Domains)
-5. Return to Resend and click **Verify** — DNS propagation may take a few minutes to 48 hours
+Resend's dashboard walks you through the required DNS records (SPF, DKIM, DMARC). Follow the on-screen instructions to add them in your DNS provider (e.g., Cloudflare, Route 53, Vercel Domains) and click **Verify** in Resend. DNS propagation may take a few minutes to 48 hours.
 
 > **Tip:** If you are already using Resend for the contact form (see [environment-variables.md](environment-variables.md#contact-form-email-optional)), your domain may already be verified. You can use the same domain for both the contact form API and SMTP.
 
-## 2. Get SMTP Credentials from Resend
-
-1. Go to [resend.com/api-keys](https://resend.com/api-keys)
-2. Click **Create API Key**
-   - **Name**: e.g., `supabase-smtp`
-   - **Permission**: **Sending access**
-   - **Domain**: Select your verified domain (or "All domains")
-3. Copy the generated API key — this is your SMTP password
-
-The SMTP credentials are:
-
-| Setting      | Value                                                         |
-| ------------ | ------------------------------------------------------------- |
-| **Host**     | `smtp.resend.com`                                             |
-| **Port**     | `465`                                                         |
-| **Username** | `resend`                                                      |
-| **Password** | Your Resend API key (e.g., `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`) |
-
-## 3. Configure SMTP in Supabase Dashboard
+## 2. Configure SMTP in Supabase Dashboard
 
 Use the official [Resend integration for Supabase](https://supabase.com/partners/integrations/resend) to connect the two services. This automatically configures SMTP settings for your Supabase project.
 
@@ -52,9 +27,11 @@ Use the official [Resend integration for Supabase](https://supabase.com/partners
 2. Find the **Supabase** integration and click **Install**
 3. Follow the on-screen instructions to connect your Supabase project
 
+> **Note:** The SMTP Password shown in Supabase Dashboard is actually your Resend API key (the `re_` prefixed string). After saving, the password field appears blank on page reload — this is a security feature of the Supabase Dashboard, not a bug. The value IS saved.
+
 > **Tip:** For details on maximizing email deliverability, see the Resend blog post: [How to configure Supabase to send emails from your domain](https://resend.com/blog/how-to-configure-supabase-to-send-emails-from-your-domain).
 
-## 4. Set Up Email Templates in Supabase Dashboard
+## 3. Set Up Email Templates in Supabase Dashboard
 
 The email templates defined in the local `config.toml` (under `[auth.email.template.*]`) and the HTML files in `supabase/templates/` are **only used for local development**. They do **not** automatically sync to the production Supabase project.
 
@@ -77,7 +54,7 @@ To use the same branded templates in production:
 
 > **Important:** If you update the local template files in the future, remember to manually copy the changes to the Supabase Dashboard as well. There is no automatic synchronization.
 
-## 5. Testing and Verification
+## 4. Testing and Verification
 
 After completing the setup:
 
