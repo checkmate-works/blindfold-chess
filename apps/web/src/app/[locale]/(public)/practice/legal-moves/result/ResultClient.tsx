@@ -31,12 +31,16 @@ export function ResultClient({ locale }: Props) {
   // Calculate average time if total > 0
   const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
 
-  // Construct retry URL
-  const retryParams = new URLSearchParams();
-  if (timeLimit) retryParams.set('timeLimit', timeLimit);
-  if (piece) retryParams.set('piece', piece);
+  // Try Again: 同じ設定でセッションを即座にやり直す
+  const sessionParams = new URLSearchParams();
+  if (timeLimit) sessionParams.set('timeLimit', timeLimit);
+  if (piece) sessionParams.set('piece', piece);
+  const tryAgainUrl = `/${locale}/practice/legal-moves/challenge/session?${sessionParams.toString()}`;
 
-  const retryUrl = `/${locale}/practice/legal-moves/challenge?${retryParams.toString()}`;
+  // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
+  const settingsParams = new URLSearchParams();
+  if (piece) settingsParams.set('piece', piece);
+  const changeSettingsUrl = `/${locale}/practice/legal-moves/challenge?${settingsParams.toString()}`;
 
   return (
     <PracticeResultPage
@@ -54,8 +58,8 @@ export function ResultClient({ locale }: Props) {
         score={score}
         total={total}
         // Full page reload to reset useRef-based question generation state in LegalMovesSession
-        onTryAgain={() => (window.location.href = retryUrl)}
-        onExit={() => router.push(`/${locale}/practice/legal-moves`)}
+        onTryAgain={() => (window.location.href = tryAgainUrl)}
+        onExit={() => router.push(changeSettingsUrl)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),

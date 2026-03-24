@@ -72,9 +72,9 @@ export function ResultClient({ locale, adBanner }: Props) {
         score={score}
         total={total}
         onTryAgain={() => {
-          router.push(`/${locale}/practice/square-colors/challenge`);
+          router.push(`/${locale}/practice/square-colors/challenge/session`);
         }}
-        onExit={() => router.push(`/${locale}/practice/square-colors`)}
+        onExit={() => router.push(`/${locale}/practice/square-colors/challenge`)}
         locale={locale}
         labels={labels}
         scoreStats={{ correct: score, incorrect: total - score, total }}

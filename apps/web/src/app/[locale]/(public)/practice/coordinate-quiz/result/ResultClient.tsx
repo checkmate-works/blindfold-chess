@@ -28,12 +28,18 @@ export function ResultClient({ locale, adBanner }: Props) {
   const orientation = searchParams.get('orientation');
   const speed = searchParams.get('speed');
 
-  // Construct URL for retrying with same settings
-  const tryAgainParams = new URLSearchParams();
-  if (timeLimit) tryAgainParams.set('timeLimit', timeLimit);
-  if (orientation) tryAgainParams.set('boardOrientation', orientation);
-  if (speed) tryAgainParams.set('feedbackSpeed', speed);
-  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge?${tryAgainParams.toString()}`;
+  // Try Again: 同じ設定でセッションを即座にやり直す
+  const sessionParams = new URLSearchParams();
+  if (timeLimit) sessionParams.set('timeLimit', timeLimit);
+  if (orientation) sessionParams.set('boardOrientation', orientation);
+  if (speed) sessionParams.set('feedbackSpeed', speed);
+  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge/session?${sessionParams.toString()}`;
+
+  // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
+  const settingsParams = new URLSearchParams();
+  if (orientation) settingsParams.set('boardOrientation', orientation);
+  if (speed) settingsParams.set('feedbackSpeed', speed);
+  const changeSettingsUrl = `/${locale}/practice/coordinate-quiz/challenge?${settingsParams.toString()}`;
 
   // Calculate average time if total > 0
   const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
@@ -52,7 +58,7 @@ export function ResultClient({ locale, adBanner }: Props) {
         score={score}
         total={total}
         onTryAgain={() => router.push(tryAgainUrl)}
-        onExit={() => router.push(`/${locale}/practice/coordinate-quiz`)}
+        onExit={() => router.push(changeSettingsUrl)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),
