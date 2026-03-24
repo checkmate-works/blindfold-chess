@@ -25,13 +25,17 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const handleStart = () => {
-    const pieceName =
-      pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
+  const pieceName =
+    pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
 
+  const handleStartTraining = () => {
     router.push(
       `/${locale}/practice/legal-moves/training?piece=${pieceName}#legal-moves-training-session`
     );
+  };
+
+  const handleStartChallenge = () => {
+    router.push(`/${locale}/practice/legal-moves/challenge/session?piece=${pieceName}`);
   };
 
   return (
@@ -46,7 +50,7 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
         <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
 
         <Button
-          onClick={handleStart}
+          onClick={handleStartTraining}
           variant="secondary"
           size="lg"
           className="w-full mt-6"
@@ -55,7 +59,7 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
           {tp('startTraining')}
         </Button>
         <Button
-          onClick={() => router.push(`/${locale}/practice/legal-moves/challenge/session`)}
+          onClick={handleStartChallenge}
           variant="primary"
           size="lg"
           icon={<FaPlay />}

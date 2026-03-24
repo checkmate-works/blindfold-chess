@@ -32,10 +32,16 @@ export function CoordinateQuizSetup({
   const tp = useTranslations('practice');
   const router = useRouter();
 
-  const handleStart = () => {
+  const settingsQuery = `boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
+
+  const handleStartTraining = () => {
     router.push(
-      `/${locale}/practice/coordinate-quiz/training?boardOrientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}#coordinate-quiz-training-session`
+      `/${locale}/practice/coordinate-quiz/training?${settingsQuery}#coordinate-quiz-training-session`
     );
+  };
+
+  const handleStartChallenge = () => {
+    router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`);
   };
 
   return (
@@ -55,7 +61,7 @@ export function CoordinateQuizSetup({
         />
 
         <Button
-          onClick={handleStart}
+          onClick={handleStartTraining}
           variant="secondary"
           size="lg"
           className="w-full mt-6"
@@ -64,7 +70,7 @@ export function CoordinateQuizSetup({
           {tp('startTraining')}
         </Button>
         <Button
-          onClick={() => router.push(`/${locale}/practice/coordinate-quiz/challenge/session`)}
+          onClick={handleStartChallenge}
           variant="primary"
           size="lg"
           icon={<FaPlay />}

@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { FaPlay } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
@@ -11,6 +14,9 @@ import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { LegalMovesSettings } from '../../_components/LegalMovesSettings';
+import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/utils';
 
 const DEFAULT_TIME_LIMIT = 60;
 
@@ -23,10 +29,17 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
   const t = useTranslations('practice');
   const router = useRouter();
 
+  // Convert piece name from URL to PieceSelection type
+  const initialSelection: PieceSelection =
+    piece === 'random' ? 'random' : (PIECE_NAME_TO_TYPE[piece] ?? 'random');
+  const [pieceSelection, setPieceSelection] = useState<PieceSelection>(initialSelection);
+
   const handleStart = () => {
+    const pieceName =
+      pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
     const params = new URLSearchParams({
       timeLimit: DEFAULT_TIME_LIMIT.toString(),
-      piece,
+      piece: pieceName,
     });
     router.push(`/${locale}/practice/legal-moves/challenge/session?${params.toString()}`);
   };
@@ -41,12 +54,14 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
         <li>{t('challengeSetup.leaderboard')}</li>
       </ul>
 
+      <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={setPieceSelection} />
+
       <Button
         onClick={handleStart}
         variant="primary"
         size="lg"
         icon={<FaPlay />}
-        className="w-full"
+        className="w-full mt-6"
       >
         {t('startChallenge')}
       </Button>

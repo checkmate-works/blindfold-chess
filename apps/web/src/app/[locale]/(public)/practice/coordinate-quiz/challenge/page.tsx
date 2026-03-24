@@ -13,6 +13,10 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<{
+    boardOrientation?: string;
+    feedbackSpeed?: string;
+  }>;
 };
 
 export async function generateStaticParams() {
@@ -31,9 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CoordinateQuizChallengePage({ params }: Props) {
+export default async function CoordinateQuizChallengePage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { boardOrientation, feedbackSpeed } = await searchParams;
   const t = await getTranslations({ locale });
 
   return (
@@ -46,7 +51,11 @@ export default async function CoordinateQuizChallengePage({ params }: Props) {
         { label: t('practice.modeTimed') },
       ]}
     >
-      <CoordinateQuizChallengeSetup locale={locale} />
+      <CoordinateQuizChallengeSetup
+        locale={locale}
+        boardOrientation={boardOrientation || 'white'}
+        feedbackSpeed={feedbackSpeed || 'normal'}
+      />
     </PracticeSessionPage>
   );
 }
