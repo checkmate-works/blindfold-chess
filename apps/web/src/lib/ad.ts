@@ -75,22 +75,23 @@ export const getAdBannerBySlot = unstable_cache(
 export const getAdBannersForFeed = unstable_cache(
   async (): Promise<AdBannerConfig[]> => {
     try {
-      const rows = await withTimeout(
-        db
-          .select()
-          .from(adBanners)
-          .where(eq(adBanners.isActive, true))
-          .orderBy(adBanners.sortOrder),
+      const banner = await withTimeout(
+        db.select().from(adBanners).where(eq(adBanners.slot, 'native-ad')).limit(1),
         DB_QUERY_TIMEOUT_MS
       );
 
-      return rows.map((row) => ({
-        href: row.href,
-        imagePath: row.imagePath,
-        alt: row.alt,
-        width: row.width,
-        height: row.height,
-      }));
+      const row = banner[0];
+      if (!row || !row.isActive) return [];
+
+      return [
+        {
+          href: row.href,
+          imagePath: row.imagePath,
+          alt: row.alt,
+          width: row.width,
+          height: row.height,
+        },
+      ];
     } catch (error) {
       console.warn('Failed to fetch ad banners for feed:', error);
       return [];

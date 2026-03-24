@@ -2292,7 +2292,20 @@
       "saving": "Saving...",
       "active": "Active",
       "inactive": "Inactive",
-      "noBanners": "No ad banners found."
+      "noBanners": "No ad banners found.",
+      "newBanner": "New Banner",
+      "createTitle": "Create Ad Banner",
+      "slotPlaceholder": "e.g. native-ad",
+      "hrefPlaceholder": "https://example.com",
+      "imagePathPlaceholder": "/images/ads/banner.png",
+      "altPlaceholder": "Advertisement",
+      "width": "Width",
+      "height": "Height",
+      "sortOrder": "Sort Order",
+      "startAt": "Start At",
+      "endAt": "End At",
+      "create": "Create",
+      "creating": "Creating..."
     }
   },
   "publicProfile": {

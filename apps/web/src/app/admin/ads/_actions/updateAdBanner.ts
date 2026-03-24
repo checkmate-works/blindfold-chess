@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -42,7 +42,7 @@ export async function updateAdBanner(id: string, data: UpdateData): Promise<Upda
     })
     .where(eq(adBanners.id, id));
 
-  revalidateTag('ads-config', 'max');
+  updateTag('ads-config');
 
   return { success: true };
 }

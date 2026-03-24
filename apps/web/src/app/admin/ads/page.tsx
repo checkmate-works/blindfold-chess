@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { getAdsEnabledDirect, getAllAdBanners } from '@/lib/ad';
 
@@ -30,7 +31,15 @@ export default async function AdminAdsPage() {
         </div>
       </div>
 
-      <h2 className="text-lg font-semibold mb-4">{t('banners')}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">{t('banners')}</h2>
+        <Link
+          href="/admin/ads/new"
+          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          {t('newBanner')}
+        </Link>
+      </div>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-secondary">

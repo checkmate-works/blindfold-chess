@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -32,7 +32,7 @@ export async function toggleAdsEnabled(): Promise<ToggleResult> {
       set: { value: { enabled: !currentEnabled }, updatedAt: new Date() },
     });
 
-  revalidateTag('ads-config', 'max');
+  updateTag('ads-config');
 
   return { success: true };
 }
