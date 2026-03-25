@@ -1,54 +1,18 @@
 import { getTranslations } from 'next-intl/server';
-import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { eq } from 'drizzle-orm';
-
-import { db, profiles } from '@/lib/db';
-import { createClient } from '@/lib/supabase/server';
-
-import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
-
 import type { NavigationItem } from '../_lib/types';
-import { AnnouncementBanner } from './AnnouncementBanner';
+import { AnnouncementBannerContainer } from './AnnouncementBannerContainer';
+import { HeaderNavigation } from './HeaderNavigation';
 import { HeaderRightSection } from './HeaderRightSection';
-import { MobileMenu } from './MobileMenu';
 
 type Props = {
   locale: string;
 };
 
 export async function Header({ locale }: Props) {
-  const [t, supabase, cookieStore, bannerAnnouncement] = await Promise.all([
-    getTranslations({ locale, namespace: 'Header' }),
-    createClient(),
-    cookies(),
-    getLatestBannerAnnouncement(locale),
-  ]);
-
-  const dismissedId = cookieStore.get('dismissed-announcement')?.value;
-  const showBanner = bannerAnnouncement && bannerAnnouncement.id !== dismissedId;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const isAuthenticated = !!user;
-
-  let avatarUrl: string | null = null;
-  let displayName: string | null = null;
-
-  if (user) {
-    const [profile] = await db
-      .select({ avatarUrl: profiles.avatarUrl, displayName: profiles.displayName })
-      .from(profiles)
-      .where(eq(profiles.id, user.id))
-      .limit(1);
-
-    if (profile) {
-      avatarUrl = profile.avatarUrl;
-      displayName = profile.displayName;
-    }
-  }
+  const t = await getTranslations({ locale, namespace: 'Header' });
 
   const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -74,35 +38,36 @@ export async function Header({ locale }: Props) {
     { id: 'settings', href: `/${locale}/preferences`, label: t('settings'), iconName: 'settings' },
   ];
 
-  const menuItems: NavigationItem[] = isAuthenticated
-    ? [{ id: 'dashboard', href: '/', label: t('dashboard'), iconName: 'dashboard' }, ...commonItems]
-    : [
-        commonItems[0],
-        {
-          id: 'getting-started',
-          href: `/${locale}/getting-started`,
-          label: t('gettingStarted'),
-          iconName: 'getting-started',
-        },
-        ...commonItems.slice(1),
-      ];
+  const authenticatedItems: NavigationItem[] = [
+    { id: 'dashboard', href: '/', label: t('dashboard'), iconName: 'dashboard' },
+    ...commonItems,
+  ];
+
+  const unauthenticatedItems: NavigationItem[] = [
+    commonItems[0],
+    {
+      id: 'getting-started',
+      href: `/${locale}/getting-started`,
+      label: t('gettingStarted'),
+      iconName: 'getting-started',
+    },
+    ...commonItems.slice(1),
+  ];
 
   return (
     <>
-      {showBanner && (
-        <AnnouncementBanner
-          id={bannerAnnouncement.id}
-          title={bannerAnnouncement.title}
-          href={`/${locale}/announcements/${bannerAnnouncement.slug}`}
-        />
-      )}
+      <AnnouncementBannerContainer />
       <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Left side: Mobile menu + Logo + Title + Desktop navigation */}
             <div className="flex items-center space-x-6">
               {/* Mobile menu button - only this part needs client-side */}
-              <MobileMenu title={t('title')} items={menuItems} />
+              <HeaderNavigation
+                title={t('title')}
+                authenticatedItems={authenticatedItems}
+                unauthenticatedItems={unauthenticatedItems}
+              />
 
               {/* Logo + Title */}
               <Link href={`/${locale}`} className="flex items-center gap-3">
@@ -125,11 +90,7 @@ export async function Header({ locale }: Props) {
             </div>
 
             {/* Right side: Notifications + Auth status */}
-            <HeaderRightSection
-              isAuthenticated={isAuthenticated}
-              avatarUrl={avatarUrl}
-              displayName={displayName}
-            />
+            <HeaderRightSection />
           </div>
         </div>
       </header>

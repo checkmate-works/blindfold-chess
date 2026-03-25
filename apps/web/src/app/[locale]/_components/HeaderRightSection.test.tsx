@@ -1,11 +1,18 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HeaderRightSection } from './HeaderRightSection';
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
+
+const mockUseAuth = vi.fn();
+
+vi.mock('../_contexts/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
 
 vi.mock('./AuthStatusDisplay', () => ({
   AuthStatusDisplay: ({
@@ -35,78 +42,54 @@ vi.mock('./NotificationBadge', () => ({
 describe('HeaderRightSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn();
   });
 
-  describe('when server isAuthenticated=true', () => {
-    it('shows NotificationBadge and AuthStatusDisplay with isAuthenticated=true', () => {
-      render(
-        <HeaderRightSection
-          isAuthenticated={true}
-          avatarUrl="https://example.com/avatar.jpg"
-          displayName="TestUser"
-        />
-      );
+  describe('when loading', () => {
+    it('renders a placeholder', () => {
+      mockUseAuth.mockReturnValue({ user: null, isLoading: true });
+      render(<HeaderRightSection />);
+
+      expect(screen.queryByTestId('auth-status-display')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('when authenticated', () => {
+    it('shows NotificationBadge and AuthStatusDisplay', async () => {
+      mockUseAuth.mockReturnValue({
+        user: { id: 'user-1', email: 'test@example.com' },
+        isLoading: false,
+      });
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        json: () =>
+          Promise.resolve({
+            avatarUrl: 'https://example.com/avatar.jpg',
+            displayName: 'TestUser',
+          }),
+      });
+
+      render(<HeaderRightSection />);
 
       expect(screen.getByTestId('notification-badge')).toBeInTheDocument();
-      const authDisplay = screen.getByTestId('auth-status-display');
-      expect(authDisplay).toBeInTheDocument();
-      expect(authDisplay).toHaveAttribute('data-authenticated', 'true');
-    });
 
-    it('passes avatarUrl and displayName to AuthStatusDisplay', () => {
-      render(
-        <HeaderRightSection
-          isAuthenticated={true}
-          avatarUrl="https://example.com/avatar.jpg"
-          displayName="TestUser"
-        />
-      );
-
-      const authDisplay = screen.getByTestId('auth-status-display');
-      expect(authDisplay).toHaveAttribute('data-avatar', 'https://example.com/avatar.jpg');
-      expect(authDisplay).toHaveAttribute('data-name', 'TestUser');
+      await waitFor(() => {
+        const authDisplay = screen.getByTestId('auth-status-display');
+        expect(authDisplay).toHaveAttribute('data-authenticated', 'true');
+        expect(authDisplay).toHaveAttribute('data-avatar', 'https://example.com/avatar.jpg');
+        expect(authDisplay).toHaveAttribute('data-name', 'TestUser');
+      });
     });
   });
 
-  describe('when server isAuthenticated=false', () => {
+  describe('when not authenticated', () => {
     it('does not show NotificationBadge', () => {
-      render(<HeaderRightSection isAuthenticated={false} avatarUrl={null} displayName={null} />);
+      mockUseAuth.mockReturnValue({ user: null, isLoading: false });
+      render(<HeaderRightSection />);
 
       expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
-    });
-
-    it('shows AuthStatusDisplay with isAuthenticated=false', () => {
-      render(<HeaderRightSection isAuthenticated={false} avatarUrl={null} displayName={null} />);
-
       const authDisplay = screen.getByTestId('auth-status-display');
-      expect(authDisplay).toBeInTheDocument();
       expect(authDisplay).toHaveAttribute('data-authenticated', 'false');
-    });
-  });
-
-  describe('transition from authenticated to unauthenticated (rerender)', () => {
-    it('transitions correctly on rerender', () => {
-      const { rerender } = render(
-        <HeaderRightSection
-          isAuthenticated={true}
-          avatarUrl="https://example.com/avatar.jpg"
-          displayName="TestUser"
-        />
-      );
-
-      expect(screen.getByTestId('notification-badge')).toBeInTheDocument();
-      expect(screen.getByTestId('auth-status-display')).toHaveAttribute(
-        'data-authenticated',
-        'true'
-      );
-
-      rerender(<HeaderRightSection isAuthenticated={false} avatarUrl={null} displayName={null} />);
-
-      expect(screen.queryByTestId('notification-badge')).not.toBeInTheDocument();
-      expect(screen.getByTestId('auth-status-display')).toHaveAttribute(
-        'data-authenticated',
-        'false'
-      );
     });
   });
 });
