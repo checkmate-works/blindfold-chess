@@ -141,11 +141,7 @@ describe('FeedClient', () => {
     ];
 
     it('should insert a native ad card after every AD_INTERVAL items', () => {
-      const items = [
-        createTopicPostFeedItem('1'),
-        createTopicPostFeedItem('2'),
-        createTopicPostFeedItem('3'),
-      ];
+      const items = Array.from({ length: 5 }, (_, i) => createTopicPostFeedItem(String(i + 1)));
 
       render(
         <FeedClient
@@ -157,8 +153,8 @@ describe('FeedClient', () => {
         />
       );
 
-      // 3 feed cards + 1 ad card (after every 3 items)
-      expect(screen.getAllByTestId(/feed-card-/)).toHaveLength(3);
+      // 5 feed cards + 1 ad card (after every 5 items)
+      expect(screen.getAllByTestId(/feed-card-/)).toHaveLength(5);
       expect(screen.getAllByTestId('native-ad-card')).toHaveLength(1);
     });
 
@@ -177,7 +173,7 @@ describe('FeedClient', () => {
     });
 
     it('should not insert ads when fewer items than AD_INTERVAL', () => {
-      const items = [createTopicPostFeedItem('1'), createTopicPostFeedItem('2')];
+      const items = Array.from({ length: 4 }, (_, i) => createTopicPostFeedItem(String(i + 1)));
 
       render(
         <FeedClient
@@ -197,7 +193,7 @@ describe('FeedClient', () => {
         { ...adBanners[0], alt: 'Ad A' },
         { ...adBanners[0], alt: 'Ad B' },
       ];
-      const items = Array.from({ length: 6 }, (_, i) => createTopicPostFeedItem(String(i + 1)));
+      const items = Array.from({ length: 10 }, (_, i) => createTopicPostFeedItem(String(i + 1)));
 
       render(
         <FeedClient
@@ -209,7 +205,7 @@ describe('FeedClient', () => {
         />
       );
 
-      // 6 items → ads at positions 3 and 6 → 2 ad cards
+      // 10 items → ads at positions 5 and 10 → 2 ad cards
       expect(screen.getAllByTestId('native-ad-card')).toHaveLength(2);
     });
   });
