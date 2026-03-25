@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { db, userActivityLog } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -13,6 +13,11 @@ import { createClient } from '@/lib/supabase/server';
  *
  * Fire-and-forget from the client perspective — a failure here must
  * never prevent the user from signing out.
+ *
+ * Unlike other activity log call sites that use `logActivityEvent()`
+ * (fire-and-forget), this route awaits the DB insert directly.
+ * In a Route Handler, returning a Response ends the request lifecycle
+ * and any pending Promises may be discarded by the runtime.
  */
 export async function POST() {
   const supabase = await createClient();
@@ -24,10 +29,17 @@ export async function POST() {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  logActivityEvent({
-    userId: user.id,
-    action: 'logout',
-  });
+  try {
+    await db.insert(userActivityLog).values({
+      userId: user.id,
+      action: 'logout',
+      targetType: null,
+      targetId: null,
+      metadata: {},
+    });
+  } catch {
+    // Logging failure must never prevent the logout response.
+  }
 
   return NextResponse.json({ ok: true });
 }

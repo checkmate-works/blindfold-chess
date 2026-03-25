@@ -10,6 +10,55 @@ import { PaginationNav } from '@/app/[locale]/_components';
 
 const PAGE_SIZE = 20;
 
+function getActionBadgeClasses(action: string): string {
+  switch (action) {
+    // Destructive / dangerous (red)
+    case 'delete_account':
+    case 'delete_post':
+      return 'bg-red-100 text-red-800';
+
+    // Security attention (yellow/orange)
+    case 'change_password':
+    case 'request_password_reset':
+    case 'logout':
+      return 'bg-yellow-100 text-yellow-800';
+
+    // Normal operations (blue)
+    case 'login':
+    case 'create_post':
+    case 'create_reply':
+    case 'like':
+    case 'unlike':
+      return 'bg-blue-100 text-blue-800';
+
+    // Profile / social (green)
+    case 'follow':
+    case 'unfollow':
+    case 'update_profile':
+      return 'bg-green-100 text-green-800';
+
+    // Default / unknown (gray)
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+}
+
+function formatUserDisplay(
+  userId: string,
+  profileMap: Map<string, { username: string | null }>,
+  emailMap: Map<string, string>
+): string {
+  const profile = profileMap.get(userId);
+  if (profile?.username) return profile.username;
+
+  const email = emailMap.get(userId);
+  if (email) return email;
+
+  // Neither username nor email available — likely a deleted account
+  const shortId = userId.length > 8 ? userId.slice(0, 8) : userId;
+  return `[deleted] (${shortId}...)`;
+}
+
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   action: parseAsString.withDefault(''),
@@ -190,19 +239,18 @@ export default async function AdminActivityLogPage({
           </thead>
           <tbody>
             {logs.map((log) => {
-              const userProfile = profileMap.get(log.userId);
-              const userDisplay = userProfile?.username ?? emailMap.get(log.userId) ?? log.userId;
+              const userDisplay = formatUserDisplay(log.userId, profileMap, emailMap);
               const targetDisplay = log.targetId
-                ? (profileMap.get(log.targetId)?.username ??
-                  emailMap.get(log.targetId) ??
-                  log.targetId)
+                ? formatUserDisplay(log.targetId, profileMap, emailMap)
                 : '-';
               const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
 
               return (
                 <tr key={log.id} className="border-t border-border">
                   <td className="px-4 py-3">
-                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${getActionBadgeClasses(log.action)}`}
+                    >
                       {log.action}
                     </span>
                   </td>
