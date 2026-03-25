@@ -48,6 +48,8 @@ export const RATE_LIMITS = {
    * build the action string (e.g., 'create_opening_post:french-defense').
    */
   createOpeningPost: { action: 'create_opening_post', maxAttempts: 1, windowMs: 86_400_000 },
+  createCheckoutSession: { action: 'create_checkout_session', maxAttempts: 5, windowMs: 600_000 },
+  createPortalSession: { action: 'create_portal_session', maxAttempts: 5, windowMs: 600_000 },
 } as const;
 
 /**
