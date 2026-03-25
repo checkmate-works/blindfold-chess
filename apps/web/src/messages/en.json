@@ -2017,7 +2017,8 @@
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
-    "accountDeleted": "Your account has been deleted"
+    "accountDeleted": "Your account has been deleted",
+    "practiceResultSaveFailed": "Failed to save your result. Please try again."
   },
   "setupUsername": {
     "title": "Create Your Account",

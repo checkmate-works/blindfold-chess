@@ -22,6 +22,7 @@ type AuthContextValue = {
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isLoading, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

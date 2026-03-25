@@ -8,9 +8,7 @@ import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-export type SaveResultResponse = {
-  success: boolean;
-};
+export type SaveResultResponse = { success: true } | { success: false; error: string };
 
 export type ChallengeFields = {
   score: number;
@@ -37,25 +35,33 @@ export async function savePracticeResult(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { success: false };
+      console.warn(`[savePracticeResult] ${menuType}: auth failed — getUser() returned null`);
+      return { success: false, error: 'auth_failed' };
     }
 
     if (await isUserBanned(user.id)) {
-      return { success: false };
+      console.warn(`[savePracticeResult] ${menuType}: user ${user.id} is banned`);
+      return { success: false, error: 'user_banned' };
     }
 
     const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.savePracticeResult);
     if ('error' in rateLimitResult) {
-      return { success: false };
+      console.warn(`[savePracticeResult] ${menuType}: rate limited for user ${user.id}`);
+      return { success: false, error: 'rate_limited' };
     }
 
     if (!(PRACTICE_MENU_TYPES as readonly string[]).includes(menuType)) {
-      return { success: false };
+      console.warn(`[savePracticeResult] invalid menuType: ${menuType}`);
+      return { success: false, error: 'invalid_menu_type' };
     }
 
     const leaderboardKey = deriveLeaderboardKey(menuType, settings);
     if (!leaderboardKey) {
-      return { success: false };
+      console.warn(
+        `[savePracticeResult] ${menuType}: deriveLeaderboardKey returned null for settings:`,
+        JSON.stringify(settings)
+      );
+      return { success: false, error: 'invalid_leaderboard_key' };
     }
 
     // Round to integers — DB columns are integer type, but timers may produce floats
@@ -70,7 +76,7 @@ export async function savePracticeResult(
 
     return { success: true };
   } catch (error) {
-    console.error(`Failed to save ${menuType} result:`, error);
-    return { success: false };
+    console.error(`[savePracticeResult] ${menuType}: unexpected error during save:`, error);
+    return { success: false, error: 'unexpected_error' };
   }
 }

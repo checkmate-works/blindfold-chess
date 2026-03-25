@@ -16,7 +16,6 @@ import {
   generateSquareSequence,
   getSquareColor,
 } from '@/app/[locale]/(public)/practice/square-colors/_lib/utils';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -30,7 +29,6 @@ const BATCH_SIZE = 100;
 
 export default function SquareColorsChallenge({ locale }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
   const { preferences, isLoaded } = useGamePreferences();
 
   // Batch-based question generation via ref
@@ -94,14 +92,21 @@ export default function SquareColorsChallenge({ locale }: Props) {
     });
     const resultUrl = `/${locale}/practice/square-colors/result?${params.toString()}`;
 
-    if (user && total > 0) {
+    if (total > 0) {
       saveSquareColorsResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
       })
+        .then((result) => {
+          if (!result.success) {
+            console.error('Failed to save square_colors result:', result.error);
+            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+          }
+        })
         .catch((error) => {
           console.error('Failed to save square_colors result:', error);
+          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
         })
         .finally(() => {
           router.push(resultUrl);
@@ -109,7 +114,7 @@ export default function SquareColorsChallenge({ locale }: Props) {
     } else {
       router.push(resultUrl);
     }
-  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime, user]);
+  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime]);
 
   if (isFinished) {
     return <PracticeResultSkeleton />;

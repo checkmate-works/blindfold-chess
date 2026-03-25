@@ -11,7 +11,6 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/legal-moves/_actions/save-result';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { MoveQuestion, PieceType } from '../../_lib/types';
@@ -26,7 +25,6 @@ type Props = {
 
 export default function LegalMovesSession({ locale, selectedPieces, selectedPiece }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
   const t = useTranslations('practice.legalMoves');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
@@ -115,15 +113,22 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
 
     const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
 
-    if (user && totalCount > 0) {
+    if (totalCount > 0) {
       saveLegalMovesResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
         selectedPiece,
       })
+        .then((result) => {
+          if (!result.success) {
+            console.error('Failed to save legal_moves result:', result.error);
+            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+          }
+        })
         .catch((error) => {
           console.error('Failed to save legal_moves result:', error);
+          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
         })
         .finally(() => {
           router.push(resultUrl);
@@ -140,7 +145,6 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
     router,
     selectedPiece,
     totalTime,
-    user,
   ]);
 
   if (isFinished) {

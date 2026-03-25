@@ -54,10 +54,21 @@ export function ToastContainer() {
       // Prevent duplicate processing
       if (processingToastRef.current) return;
 
+      const shouldShowPracticeErrorToast = sessionStorage.getItem(
+        'blindfold_chess_show_practice_save_error_toast'
+      );
       const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
       const shouldShowDeleteToast = sessionStorage.getItem('blindfold_chess_show_delete_toast');
 
-      if (shouldShowSaveToast === 'true') {
+      if (shouldShowPracticeErrorToast === 'true') {
+        processingToastRef.current = true;
+        sessionStorage.removeItem('blindfold_chess_show_practice_save_error_toast');
+        showToast(tToast('practiceResultSaveFailed'), 'error');
+
+        setTimeout(() => {
+          processingToastRef.current = false;
+        }, 1000);
+      } else if (shouldShowSaveToast === 'true') {
         processingToastRef.current = true;
         sessionStorage.removeItem('blindfold_chess_show_save_toast');
         showToast(tToast('gameSaved'), 'success');

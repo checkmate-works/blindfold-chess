@@ -37,10 +37,6 @@ vi.mock('@/lib/rate-limit-ip', () => ({
   },
 }));
 
-vi.mock('next/navigation', () => ({
-  redirect: vi.fn(),
-}));
-
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
 describe('signIn', () => {
@@ -48,6 +44,17 @@ describe('signIn', () => {
     vi.clearAllMocks();
     mockGetClientIp.mockResolvedValue('127.0.0.1');
     mockGetLocaleFromRequest.mockResolvedValue('en');
+  });
+
+  it('should return success with locale on successful sign-in', async () => {
+    mockSignInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: testUserId } },
+    });
+
+    const result = await signIn('test@example.com', 'password123');
+
+    expect(result).toEqual({ success: true, locale: 'en' });
   });
 
   it('should call logActivityEvent with userId and action login on successful sign-in', async () => {
@@ -85,5 +92,17 @@ describe('signIn', () => {
 
     expect(result).toEqual({ error: 'invalidCredentials' });
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
+  });
+
+  it('should return locale from getLocaleFromRequest on success', async () => {
+    mockGetLocaleFromRequest.mockResolvedValue('ja');
+    mockSignInWithPassword.mockResolvedValue({
+      error: null,
+      data: { user: { id: testUserId } },
+    });
+
+    const result = await signIn('test@example.com', 'password123');
+
+    expect(result).toEqual({ success: true, locale: 'ja' });
   });
 });

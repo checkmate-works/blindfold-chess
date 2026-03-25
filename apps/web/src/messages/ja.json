@@ -2018,7 +2018,8 @@
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
-    "accountDeleted": "退会が完了しました"
+    "accountDeleted": "退会が完了しました",
+    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。"
   },
   "setupUsername": {
     "title": "アカウント登録",

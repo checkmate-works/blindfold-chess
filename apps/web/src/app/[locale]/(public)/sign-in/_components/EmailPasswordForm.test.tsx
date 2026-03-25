@@ -11,10 +11,23 @@ afterEach(() => {
 });
 
 const mockSignIn = vi.fn();
+const mockPush = vi.fn();
+const mockRefreshUser = vi.fn();
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
   useLocale: () => 'en',
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+    refresh: vi.fn(),
+  }),
 }));
 
 vi.mock('@/i18n/routing', () => ({
@@ -33,10 +46,10 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-const mockIsRedirectError = vi.fn();
-
-vi.mock('next/dist/client/components/redirect-error', () => ({
-  isRedirectError: (...args: unknown[]) => mockIsRedirectError(...args),
+vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
+  useAuth: () => ({
+    refreshUser: mockRefreshUser,
+  }),
 }));
 
 vi.mock('../_actions/signIn', () => ({
@@ -46,6 +59,7 @@ vi.mock('../_actions/signIn', () => ({
 describe('EmailPasswordForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRefreshUser.mockResolvedValue(undefined);
   });
 
   it('should render the form with email and password fields', () => {
@@ -56,12 +70,8 @@ describe('EmailPasswordForm', () => {
     expect(screen.getByRole('button', { name: 'emailSignIn' })).toBeInTheDocument();
   });
 
-  it('should call signIn Server Action with valid input (redirect happens server-side)', async () => {
-    // On success, the server action calls redirect() which throws NEXT_REDIRECT.
-    // In tests, we simulate this by having signIn throw.
-    const redirectError = new Error('NEXT_REDIRECT');
-    mockSignIn.mockRejectedValue(redirectError);
-    mockIsRedirectError.mockReturnValue(true);
+  it('should call signIn Server Action and redirect on success', async () => {
+    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
 
     render(<EmailPasswordForm />);
 
@@ -76,6 +86,11 @@ describe('EmailPasswordForm', () => {
 
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+    });
+
+    await waitFor(() => {
+      expect(mockRefreshUser).toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=login_success');
     });
   });
 
@@ -154,7 +169,6 @@ describe('EmailPasswordForm', () => {
 
   it('should show error when Server Action throws', async () => {
     mockSignIn.mockRejectedValue(new Error('Network error'));
-    mockIsRedirectError.mockReturnValue(false);
 
     render(<EmailPasswordForm />);
 
@@ -172,8 +186,8 @@ describe('EmailPasswordForm', () => {
     });
   });
 
-  it('should not show error message when signIn succeeds (result is undefined)', async () => {
-    mockSignIn.mockResolvedValue(undefined);
+  it('should not show error message when signIn succeeds', async () => {
+    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
 
     render(<EmailPasswordForm />);
 
@@ -190,14 +204,16 @@ describe('EmailPasswordForm', () => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
     });
 
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalled();
+    });
+
     expect(screen.queryByText('emailSignInError')).not.toBeInTheDocument();
     expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
   });
 
-  it('should not show error message when redirect error is thrown', async () => {
-    const redirectError = new Error('NEXT_REDIRECT');
-    mockSignIn.mockRejectedValue(redirectError);
-    mockIsRedirectError.mockReturnValue(true);
+  it('should redirect with locale from server response', async () => {
+    mockSignIn.mockResolvedValue({ success: true, locale: 'ja' });
 
     render(<EmailPasswordForm />);
 
@@ -211,16 +227,21 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123');
+      expect(mockPush).toHaveBeenCalledWith('/ja/mypage?toast=login_success');
     });
-
-    expect(screen.queryByText('emailSignInError')).not.toBeInTheDocument();
-    expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
   });
 
-  it('should show error when non-redirect exception is thrown', async () => {
-    mockSignIn.mockRejectedValue(new TypeError('fetch failed'));
-    mockIsRedirectError.mockReturnValue(false);
+  it('should call refreshUser before router.push on success', async () => {
+    // Track call order to verify refreshUser is called before push
+    const callOrder: string[] = [];
+    mockRefreshUser.mockImplementation(() => {
+      callOrder.push('refreshUser');
+      return Promise.resolve();
+    });
+    mockPush.mockImplementation(() => {
+      callOrder.push('push');
+    });
+    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
 
     render(<EmailPasswordForm />);
 
@@ -229,6 +250,27 @@ describe('EmailPasswordForm', () => {
     });
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
       target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalled();
+    });
+
+    expect(callOrder).toEqual(['refreshUser', 'push']);
+  });
+
+  it('should not call router.push when signIn returns error', async () => {
+    mockSignIn.mockResolvedValue({ error: 'invalidCredentials' });
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'wrongpassword' },
     });
 
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
@@ -236,6 +278,29 @@ describe('EmailPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('emailSignInError')).toBeInTheDocument();
     });
-    expect(mockIsRedirectError).toHaveBeenCalled();
+
+    expect(mockRefreshUser).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('should not call refreshUser when signIn returns error', async () => {
+    mockSignIn.mockResolvedValue({ error: 'rateLimited' });
+
+    render(<EmailPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText('emailLabel'), {
+      target: { value: 'test@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('passwordLabel'), {
+      target: { value: 'password123' },
+    });
+
+    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('rateLimited')).toBeInTheDocument();
+    });
+
+    expect(mockRefreshUser).not.toHaveBeenCalled();
   });
 });

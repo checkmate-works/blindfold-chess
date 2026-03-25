@@ -289,6 +289,48 @@ describe('AuthContext', () => {
     });
   });
 
+  describe('refreshUser', () => {
+    it('exposes refreshUser as a function in the context value', async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      mockGetSession.mockResolvedValue({ data: { session: null } });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(typeof result.current.refreshUser).toBe('function');
+    });
+
+    it('updates user and session when refreshUser is called explicitly', async () => {
+      // Start with no user
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      mockGetSession.mockResolvedValue({ data: { session: null } });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.user).toBeNull();
+
+      // Simulate server-side login: Supabase now returns a user
+      const newUser = { id: 'user-refresh', email: 'refresh@example.com' };
+      const newSession = { access_token: 'refresh-token', user: newUser };
+      mockGetUser.mockResolvedValue({ data: { user: newUser } });
+      mockGetSession.mockResolvedValue({ data: { session: newSession } });
+
+      await act(async () => {
+        await result.current.refreshUser();
+      });
+
+      expect(result.current.user).toEqual(newUser);
+      expect(result.current.session).toEqual(newSession);
+    });
+  });
+
   describe('useAuth outside provider', () => {
     it('throws error when used outside AuthProvider', () => {
       expect(() => {

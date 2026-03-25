@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
 
   // Optimize production builds
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
 
   // Enable experimental features for better performance

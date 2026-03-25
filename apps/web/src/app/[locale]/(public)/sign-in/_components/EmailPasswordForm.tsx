@@ -3,17 +3,20 @@
 import { useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { signIn } from '../_actions/signIn';
 
 export function EmailPasswordForm() {
   const t = useTranslations('signIn');
   const locale = useLocale();
+  const router = useRouter();
+  const { refreshUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,7 +30,7 @@ export function EmailPasswordForm() {
     try {
       const result = await signIn(email, password);
 
-      if (result?.error) {
+      if ('error' in result) {
         switch (result.error) {
           case 'rateLimited':
             setError(t('rateLimited'));
@@ -35,12 +38,15 @@ export function EmailPasswordForm() {
           default:
             setError(t('emailSignInError'));
         }
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
-    } catch (err) {
-      if (!isRedirectError(err)) {
-        setError(t('emailSignInError'));
-      }
+
+      // Refresh client-side auth state before navigating
+      await refreshUser();
+      router.push(`/${result.locale}/mypage?toast=login_success`);
+    } catch {
+      setError(t('emailSignInError'));
       setIsLoading(false);
     }
   };

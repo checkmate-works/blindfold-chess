@@ -12,7 +12,6 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveCoordinateQuizResult } from '@/app/[locale]/(public)/practice/coordinate-quiz/_actions/save-result';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation, CoordinateQuestion, FeedbackSpeed } from '../../_lib/types';
@@ -32,7 +31,6 @@ export default function CoordinateQuizChallenge({
   initialFeedbackSpeed,
 }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
 
   const boardOrientation = initialBoardOrientation as BoardOrientation;
   const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
@@ -105,15 +103,22 @@ export default function CoordinateQuizChallenge({
     });
     const resultUrl = `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
 
-    if (user && totalCount > 0) {
+    if (totalCount > 0) {
       saveCoordinateQuizResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
         boardOrientation,
       })
+        .then((result) => {
+          if (!result.success) {
+            console.error('Failed to save coordinate_quiz result:', result.error);
+            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+          }
+        })
         .catch((error) => {
           console.error('Failed to save coordinate_quiz result:', error);
+          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
         })
         .finally(() => {
           router.push(resultUrl);
@@ -131,7 +136,6 @@ export default function CoordinateQuizChallenge({
     totalTime,
     boardOrientation,
     feedbackSpeed,
-    user,
   ]);
 
   if (isFinished) {
