@@ -11,23 +11,10 @@ afterEach(() => {
 });
 
 const mockSignIn = vi.fn();
-const mockPush = vi.fn();
-const mockRefreshUser = vi.fn();
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
   useLocale: () => 'en',
-}));
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-    prefetch: vi.fn(),
-    refresh: vi.fn(),
-  }),
 }));
 
 vi.mock('@/i18n/routing', () => ({
@@ -46,20 +33,28 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-vi.mock('@/app/[locale]/_contexts/AuthContext', () => ({
-  useAuth: () => ({
-    refreshUser: mockRefreshUser,
-  }),
-}));
-
 vi.mock('../_actions/signIn', () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
 }));
 
 describe('EmailPasswordForm', () => {
+  // Save original location and replace with a mock for each test
+  const originalLocation = window.location;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRefreshUser.mockResolvedValue(undefined);
+    // Replace window.location with a writable mock
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, href: originalLocation.href },
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: originalLocation,
+    });
   });
 
   it('should render the form with email and password fields', () => {
@@ -70,7 +65,7 @@ describe('EmailPasswordForm', () => {
     expect(screen.getByRole('button', { name: 'emailSignIn' })).toBeInTheDocument();
   });
 
-  it('should call signIn Server Action and redirect on success', async () => {
+  it('should call signIn Server Action and navigate on success', async () => {
     mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
 
     render(<EmailPasswordForm />);
@@ -89,8 +84,7 @@ describe('EmailPasswordForm', () => {
     });
 
     await waitFor(() => {
-      expect(mockRefreshUser).toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=login_success');
+      expect(window.location.href).toBe('/en/mypage?toast=login_success');
     });
   });
 
@@ -205,14 +199,14 @@ describe('EmailPasswordForm', () => {
     });
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalled();
+      expect(window.location.href).toBe('/en/mypage?toast=login_success');
     });
 
     expect(screen.queryByText('emailSignInError')).not.toBeInTheDocument();
     expect(screen.queryByText('rateLimited')).not.toBeInTheDocument();
   });
 
-  it('should redirect with locale from server response', async () => {
+  it('should navigate with locale from server response', async () => {
     mockSignIn.mockResolvedValue({ success: true, locale: 'ja' });
 
     render(<EmailPasswordForm />);
@@ -227,42 +221,13 @@ describe('EmailPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/ja/mypage?toast=login_success');
+      expect(window.location.href).toBe('/ja/mypage?toast=login_success');
     });
   });
 
-  it('should call refreshUser before router.push on success', async () => {
-    // Track call order to verify refreshUser is called before push
-    const callOrder: string[] = [];
-    mockRefreshUser.mockImplementation(() => {
-      callOrder.push('refreshUser');
-      return Promise.resolve();
-    });
-    mockPush.mockImplementation(() => {
-      callOrder.push('push');
-    });
-    mockSignIn.mockResolvedValue({ success: true, locale: 'en' });
-
-    render(<EmailPasswordForm />);
-
-    fireEvent.change(screen.getByLabelText('emailLabel'), {
-      target: { value: 'test@example.com' },
-    });
-    fireEvent.change(screen.getByLabelText('passwordLabel'), {
-      target: { value: 'password123' },
-    });
-
-    fireEvent.submit(screen.getByRole('button', { name: 'emailSignIn' }));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalled();
-    });
-
-    expect(callOrder).toEqual(['refreshUser', 'push']);
-  });
-
-  it('should not call router.push when signIn returns error', async () => {
+  it('should not navigate when signIn returns error', async () => {
     mockSignIn.mockResolvedValue({ error: 'invalidCredentials' });
+    const originalHref = window.location.href;
 
     render(<EmailPasswordForm />);
 
@@ -279,12 +244,12 @@ describe('EmailPasswordForm', () => {
       expect(screen.getByText('emailSignInError')).toBeInTheDocument();
     });
 
-    expect(mockRefreshUser).not.toHaveBeenCalled();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(originalHref);
   });
 
-  it('should not call refreshUser when signIn returns error', async () => {
+  it('should not navigate when signIn returns rate limited error', async () => {
     mockSignIn.mockResolvedValue({ error: 'rateLimited' });
+    const originalHref = window.location.href;
 
     render(<EmailPasswordForm />);
 
@@ -301,6 +266,6 @@ describe('EmailPasswordForm', () => {
       expect(screen.getByText('rateLimited')).toBeInTheDocument();
     });
 
-    expect(mockRefreshUser).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(originalHref);
   });
 });

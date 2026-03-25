@@ -3,20 +3,16 @@
 import { useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
-import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 import { signIn } from '../_actions/signIn';
 
 export function EmailPasswordForm() {
   const t = useTranslations('signIn');
   const locale = useLocale();
-  const router = useRouter();
-  const { refreshUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,9 +38,12 @@ export function EmailPasswordForm() {
         return;
       }
 
-      // Refresh client-side auth state before navigating
-      await refreshUser();
-      router.push(`/${result.locale}/mypage?toast=login_success`);
+      // Use hard navigation to ensure the server-side auth state is fully
+      // synchronised. A soft navigation (router.push) can render the
+      // destination's Server Components before the browser has committed the
+      // session cookies set by the signIn Server Action, resulting in an
+      // unauthenticated request and blank page content.
+      window.location.href = `/${result.locale}/mypage?toast=login_success`;
     } catch {
       setError(t('emailSignInError'));
       setIsLoading(false);
