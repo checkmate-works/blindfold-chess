@@ -6,6 +6,8 @@ import { and, desc, eq } from 'drizzle-orm';
 import { db, moderationActions, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 export default async function BannedPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const supabase = await createClient();

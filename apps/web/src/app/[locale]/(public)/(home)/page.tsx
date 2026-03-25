@@ -1,15 +1,3 @@
-/**
- * Home Page (ホーム)
- *
- * @description
- * The main landing page. Displays a timeline feed of topic posts with
- * cursor-based infinite scrolling. Initial data is fetched server-side
- * for SEO; additional pages are loaded client-side via Server Action.
- *
- * @flow
- * - Timeline Feed: Chronological feed of topic posts across all topic types
- * - Infinite scroll: Loads more items when the user scrolls near the bottom
- */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -24,6 +12,20 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { FeedClient } from './_components/FeedClient';
 import { VsAiCard } from './_components/VsAiCard';
 import { getFeedData } from './_lib/queries';
+
+/**
+ * Home Page (ホーム)
+ *
+ * @description
+ * The main landing page. Displays a timeline feed of topic posts with
+ * cursor-based infinite scrolling. Initial data is fetched server-side
+ * for SEO; additional pages are loaded client-side via Server Action.
+ *
+ * @flow
+ * - Timeline Feed: Chronological feed of topic posts across all topic types
+ * - Infinite scroll: Loads more items when the user scrolls near the bottom
+ */
+export const dynamic = 'force-dynamic';
 
 const INITIAL_FEED_SIZE = 10;
 
