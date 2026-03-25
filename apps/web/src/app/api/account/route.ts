@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, profiles } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -54,6 +55,13 @@ export async function DELETE() {
       updatedAt: new Date(),
     })
     .where(eq(profiles.id, user.id));
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_account',
+    targetType: 'user',
+    targetId: user.id,
+  });
 
   return NextResponse.json({ success: true });
 }

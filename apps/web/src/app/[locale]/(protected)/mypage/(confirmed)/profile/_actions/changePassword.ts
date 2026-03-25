@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -66,6 +67,13 @@ export async function changePassword(
     }
     return { error: 'updateFailed' };
   }
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'change_password',
+    targetType: 'user',
+    targetId: user.id,
+  });
 
   return { success: true };
 }

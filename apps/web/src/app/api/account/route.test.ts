@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { checkRateLimit } from '@/lib/rate-limit';
+
 import { DELETE } from './route';
 
 const mockGetUser = vi.fn();
 const mockDeleteUser = vi.fn();
 const mockIsUserBanned = vi.fn();
+const mockLogActivityEvent = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -25,6 +28,10 @@ vi.mock('@/lib/supabase/admin', () => ({
       },
     },
   }),
+}));
+
+vi.mock('@/lib/activity-log', () => ({
+  logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
 vi.mock('@/lib/ban', () => ({
@@ -85,6 +92,46 @@ describe('DELETE /api/account', () => {
       expect(mockDeleteUser).not.toHaveBeenCalled();
       expect(mockWhere).not.toHaveBeenCalled();
     });
+
+    it('should not log activity event when user is banned', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: testUserId } },
+      });
+      mockIsUserBanned.mockResolvedValue(true);
+
+      await DELETE();
+
+      expect(mockLogActivityEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('rate limit enforcement', () => {
+    it('should return 429 when rate limit is exceeded', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: testUserId } },
+      });
+      mockIsUserBanned.mockResolvedValue(false);
+      vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' } as never);
+
+      const response = await DELETE();
+
+      expect(response.status).toBe(429);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'rateLimited' });
+    });
+
+    it('should not log activity event when rate limited', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: testUserId } },
+      });
+      mockIsUserBanned.mockResolvedValue(false);
+      vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' } as never);
+
+      await DELETE();
+
+      expect(mockLogActivityEvent).not.toHaveBeenCalled();
+      expect(mockDeleteUser).not.toHaveBeenCalled();
+    });
   });
 
   describe('normal case', () => {
@@ -106,6 +153,14 @@ describe('DELETE /api/account', () => {
 
       // Verify profile was cleaned up
       expect(mockWhere).toHaveBeenCalled();
+
+      // Verify activity log was recorded
+      expect(mockLogActivityEvent).toHaveBeenCalledWith({
+        userId: testUserId,
+        action: 'delete_account',
+        targetType: 'user',
+        targetId: testUserId,
+      });
     });
   });
 
@@ -124,6 +179,7 @@ describe('DELETE /api/account', () => {
       // Should not attempt to delete anything
       expect(mockDeleteUser).not.toHaveBeenCalled();
       expect(mockWhere).not.toHaveBeenCalled();
+      expect(mockLogActivityEvent).not.toHaveBeenCalled();
     });
 
     it('should return 500 when Supabase Admin deleteUser fails', async () => {
@@ -143,6 +199,7 @@ describe('DELETE /api/account', () => {
 
       // Should not update profile when auth deletion fails
       expect(mockWhere).not.toHaveBeenCalled();
+      expect(mockLogActivityEvent).not.toHaveBeenCalled();
     });
   });
 

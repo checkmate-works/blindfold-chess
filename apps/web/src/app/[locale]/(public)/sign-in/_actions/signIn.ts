@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
+import { logActivityEvent } from '@/lib/activity-log';
 import { getClientIp } from '@/lib/client-ip';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
@@ -19,11 +20,16 @@ export async function signIn(email: string, password: string): Promise<SignInRes
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error, data } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     return { error: 'invalidCredentials' };
   }
+
+  logActivityEvent({
+    userId: data.user.id,
+    action: 'login',
+  });
 
   const locale = await getLocaleFromRequest();
   redirect(`/${locale}/mypage?toast=login_success`);
