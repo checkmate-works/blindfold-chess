@@ -21,6 +21,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './_lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
