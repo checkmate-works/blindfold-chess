@@ -9,6 +9,7 @@ import { Button } from '@/app/_components';
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
 import { FaPlusCircle } from 'react-icons/fa';
 
+import { isBlackOpening } from '../_lib/openings';
 import { MiniBoard } from './MiniBoard';
 
 type Props = {
@@ -82,7 +83,7 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
   return (
     <div className="space-y-3">
       <div className="max-w-xs mx-auto">
-        <MiniBoard fen={currentFen} responsive />
+        <MiniBoard fen={currentFen} responsive flipped={isBlackOpening(fen)} />
       </div>
 
       {/* Navigation Controls */}
