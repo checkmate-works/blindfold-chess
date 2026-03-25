@@ -81,6 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     const supabase = supabaseRef.current ?? createClient();
     if (!supabase) return;
+
+    // Fire-and-forget: notify server to record logout activity event.
+    // Must be called BEFORE signOut() so the auth cookie is still valid.
+    fetch('/auth/logout', { method: 'POST' }).catch(() => {});
+
     await supabase.auth.signOut();
   }, []);
 
