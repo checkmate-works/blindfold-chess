@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-
-import { SUPPORTED_LOCALES } from '@/config';
 
 import {
   Divider,
@@ -19,6 +17,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticleCount, getPublishedArticlesPaginated } from './_lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 const ARTICLES_PER_PAGE = 20;
 
 type Props = {
@@ -30,13 +30,8 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'articles' });
 
   return {
