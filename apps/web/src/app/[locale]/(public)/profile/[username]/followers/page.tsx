@@ -11,6 +11,8 @@ import { Divider, PagePanel, PageTitle, PaginationNav, UserCard } from '@/app/[l
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 10;
 
 const searchParamsCache = createSearchParamsCache({
