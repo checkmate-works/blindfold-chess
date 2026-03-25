@@ -107,28 +107,25 @@ describe('ChallengeRankUpdateCard', () => {
     expect(screen.getByText('Improved rank!')).toBeInTheDocument();
   });
 
-  it('should render medal SVG for podium ranks (1-3)', () => {
-    const { container } = render(
-      <ChallengeRankUpdateCard data={createData({ rank: 1 })} {...defaultProps} />
-    );
+  it('should render medal emoji for podium ranks (1-3)', () => {
+    render(<ChallengeRankUpdateCard data={createData({ rank: 1 })} {...defaultProps} />);
 
-    // Medal SVG (viewBox 0 0 32 32) should contain rank number
-    const medalSvg = container.querySelector('svg[viewBox="0 0 32 32"]');
-    expect(medalSvg).not.toBeNull();
-    expect(medalSvg!.querySelector('text')).toHaveTextContent('1');
+    // Rank 1 displays gold medal emoji (🥇)
+    expect(screen.getByText('\u{1F947}')).toBeInTheDocument();
   });
 
-  it('should render plain rank number for non-podium ranks', () => {
+  it('should render keycap emoji for non-podium ranks (4-9)', () => {
     render(<ChallengeRankUpdateCard data={createData({ rank: 7 })} {...defaultProps} />);
 
-    expect(screen.getByText('Rank:')).toBeInTheDocument();
-    expect(screen.getByText('7')).toBeInTheDocument();
+    // Rank 7 displays keycap emoji (7️⃣)
+    expect(screen.getByText('7\uFE0F\u20E3')).toBeInTheDocument();
   });
 
-  it('should render the score', () => {
-    render(<ChallengeRankUpdateCard data={createData({ score: 42 })} {...defaultProps} />);
+  it('should render rank emoji for ranked entries', () => {
+    render(<ChallengeRankUpdateCard data={createData({ rank: 5 })} {...defaultProps} />);
 
-    expect(screen.getByText('Score: 42')).toBeInTheDocument();
+    // Rank 5 displays keycap emoji (5️⃣)
+    expect(screen.getByText('5\uFE0F\u20E3')).toBeInTheDocument();
   });
 
   it('should link to the correct leaderboard page', () => {
