@@ -119,7 +119,7 @@ export function VsAiCard({ locale }: Props) {
 
             <div className="flex items-center gap-2 ml-auto">
               <Link
-                href="/games/play"
+                href={`/games/play?gameId=${latestGame.id}`}
                 locale={locale}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
               >
