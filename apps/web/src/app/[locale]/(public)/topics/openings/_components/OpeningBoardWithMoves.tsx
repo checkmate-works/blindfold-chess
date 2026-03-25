@@ -73,8 +73,9 @@ export function OpeningBoardWithMoves({ fen, pgn }: Props) {
     const movesToKeep = moves.slice(0, currentMoveIndex + 1);
     const params = new URLSearchParams();
     params.set('moves', JSON.stringify(movesToKeep));
+    params.set('color', isBlackOpening(fen) ? 'black' : 'white');
     router.push(`/${locale}/games/new/pgn?${params.toString()}`);
-  }, [moves, currentMoveIndex, locale, router]);
+  }, [moves, currentMoveIndex, locale, router, fen]);
 
   const isPreviousDisabled = currentMoveIndex === -1;
   const isNextDisabled = currentMoveIndex === moves.length - 1;
