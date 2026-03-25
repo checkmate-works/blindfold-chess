@@ -20,6 +20,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PostCard, SquareBoard } from './_components';
 import { getPostCountAcrossSquares, getPostsAcrossSquaresPaginated } from './_lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({

@@ -2,8 +2,6 @@ import { Suspense } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { Divider, PagePanel, Skeleton } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -14,6 +12,8 @@ import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
 import type { LeaderboardPeriod, ModuleFilterValue } from './_lib/types';
 import { isValidModuleFilter, isValidPeriod } from './_lib/validators';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{
     locale: Locale;
@@ -23,10 +23,6 @@ type Props = {
     module?: string;
   }>;
 };
-
-export function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
 
 function parsePeriod(value: string | undefined): LeaderboardPeriod {
   if (value && isValidPeriod(value)) {

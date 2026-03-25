@@ -19,6 +19,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({

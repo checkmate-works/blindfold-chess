@@ -1,24 +1,49 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { getAdBannerBySlot, isAdsEnabled } from '@/lib/ad';
-
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { AdBannerConfig } from '@/lib/ad';
 
 type AdBannerProps = {
   slot: string;
-  locale: Locale;
+  /** @deprecated No longer used. Kept for backward compatibility with existing call sites. */
+  locale?: string;
 };
 
-export async function AdBanner({ slot, locale }: AdBannerProps) {
-  const enabled = await isAdsEnabled();
-  if (!enabled) return null;
+export function AdBanner({ slot }: AdBannerProps) {
+  const t = useTranslations('Common');
+  const [config, setConfig] = useState<AdBannerConfig | null>(null);
 
-  const config = await getAdBannerBySlot(slot);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchBanner() {
+      try {
+        const res = await fetch(`/api/ad-banners?slot=${encodeURIComponent(slot)}`);
+        if (!res.ok) return;
+
+        const json = (await res.json()) as { data: AdBannerConfig | null };
+        if (!cancelled && json.data) {
+          setConfig(json.data);
+        }
+      } catch {
+        // Silently fail - ads are non-critical
+      }
+    }
+
+    fetchBanner();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slot]);
+
   if (!config) return null;
 
-  const t = await getTranslations({ locale, namespace: 'Common' });
   const isWide = slot.includes('wide');
 
   return (

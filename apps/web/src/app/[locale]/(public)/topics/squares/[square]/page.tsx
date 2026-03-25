@@ -32,6 +32,8 @@ import { getPostsWithReplyMeta } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
