@@ -16,3 +16,12 @@ export function isValidOpeningSlugFormat(value: string): boolean {
   if (!value || value.length > 100) return false;
   return SLUG_PATTERN.test(value);
 }
+
+/**
+ * Check if an opening is played from black's perspective.
+ * When it's white's turn to move, black moved last — meaning it's a black opening
+ * and the board should be displayed flipped.
+ */
+export function isBlackOpening(fen: string): boolean {
+  return fen.split(' ')[1] === 'w';
+}

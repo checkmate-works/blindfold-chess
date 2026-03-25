@@ -92,6 +92,109 @@ describe("game-state-service", () => {
     });
   });
 
+  describe("player color selection scenarios", () => {
+    it("should correctly identify it is NOT the player's turn when player is white and it is black's turn", () => {
+      // After 1.e4, it's black's turn. Player is white, so it's NOT the player's turn.
+      const moves = ["e4"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "white");
+      expect(state.isPlayerTurn).toBe(false);
+      expect(state.currentTurn).toBe("black");
+    });
+
+    it("should correctly identify it IS the player's turn when player is black and it is black's turn", () => {
+      // After 1.e4, it's black's turn. Player is black, so it IS the player's turn.
+      const moves = ["e4"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "black");
+      expect(state.isPlayerTurn).toBe(true);
+      expect(state.currentTurn).toBe("black");
+    });
+
+    it("should trigger AI move when player is black at game start (standard position)", () => {
+      // Standard starting position: white to move, player is black → AI should move
+      const state = computeGameState([], "black");
+      expect(state.isPlayerTurn).toBe(false);
+      expect(state.currentTurn).toBe("white");
+      expect(state.status).toBe("in_progress");
+    });
+
+    it("should NOT trigger AI move when player is white at game start (standard position)", () => {
+      // Standard starting position: white to move, player is white → player should move
+      const state = computeGameState([], "white");
+      expect(state.isPlayerTurn).toBe(true);
+      expect(state.currentTurn).toBe("white");
+      expect(state.status).toBe("in_progress");
+    });
+
+    it("should handle black opening (FEN where it's white's turn after black's last move)", () => {
+      // After 1.e4 e5 (white to move), player is black
+      // This is a black opening. After these opening moves, it's white's turn.
+      // Since player is black, it's not the player's turn → AI should move.
+      const fenAfterE4E5 =
+        "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+      const state = computeGameState([], "black", fenAfterE4E5);
+      expect(state.isPlayerTurn).toBe(false);
+      expect(state.currentTurn).toBe("white");
+      expect(state.status).toBe("in_progress");
+    });
+
+    it("should handle white opening (FEN where it's black's turn after white's last move)", () => {
+      // After 1.e4 (black to move), player is white
+      // This is a white opening. After opening moves, it's black's turn.
+      // Since player is white, it's not the player's turn → AI should move.
+      const fenAfterE4 =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+      const state = computeGameState([], "white", fenAfterE4);
+      expect(state.isPlayerTurn).toBe(false);
+      expect(state.currentTurn).toBe("black");
+      expect(state.status).toBe("in_progress");
+    });
+
+    it("should handle player=white with opening moves from standard position", () => {
+      // Opening moves: 1.e4 e5 2.Nf3 Nc6 (white to move next)
+      // Player is white, so it IS the player's turn.
+      const moves = ["e4", "e5", "Nf3", "Nc6"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "white");
+      expect(state.isPlayerTurn).toBe(true);
+      expect(state.currentTurn).toBe("white");
+    });
+
+    it("should handle player=black with opening moves from standard position", () => {
+      // Opening moves: 1.e4 e5 2.Nf3 Nc6 (white to move next)
+      // Player is black, so it's NOT the player's turn → AI should move.
+      const moves = ["e4", "e5", "Nf3", "Nc6"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "black");
+      expect(state.isPlayerTurn).toBe(false);
+      expect(state.currentTurn).toBe("white");
+    });
+
+    it("should handle player=black with odd number of opening moves", () => {
+      // Opening moves: 1.e4 e5 2.Nf3 (black to move next)
+      // Player is black, so it IS the player's turn.
+      const moves = ["e4", "e5", "Nf3"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "black");
+      expect(state.isPlayerTurn).toBe(true);
+      expect(state.currentTurn).toBe("black");
+    });
+
+    it("should compute playerResult correctly for checkmate when player is black", () => {
+      // Fool's mate: 1.f3 e5 2.g4 Qh4# — white is checkmated
+      // Player is black → player wins
+      const moves = ["f3", "e5", "g4", "Qh4#"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "black");
+      expect(state.status).toBe("checkmate");
+      expect(state.playerResult).toBe("win");
+    });
+
+    it("should compute playerResult correctly for checkmate when player is white", () => {
+      // Fool's mate: 1.f3 e5 2.g4 Qh4# — white is checkmated
+      // Player is white → player loses
+      const moves = ["f3", "e5", "g4", "Qh4#"] as AlgebraicNotation[];
+      const state = computeGameState(moves, "white");
+      expect(state.status).toBe("checkmate");
+      expect(state.playerResult).toBe("loss");
+    });
+  });
+
   describe("validateGameMove", () => {
     it("should return true for legal pawn moves", () => {
       expect(validateGameMove([], "e4" as AlgebraicNotation)).toBe(true);

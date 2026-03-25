@@ -6,6 +6,7 @@ import type { ChessOpening } from '@/lib/db';
 
 import { useInView } from '@/app/[locale]/_hooks/use-in-view';
 
+import { isBlackOpening } from '../_lib/openings';
 import { MiniBoard } from './MiniBoard';
 
 type Props = {
@@ -64,7 +65,11 @@ export function OpeningCard({ opening, displayName, locale, compact }: Props) {
         locale={locale}
         className="flex gap-3 p-3 rounded-lg border border-border bg-card hover:border-foreground/20 transition-colors"
       >
-        {inView ? <MiniBoard fen={opening.fen} size={BOARD_SIZE} /> : <BoardSkeleton />}
+        {inView ? (
+          <MiniBoard fen={opening.fen} size={BOARD_SIZE} flipped={isBlackOpening(opening.fen)} />
+        ) : (
+          <BoardSkeleton />
+        )}
         <div className="flex flex-col justify-center min-w-0">
           <span className="text-xs text-muted-foreground font-mono">{opening.ecoCode}</span>
           <h3 className="text-sm font-medium text-foreground leading-snug">{displayName}</h3>

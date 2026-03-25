@@ -11,6 +11,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MiniBoard } from '../../_components/MiniBoard';
+import { isBlackOpening } from '../../_lib/openings';
 import { getOpeningBySlug } from '../../_lib/queries';
 import { NewOpeningPostForm } from './_components';
 
@@ -75,7 +76,7 @@ export default async function NewOpeningPostPage({ params }: Props) {
         <SectionTitle>{t('openings.newPostForm.title', { name: displayName })}</SectionTitle>
 
         <div className="max-w-xs mx-auto">
-          <MiniBoard fen={opening.fen} responsive />
+          <MiniBoard fen={opening.fen} responsive flipped={isBlackOpening(opening.fen)} />
         </div>
 
         <NewOpeningPostForm locale={locale} slug={slug} />

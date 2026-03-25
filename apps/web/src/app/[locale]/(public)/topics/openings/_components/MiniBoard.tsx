@@ -37,12 +37,17 @@ type Props = {
   fen: string;
   size?: number;
   responsive?: boolean;
+  flipped?: boolean;
 };
 
-export function MiniBoard({ fen, size = 120, responsive = false }: Props) {
+export function MiniBoard({ fen, size = 120, responsive = false, flipped = false }: Props) {
   const { preferences } = useGamePreferences();
   const themeColors = getBoardThemeColors(preferences.boardTheme);
-  const board = parseFenPlacement(fen);
+  const board = flipped
+    ? parseFenPlacement(fen)
+        .reverse()
+        .map((rank) => [...rank].reverse())
+    : parseFenPlacement(fen);
 
   if (responsive) {
     return (
