@@ -2853,5 +2853,44 @@
       "missingDigit": "Password must contain at least one digit.",
       "weak": "Password is too weak. Please choose a stronger password."
     }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "description": "Choose the plan that's right for you",
+    "subtitle": "Support Blindfold Chess and enjoy an ad-free experience",
+    "freePlan": {
+      "name": "Free",
+      "price": "$0",
+      "feature1": "All practice modules",
+      "feature2": "Leaderboard access",
+      "feature3": "Community topics"
+    },
+    "adFreePlan": {
+      "name": "Ad-Free",
+      "price": "$1",
+      "priceUnit": "/ month",
+      "feature1": "Everything in Free",
+      "feature2": "No advertisements",
+      "feature3": "Support development"
+    },
+    "currentPlan": "Current plan",
+    "subscribe": "Subscribe",
+    "managePlan": "Manage plan"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "successMessage": "Your subscription is now active! Ads have been removed.",
+    "noSubscription": "No active subscription",
+    "noSubscriptionDescription": "Subscribe to remove ads and support Blindfold Chess.",
+    "viewPlans": "View plans",
+    "adFreePlan": "Ad-Free Plan",
+    "statusActive": "Active",
+    "statusCanceling": "Canceling",
+    "statusInactive": "Inactive",
+    "cancelingNote": "Your subscription will end at the end of the billing period.",
+    "accessUntil": "Ad-free access until {date}",
+    "nextBilling": "Next billing date",
+    "noBilling": "No future billing",
+    "manageSubscription": "Manage subscription"
   }
 }

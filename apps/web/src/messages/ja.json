@@ -2818,5 +2818,44 @@
       "missingDigit": "パスワードには数字を1文字以上含めてください。",
       "weak": "パスワードが脆弱です。より強力なパスワードを選択してください。"
     }
+  },
+  "pricing": {
+    "title": "料金プラン",
+    "description": "あなたに合ったプランをお選びください",
+    "subtitle": "Blindfold Chess を支援して、広告なしの体験をお楽しみください",
+    "freePlan": {
+      "name": "フリー",
+      "price": "$0",
+      "feature1": "全トレーニングモジュール",
+      "feature2": "リーダーボード",
+      "feature3": "コミュニティトピック"
+    },
+    "adFreePlan": {
+      "name": "広告なし",
+      "price": "$1",
+      "priceUnit": "/ 月",
+      "feature1": "フリープランの全機能",
+      "feature2": "広告非表示",
+      "feature3": "開発を支援"
+    },
+    "currentPlan": "現在のプラン",
+    "subscribe": "登録する",
+    "managePlan": "プランを管理"
+  },
+  "subscription": {
+    "title": "サブスクリプション",
+    "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
+    "noSubscription": "有効なサブスクリプションがありません",
+    "noSubscriptionDescription": "サブスクリプションに登録して、広告を非表示にしましょう。",
+    "viewPlans": "プランを見る",
+    "adFreePlan": "広告なしプラン",
+    "statusActive": "有効",
+    "statusCanceling": "解約予定",
+    "statusInactive": "無効",
+    "cancelingNote": "現在の請求期間の終了時にサブスクリプションが終了します。",
+    "accessUntil": "{date} まで広告なしでご利用いただけます",
+    "nextBilling": "次回請求日",
+    "noBilling": "今後の請求はありません",
+    "manageSubscription": "サブスクリプションを管理"
   }
 }
