@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
@@ -17,9 +17,7 @@ type Props = {
   params: Promise<{ locale: Locale }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -39,13 +37,14 @@ export default async function SquareColorsResultPage(props: Props) {
   const leaderboardResult = await getLeaderboard('square_colors', 'default', 'weekly', 1);
   const leaderboardRows = leaderboardResult.rows.slice(0, 3);
   const leaderboardDetailPath = buildDetailPath('weekly', 'square_colors', 'default');
+  const showAds = await shouldShowAds();
 
   return (
     <Suspense>
       <ResultClient
         locale={locale}
-        adBannerWide={<AdBanner slot="banner-wide" locale={locale} />}
-        adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+        adBannerWide={showAds ? <AdBanner slot="banner-wide" locale={locale} /> : null}
+        adBannerStandard={showAds ? <AdBanner slot="banner-standard" locale={locale} /> : null}
         leaderboardRows={leaderboardRows}
         leaderboardDetailPath={leaderboardDetailPath}
       />

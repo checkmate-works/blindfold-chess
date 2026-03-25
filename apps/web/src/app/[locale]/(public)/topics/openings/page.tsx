@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -90,6 +91,8 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
       )
     : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
 
+  const showAds = await shouldShowAds();
+
   const openings = firstMoveSquare
     ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
     : await getOpeningsAsTree();
@@ -138,7 +141,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
           </>
         )}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
 
         {firstMoveSquare
           ? currentPage === 1 && (
@@ -180,7 +183,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
               </Suspense>
             )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
@@ -84,6 +85,7 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
   const data = await getLeaderboard(validated.module, validated.key, validated.period, page);
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
   const detailTitle = t(`cardTitle.${validated.module}.${validated.key}`);
+  const showAds = await shouldShowAds();
 
   return (
     <PagePanel>
@@ -99,7 +101,7 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
 
       <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
 
-      <AdBanner slot="banner-standard" locale={locale} />
+      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
       <Divider />
 

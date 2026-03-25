@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { shouldShowAds } from '@/lib/ad';
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
@@ -57,6 +58,8 @@ export default async function ArticlePage({ params }: Props) {
     notFound();
   }
 
+  const showAds = await shouldShowAds();
+
   const publishedDate = article.publishedAt
     ? new Date(article.publishedAt).toLocaleDateString(locale, {
         year: 'numeric',
@@ -90,7 +93,7 @@ export default async function ArticlePage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

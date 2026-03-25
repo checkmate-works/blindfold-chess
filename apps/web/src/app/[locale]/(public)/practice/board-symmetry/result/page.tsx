@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -15,9 +15,7 @@ type Props = {
   params: Promise<{ locale: Locale }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -33,13 +31,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BoardSymmetryResultPage(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
+  const showAds = await shouldShowAds();
 
   return (
     <>
       <Suspense>
-        <ResultClient locale={locale} adBanner={<AdBanner slot="banner-wide" locale={locale} />} />
+        <ResultClient
+          locale={locale}
+          adBanner={showAds ? <AdBanner slot="banner-wide" locale={locale} /> : null}
+        />
       </Suspense>
-      <AdBanner slot="banner-standard" locale={locale} />
+      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
     </>
   );
 }

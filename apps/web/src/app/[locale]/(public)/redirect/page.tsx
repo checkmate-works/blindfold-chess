@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { shouldShowAds } from '@/lib/ad';
 import { isInternalUrl } from '@/lib/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
@@ -41,6 +42,7 @@ export default async function RedirectPage({ params, searchParams }: Props) {
   const sp = await searchParams;
   const url = typeof sp.url === 'string' ? sp.url : '';
   const t = await getTranslations({ locale, namespace: 'redirect' });
+  const showAds = await shouldShowAds();
 
   if (!url || !isValidExternalUrl(url)) {
     return (
@@ -49,7 +51,7 @@ export default async function RedirectPage({ params, searchParams }: Props) {
           <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
           <p className="text-muted-foreground">{t('invalidUrl')}</p>
         </div>
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
       </PagePanel>
     );
   }
@@ -67,7 +69,7 @@ export default async function RedirectPage({ params, searchParams }: Props) {
         </div>
         <RedirectActions url={url} locale={locale} />
       </div>
-      <AdBanner slot="banner-standard" locale={locale} />
+      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
     </PagePanel>
   );
 }

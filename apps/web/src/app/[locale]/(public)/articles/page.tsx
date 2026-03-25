@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { shouldShowAds } from '@/lib/ad';
+
 import {
   Divider,
   ListLink,
@@ -56,6 +58,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
 
   const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
   const articles = await getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset);
+  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-12">
@@ -100,7 +103,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
           </>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

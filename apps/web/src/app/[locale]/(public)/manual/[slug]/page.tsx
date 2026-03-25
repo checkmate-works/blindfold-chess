@@ -1,9 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
-import dynamic from 'next/dynamic';
+// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
+import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
@@ -11,9 +12,9 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getAvailableManualArticles, getManualArticle } from '../_lib/utils';
+import { getManualArticle } from '../_lib/utils';
 
-const MarkdownRenderer = dynamic(
+const MarkdownRenderer = nextDynamic(
   () =>
     import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
@@ -28,16 +29,7 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  const slugs = getAvailableManualArticles();
-
-  return slugs.flatMap((slug) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      locale,
-      slug,
-    }))
-  );
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
@@ -72,6 +64,7 @@ export default async function ManualArticlePage({ params }: Props) {
   }
 
   const title = article.metadata.title;
+  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-12">
@@ -84,7 +77,7 @@ export default async function ManualArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

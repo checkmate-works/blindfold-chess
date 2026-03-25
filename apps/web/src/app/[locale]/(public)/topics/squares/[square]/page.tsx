@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -93,6 +94,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     return translated === `topics.openings.names.${slug}` ? fallback : translated;
   };
 
+  const showAds = await shouldShowAds();
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
   const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
@@ -136,7 +138,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -162,7 +164,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

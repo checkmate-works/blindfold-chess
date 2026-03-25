@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
+import { shouldShowAds } from '@/lib/ad';
 import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
@@ -59,6 +60,8 @@ export default async function AnnouncementPage({ params }: Props) {
     notFound();
   }
 
+  const showAds = await shouldShowAds();
+
   if (announcement.visibility === 'members_only') {
     const user = await getOptionalUser();
 
@@ -81,7 +84,7 @@ export default async function AnnouncementPage({ params }: Props) {
               </Link>
             </div>
 
-            <AdBanner slot="banner-standard" locale={locale} />
+            {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
             <Divider />
 
@@ -121,7 +124,7 @@ export default async function AnnouncementPage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -64,6 +65,7 @@ export default async function TopicsPage({ params, searchParams }: Props) {
     (currentPage - 1) * PAGE_SIZE,
     user?.id
   );
+  const showAds = await shouldShowAds();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -120,7 +122,7 @@ export default async function TopicsPage({ params, searchParams }: Props) {
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

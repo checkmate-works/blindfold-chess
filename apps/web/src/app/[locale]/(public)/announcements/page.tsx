@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { HiLockClosed } from 'react-icons/hi2';
 
+import { shouldShowAds } from '@/lib/ad';
 import { getOptionalUser } from '@/lib/auth';
 
 import {
@@ -51,6 +52,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
   const user = await getOptionalUser();
+  const showAds = await shouldShowAds();
   const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
@@ -116,7 +118,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           </>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

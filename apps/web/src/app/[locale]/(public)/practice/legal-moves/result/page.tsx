@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
@@ -20,9 +20,7 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -45,12 +43,13 @@ export default async function LegalMovesResultPage(props: Props) {
   const leaderboardResult = await getLeaderboard('legal_moves', piece, 'weekly', 1);
   const leaderboardRows = leaderboardResult.rows.slice(0, 3);
   const leaderboardDetailPath = buildDetailPath('weekly', 'legal_moves', piece);
+  const showAds = await shouldShowAds();
 
   return (
     <Suspense>
       <ResultClient
         locale={locale}
-        adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+        adBannerStandard={showAds ? <AdBanner slot="banner-standard" locale={locale} /> : null}
         leaderboardRows={leaderboardRows}
         leaderboardDetailPath={leaderboardDetailPath}
       />

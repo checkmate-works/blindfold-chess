@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import {
   Divider,
@@ -33,15 +33,9 @@ type Props = {
   }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
-export async function generateStaticParams() {
-  return validCategories.flatMap((category) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      locale,
-      category,
-    }))
-  );
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
@@ -71,6 +65,7 @@ export default async function LearnCategoryPage({ params }: Props) {
 
   const t = await getTranslations({ locale });
   const articles = await getArticlesByCategory(category as ArticleCategory, locale);
+  const showAds = await shouldShowAds();
 
   const categoryLabel = t(`learn.categories.${category}`);
 
@@ -97,7 +92,7 @@ export default async function LearnCategoryPage({ params }: Props) {
           </ListLinkContainer>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

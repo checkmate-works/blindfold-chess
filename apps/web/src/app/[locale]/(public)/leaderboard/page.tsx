@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 
+import { shouldShowAds } from '@/lib/ad';
+
 import { Divider, PagePanel, Skeleton } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -44,6 +46,7 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
   const period = parsePeriod(periodParam);
   const moduleFilter = parseModuleFilter(moduleParam);
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
+  const showAds = await shouldShowAds();
 
   return (
     <PagePanel>
@@ -70,7 +73,7 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
         />
       </Suspense>
 
-      <AdBanner slot="banner-standard" locale={locale} />
+      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
       <Divider />
 

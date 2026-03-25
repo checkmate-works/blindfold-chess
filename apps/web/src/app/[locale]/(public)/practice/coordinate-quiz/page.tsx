@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { shouldShowAds } from '@/lib/ad';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
@@ -17,9 +17,7 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -36,6 +34,7 @@ export default async function CoordinateQuizPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-8">
@@ -44,7 +43,7 @@ export default async function CoordinateQuizPage({ params }: Props) {
       <PagePanel>
         <CoordinateQuiz locale={locale} />
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
 
         <div className="mt-8 space-y-4">
           <SectionTitle>{t('practice.coordinateQuiz.relatedArticles')}</SectionTitle>
@@ -73,7 +72,7 @@ export default async function CoordinateQuizPage({ params }: Props) {
           </div>
         </div>
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <Divider />
 

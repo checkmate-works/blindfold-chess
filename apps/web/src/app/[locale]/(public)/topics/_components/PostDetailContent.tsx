@@ -53,6 +53,7 @@ type Props = {
   repliesCount: string;
   noReplies: string;
   loginToReply: string;
+  showAds?: boolean;
   extraContent?: React.ReactNode;
 };
 
@@ -76,6 +77,7 @@ export function PostDetailContent({
   repliesCount,
   noReplies,
   loginToReply,
+  showAds = true,
   extraContent,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -134,7 +136,7 @@ export function PostDetailContent({
         </div>
       </div>
 
-      <AdBanner slot="banner-wide" locale={locale} />
+      {showAds && <AdBanner slot="banner-wide" locale={locale} />}
 
       <SectionTitle>
         {repliesTitle} ({repliesCount})
@@ -202,7 +204,7 @@ export function PostDetailContent({
         </>
       )}
 
-      <AdBanner slot="banner-standard" locale={locale} />
+      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
       <HashScrollTarget />
     </>

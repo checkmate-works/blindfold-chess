@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -61,6 +62,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
     (currentPage - 1) * PAGE_SIZE,
     user?.id
   );
+  const showAds = await shouldShowAds();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -76,7 +78,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PagePanel>
         {currentPage === 1 && <SquareBoard locale={locale} />}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
 
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
@@ -96,7 +98,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
