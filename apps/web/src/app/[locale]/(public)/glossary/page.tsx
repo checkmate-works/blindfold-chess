@@ -2,8 +2,6 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -13,13 +11,11 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ locale: Locale }>;
 };
-
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

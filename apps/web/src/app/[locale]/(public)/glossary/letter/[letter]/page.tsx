@@ -2,8 +2,6 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -14,23 +12,14 @@ import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { getTermsByLetter } from '../../_lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{
     locale: Locale;
     letter: string;
   }>;
 };
-
-// Queries the database at build time — requires a running DB connection for `next build`.
-export async function generateStaticParams() {
-  const letters = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
-  return letters.flatMap((letter) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      locale,
-      letter: letter.toLowerCase(),
-    }))
-  );
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, letter } = await params;

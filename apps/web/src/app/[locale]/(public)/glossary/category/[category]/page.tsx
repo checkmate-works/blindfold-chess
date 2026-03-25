@@ -3,8 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -16,6 +14,8 @@ import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { getTermsByCategory } from '../../_lib/queries';
 import { CATEGORY_STYLES, type GlossaryCategory } from '../../_lib/types';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{
     locale: Locale;
@@ -24,15 +24,6 @@ type Props = {
 };
 
 const VALID_CATEGORIES = Object.keys(CATEGORY_STYLES);
-
-export async function generateStaticParams() {
-  return VALID_CATEGORIES.flatMap((category) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      locale,
-      category,
-    }))
-  );
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
