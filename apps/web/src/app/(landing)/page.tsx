@@ -17,6 +17,8 @@ import {
 import { DashboardFooter } from './_components/DashboardFooter';
 import { Footer } from './_components/Footer';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });

@@ -31,6 +31,8 @@ import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
 
+export const dynamic = 'force-dynamic';
+
 const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({

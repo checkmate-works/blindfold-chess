@@ -1,19 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
 import { ChallengeLink } from '@/app/[locale]/(public)/leaderboard/_components/ChallengeLink';
 import {
-  ALL_LEADERBOARD_ENTRIES,
   type LeaderboardModule,
   type LeaderboardPeriod,
-  VALID_PERIODS,
-  moduleToSlug,
   slugToModule,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
@@ -21,6 +16,8 @@ import { Divider, PagePanel } from '@/app/[locale]/_components';
 import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{
@@ -51,19 +48,6 @@ function validateParams(
   if (!resolvedModule || !isValidKey(resolvedModule, key)) return null;
 
   return { period: periodStr, module: resolvedModule, key };
-}
-
-export function generateStaticParams() {
-  return SUPPORTED_LOCALES.flatMap((locale) =>
-    VALID_PERIODS.flatMap((period) =>
-      ALL_LEADERBOARD_ENTRIES.map(({ module, key }) => ({
-        locale,
-        period,
-        module: moduleToSlug(module),
-        key,
-      }))
-    )
-  );
 }
 
 export async function generateMetadata({ params }: Props) {
