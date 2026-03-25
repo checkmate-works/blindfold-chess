@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
 import { HiLockClosed } from 'react-icons/hi2';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -22,6 +21,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } from './_lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 const ANNOUNCEMENTS_PER_PAGE = 20;
 
 type Props = {
@@ -33,13 +34,8 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
   return {

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import dynamic from 'next/dynamic';
+// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
+import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
 import { Link } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -14,9 +14,11 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getPublishedAnnouncement, getPublishedAnnouncements } from '../_lib/queries';
+import { getPublishedAnnouncement } from '../_lib/queries';
 
-const MarkdownRenderer = dynamic(
+export const dynamic = 'force-dynamic';
+
+const MarkdownRenderer = nextDynamic(
   () =>
     import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
@@ -30,13 +32,6 @@ type Props = {
     slug: string;
   }>;
 };
-
-export async function generateStaticParams() {
-  const announcements = await getPublishedAnnouncements();
-  const slugs = [...new Set(announcements.map((a) => a.slug))];
-
-  return SUPPORTED_LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
