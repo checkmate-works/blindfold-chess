@@ -16,6 +16,7 @@ import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative
 import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
+import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
 
@@ -55,7 +56,11 @@ export const TopicPostCard = memo(function TopicPostCard({
       locale={locale}
       thumbnail={
         isOpening ? (
-          <MiniBoard fen={post.openingFen ?? getStartingFen()} responsive />
+          <MiniBoard
+            fen={post.openingFen ?? getStartingFen()}
+            responsive
+            flipped={isBlackOpening(post.openingFen ?? getStartingFen())}
+          />
         ) : (
           <TopicSquareBoard square={post.topicKey} />
         )

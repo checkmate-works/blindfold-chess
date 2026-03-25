@@ -42,7 +42,7 @@ export function PgnGameForm({ locale }: Props) {
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [pgn, setPgn] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [colorLockedFromUrl, setColorLockedFromUrl] = useState(false);
+  const [colorManuallySet, setColorManuallySet] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
 
   // Parse PGN to get moves array and starting FEN
@@ -149,7 +149,7 @@ export function PgnGameForm({ locale }: Props) {
 
     if (urlColor) {
       setColor(urlColor);
-      setColorLockedFromUrl(true);
+      setColorManuallySet(true);
     }
 
     if (urlSkillLevel) {
@@ -161,9 +161,9 @@ export function PgnGameForm({ locale }: Props) {
   }, [searchParams]);
 
   // Auto-derive color from PGN
-  // Skip auto-derivation if color was set from URL
+  // Skip auto-derivation if color was manually set by user or from URL
   useEffect(() => {
-    if (colorLockedFromUrl) return;
+    if (colorManuallySet) return;
 
     if (pgn.trim() && validatePgn(pgn)) {
       try {
@@ -188,7 +188,7 @@ export function PgnGameForm({ locale }: Props) {
         // If PGN parsing fails, keep current color selection
       }
     }
-  }, [pgn, colorLockedFromUrl]);
+  }, [pgn, colorManuallySet]);
 
   const handlePgnChange = useCallback((value: string) => {
     setPgn(value);
@@ -249,11 +249,10 @@ export function PgnGameForm({ locale }: Props) {
         value={color}
         onChange={(newColor) => {
           setColor(newColor);
-          setColorLockedFromUrl(false);
+          setColorManuallySet(true);
         }}
-        disabled={!colorLockedFromUrl && !!pgn.trim() && validatePgn(pgn)}
       />
-      {pgn.trim() && validatePgn(pgn) && !colorLockedFromUrl && (
+      {pgn.trim() && validatePgn(pgn) && !colorManuallySet && (
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
       )}
 
