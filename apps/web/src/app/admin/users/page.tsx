@@ -13,8 +13,10 @@ import { createClient } from '@/lib/supabase/server';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
+import { getPaginationParams } from '@/lib/pagination';
+
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { DEFAULT_PAGE_SIZE, getPaginationData } from '../_lib/pagination';
+import { DEFAULT_PAGE_SIZE } from '../_lib/pagination';
 import { BanButton } from './_components/BanButton';
 import { StatusFilter } from './_components/StatusFilter';
 import { UnbanButton } from './_components/UnbanButton';
@@ -97,7 +99,7 @@ export default async function AdminUsersPage({
     });
 
     const totalCount = filtered.length;
-    const pagination = getPaginationData(page, totalCount);
+    const pagination = getPaginationParams(page, totalCount, DEFAULT_PAGE_SIZE);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 
@@ -117,7 +119,7 @@ export default async function AdminUsersPage({
 
     users = usersData?.users ?? [];
     const totalCount = usersData && 'total' in usersData ? usersData.total : 0;
-    const pagination = getPaginationData(page, totalCount);
+    const pagination = getPaginationParams(page, totalCount, DEFAULT_PAGE_SIZE);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 

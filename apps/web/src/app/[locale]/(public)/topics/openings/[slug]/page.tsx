@@ -7,10 +7,11 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { paginateItems } from '@/lib/pagination';
+
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
-  paginate,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
@@ -95,7 +96,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
     totalPages,
     currentPage,
     paginatedItems: posts,
-  } = paginate(allPosts, TOPIC_PAGE_SIZE, page);
+  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
 
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);

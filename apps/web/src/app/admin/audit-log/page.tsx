@@ -8,9 +8,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
+import { getPaginationParams } from '@/lib/pagination';
+
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { ADMIN_USER_FETCH_PAGE_SIZE } from '../_lib/constants';
-import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -77,9 +78,10 @@ export default async function AdminAuditLogPage({
     .select({ count: sql<number>`count(*)` })
     .from(moderationActions)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
-    Number(countResult.count)
+    Number(countResult.count),
+    20
   );
 
   // Fetch logs for current page

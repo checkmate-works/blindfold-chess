@@ -8,8 +8,9 @@ import { announcements, db } from '@/lib/db';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
+import { getPaginationParams } from '@/lib/pagination';
+
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
 import { DeleteAnnouncementButton } from './_components/DeleteAnnouncementButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -25,9 +26,10 @@ export default async function AdminAnnouncementsPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.announcementsTable' });
 
   const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(announcements);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
-    Number(countResult.count)
+    Number(countResult.count),
+    20
   );
 
   const items = await db

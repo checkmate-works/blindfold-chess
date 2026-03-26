@@ -8,8 +8,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
+import { getPaginationParams } from '@/lib/pagination';
+
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
 import { SubscriptionStatusFilter } from './_components/SubscriptionStatusFilter';
 import { UserCombobox } from './_components/UserCombobox';
 
@@ -63,9 +64,10 @@ export default async function AdminSubscriptionsPage({
     .select({ count: sql<number>`count(*)` })
     .from(subscriptions)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
-    countResult?.count ?? 0
+    countResult?.count ?? 0,
+    20
   );
 
   // Fetch paginated subscriptions
