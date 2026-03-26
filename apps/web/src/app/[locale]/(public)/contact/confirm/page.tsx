@@ -4,14 +4,9 @@ import { redirect } from 'next/navigation';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { ContactConfirm } from '../_components/ContactConfirm';
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

@@ -4,15 +4,14 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
 
-type BanUserResult = { success: true } | { error: string };
-
-export async function banUser(targetUserId: string, reason: string): Promise<BanUserResult> {
+export async function banUser(targetUserId: string, reason: string): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

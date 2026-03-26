@@ -2,12 +2,13 @@
 
 import { SITE_URL } from '@/config';
 
+import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
 import { getClientIp } from '@/lib/client-ip';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 
-export type ForgotPasswordResult = { success: true } | { error: string };
+export type ForgotPasswordResult = ActionResult;
 
 export async function forgotPassword(email: string): Promise<ForgotPasswordResult> {
   const ip = await getClientIp();

@@ -4,13 +4,12 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { announcements, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
 
-type DeleteResult = { success: true } | { error: string };
-
-export async function deleteAnnouncement(id: string): Promise<DeleteResult> {
+export async function deleteAnnouncement(id: string): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

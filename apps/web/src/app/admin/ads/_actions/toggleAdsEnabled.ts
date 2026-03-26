@@ -4,13 +4,12 @@ import { updateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db, siteSettings } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
 
-type ToggleResult = { success: true } | { error: string };
-
-export async function toggleAdsEnabled(): Promise<ToggleResult> {
+export async function toggleAdsEnabled(): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

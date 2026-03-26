@@ -4,17 +4,13 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, topicPosts } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
 
-type DeletePostAdminResult = { success: true } | { error: string };
-
-export async function deletePostAdmin(
-  postId: string,
-  reason: string
-): Promise<DeletePostAdminResult> {
+export async function deletePostAdmin(postId: string, reason: string): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

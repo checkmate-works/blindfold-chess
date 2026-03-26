@@ -4,14 +4,9 @@ import dynamic from 'next/dynamic';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 const FenSession = dynamic(() => import('../_components/FenSession').then((mod) => mod.FenSession));
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

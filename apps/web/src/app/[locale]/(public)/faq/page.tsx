@@ -9,14 +9,10 @@ import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { FAQClient } from './_components/FAQClient';
 import type { FAQItem } from './_lib/types';
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-};
 
 export const dynamic = 'force-dynamic';
 

@@ -2,13 +2,14 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getPasswordValidationError } from '@/lib/validations/password';
 
-export type ChangePasswordResult = { success: true } | { error: string };
+export type ChangePasswordResult = ActionResult;
 
 export async function changePassword(
   currentPassword: string,

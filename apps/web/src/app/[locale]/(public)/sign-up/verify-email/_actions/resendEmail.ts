@@ -1,10 +1,11 @@
 'use server';
 
+import type { ActionResult } from '@/lib/action-types';
 import { getClientIp } from '@/lib/client-ip';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 
-export type ResendEmailResult = { success: true } | { error: string };
+export type ResendEmailResult = ActionResult;
 
 export async function resendEmail(email: string): Promise<ResendEmailResult> {
   const ip = await getClientIp();

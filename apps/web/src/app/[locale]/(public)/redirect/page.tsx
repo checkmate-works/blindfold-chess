@@ -5,14 +5,9 @@ import { isInternalUrl } from '@/lib/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedirectActions } from './_components/RedirectActions';
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
 
 function isValidExternalUrl(url: string): boolean {
   try {

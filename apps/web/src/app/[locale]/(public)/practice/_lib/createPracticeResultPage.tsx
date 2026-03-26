@@ -5,19 +5,15 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { Locale, LocalePageProps } from '@/app/[locale]/_lib/types';
 
 type MetadataConfig = {
   i18nKey: string;
   canonicalPath: string;
 };
 
-type MetadataProps = {
-  params: Promise<{ locale: Locale }>;
-};
-
 export function createPracticeResultMetadata(config: MetadataConfig) {
-  return async function generateMetadata({ params }: MetadataProps): Promise<Metadata> {
+  return async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
     const { locale } = await params;
     setRequestLocale(locale);
     const t = await getTranslations({ locale, namespace: 'practice' });
@@ -33,14 +29,10 @@ type SimpleResultClientProps = {
   adBanner?: ReactNode;
 };
 
-type PageProps = {
-  params: Promise<{ locale: Locale }>;
-};
-
 export function createSimplePracticeResultPage(
   ResultClient: ComponentType<SimpleResultClientProps>
 ) {
-  return async function Page(props: PageProps) {
+  return async function Page(props: LocalePageProps) {
     const { locale } = await props.params;
     setRequestLocale(locale);
     return (

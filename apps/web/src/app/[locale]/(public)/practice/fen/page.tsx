@@ -13,22 +13,15 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import { Divider, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { FenPageContent } from './_components/FenPageContent';
 
-type Props = {
-  params: Promise<{ locale: Locale }>;
-};
-
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

@@ -2,12 +2,13 @@
 
 import { SITE_URL } from '@/config';
 
+import type { ActionResult } from '@/lib/action-types';
 import { getClientIp } from '@/lib/client-ip';
 import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { getPasswordValidationError } from '@/lib/validations/password';
 
-export type SignUpResult = { success: true } | { error: string };
+export type SignUpResult = ActionResult;
 
 export async function signUp(email: string, password: string): Promise<SignUpResult> {
   const ip = await getClientIp();

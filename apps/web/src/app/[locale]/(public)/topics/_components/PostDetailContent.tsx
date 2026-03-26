@@ -1,6 +1,8 @@
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { LinkedText, SectionTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -20,10 +22,7 @@ type ToggleLikeAction = (
   topicKey: string
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
-type DeletePostAction = (
-  postId: string,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
+type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
 type CreateReplyAction = (
   locale: string,

@@ -4,6 +4,7 @@ import { updateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { adBanners, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -15,9 +16,7 @@ type UpdateData = {
   isActive: boolean;
 };
 
-type UpdateResult = { success: true } | { error: string };
-
-export async function updateAdBanner(id: string, data: UpdateData): Promise<UpdateResult> {
+export async function updateAdBanner(id: string, data: UpdateData): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;

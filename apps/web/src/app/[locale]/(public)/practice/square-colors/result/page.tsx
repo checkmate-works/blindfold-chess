@@ -6,13 +6,9 @@ import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/get
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { createPracticeResultMetadata } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './ResultClient';
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-};
 
 export const dynamic = 'force-dynamic';
 

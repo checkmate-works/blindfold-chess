@@ -17,7 +17,7 @@ import {
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './_lib/queries';
 
@@ -28,11 +28,6 @@ const PAGE_SIZE = 5;
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
 });
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

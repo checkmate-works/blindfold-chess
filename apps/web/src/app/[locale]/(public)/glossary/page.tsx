@@ -6,16 +6,12 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
 
 export const dynamic = 'force-dynamic';
-
-type Props = {
-  params: Promise<{ locale: Locale }>;
-};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

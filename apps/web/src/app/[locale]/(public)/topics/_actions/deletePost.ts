@@ -4,13 +4,14 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-export type DeletePostResult = { success: true } | { error: string };
+export type DeletePostResult = ActionResult;
 
 const TOPIC_TYPE_TO_URL_SEGMENT: Record<string, string> = {
   square: 'squares',
