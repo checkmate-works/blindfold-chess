@@ -6,7 +6,8 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-import { db, moderationActions, profiles, userRoles } from '@/lib/db';
+import { db, moderationActions, profiles, subscriptions, userRoles } from '@/lib/db';
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
@@ -136,6 +137,20 @@ export default async function AdminUsersPage({
       : [];
   const roleMap = new Map(roles.map((r) => [r.userId, r.role]));
 
+  const userSubscriptions =
+    userIds.length > 0
+      ? await db
+          .select({ userId: subscriptions.userId, status: subscriptions.status })
+          .from(subscriptions)
+          .where(
+            and(
+              inArray(subscriptions.userId, userIds),
+              inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
+            )
+          )
+      : [];
+  const subscriptionMap = new Map(userSubscriptions.map((s) => [s.userId, s.status]));
+
   // Fetch latest ban reason for each banned user from moderation_actions
   const bannedUserIds = [...profileMap.values()].filter((p) => p.bannedAt != null).map((p) => p.id);
   const banReasonMap = new Map<string, string | null>();
@@ -192,6 +207,7 @@ export default async function AdminUsersPage({
           t('usersTable.email'),
           t('usersTable.username'),
           t('usersTable.role'),
+          t('usersTable.plan'),
           t('usersTable.status'),
           t('usersTable.createdAt'),
           t('usersTable.actions'),
@@ -229,6 +245,17 @@ export default async function AdminUsersPage({
                   }`}
                 >
                   {roleMap.get(user.id) ?? t('usersTable.defaultRole')}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <span
+                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                    subscriptionMap.has(user.id)
+                      ? 'bg-success-soft text-success-soft-foreground'
+                      : 'bg-secondary text-foreground'
+                  }`}
+                >
+                  {subscriptionMap.has(user.id) ? t('usersTable.premium') : t('usersTable.free')}
                 </span>
               </td>
               <td className="px-4 py-3">
@@ -276,6 +303,12 @@ export default async function AdminUsersPage({
                         className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
                       >
                         {t('usersTable.viewActivity')}
+                      </Link>
+                      <Link
+                        href={`/admin/subscriptions?user=${user.id}`}
+                        className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+                      >
+                        {t('usersTable.viewSubscriptions')}
                       </Link>
                     </>
                   )}
