@@ -15,21 +15,37 @@ export type AdBannerConfig = {
   height: number;
 };
 
+async function fetchAdsEnabledFlag(): Promise<boolean> {
+  const [row] = await db
+    .select({ value: siteSettings.value })
+    .from(siteSettings)
+    .where(eq(siteSettings.key, 'ads_enabled'))
+    .limit(1);
+  if (!row) return false;
+  const value = row.value as { enabled?: boolean };
+  return value.enabled === true;
+}
+
+function toAdBannerConfig(row: {
+  href: string;
+  imagePath: string;
+  alt: string;
+  width: number;
+  height: number;
+}): AdBannerConfig {
+  return {
+    href: row.href,
+    imagePath: row.imagePath,
+    alt: row.alt,
+    width: row.width,
+    height: row.height,
+  };
+}
+
 export const isAdsEnabled = unstable_cache(
   async (): Promise<boolean> => {
     try {
-      const [row] = await withTimeout(
-        db
-          .select({ value: siteSettings.value })
-          .from(siteSettings)
-          .where(eq(siteSettings.key, 'ads_enabled'))
-          .limit(1)
-      );
-
-      if (!row) return false;
-
-      const value = row.value as { enabled?: boolean };
-      return value.enabled === true;
+      return await withTimeout(fetchAdsEnabledFlag());
     } catch (error) {
       console.warn('Failed to fetch ads_enabled setting:', error);
       return false;
@@ -75,13 +91,7 @@ export const getAdBannerBySlot = unstable_cache(
 
       if (!row || !row.isActive) return null;
 
-      return {
-        href: row.href,
-        imagePath: row.imagePath,
-        alt: row.alt,
-        width: row.width,
-        height: row.height,
-      };
+      return toAdBannerConfig(row);
     } catch (error) {
       console.warn('Failed to fetch ad banner for slot:', slot, error);
       return null;
@@ -101,15 +111,7 @@ export const getAdBannersForFeed = unstable_cache(
       const row = banner[0];
       if (!row || !row.isActive) return [];
 
-      return [
-        {
-          href: row.href,
-          imagePath: row.imagePath,
-          alt: row.alt,
-          width: row.width,
-          height: row.height,
-        },
-      ];
+      return [toAdBannerConfig(row)];
     } catch (error) {
       console.warn('Failed to fetch ad banners for feed:', error);
       return [];
@@ -122,16 +124,7 @@ export const getAdBannersForFeed = unstable_cache(
 // No-cache versions for admin pages (always show latest data)
 export async function getAdsEnabledDirect(): Promise<boolean> {
   try {
-    const [row] = await db
-      .select({ value: siteSettings.value })
-      .from(siteSettings)
-      .where(eq(siteSettings.key, 'ads_enabled'))
-      .limit(1);
-
-    if (!row) return false;
-
-    const value = row.value as { enabled?: boolean };
-    return value.enabled === true;
+    return await fetchAdsEnabledFlag();
   } catch (error) {
     console.warn('Failed to fetch ads_enabled setting (direct):', error);
     return false;
