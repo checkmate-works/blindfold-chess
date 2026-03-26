@@ -8,7 +8,7 @@ export type EvaluationMark = {
   isMate?: boolean;
 };
 
-export type EvaluationIconSize = 'sm' | 'md';
+type EvaluationIconSize = 'sm' | 'md';
 
 const sizeClasses: Record<EvaluationIconSize, { container: string; icon: string; text: string }> = {
   sm: { container: 'w-4 h-4', icon: 'w-2 h-2', text: 'text-[10px]' },

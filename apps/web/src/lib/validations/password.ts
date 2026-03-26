@@ -9,8 +9,6 @@ export const passwordSchema = z
   .regex(/[a-zA-Z]/, 'missingLetter') // letters_digits: requires at least one letter
   .regex(/\d/, 'missingDigit'); // letters_digits: requires at least one digit
 
-export type Password = z.infer<typeof passwordSchema>;
-
 export const PASSWORD_VALIDATION_ERROR_KEYS = [
   'tooShort',
   'missingLetter',
@@ -27,5 +25,6 @@ export function isPasswordValidationErrorKey(key: string): key is PasswordValida
 export function getPasswordValidationError(password: string): PasswordValidationErrorKey | null {
   const result = passwordSchema.safeParse(password);
   if (result.success) return null;
-  return result.error.issues[0].message as PasswordValidationErrorKey;
+  const message = result.error.issues[0].message;
+  return isPasswordValidationErrorKey(message) ? message : 'weak';
 }

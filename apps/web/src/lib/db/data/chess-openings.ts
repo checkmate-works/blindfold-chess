@@ -8,7 +8,7 @@
  * Sources: ECO classification, lichess-org/chess-openings
  */
 
-export type ChessOpeningSeed = {
+type ChessOpeningSeed = {
   slug: string;
   name: string;
   ecoCode: string;
