@@ -161,7 +161,17 @@ export function TiptapEditor({
           class: IMAGE_CLASS,
         },
       }),
-      Youtube.configure({
+      Youtube.extend({
+        renderHTML({ node, HTMLAttributes }) {
+          // Guard against null src which crashes the YouTube extension
+          if (!HTMLAttributes.src) {
+            return ['div', { 'data-youtube-video': '' }];
+          }
+          return this.parent?.({ node, HTMLAttributes }) as ReturnType<
+            NonNullable<typeof this.parent>
+          >;
+        },
+      }).configure({
         inline: false,
         nocookie: true,
       }),
