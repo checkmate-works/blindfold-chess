@@ -40,29 +40,30 @@ export const isAdsEnabled = unstable_cache(
 );
 
 /**
- * Determine whether ads should be shown to the current user.
+ * Pure decision function: determine whether ads should be shown for a given user.
  *
- * Combines the global ads-enabled switch with per-user subscription check.
- * - Unauthenticated users: always show ads (if globally enabled)
- * - Authenticated users with active subscription: hide ads
- * - Authenticated users without subscription: show ads
- *
- * @param userId - Optional user ID. If not provided, fetches from session.
+ * - `null` userId (unauthenticated): always show ads (if globally enabled)
+ * - Authenticated user with active subscription: hide ads
+ * - Authenticated user without subscription: show ads
  */
-export async function shouldShowAds(userId?: string | null): Promise<boolean> {
+export async function shouldShowAdsForUser(userId: string | null): Promise<boolean> {
   const adsEnabled = await isAdsEnabled();
   if (!adsEnabled) return false;
 
-  // If userId explicitly provided, use it
-  if (userId) {
-    return !(await hasActiveSubscription(userId));
-  }
+  if (!userId) return true; // Unauthenticated -> show ads
 
-  // Otherwise, check current session
+  return !(await hasActiveSubscription(userId));
+}
+
+/**
+ * Convenience wrapper that resolves the current session user and delegates
+ * to `shouldShowAdsForUser`.
+ *
+ * Existing callers can continue using this function without changes.
+ */
+export async function shouldShowAds(): Promise<boolean> {
   const user = await getOptionalUser();
-  if (!user) return true; // Unauthenticated -> show ads
-
-  return !(await hasActiveSubscription(user.id));
+  return shouldShowAdsForUser(user?.id ?? null);
 }
 
 export const getAdBannerBySlot = unstable_cache(

@@ -24,9 +24,24 @@ vi.mock('next/cache', () => ({
 
 vi.mock('server-only', () => ({}));
 
-const { isAdsEnabled, getAdBannerBySlot, getAdsEnabledDirect, getAllAdBanners } = await import(
-  './ad'
-);
+const mockHasActiveSubscription = vi.fn();
+vi.mock('./subscription', () => ({
+  hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
+}));
+
+const mockGetOptionalUser = vi.fn();
+vi.mock('./auth', () => ({
+  getOptionalUser: () => mockGetOptionalUser(),
+}));
+
+const {
+  isAdsEnabled,
+  getAdBannerBySlot,
+  getAdsEnabledDirect,
+  getAllAdBanners,
+  shouldShowAdsForUser,
+  shouldShowAds,
+} = await import('./ad');
 
 describe('isAdsEnabled', () => {
   beforeEach(() => {
@@ -240,5 +255,110 @@ describe('getAllAdBanners', () => {
 
     const result = await getAllAdBanners();
     expect(result).toEqual([]);
+  });
+});
+
+describe('shouldShowAdsForUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return false when ads are disabled globally', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: false } }]);
+
+    const result = await shouldShowAdsForUser('user-123');
+    expect(result).toBe(false);
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should return false when ads_enabled setting row does not exist', async () => {
+    mockLimit.mockResolvedValue([]);
+
+    const result = await shouldShowAdsForUser('user-123');
+    expect(result).toBe(false);
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should return true for unauthenticated user (null) when ads enabled', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+
+    const result = await shouldShowAdsForUser(null);
+    expect(result).toBe(true);
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should not check subscription for null userId (short-circuit)', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+
+    await shouldShowAdsForUser(null);
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should return false for user with active subscription', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+    mockHasActiveSubscription.mockResolvedValue(true);
+
+    const result = await shouldShowAdsForUser('user-123');
+    expect(result).toBe(false);
+    expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-123');
+  });
+
+  it('should return true for user without active subscription', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+    mockHasActiveSubscription.mockResolvedValue(false);
+
+    const result = await shouldShowAdsForUser('user-456');
+    expect(result).toBe(true);
+    expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-456');
+  });
+
+  it('should return false for null userId when ads are disabled', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: false } }]);
+
+    const result = await shouldShowAdsForUser(null);
+    expect(result).toBe(false);
+  });
+
+  it('should return false when isAdsEnabled throws (DB failure)', async () => {
+    mockLimit.mockRejectedValue(new Error('DB connection failed'));
+
+    const result = await shouldShowAdsForUser('user-123');
+    expect(result).toBe(false);
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+});
+
+describe('shouldShowAds', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should delegate to shouldShowAdsForUser with session user id', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+    mockGetOptionalUser.mockResolvedValue({ id: 'session-user-1' });
+    mockHasActiveSubscription.mockResolvedValue(false);
+
+    const result = await shouldShowAds();
+    expect(result).toBe(true);
+    expect(mockGetOptionalUser).toHaveBeenCalled();
+    expect(mockHasActiveSubscription).toHaveBeenCalledWith('session-user-1');
+  });
+
+  it('should pass null when no session user exists', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+    mockGetOptionalUser.mockResolvedValue(null);
+
+    const result = await shouldShowAds();
+    expect(result).toBe(true);
+    expect(mockGetOptionalUser).toHaveBeenCalled();
+    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should return false when ads disabled even with session user', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: false } }]);
+    mockGetOptionalUser.mockResolvedValue({ id: 'session-user-1' });
+
+    const result = await shouldShowAds();
+    expect(result).toBe(false);
   });
 });
