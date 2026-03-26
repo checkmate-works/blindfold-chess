@@ -3,6 +3,7 @@
 import type { ArticleImage } from '@/lib/db';
 
 import { updateArticle } from '../_actions/updateArticle';
+import type { ContentFormat, TiptapJsonContent } from '../_lib/types';
 import { ArticleForm } from './ArticleForm';
 
 type EditArticleFormProps = {
@@ -11,6 +12,8 @@ type EditArticleFormProps = {
     slug: string;
     title: string;
     content: string;
+    contentJson: TiptapJsonContent | null;
+    contentFormat: ContentFormat;
     locale: string;
     status: string;
     pinnedAt: string | null;
@@ -39,6 +42,8 @@ export function EditArticleForm({
         slug: defaultValues.slug,
         title: defaultValues.title,
         content: defaultValues.content,
+        contentJson: defaultValues.contentJson,
+        contentFormat: defaultValues.contentFormat,
         locale: defaultValues.locale,
         excerpt: defaultValues.excerpt,
         description: defaultValues.description,

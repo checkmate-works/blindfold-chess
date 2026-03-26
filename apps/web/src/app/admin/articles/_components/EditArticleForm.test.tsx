@@ -21,23 +21,34 @@ vi.mock('next-navigation-guard', () => ({
   }),
 }));
 
-vi.mock('next/dynamic', () => ({
-  default: (loader: () => Promise<{ default: React.ComponentType }>) => {
-    let Resolved: React.ComponentType | null = null;
-    const promise = loader();
-    promise.then((mod) => {
-      Resolved = mod.default;
-    });
-    return function DynamicWrapper(props: Record<string, unknown>) {
-      if (!Resolved) return null;
-      return <Resolved {...props} />;
-    };
-  },
-}));
-
-vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
-  MarkdownRenderer: ({ content }: { content: string }) => (
-    <div data-testid="markdown-preview">{content}</div>
+// Mock TiptapEditor to a simple textarea for testing
+vi.mock('./TiptapEditor', () => ({
+  TiptapEditor: ({
+    onChange,
+    placeholder,
+    ariaLabel,
+  }: {
+    initialContent?: unknown;
+    onChange: (json: { type: 'doc'; content?: unknown[] }) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+  }) => (
+    <textarea
+      data-testid="tiptap-editor"
+      placeholder={placeholder}
+      aria-label={ariaLabel}
+      onChange={(e) => {
+        onChange({
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: e.target.value }],
+            },
+          ],
+        });
+      }}
+    />
   ),
 }));
 
@@ -92,6 +103,8 @@ const defaultValues = {
   slug: 'existing-slug',
   title: 'Existing Title',
   content: 'Existing Content',
+  contentJson: null,
+  contentFormat: 'markdown' as const,
   locale: 'en',
   status: 'published',
   pinnedAt: '2024-06-15T12:00',
@@ -127,19 +140,22 @@ describe('EditArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
-      slug: 'existing-slug',
-      title: 'Existing Title',
-      content: 'Existing Content',
-      locale: 'en',
-      status: 'draft',
-      pinnedAt: '2024-06-15T12:00',
-      publishedAt: '2024-06-15T14:00',
-      excerpt: null,
-      description: null,
-      categoryId: null,
-      icon: null,
-    });
+    expect(mockUpdateArticle).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({
+        slug: 'existing-slug',
+        title: 'Existing Title',
+        locale: 'en',
+        status: 'draft',
+        contentFormat: 'tiptap_json',
+        pinnedAt: '2024-06-15T12:00',
+        publishedAt: '2024-06-15T14:00',
+        excerpt: null,
+        description: null,
+        categoryId: null,
+        icon: null,
+      })
+    );
   });
 
   it('should call updateArticle with status draft on Preview and navigate to preview page', async () => {
@@ -158,19 +174,15 @@ describe('EditArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Publish Settings' }));
     });
 
-    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
-      slug: 'existing-slug',
-      title: 'Existing Title',
-      content: 'Existing Content',
-      locale: 'en',
-      status: 'draft',
-      pinnedAt: '2024-06-15T12:00',
-      publishedAt: '2024-06-15T14:00',
-      excerpt: null,
-      description: null,
-      categoryId: null,
-      icon: null,
-    });
+    expect(mockUpdateArticle).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({
+        slug: 'existing-slug',
+        title: 'Existing Title',
+        status: 'draft',
+        contentFormat: 'tiptap_json',
+      })
+    );
     expect(mockPush).toHaveBeenCalledWith(`/admin/articles/${testId}/publish`);
   });
 
@@ -194,19 +206,15 @@ describe('EditArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    expect(mockUpdateArticle).toHaveBeenCalledWith(testId, {
-      slug: 'existing-slug',
-      title: 'Updated Title',
-      content: 'Existing Content',
-      locale: 'en',
-      status: 'draft',
-      pinnedAt: '2024-06-15T12:00',
-      publishedAt: '2024-06-15T14:00',
-      excerpt: null,
-      description: null,
-      categoryId: null,
-      icon: null,
-    });
+    expect(mockUpdateArticle).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({
+        slug: 'existing-slug',
+        title: 'Updated Title',
+        status: 'draft',
+        contentFormat: 'tiptap_json',
+      })
+    );
   });
 
   // --- articles-specific: NO visibility or notification in update data ---

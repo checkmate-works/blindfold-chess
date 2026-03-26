@@ -69,6 +69,8 @@ const validData = {
   slug: 'updated-article',
   title: 'Updated Article',
   content: 'Updated content.',
+  contentJson: null,
+  contentFormat: 'markdown' as const,
   locale: 'en',
   status: 'draft',
   pinnedAt: null,

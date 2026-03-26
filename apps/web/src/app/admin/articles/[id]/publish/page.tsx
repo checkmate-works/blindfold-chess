@@ -7,6 +7,7 @@ import { articles, db } from '@/lib/db';
 
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { ArticlePublishForm } from '../../_components/ArticlePublishForm';
+import type { ContentFormat, TiptapJsonContent } from '../../_lib/types';
 
 export default async function PublishArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,6 +31,8 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
           slug: article.slug,
           title: article.title,
           content: article.content,
+          contentJson: (article.contentJson as TiptapJsonContent) ?? null,
+          contentFormat: (article.contentFormat as ContentFormat) ?? 'markdown',
           locale: article.locale,
           excerpt: article.excerpt ?? null,
           description: article.description ?? null,

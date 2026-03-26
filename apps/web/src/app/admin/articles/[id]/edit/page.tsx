@@ -9,6 +9,7 @@ import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditArticleForm } from '../../_components/EditArticleForm';
 import { getArticleFormLabels } from '../../_lib/labels';
 import { getArticleCategories } from '../../_lib/queries';
+import type { ContentFormat, TiptapJsonContent } from '../../_lib/types';
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,6 +33,8 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         slug: article.slug,
         title: article.title,
         content: article.content,
+        contentJson: (article.contentJson as TiptapJsonContent) ?? null,
+        contentFormat: (article.contentFormat as ContentFormat) ?? 'markdown',
         locale: article.locale,
         status: article.status ?? 'draft',
         pinnedAt: formatDateTimeLocal(article.pinnedAt),

@@ -16,7 +16,7 @@ function toImageMarkdown(image: Pick<ArticleImage, 'altText' | 'publicUrl'>): st
 type ArticleImageUploaderProps = {
   articleId: string;
   initialImages?: ArticleImage[];
-  onInsertMarkdown: (markdown: string) => void;
+  onInsertMarkdown?: (markdown: string) => void;
 };
 
 export function ArticleImageUploader({
@@ -52,7 +52,7 @@ export function ArticleImageUploader({
 
         const image: ArticleImage = await res.json();
         setImages((prev) => [...prev, image]);
-        onInsertMarkdown(toImageMarkdown(image));
+        onInsertMarkdown?.(toImageMarkdown(image));
       } catch {
         setError('Upload failed');
       } finally {
@@ -101,7 +101,7 @@ export function ArticleImageUploader({
 
   const handleCopyMarkdown = useCallback(
     (image: ArticleImage) => {
-      onInsertMarkdown(toImageMarkdown(image));
+      onInsertMarkdown?.(toImageMarkdown(image));
     },
     [onInsertMarkdown]
   );
