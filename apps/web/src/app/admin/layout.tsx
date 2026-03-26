@@ -82,6 +82,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('users')}
                 </Link>
                 <Link
+                  href="/admin/subscriptions"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('subscriptions')}
+                </Link>
+                <Link
                   href="/admin/topic_posts"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >

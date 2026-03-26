@@ -30,6 +30,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.96.0",
     "@xstate/react": "^6.0.0",
+    "downshift": "^9.3.2",
     "drizzle-orm": "^0.45.1",
     "katex": "^0.16.33",
     "next": "16.1.6",
