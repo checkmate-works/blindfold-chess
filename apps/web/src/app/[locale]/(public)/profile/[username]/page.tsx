@@ -6,22 +6,23 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
-import { SiChessdotcom, SiInstagram, SiLichess, SiX, SiYoutube } from 'react-icons/si';
 
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
-import { paginateItems } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
-import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
-import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { LinkedText, PagePanel, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
+import { ProfilePosts } from './_components/ProfilePosts';
+import { SocialLinks } from './_components/SocialLinks';
+import { getProfileByUsername } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
+
+const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -35,14 +36,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({
-      displayName: profiles.displayName,
-      bio: profiles.bio,
-    })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     return {};
@@ -63,25 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({
-      id: profiles.id,
-      username: profiles.username,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
-      bio: profiles.bio,
-      country: profiles.country,
-      flair: profiles.flair,
-      fideId: profiles.fideId,
-      chesscomUsername: profiles.chesscomUsername,
-      lichessUsername: profiles.lichessUsername,
-      xUsername: profiles.xUsername,
-      instagramUsername: profiles.instagramUsername,
-      youtubeHandle: profiles.youtubeHandle,
-    })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();
@@ -134,23 +110,13 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
   const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
 
-  const hasExternalLinks =
-    profile.fideId ||
-    profile.chesscomUsername ||
-    profile.lichessUsername ||
-    profile.xUsername ||
-    profile.instagramUsername ||
-    profile.youtubeHandle;
-
   const allPosts = await getPostsByUserId(profile.id, user?.id);
 
   const { page } = await searchParamsCache.parse(searchParams);
-  const {
-    totalCount,
-    totalPages,
-    currentPage,
-    paginatedItems: posts,
-  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
+  const totalCount = allPosts.length;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
@@ -243,88 +209,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         </p>
 
         {/* External Links */}
-        {hasExternalLinks && (
-          <div className="flex items-center gap-3">
-            {profile.fideId && (
-              <a
-                href={`https://ratings.fide.com/profile/${profile.fideId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="FIDE profile"
-                title="FIDE"
-                className="opacity-70 transition-opacity hover:opacity-100"
-              >
-                <Image
-                  src="/images/fide-favicon.ico"
-                  alt="FIDE"
-                  width={20}
-                  height={20}
-                  unoptimized
-                />
-              </a>
-            )}
-            {profile.chesscomUsername && (
-              <a
-                href={`https://www.chess.com/member/${profile.chesscomUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Chess.com profile"
-                title="Chess.com"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SiChessdotcom size={20} />
-              </a>
-            )}
-            {profile.lichessUsername && (
-              <a
-                href={`https://lichess.org/@/${profile.lichessUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Lichess profile"
-                title="Lichess"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SiLichess size={20} />
-              </a>
-            )}
-            {profile.xUsername && (
-              <a
-                href={`https://x.com/${profile.xUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="X profile"
-                title="X"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SiX size={20} />
-              </a>
-            )}
-            {profile.instagramUsername && (
-              <a
-                href={`https://www.instagram.com/${profile.instagramUsername}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram profile"
-                title="Instagram"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SiInstagram size={20} />
-              </a>
-            )}
-            {profile.youtubeHandle && (
-              <a
-                href={`https://www.youtube.com/@${profile.youtubeHandle}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube channel"
-                title="YouTube"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <SiYoutube size={20} />
-              </a>
-            )}
-          </div>
-        )}
+        <SocialLinks
+          fideId={profile.fideId}
+          chesscomUsername={profile.chesscomUsername}
+          lichessUsername={profile.lichessUsername}
+          xUsername={profile.xUsername}
+          instagramUsername={profile.instagramUsername}
+          youtubeHandle={profile.youtubeHandle}
+        />
 
         {/* Bio */}
         {profile.bio && (
@@ -337,38 +229,25 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         )}
 
         {/* Topics Tab */}
-        <div>
-          <div className="border-b border-border">
-            <nav className="flex">
-              <button className="px-4 py-2 text-sm font-bold text-foreground border-b-2 border-foreground">
-                {t('topicsTab')}{' '}
-                <span className="text-muted-foreground font-normal">{totalCount}</span>
-              </button>
-            </nav>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {posts.length > 0 ? (
-              posts.map((post) => {
-                const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
-                return (
-                  <TopicPostCard
-                    key={post.id}
-                    post={post}
-                    locale={locale}
-                    showMoreLabel={tTopics('showMore')}
-                    justNowLabel={tTopic('justNow')}
-                    newReplyTemplate={tTopic('newReply', { time: '{time}' })}
-                  />
-                );
-              })
-            ) : (
-              <p className="py-8 text-center text-muted-foreground">{t('noTopicPosts')}</p>
-            )}
-          </div>
-
-          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-        </div>
+        <ProfilePosts
+          posts={posts}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          locale={locale}
+          buildHref={buildHref}
+          labels={{
+            topicsTab: t('topicsTab'),
+            noTopicPosts: t('noTopicPosts'),
+            showMore: tTopics('showMore'),
+            justNow: (topicType) =>
+              topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
+            newReply: (topicType) =>
+              topicType === 'opening'
+                ? tOpenings('newReply', { time: '{time}' })
+                : tSquares('newReply', { time: '{time}' }),
+          }}
+        />
       </div>
     </PagePanel>
   );

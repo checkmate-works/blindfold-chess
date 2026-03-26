@@ -79,7 +79,11 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
     <div>
       <h1 className="text-2xl font-bold mb-6">{labels.formTitle}</h1>
 
-      {error && <div className="mb-4 p-3 rounded bg-red-100 text-red-800 text-sm">{error}</div>}
+      {error && (
+        <div className="mb-4 p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
         <div>

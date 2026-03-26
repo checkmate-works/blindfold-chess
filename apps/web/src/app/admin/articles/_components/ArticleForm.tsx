@@ -11,6 +11,8 @@ import { LuSettings, LuX } from 'react-icons/lu';
 
 import type { ArticleImage } from '@/lib/db';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
 import type { ArticleEditData } from '../_lib/types';
 import { ArticleImageUploader } from './ArticleImageUploader';
 
@@ -71,10 +73,10 @@ export function ArticleForm({
   labels,
 }: ArticleFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -154,15 +156,13 @@ export function ArticleForm({
 
   const handleSaveDraft = () => {
     setError(null);
-    setToastMessage(null);
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
 
       if ('error' in result) {
         setError(result.error);
       } else {
-        setToastMessage(labels.draftSaved);
-        setTimeout(() => setToastMessage(null), 3000);
+        showToast(labels.draftSaved, 'success');
         // For new articles, update URL to edit page so subsequent saves are updates
         if (!defaultValues) {
           router.replace(`/admin/articles/${result.id}/edit`);
@@ -173,7 +173,6 @@ export function ArticleForm({
 
   const handlePublishSettings = () => {
     setError(null);
-    setToastMessage(null);
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
 
@@ -228,14 +227,7 @@ export function ArticleForm({
 
       {error && (
         <div className="px-4 py-2 shrink-0">
-          <p className="text-red-600 text-sm">{error}</p>
-        </div>
-      )}
-
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-success text-success-foreground px-4 py-3 rounded-md shadow-lg text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <span>✓</span>
-          <span>{toastMessage}</span>
+          <p className="text-destructive text-sm">{error}</p>
         </div>
       )}
 

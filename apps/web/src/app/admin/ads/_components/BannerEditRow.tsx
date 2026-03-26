@@ -131,7 +131,9 @@ export function BannerEditRow({ banner, labels }: BannerEditRowProps) {
       <td className="px-4 py-3">
         <span
           className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-            banner.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            banner.isActive
+              ? 'bg-success-soft text-success-soft-foreground'
+              : 'bg-destructive-soft text-destructive-soft-foreground'
           }`}
         >
           {banner.isActive ? labels.active : labels.inactive}

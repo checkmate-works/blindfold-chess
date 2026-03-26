@@ -42,6 +42,16 @@ vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
   ),
 }));
 
+const mockShowToast = vi.fn();
+
+vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
+  useToast: () => ({
+    toasts: [],
+    showToast: mockShowToast,
+    hideToast: vi.fn(),
+  }),
+}));
+
 const defaultLabels = {
   formTitle: 'Create Article',
   slug: 'Slug',
@@ -200,7 +210,7 @@ describe('ArticleForm', () => {
     });
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
-    expect(screen.getByText('Draft saved')).toBeInTheDocument();
+    expect(mockShowToast).toHaveBeenCalledWith('Draft saved', 'success');
   });
 
   it('should call onSaveDraft and navigate to preview page on Publish Settings', async () => {

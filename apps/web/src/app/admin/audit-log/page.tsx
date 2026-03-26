@@ -8,10 +8,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { getPaginationParams } from '@/lib/pagination';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { ADMIN_USER_FETCH_PAGE_SIZE } from '../_lib/constants';
+import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -52,7 +50,7 @@ export default async function AdminAuditLogPage({
     // Also search by email via Supabase admin client
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     const matchingEmailUserIds = (usersData?.users ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
@@ -78,10 +76,9 @@ export default async function AdminAuditLogPage({
     .select({ count: sql<number>`count(*)` })
     .from(moderationActions)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+  const { currentPage, totalPages, limit, offset } = getPaginationData(
     page,
-    Number(countResult.count),
-    20
+    Number(countResult.count)
   );
 
   // Fetch logs for current page
@@ -113,7 +110,7 @@ export default async function AdminAuditLogPage({
   if (allUserIds.length > 0) {
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     for (const u of usersData?.users ?? []) {
       if (u.email) {
@@ -197,12 +194,12 @@ export default async function AdminAuditLogPage({
                 <span
                   className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                     log.action === 'ban'
-                      ? 'bg-red-100 text-red-800'
+                      ? 'bg-destructive-soft text-destructive-soft-foreground'
                       : log.action === 'unban'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-success-soft text-success-soft-foreground'
                         : log.action === 'delete_post'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-caution-soft text-caution-soft-foreground'
+                          : 'bg-secondary text-secondary-foreground'
                   }`}
                 >
                   {log.action}

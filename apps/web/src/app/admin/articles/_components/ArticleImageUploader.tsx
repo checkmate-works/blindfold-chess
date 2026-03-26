@@ -128,7 +128,7 @@ export function ArticleImageUploader({
         />
       </div>
 
-      {error && <p className="text-red-600 text-xs">{error}</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
 
       {/* Image gallery */}
       {images.length > 0 && (
@@ -166,7 +166,7 @@ export function ArticleImageUploader({
                 <button
                   type="button"
                   onClick={() => handleDelete(image.id)}
-                  className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
+                  className="p-1 text-muted-foreground hover:text-destructive transition-colors"
                   title="Delete image"
                 >
                   <LuTrash2 size={12} />

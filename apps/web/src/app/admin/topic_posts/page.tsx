@@ -8,10 +8,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { getPaginationParams } from '@/lib/pagination';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { ADMIN_USER_FETCH_PAGE_SIZE } from '../_lib/constants';
+import { getPaginationData } from '../_lib/pagination';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -66,7 +64,7 @@ export default async function AdminTopicPostsPage({
     // Also search by email via Supabase admin client
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     const matchingEmailUserIds = (usersData?.users ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
@@ -91,10 +89,9 @@ export default async function AdminTopicPostsPage({
     .select({ count: sql<number>`count(*)` })
     .from(topicPosts)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+  const { currentPage, totalPages, limit, offset } = getPaginationData(
     page,
-    Number(countResult.count),
-    20
+    Number(countResult.count)
   );
 
   // Fetch posts for current page
@@ -124,7 +121,7 @@ export default async function AdminTopicPostsPage({
   if (authorIds.length > 0) {
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     for (const u of usersData?.users ?? []) {
       if (u.email) {
@@ -246,11 +243,11 @@ export default async function AdminTopicPostsPage({
               <td className="px-4 py-3">{authorDisplay}</td>
               <td className="px-4 py-3">
                 {isDeleted ? (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-destructive-soft text-destructive-soft-foreground">
                     {t('topicPosts.deleted')}
                   </span>
                 ) : (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-success-soft text-success-soft-foreground">
                     {t('topicPosts.active')}
                   </span>
                 )}

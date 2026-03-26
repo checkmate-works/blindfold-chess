@@ -6,17 +6,14 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-import { db, moderationActions, profiles, subscriptions, userRoles } from '@/lib/db';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
+import { db, moderationActions, profiles, userRoles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { getPaginationParams } from '@/lib/pagination';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { DEFAULT_PAGE_SIZE } from '../_lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPaginationData } from '../_lib/pagination';
 import { BanButton } from './_components/BanButton';
 import { StatusFilter } from './_components/StatusFilter';
 import { UnbanButton } from './_components/UnbanButton';
@@ -99,7 +96,7 @@ export default async function AdminUsersPage({
     });
 
     const totalCount = filtered.length;
-    const pagination = getPaginationParams(page, totalCount, DEFAULT_PAGE_SIZE);
+    const pagination = getPaginationData(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 
@@ -119,7 +116,7 @@ export default async function AdminUsersPage({
 
     users = usersData?.users ?? [];
     const totalCount = usersData && 'total' in usersData ? usersData.total : 0;
-    const pagination = getPaginationParams(page, totalCount, DEFAULT_PAGE_SIZE);
+    const pagination = getPaginationData(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 
@@ -138,20 +135,6 @@ export default async function AdminUsersPage({
       ? await db.select().from(userRoles).where(inArray(userRoles.userId, userIds))
       : [];
   const roleMap = new Map(roles.map((r) => [r.userId, r.role]));
-
-  const userSubscriptions =
-    userIds.length > 0
-      ? await db
-          .select({ userId: subscriptions.userId, status: subscriptions.status })
-          .from(subscriptions)
-          .where(
-            and(
-              inArray(subscriptions.userId, userIds),
-              inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
-            )
-          )
-      : [];
-  const subscriptionMap = new Map(userSubscriptions.map((s) => [s.userId, s.status]));
 
   // Fetch latest ban reason for each banned user from moderation_actions
   const bannedUserIds = [...profileMap.values()].filter((p) => p.bannedAt != null).map((p) => p.id);
@@ -209,7 +192,6 @@ export default async function AdminUsersPage({
           t('usersTable.email'),
           t('usersTable.username'),
           t('usersTable.role'),
-          t('usersTable.plan'),
           t('usersTable.status'),
           t('usersTable.createdAt'),
           t('usersTable.actions'),
@@ -250,24 +232,13 @@ export default async function AdminUsersPage({
                 </span>
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                    subscriptionMap.has(user.id)
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-secondary text-foreground'
-                  }`}
-                >
-                  {subscriptionMap.has(user.id) ? t('usersTable.premium') : t('usersTable.free')}
-                </span>
-              </td>
-              <td className="px-4 py-3">
                 {!profile ? (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-warning-soft text-warning-soft-foreground">
                     {t('usersTable.anonymous')}
                   </span>
                 ) : isBanned ? (
                   <div>
-                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-destructive-soft text-destructive-soft-foreground">
                       {t('usersTable.banned')}
                     </span>
                     {banReason && (
@@ -282,7 +253,7 @@ export default async function AdminUsersPage({
                     )}
                   </div>
                 ) : (
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-success-soft text-success-soft-foreground">
                     {t('usersTable.active')}
                   </span>
                 )}
@@ -305,12 +276,6 @@ export default async function AdminUsersPage({
                         className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
                       >
                         {t('usersTable.viewActivity')}
-                      </Link>
-                      <Link
-                        href={`/admin/subscriptions?user=${user.id}`}
-                        className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                      >
-                        {t('usersTable.viewSubscriptions')}
                       </Link>
                     </>
                   )}

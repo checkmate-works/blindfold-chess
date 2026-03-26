@@ -15,6 +15,59 @@ import { AvatarUpload } from './AvatarUpload';
 import { CountrySelect } from './CountrySelect';
 import { FlairPicker } from './FlairPicker';
 
+const COUNTRY_CODE_PATTERN = /^[A-Za-z]{2}$/;
+const FIDE_ID_PATTERN = /^\d+$/;
+const CHESS_USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const X_USERNAME_PATTERN = /^[a-zA-Z0-9_]+$/;
+const INSTAGRAM_USERNAME_PATTERN = /^[a-zA-Z0-9._]+$/;
+const YOUTUBE_HANDLE_PATTERN = /^[a-zA-Z0-9._-]+$/;
+
+const VALIDATION_RULES: { field: string; regex: RegExp; errorKey: string }[] = [
+  { field: 'fideId', regex: FIDE_ID_PATTERN, errorKey: 'fideIdInvalidFormat' },
+  {
+    field: 'chesscomUsername',
+    regex: CHESS_USERNAME_PATTERN,
+    errorKey: 'chesscomUsernameInvalidFormat',
+  },
+  {
+    field: 'lichessUsername',
+    regex: CHESS_USERNAME_PATTERN,
+    errorKey: 'lichessUsernameInvalidFormat',
+  },
+  { field: 'xUsername', regex: X_USERNAME_PATTERN, errorKey: 'xUsernameInvalidFormat' },
+  {
+    field: 'instagramUsername',
+    regex: INSTAGRAM_USERNAME_PATTERN,
+    errorKey: 'instagramUsernameInvalidFormat',
+  },
+  { field: 'youtubeHandle', regex: YOUTUBE_HANDLE_PATTERN, errorKey: 'youtubeHandleInvalidFormat' },
+];
+
+const SERVER_ERROR_MAP: Record<string, { messageKey: string; field: string }> = {
+  display_name_required: { messageKey: 'displayNameRequired', field: 'displayName' },
+  display_name_inappropriate: { messageKey: 'displayNameInappropriate', field: 'displayName' },
+  bio_too_long: { messageKey: 'bioMaxLength', field: 'bio' },
+  invalid_country: { messageKey: 'countryInvalid', field: 'country' },
+  fide_id_invalid_format: { messageKey: 'fideIdInvalidFormat', field: 'fideId' },
+  chesscom_username_invalid_format: {
+    messageKey: 'chesscomUsernameInvalidFormat',
+    field: 'chesscomUsername',
+  },
+  lichess_username_invalid_format: {
+    messageKey: 'lichessUsernameInvalidFormat',
+    field: 'lichessUsername',
+  },
+  x_username_invalid_format: { messageKey: 'xUsernameInvalidFormat', field: 'xUsername' },
+  instagram_username_invalid_format: {
+    messageKey: 'instagramUsernameInvalidFormat',
+    field: 'instagramUsername',
+  },
+  youtube_handle_invalid_format: {
+    messageKey: 'youtubeHandleInvalidFormat',
+    field: 'youtubeHandle',
+  },
+};
+
 type Props = {
   locale: string;
   profile: Profile;
@@ -44,27 +97,26 @@ export function ProfileForm({ locale, profile }: Props) {
     if (bio.length > 500) {
       return { message: t('bioMaxLength'), field: 'bio' };
     }
-    if (country && !/^[A-Za-z]{2}$/.test(country)) {
+    if (country && !COUNTRY_CODE_PATTERN.test(country)) {
       return { message: t('countryInvalid'), field: 'country' };
     }
-    if (fideId.trim() && !/^\d+$/.test(fideId.trim())) {
-      return { message: t('fideIdInvalidFormat'), field: 'fideId' };
+
+    const fieldValues: Record<string, string> = {
+      fideId,
+      chesscomUsername,
+      lichessUsername,
+      xUsername,
+      instagramUsername,
+      youtubeHandle,
+    };
+
+    for (const rule of VALIDATION_RULES) {
+      const value = fieldValues[rule.field].trim();
+      if (value && !rule.regex.test(value)) {
+        return { message: t(rule.errorKey), field: rule.field };
+      }
     }
-    if (chesscomUsername.trim() && !/^[a-zA-Z0-9_-]+$/.test(chesscomUsername.trim())) {
-      return { message: t('chesscomUsernameInvalidFormat'), field: 'chesscomUsername' };
-    }
-    if (lichessUsername.trim() && !/^[a-zA-Z0-9_-]+$/.test(lichessUsername.trim())) {
-      return { message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' };
-    }
-    if (xUsername.trim() && !/^[a-zA-Z0-9_]+$/.test(xUsername.trim())) {
-      return { message: t('xUsernameInvalidFormat'), field: 'xUsername' };
-    }
-    if (instagramUsername.trim() && !/^[a-zA-Z0-9._]+$/.test(instagramUsername.trim())) {
-      return { message: t('instagramUsernameInvalidFormat'), field: 'instagramUsername' };
-    }
-    if (youtubeHandle.trim() && !/^[a-zA-Z0-9._-]+$/.test(youtubeHandle.trim())) {
-      return { message: t('youtubeHandleInvalidFormat'), field: 'youtubeHandle' };
-    }
+
     return null;
   };
 
@@ -100,39 +152,11 @@ export function ProfileForm({ locale, profile }: Props) {
 
       if (!res.ok) {
         const data = await res.json();
-        switch (data.error) {
-          case 'display_name_required':
-            setError({ message: t('displayNameRequired'), field: 'displayName' });
-            break;
-          case 'display_name_inappropriate':
-            setError({ message: t('displayNameInappropriate'), field: 'displayName' });
-            break;
-          case 'bio_too_long':
-            setError({ message: t('bioMaxLength'), field: 'bio' });
-            break;
-          case 'invalid_country':
-            setError({ message: t('countryInvalid'), field: 'country' });
-            break;
-          case 'fide_id_invalid_format':
-            setError({ message: t('fideIdInvalidFormat'), field: 'fideId' });
-            break;
-          case 'chesscom_username_invalid_format':
-            setError({ message: t('chesscomUsernameInvalidFormat'), field: 'chesscomUsername' });
-            break;
-          case 'lichess_username_invalid_format':
-            setError({ message: t('lichessUsernameInvalidFormat'), field: 'lichessUsername' });
-            break;
-          case 'x_username_invalid_format':
-            setError({ message: t('xUsernameInvalidFormat'), field: 'xUsername' });
-            break;
-          case 'instagram_username_invalid_format':
-            setError({ message: t('instagramUsernameInvalidFormat'), field: 'instagramUsername' });
-            break;
-          case 'youtube_handle_invalid_format':
-            setError({ message: t('youtubeHandleInvalidFormat'), field: 'youtubeHandle' });
-            break;
-          default:
-            setError({ message: t('error') });
+        const mapped = SERVER_ERROR_MAP[data.error as string];
+        if (mapped) {
+          setError({ message: t(mapped.messageKey), field: mapped.field });
+        } else {
+          setError({ message: t('error') });
         }
         setIsSubmitting(false);
         return;

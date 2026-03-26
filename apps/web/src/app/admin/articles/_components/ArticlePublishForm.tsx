@@ -90,7 +90,7 @@ export function ArticlePublishForm({
         />
       </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex items-center gap-2 pt-2">
         <button

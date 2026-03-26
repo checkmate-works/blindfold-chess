@@ -41,6 +41,14 @@ vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
   ),
 }));
 
+vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
+  useToast: () => ({
+    toasts: [],
+    showToast: vi.fn(),
+    hideToast: vi.fn(),
+  }),
+}));
+
 const mockUpdateArticle = vi.fn();
 
 vi.mock('../_actions/updateArticle', () => ({

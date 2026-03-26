@@ -14,7 +14,10 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
+
 import '../globals.css';
+import { AdminToastContainer } from './_components/AdminToastContainer';
 import { ThemeToggle } from './_components/ThemeToggle';
 
 const inter = Inter({
@@ -130,9 +133,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <ThemeToggle />
               </header>
               <main className="flex-1 p-8">
-                <NavigationGuardProvider>
-                  <NuqsAdapter>{children}</NuqsAdapter>
-                </NavigationGuardProvider>
+                <ToastProvider>
+                  <NavigationGuardProvider>
+                    <NuqsAdapter>{children}</NuqsAdapter>
+                  </NavigationGuardProvider>
+                  <AdminToastContainer />
+                </ToastProvider>
               </main>
             </div>
           </div>

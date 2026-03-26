@@ -4,11 +4,10 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles, subscriptions } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
-
-import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { SubscriptionStatusFilter } from './_components/SubscriptionStatusFilter';
@@ -23,14 +22,14 @@ const searchParamsCache = createSearchParamsCache({
 function getStatusBadgeClass(status: string): string {
   switch (status) {
     case 'active':
-      return 'bg-green-100 text-green-800';
+      return 'bg-success-soft text-success-soft-foreground';
     case 'trialing':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-info-soft text-info-soft-foreground';
     case 'past_due':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-warning-soft text-warning-soft-foreground';
     case 'canceled':
     case 'unpaid':
-      return 'bg-red-100 text-red-800';
+      return 'bg-destructive-soft text-destructive-soft-foreground';
     default:
       return 'bg-secondary text-foreground';
   }

@@ -8,9 +8,8 @@ import { announcements, db } from '@/lib/db';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { getPaginationParams } from '@/lib/pagination';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { getPaginationData } from '../_lib/pagination';
 import { DeleteAnnouncementButton } from './_components/DeleteAnnouncementButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -26,10 +25,9 @@ export default async function AdminAnnouncementsPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.announcementsTable' });
 
   const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(announcements);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+  const { currentPage, totalPages, limit, offset } = getPaginationData(
     page,
-    Number(countResult.count),
-    20
+    Number(countResult.count)
   );
 
   const items = await db
@@ -78,8 +76,8 @@ export default async function AdminAnnouncementsPage({
               <span
                 className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                   item.status === 'published'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
+                    ? 'bg-success-soft text-success-soft-foreground'
+                    : 'bg-warning-soft text-warning-soft-foreground'
                 }`}
               >
                 {item.status === 'published' ? t('published') : t('draft')}

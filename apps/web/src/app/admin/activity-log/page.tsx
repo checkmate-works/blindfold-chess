@@ -4,44 +4,42 @@ import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
-import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { ADMIN_USER_FETCH_PAGE_SIZE } from '../_lib/constants';
-import { DEFAULT_PAGE_SIZE } from '../_lib/pagination';
+const PAGE_SIZE = 20;
 
 function getActionBadgeClasses(action: string): string {
   switch (action) {
-    // Destructive / dangerous (red)
+    // Destructive / dangerous
     case 'delete_account':
     case 'delete_post':
-      return 'bg-red-100 text-red-800';
+      return 'bg-destructive-soft text-destructive-soft-foreground';
 
-    // Security attention (yellow/orange)
+    // Security attention
     case 'change_password':
     case 'request_password_reset':
     case 'logout':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-warning-soft text-warning-soft-foreground';
 
-    // Normal operations (blue)
+    // Normal operations
     case 'login':
     case 'create_post':
     case 'create_reply':
     case 'like':
     case 'unlike':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-info-soft text-info-soft-foreground';
 
-    // Profile / social (green)
+    // Profile / social
     case 'follow':
     case 'unfollow':
     case 'update_profile':
-      return 'bg-green-100 text-green-800';
+      return 'bg-success-soft text-success-soft-foreground';
 
-    // Default / unknown (gray)
+    // Default / unknown
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-secondary text-secondary-foreground';
   }
 }
 
@@ -76,6 +74,7 @@ export default async function AdminActivityLogPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const adminClient = createAdminClient();
 
+  const currentPage = Math.max(1, page);
   const userFilter = rawUser.trim();
 
   // Build where conditions
@@ -100,7 +99,7 @@ export default async function AdminActivityLogPage({
     // Also search by email via Supabase admin client
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     const matchingEmailUserIds = (usersData?.users ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
@@ -126,11 +125,7 @@ export default async function AdminActivityLogPage({
     .from(userActivityLog)
     .where(whereClause);
   const totalCount = Number(countResult.count);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    totalCount,
-    DEFAULT_PAGE_SIZE
-  );
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   // Fetch logs for current page
   const logs =
@@ -141,8 +136,8 @@ export default async function AdminActivityLogPage({
           .from(userActivityLog)
           .where(whereClause)
           .orderBy(desc(userActivityLog.createdAt))
-          .limit(limit)
-          .offset(offset);
+          .limit(PAGE_SIZE)
+          .offset((currentPage - 1) * PAGE_SIZE);
 
   // Collect unique user IDs for lookups
   const userIds = [...new Set(logs.map((l) => l.userId))];
@@ -161,7 +156,7 @@ export default async function AdminActivityLogPage({
   if (allLookupIds.length > 0) {
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
+      perPage: 100,
     });
     for (const u of usersData?.users ?? []) {
       if (u.email) {
