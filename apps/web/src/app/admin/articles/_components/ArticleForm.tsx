@@ -259,6 +259,8 @@ export function ArticleForm({
                 onChange={handleContentChange}
                 placeholder={labels.contentPlaceholder}
                 ariaLabel={labels.content}
+                articleId={articleId}
+                onImageUploadError={(message) => showToast(message, 'error')}
               />
             </div>
           </div>

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { Editor } from '@tiptap/core';
+import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -17,6 +19,7 @@ import {
   LuLink,
   LuList,
   LuListOrdered,
+  LuLoader,
   LuMinus,
   LuPlus,
   LuQuote,
@@ -27,11 +30,17 @@ import {
 import type { TiptapJsonContent } from '../_lib/types';
 import './tiptap-editor.css';
 
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const IMAGE_CLASS = 'rounded max-w-full';
+
 type TiptapEditorProps = {
   initialContent?: TiptapJsonContent | null;
   onChange: (json: TiptapJsonContent) => void;
   placeholder?: string;
   ariaLabel?: string;
+  articleId?: string;
+  onImageUploadError?: (message: string) => void;
 };
 
 export function TiptapEditor({
@@ -39,13 +48,94 @@ export function TiptapEditor({
   onChange,
   placeholder = '',
   ariaLabel,
+  articleId,
+  onImageUploadError,
 }: TiptapEditorProps) {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [plusMenuTop, setPlusMenuTop] = useState(0);
   const [plusMenuVisible, setPlusMenuVisible] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
+  const isUploadingImage = uploadCount > 0;
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const plusButtonRef = useRef<HTMLButtonElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const imageUploadEnabled = !!articleId;
+
+  const uploadImage = useCallback(
+    async (file: File) => {
+      if (!articleId || !imageUploadEnabled) return;
+
+      if (file.size > MAX_FILE_SIZE) {
+        onImageUploadError?.('ファイルサイズが大きすぎます（最大5MB）');
+        return;
+      }
+
+      setUploadCount((c) => c + 1);
+
+      // Insert a placeholder paragraph while uploading
+      const placeholderId = `upload-${Date.now()}`;
+      const placeholderAttrs = {
+        src: '',
+        alt: 'Uploading...',
+        title: placeholderId,
+        class: 'tiptap-image-placeholder',
+      };
+
+      // We need a reference to the current editor instance
+      // This will be called from within editor context or from callbacks that have access
+      const currentEditor = editorRef.current;
+      if (!currentEditor) {
+        setUploadCount((c) => c - 1);
+        return;
+      }
+
+      currentEditor.chain().focus().setImage(placeholderAttrs).run();
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('altText', file.name.replace(/\.[^.]+$/, ''));
+
+        const res = await fetch(`/api/admin/articles/${articleId}/images`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          // Remove placeholder
+          removePlaceholderImage(currentEditor, placeholderId);
+          onImageUploadError?.(data.error ?? 'Upload failed');
+          return;
+        }
+
+        const image = await res.json();
+        // Replace placeholder with actual image
+        replacePlaceholderImage(currentEditor, placeholderId, image.publicUrl, image.altText ?? '');
+      } catch {
+        removePlaceholderImage(currentEditor, placeholderId);
+        onImageUploadError?.('Upload failed');
+      } finally {
+        setUploadCount((c) => c - 1);
+      }
+    },
+    [articleId, imageUploadEnabled, onImageUploadError]
+  );
+
+  const handleFiles = useCallback(
+    (files: FileList | File[]) => {
+      const fileArray = Array.from(files);
+      for (const file of fileArray) {
+        if (ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+          uploadImage(file);
+          break; // Upload one at a time
+        }
+      }
+    },
+    [uploadImage]
+  );
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -60,6 +150,13 @@ export function TiptapEditor({
       Placeholder.configure({
         placeholder,
       }),
+      Image.configure({
+        inline: false,
+        allowBase64: false,
+        HTMLAttributes: {
+          class: IMAGE_CLASS,
+        },
+      }),
     ],
     content: initialContent ?? undefined,
     onUpdate: ({ editor: ed }) => {
@@ -71,8 +168,40 @@ export function TiptapEditor({
           'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[200px] px-12 py-6',
         ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
       },
+      handleDrop: (_view, event, _slice, moved) => {
+        if (moved || !imageUploadEnabled) return false;
+        const files = event.dataTransfer?.files;
+        if (!files?.length) return false;
+        const file = files[0];
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) return false;
+        event.preventDefault();
+        handleFiles(files);
+        return true;
+      },
+      handlePaste: (_view, event) => {
+        if (!imageUploadEnabled) return false;
+        const items = event.clipboardData?.items;
+        if (!items) return false;
+        for (const item of items) {
+          if (ACCEPTED_IMAGE_TYPES.includes(item.type)) {
+            const file = item.getAsFile();
+            if (file) {
+              event.preventDefault();
+              handleFiles([file]);
+              return true;
+            }
+          }
+        }
+        return false;
+      },
     },
   });
+
+  // Keep a ref to the editor for use in async callbacks
+  const editorRef = useRef(editor);
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Track whether cursor is on an empty paragraph and position the "+" button
   useEffect(() => {
@@ -185,10 +314,16 @@ export function TiptapEditor({
       action: () => editor.chain().focus().setHorizontalRule().run(),
     },
     {
-      icon: <LuImage size={16} />,
+      icon: isUploadingImage ? (
+        <LuLoader size={16} className="animate-spin" />
+      ) : (
+        <LuImage size={16} />
+      ),
       label: '画像',
-      action: () => {},
-      disabled: true,
+      action: () => {
+        imageInputRef.current?.click();
+      },
+      disabled: !imageUploadEnabled || isUploadingImage,
     },
   ];
 
@@ -271,8 +406,62 @@ export function TiptapEditor({
 
       {/* Editor content */}
       <EditorContent editor={editor} className="flex-1 overflow-y-auto" />
+
+      {/* Hidden file input for image upload */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/svg+xml"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleFiles([file]);
+          }
+          e.target.value = '';
+        }}
+        className="hidden"
+      />
     </div>
   );
+}
+
+/**
+ * Find and remove a placeholder image node identified by its title attribute.
+ * Uses a single transaction from the same state snapshot to avoid stale pos issues.
+ */
+function removePlaceholderImage(editor: Editor, placeholderId: string) {
+  const { doc, tr } = editor.state;
+  doc.descendants((node, pos) => {
+    if (node.type.name === 'image' && node.attrs.title === placeholderId) {
+      tr.delete(pos, pos + node.nodeSize);
+      return false; // stop traversal
+    }
+  });
+  if (tr.docChanged) {
+    editor.view.dispatch(tr);
+  }
+}
+
+/**
+ * Replace a placeholder image node with the actual uploaded image.
+ * Uses a single transaction from the same state snapshot to avoid stale pos issues.
+ */
+function replacePlaceholderImage(editor: Editor, placeholderId: string, src: string, alt: string) {
+  const { doc, tr } = editor.state;
+  doc.descendants((node, pos) => {
+    if (node.type.name === 'image' && node.attrs.title === placeholderId) {
+      tr.setNodeMarkup(pos, undefined, {
+        src,
+        alt,
+        title: null,
+        class: IMAGE_CLASS,
+      });
+      return false; // stop traversal
+    }
+  });
+  if (tr.docChanged) {
+    editor.view.dispatch(tr);
+  }
 }
 
 function BubbleButton({
