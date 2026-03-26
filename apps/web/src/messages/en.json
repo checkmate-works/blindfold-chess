@@ -2861,17 +2861,14 @@
     "freePlan": {
       "name": "Free",
       "price": "$0",
-      "feature1": "All practice modules",
-      "feature2": "Leaderboard access",
-      "feature3": "Community topics"
+      "feature1": "All features"
     },
     "adFreePlan": {
       "name": "Ad-Free",
       "price": "$1",
       "priceUnit": "/ month",
-      "feature1": "Everything in Free",
-      "feature2": "No advertisements",
-      "feature3": "Support development"
+      "feature1": "All features",
+      "feature2": "Hide all advertisements"
     },
     "currentPlan": "Current plan",
     "subscribe": "Subscribe",

@@ -48,20 +48,24 @@ export function PricingCard(props: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div
+      className={`relative flex flex-col rounded-xl bg-card p-6 shadow-sm ${
+        isCurrent ? 'border-2 border-primary' : 'border border-border'
+      }`}
+    >
+      {isCurrent && (
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+          {currentLabel}
+        </span>
+      )}
+
       <h3 className="text-lg font-semibold">{name}</h3>
       <div className="mt-4 flex items-baseline gap-1">
         <span className="text-3xl font-bold">{price}</span>
         {priceUnit && <span className="text-muted-foreground">{priceUnit}</span>}
       </div>
 
-      {isCurrent && (
-        <span className="mt-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-          {currentLabel}
-        </span>
-      )}
-
-      <ul className="mt-6 space-y-3">
+      <ul className="mt-6 flex-1 space-y-3">
         {features.map((feature, i) => (
           <li key={i} className="flex items-start gap-2">
             <FiCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -72,7 +76,6 @@ export function PricingCard(props: Props) {
 
       {props.variant === 'paid' &&
         props.ctaLabel &&
-        !isCurrent &&
         (props.ctaHref ? (
           <a
             href={props.ctaHref}

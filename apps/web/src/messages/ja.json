@@ -2826,17 +2826,14 @@
     "freePlan": {
       "name": "フリー",
       "price": "$0",
-      "feature1": "全トレーニングモジュール",
-      "feature2": "リーダーボード",
-      "feature3": "コミュニティトピック"
+      "feature1": "サービス内の全機能"
     },
     "adFreePlan": {
       "name": "広告なし",
       "price": "$1",
       "priceUnit": "/ 月",
-      "feature1": "フリープランの全機能",
-      "feature2": "広告非表示",
-      "feature3": "開発を支援"
+      "feature1": "サービス内の全機能",
+      "feature2": "すべての広告を非表示"
     },
     "currentPlan": "現在のプラン",
     "subscribe": "登録する",
