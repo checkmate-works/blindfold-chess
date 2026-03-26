@@ -8,20 +8,16 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
 import { LuSettings, LuX } from 'react-icons/lu';
 
-import type { ArticleImage } from '@/lib/db';
-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { extractPlainText } from '../_lib/extract-plain-text';
 import type { ArticleEditData, TiptapJsonContent } from '../_lib/types';
-import { ArticleImageUploader } from './ArticleImageUploader';
 import { TiptapEditor } from './TiptapEditor';
 
 type ArticleFormProps = {
   articleId?: string;
   defaultValues?: ArticleEditData;
   categories?: { id: string; name: string }[];
-  initialImages?: ArticleImage[];
   onSaveDraft: (
     data: ArticleEditData
   ) => Promise<{ success: true; id: string } | { error: string }>;
@@ -61,7 +57,6 @@ export function ArticleForm({
   articleId,
   defaultValues,
   categories = [],
-  initialImages,
   onSaveDraft,
   labels,
 }: ArticleFormProps) {
@@ -248,11 +243,6 @@ export function ArticleForm({
 
           {/* Tiptap editor */}
           <div className="flex-1 px-6 pb-4 flex flex-col">
-            {articleId && (
-              <div className="pb-2">
-                <ArticleImageUploader articleId={articleId} initialImages={initialImages} />
-              </div>
-            )}
             <div className="flex-1 flex flex-col rounded bg-card">
               <TiptapEditor
                 initialContent={contentJson}

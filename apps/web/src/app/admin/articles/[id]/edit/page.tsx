@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
-import { articleImages, articles, db } from '@/lib/db';
+import { articles, db } from '@/lib/db';
 
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditArticleForm } from '../../_components/EditArticleForm';
@@ -21,10 +21,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  const [categories, images] = await Promise.all([
-    getArticleCategories(),
-    db.select().from(articleImages).where(eq(articleImages.articleId, id)),
-  ]);
+  const categories = await getArticleCategories();
 
   return (
     <EditArticleForm
@@ -45,7 +42,6 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         icon: article.icon ?? '',
       }}
       categories={categories}
-      images={images}
       labels={getArticleFormLabels(t, t('form.editTitle'))}
     />
   );
