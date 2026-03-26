@@ -4,11 +4,14 @@ import { getTranslations } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
+
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -83,7 +86,11 @@ export default async function ArticlePage({ params }: Props) {
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none">
-          <MarkdownRenderer content={article.content} skipFirstH1={true} />
+          {article.contentFormat === 'tiptap_json' && article.contentJson ? (
+            <TiptapRenderer content={article.contentJson as TiptapJsonContent} />
+          ) : (
+            <MarkdownRenderer content={article.content} skipFirstH1={true} />
+          )}
         </article>
 
         {publishedDate && (
