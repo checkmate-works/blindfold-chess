@@ -62,6 +62,7 @@ describe('HeaderRightSection', () => {
         isLoading: false,
       });
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ok: true,
         json: () =>
           Promise.resolve({
             avatarUrl: 'https://example.com/avatar.jpg',

@@ -15,6 +15,14 @@ vi.mock('next/image', () => ({
   ),
 }));
 
+vi.mock('@/i18n/routing', () => ({
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
   UserAvatar: ({ displayName }: { displayName: string }) => (
     <span data-testid="user-avatar">{displayName}</span>
