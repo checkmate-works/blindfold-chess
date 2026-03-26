@@ -73,7 +73,7 @@ export function TopicListPageLayout({
 
         {topicHeader}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        <AdBanner slot="banner-wide" />
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{postCountText}</p>
@@ -95,7 +95,7 @@ export function TopicListPageLayout({
           <p className="text-muted-foreground text-center py-8">{noPostsText}</p>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBanner slot="banner-standard" />
 
         <PaginationNav
           currentPage={pagination.currentPage}
