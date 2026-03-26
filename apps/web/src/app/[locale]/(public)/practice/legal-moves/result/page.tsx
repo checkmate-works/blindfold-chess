@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { createPracticeResultMetadata } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './ResultClient';
@@ -20,16 +19,10 @@ type Props = {
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'practice' });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/legal-moves/result' }),
-    title: `${t('legalMoves.title')} - ${t('result')}`,
-  };
-}
+export const generateMetadata = createPracticeResultMetadata({
+  i18nKey: 'legalMoves',
+  canonicalPath: 'practice/legal-moves/result',
+});
 
 export default async function LegalMovesResultPage(props: Props) {
   const { locale } = await props.params;
