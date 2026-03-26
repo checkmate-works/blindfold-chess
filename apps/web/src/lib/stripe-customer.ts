@@ -26,10 +26,18 @@ export async function getOrCreateStripeCustomerId(
     metadata: { supabaseUserId: userId },
   });
 
-  await db.insert(stripeCustomers).values({
-    userId,
-    stripeCustomerId: customer.id,
-  });
+  const result = await db
+    .insert(stripeCustomers)
+    .values({ userId, stripeCustomerId: customer.id })
+    .onConflictDoNothing({ target: stripeCustomers.userId })
+    .returning({ stripeCustomerId: stripeCustomers.stripeCustomerId });
+
+  if (result.length === 0) {
+    // Race: another request already inserted. Clean up the orphaned Stripe customer.
+    await stripe.customers.del(customer.id);
+    const winner = await getStripeCustomerId(userId);
+    return winner!;
+  }
 
   return customer.id;
 }

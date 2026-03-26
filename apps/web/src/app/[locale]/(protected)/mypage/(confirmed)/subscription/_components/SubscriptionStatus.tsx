@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import type { Subscription } from '@/lib/db';
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription';
 
 import { createPortalSession } from '../_actions/createPortalSession';
 
@@ -37,7 +38,9 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
     );
   }
 
-  const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+  const isActive = BENEFIT_ACTIVE_STATUSES.includes(
+    subscription.status as (typeof BENEFIT_ACTIVE_STATUSES)[number]
+  );
   const isCanceling = subscription.cancelAtPeriodEnd;
 
   return (

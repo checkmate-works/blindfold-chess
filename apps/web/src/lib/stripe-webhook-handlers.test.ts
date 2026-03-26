@@ -207,6 +207,17 @@ describe('toSubscriptionFields', () => {
     );
     expect(fields.stripePriceId).toBe('price_annual_xyz_999');
   });
+
+  it('should throw when items.data is empty', () => {
+    const sub = {
+      id: 'sub_empty',
+      status: 'active',
+      cancel_at_period_end: false,
+      items: { data: [] },
+    } as unknown as Stripe.Subscription;
+
+    expect(() => toSubscriptionFields(sub)).toThrow('Subscription sub_empty has no items');
+  });
 });
 
 // ── handleCheckoutCompleted ──────────────────────────────────────────
@@ -274,7 +285,7 @@ describe('handleCheckoutCompleted', () => {
     expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
   });
 
-  it('should log error and return when no customer record is found', async () => {
+  it('should throw when no customer record is found', async () => {
     const session = {
       mode: 'subscription',
       subscription: 'sub_123',
@@ -286,17 +297,10 @@ describe('handleCheckoutCompleted', () => {
     );
     mockSelectLimit.mockResolvedValue([]);
 
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    await handleCheckoutCompleted(session);
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'No stripe_customers record for customer:',
-      'cus_unknown'
+    await expect(handleCheckoutCompleted(session)).rejects.toThrow(
+      'No stripe_customers record for customer: cus_unknown'
     );
     expect(mockInsertValues).not.toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
   });
 
   it('should upsert subscription when checkout completes successfully', async () => {

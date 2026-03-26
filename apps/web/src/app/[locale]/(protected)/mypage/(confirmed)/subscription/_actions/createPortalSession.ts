@@ -9,7 +9,9 @@ import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { stripe } from '@/lib/stripe';
 import { getStripeCustomerId } from '@/lib/stripe-customer';
 
-export async function createPortalSession(locale: string) {
+type PortalError = { error: 'rateLimited' | 'noSubscription' };
+
+export async function createPortalSession(locale: string): Promise<PortalError> {
   const user = await getAuthenticatedUser();
 
   // Rate limit

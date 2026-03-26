@@ -6,6 +6,12 @@ import 'server-only';
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 
+/** Statuses that grant active subscriber benefits (e.g., ad-free). */
+export const BENEFIT_ACTIVE_STATUSES = ['active', 'trialing'] as const;
+
+/** Statuses that indicate a displayable (non-terminal) subscription. */
+export const DISPLAYABLE_STATUSES = ['active', 'trialing', 'past_due'] as const;
+
 export const hasActiveSubscription = unstable_cache(
   async (userId: string): Promise<boolean> => {
     try {
@@ -16,7 +22,7 @@ export const hasActiveSubscription = unstable_cache(
           .where(
             and(
               eq(subscriptions.userId, userId),
-              inArray(subscriptions.status, ['active', 'trialing'])
+              inArray(subscriptions.status, [...BENEFIT_ACTIVE_STATUSES])
             )
           )
           .limit(1)
@@ -40,7 +46,7 @@ export async function getUserSubscription(userId: string) {
         .where(
           and(
             eq(subscriptions.userId, userId),
-            inArray(subscriptions.status, ['active', 'trialing', 'past_due'])
+            inArray(subscriptions.status, [...DISPLAYABLE_STATUSES])
           )
         )
         .limit(1)

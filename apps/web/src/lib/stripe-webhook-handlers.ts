@@ -15,6 +15,9 @@ const SUBSCRIPTION_CACHE_EXPIRE = 60;
  */
 export function toSubscriptionFields(subscription: Stripe.Subscription) {
   const item = subscription.items.data[0];
+  if (!item) {
+    throw new Error(`Subscription ${subscription.id} has no items`);
+  }
   return {
     stripePriceId: item.price.id,
     status: subscription.status,
@@ -36,8 +39,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
     .limit(1);
 
   if (!customerRecord) {
-    console.error('No stripe_customers record for customer:', session.customer);
-    return;
+    throw new Error(`No stripe_customers record for customer: ${session.customer}`);
   }
 
   const fields = toSubscriptionFields(subscription);

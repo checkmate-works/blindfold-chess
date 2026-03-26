@@ -43,6 +43,7 @@ export default async function PricingPage({ params }: Props) {
       <div className="mt-8 grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
         {/* Free Plan */}
         <PricingCard
+          variant="free"
           name={t('freePlan.name')}
           price={t('freePlan.price')}
           features={[t('freePlan.feature1'), t('freePlan.feature2'), t('freePlan.feature3')]}
@@ -52,6 +53,7 @@ export default async function PricingPage({ params }: Props) {
 
         {/* Ad-Free Plan */}
         <PricingCard
+          variant="paid"
           name={t('adFreePlan.name')}
           price={t('adFreePlan.price')}
           priceUnit={t('adFreePlan.priceUnit')}
