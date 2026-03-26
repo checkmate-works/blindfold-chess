@@ -9,6 +9,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { createClient } from '@/lib/supabase/server';
 
 import {
+  TOPIC_PAGE_SIZE,
   buildPaginationHref,
   paginate,
   validateSort,
@@ -33,8 +34,6 @@ import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -86,7 +85,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     totalPages,
     currentPage,
     paginatedItems: posts,
-  } = paginate(allPosts, PAGE_SIZE, page);
+  } = paginate(allPosts, TOPIC_PAGE_SIZE, page);
 
   const getDisplayName = (slug: string, fallback: string) => {
     const translated = nameT(slug as never);

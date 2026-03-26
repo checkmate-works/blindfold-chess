@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import type { SkillLevel } from '@/lib/types';
@@ -56,7 +56,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
     let errorDetails: ValidationErrorDetails | null = null;
 
     if (parsedMoves.length > 0 && !gameId) {
-      const fen = startingFen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const fen = startingFen ?? getStartingFen();
       const result = validateMoveSequence(fen, parsedMoves as string[]);
 
       if (result.valid) {

@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { ADMIN_USER_FETCH_PAGE_SIZE } from '../_lib/constants';
 import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
@@ -50,7 +51,7 @@ export default async function AdminAuditLogPage({
     // Also search by email via Supabase admin client
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: 100,
+      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
     });
     const matchingEmailUserIds = (usersData?.users ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
@@ -110,7 +111,7 @@ export default async function AdminAuditLogPage({
   if (allUserIds.length > 0) {
     const { data: usersData } = await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: 100,
+      perPage: ADMIN_USER_FETCH_PAGE_SIZE,
     });
     for (const u of usersData?.users ?? []) {
       if (u.email) {

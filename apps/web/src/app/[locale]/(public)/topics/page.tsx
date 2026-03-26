@@ -3,9 +3,11 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   CardLink,
   Divider,
@@ -22,8 +24,6 @@ import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 import { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -51,14 +51,13 @@ export default async function TopicsPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const totalCount = await getPostCountAcrossTopics();
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-
-  const recentPosts = await getPostsAcrossTopicsPaginated(
-    PAGE_SIZE,
-    (currentPage - 1) * PAGE_SIZE,
-    user?.id
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+    page,
+    totalCount,
+    TOPIC_PAGE_SIZE
   );
+
+  const recentPosts = await getPostsAcrossTopicsPaginated(limit, offset, user?.id);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();

@@ -10,6 +10,7 @@ import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import {
+  TOPIC_PAGE_SIZE,
   buildPaginationHref,
   paginate,
   validateSort,
@@ -32,8 +33,6 @@ import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries'
 import { OpeningPostCard } from './_components';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -106,7 +105,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
     totalPages,
     currentPage,
     paginatedItems: posts,
-  } = paginate(allPosts, PAGE_SIZE, page);
+  } = paginate(allPosts, TOPIC_PAGE_SIZE, page);
 
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);

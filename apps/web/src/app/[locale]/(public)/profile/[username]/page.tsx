@@ -10,9 +10,11 @@ import { SiChessdotcom, SiInstagram, SiLichess, SiX, SiYoutube } from 'react-ico
 
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
+import { paginateItems } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { LinkedText, PagePanel, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -20,8 +22,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { FollowButton } from './_components/FollowButton';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -145,10 +145,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const allPosts = await getPostsByUserId(profile.id, user?.id);
 
   const { page } = await searchParamsCache.parse(searchParams);
-  const totalCount = allPosts.length;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const {
+    totalCount,
+    totalPages,
+    currentPage,
+    paginatedItems: posts,
+  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';

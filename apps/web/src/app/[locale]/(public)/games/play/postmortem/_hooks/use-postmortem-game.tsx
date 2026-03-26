@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { getStartingFen, replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -127,7 +127,7 @@ export function usePostmortemGame({
       const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
       const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);
 
-      const fen = startingFen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const fen = startingFen ?? getStartingFen();
       const result = validateMoveSequence(fen, moves);
       const validMoves = result.validMoves as AlgebraicNotation[];
 

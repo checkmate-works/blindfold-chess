@@ -4,16 +4,16 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import {
   getLikedPostCountByUser,
   getLikedPostsByUser,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -47,9 +47,12 @@ export default async function LikesPage({ params, searchParams }: Props) {
   const { page } = await searchParamsCache.parse(searchParams);
 
   const totalCount = await getLikedPostCountByUser(user.id);
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = await getLikedPostsByUser(user.id, PAGE_SIZE, (currentPage - 1) * PAGE_SIZE);
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+    page,
+    totalCount,
+    TOPIC_PAGE_SIZE
+  );
+  const posts = await getLikedPostsByUser(user.id, limit, offset);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';

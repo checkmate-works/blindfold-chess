@@ -3,8 +3,10 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   Divider,
   PagePanel,
@@ -21,8 +23,6 @@ import { PostCard, SquareBoard } from './_components';
 import { getPostCountAcrossSquares, getPostsAcrossSquaresPaginated } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -48,14 +48,13 @@ export default async function SquaresPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
   const totalCount = await getPostCountAcrossSquares();
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-
-  const recentPosts = await getPostsAcrossSquaresPaginated(
-    PAGE_SIZE,
-    (currentPage - 1) * PAGE_SIZE,
-    user?.id
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+    page,
+    totalCount,
+    TOPIC_PAGE_SIZE
   );
+
+  const recentPosts = await getPostsAcrossSquaresPaginated(limit, offset, user?.id);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();

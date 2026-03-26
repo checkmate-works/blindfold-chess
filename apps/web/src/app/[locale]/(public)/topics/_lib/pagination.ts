@@ -1,4 +1,9 @@
+import { paginateItems } from '@/lib/pagination';
+
 import type { SortMode } from './queries';
+
+/** Default page size for topic and profile listing pages. */
+export const TOPIC_PAGE_SIZE = 5;
 
 const VALID_SORTS: SortMode[] = ['new', 'popular', 'active'];
 
@@ -11,14 +16,11 @@ export function validateSort(sort: string): SortMode {
 
 /**
  * Calculate pagination values from total count, page size, and requested page.
+ *
+ * @deprecated Use `paginateItems` from `@/lib/pagination` directly.
  */
 export function paginate<T>(items: T[], pageSize: number, requestedPage: number) {
-  const totalCount = items.length;
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const currentPage = Math.max(1, Math.min(requestedPage, totalPages || 1));
-  const paginatedItems = items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
-  return { totalCount, totalPages, currentPage, paginatedItems };
+  return paginateItems(items, pageSize, requestedPage);
 }
 
 /**

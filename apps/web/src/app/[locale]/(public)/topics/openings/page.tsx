@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
@@ -21,6 +22,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   OpeningCard,
   OpeningCategoryFilter,
@@ -37,8 +39,6 @@ import {
 } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
-
-const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -73,17 +73,16 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
   const totalCount = firstMoveSquare
     ? await getPostCountByFirstMoveSquare(firstMoveSquare)
     : await getPostCountAcrossOpenings();
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
+    page,
+    totalCount,
+    TOPIC_PAGE_SIZE
+  );
 
   const recentPosts = firstMoveSquare
-    ? await getPostsByFirstMoveSquarePaginated(
-        firstMoveSquare,
-        PAGE_SIZE,
-        (currentPage - 1) * PAGE_SIZE,
-        user?.id
-      )
-    : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
+    ? await getPostsByFirstMoveSquarePaginated(firstMoveSquare, limit, offset, user?.id)
+    : await getPostsAcrossOpeningsPaginated(limit, offset, user?.id);
+
   const openings = firstMoveSquare
     ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
     : await getOpeningsAsTree();

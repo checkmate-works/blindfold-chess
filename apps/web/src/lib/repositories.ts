@@ -1,5 +1,5 @@
 import { MAX_GAMES } from '@/config';
-import { validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
@@ -224,7 +224,7 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   private validateMoves(moves: string[], startingFen?: string): void {
-    const fen = startingFen ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    const fen = startingFen ?? getStartingFen();
     const result = validateMoveSequence(fen, moves);
     if (!result.valid) {
       throw new Error(`Invalid move detected during validation: ${result.error}`);
