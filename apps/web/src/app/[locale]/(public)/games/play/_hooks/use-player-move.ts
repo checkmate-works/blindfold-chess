@@ -4,11 +4,10 @@ import { useTranslations } from 'next-intl';
 
 import { validateGameMove } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 type UsePlayerMoveOptions = {
   moves: AlgebraicNotation[];
-  playerSide: Side;
   startingFen: string | undefined;
   isLoading: boolean;
   isPlayerTurn: boolean;
@@ -21,7 +20,6 @@ type UsePlayerMoveOptions = {
 
 export function usePlayerMove({
   moves,
-  playerSide,
   startingFen,
   isLoading,
   isPlayerTurn,
@@ -67,7 +65,6 @@ export function usePlayerMove({
     },
     [
       moves,
-      playerSide,
       pushMove,
       t,
       markPlayerInteraction,

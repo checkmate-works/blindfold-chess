@@ -12,16 +12,13 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { parseFenMeta } from '../_lib/fen-utils';
-import {
-  parseUrlSearchParams,
-  useAiMoveOrchestration,
-  useAiVersus,
-  useAutoSave,
-  useGameInitialization,
-  useGamePersistence,
-  useNotation,
-} from './index';
+import { useAiMoveOrchestration } from './use-ai-move-orchestration';
+import { useAiVersus } from './use-ai-versus';
+import { useAutoSave } from './use-auto-save';
+import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
+import { useGamePersistence } from './use-game-persistence';
 import { useGameState } from './use-game-state';
+import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
 import { useUrlSync } from './use-url-sync';
 
@@ -191,7 +188,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Player move hook
   const { handleSubmitMove } = usePlayerMove({
     moves,
-    playerSide,
     startingFen,
     isLoading,
     isPlayerTurn,
