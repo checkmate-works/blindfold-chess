@@ -28,16 +28,20 @@ export function toSubscriptionFields(subscription: Stripe.Subscription) {
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode !== 'subscription' || !session.subscription) return;
 
-  const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+  const subscriptionId =
+    typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
+  if (!session.customer) return;
+  const customerId = typeof session.customer === 'string' ? session.customer : session.customer.id;
   const [customerRecord] = await db
     .select({ userId: stripeCustomers.userId })
     .from(stripeCustomers)
-    .where(eq(stripeCustomers.stripeCustomerId, session.customer as string))
+    .where(eq(stripeCustomers.stripeCustomerId, customerId))
     .limit(1);
 
   if (!customerRecord) {
-    throw new Error(`No stripe_customers record for customer: ${session.customer}`);
+    throw new Error(`No stripe_customers record for customer: ${customerId}`);
   }
 
   const fields = toSubscriptionFields(subscription);

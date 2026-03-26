@@ -36,7 +36,12 @@ export async function getOrCreateStripeCustomerId(
     // Race: another request already inserted. Clean up the orphaned Stripe customer.
     await stripe.customers.del(customer.id);
     const winner = await getStripeCustomerId(userId);
-    return winner!;
+    if (!winner) {
+      throw new Error(
+        `Failed to retrieve Stripe customer ID for user ${userId} after conflict resolution`
+      );
+    }
+    return winner;
   }
 
   return customer.id;
