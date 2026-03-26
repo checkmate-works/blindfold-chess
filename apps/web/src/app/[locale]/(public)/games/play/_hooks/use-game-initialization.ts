@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -47,7 +48,14 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
     const { playerSide, skillLevel, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
 
     // Get initial moves from URL and validate them
-    const parsedMoves: AlgebraicNotation[] = urlMoves ? JSON.parse(urlMoves) : [];
+    let parsedMoves: AlgebraicNotation[] = [];
+    if (urlMoves) {
+      try {
+        parsedMoves = JSON.parse(urlMoves);
+      } catch {
+        // Invalid JSON in URL, ignore
+      }
+    }
 
     // Validate moves if we don't have a gameId (gameId takes precedence)
     // When gameId is present, moves will be loaded from localStorage with the correct startingFen
@@ -109,9 +117,15 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
     }
   }
 
+  const colorParam = searchParams.get('color');
+  const playerSide: Side = colorParam === 'white' || colorParam === 'black' ? colorParam : 'white';
+
+  const parsedSkillLevel = parseInt(searchParams.get('skillLevel') || '5');
+  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel) ? parsedSkillLevel : 5;
+
   return {
-    playerSide: (searchParams.get('color') as Side) || 'white',
-    skillLevel: (parseInt(searchParams.get('skillLevel') || '5') as SkillLevel) || 5,
+    playerSide,
+    skillLevel,
     gameId: searchParams.get('gameId') || undefined,
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),

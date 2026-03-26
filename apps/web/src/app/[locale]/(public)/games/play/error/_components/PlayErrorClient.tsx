@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import type { Side } from '@blindfold-chess/types';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
+import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
@@ -34,8 +35,18 @@ export function PlayErrorClient({ locale }: Props) {
   const skillLevel = searchParams.get('skillLevel') || '5';
   const startingFen = searchParams.get('fen') || undefined;
 
-  const validMoves = JSON.parse(validMovesJson);
-  const allMoves = JSON.parse(allMovesJson);
+  let validMoves: AlgebraicNotation[] = [];
+  let allMoves: AlgebraicNotation[] = [];
+  try {
+    validMoves = JSON.parse(validMovesJson);
+  } catch {
+    // Invalid JSON in URL, use empty array
+  }
+  try {
+    allMoves = JSON.parse(allMovesJson);
+  } catch {
+    // Invalid JSON in URL, use empty array
+  }
 
   const handleRecover = async () => {
     setIsProcessing(true);
@@ -71,8 +82,10 @@ export function PlayErrorClient({ locale }: Props) {
         const gameRepository = new LocalStorageGameRepository();
         const newGameId = await gameRepository.create({
           moves: validMoves,
-          playerColor: color as Side,
-          skillLevel: parseInt(skillLevel) as SkillLevel,
+          playerColor: color === 'white' || color === 'black' ? color : 'white',
+          skillLevel: isValidSkillLevel(parseInt(skillLevel))
+            ? (parseInt(skillLevel) as SkillLevel)
+            : 5,
           status: 'in_progress',
           startingFen,
         });
