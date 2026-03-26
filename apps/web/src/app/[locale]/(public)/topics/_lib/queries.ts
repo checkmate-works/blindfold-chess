@@ -12,11 +12,12 @@ import {
 } from '@/lib/db';
 
 import { attachPostMeta, attachProfilePostMeta } from './post-meta';
-import { authorSelect, ratingSelect } from './shared';
+import { authorSelect, ratingSelect, sortPosts } from './shared';
 import type {
   LikeMeta,
   PostWithReplyMeta,
   ProfilePostWithReplyMeta,
+  SortMode,
   TopicPostWithAuthor,
 } from './shared';
 
@@ -32,6 +33,176 @@ export type {
   SortMode,
   TopicPostWithAuthor,
 } from './shared';
+
+/**
+ * Get the count of top-level posts for a specific topic type ('square' or 'opening').
+ */
+export async function getPostCountByTopicType(topicType: 'square' | 'opening'): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPosts)
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    );
+  return result.count;
+}
+
+/**
+ * Get top-level posts for a specific topicType + topicKey, with author info.
+ * Base function shared by squares and openings.
+ */
+export async function getTopLevelPostsByTopicKey(
+  topicType: 'square' | 'opening',
+  topicKey: string
+): Promise<TopicPostWithAuthor[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt));
+
+  return results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+}
+
+/**
+ * Get a single post by ID, verifying it belongs to the given topicType + topicKey.
+ * Base function shared by squares and openings.
+ */
+export async function getPostByIdAndTopicKey(
+  postId: string,
+  topicType: 'square' | 'opening',
+  topicKey: string
+): Promise<TopicPostWithAuthor | null> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.id, postId),
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .limit(1);
+
+  if (results.length === 0) {
+    return null;
+  }
+
+  return {
+    ...results[0].post,
+    author: results[0].author,
+  };
+}
+
+/**
+ * Get the most recent top-level posts for a specific topic type with reply metadata.
+ * Base function shared by squares and openings.
+ */
+export async function getRecentPostsByTopicType(
+  topicType: 'square' | 'opening',
+  limit = 5,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachPostMeta(posts, currentUserId);
+}
+
+/**
+ * Get top-level posts for a specific topicType + topicKey with reply metadata, sorted.
+ * Base function shared by squares and openings.
+ */
+export async function getPostsWithReplyMetaByTopicKey(
+  topicType: 'square' | 'opening',
+  topicKey: string,
+  currentUserId?: string,
+  sortBy: SortMode = 'new'
+): Promise<PostWithReplyMeta[]> {
+  const posts = await getTopLevelPostsByTopicKey(topicType, topicKey);
+  const postsWithMeta = await attachPostMeta(posts, currentUserId);
+
+  return sortPosts(postsWithMeta, sortBy);
+}
+
+/**
+ * Get top-level posts for a specific topic type with reply metadata, paginated.
+ * Base function shared by squares and openings (for simple cases without extra JOINs).
+ */
+export async function getPostsByTopicTypePaginated(
+  topicType: 'square' | 'opening',
+  limit: number,
+  offset: number,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachPostMeta(posts, currentUserId);
+}
 
 /**
  * Get like metadata for a single post.
