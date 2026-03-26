@@ -9,55 +9,23 @@
  * @flow
  * Setup (training selected) → Countdown → Infinite Q&A → End button → Setup + toast
  */
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const SquareColorsTrainingSession = dynamic(
   () => import('./_components/SquareColorsTrainingSession')
 );
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
+const { generateMetadata, generateStaticParams, Page } = createPracticeTrainingPage({
+  i18nKey: 'squareColors',
+  canonicalPath: 'practice/square-colors/training',
+  breadcrumbSegments: [
+    { labelKey: 'squareColors.title', href: '/practice/square-colors' },
+    { labelKey: 'modeTraining' },
+  ],
+  renderContent: ({ locale }) => <SquareColorsTrainingSession locale={locale} />,
+});
 
-export const generateStaticParams = generateLocaleStaticParams;
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/training' }),
-    title: `${t('practice.squareColors.title')} - ${t('practice.modeTraining')}`,
-    description: t('practice.squareColors.description'),
-  };
-}
-
-export default async function SquareColorsTrainingPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <PracticeSessionPage
-      locale={locale}
-      title={t('practice.squareColors.title')}
-      breadcrumbItems={[
-        { label: t('navigation.practice'), href: '/practice' },
-        { label: t('practice.squareColors.title'), href: '/practice/square-colors' },
-        { label: t('practice.modeTraining') },
-      ]}
-    >
-      <SquareColorsTrainingSession locale={locale} />
-    </PracticeSessionPage>
-  );
-}
+export { generateMetadata, generateStaticParams };
+export default Page;

@@ -9,59 +9,30 @@
  * @flow
  * Setup (training selected) -> Countdown -> Infinite Q&A -> End button -> Setup + toast
  */
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const CoordinateQuizTrainingSession = dynamic(
   () => import('./_components/CoordinateQuizTrainingSession')
 );
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  searchParams: Promise<{
-    orientation?: string;
-    feedbackSpeed?: string;
-  }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/coordinate-quiz/training' }),
-    title: `${t('practice.coordinateQuiz.title')} - ${t('practice.modeTraining')}`,
-    description: t('practice.coordinateQuiz.description'),
-  };
-}
-
-export default async function CoordinateQuizTrainingPage({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { orientation, feedbackSpeed } = await searchParams;
-  const t = await getTranslations({ locale });
-
-  return (
-    <PracticeSessionPage
+const { generateMetadata, Page } = createPracticeTrainingPage({
+  i18nKey: 'coordinateQuiz',
+  canonicalPath: 'practice/coordinate-quiz/training',
+  staticParams: false,
+  breadcrumbSegments: [
+    { labelKey: 'coordinateQuiz.title', href: '/practice/coordinate-quiz' },
+    { labelKey: 'modeTraining' },
+  ],
+  renderContent: ({ locale, searchParams }) => (
+    <CoordinateQuizTrainingSession
       locale={locale}
-      title={t('practice.coordinateQuiz.title')}
-      breadcrumbItems={[
-        { label: t('navigation.practice'), href: '/practice' },
-        { label: t('practice.coordinateQuiz.title'), href: '/practice/coordinate-quiz' },
-        { label: t('practice.modeTraining') },
-      ]}
-    >
-      <CoordinateQuizTrainingSession
-        locale={locale}
-        boardOrientation={orientation || 'white'}
-        feedbackSpeed={feedbackSpeed || 'normal'}
-      />
-    </PracticeSessionPage>
-  );
-}
+      boardOrientation={(searchParams.orientation as string) || 'white'}
+      feedbackSpeed={(searchParams.feedbackSpeed as string) || 'normal'}
+    />
+  ),
+});
+
+export { generateMetadata };
+export default Page;

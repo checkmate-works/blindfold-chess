@@ -9,64 +9,35 @@
  * @flow
  * Setup (training selected) -> Countdown -> Infinite Q&A -> End button -> Setup + toast
  */
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import type { PieceType } from '../_lib/types';
-import { PIECE_NAME_TO_TYPE } from '../_lib/utils';
+import type { PieceType } from '@/app/[locale]/(public)/practice/legal-moves/_lib/types';
+import { PIECE_NAME_TO_TYPE } from '@/app/[locale]/(public)/practice/legal-moves/_lib/utils';
+import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const LegalMovesTrainingSession = dynamic(() => import('./_components/LegalMovesTrainingSession'));
 
 const VALID_PIECE_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  searchParams: Promise<{
-    piece?: string;
-  }>;
-};
+const { generateMetadata, Page } = createPracticeTrainingPage({
+  i18nKey: 'legalMoves',
+  canonicalPath: 'practice/legal-moves/training',
+  staticParams: false,
+  breadcrumbSegments: [
+    { labelKey: 'legalMoves.title', href: '/practice/legal-moves' },
+    { labelKey: 'modeTraining' },
+  ],
+  renderContent: ({ locale, searchParams }) => {
+    const piece = searchParams.piece as string | undefined;
+    const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
+    const validPieceName =
+      piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'random';
+    const selectedPieces: PieceType[] =
+      validPieceName === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[validPieceName]];
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale });
+    return <LegalMovesTrainingSession locale={locale} selectedPieces={selectedPieces} />;
+  },
+});
 
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/legal-moves/training' }),
-    title: `${t('practice.legalMoves.title')} - ${t('practice.modeTraining')}`,
-    description: t('practice.legalMoves.description'),
-  };
-}
-
-export default async function LegalMovesTrainingPage({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { piece } = await searchParams;
-  const t = await getTranslations({ locale });
-
-  // Parse selected piece from URL (full name: king, queen, rook, bishop, knight, random)
-  const allPieceTypes: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-  const validPieceName =
-    piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'random';
-  const selectedPieces: PieceType[] =
-    validPieceName === 'random' ? allPieceTypes : [PIECE_NAME_TO_TYPE[validPieceName]];
-
-  return (
-    <PracticeSessionPage
-      locale={locale}
-      title={t('practice.legalMoves.title')}
-      breadcrumbItems={[
-        { label: t('navigation.practice'), href: '/practice' },
-        { label: t('practice.legalMoves.title'), href: '/practice/legal-moves' },
-        { label: t('practice.modeTraining') },
-      ]}
-    >
-      <LegalMovesTrainingSession locale={locale} selectedPieces={selectedPieces} />
-    </PracticeSessionPage>
-  );
-}
+export { generateMetadata };
+export default Page;

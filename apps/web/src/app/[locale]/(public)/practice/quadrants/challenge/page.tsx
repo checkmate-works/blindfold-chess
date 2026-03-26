@@ -1,52 +1,28 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const QuadrantPlaying = dynamic(() => import('../_components/QuadrantPlaying'));
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  searchParams: Promise<{
-    count?: string;
-    orientation?: string;
-  }>;
-};
+const { generateMetadata, Page } = createPracticeChallengeSessionPage({
+  i18nKey: 'quadrantAnchors',
+  canonicalPath: 'practice/quadrants/challenge',
+  sessionLabelKey: 'session',
+  staticParams: false,
+  robots: { index: false, follow: false },
+  breadcrumbSegments: [
+    { labelKey: 'quadrantAnchors.title', href: '/practice/quadrants' },
+    { labelKey: 'quadrantAnchors.session' },
+  ],
+  renderContent: ({ searchParams }) => {
+    const countParam = searchParams.count;
+    const problemCount = countParam && typeof countParam === 'string' ? parseInt(countParam, 10) : 10;
+    const orientationParam = searchParams.orientation;
+    const initialOrientation =
+      (typeof orientationParam === 'string' ? (orientationParam as 'white' | 'black' | 'random') : undefined) ||
+      'white';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/quadrants/challenge' }),
-    title: `${t('practice.quadrantAnchors.title')} - ${t('practice.quadrantAnchors.session')}`,
-    description: t('practice.quadrantAnchors.description'),
-  };
-}
-
-export default async function QuadrantChallengePage({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { count, orientation } = await searchParams;
-  const t = await getTranslations({ locale });
-
-  const problemCount = count ? parseInt(count, 10) : 10;
-  const initialOrientation = (orientation as 'white' | 'black' | 'random') || 'white';
-
-  return (
-    <PracticeSessionPage
-      locale={locale}
-      title={t('practice.quadrantAnchors.title')}
-      breadcrumbItems={[
-        { label: t('navigation.practice'), href: '/practice' },
-        { label: t('practice.quadrantAnchors.title'), href: '/practice/quadrants' },
-        { label: t('practice.quadrantAnchors.session') },
-      ]}
-    >
+    return (
       <div className="max-w-3xl mx-auto">
         <QuadrantPlaying
           key={initialOrientation}
@@ -54,6 +30,9 @@ export default async function QuadrantChallengePage({ params, searchParams }: Pr
           initialOrientation={initialOrientation}
         />
       </div>
-    </PracticeSessionPage>
-  );
-}
+    );
+  },
+});
+
+export { generateMetadata };
+export default Page;

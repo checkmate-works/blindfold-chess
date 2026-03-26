@@ -1,10 +1,6 @@
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 import { PIECES } from '../_lib/utils';
 import type { PieceType } from '../_lib/utils';
@@ -13,84 +9,54 @@ const RoutePlannerSession = dynamic(() =>
   import('../_components/RoutePlannerSession').then((mod) => mod.RoutePlannerSession)
 );
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/route-planner/challenge' }),
-    title: `${t('practice.routePlanner.title')} - ${t('practice.routePlanner.session')}`,
-    description: t('practice.routePlanner.description'),
-    robots: {
-      index: false,
-      follow: false,
-    },
-  };
-}
-
-export default async function RoutePlannerChallengePage({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const search = await searchParams;
-  const t = await getTranslations({ locale });
-
-  // Parse problem count (default 5)
-  const countParam = search.count;
-  let problemCount = 5;
-  if (countParam && typeof countParam === 'string') {
-    const parsed = parseInt(countParam);
-    if (!isNaN(parsed) && parsed >= 1) {
-      problemCount = parsed;
+const { generateMetadata, Page } = createPracticeChallengeSessionPage({
+  i18nKey: 'routePlanner',
+  canonicalPath: 'practice/route-planner/challenge',
+  sessionLabelKey: 'session',
+  staticParams: false,
+  robots: { index: false, follow: false },
+  showDivider: false,
+  breadcrumbSegments: [
+    { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
+    { labelKey: 'session' },
+  ],
+  renderContent: ({ locale, searchParams }) => {
+    // Parse problem count (default 5)
+    const countParam = searchParams.count;
+    let problemCount = 5;
+    if (countParam && typeof countParam === 'string') {
+      const parsed = parseInt(countParam);
+      if (!isNaN(parsed) && parsed >= 1) {
+        problemCount = parsed;
+      }
     }
-  }
 
-  // Parse allowed pieces
-  const piecesParam = search.pieces;
-  let allowedPieces: PieceType[] = [];
-  if (piecesParam && typeof piecesParam === 'string') {
-    const potentialPieces = piecesParam.split('') as PieceType[];
-    // Filter only valid pieces
-    allowedPieces = potentialPieces.filter((p) => PIECES.includes(p));
-  }
-  // If empty or invalid, default to all pieces (handled in utils or component,
-  // but safer to pass empty array here if we want default behavior)
-  if (allowedPieces.length === 0) {
-    allowedPieces = [...PIECES];
-  }
-  // Parse tutorial mode params
-  const mode = search.mode === 'tutorial' ? 'tutorial' : 'standard';
-
-  let initialProblem;
-  if (mode === 'tutorial') {
-    const piece = search.piece as PieceType;
-    const start = search.start as string;
-    const end = search.end as string;
-
-    if (piece && start && end) {
-      initialProblem = { piece, start, end };
+    // Parse allowed pieces
+    const piecesParam = searchParams.pieces;
+    let allowedPieces: PieceType[] = [];
+    if (piecesParam && typeof piecesParam === 'string') {
+      const potentialPieces = piecesParam.split('') as PieceType[];
+      allowedPieces = potentialPieces.filter((p) => PIECES.includes(p));
     }
-  }
+    if (allowedPieces.length === 0) {
+      allowedPieces = [...PIECES];
+    }
 
-  return (
-    <PracticeSessionPage
-      locale={locale}
-      title={t('practice.routePlanner.title')}
-      showDivider={false}
-      breadcrumbItems={[
-        { label: t('navigation.practice'), href: '/practice' },
-        {
-          label: t('practice.routePlanner.title'),
-          href: '/practice/route-planner',
-        },
-        { label: t('practice.session') },
-      ]}
-    >
+    // Parse tutorial mode params
+    const mode = searchParams.mode === 'tutorial' ? 'tutorial' : 'standard';
+
+    let initialProblem;
+    if (mode === 'tutorial') {
+      const piece = searchParams.piece as PieceType;
+      const start = searchParams.start as string;
+      const end = searchParams.end as string;
+
+      if (piece && start && end) {
+        initialProblem = { piece, start, end };
+      }
+    }
+
+    return (
       <RoutePlannerSession
         locale={locale}
         problemCount={problemCount}
@@ -98,6 +64,9 @@ export default async function RoutePlannerChallengePage({ params, searchParams }
         mode={mode}
         initialProblem={initialProblem}
       />
-    </PracticeSessionPage>
-  );
-}
+    );
+  },
+});
+
+export { generateMetadata };
+export default Page;
