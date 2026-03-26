@@ -5,12 +5,9 @@ import 'server-only';
 
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
+import { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES } from '@/lib/subscription-constants';
 
-/** Statuses that grant active subscriber benefits (e.g., ad-free). */
-export const BENEFIT_ACTIVE_STATUSES = ['active', 'trialing'] as const;
-
-/** Statuses that indicate a displayable (non-terminal) subscription. */
-export const DISPLAYABLE_STATUSES = ['active', 'trialing', 'past_due'] as const;
+export { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES };
 
 export const hasActiveSubscription = unstable_cache(
   async (userId: string): Promise<boolean> => {

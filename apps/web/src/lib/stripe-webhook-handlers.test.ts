@@ -327,7 +327,7 @@ describe('handleCheckoutCompleted', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', expect.any(Object));
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should pass subscription ID as string to stripe.subscriptions.retrieve', async () => {
@@ -406,7 +406,7 @@ describe('handleSubscriptionUpdated', () => {
   it('should call revalidateTag after update', async () => {
     await handleSubscriptionUpdated(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', expect.any(Object));
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should pass updated fields for a past_due subscription', async () => {
@@ -474,7 +474,7 @@ describe('handleSubscriptionDeleted', () => {
   it('should call revalidateTag after deletion', async () => {
     await handleSubscriptionDeleted(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', expect.any(Object));
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should override whatever previous status the subscription had', async () => {

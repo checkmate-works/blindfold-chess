@@ -7,8 +7,6 @@ import type Stripe from 'stripe';
 import { db, stripeCustomers, subscriptions } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
 
-const SUBSCRIPTION_CACHE_EXPIRE = 60;
-
 /**
  * Map a Stripe Subscription object to the DB column values used for
  * both insert and upsert-update operations.
@@ -59,7 +57,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
       },
     });
 
-  revalidateTag('subscription-status', { expire: SUBSCRIPTION_CACHE_EXPIRE });
+  revalidateTag('subscription-status', { expire: 60 });
 }
 
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -73,7 +71,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
 
-  revalidateTag('subscription-status', { expire: SUBSCRIPTION_CACHE_EXPIRE });
+  revalidateTag('subscription-status', { expire: 60 });
 }
 
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -86,5 +84,5 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
 
-  revalidateTag('subscription-status', { expire: SUBSCRIPTION_CACHE_EXPIRE });
+  revalidateTag('subscription-status', { expire: 60 });
 }

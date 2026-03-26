@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import type { Subscription } from '@/lib/db';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription';
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
 import { createPortalSession } from '../_actions/createPortalSession';
 

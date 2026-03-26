@@ -1,29 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-vi.mock('./db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => ({
-          limit: () => Promise.resolve([]),
-        }),
-      }),
-    }),
-  },
-  subscriptions: { id: 'id', userId: 'user_id', status: 'status' },
-}));
-
-vi.mock('./db-timeout', () => ({
-  withTimeout: (p: Promise<unknown>) => p,
-}));
-
-vi.mock('next/cache', () => ({
-  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
-}));
-
-vi.mock('server-only', () => ({}));
-
-const { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES } = await import('./subscription');
+import { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES } from './subscription-constants';
 
 describe('BENEFIT_ACTIVE_STATUSES', () => {
   it('should contain active and trialing', () => {
