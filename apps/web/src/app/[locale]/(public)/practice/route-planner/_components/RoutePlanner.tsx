@@ -6,6 +6,7 @@ import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/u
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerPageContent } from './RoutePlannerPageContent';
+import { STORAGE_KEY } from './constants';
 
 type Props = {
   locale: Locale;
@@ -16,8 +17,6 @@ type RoutePlannerLocalSettings = {
   selectedPieces: Record<string, boolean>;
   mode: PracticeMode;
 };
-
-export const STORAGE_KEY = 'routePlannerSettings';
 const DEFAULTS: RoutePlannerLocalSettings = {
   problemCount: 5,
   selectedPieces: { n: true, b: true, r: true, q: true },

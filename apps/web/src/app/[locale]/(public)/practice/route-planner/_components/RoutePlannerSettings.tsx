@@ -18,11 +18,11 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PIECES } from '../_lib/utils';
-import { STORAGE_KEY } from './RoutePlanner';
 import {
   ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY,
   RoutePlannerTutorialSkipLink,
 } from './RoutePlannerTutorialSkipLink';
+import { STORAGE_KEY } from './constants';
 
 type Props = {
   locale: Locale;
