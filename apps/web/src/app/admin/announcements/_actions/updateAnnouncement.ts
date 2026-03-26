@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import {
@@ -10,7 +8,8 @@ import {
 } from '@/lib/announcement-notification';
 import { announcements, db } from '@/lib/db';
 
-import { requireAdmin } from '../../_lib/auth';
+import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import type { MutationResult } from '../../_lib/action-factories';
 import { validateAnnouncementData } from '../_lib/validation';
 
 type UpdateData = {
@@ -25,21 +24,17 @@ type UpdateData = {
   sendNotification?: boolean;
 };
 
-type UpdateResult = { success: true; id: string } | { error: string };
-
-export async function updateAnnouncement(id: string, data: UpdateData): Promise<UpdateResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
+export async function updateAnnouncement(id: string, data: UpdateData): Promise<MutationResult> {
+  const guard = await adminMutationGuard(data, validateAnnouncementData);
+  if (guard) {
+    return guard;
   }
 
-  const validationError = validateAnnouncementData(data);
-  if (validationError) {
-    return { error: validationError };
-  }
-
-  // Fetch current announcement to verify it exists
-  const [current] = await db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
+  const [current] = await db
+    .select()
+    .from(announcements)
+    .where(eq(announcements.id, id))
+    .limit(1);
 
   if (!current) {
     return { error: 'not found' };
@@ -60,7 +55,6 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     })
     .where(eq(announcements.id, id));
 
-  // Trigger notification only when explicitly requested and not already sent
   if (data.sendNotification && data.status === 'published') {
     const alreadySent = await hasAnnouncementNotification(id);
     if (!alreadySent) {
@@ -68,7 +62,5 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     }
   }
 
-  revalidatePath('/admin/announcements');
-
-  return { success: true, id };
+  return mutationSuccess(id, '/admin/announcements');
 }

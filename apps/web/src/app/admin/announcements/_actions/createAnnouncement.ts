@@ -1,14 +1,13 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
 } from '@/lib/announcement-notification';
 import { announcements, db } from '@/lib/db';
 
-import { requireAdmin } from '../../_lib/auth';
+import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import type { MutationResult } from '../../_lib/action-factories';
 import { validateAnnouncementData } from '../_lib/validation';
 
 type CreateData = {
@@ -23,17 +22,10 @@ type CreateData = {
   sendNotification?: boolean;
 };
 
-type CreateResult = { success: true; id: string } | { error: string };
-
-export async function createAnnouncement(data: CreateData): Promise<CreateResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
-  }
-
-  const validationError = validateAnnouncementData(data);
-  if (validationError) {
-    return { error: validationError };
+export async function createAnnouncement(data: CreateData): Promise<MutationResult> {
+  const guard = await adminMutationGuard(data, validateAnnouncementData);
+  if (guard) {
+    return guard;
   }
 
   const [inserted] = await db
@@ -57,7 +49,5 @@ export async function createAnnouncement(data: CreateData): Promise<CreateResult
     }
   }
 
-  revalidatePath('/admin/announcements');
-
-  return { success: true, id: inserted.id };
+  return mutationSuccess(inserted.id, '/admin/announcements');
 }

@@ -1,25 +1,17 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { articles, db } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { requireAdmin } from '../../_lib/auth';
+import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import type { MutationResult } from '../../_lib/action-factories';
 import type { ArticleMutationData } from '../_lib/types';
 import { validateArticleData } from '../_lib/validation';
 
-type CreateResult = { success: true; id: string } | { error: string };
-
-export async function createArticle(data: ArticleMutationData): Promise<CreateResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
-  }
-
-  const validationError = validateArticleData(data);
-  if (validationError) {
-    return { error: validationError };
+export async function createArticle(data: ArticleMutationData): Promise<MutationResult> {
+  const guard = await adminMutationGuard(data, validateArticleData);
+  if (guard) {
+    return guard;
   }
 
   let inserted: { id: string };
@@ -47,7 +39,5 @@ export async function createArticle(data: ArticleMutationData): Promise<CreateRe
     throw err;
   }
 
-  revalidatePath('/admin/articles');
-
-  return { success: true, id: inserted.id };
+  return mutationSuccess(inserted.id, '/admin/articles');
 }

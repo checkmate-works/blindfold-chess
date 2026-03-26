@@ -1,30 +1,21 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { requireAdmin } from '../../_lib/auth';
+import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import type { MutationResult } from '../../_lib/action-factories';
 import type { ArticleMutationData } from '../_lib/types';
 import { validateArticleData } from '../_lib/validation';
 
-type UpdateResult = { success: true; id: string } | { error: string };
-
-export async function updateArticle(id: string, data: ArticleMutationData): Promise<UpdateResult> {
-  const auth = await requireAdmin();
-  if ('error' in auth) {
-    return auth;
+export async function updateArticle(id: string, data: ArticleMutationData): Promise<MutationResult> {
+  const guard = await adminMutationGuard(data, validateArticleData);
+  if (guard) {
+    return guard;
   }
 
-  const validationError = validateArticleData(data);
-  if (validationError) {
-    return { error: validationError };
-  }
-
-  // Fetch current article to verify it exists
   const [current] = await db.select().from(articles).where(eq(articles.id, id)).limit(1);
 
   if (!current) {
@@ -56,7 +47,5 @@ export async function updateArticle(id: string, data: ArticleMutationData): Prom
     throw err;
   }
 
-  revalidatePath('/admin/articles');
-
-  return { success: true, id };
+  return mutationSuccess(id, '/admin/articles');
 }

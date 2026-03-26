@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Button } from '@/app/_components';
-import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
@@ -15,15 +13,7 @@ import {
   paginate,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -114,63 +104,39 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
     !user || !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{dt('pageTitle')}</PageTitle>
-
-      <PagePanel>
-        <SectionTitle>{displayName}</SectionTitle>
-
-        {currentPage === 1 && <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
-
-        <AdBannerGuard slot="banner-wide" />
-
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{dt('postCount', { count: totalCount })}</p>
-
-          {showNewPostButton && (
-            <Link href={`/topics/openings/${slug}/new`} locale={locale}>
-              <Button variant="primary" asChild>
-                {dt('newPost')}
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        <OpeningSortTabs slug={slug} locale={locale} />
-
-        {posts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{dt('noPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {posts.map((post) => (
-              <OpeningPostCard key={post.id} post={post} locale={locale} slug={slug} />
-            ))}
-          </div>
-        )}
-
-        <AdBannerGuard slot="banner-standard" />
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('title'), href: '/topics' },
-            { label: t('openings.title'), href: '/topics/openings' },
-            ...(parentOpening && parentDisplayName
-              ? [
-                  {
-                    label: parentDisplayName,
-                    href: `/topics/openings/${parentOpening.slug}`,
-                  },
-                ]
-              : []),
-            { label: displayName },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+    <TopicListPageLayout
+      locale={locale}
+      pageTitle={dt('pageTitle')}
+      sectionTitle={displayName}
+      topicHeader={
+        currentPage === 1 ? <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} /> : undefined
+      }
+      postCountText={dt('postCount', { count: totalCount })}
+      newPostButton={
+        showNewPostButton
+          ? { href: `/topics/openings/${slug}/new`, label: dt('newPost') }
+          : undefined
+      }
+      sortTabs={<OpeningSortTabs slug={slug} locale={locale} />}
+      hasPosts={posts.length > 0}
+      noPostsText={dt('noPosts')}
+      postCards={posts.map((post) => (
+        <OpeningPostCard key={post.id} post={post} locale={locale} slug={slug} />
+      ))}
+      pagination={{ currentPage, totalPages, buildHref }}
+      breadcrumbItems={[
+        { label: t('title'), href: '/topics' },
+        { label: t('openings.title'), href: '/topics/openings' },
+        ...(parentOpening && parentDisplayName
+          ? [
+              {
+                label: parentDisplayName,
+                href: `/topics/openings/${parentOpening.slug}`,
+              },
+            ]
+          : []),
+        { label: displayName },
+      ]}
+    />
   );
 }

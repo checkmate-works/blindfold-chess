@@ -2,13 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Link } from '@/i18n/routing';
-
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { PostDetailContent } from '@/app/[locale]/(public)/topics/_components/PostDetailContent';
+import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,66 +77,47 @@ export default async function OpeningPostDetailPage({ params }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{dt('detail.pageTitle')}</PageTitle>
-
-      <PagePanel>
-        <SectionTitle>
-          {dt('postDetail.authorView', { author: authorName, name: displayName })}
-        </SectionTitle>
-
-        <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
-
-        <div>
-          <Link
-            href={`/topics/openings/${slug}`}
-            locale={locale}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            &larr; {dt('postDetail.backToOpening', { name: displayName })}
-          </Link>
-        </div>
-
-        <PostDetailContent
-          post={post}
-          user={user}
-          locale={locale}
-          topicKey={slug}
-          likeMeta={likeMeta}
-          replies={replies}
-          canReply={canReply}
-          replyRestrictionMessage={replyRestrictionMessage}
-          toggleLikeAction={toggleLike}
-          deletePostAction={deletePost}
-          createReplyAction={createReply}
-          redirectPath={`/${locale}/topics/openings/${slug}`}
-          likeI18nNamespace="topics.openings.postDetail"
-          deleteI18nNamespace="topics.openings.deletePost"
-          replyI18nNamespace="topics.openings.replies"
-          repliesTitle={dt('replies.title')}
-          repliesCount={dt('replies.count', { count: replies.length })}
-          noReplies={dt('replies.noReplies')}
-          loginToReply={dt('replies.loginToReply')}
-          extraContent={
-            post.rating ? (
-              <RatingDisplay
-                preferenceRating={post.rating.preferenceRating}
-                proficiencyRating={post.rating.proficiencyRating}
-              />
-            ) : undefined
-          }
-        />
-
-        <Breadcrumb
-          items={[
-            { label: t('title'), href: '/topics' },
-            { label: t('openings.title'), href: '/topics/openings' },
-            { label: displayName, href: `/topics/openings/${slug}` },
-            { label: t('openings.readMore') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+    <TopicPostDetailLayout
+      locale={locale}
+      pageTitle={dt('detail.pageTitle')}
+      sectionTitle={dt('postDetail.authorView', { author: authorName, name: displayName })}
+      topicVisual={<OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
+      backLink={{
+        href: `/topics/openings/${slug}`,
+        label: dt('postDetail.backToOpening', { name: displayName }),
+      }}
+      post={post}
+      user={user}
+      topicKey={slug}
+      likeMeta={likeMeta}
+      replies={replies}
+      canReply={canReply}
+      replyRestrictionMessage={replyRestrictionMessage}
+      toggleLikeAction={toggleLike}
+      deletePostAction={deletePost}
+      createReplyAction={createReply}
+      redirectPath={`/${locale}/topics/openings/${slug}`}
+      likeI18nNamespace="topics.openings.postDetail"
+      deleteI18nNamespace="topics.openings.deletePost"
+      replyI18nNamespace="topics.openings.replies"
+      repliesTitle={dt('replies.title')}
+      repliesCount={dt('replies.count', { count: replies.length })}
+      noReplies={dt('replies.noReplies')}
+      loginToReply={dt('replies.loginToReply')}
+      extraContent={
+        post.rating ? (
+          <RatingDisplay
+            preferenceRating={post.rating.preferenceRating}
+            proficiencyRating={post.rating.proficiencyRating}
+          />
+        ) : undefined
+      }
+      breadcrumbItems={[
+        { label: t('title'), href: '/topics' },
+        { label: t('openings.title'), href: '/topics/openings' },
+        { label: displayName, href: `/topics/openings/${slug}` },
+        { label: t('openings.readMore') },
+      ]}
+    />
   );
 }

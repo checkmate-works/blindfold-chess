@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -14,17 +13,10 @@ import {
   paginate,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -99,83 +91,59 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/squares/${square}`, p, sortBy);
 
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('squares.pageTitle')}</PageTitle>
+  const topicHeader = (
+    <>
+      {currentPage === 1 && <SquareHighlightBoard square={square} locale={locale} />}
 
-      <PagePanel>
-        <SectionTitle>{square}</SectionTitle>
-
-        {currentPage === 1 && <SquareHighlightBoard square={square} locale={locale} />}
-
-        {visibleOpenings.length > 0 && (
-          <div className="space-y-3">
-            <SectionTitle>{t('squares.openingsLink', { square })}</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {visibleOpenings.map((opening) => (
-                <OpeningCard
-                  key={opening.id}
-                  opening={opening}
-                  displayName={getDisplayName(opening.slug, opening.name)}
-                  locale={locale}
-                />
-              ))}
-            </div>
-            {hasMoreOpenings && (
-              <div className="text-center">
-                <Link
-                  href={`/topics/openings?first_move=${square}`}
-                  locale={locale}
-                  className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
-                >
-                  {t('squares.moreOpenings')}
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-
-        <AdBannerGuard slot="banner-wide" />
-
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {t('squares.postCount', { count: totalCount })}
-          </p>
-
-          <Link href={`/topics/squares/${square}/new`} locale={locale}>
-            <Button variant="primary" asChild>
-              {t('squares.newPost')}
-            </Button>
-          </Link>
-        </div>
-
-        <SortTabs square={square} locale={locale} />
-
-        {posts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('squares.noPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} locale={locale} square={square} />
+      {visibleOpenings.length > 0 && (
+        <div className="space-y-3">
+          <SectionTitle>{t('squares.openingsLink', { square })}</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {visibleOpenings.map((opening) => (
+              <OpeningCard
+                key={opening.id}
+                opening={opening}
+                displayName={getDisplayName(opening.slug, opening.name)}
+                locale={locale}
+              />
             ))}
           </div>
-        )}
+          {hasMoreOpenings && (
+            <div className="text-center">
+              <Link
+                href={`/topics/openings?first_move=${square}`}
+                locale={locale}
+                className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
+              >
+                {t('squares.moreOpenings')}
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
 
-        <AdBannerGuard slot="banner-standard" />
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('title'), href: '/topics' },
-            { label: t('squares.title'), href: '/topics/squares' },
-            { label: square },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+  return (
+    <TopicListPageLayout
+      locale={locale}
+      pageTitle={t('squares.pageTitle')}
+      sectionTitle={square}
+      topicHeader={topicHeader}
+      postCountText={t('squares.postCount', { count: totalCount })}
+      newPostButton={{ href: `/topics/squares/${square}/new`, label: t('squares.newPost') }}
+      sortTabs={<SortTabs square={square} locale={locale} />}
+      hasPosts={posts.length > 0}
+      noPostsText={t('squares.noPosts')}
+      postCards={posts.map((post) => (
+        <PostCard key={post.id} post={post} locale={locale} square={square} />
+      ))}
+      pagination={{ currentPage, totalPages, buildHref }}
+      breadcrumbItems={[
+        { label: t('title'), href: '/topics' },
+        { label: t('squares.title'), href: '/topics/squares' },
+        { label: square },
+      ]}
+    />
   );
 }

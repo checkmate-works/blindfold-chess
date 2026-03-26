@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { NewTopicPostLayout } from '@/app/[locale]/(public)/topics/_components/NewTopicPostLayout';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -53,28 +51,18 @@ export default async function NewPostPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'topics' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('squares.pageTitle')}</PageTitle>
-
-      <PagePanel>
-        <SectionTitle>{t('squares.newPostForm.title', { square: square })}</SectionTitle>
-
-        <SquareHighlightBoard square={square} locale={locale} disableLinks />
-
-        <NewPostForm locale={locale} square={square} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('title'), href: '/topics' },
-            { label: t('squares.title'), href: '/topics/squares' },
-            { label: square, href: `/topics/squares/${square}` },
-            { label: t('squares.newPost') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+    <NewTopicPostLayout
+      locale={locale}
+      pageTitle={t('squares.pageTitle')}
+      sectionTitle={t('squares.newPostForm.title', { square: square })}
+      topicVisual={<SquareHighlightBoard square={square} locale={locale} disableLinks />}
+      form={<NewPostForm locale={locale} square={square} />}
+      breadcrumbItems={[
+        { label: t('title'), href: '/topics' },
+        { label: t('squares.title'), href: '/topics/squares' },
+        { label: square, href: `/topics/squares/${square}` },
+        { label: t('squares.newPost') },
+      ]}
+    />
   );
 }
