@@ -6,15 +6,12 @@ import { Link } from '@/i18n/routing';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
+import type { PostDetailI18n } from './PostDetailContent';
 import { PostDetailContent } from './PostDetailContent';
-
-type BreadcrumbItem = {
-  label: string;
-  href?: string;
-};
 
 type CreateReplyState = { error?: string };
 
@@ -60,13 +57,7 @@ type Props = {
   deletePostAction: DeletePostAction;
   createReplyAction: CreateReplyAction;
   redirectPath: string;
-  likeI18nNamespace: string;
-  deleteI18nNamespace: string;
-  replyI18nNamespace: string;
-  repliesTitle: string;
-  repliesCount: string;
-  noReplies: string;
-  loginToReply: string;
+  i18n: PostDetailI18n;
   /** Extra content rendered inside PostDetailContent (e.g., rating display) */
   extraContent?: ReactNode;
   /** Breadcrumb items */
@@ -90,13 +81,7 @@ export function TopicPostDetailLayout({
   deletePostAction,
   createReplyAction,
   redirectPath,
-  likeI18nNamespace,
-  deleteI18nNamespace,
-  replyI18nNamespace,
-  repliesTitle,
-  repliesCount,
-  noReplies,
-  loginToReply,
+  i18n,
   extraContent,
   breadcrumbItems,
 }: Props) {
@@ -132,13 +117,7 @@ export function TopicPostDetailLayout({
           deletePostAction={deletePostAction}
           createReplyAction={createReplyAction}
           redirectPath={redirectPath}
-          likeI18nNamespace={likeI18nNamespace}
-          deleteI18nNamespace={deleteI18nNamespace}
-          replyI18nNamespace={replyI18nNamespace}
-          repliesTitle={repliesTitle}
-          repliesCount={repliesCount}
-          noReplies={noReplies}
-          loginToReply={loginToReply}
+          i18n={i18n}
           extraContent={extraContent}
         />
 

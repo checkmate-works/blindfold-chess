@@ -86,13 +86,15 @@ export default async function PostDetailPage({ params }: Props) {
       deletePostAction={deletePost}
       createReplyAction={createReply}
       redirectPath={`/${locale}/topics/squares/${square}`}
-      likeI18nNamespace="topics.squares"
-      deleteI18nNamespace="topics.squares.deletePost"
-      replyI18nNamespace="topics.squares.replies"
-      repliesTitle={t('squares.replies.title')}
-      repliesCount={t('squares.replies.count', { count: replies.length })}
-      noReplies={t('squares.replies.noReplies')}
-      loginToReply={t('squares.replies.loginToReply')}
+      i18n={{
+        likeNamespace: 'topics.squares',
+        deleteNamespace: 'topics.squares.deletePost',
+        replyNamespace: 'topics.squares.replies',
+        repliesTitle: t('squares.replies.title'),
+        repliesCount: t('squares.replies.count', { count: replies.length }),
+        noReplies: t('squares.replies.noReplies'),
+        loginToReply: t('squares.replies.loginToReply'),
+      }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },
         { label: t('squares.title'), href: '/topics/squares' },

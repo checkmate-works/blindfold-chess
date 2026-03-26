@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { JsonLd, generateBreadcrumbListSchema } from '@/lib/jsonld';
 
-type BreadcrumbItem = {
+export type BreadcrumbItem = {
   label: string;
   href?: string;
 };

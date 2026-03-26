@@ -97,13 +97,15 @@ export default async function OpeningPostDetailPage({ params }: Props) {
       deletePostAction={deletePost}
       createReplyAction={createReply}
       redirectPath={`/${locale}/topics/openings/${slug}`}
-      likeI18nNamespace="topics.openings.postDetail"
-      deleteI18nNamespace="topics.openings.deletePost"
-      replyI18nNamespace="topics.openings.replies"
-      repliesTitle={dt('replies.title')}
-      repliesCount={dt('replies.count', { count: replies.length })}
-      noReplies={dt('replies.noReplies')}
-      loginToReply={dt('replies.loginToReply')}
+      i18n={{
+        likeNamespace: 'topics.openings.postDetail',
+        deleteNamespace: 'topics.openings.deletePost',
+        replyNamespace: 'topics.openings.replies',
+        repliesTitle: dt('replies.title'),
+        repliesCount: dt('replies.count', { count: replies.length }),
+        noReplies: dt('replies.noReplies'),
+        loginToReply: dt('replies.loginToReply'),
+      }}
       extraContent={
         post.rating ? (
           <RatingDisplay

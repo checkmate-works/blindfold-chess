@@ -32,6 +32,16 @@ type CreateReplyAction = (
   formData: FormData
 ) => Promise<CreateReplyState>;
 
+export type PostDetailI18n = {
+  likeNamespace: string;
+  deleteNamespace: string;
+  replyNamespace: string;
+  repliesTitle: string;
+  repliesCount: string;
+  noReplies: string;
+  loginToReply: string;
+};
+
 type Props = {
   post: TopicPostWithAuthor;
   user: User | null;
@@ -45,13 +55,7 @@ type Props = {
   deletePostAction: DeletePostAction;
   createReplyAction: CreateReplyAction;
   redirectPath: string;
-  likeI18nNamespace: string;
-  deleteI18nNamespace: string;
-  replyI18nNamespace: string;
-  repliesTitle: string;
-  repliesCount: string;
-  noReplies: string;
-  loginToReply: string;
+  i18n: PostDetailI18n;
   extraContent?: React.ReactNode;
 };
 
@@ -68,13 +72,7 @@ export function PostDetailContent({
   deletePostAction,
   createReplyAction,
   redirectPath,
-  likeI18nNamespace,
-  deleteI18nNamespace,
-  replyI18nNamespace,
-  repliesTitle,
-  repliesCount,
-  noReplies,
-  loginToReply,
+  i18n,
   extraContent,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -119,7 +117,7 @@ export function PostDetailContent({
             initialLikeCount={likeMeta.likeCount}
             initialLikedByMe={likeMeta.likedByMe}
             toggleLikeAction={toggleLikeAction}
-            i18nNamespace={likeI18nNamespace}
+            i18nNamespace={i18n.likeNamespace}
           />
           {user && user.id === post.userId && (
             <DeletePostButton
@@ -127,7 +125,7 @@ export function PostDetailContent({
               locale={locale}
               redirectPath={redirectPath}
               deletePostAction={deletePostAction}
-              i18nNamespace={deleteI18nNamespace}
+              i18nNamespace={i18n.deleteNamespace}
             />
           )}
         </div>
@@ -136,10 +134,10 @@ export function PostDetailContent({
       <AdBannerGuard slot="banner-wide" />
 
       <SectionTitle>
-        {repliesTitle} ({repliesCount})
+        {i18n.repliesTitle} ({i18n.repliesCount})
       </SectionTitle>
 
-      {replies.length === 0 && <p className="text-sm text-muted-foreground">{noReplies}</p>}
+      {replies.length === 0 && <p className="text-sm text-muted-foreground">{i18n.noReplies}</p>}
 
       {canReply ? (
         user ? (
@@ -150,8 +148,8 @@ export function PostDetailContent({
             postId={post.id}
             toggleLikeAction={toggleLikeAction}
             createReplyAction={createReplyAction}
-            likeI18nNamespace={likeI18nNamespace}
-            replyI18nNamespace={replyI18nNamespace}
+            likeI18nNamespace={i18n.likeNamespace}
+            replyI18nNamespace={i18n.replyNamespace}
             showForm
           />
         ) : (
@@ -164,8 +162,8 @@ export function PostDetailContent({
                 postId={post.id}
                 toggleLikeAction={toggleLikeAction}
                 createReplyAction={createReplyAction}
-                likeI18nNamespace={likeI18nNamespace}
-                replyI18nNamespace={replyI18nNamespace}
+                likeI18nNamespace={i18n.likeNamespace}
+                replyI18nNamespace={i18n.replyNamespace}
                 showForm={false}
               />
             )}
@@ -175,7 +173,7 @@ export function PostDetailContent({
                 locale={locale}
                 className="text-foreground underline hover:text-muted-foreground transition-colors"
               >
-                {loginToReply}
+                {i18n.loginToReply}
               </Link>
             </p>
           </>
@@ -190,8 +188,8 @@ export function PostDetailContent({
               postId={post.id}
               toggleLikeAction={toggleLikeAction}
               createReplyAction={createReplyAction}
-              likeI18nNamespace={likeI18nNamespace}
-              replyI18nNamespace={replyI18nNamespace}
+              likeI18nNamespace={i18n.likeNamespace}
+              replyI18nNamespace={i18n.replyNamespace}
               showForm={false}
             />
           )}

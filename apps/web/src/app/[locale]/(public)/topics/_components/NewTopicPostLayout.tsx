@@ -2,12 +2,8 @@ import type { ReactNode } from 'react';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-type BreadcrumbItem = {
-  label: string;
-  href?: string;
-};
 
 type Props = {
   locale: Locale;
