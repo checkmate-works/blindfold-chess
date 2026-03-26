@@ -20,24 +20,34 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
     return { error: 'rateLimited' as const };
   }
 
-  const stripeCustomerId = await getOrCreateStripeCustomerId(user.id, user.email);
+  let stripeCustomerId: string;
+  try {
+    stripeCustomerId = await getOrCreateStripeCustomerId(user.id, user.email);
+  } catch {
+    return { error: 'sessionCreationFailed' as const };
+  }
 
   // Create Checkout session
-  const session = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    mode: 'subscription',
-    line_items: [
-      {
-        price: STRIPE_PRICE_ID,
-        quantity: 1,
+  let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>;
+  try {
+    session = await stripe.checkout.sessions.create({
+      customer: stripeCustomerId,
+      mode: 'subscription',
+      line_items: [
+        {
+          price: STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      success_url: `${SITE_URL}/${locale}/mypage/subscription?status=success`,
+      cancel_url: `${SITE_URL}/${locale}/pricing`,
+      subscription_data: {
+        metadata: { supabaseUserId: user.id },
       },
-    ],
-    success_url: `${SITE_URL}/${locale}/mypage/subscription?status=success`,
-    cancel_url: `${SITE_URL}/${locale}/pricing`,
-    subscription_data: {
-      metadata: { supabaseUserId: user.id },
-    },
-  });
+    });
+  } catch {
+    return { error: 'sessionCreationFailed' as const };
+  }
 
   if (!session.url) {
     return { error: 'sessionCreationFailed' as const };
