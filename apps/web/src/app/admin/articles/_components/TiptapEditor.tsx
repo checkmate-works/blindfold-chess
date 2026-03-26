@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Editor } from '@tiptap/core';
-import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -28,6 +27,7 @@ import {
 } from 'react-icons/lu';
 
 import type { TiptapJsonContent } from '../_lib/types';
+import { ResizableImage } from './ResizableImage';
 import './tiptap-editor.css';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
@@ -77,7 +77,7 @@ export function TiptapEditor({
       // Insert a placeholder paragraph while uploading
       const placeholderId = `upload-${Date.now()}`;
       const placeholderAttrs = {
-        src: '',
+        src: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
         alt: 'Uploading...',
         title: placeholderId,
         class: 'tiptap-image-placeholder',
@@ -150,7 +150,7 @@ export function TiptapEditor({
       Placeholder.configure({
         placeholder,
       }),
-      Image.configure({
+      ResizableImage.configure({
         inline: false,
         allowBase64: false,
         HTMLAttributes: {
@@ -455,6 +455,7 @@ function replacePlaceholderImage(editor: Editor, placeholderId: string, src: str
         alt,
         title: null,
         class: IMAGE_CLASS,
+        size: 'large',
       });
       return false; // stop traversal
     }

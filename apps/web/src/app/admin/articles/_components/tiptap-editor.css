@@ -99,3 +99,107 @@
   border-radius: 0.375rem;
   object-fit: none;
 }
+
+/* Image NodeView wrapper */
+.tiptap-image-node {
+  position: relative;
+  display: block;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.tiptap-image-node img {
+  cursor: pointer;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Image size variants */
+.tiptap-image-large {
+  width: 100%;
+}
+
+.tiptap-image-large img {
+  width: 100%;
+}
+
+.tiptap-image-small {
+  width: fit-content;
+  max-width: 400px;
+}
+
+.tiptap-image-small img {
+  max-width: 400px;
+}
+
+/* Image alignment variants */
+.tiptap-image-align-left {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.tiptap-image-align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tiptap-image-align-right {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Image toolbar (size + alignment toggles) */
+.tiptap-image-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-card, #fff);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+
+.tiptap-image-toggle-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.tiptap-image-toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--color-border, #d1d5db);
+  margin: 0 2px;
+}
+
+.tiptap-image-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-muted-foreground, #6b7280);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.tiptap-image-toggle-btn:hover {
+  background-color: var(--color-secondary, #f3f4f6);
+  color: var(--color-foreground, #111827);
+}
+
+.tiptap-image-toggle-btn-active {
+  background-color: var(--color-secondary, #f3f4f6);
+  color: var(--color-foreground, #111827);
+  font-weight: 600;
+}
