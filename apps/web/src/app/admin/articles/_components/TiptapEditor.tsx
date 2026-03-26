@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
@@ -23,11 +24,14 @@ import {
   LuPlus,
   LuQuote,
   LuStrikethrough,
+  LuTwitter,
   LuUnlink,
+  LuYoutube,
 } from 'react-icons/lu';
 
 import type { TiptapJsonContent } from '../_lib/types';
 import { ResizableImage } from './ResizableImage';
+import { TwitterEmbed } from './TwitterEmbed';
 import './tiptap-editor.css';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
@@ -157,6 +161,11 @@ export function TiptapEditor({
           class: IMAGE_CLASS,
         },
       }),
+      Youtube.configure({
+        inline: false,
+        nocookie: true,
+      }),
+      TwitterEmbed,
     ],
     content: initialContent ?? undefined,
     onUpdate: ({ editor: ed }) => {
@@ -325,6 +334,29 @@ export function TiptapEditor({
       },
       disabled: !imageUploadEnabled || isUploadingImage,
     },
+    {
+      icon: <LuYoutube size={16} />,
+      label: 'YouTube',
+      action: () => {
+        const url = window.prompt('YouTube URLを入力してください');
+        if (!url) return;
+        editor.commands.setYoutubeVideo({ src: url });
+      },
+    },
+    {
+      icon: <LuTwitter size={16} />,
+      label: 'Twitter',
+      action: () => {
+        const url = window.prompt('Twitter (X) URLを入力してください');
+        if (!url) return;
+        const tweetId = extractTweetId(url);
+        if (!tweetId) {
+          window.alert('有効なTwitter URLを入力してください');
+          return;
+        }
+        editor.commands.setTwitterEmbed({ tweetId, url });
+      },
+    },
   ];
 
   return (
@@ -463,6 +495,15 @@ function replacePlaceholderImage(editor: Editor, placeholderId: string, src: str
   if (tr.docChanged) {
     editor.view.dispatch(tr);
   }
+}
+
+/**
+ * Extract tweet ID from a Twitter/X URL.
+ * Supports: twitter.com/.../status/..., x.com/.../status/...
+ */
+function extractTweetId(url: string): string | null {
+  const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+  return match?.[1] ?? null;
 }
 
 function BubbleButton({
