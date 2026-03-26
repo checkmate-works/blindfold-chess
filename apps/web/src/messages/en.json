@@ -2158,7 +2158,37 @@
       "viewActivity": "Activity",
       "username": "Username",
       "filterByStatus": "Status",
-      "allStatuses": "All"
+      "allStatuses": "All",
+      "plan": "Plan",
+      "premium": "Premium",
+      "free": "Free",
+      "viewSubscriptions": "Subscriptions"
+    },
+    "subscriptions": "Subscriptions",
+    "subscriptionsTable": {
+      "title": "Subscriptions",
+      "user": "User",
+      "username": "Username",
+      "subscriptionId": "Subscription ID",
+      "priceId": "Price ID",
+      "status": "Status",
+      "cancelAtPeriodEnd": "Cancel at Period End",
+      "periodStart": "Period Start",
+      "periodEnd": "Period End",
+      "createdAt": "Created At",
+      "noSubscriptionsFound": "No subscriptions found.",
+      "filterByStatus": "Status",
+      "allStatuses": "All",
+      "active": "Active",
+      "trialing": "Trialing",
+      "pastDue": "Past Due",
+      "canceled": "Canceled",
+      "unpaid": "Unpaid",
+      "yes": "Yes",
+      "no": "No",
+      "searchUser": "Search by username",
+      "noResults": "No users found",
+      "clearFilter": "Clear"
     },
     "userPosts": {
       "title": "Posts by {username}",
@@ -2853,5 +2883,41 @@
       "missingDigit": "Password must contain at least one digit.",
       "weak": "Password is too weak. Please choose a stronger password."
     }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "description": "Choose the plan that's right for you",
+    "subtitle": "Support Blindfold Chess and enjoy an ad-free experience",
+    "freePlan": {
+      "name": "Free",
+      "price": "$0",
+      "feature1": "All features"
+    },
+    "adFreePlan": {
+      "name": "Ad-Free",
+      "price": "$1",
+      "priceUnit": "/ month",
+      "feature1": "All features",
+      "feature2": "Hide all advertisements"
+    },
+    "currentPlan": "Current plan",
+    "subscribe": "Subscribe",
+    "managePlan": "Manage plan"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "successMessage": "Your subscription is now active! Ads have been removed.",
+    "noSubscription": "No active subscription",
+    "noSubscriptionDescription": "Subscribe to remove ads and support Blindfold Chess.",
+    "viewPlans": "View plans",
+    "adFreePlan": "Ad-Free Plan",
+    "statusActive": "Active",
+    "statusCanceling": "Canceling",
+    "statusInactive": "Inactive",
+    "cancelingNote": "Your subscription will end at the end of the billing period.",
+    "accessUntil": "Ad-free access until {date}",
+    "nextBilling": "Next billing date",
+    "noBilling": "No future billing",
+    "manageSubscription": "Manage subscription"
   }
 }

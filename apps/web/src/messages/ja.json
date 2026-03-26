@@ -2159,7 +2159,37 @@
       "viewActivity": "アクティビティ",
       "username": "Username",
       "filterByStatus": "Status",
-      "allStatuses": "All"
+      "allStatuses": "All",
+      "plan": "プラン",
+      "premium": "Premium",
+      "free": "Free",
+      "viewSubscriptions": "サブスクリプション"
+    },
+    "subscriptions": "Subscriptions",
+    "subscriptionsTable": {
+      "title": "サブスクリプション",
+      "user": "ユーザー",
+      "username": "ユーザー名",
+      "subscriptionId": "Subscription ID",
+      "priceId": "Price ID",
+      "status": "ステータス",
+      "cancelAtPeriodEnd": "期間終了時にキャンセル",
+      "periodStart": "期間開始",
+      "periodEnd": "期間終了",
+      "createdAt": "作成日時",
+      "noSubscriptionsFound": "サブスクリプションが見つかりません。",
+      "filterByStatus": "ステータス",
+      "allStatuses": "すべて",
+      "active": "アクティブ",
+      "trialing": "トライアル",
+      "pastDue": "支払い遅延",
+      "canceled": "キャンセル済み",
+      "unpaid": "未払い",
+      "yes": "はい",
+      "no": "いいえ",
+      "searchUser": "ユーザー名で検索",
+      "noResults": "ユーザーが見つかりません",
+      "clearFilter": "解除"
     },
     "userPosts": {
       "title": "{username} の投稿",
@@ -2818,5 +2848,41 @@
       "missingDigit": "パスワードには数字を1文字以上含めてください。",
       "weak": "パスワードが脆弱です。より強力なパスワードを選択してください。"
     }
+  },
+  "pricing": {
+    "title": "料金プラン",
+    "description": "あなたに合ったプランをお選びください",
+    "subtitle": "Blindfold Chess を支援して、広告なしの体験をお楽しみください",
+    "freePlan": {
+      "name": "フリー",
+      "price": "$0",
+      "feature1": "サービス内の全機能"
+    },
+    "adFreePlan": {
+      "name": "広告なし",
+      "price": "$1",
+      "priceUnit": "/ 月",
+      "feature1": "サービス内の全機能",
+      "feature2": "すべての広告を非表示"
+    },
+    "currentPlan": "現在のプラン",
+    "subscribe": "登録する",
+    "managePlan": "プランを管理"
+  },
+  "subscription": {
+    "title": "サブスクリプション",
+    "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
+    "noSubscription": "有効なサブスクリプションがありません",
+    "noSubscriptionDescription": "サブスクリプションに登録して、広告を非表示にしましょう。",
+    "viewPlans": "プランを見る",
+    "adFreePlan": "広告なしプラン",
+    "statusActive": "有効",
+    "statusCanceling": "解約予定",
+    "statusInactive": "無効",
+    "cancelingNote": "現在の請求期間の終了時にサブスクリプションが終了します。",
+    "accessUntil": "{date} まで広告なしでご利用いただけます",
+    "nextBilling": "次回請求日",
+    "noBilling": "今後の請求はありません",
+    "manageSubscription": "サブスクリプションを管理"
   }
 }

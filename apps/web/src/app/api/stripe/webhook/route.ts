@@ -1,0 +1,49 @@
+import { NextResponse } from 'next/server';
+
+import type Stripe from 'stripe';
+
+import { STRIPE_WEBHOOK_SECRET, stripe } from '@/lib/stripe';
+import {
+  handleCheckoutCompleted,
+  handleSubscriptionDeleted,
+  handleSubscriptionUpdated,
+} from '@/lib/stripe-webhook-handlers';
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const sig = request.headers.get('stripe-signature');
+
+  if (!sig) {
+    return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
+      case 'customer.subscription.updated':
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        break;
+      case 'customer.subscription.deleted':
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        break;
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error(`Webhook handler error for ${event.type}:`, error);
+    return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
+  }
+
+  return NextResponse.json({ received: true });
+}

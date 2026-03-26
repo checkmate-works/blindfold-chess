@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
 import { Link } from '@/i18n/routing';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -19,9 +18,7 @@ type Props = {
   params: Promise<{ locale: Locale }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -104,7 +101,7 @@ export default async function FAQPage({ params }: Props) {
       <PagePanel>
         <FAQClient items={faqItems} />
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

@@ -3,8 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
 import {
   Divider,
   ListLink,
@@ -13,7 +11,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -33,15 +31,9 @@ type Props = {
   }>;
 };
 
+export const dynamic = 'force-dynamic';
+
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
-export async function generateStaticParams() {
-  return validCategories.flatMap((category) =>
-    SUPPORTED_LOCALES.map((locale) => ({
-      locale,
-      category,
-    }))
-  );
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;
@@ -97,7 +89,7 @@ export default async function LearnCategoryPage({ params }: Props) {
           </ListLinkContainer>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

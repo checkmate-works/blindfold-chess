@@ -136,6 +136,12 @@ Profile avatar image upload using Supabase Storage. Requires a storage bucket wi
 
 See [docs/avatar-storage-setup.md](docs/avatar-storage-setup.md) for setup instructions.
 
+## Subscription / Billing
+
+Stripe-based subscription billing ($1/month ad-free plan). Covers API keys, Product/Price creation, Webhook setup, Customer Portal, and environment variables.
+
+See [docs/stripe-setup.md](docs/stripe-setup.md) for setup instructions.
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:

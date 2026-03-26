@@ -10,6 +10,7 @@ import {
   attachProfilePostMeta,
   authorSelect,
   getLikeMetaForPost,
+  getPostCountByTopicType,
   getRepliesByPostId,
   ratingSelect,
   sortPosts,
@@ -237,19 +238,7 @@ export async function getOpeningPostsWithReplyMeta(
 /**
  * Get the count of top-level posts across all openings.
  */
-export async function getPostCountAcrossOpenings(): Promise<number> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(topicPosts)
-    .where(
-      and(
-        eq(topicPosts.topicType, 'opening'),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    );
-  return result.count;
-}
+export const getPostCountAcrossOpenings = (): Promise<number> => getPostCountByTopicType('opening');
 
 /**
  * Get top-level posts across all openings with reply metadata, paginated.

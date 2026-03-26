@@ -258,3 +258,21 @@ CREATE POLICY "feed_items_select" ON "feed_items"
 DROP POLICY IF EXISTS "feed_items_insert" ON "feed_items";
 CREATE POLICY "feed_items_insert" ON "feed_items"
   FOR INSERT WITH CHECK (auth.uid() = actor_id);
+
+-- =============================================================================
+-- stripe_customers (server-side only writes, user can read own)
+-- =============================================================================
+ALTER TABLE "stripe_customers" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "stripe_customers_select" ON "stripe_customers";
+CREATE POLICY "stripe_customers_select" ON "stripe_customers"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- subscriptions (server-side only writes, user can read own)
+-- =============================================================================
+ALTER TABLE "subscriptions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "subscriptions_select" ON "subscriptions";
+CREATE POLICY "subscriptions_select" ON "subscriptions"
+  FOR SELECT USING (auth.uid() = user_id);

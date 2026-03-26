@@ -12,7 +12,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -76,7 +76,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PagePanel>
         {currentPage === 1 && <SquareBoard locale={locale} />}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        <AdBannerGuard slot="banner-wide" />
 
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
@@ -96,7 +96,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

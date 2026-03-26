@@ -1,12 +1,9 @@
 import { Suspense } from 'react';
 
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
-
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { createPracticeResultMetadata } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './ResultClient';
@@ -17,20 +14,12 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'practice' });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/position-memory/result' }),
-    title: `${t('positionMemory.title')} - ${t('result')}`,
-  };
-}
+export const generateMetadata = createPracticeResultMetadata({
+  i18nKey: 'positionMemory',
+  canonicalPath: 'practice/position-memory/result',
+});
 
 export default async function PositionMemoryResultPage(props: Props) {
   const { locale } = await props.params;
@@ -41,7 +30,7 @@ export default async function PositionMemoryResultPage(props: Props) {
       <Suspense>
         <ResultClient locale={locale} />
       </Suspense>
-      <AdBanner slot="banner-standard" locale={locale} />
+      <AdBannerGuard slot="banner-standard" />
     </>
   );
 }

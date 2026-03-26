@@ -30,6 +30,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.96.0",
     "@xstate/react": "^6.0.0",
+    "downshift": "^9.3.2",
     "drizzle-orm": "^0.45.1",
     "katex": "^0.16.33",
     "next": "16.1.6",
@@ -47,6 +48,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "resend": "^6.9.2",
+    "stripe": "^20.4.1",
     "xstate": "5.25.1",
     "zod": "^4.3.6"
   },

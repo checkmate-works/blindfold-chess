@@ -16,7 +16,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -89,7 +89,6 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
         user?.id
       )
     : await getPostsAcrossOpeningsPaginated(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, user?.id);
-
   const openings = firstMoveSquare
     ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
     : await getOpeningsAsTree();
@@ -138,7 +137,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
           </>
         )}
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        <AdBannerGuard slot="banner-wide" />
 
         {firstMoveSquare
           ? currentPage === 1 && (
@@ -180,7 +179,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
               </Suspense>
             )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
-import dynamic from 'next/dynamic';
+// Renamed to avoid conflict with Next.js route segment config `export const dynamic`
+import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
-
-import { SUPPORTED_LOCALES } from '@/config';
 
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import {
@@ -20,7 +19,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ARTICLE_ICONS, type ArticleSlug, CATEGORY_STYLES } from '../../_lib/types';
 import {
-  getAllArticles,
   getArticle,
   getArticlesByCategory,
   getAvailableCategories,
@@ -28,7 +26,7 @@ import {
   getPracticeModulesForArticle,
 } from '../../_lib/utils';
 
-const MarkdownRenderer = dynamic(
+const MarkdownRenderer = nextDynamic(
   () =>
     import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
@@ -44,29 +42,7 @@ type Props = {
   }>;
 };
 
-export async function generateStaticParams() {
-  // We can't easily filter by category here without loading all articles,
-  // but generateStaticParams is for pre-rendering.
-  // Ideally we should know which article belongs to which category.
-  // For now, let's fetch all articles to map correct category.
-
-  const allParams = [];
-
-  for (const locale of SUPPORTED_LOCALES) {
-    const articles = await getAllArticles(locale);
-    for (const article of articles) {
-      if (article.category) {
-        allParams.push({
-          locale,
-          category: article.category,
-          slug: article.slug,
-        });
-      }
-    }
-  }
-
-  return allParams;
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug, category } = await params;
@@ -108,6 +84,7 @@ export default async function LearnArticlePage({ params }: Props) {
   // Get category data for CategoryIndex
   const categoryCounts = await getCategoryCounts(locale);
   const availableCategories = getAvailableCategories();
+
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
     label: t(`learn.categories.${cat}`),
@@ -138,7 +115,7 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        <AdBanner slot="banner-wide" locale={locale} />
+        <AdBannerGuard slot="banner-wide" />
 
         {relatedPracticeModules && (
           <div className="space-y-4">
@@ -205,7 +182,7 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

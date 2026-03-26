@@ -1,14 +1,11 @@
 import { Suspense } from 'react';
 
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
-import { SUPPORTED_LOCALES } from '@/config';
+import { setRequestLocale } from 'next-intl/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { createPracticeResultMetadata } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './ResultClient';
@@ -17,20 +14,12 @@ type Props = {
   params: Promise<{ locale: Locale }>;
 };
 
-export async function generateStaticParams() {
-  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
-}
+export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'practice' });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors/result' }),
-    title: `${t('squareColors.title')} - ${t('result')}`,
-  };
-}
+export const generateMetadata = createPracticeResultMetadata({
+  i18nKey: 'squareColors',
+  canonicalPath: 'practice/square-colors/result',
+});
 
 export default async function SquareColorsResultPage(props: Props) {
   const { locale } = await props.params;
@@ -44,8 +33,8 @@ export default async function SquareColorsResultPage(props: Props) {
     <Suspense>
       <ResultClient
         locale={locale}
-        adBannerWide={<AdBanner slot="banner-wide" locale={locale} />}
-        adBannerStandard={<AdBanner slot="banner-standard" locale={locale} />}
+        adBannerWide={<AdBannerGuard slot="banner-wide" />}
+        adBannerStandard={<AdBannerGuard slot="banner-standard" />}
         leaderboardRows={leaderboardRows}
         leaderboardDetailPath={leaderboardDetailPath}
       />

@@ -345,3 +345,43 @@ $$;
 -- Grant necessary permissions (public read for timeline, server-side INSERT)
 GRANT SELECT, INSERT ON TABLE public.feed_items TO authenticated;
 GRANT SELECT ON TABLE public.feed_items TO anon;
+
+-- =============================================================================
+-- stripe_customers
+-- =============================================================================
+
+-- FK constraint: stripe_customers.user_id -> auth.users(id)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'stripe_customers_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.stripe_customers
+      ADD CONSTRAINT stripe_customers_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Server-side only writes (no INSERT/UPDATE for authenticated)
+GRANT SELECT ON TABLE public.stripe_customers TO authenticated;
+
+-- =============================================================================
+-- subscriptions
+-- =============================================================================
+
+-- FK constraint: subscriptions.user_id -> auth.users(id)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'subscriptions_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.subscriptions
+      ADD CONSTRAINT subscriptions_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Users can read their own subscriptions; writes are server-side only
+GRANT SELECT ON TABLE public.subscriptions TO authenticated;

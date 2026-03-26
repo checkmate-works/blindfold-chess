@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getAdBannersForFeed, isAdsEnabled } from '@/lib/ad';
+import { getAdBannersForFeed, shouldShowAdsForUser } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
@@ -59,12 +59,12 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [initialFeed, adsEnabled] = await Promise.all([
+  const [initialFeed, showAds] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
-    isAdsEnabled(),
+    shouldShowAdsForUser(user?.id ?? null),
   ]);
 
-  const adBanners = adsEnabled ? await getAdBannersForFeed() : [];
+  const adBanners = showAds ? await getAdBannersForFeed() : [];
 
   return (
     <>

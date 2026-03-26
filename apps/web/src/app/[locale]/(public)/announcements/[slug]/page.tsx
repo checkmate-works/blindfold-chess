@@ -9,7 +9,7 @@ import { Link } from '@/i18n/routing';
 import { getOptionalUser } from '@/lib/auth';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -81,7 +81,7 @@ export default async function AnnouncementPage({ params }: Props) {
               </Link>
             </div>
 
-            <AdBanner slot="banner-standard" locale={locale} />
+            <AdBannerGuard slot="banner-standard" />
 
             <Divider />
 
@@ -121,7 +121,7 @@ export default async function AnnouncementPage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        <AdBanner slot="banner-standard" locale={locale} />
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

@@ -13,7 +13,7 @@ import {
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
 import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -99,7 +99,7 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
 
       <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
 
-      <AdBanner slot="banner-standard" locale={locale} />
+      <AdBannerGuard slot="banner-standard" />
 
       <Divider />
 

@@ -71,6 +71,13 @@
       "when": 1774219244015,
       "tag": "20260322224044_create_feed_items_table",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774430202569,
+      "tag": "20260325091642_create_stripe_subscription_tables",
+      "breakpoints": true
     }
   ]
 }
