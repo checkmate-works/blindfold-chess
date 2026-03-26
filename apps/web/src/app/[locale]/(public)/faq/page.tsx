@@ -3,11 +3,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { shouldShowAds } from '@/lib/ad';
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -56,8 +55,6 @@ export default async function FAQPage({ params }: Props) {
     },
   ];
 
-  const showAds = await shouldShowAds();
-
   const faqItems: FAQItem[] = [
     {
       id: 'invalid-move',
@@ -104,7 +101,7 @@ export default async function FAQPage({ params }: Props) {
       <PagePanel>
         <FAQClient items={faqItems} />
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

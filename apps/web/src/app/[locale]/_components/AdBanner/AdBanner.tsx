@@ -10,8 +10,6 @@ import type { AdBannerConfig } from '@/lib/ad';
 
 type AdBannerProps = {
   slot: string;
-  /** @deprecated No longer used. Kept for backward compatibility with existing call sites. */
-  locale?: string;
 };
 
 export function AdBanner({ slot }: AdBannerProps) {

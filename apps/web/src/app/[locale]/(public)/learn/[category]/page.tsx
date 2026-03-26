@@ -3,8 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import {
   Divider,
   ListLink,
@@ -13,7 +11,7 @@ import {
   PageTitle,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -65,7 +63,6 @@ export default async function LearnCategoryPage({ params }: Props) {
 
   const t = await getTranslations({ locale });
   const articles = await getArticlesByCategory(category as ArticleCategory, locale);
-  const showAds = await shouldShowAds();
 
   const categoryLabel = t(`learn.categories.${category}`);
 
@@ -92,7 +89,7 @@ export default async function LearnCategoryPage({ params }: Props) {
           </ListLinkContainer>
         )}
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

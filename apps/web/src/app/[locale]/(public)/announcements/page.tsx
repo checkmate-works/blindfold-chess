@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 
 import { HiLockClosed } from 'react-icons/hi2';
 
-import { shouldShowAds } from '@/lib/ad';
 import { getOptionalUser } from '@/lib/auth';
 
 import {
@@ -15,7 +14,7 @@ import {
   PageTitle,
   PaginationNav,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,7 +51,6 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
   const user = await getOptionalUser();
-  const showAds = await shouldShowAds();
   const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
@@ -118,7 +116,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
           </>
         )}
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

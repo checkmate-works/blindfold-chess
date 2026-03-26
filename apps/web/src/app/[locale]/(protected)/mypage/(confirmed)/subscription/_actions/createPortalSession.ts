@@ -3,12 +3,11 @@
 import { redirect } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
-import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, stripeCustomers } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { stripe } from '@/lib/stripe';
+import { getStripeCustomerId } from '@/lib/stripe-customer';
 
 export async function createPortalSession(locale: string) {
   const user = await getAuthenticatedUser();
@@ -19,19 +18,13 @@ export async function createPortalSession(locale: string) {
     return { error: 'rateLimited' as const };
   }
 
-  // Get Stripe customer ID
-  const [record] = await db
-    .select({ stripeCustomerId: stripeCustomers.stripeCustomerId })
-    .from(stripeCustomers)
-    .where(eq(stripeCustomers.userId, user.id))
-    .limit(1);
-
-  if (!record) {
+  const stripeCustomerId = await getStripeCustomerId(user.id);
+  if (!stripeCustomerId) {
     return { error: 'noSubscription' as const };
   }
 
   const session = await stripe.billingPortal.sessions.create({
-    customer: record.stripeCustomerId,
+    customer: stripeCustomerId,
     return_url: `${SITE_URL}/${locale}/mypage/subscription`,
   });
 

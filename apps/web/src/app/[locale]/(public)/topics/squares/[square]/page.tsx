@@ -6,7 +6,6 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -23,7 +22,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -94,7 +93,6 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     return translated === `topics.openings.names.${slug}` ? fallback : translated;
   };
 
-  const showAds = await shouldShowAds();
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
   const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
@@ -138,7 +136,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
+        <AdBannerGuard slot="banner-wide" />
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -164,7 +162,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

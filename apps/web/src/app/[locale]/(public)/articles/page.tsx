@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import {
   Divider,
   ListLink,
@@ -12,7 +10,7 @@ import {
   PageTitle,
   PaginationNav,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -58,7 +56,6 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
 
   const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
   const articles = await getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset);
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-12">
@@ -103,7 +100,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
           </>
         )}
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

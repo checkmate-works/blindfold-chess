@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -36,7 +34,6 @@ export default async function ManualPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'manual' });
   const articles = await getAllManualArticles(locale);
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-8">
@@ -58,7 +55,7 @@ export default async function ManualPage({ params }: Props) {
           ))}
         </div>
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

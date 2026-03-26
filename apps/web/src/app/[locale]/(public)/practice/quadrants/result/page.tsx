@@ -3,9 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { shouldShowAds } from '@/lib/ad';
-
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -33,17 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function QuadrantAnchorsResultPage(props: Props) {
   const { locale } = await props.params;
   setRequestLocale(locale);
-  const showAds = await shouldShowAds();
 
   return (
     <>
       <Suspense>
-        <ResultClient
-          locale={locale}
-          adBanner={showAds ? <AdBanner slot="banner-wide" locale={locale} /> : null}
-        />
+        <ResultClient locale={locale} adBanner={<AdBannerGuard slot="banner-wide" />} />
       </Suspense>
-      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+      <AdBannerGuard slot="banner-standard" />
     </>
   );
 }

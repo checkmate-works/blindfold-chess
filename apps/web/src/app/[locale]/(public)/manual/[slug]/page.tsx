@@ -4,10 +4,8 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -64,7 +62,6 @@ export default async function ManualArticlePage({ params }: Props) {
   }
 
   const title = article.metadata.title;
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-12">
@@ -77,7 +74,7 @@ export default async function ManualArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

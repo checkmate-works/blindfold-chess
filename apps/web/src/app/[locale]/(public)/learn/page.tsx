@@ -2,10 +2,8 @@ import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -39,7 +37,6 @@ export default async function LearnPage({ params }: Props) {
   const t = await getTranslations({ locale });
   const categoryCounts = await getCategoryCounts(locale);
   const availableCategories = getAvailableCategories();
-  const showAds = await shouldShowAds();
 
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
@@ -75,7 +72,7 @@ export default async function LearnPage({ params }: Props) {
           })}
         </div>
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
@@ -14,7 +13,7 @@ import {
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
 import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -85,7 +84,6 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
   const data = await getLeaderboard(validated.module, validated.key, validated.period, page);
   const t = await getTranslations({ locale, namespace: 'leaderboard' });
   const detailTitle = t(`cardTitle.${validated.module}.${validated.key}`);
-  const showAds = await shouldShowAds();
 
   return (
     <PagePanel>
@@ -101,7 +99,7 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
 
       <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
 
-      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+      <AdBannerGuard slot="banner-standard" />
 
       <Divider />
 

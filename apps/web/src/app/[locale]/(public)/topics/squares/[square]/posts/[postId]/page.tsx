@@ -4,8 +4,6 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { PostDetailContent } from '@/app/[locale]/(public)/topics/_components/PostDetailContent';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
@@ -70,7 +68,6 @@ export default async function PostDetailPage({ params }: Props) {
       : null;
 
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-8">
@@ -113,7 +110,6 @@ export default async function PostDetailPage({ params }: Props) {
           repliesCount={t('squares.replies.count', { count: replies.length })}
           noReplies={t('squares.replies.noReplies')}
           loginToReply={t('squares.replies.loginToReply')}
-          showAds={showAds}
         />
 
         <Breadcrumb

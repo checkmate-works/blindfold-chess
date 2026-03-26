@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { shouldShowAds } from '@/lib/ad';
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -13,7 +12,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -62,7 +61,6 @@ export default async function SquaresPage({ params, searchParams }: Props) {
     (currentPage - 1) * PAGE_SIZE,
     user?.id
   );
-  const showAds = await shouldShowAds();
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -78,7 +76,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PagePanel>
         {currentPage === 1 && <SquareBoard locale={locale} />}
 
-        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
+        <AdBannerGuard slot="banner-wide" />
 
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
@@ -98,7 +96,7 @@ export default async function SquaresPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 

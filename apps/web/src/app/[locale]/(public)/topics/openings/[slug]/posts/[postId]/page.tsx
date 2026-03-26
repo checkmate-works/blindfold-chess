@@ -4,8 +4,6 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { PostDetailContent } from '@/app/[locale]/(public)/topics/_components/PostDetailContent';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
@@ -81,7 +79,6 @@ export default async function OpeningPostDetailPage({ params }: Props) {
   const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
 
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-8">
@@ -124,7 +121,6 @@ export default async function OpeningPostDetailPage({ params }: Props) {
           repliesCount={dt('replies.count', { count: replies.length })}
           noReplies={dt('replies.noReplies')}
           loginToReply={dt('replies.loginToReply')}
-          showAds={showAds}
           extraContent={
             post.rating ? (
               <RatingDisplay

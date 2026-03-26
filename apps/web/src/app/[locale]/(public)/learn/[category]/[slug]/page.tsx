@@ -5,11 +5,10 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { shouldShowAds } from '@/lib/ad';
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import {
@@ -85,7 +84,6 @@ export default async function LearnArticlePage({ params }: Props) {
   // Get category data for CategoryIndex
   const categoryCounts = await getCategoryCounts(locale);
   const availableCategories = getAvailableCategories();
-  const showAds = await shouldShowAds();
 
   const categoryInfos = availableCategories.map((cat) => ({
     category: cat,
@@ -117,7 +115,7 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        {showAds && <AdBanner slot="banner-wide" locale={locale} />}
+        <AdBannerGuard slot="banner-wide" />
 
         {relatedPracticeModules && (
           <div className="space-y-4">
@@ -184,7 +182,7 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

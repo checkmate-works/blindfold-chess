@@ -2,7 +2,7 @@ import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
 import { LinkedText, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
@@ -53,7 +53,6 @@ type Props = {
   repliesCount: string;
   noReplies: string;
   loginToReply: string;
-  showAds?: boolean;
   extraContent?: React.ReactNode;
 };
 
@@ -77,7 +76,6 @@ export function PostDetailContent({
   repliesCount,
   noReplies,
   loginToReply,
-  showAds = true,
   extraContent,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -136,7 +134,7 @@ export function PostDetailContent({
         </div>
       </div>
 
-      {showAds && <AdBanner slot="banner-wide" locale={locale} />}
+      <AdBannerGuard slot="banner-wide" />
 
       <SectionTitle>
         {repliesTitle} ({repliesCount})
@@ -204,7 +202,7 @@ export function PostDetailContent({
         </>
       )}
 
-      {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+      <AdBannerGuard slot="banner-standard" />
 
       <HashScrollTarget />
     </>

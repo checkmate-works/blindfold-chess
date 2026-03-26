@@ -2,10 +2,8 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -35,7 +33,6 @@ export default async function GlossaryIndexPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'glossary' });
-  const showAds = await shouldShowAds();
 
   return (
     <div className="space-y-8">
@@ -52,7 +49,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
           <CategoryIndex locale={locale} />
         </div>
 
-        {showAds && <AdBanner slot="banner-standard" locale={locale} />}
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

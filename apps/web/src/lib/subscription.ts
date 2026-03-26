@@ -4,15 +4,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
 import { db, subscriptions } from '@/lib/db';
-
-const DB_QUERY_TIMEOUT_MS = 5000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DB query timeout')), ms)),
-  ]);
-}
+import { withTimeout } from '@/lib/db-timeout';
 
 export const hasActiveSubscription = unstable_cache(
   async (userId: string): Promise<boolean> => {
@@ -27,8 +19,7 @@ export const hasActiveSubscription = unstable_cache(
               inArray(subscriptions.status, ['active', 'trialing'])
             )
           )
-          .limit(1),
-        DB_QUERY_TIMEOUT_MS
+          .limit(1)
       );
       return !!row;
     } catch (error) {
@@ -52,8 +43,7 @@ export async function getUserSubscription(userId: string) {
             inArray(subscriptions.status, ['active', 'trialing', 'past_due'])
           )
         )
-        .limit(1),
-      DB_QUERY_TIMEOUT_MS
+        .limit(1)
     );
     return row ?? null;
   } catch (error) {

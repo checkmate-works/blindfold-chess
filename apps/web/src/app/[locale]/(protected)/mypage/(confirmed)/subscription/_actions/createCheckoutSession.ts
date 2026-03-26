@@ -3,12 +3,11 @@
 import { redirect } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
-import { eq } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, stripeCustomers } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { stripe } from '@/lib/stripe';
+import { getOrCreateStripeCustomerId } from '@/lib/stripe-customer';
 
 export async function createCheckoutSession(locale: string) {
   const user = await getAuthenticatedUser();
@@ -19,28 +18,7 @@ export async function createCheckoutSession(locale: string) {
     return { error: 'rateLimited' as const };
   }
 
-  // Find or create Stripe customer
-  let stripeCustomerId: string;
-
-  const [existing] = await db
-    .select({ stripeCustomerId: stripeCustomers.stripeCustomerId })
-    .from(stripeCustomers)
-    .where(eq(stripeCustomers.userId, user.id))
-    .limit(1);
-
-  if (existing) {
-    stripeCustomerId = existing.stripeCustomerId;
-  } else {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: { supabaseUserId: user.id },
-    });
-    await db.insert(stripeCustomers).values({
-      userId: user.id,
-      stripeCustomerId: customer.id,
-    });
-    stripeCustomerId = customer.id;
-  }
+  const stripeCustomerId = await getOrCreateStripeCustomerId(user.id, user.email);
 
   // Create Checkout session
   const session = await stripe.checkout.sessions.create({

@@ -3,11 +3,9 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { shouldShowAds } from '@/lib/ad';
-
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -43,13 +41,12 @@ export default async function LegalMovesResultPage(props: Props) {
   const leaderboardResult = await getLeaderboard('legal_moves', piece, 'weekly', 1);
   const leaderboardRows = leaderboardResult.rows.slice(0, 3);
   const leaderboardDetailPath = buildDetailPath('weekly', 'legal_moves', piece);
-  const showAds = await shouldShowAds();
 
   return (
     <Suspense>
       <ResultClient
         locale={locale}
-        adBannerStandard={showAds ? <AdBanner slot="banner-standard" locale={locale} /> : null}
+        adBannerStandard={<AdBannerGuard slot="banner-standard" />}
         leaderboardRows={leaderboardRows}
         leaderboardDetailPath={leaderboardDetailPath}
       />
