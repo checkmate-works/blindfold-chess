@@ -83,6 +83,10 @@
       "title": "インタビュー",
       "description": "チェスプレイヤーのインタビュー質問と回答を閲覧できます"
     },
+    "interviewQuestion": {
+      "title": "{label} - インタビュー",
+      "description": "インタビュー質問に回答: {label}"
+    },
     "mypageChallengeResults": {
       "title": "チャレンジ結果一覧",
       "description": "すべてのチャレンジ結果をフィルター付きで閲覧できます"
@@ -2423,10 +2427,32 @@
   "interview": {
     "title": "インタビュー",
     "noAnswer": "未回答",
+    "answered": "回答済み",
     "questions": {
       "favorite_opening": {
         "label": "好きなオープニング",
         "description": "一番好きなオープニングは何ですか？"
+      }
+    },
+    "detail": {
+      "selectOpening": "オープニングを選択",
+      "searchPlaceholder": "オープニングを検索...",
+      "save": "保存",
+      "delete": "回答を削除",
+      "confirmDelete": "回答を削除してもよろしいですか？",
+      "currentAnswer": "あなたの回答",
+      "signInRequired": "この質問に回答するにはサインインしてください。",
+      "signIn": "サインイン",
+      "signUp": "サインアップ",
+      "saving": "保存中...",
+      "deleting": "削除中...",
+      "errors": {
+        "unauthorized": "この操作を行うにはサインインが必要です。",
+        "invalidQuestionKey": "無効な質問です。",
+        "invalidAnswerValue": "有効なオプションを選択してください。",
+        "alreadyAnswered": "この質問にはすでに回答済みです。",
+        "notFound": "回答が見つかりません。",
+        "unknown": "予期しないエラーが発生しました。もう一度お試しください。"
       }
     }
   },

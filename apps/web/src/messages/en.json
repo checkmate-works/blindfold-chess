@@ -83,6 +83,10 @@
       "title": "Interview",
       "description": "Browse interview questions and answers from chess players"
     },
+    "interviewQuestion": {
+      "title": "{label} - Interview",
+      "description": "Answer the interview question: {label}"
+    },
     "mypageChallengeResults": {
       "title": "All Challenge Results",
       "description": "Browse all your challenge results with filters"
@@ -2458,10 +2462,32 @@
   "interview": {
     "title": "Interview",
     "noAnswer": "Not answered yet",
+    "answered": "Answered",
     "questions": {
       "favorite_opening": {
         "label": "Favourite Opening",
         "description": "Which opening do you enjoy playing the most?"
+      }
+    },
+    "detail": {
+      "selectOpening": "Select an opening",
+      "searchPlaceholder": "Search openings...",
+      "save": "Save",
+      "delete": "Delete Answer",
+      "confirmDelete": "Are you sure you want to delete your answer?",
+      "currentAnswer": "Your Answer",
+      "signInRequired": "Please sign in to answer this question.",
+      "signIn": "Sign In",
+      "signUp": "Sign Up",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "errors": {
+        "unauthorized": "You must be signed in to perform this action.",
+        "invalidQuestionKey": "Invalid question.",
+        "invalidAnswerValue": "Please select a valid option.",
+        "alreadyAnswered": "You have already answered this question.",
+        "notFound": "Answer not found.",
+        "unknown": "An unexpected error occurred. Please try again."
       }
     }
   },
