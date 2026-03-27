@@ -34,7 +34,7 @@ async function getCurrentUserId(): Promise<string | null> {
 // Cached ranking data (shared across all users)
 // ---------------------------------------------------------------------------
 
-const REVALIDATE_SECONDS = 300; // 5 minutes
+const REVALIDATE_SECONDS = 60; // 1 minute
 
 function getCachedRanking(
   module: LeaderboardModule,
