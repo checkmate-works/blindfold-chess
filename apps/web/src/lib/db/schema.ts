@@ -753,11 +753,12 @@ export type NewNotification = typeof notifications.$inferInsert;
  * following the same pattern as other topic types. It appears in URLs
  * (e.g., /topics/openings/french-defense).
  *
- * @design No parent_id — flat structure for now
+ * @design Flat URL slugs — no hierarchical paths
  *
- * This initial schema stores only opening families (e.g., "Sicilian Defense"),
- * not individual variations (e.g., "Sicilian Najdorf"). A `parent_id` column
- * for hierarchical variation support may be added in a future migration.
+ * Although parentSlug models a tree, URLs remain flat (/openings/kings-gambit-declined,
+ * not /openings/kings-gambit/declined). The slug is used as topicKey in topicPosts and
+ * as answerValue in userInterviewAnswers; hierarchical paths would require reverse-mapping
+ * logic with no SEO or UX benefit. Hierarchy is expressed in the UI (breadcrumbs) instead.
  */
 export const chessOpenings = pgTable(
   'chess_openings',
@@ -1057,3 +1058,21 @@ export const subscriptions = pgTable(
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+
+// User Interview Answers
+export const userInterviewAnswers = pgTable(
+  'user_interview_answers',
+  {
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    questionKey: varchar('question_key', { length: 50 }).notNull(),
+    answerValue: varchar('answer_value', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ name: 'user_interview_answers_pkey', columns: [table.userId, table.questionKey] }),
+    index('idx_user_interview_answers_question').on(table.questionKey),
+  ]
+);
+
+export type UserInterviewAnswer = typeof userInterviewAnswers.$inferSelect;
+export type NewUserInterviewAnswer = typeof userInterviewAnswers.$inferInsert;

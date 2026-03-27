@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+
+import { FaTachometerAlt } from 'react-icons/fa';
 
 import { getAdBannersForFeed, shouldShowAdsForUser } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
-import { PageTitle } from '@/app/[locale]/_components';
+import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -53,6 +56,7 @@ export default async function HomePage({ params }: Props) {
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
   const tCommon = await getTranslations({ locale, namespace: 'Common' });
+  const tHeader = await getTranslations({ locale, namespace: 'Header' });
 
   const supabase = await createClient();
   const {
@@ -68,14 +72,23 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      <div className="mb-8">
-        <PageTitle>{tHome('pageTitle')}</PageTitle>
+      <div className="mb-8 flex items-center justify-center gap-2">
+        <PageTitle className="!mb-0">{tHome('pageTitle')}</PageTitle>
+        {user && (
+          <Link
+            href="/"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={tHeader('dashboard')}
+          >
+            <FaTachometerAlt className="h-5 w-5" />
+          </Link>
+        )}
       </div>
 
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
-        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <DashboardCard>
           <VsAiCard locale={locale} />
           <FeedClient
             initialItems={initialFeed.items}
@@ -89,7 +102,7 @@ export default async function HomePage({ params }: Props) {
             sponsorLabel={tCommon('sponsor')}
             sponsoredLinkLabel={tCommon('sponsoredLink')}
           />
-        </div>
+        </DashboardCard>
       </div>
     </>
   );

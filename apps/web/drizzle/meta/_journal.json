@@ -85,6 +85,13 @@
       "when": 1774553985468,
       "tag": "20260326193945_add_content_json_to_articles",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1774597275637,
+      "tag": "20260327074115_create_user_interview_answers_table",
+      "breakpoints": true
     }
   ]
 }

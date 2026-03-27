@@ -1,7 +1,8 @@
 import type { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { ChallengeCard } from './ChallengeCard';
+import { ChallengeCard } from '@/app/_components';
+
 import { DashboardHero } from './DashboardHero';
 import { GameSectionCard } from './GameSectionCard';
 import { GameShortcutCard } from './GameShortcutCard';

@@ -21,6 +21,7 @@ import {
   getNavigablePreviousPeriod,
   getPreviousPeriodLabel,
 } from '../_lib/dashboard-utils';
+import { selectClassName } from '../_lib/ui-constants';
 import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
@@ -31,9 +32,6 @@ import { StatsCard } from './StatsCard';
 // (2) 定期的なデータクリーンアップを想定しており、長期間のデータ保持を前提としない
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
-
-const selectClassName =
-  'px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 
 export function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('Mypage');

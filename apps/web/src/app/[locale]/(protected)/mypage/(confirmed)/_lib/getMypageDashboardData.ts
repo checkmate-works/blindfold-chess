@@ -1,17 +1,25 @@
-import { and, count, eq, isNull } from 'drizzle-orm';
+import { and, count, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts, userFollows } from '@/lib/db';
+import { db, profiles, topicPostLikes, topicPosts, userInterviewAnswers } from '@/lib/db';
+
+import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 
 export type MypageDashboardData = {
   username: string | undefined;
+  displayName: string | null;
+  avatarUrl: string | null;
   likesCount: number;
-  followingCount: number;
+  unansweredInterviewCount: number;
 };
 
 export async function getMypageDashboardData(userId: string): Promise<MypageDashboardData> {
-  const [profileResult, likesResult, followingResult] = await Promise.all([
+  const [profileResult, likesResult, answeredResult] = await Promise.all([
     db
-      .select({ username: profiles.username })
+      .select({
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      })
       .from(profiles)
       .where(eq(profiles.id, userId))
       .limit(1),
@@ -22,14 +30,22 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt))),
     db
       .select({ value: count() })
-      .from(userFollows)
-      .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-      .where(and(eq(userFollows.followerId, userId), isNull(profiles.deletedAt))),
+      .from(userInterviewAnswers)
+      .where(
+        and(
+          eq(userInterviewAnswers.userId, userId),
+          inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS])
+        )
+      ),
   ]);
 
-  const username = profileResult[0]?.username;
+  const profile = profileResult[0];
+  const username = profile?.username;
+  const displayName = profile?.displayName ?? null;
+  const avatarUrl = profile?.avatarUrl ?? null;
   const likesCount = likesResult[0]?.value ?? 0;
-  const followingCount = followingResult[0]?.value ?? 0;
+  const answeredCount = answeredResult[0]?.value ?? 0;
+  const unansweredInterviewCount = Math.max(0, INTERVIEW_QUESTION_KEYS.length - answeredCount);
 
-  return { username, likesCount, followingCount };
+  return { username, displayName, avatarUrl, likesCount, unansweredInterviewCount };
 }

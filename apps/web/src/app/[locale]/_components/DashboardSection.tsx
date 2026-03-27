@@ -1,0 +1,9 @@
+import type { ReactNode } from 'react';
+
+type Props = {
+  children: ReactNode;
+};
+
+export function DashboardSection({ children }: Props) {
+  return <div className="p-4 sm:p-6 border-b border-border">{children}</div>;
+}

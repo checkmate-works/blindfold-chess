@@ -133,6 +133,27 @@ export async function isValidOpening(slug: string): Promise<boolean> {
   return result !== null;
 }
 
+/**
+ * Check whether a user has posted a top-level post for a specific opening.
+ */
+export async function hasUserPostedForOpening(userId: string, slug: string): Promise<boolean> {
+  const result = await db
+    .select({ id: topicPosts.id })
+    .from(topicPosts)
+    .where(
+      and(
+        eq(topicPosts.topicType, 'opening'),
+        eq(topicPosts.topicKey, slug),
+        eq(topicPosts.userId, userId),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0;
+}
+
 export type OpeningPostWithAuthor = TopicPost & {
   author: Pick<Profile, 'username' | 'displayName' | 'avatarUrl' | 'flair' | 'country'> | null;
   rating: Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null;

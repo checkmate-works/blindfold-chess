@@ -21,6 +21,7 @@ import {
 } from '../_lib/dashboard-utils';
 import {
   DEFAULT_PIECE_SELECTION,
+  PIECE_SHORT_TO_NAME,
   type PieceSelection,
   derivePieceSelectionFromSessions,
 } from '../_lib/derive-piece-filter';
@@ -28,14 +29,6 @@ import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';
 export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
-
-const PIECE_SHORT_TO_NAME: Record<string, string> = {
-  k: 'king',
-  q: 'queen',
-  r: 'rook',
-  b: 'bishop',
-  n: 'knight',
-};
 
 type BoardOrientation = 'white' | 'black' | 'random';
 
@@ -169,7 +162,10 @@ export function useDashboardData(locale: string) {
   }, []);
 
   const activePiece = useMemo(
-    () => (pieceFilter === 'random' ? 'random' : (PIECE_SHORT_TO_NAME[pieceFilter] ?? 'random')),
+    () =>
+      pieceFilter === 'random'
+        ? 'random'
+        : (PIECE_SHORT_TO_NAME[pieceFilter as keyof typeof PIECE_SHORT_TO_NAME] ?? 'random'),
     [pieceFilter]
   );
   const filterCtx = useMemo<FilterContext>(

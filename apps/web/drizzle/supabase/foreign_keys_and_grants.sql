@@ -385,3 +385,24 @@ $$;
 
 -- Users can read their own subscriptions; writes are server-side only
 GRANT SELECT ON TABLE public.subscriptions TO authenticated;
+
+-- =============================================================================
+-- user_interview_answers
+-- =============================================================================
+
+-- FK constraint: user_interview_answers.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_interview_answers_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_interview_answers
+      ADD CONSTRAINT user_interview_answers_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read, authenticated insert/delete)
+GRANT SELECT, INSERT, DELETE ON TABLE public.user_interview_answers TO authenticated;
+GRANT SELECT ON TABLE public.user_interview_answers TO anon;
