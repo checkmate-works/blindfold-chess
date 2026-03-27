@@ -116,4 +116,67 @@ describe('validateArticleData', () => {
   it('should accept title of exactly 1 character', () => {
     expect(validateArticleData({ ...validData, title: 'T' })).toBeNull();
   });
+
+  // contentFormat validation tests
+  describe('contentFormat validation', () => {
+    it('should allow empty content when contentFormat is tiptap_json', () => {
+      expect(
+        validateArticleData({ ...validData, content: '', contentFormat: 'tiptap_json' })
+      ).toBeNull();
+    });
+
+    it('should return error when content is empty and contentFormat is markdown', () => {
+      expect(validateArticleData({ ...validData, content: '', contentFormat: 'markdown' })).toBe(
+        'invalid content'
+      );
+    });
+
+    it('should return error when content is empty and contentFormat is undefined (default)', () => {
+      expect(validateArticleData({ ...validData, content: '' })).toBe('invalid content');
+    });
+
+    it('should return error for invalid contentFormat value', () => {
+      expect(
+        validateArticleData({
+          ...validData,
+          contentFormat: 'html' as 'markdown',
+        })
+      ).toBe('invalid content format');
+    });
+
+    it('should skip contentFormat validation when contentFormat is empty string (falsy)', () => {
+      // NOTE: Empty string contentFormat is treated as falsy and skips the
+      // VALID_CONTENT_FORMATS check. This may be intentional (equivalent to
+      // undefined/not provided), but if empty string should be rejected,
+      // the condition in validation.ts needs to change from
+      // `if (data.contentFormat && ...)` to
+      // `if (data.contentFormat !== undefined && ...)`.
+      expect(
+        validateArticleData({
+          ...validData,
+          contentFormat: '' as 'markdown',
+        })
+      ).toBeNull();
+    });
+
+    it('should accept valid markdown contentFormat with content', () => {
+      expect(
+        validateArticleData({ ...validData, content: '# Hello', contentFormat: 'markdown' })
+      ).toBeNull();
+    });
+
+    it('should accept valid tiptap_json contentFormat with content', () => {
+      expect(
+        validateArticleData({
+          ...validData,
+          content: 'Some text',
+          contentFormat: 'tiptap_json',
+        })
+      ).toBeNull();
+    });
+
+    it('should accept data without contentFormat (undefined)', () => {
+      expect(validateArticleData({ ...validData })).toBeNull();
+    });
+  });
 });

@@ -1,8 +1,7 @@
 'use client';
 
-import type { ArticleImage } from '@/lib/db';
-
 import { updateArticle } from '../_actions/updateArticle';
+import type { ContentFormat, TiptapJsonContent } from '../_lib/types';
 import { ArticleForm } from './ArticleForm';
 
 type EditArticleFormProps = {
@@ -11,6 +10,8 @@ type EditArticleFormProps = {
     slug: string;
     title: string;
     content: string;
+    contentJson: TiptapJsonContent | null;
+    contentFormat: ContentFormat;
     locale: string;
     status: string;
     pinnedAt: string | null;
@@ -21,17 +22,10 @@ type EditArticleFormProps = {
     icon: string;
   };
   categories: { id: string; name: string }[];
-  images?: ArticleImage[];
   labels: React.ComponentProps<typeof ArticleForm>['labels'];
 };
 
-export function EditArticleForm({
-  id,
-  defaultValues,
-  categories,
-  images,
-  labels,
-}: EditArticleFormProps) {
+export function EditArticleForm({ id, defaultValues, categories, labels }: EditArticleFormProps) {
   return (
     <ArticleForm
       articleId={id}
@@ -39,6 +33,8 @@ export function EditArticleForm({
         slug: defaultValues.slug,
         title: defaultValues.title,
         content: defaultValues.content,
+        contentJson: defaultValues.contentJson,
+        contentFormat: defaultValues.contentFormat,
         locale: defaultValues.locale,
         excerpt: defaultValues.excerpt,
         description: defaultValues.description,
@@ -46,7 +42,6 @@ export function EditArticleForm({
         icon: defaultValues.icon,
       }}
       categories={categories}
-      initialImages={images}
       onSaveDraft={(data) =>
         updateArticle(id, {
           ...data,

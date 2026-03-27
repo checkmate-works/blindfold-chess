@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
@@ -10,7 +12,10 @@ import type { MutationResult } from '../../_lib/action-factories';
 import type { ArticleMutationData } from '../_lib/types';
 import { validateArticleData } from '../_lib/validation';
 
-export async function updateArticle(id: string, data: ArticleMutationData): Promise<MutationResult> {
+export async function updateArticle(
+  id: string,
+  data: ArticleMutationData
+): Promise<MutationResult> {
   const guard = await adminMutationGuard(data, validateArticleData);
   if (guard) {
     return guard;
@@ -29,6 +34,8 @@ export async function updateArticle(id: string, data: ArticleMutationData): Prom
         slug: data.slug,
         title: data.title,
         content: data.content,
+        contentJson: data.contentJson ?? null,
+        contentFormat: data.contentFormat ?? 'markdown',
         locale: data.locale,
         status: data.status,
         pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
@@ -47,5 +54,7 @@ export async function updateArticle(id: string, data: ArticleMutationData): Prom
     throw err;
   }
 
+  revalidatePath(`/admin/articles/${id}/edit`);
+  revalidatePath(`/admin/articles/${id}/publish`);
   return mutationSuccess(id, '/admin/articles');
 }

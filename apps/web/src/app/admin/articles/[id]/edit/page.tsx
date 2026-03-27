@@ -3,12 +3,13 @@ import { notFound } from 'next/navigation';
 
 import { eq } from 'drizzle-orm';
 
-import { articleImages, articles, db } from '@/lib/db';
+import { articles, db } from '@/lib/db';
 
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditArticleForm } from '../../_components/EditArticleForm';
 import { getArticleFormLabels } from '../../_lib/labels';
 import { getArticleCategories } from '../../_lib/queries';
+import type { ContentFormat, TiptapJsonContent } from '../../_lib/types';
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,10 +21,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  const [categories, images] = await Promise.all([
-    getArticleCategories(),
-    db.select().from(articleImages).where(eq(articleImages.articleId, id)),
-  ]);
+  const categories = await getArticleCategories();
 
   return (
     <EditArticleForm
@@ -32,6 +30,8 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         slug: article.slug,
         title: article.title,
         content: article.content,
+        contentJson: (article.contentJson as TiptapJsonContent) ?? null,
+        contentFormat: (article.contentFormat as ContentFormat) ?? 'markdown',
         locale: article.locale,
         status: article.status ?? 'draft',
         pinnedAt: formatDateTimeLocal(article.pinnedAt),
@@ -42,7 +42,6 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
         icon: article.icon ?? '',
       }}
       categories={categories}
-      images={images}
       labels={getArticleFormLabels(t, t('form.editTitle'))}
     />
   );

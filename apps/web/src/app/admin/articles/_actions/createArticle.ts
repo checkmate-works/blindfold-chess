@@ -22,6 +22,8 @@ export async function createArticle(data: ArticleMutationData): Promise<Mutation
         slug: data.slug,
         title: data.title,
         content: data.content,
+        contentJson: data.contentJson ?? null,
+        contentFormat: data.contentFormat ?? 'markdown',
         locale: data.locale,
         status: data.status || 'draft',
         pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,

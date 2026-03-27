@@ -56,6 +56,8 @@ export const articles = pgTable(
     excerpt: text('excerpt'),
     description: text('description'),
     content: text('content').notNull(),
+    contentJson: jsonb('content_json'),
+    contentFormat: varchar('content_format', { length: 20 }).notNull().default('markdown'),
     locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     status: varchar('status', { length: 20 }).default('draft'),
     categoryId: uuid('category_id').references(() => articleCategories.id),

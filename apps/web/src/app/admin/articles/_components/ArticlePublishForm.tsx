@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { updateArticle } from '../_actions/updateArticle';
+import type { ContentFormat, TiptapJsonContent } from '../_lib/types';
 
 type ArticlePublishFormProps = {
   id: string;
@@ -12,6 +13,8 @@ type ArticlePublishFormProps = {
     slug: string;
     title: string;
     content: string;
+    contentJson: TiptapJsonContent | null;
+    contentFormat: ContentFormat;
     locale: string;
     excerpt: string | null;
     description: string | null;

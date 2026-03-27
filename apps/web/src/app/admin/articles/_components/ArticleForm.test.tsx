@@ -21,24 +21,35 @@ vi.mock('next-navigation-guard', () => ({
   }),
 }));
 
-vi.mock('next/dynamic', () => ({
-  default: (loader: () => Promise<{ default: React.ComponentType }>) => {
-    let Resolved: React.ComponentType | null = null;
-    const promise = loader();
-    promise.then((mod) => {
-      Resolved = mod.default;
-    });
-    // In test, vi.mock makes the promise resolve synchronously
-    return function DynamicWrapper(props: Record<string, unknown>) {
-      if (!Resolved) return null;
-      return <Resolved {...props} />;
-    };
-  },
-}));
-
-vi.mock('@/app/[locale]/_components/MarkdownRenderer', () => ({
-  MarkdownRenderer: ({ content }: { content: string }) => (
-    <div data-testid="markdown-preview">{content}</div>
+// Mock TiptapEditor to a simple textarea for testing
+vi.mock('./TiptapEditor', () => ({
+  TiptapEditor: ({
+    onChange,
+    placeholder,
+    ariaLabel,
+  }: {
+    initialContent?: unknown;
+    onChange: (json: Record<string, unknown>) => void;
+    placeholder?: string;
+    ariaLabel?: string;
+  }) => (
+    <textarea
+      data-testid="tiptap-editor"
+      placeholder={placeholder}
+      aria-label={ariaLabel}
+      onChange={(e) => {
+        // Simulate Tiptap JSON output
+        onChange({
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: e.target.value }],
+            },
+          ],
+        });
+      }}
+    />
   ),
 }));
 
@@ -92,13 +103,13 @@ describe('ArticleForm', () => {
     vi.clearAllMocks();
   });
 
-  it('should render title and content fields in the editor pane', () => {
+  it('should render title field and Tiptap editor', () => {
     const mockOnSaveDraft = vi.fn();
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
 
     expect(screen.getByPlaceholderText('Article title')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Article content...')).toBeInTheDocument();
+    expect(screen.getByTestId('tiptap-editor')).toBeInTheDocument();
   });
 
   it('should render slug and locale in the editor pane', () => {
@@ -152,6 +163,8 @@ describe('ArticleForm', () => {
       slug: 'my-slug',
       title: 'My Title',
       content: 'My Content',
+      contentJson: null,
+      contentFormat: 'tiptap_json' as const,
       locale: 'ja',
       excerpt: 'My Excerpt',
       description: 'My Description',
@@ -170,7 +183,6 @@ describe('ArticleForm', () => {
 
     expect(screen.getByLabelText('Slug')).toHaveValue('my-slug');
     expect(screen.getByPlaceholderText('Article title')).toHaveValue('My Title');
-    expect(screen.getByPlaceholderText('Article content...')).toHaveValue('My Content');
     expect(screen.getByLabelText('Locale')).toHaveValue('ja');
 
     openMetadataPanel();
@@ -181,7 +193,7 @@ describe('ArticleForm', () => {
     expect(screen.getByLabelText('Icon')).toHaveValue('♟️');
   });
 
-  it('should call onSaveDraft with form data and show toast on Save Draft', async () => {
+  it('should call onSaveDraft with form data including contentJson and show toast', async () => {
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'test-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -190,7 +202,7 @@ describe('ArticleForm', () => {
     fireEvent.change(screen.getByPlaceholderText('Article title'), {
       target: { value: 'Test Title' },
     });
-    fireEvent.change(screen.getByPlaceholderText('Article content...'), {
+    fireEvent.change(screen.getByTestId('tiptap-editor'), {
       target: { value: 'Test Content' },
     });
 
@@ -198,22 +210,20 @@ describe('ArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    expect(mockOnSaveDraft).toHaveBeenCalledWith({
-      slug: 'test-slug',
-      title: 'Test Title',
-      content: 'Test Content',
-      locale: 'en',
-      excerpt: '',
-      description: '',
-      categoryId: '',
-      icon: '',
-    });
+    expect(mockOnSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: 'test-slug',
+        title: 'Test Title',
+        contentFormat: 'tiptap_json',
+        contentJson: expect.objectContaining({ type: 'doc' }),
+      })
+    );
     expect(mockPush).not.toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
     expect(mockShowToast).toHaveBeenCalledWith('Draft saved', 'success');
   });
 
-  it('should call onSaveDraft and navigate to preview page on Publish Settings', async () => {
+  it('should call onSaveDraft and navigate to publish page on Publish Settings', async () => {
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'generated-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -222,7 +232,7 @@ describe('ArticleForm', () => {
     fireEvent.change(screen.getByPlaceholderText('Article title'), {
       target: { value: 'Preview Title' },
     });
-    fireEvent.change(screen.getByPlaceholderText('Article content...'), {
+    fireEvent.change(screen.getByTestId('tiptap-editor'), {
       target: { value: 'Preview Content' },
     });
 
@@ -230,16 +240,13 @@ describe('ArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Publish Settings' }));
     });
 
-    expect(mockOnSaveDraft).toHaveBeenCalledWith({
-      slug: 'preview-slug',
-      title: 'Preview Title',
-      content: 'Preview Content',
-      locale: 'en',
-      excerpt: '',
-      description: '',
-      categoryId: '',
-      icon: '',
-    });
+    expect(mockOnSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: 'preview-slug',
+        title: 'Preview Title',
+        contentFormat: 'tiptap_json',
+      })
+    );
     expect(mockPush).toHaveBeenCalledWith('/admin/articles/generated-id/publish');
   });
 
@@ -280,33 +287,6 @@ describe('ArticleForm', () => {
     expect(mockOnSaveDraft).not.toHaveBeenCalled();
   });
 
-  // --- Markdown preview tests ---
-
-  it('should render markdown preview when preview tab is active', () => {
-    const mockOnSaveDraft = vi.fn();
-
-    render(
-      <ArticleForm
-        defaultValues={{
-          slug: '',
-          title: '',
-          content: '# Hello World',
-          locale: 'en',
-          excerpt: '',
-          description: '',
-          categoryId: '',
-          icon: '',
-        }}
-        onSaveDraft={mockOnSaveDraft}
-        labels={defaultLabels}
-      />
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
-
-    expect(screen.getByTestId('markdown-preview')).toHaveTextContent('# Hello World');
-  });
-
   // --- Category dropdown tests ---
 
   it('should render category options passed via categories prop', () => {
@@ -342,9 +322,6 @@ describe('ArticleForm', () => {
 
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'test' } });
     fireEvent.change(screen.getByPlaceholderText('Article title'), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByPlaceholderText('Article content...'), {
-      target: { value: 'Content' },
-    });
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
@@ -362,9 +339,6 @@ describe('ArticleForm', () => {
 
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'test' } });
     fireEvent.change(screen.getByPlaceholderText('Article title'), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByPlaceholderText('Article content...'), {
-      target: { value: 'Content' },
-    });
 
     openMetadataPanel();
     fireEvent.change(screen.getByLabelText('Icon'), { target: { value: '♟️' } });
@@ -378,7 +352,7 @@ describe('ArticleForm', () => {
 
   // --- New fields input and submit ---
 
-  it('should submit all new fields (excerpt, description, category, icon) with entered values', async () => {
+  it('should submit all fields with entered values', async () => {
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'test-id' });
     const categories = [{ id: 'cat-1', name: 'Openings' }];
 
@@ -388,7 +362,7 @@ describe('ArticleForm', () => {
 
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'test' } });
     fireEvent.change(screen.getByPlaceholderText('Article title'), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByPlaceholderText('Article content...'), {
+    fireEvent.change(screen.getByTestId('tiptap-editor'), {
       target: { value: 'Content' },
     });
 
@@ -404,16 +378,19 @@ describe('ArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    expect(mockOnSaveDraft).toHaveBeenCalledWith({
-      slug: 'test',
-      title: 'Test',
-      content: 'Content',
-      locale: 'en',
-      excerpt: 'A brief summary',
-      description: 'Meta desc',
-      categoryId: 'cat-1',
-      icon: '♟️',
-    });
+    expect(mockOnSaveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: 'test',
+        title: 'Test',
+        contentFormat: 'tiptap_json',
+        contentJson: expect.objectContaining({ type: 'doc' }),
+        locale: 'en',
+        excerpt: 'A brief summary',
+        description: 'Meta desc',
+        categoryId: 'cat-1',
+        icon: '♟️',
+      })
+    );
   });
 
   it('should render with empty categories array by default', () => {
@@ -459,37 +436,6 @@ describe('ArticleForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close metadata' }));
 
     expect(screen.queryByLabelText('Excerpt')).not.toBeInTheDocument();
-  });
-
-  // --- Real-time preview tests ---
-
-  it('should update markdown preview when switching to preview tab after editing', () => {
-    const mockOnSaveDraft = vi.fn();
-
-    render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
-
-    const contentInput = screen.getByPlaceholderText('Article content...');
-    fireEvent.change(contentInput, { target: { value: '## New Content' } });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
-
-    expect(screen.getByTestId('markdown-preview')).toHaveTextContent('## New Content');
-  });
-
-  it('should display title in preview tab when title is entered', () => {
-    const mockOnSaveDraft = vi.fn();
-
-    render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
-
-    fireEvent.change(screen.getByPlaceholderText('Article title'), {
-      target: { value: 'Preview Title' },
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
-
-    // The title is rendered as an h1 in the preview pane
-    const headings = screen.getAllByText('Preview Title');
-    expect(headings.length).toBeGreaterThanOrEqual(1);
   });
 
   // --- Metadata panel data persistence ---
@@ -549,16 +495,13 @@ describe('ArticleForm', () => {
 
   // --- Accessibility: aria-label presence ---
 
-  it('should have aria-labels on title and content inputs', () => {
+  it('should have aria-label on title input and Tiptap editor', () => {
     const mockOnSaveDraft = vi.fn();
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
 
     expect(screen.getByPlaceholderText('Article title')).toHaveAttribute('aria-label', 'Title');
-    expect(screen.getByPlaceholderText('Article content...')).toHaveAttribute(
-      'aria-label',
-      'Content'
-    );
+    expect(screen.getByTestId('tiptap-editor')).toHaveAttribute('aria-label', 'Content');
   });
 
   it('should have aria-label on close metadata button', () => {

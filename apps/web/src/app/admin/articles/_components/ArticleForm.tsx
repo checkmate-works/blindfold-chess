@@ -1,34 +1,23 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
 import { LuSettings, LuX } from 'react-icons/lu';
 
-import type { ArticleImage } from '@/lib/db';
-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
-import type { ArticleEditData } from '../_lib/types';
-import { ArticleImageUploader } from './ArticleImageUploader';
-
-const MarkdownRenderer = dynamic(
-  () =>
-    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
-      default: m.MarkdownRenderer,
-    })),
-  { ssr: true }
-);
+import { extractPlainText } from '../_lib/extract-plain-text';
+import type { ArticleEditData, TiptapJsonContent } from '../_lib/types';
+import { TiptapEditor } from './TiptapEditor';
 
 type ArticleFormProps = {
   articleId?: string;
   defaultValues?: ArticleEditData;
   categories?: { id: string; name: string }[];
-  initialImages?: ArticleImage[];
   onSaveDraft: (
     data: ArticleEditData
   ) => Promise<{ success: true; id: string } | { error: string }>;
@@ -68,7 +57,6 @@ export function ArticleForm({
   articleId,
   defaultValues,
   categories = [],
-  initialImages,
   onSaveDraft,
   labels,
 }: ArticleFormProps) {
@@ -77,12 +65,12 @@ export function ArticleForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [slug, setSlug] = useState(defaultValues?.slug ?? '');
   const [title, setTitle] = useState(defaultValues?.title ?? '');
-  const [content, setContent] = useState(defaultValues?.content ?? '');
+  const [contentJson, setContentJson] = useState<TiptapJsonContent | null>(
+    defaultValues?.contentJson ?? null
+  );
   const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
   const [excerpt, setExcerpt] = useState(defaultValues?.excerpt ?? '');
   const [description, setDescription] = useState(defaultValues?.description ?? '');
@@ -93,7 +81,7 @@ export function ArticleForm({
     const initial = defaultValues ?? {
       slug: '',
       title: '',
-      content: '',
+      contentJson: null,
       locale: 'en',
       excerpt: '',
       description: '',
@@ -103,14 +91,14 @@ export function ArticleForm({
     return (
       slug !== initial.slug ||
       title !== initial.title ||
-      content !== initial.content ||
+      JSON.stringify(contentJson) !== JSON.stringify(initial.contentJson) ||
       locale !== initial.locale ||
       excerpt !== initial.excerpt ||
       description !== initial.description ||
       categoryId !== initial.categoryId ||
       icon !== initial.icon
     );
-  }, [slug, title, content, locale, excerpt, description, categoryId, icon, defaultValues]);
+  }, [slug, title, contentJson, locale, excerpt, description, categoryId, icon, defaultValues]);
 
   const {
     isBlocking,
@@ -118,40 +106,24 @@ export function ArticleForm({
     cancel: cancelNavigation,
   } = useUnsavedChanges({ isDirty });
 
-  const buildFormData = () => ({
-    slug,
-    title,
-    content,
-    locale,
-    excerpt,
-    description,
-    categoryId,
-    icon,
-  });
+  const buildFormData = useCallback((): ArticleEditData => {
+    const plainText = extractPlainText(contentJson);
+    return {
+      slug,
+      title,
+      content: plainText,
+      contentJson: contentJson ? JSON.parse(JSON.stringify(contentJson)) : null,
+      contentFormat: 'tiptap_json',
+      locale,
+      excerpt,
+      description,
+      categoryId,
+      icon,
+    };
+  }, [slug, title, contentJson, locale, excerpt, description, categoryId, icon]);
 
-  const handleInsertMarkdown = useCallback((markdown: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) {
-      // Fallback: append to end
-      setContent((prev) => prev + '\n' + markdown);
-      return;
-    }
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-
-    setContent((prev) => {
-      const before = prev.slice(0, start);
-      const after = prev.slice(end);
-      return before + markdown + after;
-    });
-
-    // Restore focus and set cursor after inserted text
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const newPos = start + markdown.length;
-      textarea.setSelectionRange(newPos, newPos);
-    });
+  const handleContentChange = useCallback((json: TiptapJsonContent) => {
+    setContentJson(json);
   }, []);
 
   const handleSaveDraft = () => {
@@ -269,61 +241,19 @@ export function ArticleForm({
             />
           </div>
 
-          {/* Edit / Preview tabs */}
-          <div className="flex items-center gap-1 px-6 pb-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab('edit')}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                activeTab === 'edit'
-                  ? 'bg-secondary text-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {labels.tabEdit}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('preview')}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                activeTab === 'preview'
-                  ? 'bg-secondary text-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {labels.tabPreview}
-            </button>
-          </div>
-
-          {/* Content area: edit or preview */}
-          {activeTab === 'edit' ? (
-            <div className="flex-1 px-6 pb-4 flex flex-col">
-              {articleId && (
-                <div className="pb-2">
-                  <ArticleImageUploader
-                    articleId={articleId}
-                    initialImages={initialImages}
-                    onInsertMarkdown={handleInsertMarkdown}
-                  />
-                </div>
-              )}
-              <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+          {/* Tiptap editor */}
+          <div className="flex-1 px-6 pb-4 flex flex-col">
+            <div className="flex-1 flex flex-col rounded bg-card">
+              <TiptapEditor
+                initialContent={contentJson}
+                onChange={handleContentChange}
                 placeholder={labels.contentPlaceholder}
-                aria-label={labels.content}
-                className="w-full flex-1 bg-card border-none outline-none resize-none text-sm font-mono leading-relaxed placeholder:text-muted-foreground/50 rounded px-3 py-2"
+                ariaLabel={labels.content}
+                articleId={articleId}
+                onImageUploadError={(message) => showToast(message, 'error')}
               />
             </div>
-          ) : (
-            <div className="flex-1 px-6 pb-4 overflow-y-auto">
-              {title && <h1 className="text-2xl font-bold mb-4">{title}</h1>}
-              <article className="prose prose-slate dark:prose-invert max-w-none break-words">
-                <MarkdownRenderer content={content} skipFirstH1={true} />
-              </article>
-            </div>
-          )}
+          </div>
         </div>
 
         <UnsavedChangesDialog

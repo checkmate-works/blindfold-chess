@@ -1,9 +1,13 @@
+import type { ContentFormat } from './types';
+
 const VALID_STATUSES = ['draft', 'published'] as const;
+const VALID_CONTENT_FORMATS: ContentFormat[] = ['markdown', 'tiptap_json'];
 
 type ArticleData = {
   slug: string;
   title: string;
   content: string;
+  contentFormat?: ContentFormat;
   locale: string;
   status: string;
   publishedAt: string | null;
@@ -19,8 +23,12 @@ export function validateArticleData(data: ArticleData): string | null {
     return 'invalid title';
   }
 
-  if (!data.content) {
+  if (!data.content && data.contentFormat !== 'tiptap_json') {
     return 'invalid content';
+  }
+
+  if (data.contentFormat && !VALID_CONTENT_FORMATS.includes(data.contentFormat)) {
+    return 'invalid content format';
   }
 
   if (!data.locale || data.locale.length > 10) {

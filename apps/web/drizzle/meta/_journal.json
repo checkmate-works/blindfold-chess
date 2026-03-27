@@ -78,6 +78,13 @@
       "when": 1774430202569,
       "tag": "20260325091642_create_stripe_subscription_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1774553985468,
+      "tag": "20260326193945_add_content_json_to_articles",
+      "breakpoints": true
     }
   ]
 }

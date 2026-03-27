@@ -2083,7 +2083,7 @@
     "chesscomUsernameInvalidFormat": "Chess.com username may only contain letters, digits, hyphens, and underscores.",
     "lichessUsernameInvalidFormat": "Lichess username may only contain letters, digits, hyphens, and underscores.",
     "socialAccounts": "Social Media",
-    "xUsernameLabel": "X (Twitter)",
+    "xUsernameLabel": "X",
     "xUsernamePlaceholder": "Your X username",
     "xUsernameInvalidFormat": "X username may only contain letters, digits, and underscores.",
     "instagramUsernameLabel": "Instagram",
