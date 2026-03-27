@@ -11,26 +11,12 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
 
 import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../../_hooks/use-dashboard-data';
-
-const selectClassName =
-  'px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring';
-
-const PIECE_NAME_TO_SHORT: Record<string, PieceSelection> = {
-  king: 'k',
-  queen: 'q',
-  rook: 'r',
-  bishop: 'b',
-  knight: 'n',
-  random: 'random',
-};
-
-const PIECE_SHORT_TO_NAME: Record<string, string> = {
-  k: 'king',
-  q: 'queen',
-  r: 'rook',
-  b: 'bishop',
-  n: 'knight',
-};
+import {
+  PIECE_NAME_TO_SHORT,
+  PIECE_SHORT_TO_NAME,
+  type PieceFullName,
+} from '../../_lib/derive-piece-filter';
+import { selectClassName } from '../../_lib/ui-constants';
 
 type BoardOrientation = 'white' | 'black' | 'random';
 
@@ -71,13 +57,17 @@ export function ResultsFilters({ locale, availableMenuTypes, currentMenu, curren
   };
 
   const handlePieceSelect = (selection: PieceSelection) => {
-    const key = selection === 'random' ? 'random' : (PIECE_SHORT_TO_NAME[selection] ?? 'random');
+    const key =
+      selection === 'random'
+        ? 'random'
+        : (PIECE_SHORT_TO_NAME[selection as keyof typeof PIECE_SHORT_TO_NAME] ?? 'random');
     router.push(buildResultsHref(locale, currentMenu, key));
   };
 
-  const currentPieceSelection: PieceSelection = currentKey
-    ? (PIECE_NAME_TO_SHORT[currentKey] ?? 'random')
-    : 'random';
+  const currentPieceSelection: PieceSelection =
+    currentKey && currentKey in PIECE_NAME_TO_SHORT
+      ? (PIECE_NAME_TO_SHORT[currentKey as PieceFullName] ?? 'random')
+      : 'random';
 
   const currentOrientation: BoardOrientation =
     currentKey === 'white' || currentKey === 'black' || currentKey === 'random'

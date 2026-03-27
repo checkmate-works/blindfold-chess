@@ -14,29 +14,7 @@ import { truncateContent } from '@/lib/truncate-content';
 
 import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
-
-type PostMetadata = { topicType: string; topicKey: string; postId: string };
-type ReplyMetadata = PostMetadata & { replyId: string };
-
-function isPostMetadata(m: unknown): m is PostMetadata {
-  return (
-    typeof m === 'object' && m !== null && 'topicType' in m && 'topicKey' in m && 'postId' in m
-  );
-}
-
-function isReplyMetadata(m: unknown): m is ReplyMetadata {
-  return (
-    isPostMetadata(m) &&
-    'replyId' in m &&
-    typeof (m as Record<string, unknown>).replyId === 'string'
-  );
-}
-
-type AnnouncementMetadata = { slug: string; title: string };
-
-function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
-  return typeof m === 'object' && m !== null && 'slug' in m && 'title' in m;
-}
+import { isAnnouncementMetadata, isPostMetadata, isReplyMetadata } from '../_lib/type-guards';
 
 type Props = {
   notification: NotificationWithActor;

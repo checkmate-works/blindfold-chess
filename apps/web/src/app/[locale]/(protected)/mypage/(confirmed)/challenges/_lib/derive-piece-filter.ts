@@ -8,13 +8,26 @@ export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
 
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 
+/** Map from PieceType short code to full piece name (stored as leaderboardKey in DB). */
+export const PIECE_SHORT_TO_NAME: Record<(typeof PIECE_TYPES)[number], string> = {
+  k: 'king',
+  q: 'queen',
+  r: 'rook',
+  b: 'bishop',
+  n: 'knight',
+};
+
+/** Piece full names used as leaderboard keys in DB. */
+export type PieceFullName = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'random';
+
 /** Map from full piece name (stored as leaderboardKey in DB) to PieceType short code. */
-const PIECE_NAME_TO_SHORT: Record<string, string> = {
+export const PIECE_NAME_TO_SHORT: Record<PieceFullName, PieceSelection> = {
   king: 'k',
   queen: 'q',
   rook: 'r',
   bishop: 'b',
   knight: 'n',
+  random: 'random',
 };
 
 /**
@@ -36,9 +49,14 @@ export function derivePieceSelectionFromSessions(sessions: ChallengeResultRow[])
   if (firstKey === 'random') return 'random';
 
   // Convert full piece name to short code for PieceSelection
-  const shortCode = PIECE_NAME_TO_SHORT[firstKey];
-  if (shortCode && (PIECE_TYPES as readonly string[]).includes(shortCode)) {
-    return shortCode as PieceSelection;
+  if (!(firstKey in PIECE_NAME_TO_SHORT)) return DEFAULT_PIECE_SELECTION;
+  const shortCode = PIECE_NAME_TO_SHORT[firstKey as PieceFullName];
+  if (
+    shortCode &&
+    shortCode !== 'random' &&
+    (PIECE_TYPES as readonly string[]).includes(shortCode)
+  ) {
+    return shortCode;
   }
 
   return DEFAULT_PIECE_SELECTION;

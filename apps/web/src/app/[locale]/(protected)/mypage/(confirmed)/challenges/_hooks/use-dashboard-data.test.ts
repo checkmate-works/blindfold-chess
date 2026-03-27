@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
 
+import { PIECE_SHORT_TO_NAME } from '../_lib/derive-piece-filter';
 import {
   ORIENTATION_FILTER_MENUS,
   PIECE_FILTER_MENUS,
@@ -74,16 +75,10 @@ describe('PIECE_FILTER_MENUS', () => {
 //   pieceFilter === 'n'      -> 'knight' (full name)
 // The filter then does an exact match between session.selectedPiece and activePiece.
 
-const PIECE_SHORT_TO_NAME: Record<string, string> = {
-  k: 'king',
-  q: 'queen',
-  r: 'rook',
-  b: 'bishop',
-  n: 'knight',
-};
-
 function deriveActivePiece(pieceFilter: PieceSelection): string {
-  return pieceFilter === 'random' ? 'random' : (PIECE_SHORT_TO_NAME[pieceFilter] ?? 'random');
+  return pieceFilter === 'random'
+    ? 'random'
+    : (PIECE_SHORT_TO_NAME[pieceFilter as keyof typeof PIECE_SHORT_TO_NAME] ?? 'random');
 }
 
 function sessionMatchesFilter(sessionPiece: string, activePiece: string): boolean {
