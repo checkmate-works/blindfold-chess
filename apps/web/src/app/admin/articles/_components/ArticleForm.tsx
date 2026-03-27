@@ -112,7 +112,7 @@ export function ArticleForm({
       slug,
       title,
       content: plainText,
-      contentJson,
+      contentJson: contentJson ? JSON.parse(JSON.stringify(contentJson)) : null,
       contentFormat: 'tiptap_json',
       locale,
       excerpt,

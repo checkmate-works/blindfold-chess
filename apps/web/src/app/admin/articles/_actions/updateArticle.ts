@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
@@ -52,5 +54,7 @@ export async function updateArticle(
     throw err;
   }
 
+  revalidatePath(`/admin/articles/${id}/edit`);
+  revalidatePath(`/admin/articles/${id}/publish`);
   return mutationSuccess(id, '/admin/articles');
 }

@@ -6,7 +6,7 @@ import type { Editor } from '@tiptap/core';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { EditorContent, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import {
@@ -32,6 +32,7 @@ import {
 import type { TiptapJsonContent } from '../_lib/types';
 import { ResizableImage } from './ResizableImage';
 import { TwitterEmbed } from './TwitterEmbed';
+import { YoutubeNodeView } from './YoutubeNodeView';
 import './tiptap-editor.css';
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
@@ -162,14 +163,41 @@ export function TiptapEditor({
         },
       }),
       Youtube.extend({
-        renderHTML({ node, HTMLAttributes }) {
-          // Guard against null src which crashes the YouTube extension
-          if (!HTMLAttributes.src) {
+        name: 'youtube',
+        addAttributes() {
+          return {
+            src: { default: null },
+            start: { default: 0 },
+            width: { default: 640 },
+            height: { default: 480 },
+          };
+        },
+        renderHTML({ HTMLAttributes }) {
+          const src = HTMLAttributes.src as string | null;
+          if (!src) {
             return ['div', { 'data-youtube-video': '' }];
           }
-          return this.parent?.({ node, HTMLAttributes }) as ReturnType<
-            NonNullable<typeof this.parent>
-          >;
+          const match = src.match(/(?:v=|shorts\/|youtu\.be\/|embed\/)([-\w]+)/);
+          const videoId = match?.[1];
+          if (!videoId) {
+            return ['div', { 'data-youtube-video': '' }];
+          }
+          return [
+            'div',
+            { 'data-youtube-video': '' },
+            [
+              'iframe',
+              {
+                src: `https://www.youtube-nocookie.com/embed/${videoId}`,
+                width: '640',
+                height: '480',
+                allowfullscreen: 'true',
+              },
+            ],
+          ];
+        },
+        addNodeView() {
+          return ReactNodeViewRenderer(YoutubeNodeView);
         },
       }).configure({
         inline: false,
