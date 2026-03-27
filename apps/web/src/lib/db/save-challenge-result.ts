@@ -63,6 +63,21 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
 
     const isNewEntry = !currentBest;
 
+    const isImprovement =
+      !isNewEntry &&
+      (score > currentBest.score ||
+        (score === currentBest.score && incorrectAnswers < currentBest.incorrectAnswers) ||
+        (score === currentBest.score &&
+          incorrectAnswers === currentBest.incorrectAnswers &&
+          timeTaken < currentBest.timeTaken));
+
+    // 2.5. For improvements, capture the old rank BEFORE the UPSERT
+    let oldRank: number | null = null;
+    if (isImprovement) {
+      const oldRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
+      oldRank = oldRankResult?.rank ?? null;
+    }
+
     // 3. UPSERT into challenge_best_scores (all-time best per user/menu/key)
     //    Only updates when the new result is strictly better:
     //    (higher score, then fewer incorrect answers, then faster time)
@@ -101,20 +116,12 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
         )`,
       });
 
-    // 4. Insert feed item if this is a new entry or an improvement
-    const isImprovement =
-      !isNewEntry &&
-      (score > currentBest.score ||
-        (score === currentBest.score && incorrectAnswers < currentBest.incorrectAnswers) ||
-        (score === currentBest.score &&
-          incorrectAnswers === currentBest.incorrectAnswers &&
-          timeTaken < currentBest.timeTaken));
+    // 4. Insert feed item based on rank conditions
+    if (isNewEntry) {
+      const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
+      const newRank = newRankResult?.rank ?? null;
 
-    if (isNewEntry || isImprovement) {
-      const rankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey);
-      const rank = rankResult?.rank ?? 1;
-
-      if (rank <= FEED_RANK_THRESHOLD) {
+      if (newRank != null && newRank <= FEED_RANK_THRESHOLD) {
         await tx.insert(feedItems).values({
           entityType: 'challenge_rank_update',
           entityId: challengeResult.id,
@@ -125,8 +132,34 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
             score,
             incorrectAnswers,
             timeTaken,
-            rank,
+            rank: newRank,
             isNewEntry,
+          },
+        });
+      }
+    } else if (isImprovement) {
+      const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
+      const newRank = newRankResult?.rank ?? null;
+
+      if (
+        newRank != null &&
+        newRank <= FEED_RANK_THRESHOLD &&
+        oldRank != null &&
+        oldRank > newRank
+      ) {
+        await tx.insert(feedItems).values({
+          entityType: 'challenge_rank_update',
+          entityId: challengeResult.id,
+          actorId: userId,
+          metadata: {
+            menuType,
+            leaderboardKey,
+            score,
+            incorrectAnswers,
+            timeTaken,
+            rank: newRank,
+            isNewEntry,
+            previousRank: oldRank,
           },
         });
       }

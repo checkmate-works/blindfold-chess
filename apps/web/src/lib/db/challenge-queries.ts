@@ -178,13 +178,18 @@ export async function getMonthlyRanking(
 /**
  * Returns the user's rank in the all-time leaderboard for a given menu/key.
  * Rank is 1-based. Returns null if the user has no entry.
+ *
+ * An optional `executor` can be passed to run the query within a transaction,
+ * ensuring consistency when called after an UPSERT in the same transaction.
  */
 export async function getUserAllTimeRank(
   userId: string,
   menuType: string,
-  leaderboardKey: string
+  leaderboardKey: string,
+  executor?: { execute: typeof db.execute }
 ): Promise<RankResult | null> {
-  const [row] = await db.execute<{ rank: number }>(sql`
+  const exec = executor ?? db;
+  const [row] = await exec.execute<{ rank: number }>(sql`
     SELECT rank::int FROM (
       SELECT
         user_id,

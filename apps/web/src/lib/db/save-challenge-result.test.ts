@@ -11,6 +11,7 @@ const mockInsertValues = vi.fn();
 const mockOnConflictDoUpdate = vi.fn();
 const mockTransaction = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
+const mockExecute = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
 
@@ -38,6 +39,7 @@ vi.mock('./index', () => {
         where: () => mockSelectResult(),
       }),
     }),
+    execute: (...args: unknown[]) => mockExecute(...args),
   });
 
   return {
@@ -97,6 +99,7 @@ describe('saveChallengeResult', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
   });
 
   // -------------------------------------------------------------------------
@@ -171,8 +174,9 @@ describe('saveChallengeResult', () => {
   // Feed item insertion on new entry
   // -------------------------------------------------------------------------
 
-  it('should insert feed_item when user has no previous best score (new entry)', async () => {
+  it('should insert feed_item when user has no previous best score (new entry) and rank <= 10', async () => {
     mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
@@ -188,13 +192,42 @@ describe('saveChallengeResult', () => {
           leaderboardKey: validInput.leaderboardKey,
           score: validInput.score,
           isNewEntry: true,
+          rank: 5,
         }),
       })
     );
   });
 
-  it('should insert feed_item when score improves', async () => {
+  it('should NOT include previousRank in metadata for new entries', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 3 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    const feedInsertArg = mockInsertValues.mock.calls[2][0];
+    expect(feedInsertArg.metadata).not.toHaveProperty('previousRank');
+  });
+
+  it('should NOT insert feed_item when new entry has rank > 10', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 11 });
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Feed item insertion on improvement with rank change
+  // -------------------------------------------------------------------------
+
+  it('should insert feed_item when score improves and rank goes up', async () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // First call (old rank, before UPSERT): rank 8
+    // Second call (new rank, after UPSERT): rank 5
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
@@ -206,9 +239,33 @@ describe('saveChallengeResult', () => {
         metadata: expect.objectContaining({
           isNewEntry: false,
           score: validInput.score,
+          rank: 5,
+          previousRank: 8,
         }),
       })
     );
+  });
+
+  it('should NOT insert feed_item when score improves but rank stays the same', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // Old rank = 5, new rank = 5 (no change)
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 5 });
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT insert feed_item when score improves but rank goes down', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // Old rank = 5, new rank = 7 (rank decreased — others overtook)
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 7 });
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 
   it('should NOT insert feed_item when score does not improve', async () => {
@@ -220,16 +277,18 @@ describe('saveChallengeResult', () => {
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 
-  it('should insert feed_item when incorrectAnswers improves with same score', async () => {
+  it('should insert feed_item when incorrectAnswers improves with same score and rank goes up', async () => {
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 5, timeTaken: 45 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 7 }).mockResolvedValueOnce({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
     expect(mockInsertValues).toHaveBeenCalledTimes(3);
   });
 
-  it('should insert feed_item when timeTaken improves with same score and incorrectAnswers', async () => {
+  it('should insert feed_item when timeTaken improves with same score and incorrectAnswers and rank goes up', async () => {
     mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 3, timeTaken: 60 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 6 }).mockResolvedValueOnce({ rank: 4 });
 
     await saveChallengeResult(validInput);
 
@@ -244,7 +303,11 @@ describe('saveChallengeResult', () => {
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 
-  it('should call getUserAllTimeRank when improvement detected', async () => {
+  // -------------------------------------------------------------------------
+  // getUserAllTimeRank receives tx
+  // -------------------------------------------------------------------------
+
+  it('should call getUserAllTimeRank with tx for new entry', async () => {
     mockSelectResult.mockReturnValue([]);
 
     await saveChallengeResult(validInput);
@@ -252,7 +315,32 @@ describe('saveChallengeResult', () => {
     expect(mockGetUserAllTimeRank).toHaveBeenCalledWith(
       validInput.userId,
       validInput.menuType,
-      validInput.leaderboardKey
+      validInput.leaderboardKey,
+      expect.objectContaining({ execute: expect.any(Function) })
+    );
+  });
+
+  it('should call getUserAllTimeRank with tx for improvement (called twice)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
+
+    await saveChallengeResult(validInput);
+
+    // Called twice: once before UPSERT (old rank), once after UPSERT (new rank)
+    expect(mockGetUserAllTimeRank).toHaveBeenCalledTimes(2);
+    expect(mockGetUserAllTimeRank).toHaveBeenNthCalledWith(
+      1,
+      validInput.userId,
+      validInput.menuType,
+      validInput.leaderboardKey,
+      expect.objectContaining({ execute: expect.any(Function) })
+    );
+    expect(mockGetUserAllTimeRank).toHaveBeenNthCalledWith(
+      2,
+      validInput.userId,
+      validInput.menuType,
+      validInput.leaderboardKey,
+      expect.objectContaining({ execute: expect.any(Function) })
     );
   });
 
@@ -262,6 +350,56 @@ describe('saveChallengeResult', () => {
     await saveChallengeResult(validInput);
 
     expect(mockGetUserAllTimeRank).not.toHaveBeenCalled();
+  });
+
+  // -------------------------------------------------------------------------
+  // Bug fix: getUserAllTimeRank returns null
+  // -------------------------------------------------------------------------
+
+  it('should NOT insert feed_item when getUserAllTimeRank returns null for new entry', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue(null);
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: challenge_results, challenge_best_scores (no feed_items)
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT insert feed_item when getUserAllTimeRank returns null for improvement (old rank null)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // Old rank is null, new rank is valid
+    mockGetUserAllTimeRank.mockResolvedValueOnce(null).mockResolvedValueOnce({ rank: 3 });
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: no feed_items because oldRank is null
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT insert feed_item when getUserAllTimeRank returns null for improvement (new rank null)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // Old rank is valid, new rank is null
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce(null);
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: no feed_items because newRank is null
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Improvement with rank > 10
+  // -------------------------------------------------------------------------
+
+  it('should NOT insert feed_item when improvement but new rank > 10', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 15 }).mockResolvedValueOnce({ rank: 12 });
+
+    await saveChallengeResult(validInput);
+
+    // Only 2 inserts: no feed_items because rank > 10
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 
   // -------------------------------------------------------------------------
@@ -325,5 +463,88 @@ describe('saveChallengeResult', () => {
         leaderboardKey: 'knight',
       })
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // Additional edge cases (from Tester review)
+  // -------------------------------------------------------------------------
+
+  it('should insert feed_item when improvement and new rank is exactly 10 (boundary)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // oldRank=12, newRank=10 (enters top 10 boundary)
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 12 }).mockResolvedValueOnce({ rank: 10 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        entityType: 'challenge_rank_update',
+        metadata: expect.objectContaining({
+          rank: 10,
+          previousRank: 12,
+        }),
+      })
+    );
+  });
+
+  it('should NOT insert feed_item when improvement and both oldRank and newRank are null', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should insert feed_item when getUserAllTimeRank returns rank 0 for new entry', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 0 });
+
+    await saveChallengeResult(validInput);
+
+    // rank 0 <= 10, so feed_item is inserted
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        metadata: expect.objectContaining({ rank: 0 }),
+      })
+    );
+  });
+
+  it('should NOT insert feed_item when improvement but oldRank is within top 10 and newRank falls outside (rank demotion)', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    // oldRank=5 (top 10), newRank=12 (fell out of top 10)
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 5 }).mockResolvedValueOnce({ rank: 12 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  it('should set entityId to challengeResult.id in feed_item', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 3 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(3);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        entityId: 'result-00000000-0000-0000-0000-000000000001',
+      })
+    );
+  });
+
+  it('should NOT insert feed_item when score is equal but incorrectAnswers worsened', async () => {
+    // Same score, but incorrectAnswers increased (worsened): not an improvement
+    mockSelectResult.mockReturnValue([{ score: 25, incorrectAnswers: 2, timeTaken: 45 }]);
+
+    await saveChallengeResult(validInput); // input has incorrectAnswers: 3 (worse than 2)
+
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
   });
 });

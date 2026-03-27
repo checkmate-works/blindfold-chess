@@ -43,6 +43,8 @@ export type ChallengeRankUpdateData = {
   rank: number;
   /** true = first submission for this leaderboard key; false = improved existing best */
   isNewEntry: boolean;
+  /** Previous rank before the improvement. Only present when isNewEntry is false. */
+  previousRank?: number;
   actor: {
     username: string;
     displayName: string | null;
