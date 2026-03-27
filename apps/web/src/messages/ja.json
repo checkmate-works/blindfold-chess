@@ -2444,6 +2444,8 @@
       "saving": "保存中...",
       "deleting": "削除中...",
       "cancel": "キャンセル",
+      "sharePrompt": "\ud83d\udcac {name} についてあなたの考えを共有しませんか？",
+      "shareLink": "\u270f\ufe0f 投稿する",
       "deleteAnswer": {
         "button": "削除",
         "confirmTitle": "回答を削除",

@@ -2479,6 +2479,8 @@
       "saving": "Saving...",
       "deleting": "Deleting...",
       "cancel": "Cancel",
+      "sharePrompt": "\ud83d\udcac Share your thoughts on {name}!",
+      "shareLink": "\u270f\ufe0f Post",
       "deleteAnswer": {
         "button": "Delete",
         "confirmTitle": "Delete Answer",

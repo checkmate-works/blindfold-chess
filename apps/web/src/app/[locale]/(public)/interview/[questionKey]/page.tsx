@@ -9,7 +9,10 @@ import { chessOpenings, db } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
-import { getOpeningBySlug } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
+import {
+  getOpeningBySlug,
+  hasUserPostedForOpening,
+} from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import {
@@ -106,11 +109,15 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   // Fetch full opening record and resolve display name for current answer
   let answerOpening: Awaited<ReturnType<typeof getOpeningBySlug>> = null;
   let answerDisplayName: string | null = null;
+  let alreadyPosted = false;
   if (answer && config.answerType === 'master_ref') {
     answerOpening = await getOpeningBySlug(answer.answerValue);
     answerDisplayName = tOpeningNames.has(answer.answerValue as never)
       ? tOpeningNames(answer.answerValue as never)
       : (answer.openingName ?? answer.answerValue);
+    if (user) {
+      alreadyPosted = await hasUserPostedForOpening(user.id, answer.answerValue);
+    }
   }
 
   return (
@@ -141,29 +148,49 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
             </div>
           </div>
         ) : answer ? (
-          <div className="rounded-lg border border-border bg-muted/30 p-4">
-            <p className="text-xs font-medium text-muted-foreground mb-2">
-              {tDetail('currentAnswer')}
-            </p>
-            {config.answerType === 'master_ref' && answerOpening && answerDisplayName ? (
-              <OpeningCardWithProvider
-                opening={answerOpening}
-                displayName={answerDisplayName}
-                locale={locale}
-              />
-            ) : (
-              <p className="text-sm text-foreground">{answer.answerValue}</p>
-            )}
-            <div className="flex justify-end mt-3">
-              <DeletePostButton
-                postId={questionKey}
-                locale={locale}
-                redirectPath={`/${locale}/interview/${questionKey}`}
-                deletePostAction={deleteAnswerAction}
-                i18nNamespace="interview.detail.deleteAnswer"
-              />
+          <>
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
+                {tDetail('currentAnswer')}
+              </p>
+              {config.answerType === 'master_ref' && answerOpening && answerDisplayName ? (
+                <OpeningCardWithProvider
+                  opening={answerOpening}
+                  displayName={answerDisplayName}
+                  locale={locale}
+                />
+              ) : (
+                <p className="text-sm text-foreground">{answer.answerValue}</p>
+              )}
+              <div className="flex justify-end mt-3">
+                <DeletePostButton
+                  postId={questionKey}
+                  locale={locale}
+                  redirectPath={`/${locale}/interview/${questionKey}`}
+                  deletePostAction={deleteAnswerAction}
+                  i18nNamespace="interview.detail.deleteAnswer"
+                />
+              </div>
             </div>
-          </div>
+
+            {config.answerType === 'master_ref' &&
+              answerOpening &&
+              answerDisplayName &&
+              !alreadyPosted && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 mt-4 space-y-3">
+                  <p className="text-sm text-foreground">
+                    {tDetail('sharePrompt', { name: answerDisplayName })}
+                  </p>
+                  <Link
+                    href={`/topics/openings/${answer.answerValue}/new`}
+                    locale={locale}
+                    className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    {tDetail('shareLink')}
+                  </Link>
+                </div>
+              )}
+          </>
         ) : config.answerType === 'master_ref' ? (
           <OpeningSelectForm locale={locale} questionKey={questionKey} openings={openings} />
         ) : null}
