@@ -1,3 +1,5 @@
+import { revalidateTag } from 'next/cache';
+
 import { and, eq, sql } from 'drizzle-orm';
 
 import { getUserAllTimeRank } from './challenge-queries';
@@ -30,6 +32,9 @@ export type ChallengeResultInput = {
 export async function saveChallengeResult(input: ChallengeResultInput): Promise<void> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
+
+  // Track whether rankings changed so we can invalidate the cache after commit
+  let rankingsChanged = false;
 
   await db.transaction(async (tx) => {
     // 1. Append to challenge_results (all results, for period-based rankings)
@@ -116,6 +121,11 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
         )`,
       });
 
+    // Rankings change whenever a new entry or improvement occurs
+    if (isNewEntry || isImprovement) {
+      rankingsChanged = true;
+    }
+
     // 4. Insert feed item based on rank conditions
     if (isNewEntry) {
       const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
@@ -165,4 +175,10 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
       }
     }
   });
+
+  // 5. Invalidate leaderboard cache after transaction commits so the next
+  //    page visit fetches fresh ranking data.
+  if (rankingsChanged) {
+    revalidateTag('leaderboard', { expire: 60 });
+  }
 }

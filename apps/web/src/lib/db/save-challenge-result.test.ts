@@ -12,8 +12,13 @@ const mockOnConflictDoUpdate = vi.fn();
 const mockTransaction = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
 const mockExecute = vi.fn();
+const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
+
+vi.mock('next/cache', () => ({
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
+}));
 
 vi.mock('./challenge-queries', () => ({
   getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
@@ -400,6 +405,36 @@ describe('saveChallengeResult', () => {
 
     // Only 2 inserts: no feed_items because rank > 10
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
+  });
+
+  // -------------------------------------------------------------------------
+  // Leaderboard cache invalidation
+  // -------------------------------------------------------------------------
+
+  it('should call revalidateTag("leaderboard") on new entry', async () => {
+    mockSelectResult.mockReturnValue([]);
+    mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+  });
+
+  it('should call revalidateTag("leaderboard") on improvement', async () => {
+    mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
+    mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
+
+    await saveChallengeResult(validInput);
+
+    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+  });
+
+  it('should NOT call revalidateTag when no improvement', async () => {
+    mockSelectResult.mockReturnValue([{ score: 30, incorrectAnswers: 1, timeTaken: 30 }]);
+
+    await saveChallengeResult(validInput);
+
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
   // -------------------------------------------------------------------------
