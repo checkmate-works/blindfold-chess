@@ -1057,3 +1057,21 @@ export const subscriptions = pgTable(
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
+
+// User Interview Answers
+export const userInterviewAnswers = pgTable(
+  'user_interview_answers',
+  {
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    questionKey: varchar('question_key', { length: 50 }).notNull(),
+    answerValue: varchar('answer_value', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ name: 'user_interview_answers_pkey', columns: [table.userId, table.questionKey] }),
+    index('idx_user_interview_answers_question').on(table.questionKey),
+  ]
+);
+
+export type UserInterviewAnswer = typeof userInterviewAnswers.$inferSelect;
+export type NewUserInterviewAnswer = typeof userInterviewAnswers.$inferInsert;

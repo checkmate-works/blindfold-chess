@@ -276,3 +276,20 @@ ALTER TABLE "subscriptions" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "subscriptions_select" ON "subscriptions";
 CREATE POLICY "subscriptions_select" ON "subscriptions"
   FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- user_interview_answers (public read, own insert/delete)
+-- =============================================================================
+ALTER TABLE "user_interview_answers" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_interview_answers_select" ON "user_interview_answers";
+CREATE POLICY "user_interview_answers_select" ON "user_interview_answers"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "user_interview_answers_insert" ON "user_interview_answers";
+CREATE POLICY "user_interview_answers_insert" ON "user_interview_answers"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers";
+CREATE POLICY "user_interview_answers_delete" ON "user_interview_answers"
+  FOR DELETE USING (auth.uid() = user_id);
