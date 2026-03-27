@@ -24,14 +24,13 @@ import {
   LuPlus,
   LuQuote,
   LuStrikethrough,
-  LuTwitter,
   LuUnlink,
   LuYoutube,
 } from 'react-icons/lu';
 
 import type { TiptapJsonContent } from '../_lib/types';
 import { ResizableImage } from './ResizableImage';
-import { TwitterEmbed } from './TwitterEmbed';
+import { XEmbed } from './XEmbed';
 import { YoutubeNodeView } from './YoutubeNodeView';
 import './tiptap-editor.css';
 
@@ -203,7 +202,7 @@ export function TiptapEditor({
         inline: false,
         nocookie: true,
       }),
-      TwitterEmbed,
+      XEmbed,
     ],
     content: initialContent ?? undefined,
     onUpdate: ({ editor: ed }) => {
@@ -382,17 +381,17 @@ export function TiptapEditor({
       },
     },
     {
-      icon: <LuTwitter size={16} />,
-      label: 'Twitter',
+      icon: <span style={{ fontSize: 14, fontWeight: 700 }}>𝕏</span>,
+      label: 'X',
       action: () => {
-        const url = window.prompt('Twitter (X) URLを入力してください');
+        const url = window.prompt('X (旧Twitter) URLを入力してください');
         if (!url) return;
         const tweetId = extractTweetId(url);
         if (!tweetId) {
-          window.alert('有効なTwitter URLを入力してください');
+          window.alert('有効なX URLを入力してください');
           return;
         }
-        editor.commands.setTwitterEmbed({ tweetId, url });
+        editor.commands.setXEmbed({ tweetId, url });
       },
     },
   ];
@@ -536,8 +535,8 @@ function replacePlaceholderImage(editor: Editor, placeholderId: string, src: str
 }
 
 /**
- * Extract tweet ID from a Twitter/X URL.
- * Supports: twitter.com/.../status/..., x.com/.../status/...
+ * Extract tweet ID from an X (formerly Twitter) URL.
+ * Supports: x.com/.../status/..., twitter.com/.../status/...
  */
 function extractTweetId(url: string): string | null {
   const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);

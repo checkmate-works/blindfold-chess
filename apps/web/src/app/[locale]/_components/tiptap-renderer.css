@@ -68,13 +68,13 @@
   border-radius: 0.375rem;
 }
 
-/* Twitter embed */
+/* X embed */
 .tiptap-render-tweet {
   margin-top: 1em;
   margin-bottom: 1em;
 }
 
-/* Twitter embed fallback link */
+/* X embed fallback link */
 .tiptap-render-tweet-fallback {
   display: flex;
   align-items: center;

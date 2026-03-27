@@ -74,7 +74,7 @@ function RenderNode({ node }: { node: TiptapNode }) {
     case 'youtube':
       return <YouTubeNode node={node} />;
     case 'twitterEmbed':
-      return <TwitterEmbedNode node={node} />;
+      return <XEmbedNode node={node} />;
     default:
       // Fallback: render children if any, ignore unknown nodes
       if (node.content) {
@@ -274,7 +274,7 @@ function YouTubeNode({ node }: { node: TiptapNode }) {
   );
 }
 
-function TwitterEmbedNode({ node }: { node: TiptapNode }) {
+function XEmbedNode({ node }: { node: TiptapNode }) {
   const tweetId = node.attrs?.tweetId as string | undefined;
 
   if (!tweetId) {

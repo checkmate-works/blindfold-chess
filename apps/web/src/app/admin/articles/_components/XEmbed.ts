@@ -1,18 +1,19 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 
-export interface TwitterEmbedOptions {
+export interface XEmbedOptions {
   HTMLAttributes: Record<string, string>;
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    twitterEmbed: {
-      setTwitterEmbed: (options: { tweetId: string; url: string }) => ReturnType;
+    xEmbed: {
+      setXEmbed: (options: { tweetId: string; url: string }) => ReturnType;
     };
   }
 }
 
-export const TwitterEmbed = Node.create<TwitterEmbedOptions>({
+export const XEmbed = Node.create<XEmbedOptions>({
+  // Keep node name as 'twitterEmbed' for backward compatibility with saved content
   name: 'twitterEmbed',
 
   group: 'block',
@@ -56,12 +57,12 @@ export const TwitterEmbed = Node.create<TwitterEmbedOptions>({
     return [
       'div',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        class: 'twitter-embed-placeholder',
+        class: 'x-embed-placeholder',
       }),
       [
         'div',
-        { class: 'twitter-embed-content' },
-        ['span', { class: 'twitter-embed-icon' }, '𝕏'],
+        { class: 'x-embed-content' },
+        ['span', { class: 'x-embed-icon' }, '𝕏'],
         [
           'a',
           {
@@ -77,7 +78,7 @@ export const TwitterEmbed = Node.create<TwitterEmbedOptions>({
 
   addCommands() {
     return {
-      setTwitterEmbed:
+      setXEmbed:
         (options) =>
         ({ commands }) => {
           return commands.insertContent({
