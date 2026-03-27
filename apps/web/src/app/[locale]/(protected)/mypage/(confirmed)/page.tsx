@@ -1,15 +1,23 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { ChallengeCard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import {
+  DashboardCard,
+  DashboardSection,
+  DashboardSectionHeader,
+  Divider,
+  PagePanel,
+  PageTitle,
+  UserAvatar,
+} from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
-import { buildDashboardCards } from './_lib/buildDashboardCards';
 import { getMypageDashboardData } from './_lib/getMypageDashboardData';
 
 type Props = {
@@ -34,37 +42,101 @@ export default async function MypagePage({ params }: Props) {
 
   const user = await getAuthenticatedUser();
   const data = await getMypageDashboardData(user.id);
-  const cards = buildDashboardCards(data, t);
 
   return (
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
-        {data.username && (
-          <div className="mb-4">
-            <Link
-              href={`/@/${data.username}`}
-              locale={locale}
-              className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-            >
-              {t('dashboard.viewProfile', { username: data.username })}
-            </Link>
+        {/* User profile card */}
+        <div className="flex items-center gap-4">
+          <UserAvatar
+            src={data.avatarUrl}
+            alt={data.displayName ?? data.username ?? ''}
+            size={64}
+          />
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-foreground truncate">
+              {data.displayName ?? data.username ?? t('title')}
+            </h2>
+            {data.username && <p className="text-sm text-muted-foreground">@{data.username}</p>}
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              {data.username && (
+                <Link
+                  href={`/@/${data.username}`}
+                  locale={locale}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  <span>👤</span>
+                  <span>{t('dashboard.viewProfile')}</span>
+                </Link>
+              )}
+              <Link
+                href="/mypage/profile"
+                locale={locale}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                <span>✏️</span>
+                <span>{t('dashboard.editProfile')}</span>
+              </Link>
+            </div>
           </div>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {cards.map((card) => (
-            <Link
-              key={card.href}
-              href={card.href}
-              locale={locale}
-              className="block rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted"
-            >
-              <span className="text-2xl">{card.icon}</span>
-              <h2 className="mt-2 text-base font-semibold text-card-foreground">{card.title}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{card.summary}</p>
-            </Link>
-          ))}
         </div>
+
+        <Divider />
+
+        {/* Interview banner — hidden when all questions are answered */}
+        {data.unansweredInterviewCount > 0 && (
+          <Link
+            href="/interview"
+            locale={locale}
+            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎙️</span>
+              <span className="text-sm font-semibold text-foreground">
+                {t('dashboard.interviewBanner')}
+              </span>
+            </div>
+            <span className="bg-primary text-primary-foreground rounded-full text-xs px-1.5 py-0.5 min-w-[1.25rem] text-center">
+              {data.unansweredInterviewCount}
+            </span>
+          </Link>
+        )}
+
+        {/* Dashboard sections — same structure as home page VsAiCard */}
+        <DashboardCard>
+          {/* Challenge section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">🏆</span>}
+              title={t('dashboard.challengeTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/challenges"
+                label={t('dashboard.myRecords')}
+                icon="📈"
+              />
+            </div>
+          </DashboardSection>
+
+          {/* Social section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">💬</span>}
+              title={t('dashboard.socialTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/likes"
+                label={t('dashboard.likesTitle')}
+                icon="❤️"
+              />
+            </div>
+          </DashboardSection>
+        </DashboardCard>
 
         <Divider />
 

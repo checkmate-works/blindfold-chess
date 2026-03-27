@@ -1895,17 +1895,14 @@
     "title": "マイページ",
     "challengeLink": "チャレンジ記録",
     "dashboard": {
-      "viewProfile": "@{username} のプロフィール",
+      "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
-      "challengeSummary": "今週 {sessions} セッション / 最高スコア: {bestScore}",
-      "challengeEmpty": "今週はまだ記録がありません。",
       "likesTitle": "いいねした投稿",
-      "likesSummary": "{count} 件の投稿にいいね",
-      "followingTitle": "フォロー中",
-      "followingSummary": "{count} 人をフォロー中",
-      "profileTitle": "プロフィール編集",
-      "profileSummary": "表示名やアバターを編集する",
-      "challengeStaticSummary": "チャレンジの記録を確認し、上達を追跡しましょう"
+      "editProfile": "編集",
+      "interviewTitle": "インタビュー",
+      "myRecords": "マイレコード",
+      "socialTitle": "ソーシャル",
+      "interviewBanner": "インタビューに答えてあなたのことを教えてください"
     },
     "records": "レコード",
     "bestScore": "最高スコア",

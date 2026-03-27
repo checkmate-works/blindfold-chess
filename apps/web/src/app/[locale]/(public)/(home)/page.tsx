@@ -5,7 +5,7 @@ import { getAdBannersForFeed, shouldShowAdsForUser } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
-import { PageTitle } from '@/app/[locale]/_components';
+import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -75,7 +75,7 @@ export default async function HomePage({ params }: Props) {
       <div className="space-y-6">
         <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
 
-        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <DashboardCard>
           <VsAiCard locale={locale} />
           <FeedClient
             initialItems={initialFeed.items}
@@ -89,7 +89,7 @@ export default async function HomePage({ params }: Props) {
             sponsorLabel={tCommon('sponsor')}
             sponsoredLinkLabel={tCommon('sponsoredLink')}
           />
-        </div>
+        </DashboardCard>
       </div>
     </>
   );

@@ -1,6 +1,9 @@
 export { AuthStatusDisplay } from './AuthStatusDisplay';
 export { BetaNotice } from './BetaNotice';
 export { CardLink } from './CardLink';
+export { DashboardCard } from './DashboardCard';
+export { DashboardSection } from './DashboardSection';
+export { DashboardSectionHeader } from './DashboardSectionHeader';
 export { ChessBoardDemo } from './ChessBoardDemo';
 export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
@@ -17,4 +20,5 @@ export { PgnInput } from './PgnInput';
 export { SectionTitle } from './SectionTitle';
 export { Skeleton } from './Skeleton';
 export { SubsectionTitle } from './SubsectionTitle';
+export { UserAvatar } from './UserAvatar';
 export { UserCard } from './UserCard';

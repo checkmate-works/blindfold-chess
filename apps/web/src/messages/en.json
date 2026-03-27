@@ -1894,17 +1894,14 @@
     "title": "My Page",
     "challengeLink": "Challenge Records",
     "dashboard": {
-      "viewProfile": "@{username}'s profile",
+      "viewProfile": "Public profile",
       "challengeTitle": "Challenge Records",
-      "challengeSummary": "{sessions} sessions this week / Best score: {bestScore}",
-      "challengeEmpty": "No records this week yet.",
       "likesTitle": "Liked Posts",
-      "likesSummary": "{count, plural, one {# post} other {# posts}} liked",
-      "followingTitle": "Following",
-      "followingSummary": "Following {count, plural, one {# user} other {# users}}",
-      "profileTitle": "Edit Profile",
-      "profileSummary": "Edit your display name and avatar",
-      "challengeStaticSummary": "View your challenge records and track your progress"
+      "editProfile": "Edit",
+      "interviewTitle": "Interview",
+      "myRecords": "My Records",
+      "socialTitle": "Social",
+      "interviewBanner": "Answer interview questions and tell us about yourself"
     },
     "records": "Records",
     "bestScore": "Best Score",

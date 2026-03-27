@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
@@ -12,7 +11,7 @@ import { db, profiles, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { LinkedText, PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, SectionTitle, UserAvatar } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
@@ -127,31 +126,11 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     <PagePanel>
       <div className="space-y-6">
         {/* Avatar */}
-        {profile.avatarUrl ? (
-          <Image
-            src={profile.avatarUrl}
-            alt={profile.displayName ?? profile.username}
-            width={96}
-            height={96}
-            className="rounded-full object-cover h-24 w-24"
-            unoptimized
-          />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-12 w-12"
-            >
-              <path
-                fillRule="evenodd"
-                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        )}
+        <UserAvatar
+          src={profile.avatarUrl}
+          alt={profile.displayName ?? profile.username}
+          size={96}
+        />
 
         {/* Display Name + Action Button Row */}
         <div className="flex items-start justify-between gap-4">

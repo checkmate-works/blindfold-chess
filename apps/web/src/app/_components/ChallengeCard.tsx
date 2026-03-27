@@ -1,10 +1,12 @@
+import type { ReactNode } from 'react';
+
 import Link from 'next/link';
 
 type Props = {
   locale: string;
   href: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
 };
 
 export function ChallengeCard({ locale, href, label, icon }: Props) {
