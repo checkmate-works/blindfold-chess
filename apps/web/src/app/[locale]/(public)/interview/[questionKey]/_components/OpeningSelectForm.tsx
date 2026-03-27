@@ -8,11 +8,15 @@ import { Button } from '@/app/_components';
 
 import type { ActionResult } from '@/lib/action-types';
 
+import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
+
 import { saveAnswerAction } from '../_actions/saveAnswer';
+import { MiniBoardWithProvider } from './MiniBoardWithProvider';
 
 type Opening = {
   slug: string;
   name: string;
+  fen: string;
   translatedName: string;
 };
 
@@ -86,9 +90,16 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
         />
 
         {selectedOpening && (
-          <p className="text-sm text-foreground">
-            <span className="font-medium">{selectedOpening.translatedName}</span>
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-foreground">
+              <span className="font-medium">{selectedOpening.translatedName}</span>
+            </p>
+            <MiniBoardWithProvider
+              fen={selectedOpening.fen}
+              flipped={isBlackOpening(selectedOpening.fen)}
+              size={140}
+            />
+          </div>
         )}
 
         <div className="max-h-60 overflow-y-auto rounded-md border border-border bg-background">

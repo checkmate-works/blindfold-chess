@@ -8,6 +8,8 @@ import { asc } from 'drizzle-orm';
 import { chessOpenings, db } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
+import { getOpeningBySlug } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import {
@@ -18,7 +20,8 @@ import {
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { DeleteAnswerButton } from './_components/DeleteAnswerButton';
+import { deleteAnswerAction } from './_actions/deleteAnswer';
+import { OpeningCardWithProvider } from './_components/OpeningCardWithProvider';
 import { OpeningSelectForm } from './_components/OpeningSelectForm';
 import { getInterviewAnswer } from './_lib/queries';
 
@@ -72,10 +75,10 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   const answer = user ? await getInterviewAnswer(user.id, questionKey) : null;
 
   // Fetch openings for master_ref type questions
-  let openings: { slug: string; name: string; translatedName: string }[] = [];
+  let openings: { slug: string; name: string; fen: string; translatedName: string }[] = [];
   if (config.answerType === 'master_ref') {
     const allOpenings = await db
-      .select({ slug: chessOpenings.slug, name: chessOpenings.name })
+      .select({ slug: chessOpenings.slug, name: chessOpenings.name, fen: chessOpenings.fen })
       .from(chessOpenings)
       .orderBy(asc(chessOpenings.sortOrder));
 
@@ -87,9 +90,11 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
     });
   }
 
-  // Resolve display name for current answer
+  // Fetch full opening record and resolve display name for current answer
+  let answerOpening: Awaited<ReturnType<typeof getOpeningBySlug>> = null;
   let answerDisplayName: string | null = null;
   if (answer && config.answerType === 'master_ref') {
+    answerOpening = await getOpeningBySlug(answer.answerValue);
     answerDisplayName = tOpeningNames.has(answer.answerValue as never)
       ? tOpeningNames(answer.answerValue as never)
       : (answer.openingName ?? answer.answerValue);
@@ -125,24 +130,28 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
             </div>
           </div>
         ) : answer ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <p className="text-xs font-medium text-muted-foreground mb-1">
-                {tDetail('currentAnswer')}
-              </p>
-              {config.answerType === 'master_ref' ? (
-                <Link
-                  href={`/topics/openings/${answer.answerValue}`}
-                  locale={locale}
-                  className="text-sm text-link hover:underline"
-                >
-                  {answerDisplayName}
-                </Link>
-              ) : (
-                <p className="text-sm text-foreground">{answer.answerValue}</p>
-              )}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <p className="text-xs font-medium text-muted-foreground mb-2">
+              {tDetail('currentAnswer')}
+            </p>
+            {config.answerType === 'master_ref' && answerOpening && answerDisplayName ? (
+              <OpeningCardWithProvider
+                opening={answerOpening}
+                displayName={answerDisplayName}
+                locale={locale}
+              />
+            ) : (
+              <p className="text-sm text-foreground">{answer.answerValue}</p>
+            )}
+            <div className="flex justify-end mt-3">
+              <DeletePostButton
+                postId={questionKey}
+                locale={locale}
+                redirectPath={`/${locale}/interview/${questionKey}`}
+                deletePostAction={deleteAnswerAction}
+                i18nNamespace="interview.detail.deleteAnswer"
+              />
             </div>
-            <DeleteAnswerButton questionKey={questionKey} locale={locale} />
           </div>
         ) : config.answerType === 'master_ref' ? (
           <OpeningSelectForm locale={locale} questionKey={questionKey} openings={openings} />

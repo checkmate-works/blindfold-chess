@@ -2444,6 +2444,14 @@
       "saving": "保存中...",
       "deleting": "削除中...",
       "cancel": "キャンセル",
+      "deleteAnswer": {
+        "button": "削除",
+        "confirmTitle": "回答を削除",
+        "confirmMessage": "回答を削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      },
       "errors": {
         "unauthorized": "この操作を行うにはサインインが必要です。",
         "banned": "あなたのアカウントは停止されています。",

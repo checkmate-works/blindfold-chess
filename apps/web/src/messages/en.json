@@ -2479,6 +2479,14 @@
       "saving": "Saving...",
       "deleting": "Deleting...",
       "cancel": "Cancel",
+      "deleteAnswer": {
+        "button": "Delete",
+        "confirmTitle": "Delete Answer",
+        "confirmMessage": "Are you sure you want to delete your answer? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      },
       "errors": {
         "unauthorized": "You must be signed in to perform this action.",
         "banned": "Your account has been suspended.",
