@@ -9,11 +9,14 @@ import { useInView } from '@/app/[locale]/_hooks/use-in-view';
 import { isBlackOpening } from '../_lib/openings';
 import { MiniBoard } from './MiniBoard';
 
+type OpeningData = Pick<ChessOpening, 'slug' | 'fen' | 'ecoCode' | 'pgn'>;
+
 type Props = {
-  opening: ChessOpening;
+  opening: OpeningData;
   displayName: string;
   locale: string;
   compact?: boolean;
+  disableLink?: boolean;
 };
 
 const BOARD_SIZE = 96;
@@ -39,8 +42,23 @@ function BoardSkeleton() {
   );
 }
 
-export function OpeningCard({ opening, displayName, locale, compact }: Props) {
+export function OpeningCard({ opening, displayName, locale, compact, disableLink }: Props) {
   const { ref, inView } = useInView({ rootMargin: '200px' });
+
+  const cardContent = (
+    <>
+      {inView ? (
+        <MiniBoard fen={opening.fen} size={BOARD_SIZE} flipped={isBlackOpening(opening.fen)} />
+      ) : (
+        <BoardSkeleton />
+      )}
+      <div className="flex flex-col justify-center min-w-0">
+        <span className="text-xs text-muted-foreground font-mono">{opening.ecoCode}</span>
+        <h3 className="text-sm font-medium text-foreground leading-snug">{displayName}</h3>
+        <span className="text-xs text-muted-foreground mt-1 truncate">{opening.pgn}</span>
+      </div>
+    </>
+  );
 
   if (compact) {
     return (
@@ -58,24 +76,19 @@ export function OpeningCard({ opening, displayName, locale, compact }: Props) {
     );
   }
 
+  const cardClassName =
+    'flex gap-3 p-3 rounded-lg border border-border bg-card transition-colors' +
+    (disableLink ? '' : ' hover:border-foreground/20');
+
   return (
     <div ref={ref}>
-      <Link
-        href={`/topics/openings/${opening.slug}`}
-        locale={locale}
-        className="flex gap-3 p-3 rounded-lg border border-border bg-card hover:border-foreground/20 transition-colors"
-      >
-        {inView ? (
-          <MiniBoard fen={opening.fen} size={BOARD_SIZE} flipped={isBlackOpening(opening.fen)} />
-        ) : (
-          <BoardSkeleton />
-        )}
-        <div className="flex flex-col justify-center min-w-0">
-          <span className="text-xs text-muted-foreground font-mono">{opening.ecoCode}</span>
-          <h3 className="text-sm font-medium text-foreground leading-snug">{displayName}</h3>
-          <span className="text-xs text-muted-foreground mt-1 truncate">{opening.pgn}</span>
-        </div>
-      </Link>
+      {disableLink ? (
+        <div className={cardClassName}>{cardContent}</div>
+      ) : (
+        <Link href={`/topics/openings/${opening.slug}`} locale={locale} className={cardClassName}>
+          {cardContent}
+        </Link>
+      )}
     </div>
   );
 }

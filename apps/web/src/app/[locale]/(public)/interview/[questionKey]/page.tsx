@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { DeletePostButton } from '@/app/[locale]/(public)/topics/_components/DeletePostButton';
 import { getOpeningBySlug } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import {
   INTERVIEW_QUESTION_KEYS,
@@ -75,10 +75,23 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   const answer = user ? await getInterviewAnswer(user.id, questionKey) : null;
 
   // Fetch openings for master_ref type questions
-  let openings: { slug: string; name: string; fen: string; translatedName: string }[] = [];
+  let openings: {
+    slug: string;
+    name: string;
+    fen: string;
+    ecoCode: string;
+    pgn: string;
+    translatedName: string;
+  }[] = [];
   if (config.answerType === 'master_ref') {
     const allOpenings = await db
-      .select({ slug: chessOpenings.slug, name: chessOpenings.name, fen: chessOpenings.fen })
+      .select({
+        slug: chessOpenings.slug,
+        name: chessOpenings.name,
+        fen: chessOpenings.fen,
+        ecoCode: chessOpenings.ecoCode,
+        pgn: chessOpenings.pgn,
+      })
       .from(chessOpenings)
       .orderBy(asc(chessOpenings.sortOrder));
 
@@ -105,9 +118,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
       <PageTitle>{t(`questions.${typedKey}.label` as never)}</PageTitle>
 
       <PagePanel>
-        <p className="text-sm text-muted-foreground mb-6">
-          {t(`questions.${typedKey}.description` as never)}
-        </p>
+        <SectionTitle>{t(`questions.${typedKey}.description` as never)}</SectionTitle>
 
         {!user ? (
           <div className="rounded-lg border border-border bg-muted/50 p-6 text-center space-y-4">

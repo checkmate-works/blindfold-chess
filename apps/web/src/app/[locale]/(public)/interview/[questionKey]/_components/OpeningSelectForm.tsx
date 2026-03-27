@@ -8,15 +8,15 @@ import { Button } from '@/app/_components';
 
 import type { ActionResult } from '@/lib/action-types';
 
-import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
-
 import { saveAnswerAction } from '../_actions/saveAnswer';
-import { MiniBoardWithProvider } from './MiniBoardWithProvider';
+import { OpeningCardWithProvider } from './OpeningCardWithProvider';
 
 type Opening = {
   slug: string;
   name: string;
   fen: string;
+  ecoCode: string;
+  pgn: string;
   translatedName: string;
 };
 
@@ -89,19 +89,6 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
 
-        {selectedOpening && (
-          <div className="space-y-2">
-            <p className="text-sm text-foreground">
-              <span className="font-medium">{selectedOpening.translatedName}</span>
-            </p>
-            <MiniBoardWithProvider
-              fen={selectedOpening.fen}
-              flipped={isBlackOpening(selectedOpening.fen)}
-              size={140}
-            />
-          </div>
-        )}
-
         <div className="max-h-60 overflow-y-auto rounded-md border border-border bg-background">
           {filteredOpenings.length === 0 ? (
             <p className="p-3 text-sm text-muted-foreground">&mdash;</p>
@@ -129,7 +116,22 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
         </div>
       </div>
 
-      <Button type="submit" variant="primary" disabled={!selectedSlug || isPending}>
+      {selectedOpening && (
+        <OpeningCardWithProvider
+          opening={selectedOpening}
+          displayName={selectedOpening.translatedName}
+          locale={locale}
+          disableLink
+        />
+      )}
+
+      <Button
+        type="submit"
+        variant="primary"
+        fullWidth
+        disabled={!selectedSlug || isPending}
+        loading={isPending}
+      >
         {isPending ? t('saving') : t('save')}
       </Button>
     </form>
