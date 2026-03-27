@@ -753,11 +753,12 @@ export type NewNotification = typeof notifications.$inferInsert;
  * following the same pattern as other topic types. It appears in URLs
  * (e.g., /topics/openings/french-defense).
  *
- * @design No parent_id — flat structure for now
+ * @design Flat URL slugs — no hierarchical paths
  *
- * This initial schema stores only opening families (e.g., "Sicilian Defense"),
- * not individual variations (e.g., "Sicilian Najdorf"). A `parent_id` column
- * for hierarchical variation support may be added in a future migration.
+ * Although parentSlug models a tree, URLs remain flat (/openings/kings-gambit-declined,
+ * not /openings/kings-gambit/declined). The slug is used as topicKey in topicPosts and
+ * as answerValue in userInterviewAnswers; hierarchical paths would require reverse-mapping
+ * logic with no SEO or UX benefit. Hierarchy is expressed in the UI (breadcrumbs) instead.
  */
 export const chessOpenings = pgTable(
   'chess_openings',
