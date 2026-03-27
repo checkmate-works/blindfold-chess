@@ -3,6 +3,8 @@
 import type { NodeViewProps } from '@tiptap/react';
 import { NodeViewWrapper } from '@tiptap/react';
 
+import { extractXUsername } from '../_lib/x-utils';
+
 export function XEmbedNodeView({ node }: NodeViewProps) {
   const url = node.attrs.url as string | null;
   const tweetId = node.attrs.tweetId as string | null;
@@ -15,9 +17,7 @@ export function XEmbedNodeView({ node }: NodeViewProps) {
     );
   }
 
-  // Extract username from URL (e.g., https://x.com/username/status/123)
-  const usernameMatch = url?.match(/(?:twitter\.com|x\.com)\/(\w+)\/status\//);
-  const username = usernameMatch?.[1] ?? null;
+  const username = url ? extractXUsername(url) : null;
 
   const displayUrl = url ?? `https://x.com/i/status/${tweetId}`;
 
