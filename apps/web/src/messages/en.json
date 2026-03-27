@@ -79,6 +79,10 @@
       "title": "Challenge Records",
       "description": "View your challenge session history and scores"
     },
+    "interview": {
+      "title": "Interview",
+      "description": "Browse interview questions and answers from chess players"
+    },
     "mypageChallengeResults": {
       "title": "All Challenge Results",
       "description": "Browse all your challenge results with filters"
@@ -2450,6 +2454,16 @@
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet."
+  },
+  "interview": {
+    "title": "Interview",
+    "noAnswer": "Not answered yet",
+    "questions": {
+      "favorite_opening": {
+        "label": "Favourite Opening",
+        "description": "Which opening do you enjoy playing the most?"
+      }
+    }
   },
   "banned": {
     "title": "Account Suspended",

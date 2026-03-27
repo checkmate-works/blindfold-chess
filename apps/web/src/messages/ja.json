@@ -79,6 +79,10 @@
       "title": "チャレンジ記録",
       "description": "チャレンジセッションの履歴とスコアを確認できます"
     },
+    "interview": {
+      "title": "インタビュー",
+      "description": "チェスプレイヤーのインタビュー質問と回答を閲覧できます"
+    },
     "mypageChallengeResults": {
       "title": "チャレンジ結果一覧",
       "description": "すべてのチャレンジ結果をフィルター付きで閲覧できます"
@@ -2415,6 +2419,16 @@
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。"
+  },
+  "interview": {
+    "title": "インタビュー",
+    "noAnswer": "未回答",
+    "questions": {
+      "favorite_opening": {
+        "label": "好きなオープニング",
+        "description": "一番好きなオープニングは何ですか？"
+      }
+    }
   },
   "banned": {
     "title": "アカウント停止",
