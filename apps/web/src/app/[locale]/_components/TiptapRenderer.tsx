@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import type { TiptapJsonContent, TiptapMark, TiptapNode } from '@/app/admin/articles/_lib/types';
+import { extractYouTubeVideoId } from '@/app/admin/articles/_lib/youtube';
 import { Tweet } from 'react-tweet';
 
 import { SectionTitle } from './SectionTitle';
@@ -234,31 +235,8 @@ function YouTubeNode({ node }: { node: TiptapNode }) {
   const src = node.attrs?.src as string | undefined;
   if (!src) return null;
 
-  // Extract video ID from various YouTube URL formats
-  let videoId: string | null = null;
-  try {
-    const url = new URL(src);
-    if (url.hostname === 'www.youtube-nocookie.com' || url.hostname === 'www.youtube.com') {
-      // /embed/VIDEO_ID format
-      const match = url.pathname.match(/\/embed\/([^/?]+)/);
-      if (match) videoId = match[1];
-    }
-    if (!videoId) {
-      // Standard ?v= format
-      videoId = url.searchParams.get('v');
-    }
-    if (!videoId && url.hostname === 'youtu.be') {
-      videoId = url.pathname.slice(1);
-    }
-  } catch {
-    // Not a valid URL, try as-is
-    videoId = src;
-  }
-
+  const videoId = extractYouTubeVideoId(src);
   if (!videoId) return null;
-
-  const isValidVideoId = /^[a-zA-Z0-9_-]+$/.test(videoId);
-  if (!isValidVideoId) return null;
 
   const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
 

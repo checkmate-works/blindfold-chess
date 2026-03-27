@@ -3,6 +3,8 @@
 import type { NodeViewProps } from '@tiptap/react';
 import { NodeViewWrapper } from '@tiptap/react';
 
+import { extractYouTubeVideoId } from '../_lib/youtube';
+
 export function YoutubeNodeView({ node }: NodeViewProps) {
   const src = node.attrs.src as string | null;
 
@@ -14,8 +16,7 @@ export function YoutubeNodeView({ node }: NodeViewProps) {
     );
   }
 
-  const match = src.match(/(?:v=|shorts\/|youtu\.be\/|embed\/)([-\w]+)/);
-  const videoId = match?.[1];
+  const videoId = extractYouTubeVideoId(src);
 
   if (!videoId) {
     return (
