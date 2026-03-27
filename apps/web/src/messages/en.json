@@ -2483,6 +2483,7 @@
       "deleting": "Deleting...",
       "errors": {
         "unauthorized": "You must be signed in to perform this action.",
+        "banned": "Your account has been suspended.",
         "invalidQuestionKey": "Invalid question.",
         "invalidAnswerValue": "Please select a valid option.",
         "alreadyAnswered": "You have already answered this question.",

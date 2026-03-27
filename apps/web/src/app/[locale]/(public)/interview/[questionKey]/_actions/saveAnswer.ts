@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -19,9 +20,12 @@ export type SaveAnswerState = {
 
 export async function saveAnswerAction(
   questionKey: string,
-  answerValue: string,
-  locale: string
+  locale: string,
+  _prevState: SaveAnswerState,
+  formData: FormData
 ): Promise<SaveAnswerState> {
+  const answerValue = formData.get('answerValue') as string | null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,6 +35,10 @@ export async function saveAnswerAction(
     return { error: 'unauthorized' };
   }
 
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
+  }
+
   // Validate question key
   if (!(INTERVIEW_QUESTION_KEYS as readonly string[]).includes(questionKey)) {
     return { error: 'invalidQuestionKey' };
@@ -38,6 +46,10 @@ export async function saveAnswerAction(
 
   const typedKey = questionKey as InterviewQuestionKey;
   const config = QUESTION_CONFIG[typedKey];
+
+  if (!answerValue || answerValue.trim() === '') {
+    return { error: 'invalidAnswerValue' };
+  }
 
   // Validate answer value based on question type
   if (config.answerType === 'master_ref') {
@@ -50,10 +62,6 @@ export async function saveAnswerAction(
     if (!opening) {
       return { error: 'invalidAnswerValue' };
     }
-  }
-
-  if (!answerValue || answerValue.trim() === '') {
-    return { error: 'invalidAnswerValue' };
   }
 
   // Check if already answered

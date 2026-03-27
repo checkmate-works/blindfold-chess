@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq } from 'drizzle-orm';
 
+import { isUserBanned } from '@/lib/ban';
 import { db, userInterviewAnswers } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -24,6 +25,10 @@ export async function deleteAnswerAction(
 
   if (!user) {
     return { error: 'unauthorized' };
+  }
+
+  if (await isUserBanned(user.id)) {
+    return { error: 'banned' };
   }
 
   // Validate question key

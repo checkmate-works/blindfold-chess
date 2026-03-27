@@ -2448,6 +2448,7 @@
       "deleting": "削除中...",
       "errors": {
         "unauthorized": "この操作を行うにはサインインが必要です。",
+        "banned": "あなたのアカウントは停止されています。",
         "invalidQuestionKey": "無効な質問です。",
         "invalidAnswerValue": "有効なオプションを選択してください。",
         "alreadyAnswered": "この質問にはすでに回答済みです。",

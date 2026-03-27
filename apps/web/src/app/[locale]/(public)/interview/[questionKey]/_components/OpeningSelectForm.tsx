@@ -25,7 +25,7 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
   const [search, setSearch] = useState('');
   const [selectedSlug, setSelectedSlug] = useState('');
 
-  const boundSave = saveAnswerAction.bind(null, questionKey, selectedSlug, locale);
+  const boundSave = saveAnswerAction.bind(null, questionKey, locale);
   const [state, formAction, isPending] = useActionState(boundSave, {});
 
   const filteredOpenings = useMemo(() => {
@@ -46,6 +46,7 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
       ? t(
           `errors.${state.error}` as
             | 'errors.unauthorized'
+            | 'errors.banned'
             | 'errors.invalidQuestionKey'
             | 'errors.invalidAnswerValue'
             | 'errors.alreadyAnswered'
@@ -56,6 +57,7 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="answerValue" value={selectedSlug} />
       {errorMessage && (
         <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
           {errorMessage}

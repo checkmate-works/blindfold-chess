@@ -25,6 +25,7 @@ export function DeleteAnswerButton({ questionKey, locale }: Props) {
       ? t(
           `errors.${state.error}` as
             | 'errors.unauthorized'
+            | 'errors.banned'
             | 'errors.invalidQuestionKey'
             | 'errors.notFound'
             | 'errors.unknown'
