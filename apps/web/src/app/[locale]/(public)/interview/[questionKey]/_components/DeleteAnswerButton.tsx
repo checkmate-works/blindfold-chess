@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { deleteAnswerAction } from '../_actions/deleteAnswer';
 
 type Props = {
@@ -18,20 +20,25 @@ export function DeleteAnswerButton({ questionKey, locale }: Props) {
   const [confirming, setConfirming] = useState(false);
 
   const boundDelete = deleteAnswerAction.bind(null, questionKey, locale);
-  const [state, formAction, isPending] = useActionState(boundDelete, {});
+  const [state, formAction, isPending] = useActionState<ActionResult | null, FormData>(
+    boundDelete,
+    null
+  );
 
-  const errorMessage = state.error
-    ? t.has(`errors.${state.error}`)
-      ? t(
-          `errors.${state.error}` as
-            | 'errors.unauthorized'
-            | 'errors.banned'
-            | 'errors.invalidQuestionKey'
-            | 'errors.notFound'
-            | 'errors.unknown'
-        )
-      : t('errors.unknown')
-    : null;
+  const errorMessage =
+    state && 'error' in state
+      ? t.has(`errors.${state.error}`)
+        ? t(
+            `errors.${state.error}` as
+              | 'errors.unauthorized'
+              | 'errors.banned'
+              | 'errors.invalidQuestionKey'
+              | 'errors.notFound'
+              | 'errors.rateLimited'
+              | 'errors.unknown'
+          )
+        : t('errors.unknown')
+      : null;
 
   if (!confirming) {
     return (
@@ -62,7 +69,7 @@ export function DeleteAnswerButton({ questionKey, locale }: Props) {
           onClick={() => setConfirming(false)}
           disabled={isPending}
         >
-          Cancel
+          {t('cancel')}
         </Button>
       </div>
     </div>

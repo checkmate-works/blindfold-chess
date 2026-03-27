@@ -2481,6 +2481,7 @@
       "signUp": "Sign Up",
       "saving": "Saving...",
       "deleting": "Deleting...",
+      "cancel": "Cancel",
       "errors": {
         "unauthorized": "You must be signed in to perform this action.",
         "banned": "Your account has been suspended.",
@@ -2488,6 +2489,7 @@
         "invalidAnswerValue": "Please select a valid option.",
         "alreadyAnswered": "You have already answered this question.",
         "notFound": "Answer not found.",
+        "rateLimited": "Too many requests. Please try again later.",
         "unknown": "An unexpected error occurred. Please try again."
       }
     }

@@ -4,20 +4,20 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { isUserBanned } from '@/lib/ban';
 import { db, userInterviewAnswers } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 
-export type DeleteAnswerState = {
-  error?: string;
-};
+export type DeleteAnswerResult = ActionResult;
 
 export async function deleteAnswerAction(
   questionKey: string,
   locale: string
-): Promise<DeleteAnswerState> {
+): Promise<DeleteAnswerResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,6 +29,11 @@ export async function deleteAnswerAction(
 
   if (await isUserBanned(user.id)) {
     return { error: 'banned' };
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.deleteInterviewAnswer);
+  if ('error' in rateLimitResult) {
+    return { error: rateLimitResult.error };
   }
 
   // Validate question key
@@ -53,5 +58,5 @@ export async function deleteAnswerAction(
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${questionKey}`);
 
-  return {};
+  return { success: true };
 }

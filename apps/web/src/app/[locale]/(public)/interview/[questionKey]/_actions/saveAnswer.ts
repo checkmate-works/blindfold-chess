@@ -4,8 +4,10 @@ import { revalidatePath } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { isUserBanned } from '@/lib/ban';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import {
@@ -14,16 +16,14 @@ import {
   QUESTION_CONFIG,
 } from '@/app/[locale]/_lib/interview';
 
-export type SaveAnswerState = {
-  error?: string;
-};
+export type SaveAnswerResult = ActionResult;
 
 export async function saveAnswerAction(
   questionKey: string,
   locale: string,
-  _prevState: SaveAnswerState,
+  _prevState: SaveAnswerResult | null,
   formData: FormData
-): Promise<SaveAnswerState> {
+): Promise<SaveAnswerResult> {
   const answerValue = formData.get('answerValue') as string | null;
 
   const supabase = await createClient();
@@ -37,6 +37,11 @@ export async function saveAnswerAction(
 
   if (await isUserBanned(user.id)) {
     return { error: 'banned' };
+  }
+
+  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.saveInterviewAnswer);
+  if ('error' in rateLimitResult) {
+    return { error: rateLimitResult.error };
   }
 
   // Validate question key
@@ -79,5 +84,5 @@ export async function saveAnswerAction(
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${questionKey}`);
 
-  return {};
+  return { success: true };
 }

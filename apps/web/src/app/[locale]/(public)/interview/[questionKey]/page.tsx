@@ -80,8 +80,9 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
       .orderBy(asc(chessOpenings.sortOrder));
 
     openings = allOpenings.map((o) => {
-      const translated = tOpeningNames(o.slug as never);
-      const translatedName = translated === `topics.openings.names.${o.slug}` ? o.name : translated;
+      const translatedName = tOpeningNames.has(o.slug as never)
+        ? tOpeningNames(o.slug as never)
+        : o.name;
       return { ...o, translatedName };
     });
   }
@@ -89,11 +90,9 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
   // Resolve display name for current answer
   let answerDisplayName: string | null = null;
   if (answer && config.answerType === 'master_ref') {
-    const translated = tOpeningNames(answer.answerValue as never);
-    answerDisplayName =
-      translated === `topics.openings.names.${answer.answerValue}`
-        ? (answer.openingName ?? answer.answerValue)
-        : translated;
+    answerDisplayName = tOpeningNames.has(answer.answerValue as never)
+      ? tOpeningNames(answer.answerValue as never)
+      : (answer.openingName ?? answer.answerValue);
   }
 
   return (

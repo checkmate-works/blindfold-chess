@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { saveAnswerAction } from '../_actions/saveAnswer';
 
 type Opening = {
@@ -26,7 +28,10 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
   const [selectedSlug, setSelectedSlug] = useState('');
 
   const boundSave = saveAnswerAction.bind(null, questionKey, locale);
-  const [state, formAction, isPending] = useActionState(boundSave, {});
+  const [state, formAction, isPending] = useActionState<ActionResult | null, FormData>(
+    boundSave,
+    null
+  );
 
   const filteredOpenings = useMemo(() => {
     if (!search.trim()) return openings;
@@ -41,19 +46,21 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
 
   const selectedOpening = openings.find((o) => o.slug === selectedSlug);
 
-  const errorMessage = state.error
-    ? t.has(`errors.${state.error}`)
-      ? t(
-          `errors.${state.error}` as
-            | 'errors.unauthorized'
-            | 'errors.banned'
-            | 'errors.invalidQuestionKey'
-            | 'errors.invalidAnswerValue'
-            | 'errors.alreadyAnswered'
-            | 'errors.unknown'
-        )
-      : t('errors.unknown')
-    : null;
+  const errorMessage =
+    state && 'error' in state
+      ? t.has(`errors.${state.error}`)
+        ? t(
+            `errors.${state.error}` as
+              | 'errors.unauthorized'
+              | 'errors.banned'
+              | 'errors.invalidQuestionKey'
+              | 'errors.invalidAnswerValue'
+              | 'errors.alreadyAnswered'
+              | 'errors.rateLimited'
+              | 'errors.unknown'
+          )
+        : t('errors.unknown')
+      : null;
 
   return (
     <form action={formAction} className="space-y-4">
