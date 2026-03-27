@@ -31,6 +31,7 @@ import {
 import type { TiptapJsonContent } from '../_lib/types';
 import { ResizableImage } from './ResizableImage';
 import { XEmbed } from './XEmbed';
+import { XEmbedNodeView } from './XEmbedNodeView';
 import { YoutubeNodeView } from './YoutubeNodeView';
 import './tiptap-editor.css';
 
@@ -202,7 +203,11 @@ export function TiptapEditor({
         inline: false,
         nocookie: true,
       }),
-      XEmbed,
+      XEmbed.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(XEmbedNodeView);
+        },
+      }),
     ],
     content: initialContent ?? undefined,
     onUpdate: ({ editor: ed }) => {
