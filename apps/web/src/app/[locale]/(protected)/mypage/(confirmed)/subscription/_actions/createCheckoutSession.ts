@@ -3,10 +3,11 @@
 import { redirect } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
+import type Stripe from 'stripe';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { STRIPE_PRICE_ID, stripe } from '@/lib/stripe';
+import { getStripe, getStripePriceId } from '@/lib/stripe';
 import { getOrCreateStripeCustomerId } from '@/lib/stripe-customer';
 
 type CheckoutError = { error: 'rateLimited' | 'sessionCreationFailed' };
@@ -28,14 +29,14 @@ export async function createCheckoutSession(locale: string): Promise<CheckoutErr
   }
 
   // Create Checkout session
-  let session: Awaited<ReturnType<typeof stripe.checkout.sessions.create>>;
+  let session: Stripe.Response<Stripe.Checkout.Session>;
   try {
-    session = await stripe.checkout.sessions.create({
+    session = await getStripe().checkout.sessions.create({
       customer: stripeCustomerId,
       mode: 'subscription',
       line_items: [
         {
-          price: STRIPE_PRICE_ID,
+          price: getStripePriceId(),
           quantity: 1,
         },
       ],

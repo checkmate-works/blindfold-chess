@@ -39,12 +39,14 @@ vi.mock('./db', () => ({
   subscriptions: { stripeSubscriptionId: 'stripe_subscription_id' },
 }));
 
-vi.mock('./stripe', () => ({
-  stripe: {
-    subscriptions: {
-      retrieve: vi.fn(),
-    },
+const mockStripe = {
+  subscriptions: {
+    retrieve: vi.fn(),
   },
+};
+
+vi.mock('./stripe', () => ({
+  getStripe: () => mockStripe,
 }));
 
 vi.mock('next/cache', () => ({
@@ -59,7 +61,6 @@ const {
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
 } = await import('./stripe-webhook-handlers');
-const { stripe } = await import('./stripe');
 const { revalidateTag } = await import('next/cache');
 
 // ── Helper ───────────────────────────────────────────────────────────
@@ -235,7 +236,7 @@ describe('handleCheckoutCompleted', () => {
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -247,7 +248,7 @@ describe('handleCheckoutCompleted', () => {
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -259,7 +260,7 @@ describe('handleCheckoutCompleted', () => {
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -271,7 +272,7 @@ describe('handleCheckoutCompleted', () => {
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
   });
 
   it('should skip if session.subscription is empty string (falsy)', async () => {
@@ -282,7 +283,7 @@ describe('handleCheckoutCompleted', () => {
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).not.toHaveBeenCalled();
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
   });
 
   it('should throw when no customer record is found', async () => {
@@ -292,7 +293,7 @@ describe('handleCheckoutCompleted', () => {
       customer: 'cus_unknown',
     } as unknown as Stripe.Checkout.Session;
 
-    vi.mocked(stripe.subscriptions.retrieve).mockResolvedValue(
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
       createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
     );
     mockSelectLimit.mockResolvedValue([]);
@@ -310,14 +311,14 @@ describe('handleCheckoutCompleted', () => {
       customer: 'cus_456',
     } as unknown as Stripe.Checkout.Session;
 
-    vi.mocked(stripe.subscriptions.retrieve).mockResolvedValue(
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
       createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
     );
     mockSelectLimit.mockResolvedValue([{ userId: 'user_789' }]);
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_123');
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_123');
     expect(mockInsertValues).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'user_789',
@@ -337,14 +338,14 @@ describe('handleCheckoutCompleted', () => {
       customer: 'cus_456',
     } as unknown as Stripe.Checkout.Session;
 
-    vi.mocked(stripe.subscriptions.retrieve).mockResolvedValue(
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
       createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
     );
     mockSelectLimit.mockResolvedValue([{ userId: 'user_789' }]);
 
     await handleCheckoutCompleted(session);
 
-    expect(vi.mocked(stripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_specific_id');
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_specific_id');
   });
 
   it('should include all mapped subscription fields in the upsert', async () => {
@@ -362,7 +363,7 @@ describe('handleCheckoutCompleted', () => {
       customer: 'cus_456',
     } as unknown as Stripe.Checkout.Session;
 
-    vi.mocked(stripe.subscriptions.retrieve).mockResolvedValue(
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
       sub as unknown as Stripe.Response<Stripe.Subscription>
     );
     mockSelectLimit.mockResolvedValue([{ userId: 'user_trial' }]);

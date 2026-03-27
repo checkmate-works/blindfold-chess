@@ -5,7 +5,7 @@ import 'server-only';
 import type Stripe from 'stripe';
 
 import { db, stripeCustomers, subscriptions } from '@/lib/db';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 
 /**
  * Map a Stripe Subscription object to the DB column values used for
@@ -30,7 +30,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
 
   const subscriptionId =
     typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
   if (!session.customer) return;
   const customerId = typeof session.customer === 'string' ? session.customer : session.customer.id;

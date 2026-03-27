@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, stripeCustomers } from '@/lib/db';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 
 export async function getStripeCustomerId(userId: string): Promise<string | null> {
   const [record] = await db
@@ -21,7 +21,7 @@ export async function getOrCreateStripeCustomerId(
   const existing = await getStripeCustomerId(userId);
   if (existing) return existing;
 
-  const customer = await stripe.customers.create({
+  const customer = await getStripe().customers.create({
     email,
     metadata: { supabaseUserId: userId },
   });
@@ -34,7 +34,7 @@ export async function getOrCreateStripeCustomerId(
 
   if (result.length === 0) {
     // Race: another request already inserted. Clean up the orphaned Stripe customer.
-    await stripe.customers.del(customer.id);
+    await getStripe().customers.del(customer.id);
     const winner = await getStripeCustomerId(userId);
     if (!winner) {
       throw new Error(

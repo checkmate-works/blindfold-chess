@@ -3,10 +3,11 @@
 import { redirect } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
+import type Stripe from 'stripe';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { getStripeCustomerId } from '@/lib/stripe-customer';
 
 type PortalError = { error: 'rateLimited' | 'noSubscription' | 'portalSessionFailed' };
@@ -25,9 +26,9 @@ export async function createPortalSession(locale: string): Promise<PortalError> 
     return { error: 'noSubscription' as const };
   }
 
-  let session: Awaited<ReturnType<typeof stripe.billingPortal.sessions.create>>;
+  let session: Stripe.Response<Stripe.BillingPortal.Session>;
   try {
-    session = await stripe.billingPortal.sessions.create({
+    session = await getStripe().billingPortal.sessions.create({
       customer: stripeCustomerId,
       return_url: `${SITE_URL}/${locale}/mypage/subscription`,
     });
