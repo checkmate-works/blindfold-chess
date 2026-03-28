@@ -8,7 +8,9 @@ import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-export type SaveResultResponse = { success: true } | { success: false; error: string };
+export type SaveResultResponse =
+  | { success: true; grantedRanks?: { slug: string; level: number; color: string | null }[] }
+  | { success: false; error: string };
 
 export type ChallengeFields = {
   score: number;
@@ -65,7 +67,7 @@ export async function savePracticeResult(
     }
 
     // Round to integers — DB columns are integer type, but timers may produce floats
-    await saveChallengeResult({
+    const { grantedRanks } = await saveChallengeResult({
       userId: user.id,
       menuType,
       leaderboardKey,
@@ -74,7 +76,7 @@ export async function savePracticeResult(
       timeTaken: Math.round(challengeFields.timeTaken),
     });
 
-    return { success: true };
+    return { success: true, grantedRanks };
   } catch (error) {
     console.error(`[savePracticeResult] ${menuType}: unexpected error during save:`, error);
     return { success: false, error: 'unexpected_error' };

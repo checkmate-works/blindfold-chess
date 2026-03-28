@@ -2980,5 +2980,19 @@
       "1kyu": "1級",
       "1dan": "初段"
     }
+  },
+  "rankAchievement": {
+    "title": "昇級おめでとう！",
+    "description": "新しい級位を獲得しました。",
+    "viewRanks": "段級位を見る",
+    "close": "閉じる",
+    "rankNames": {
+      "5kyu": "5級",
+      "4kyu": "4級",
+      "3kyu": "3級",
+      "2kyu": "2級",
+      "1kyu": "1級",
+      "1dan": "初段"
+    }
   }
 }

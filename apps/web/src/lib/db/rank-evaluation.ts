@@ -107,7 +107,15 @@ export async function evaluateRankRequirements(
  * AFTER the challenge result transaction commits, so that
  * challenge_best_scores reflects the latest data.
  */
-export async function checkAndGrantRanks(userId: string): Promise<void> {
+export type GrantedRank = {
+  slug: string;
+  level: number;
+  color: string | null;
+};
+
+export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]> {
+  const granted: GrantedRank[] = [];
+
   // 1. Get all rank IDs the user already has
   const achievedRanks = await db
     .select({ rankId: userRanks.rankId })
@@ -140,6 +148,8 @@ export async function checkAndGrantRanks(userId: string): Promise<void> {
         target: [userRanks.userId, userRanks.rankId],
       });
 
+    granted.push({ slug: rank.slug, level: rank.level, color: rank.color });
+
     // 5. Log activity event (fire-and-forget)
     logActivityEvent({
       userId,
@@ -149,4 +159,6 @@ export async function checkAndGrantRanks(userId: string): Promise<void> {
       metadata: { rankSlug: rank.slug, level: rank.level },
     });
   }
+
+  return granted;
 }

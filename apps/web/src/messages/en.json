@@ -3015,5 +3015,19 @@
       "1kyu": "1st Kyū",
       "1dan": "1st Dan"
     }
+  },
+  "rankAchievement": {
+    "title": "Rank Achieved!",
+    "description": "Congratulations! You've earned a new belt rank.",
+    "viewRanks": "View Ranks",
+    "close": "Close",
+    "rankNames": {
+      "5kyu": "5th Kyū",
+      "4kyu": "4th Kyū",
+      "3kyu": "3rd Kyū",
+      "2kyu": "2nd Kyū",
+      "1kyu": "1st Kyū",
+      "1dan": "1st Dan"
+    }
   }
 }

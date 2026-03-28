@@ -344,8 +344,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([{ slug: '5kyu', level: 10, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledWith({
       userId,
       rankId: 'rank-1',
@@ -403,9 +404,10 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
     // Only rank-1 should be granted
+    expect(result).toEqual([{ slug: '5kyu', level: 10, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({
       userId,
@@ -453,8 +455,12 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([
+      { slug: '5kyu', level: 10, color: undefined },
+      { slug: '4kyu', level: 20, color: undefined },
+    ]);
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, { userId, rankId: 'rank-1' });
     expect(mockInsertValues).toHaveBeenNthCalledWith(2, { userId, rankId: 'rank-2' });
@@ -493,9 +499,10 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
     // Only rank-1 is granted (rank-empty is skipped, not granted)
+    expect(result).toEqual([{ slug: '5kyu', level: 10, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-1' });
   });
@@ -539,9 +546,10 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
     // Only rank-2 should be granted (rank-1 already achieved)
+    expect(result).toEqual([{ slug: '4kyu', level: 20, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-2' });
   });
@@ -555,8 +563,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([]);
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -569,8 +578,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([]);
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -605,9 +615,10 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
     // rank-bad is skipped (parseRequirements returns []), rank-1 is granted
+    expect(result).toEqual([{ slug: '5kyu', level: 10, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-1' });
   });
@@ -724,8 +735,11 @@ describe('checkAndGrantRanks', () => {
       return [{ score: 100 }];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toHaveLength(5);
+    expect(result[0]).toEqual({ slug: '10kyu', level: 1, color: undefined });
+    expect(result[4]).toEqual({ slug: '6kyu', level: 5, color: undefined });
     expect(mockInsertValues).toHaveBeenCalledTimes(5);
     expect(mockInsertValues).toHaveBeenNthCalledWith(1, { userId, rankId: 'rank-1' });
     expect(mockInsertValues).toHaveBeenNthCalledWith(2, { userId, rankId: 'rank-2' });
@@ -768,8 +782,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([]);
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -798,8 +813,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([{ slug: 'beginner', level: 1, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-beginner' });
   });
@@ -829,8 +845,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([]);
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
@@ -935,8 +952,9 @@ describe('checkAndGrantRanks', () => {
       return [];
     });
 
-    await checkAndGrantRanks(userId);
+    const result = await checkAndGrantRanks(userId);
 
+    expect(result).toEqual([{ slug: '9kyu', level: 2, color: undefined }]);
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-2' });
   });
