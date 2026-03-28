@@ -46,12 +46,6 @@ export default async function NewGamePage({ params }: Props) {
               description={t('newGame.standardDescription')}
             />
             <CardLink
-              href="/games/new/pgn"
-              icon="📋"
-              title={t('newGame.pgnPageTitle')}
-              description={t('newGame.pgnPageDescription')}
-            />
-            <CardLink
               href="/games/new/position"
               icon="♜"
               title={t('newGame.positionPageTitle')}
@@ -62,6 +56,12 @@ export default async function NewGamePage({ params }: Props) {
               icon="📖"
               title={t('newGame.openingPageTitle')}
               description={t('newGame.openingPageDescription')}
+            />
+            <CardLink
+              href="/games/new/pgn"
+              icon="📋"
+              title={t('newGame.pgnPageTitle')}
+              description={t('newGame.pgnPageDescription')}
             />
           </div>
           <Divider />

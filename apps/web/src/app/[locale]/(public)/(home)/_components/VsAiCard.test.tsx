@@ -106,11 +106,11 @@ describe('VsAiCard', () => {
       expect(screen.getByText('startGame')).toBeInTheDocument();
     });
 
-    it('should link start CTA to /games/new/standard', () => {
+    it('should link start CTA to /games/new', () => {
       render(<VsAiCard locale="en" />);
 
       const startLink = screen.getByText('startGame').closest('a');
-      expect(startLink).toHaveAttribute('href', '/games/new/standard');
+      expect(startLink).toHaveAttribute('href', '/games/new');
     });
 
     it('should not show resume or new game buttons', () => {
@@ -185,7 +185,7 @@ describe('VsAiCard', () => {
       expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1');
     });
 
-    it('should link new game button to /games/new/standard', () => {
+    it('should link new game button to /games/new', () => {
       const game = createMockGame({ id: 'game-1', status: 'in_progress' });
       mockUseGameList.mockReturnValue({
         games: [game],
@@ -195,7 +195,7 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       const newGameLink = screen.getByText('newGame').closest('a');
-      expect(newGameLink).toHaveAttribute('href', '/games/new/standard');
+      expect(newGameLink).toHaveAttribute('href', '/games/new');
     });
 
     it('should not show start game button when in-progress game exists', () => {

@@ -90,7 +90,7 @@ export function VsAiCard({ locale }: Props) {
           <>
             {!latestGame && (
               <Link
-                href="/games/new/standard"
+                href="/games/new"
                 locale={locale}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
               >
@@ -129,7 +129,7 @@ export function VsAiCard({ locale }: Props) {
                 {t('resume')}
               </Link>
               <Link
-                href="/games/new/standard"
+                href="/games/new"
                 locale={locale}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
               >
