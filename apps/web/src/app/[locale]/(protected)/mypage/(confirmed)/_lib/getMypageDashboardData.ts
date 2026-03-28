@@ -34,7 +34,8 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .where(
         and(
           eq(userInterviewAnswers.userId, userId),
-          inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS])
+          inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS]),
+          isNull(userInterviewAnswers.deletedAt)
         )
       ),
   ]);

@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { db, userInterviewAnswers } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -42,11 +43,13 @@ export async function deleteAnswerAction(
   }
 
   const result = await db
-    .delete(userInterviewAnswers)
+    .update(userInterviewAnswers)
+    .set({ deletedAt: new Date() })
     .where(
       and(
         eq(userInterviewAnswers.userId, user.id),
-        eq(userInterviewAnswers.questionKey, questionKey)
+        eq(userInterviewAnswers.questionKey, questionKey),
+        isNull(userInterviewAnswers.deletedAt)
       )
     )
     .returning({ questionKey: userInterviewAnswers.questionKey });
@@ -54,6 +57,13 @@ export async function deleteAnswerAction(
   if (result.length === 0) {
     return { error: 'notFound' };
   }
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_interview_answer',
+    targetType: 'interview_answer',
+    targetId: questionKey,
+  });
 
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${questionKey}`);

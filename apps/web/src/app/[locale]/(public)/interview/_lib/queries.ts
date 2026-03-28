@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 
@@ -28,7 +28,8 @@ export async function getInterviewAnswers(userId: string): Promise<InterviewAnsw
     .where(
       and(
         eq(userInterviewAnswers.userId, userId),
-        inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS])
+        inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS]),
+        isNull(userInterviewAnswers.deletedAt)
       )
     );
 

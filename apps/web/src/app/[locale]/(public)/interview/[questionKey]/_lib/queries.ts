@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 
@@ -28,7 +28,8 @@ export async function getInterviewAnswer(
     .where(
       and(
         eq(userInterviewAnswers.userId, userId),
-        eq(userInterviewAnswers.questionKey, questionKey)
+        eq(userInterviewAnswers.questionKey, questionKey),
+        isNull(userInterviewAnswers.deletedAt)
       )
     )
     .limit(1);

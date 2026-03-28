@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -69,17 +70,48 @@ export async function saveAnswerAction(
     }
   }
 
-  // Check if already answered
-  try {
+  // Check if already answered (including soft-deleted records)
+  const existing = await db
+    .select({ deletedAt: userInterviewAnswers.deletedAt })
+    .from(userInterviewAnswers)
+    .where(
+      and(
+        eq(userInterviewAnswers.userId, user.id),
+        eq(userInterviewAnswers.questionKey, questionKey)
+      )
+    )
+    .limit(1);
+
+  if (existing.length > 0) {
+    if (!existing[0].deletedAt) {
+      return { error: 'alreadyAnswered' };
+    }
+    // Soft-deleted → restore
+    await db
+      .update(userInterviewAnswers)
+      .set({ answerValue: answerValue.trim(), deletedAt: null })
+      .where(
+        and(
+          eq(userInterviewAnswers.userId, user.id),
+          eq(userInterviewAnswers.questionKey, questionKey)
+        )
+      );
+  } else {
+    // New insert
     await db.insert(userInterviewAnswers).values({
       userId: user.id,
       questionKey,
       answerValue: answerValue.trim(),
     });
-  } catch {
-    // Primary key constraint violation means already answered
-    return { error: 'alreadyAnswered' };
   }
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'save_interview_answer',
+    targetType: 'interview_answer',
+    targetId: questionKey,
+    metadata: { answerValue: answerValue.trim() },
+  });
 
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${questionKey}`);

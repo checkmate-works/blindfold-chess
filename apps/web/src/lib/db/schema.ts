@@ -1066,6 +1066,7 @@ export const userInterviewAnswers = pgTable(
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
     questionKey: varchar('question_key', { length: 50 }).notNull(),
     answerValue: varchar('answer_value', { length: 500 }).notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [

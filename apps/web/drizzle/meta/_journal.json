@@ -92,6 +92,13 @@
       "when": 1774597275637,
       "tag": "20260327074115_create_user_interview_answers_table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1774656712747,
+      "tag": "20260328001152_add_deleted_at_to_user_interview_answers",
+      "breakpoints": true
     }
   ]
 }
