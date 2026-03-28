@@ -71,6 +71,10 @@
       "title": "いいねした投稿",
       "description": "いいねした投稿の一覧を表示します"
     },
+    "mypagePosts": {
+      "title": "自分の投稿",
+      "description": "自分の投稿の一覧を表示します"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -1907,6 +1911,7 @@
       "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
       "likesTitle": "いいねした投稿",
+      "postsTitle": "自分の投稿",
       "editProfile": "編集",
       "interviewTitle": "インタビュー",
       "myRecords": "マイレコード",
@@ -1970,7 +1975,14 @@
   "MypageLikes": {
     "title": "いいねした投稿",
     "breadcrumbMypage": "マイページ",
-    "empty": "いいねした投稿はまだありません。"
+    "empty": "いいねした投稿はまだありません。",
+    "sectionTitle": "トピック"
+  },
+  "MypagePosts": {
+    "title": "自分の投稿",
+    "breadcrumbMypage": "マイページ",
+    "empty": "投稿はまだありません。",
+    "sectionTitle": "トピック"
   },
   "MypageFollowing": {
     "title": "フォロー中",

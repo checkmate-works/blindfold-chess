@@ -29,6 +29,7 @@ type Props = {
   showMoreLabel: string;
   justNowLabel: string;
   newReplyTemplate: string;
+  variant?: 'feed' | 'card';
 };
 
 export const TopicPostCard = memo(function TopicPostCard({
@@ -37,6 +38,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   showMoreLabel,
   justNowLabel,
   newReplyTemplate,
+  variant,
 }: Props) {
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
@@ -54,6 +56,7 @@ export const TopicPostCard = memo(function TopicPostCard({
     <FeedItemCard
       href={href}
       locale={locale}
+      variant={variant}
       thumbnail={
         isOpening ? (
           <MiniBoard

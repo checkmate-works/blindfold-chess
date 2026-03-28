@@ -115,6 +115,64 @@ describe('FeedItemCard', () => {
     });
   });
 
+  describe('variant', () => {
+    it('should apply feed classes by default', () => {
+      render(
+        <FeedItemCard href="/test" thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const link = screen.getByRole('link');
+      expect(link.className).toContain('hover:bg-muted/50');
+      expect(link.className).not.toContain('border');
+    });
+
+    it('should apply feed classes when variant="feed"', () => {
+      render(
+        <FeedItemCard href="/test" variant="feed" thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const link = screen.getByRole('link');
+      expect(link.className).toContain('hover:bg-muted/50');
+      expect(link.className).not.toContain('border-border');
+    });
+
+    it('should apply card classes when variant="card"', () => {
+      render(
+        <FeedItemCard href="/test" variant="card" thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const link = screen.getByRole('link');
+      expect(link.className).toContain('border');
+      expect(link.className).toContain('border-border');
+      expect(link.className).toContain('bg-card');
+      expect(link.className).toContain('rounded-md');
+      expect(link.className).not.toContain('hover:bg-muted/50');
+    });
+
+    it('should apply card classes to external links when variant="card"', () => {
+      render(
+        <FeedItemCard
+          href="https://example.com"
+          external
+          variant="card"
+          thumbnail={<span>thumb</span>}
+        >
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const link = screen.getByRole('link');
+      expect(link.className).toContain('border-border');
+      expect(link.className).toContain('bg-card');
+    });
+  });
+
   describe('children', () => {
     it('should render children in the content area', () => {
       render(

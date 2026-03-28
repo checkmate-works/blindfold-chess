@@ -66,6 +66,8 @@ function mockChain(rows: unknown[]) {
     'orderBy',
     'groupBy',
     'limit',
+    'offset',
+    '$dynamic',
   ];
   for (const m of methods) {
     chain[m] = vi.fn().mockReturnValue(chain);

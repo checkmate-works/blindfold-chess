@@ -9,6 +9,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import {
   Divider,
@@ -22,7 +23,6 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   OpeningCard,
   OpeningCategoryFilter,
@@ -119,6 +119,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                     showMoreLabel={t('showMore')}
                     justNowLabel={tTopic('justNow')}
                     newReplyTemplate={tTopic('newReply', { time: '{time}' })}
+                    variant="card"
                   />
                 );
               })}

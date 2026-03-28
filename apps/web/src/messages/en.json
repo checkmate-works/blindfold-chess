@@ -71,6 +71,10 @@
       "title": "Liked Posts",
       "description": "View posts you have liked"
     },
+    "mypagePosts": {
+      "title": "My Posts",
+      "description": "View your posts"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -1906,6 +1910,7 @@
       "viewProfile": "Public profile",
       "challengeTitle": "Challenge Records",
       "likesTitle": "Liked Posts",
+      "postsTitle": "My Posts",
       "editProfile": "Edit",
       "interviewTitle": "Interview",
       "myRecords": "My Records",
@@ -1969,7 +1974,14 @@
   "MypageLikes": {
     "title": "Liked Posts",
     "breadcrumbMypage": "My Page",
-    "empty": "No liked posts yet."
+    "empty": "No liked posts yet.",
+    "sectionTitle": "Topics"
+  },
+  "MypagePosts": {
+    "title": "My Posts",
+    "breadcrumbMypage": "My Page",
+    "empty": "No posts yet.",
+    "sectionTitle": "Topics"
   },
   "MypageFollowing": {
     "title": "Following",

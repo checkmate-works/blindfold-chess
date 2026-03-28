@@ -9,8 +9,8 @@ import { getPaginationParams } from '@/lib/pagination';
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  getLikedPostCountByUser,
-  getLikedPostsByUser,
+  getPostCountByUserId,
+  getPostsByUserId,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import {
   Divider,
@@ -32,7 +32,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypageLikes' });
+  const t = await getTranslations({ locale, namespace: 'metadata.mypagePosts' });
 
   return {
     title: t('title'),
@@ -41,9 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function LikesPage({ params, searchParams }: Props) {
+export default async function PostsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypageLikes' });
+  const t = await getTranslations({ locale, namespace: 'MypagePosts' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
   const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
@@ -52,17 +52,17 @@ export default async function LikesPage({ params, searchParams }: Props) {
 
   const { page } = await searchParamsCache.parse(searchParams);
 
-  const totalCount = await getLikedPostCountByUser(user.id);
+  const totalCount = await getPostCountByUserId(user.id);
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,
     TOPIC_PAGE_SIZE
   );
-  const posts = await getLikedPostsByUser(user.id, limit, offset);
+  const posts = await getPostsByUserId(user.id, user.id, limit, offset);
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/mypage/likes${qs}`;
+    return `/${locale}/mypage/posts${qs}`;
   };
 
   return (

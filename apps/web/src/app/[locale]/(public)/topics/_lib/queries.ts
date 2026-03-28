@@ -405,9 +405,11 @@ export async function getLikedPostsByUser(
  */
 export async function getPostsByUserId(
   userId: string,
-  currentUserId?: string
+  currentUserId?: string,
+  limit?: number,
+  offset?: number
 ): Promise<ProfilePostWithReplyMeta[]> {
-  const results = await db
+  let query = db
     .select({
       post: topicPosts,
       author: authorSelect,
@@ -427,7 +429,35 @@ export async function getPostsByUserId(
         isNull(topicPosts.deletedAt)
       )
     )
-    .orderBy(desc(topicPosts.createdAt));
+    .orderBy(desc(topicPosts.createdAt))
+    .$dynamic();
+
+  if (limit !== undefined) {
+    query = query.limit(limit);
+  }
+  if (offset !== undefined) {
+    query = query.offset(offset);
+  }
+
+  const results = await query;
 
   return attachProfilePostMeta(results, currentUserId);
+}
+
+/**
+ * Get the count of top-level posts by a specific user (across all topic types).
+ */
+export async function getPostCountByUserId(userId: string): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPosts)
+    .where(
+      and(
+        eq(topicPosts.userId, userId),
+        inArray(topicPosts.topicType, ['square', 'opening']),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    );
+  return result.count;
 }

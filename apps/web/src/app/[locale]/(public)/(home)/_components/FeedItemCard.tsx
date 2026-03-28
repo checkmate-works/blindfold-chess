@@ -11,6 +11,7 @@ type Props = {
   external?: boolean;
   thumbnail: ReactNode;
   thumbnailClassName?: string;
+  variant?: 'feed' | 'card';
   children: ReactNode;
 };
 
@@ -20,9 +21,13 @@ export const FeedItemCard = memo(function FeedItemCard({
   external,
   thumbnail,
   thumbnailClassName,
+  variant = 'feed',
   children,
 }: Props) {
-  const className = 'flex gap-4 p-4 hover:bg-muted/50 transition-colors';
+  const className =
+    variant === 'card'
+      ? 'flex gap-4 p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors'
+      : 'flex gap-4 p-4 hover:bg-muted/50 transition-colors';
 
   const content = (
     <>

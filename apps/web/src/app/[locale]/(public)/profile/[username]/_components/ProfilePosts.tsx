@@ -48,6 +48,7 @@ export function ProfilePosts({
               showMoreLabel={labels.showMore}
               justNowLabel={labels.justNow(post.topicType)}
               newReplyTemplate={labels.newReply(post.topicType)}
+              variant="card"
             />
           ))
         ) : (
