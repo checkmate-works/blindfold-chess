@@ -4,7 +4,6 @@ import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -64,8 +63,6 @@ export default async function InterviewPage({ params }: Props) {
             );
           })}
         </div>
-
-        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 
