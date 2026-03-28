@@ -57,6 +57,12 @@ export default async function NewGamePage({ params }: Props) {
               title={t('newGame.positionPageTitle')}
               description={t('newGame.positionPageDescription')}
             />
+            <CardLink
+              href="/games/new/opening"
+              icon="📖"
+              title={t('newGame.openingPageTitle')}
+              description={t('newGame.openingPageDescription')}
+            />
           </div>
           <Divider />
           <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />

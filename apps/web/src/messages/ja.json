@@ -247,6 +247,10 @@
     "adLabel": "広告",
     "sponsor": "スポンサー"
   },
+  "openingSearch": {
+    "selectOpening": "オープニングを選択",
+    "searchPlaceholder": "オープニングを検索..."
+  },
   "faq": {
     "title": "よくある質問",
     "description": "目隠しチェスに関するよくある質問への回答",
@@ -1388,6 +1392,11 @@
     "pgnPageDescription": "PGN記法を使って特定の局面から続けます",
     "positionPageTitle": "カスタムポジション",
     "positionPageDescription": "任意の盤面を設定してプレイを開始します",
+    "openingPageTitle": "オープニングから開始",
+    "openingPageDescription": "特定のオープニングを選んでその局面からプレイを開始します",
+    "opening": {
+      "startGame": "ゲーム開始"
+    },
     "startMethod": "開始方法を選択",
     "newGame": "新規ゲーム",
     "newGameDescription": "初期配置から新しいゲームを開始",

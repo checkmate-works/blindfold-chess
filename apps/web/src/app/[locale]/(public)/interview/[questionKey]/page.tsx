@@ -15,6 +15,7 @@ import {
 } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { OpeningCardWithProvider } from '@/app/[locale]/_components/OpeningCardWithProvider';
 import {
   INTERVIEW_QUESTION_KEYS,
   type InterviewQuestionKey,
@@ -24,7 +25,6 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { deleteAnswerAction } from './_actions/deleteAnswer';
-import { OpeningCardWithProvider } from './_components/OpeningCardWithProvider';
 import { OpeningSelectForm } from './_components/OpeningSelectForm';
 import { getInterviewAnswer } from './_lib/queries';
 

@@ -246,6 +246,10 @@
     "adLabel": "Ad",
     "sponsor": "Sponsor"
   },
+  "openingSearch": {
+    "selectOpening": "Select an opening",
+    "searchPlaceholder": "Search openings..."
+  },
   "faq": {
     "title": "Frequently Asked Questions",
     "description": "Find answers to common questions about Blindfold Chess",
@@ -1387,6 +1391,11 @@
     "pgnPageDescription": "Continue from a specific position using PGN notation",
     "positionPageTitle": "Custom Position",
     "positionPageDescription": "Set up a custom board position and start playing from there",
+    "openingPageTitle": "From Opening",
+    "openingPageDescription": "Choose a specific opening and start playing from that position",
+    "opening": {
+      "startGame": "Start Game"
+    },
     "startMethod": "How would you like to start?",
     "newGame": "New Game",
     "newGameDescription": "Start a fresh game from the beginning",
