@@ -406,3 +406,33 @@ $$;
 -- Grant necessary permissions (public read, authenticated insert/delete)
 GRANT SELECT, INSERT, UPDATE ON TABLE public.user_interview_answers TO authenticated;
 GRANT SELECT ON TABLE public.user_interview_answers TO anon;
+
+-- =============================================================================
+-- ranks
+-- =============================================================================
+
+-- Grant read permissions (master data is publicly readable)
+GRANT SELECT ON TABLE public.ranks TO authenticated;
+GRANT SELECT ON TABLE public.ranks TO anon;
+
+-- =============================================================================
+-- user_ranks
+-- =============================================================================
+
+-- FK constraint: user_ranks.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_ranks_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_ranks
+      ADD CONSTRAINT user_ranks_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (read-only for all, write via service role only)
+GRANT SELECT ON TABLE public.user_ranks TO authenticated;
+GRANT SELECT ON TABLE public.user_ranks TO anon;
+

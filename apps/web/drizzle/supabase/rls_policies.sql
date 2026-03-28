@@ -295,3 +295,21 @@ DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers
 DROP POLICY IF EXISTS "user_interview_answers_update" ON "user_interview_answers";
 CREATE POLICY "user_interview_answers_update" ON "user_interview_answers"
   FOR UPDATE USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- ranks (master data — read-only for all, write via service role only)
+-- =============================================================================
+ALTER TABLE "ranks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "ranks_select_policy" ON "ranks";
+CREATE POLICY "ranks_select_policy" ON "ranks"
+  FOR SELECT USING (true);
+
+-- =============================================================================
+-- user_ranks (read-only for authenticated, write via service role only)
+-- =============================================================================
+ALTER TABLE "user_ranks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_ranks_select_policy" ON "user_ranks";
+CREATE POLICY "user_ranks_select_policy" ON "user_ranks"
+  FOR SELECT USING (true);
