@@ -278,7 +278,7 @@ CREATE POLICY "subscriptions_select" ON "subscriptions"
   FOR SELECT USING (auth.uid() = user_id);
 
 -- =============================================================================
--- user_interview_answers (public read, own insert/delete)
+-- user_interview_answers (public read, own insert/update)
 -- =============================================================================
 ALTER TABLE "user_interview_answers" ENABLE ROW LEVEL SECURITY;
 
@@ -291,5 +291,7 @@ CREATE POLICY "user_interview_answers_insert" ON "user_interview_answers"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers";
-CREATE POLICY "user_interview_answers_delete" ON "user_interview_answers"
-  FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_interview_answers_update" ON "user_interview_answers";
+CREATE POLICY "user_interview_answers_update" ON "user_interview_answers"
+  FOR UPDATE USING (auth.uid() = user_id);

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
@@ -70,48 +70,36 @@ export async function saveAnswerAction(
     }
   }
 
-  // Check if already answered (including soft-deleted records)
-  const existing = await db
-    .select({ deletedAt: userInterviewAnswers.deletedAt })
-    .from(userInterviewAnswers)
-    .where(
-      and(
-        eq(userInterviewAnswers.userId, user.id),
-        eq(userInterviewAnswers.questionKey, questionKey)
-      )
-    )
-    .limit(1);
+  // Insert new answer — relies on partial unique index
+  // (uq_user_interview_answers_active) to prevent duplicates.
+  try {
+    const [inserted] = await db
+      .insert(userInterviewAnswers)
+      .values({
+        userId: user.id,
+        questionKey,
+        answerValue: answerValue.trim(),
+      })
+      .returning({ id: userInterviewAnswers.id });
 
-  if (existing.length > 0) {
-    if (!existing[0].deletedAt) {
+    logActivityEvent({
+      userId: user.id,
+      action: 'save_interview_answer',
+      targetType: 'interview_answer',
+      targetId: inserted.id,
+      metadata: { questionKey, answerValue: answerValue.trim() },
+    });
+  } catch (err: unknown) {
+    // PostgreSQL unique_violation error code
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as Record<string, unknown>).code === '23505'
+    ) {
       return { error: 'alreadyAnswered' };
     }
-    // Soft-deleted → restore
-    await db
-      .update(userInterviewAnswers)
-      .set({ answerValue: answerValue.trim(), deletedAt: null })
-      .where(
-        and(
-          eq(userInterviewAnswers.userId, user.id),
-          eq(userInterviewAnswers.questionKey, questionKey)
-        )
-      );
-  } else {
-    // New insert
-    await db.insert(userInterviewAnswers).values({
-      userId: user.id,
-      questionKey,
-      answerValue: answerValue.trim(),
-    });
+    throw err;
   }
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'save_interview_answer',
-    targetType: 'interview_answer',
-    targetId: questionKey,
-    metadata: { answerValue: answerValue.trim() },
-  });
 
   revalidatePath(`/${locale}/interview`);
   revalidatePath(`/${locale}/interview/${questionKey}`);

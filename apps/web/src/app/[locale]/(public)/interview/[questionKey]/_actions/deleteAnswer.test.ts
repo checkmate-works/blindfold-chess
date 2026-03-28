@@ -38,6 +38,7 @@ vi.mock('@/lib/rate-limit', () => ({
 
 vi.mock('@/lib/db', () => {
   const userInterviewAnswersTable = {
+    id: 'id',
     userId: 'user_id',
     questionKey: 'question_key',
     deletedAt: 'deleted_at',
@@ -57,15 +58,12 @@ vi.mock('@/lib/db', () => {
   };
 });
 
-vi.mock('@/app/[locale]/_lib/interview', () => ({
-  INTERVIEW_QUESTION_KEYS: ['favorite_opening'] as const,
-}));
-
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
+const testAnswerId = '11111111-1111-1111-1111-111111111111';
 const testQuestionKey = 'favorite_opening';
 const testLocale = 'en';
 
@@ -78,7 +76,7 @@ describe('deleteAnswerAction', () => {
     it('should return unauthorized when user is not authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
 
-      const result = await deleteAnswerAction(testQuestionKey, testLocale);
+      const result = await deleteAnswerAction(testAnswerId, testLocale);
       expect(result).toEqual({ error: 'unauthorized' });
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
@@ -89,21 +87,8 @@ describe('deleteAnswerAction', () => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(true);
 
-      const result = await deleteAnswerAction(testQuestionKey, testLocale);
+      const result = await deleteAnswerAction(testAnswerId, testLocale);
       expect(result).toEqual({ error: 'banned' });
-      expect(logActivityEvent).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('validation', () => {
-    beforeEach(() => {
-      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
-      mockIsUserBanned.mockResolvedValue(false);
-    });
-
-    it('should return invalidQuestionKey for unknown question key', async () => {
-      const result = await deleteAnswerAction('unknown_key', testLocale);
-      expect(result).toEqual({ error: 'invalidQuestionKey' });
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
@@ -117,15 +102,15 @@ describe('deleteAnswerAction', () => {
     it('should return notFound when no answer exists', async () => {
       mockUpdateReturning.mockResolvedValue([]);
 
-      const result = await deleteAnswerAction(testQuestionKey, testLocale);
+      const result = await deleteAnswerAction(testAnswerId, testLocale);
       expect(result).toEqual({ error: 'notFound' });
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
     it('should delete answer and return success', async () => {
-      mockUpdateReturning.mockResolvedValue([{ questionKey: testQuestionKey }]);
+      mockUpdateReturning.mockResolvedValue([{ id: testAnswerId, questionKey: testQuestionKey }]);
 
-      const result = await deleteAnswerAction(testQuestionKey, testLocale);
+      const result = await deleteAnswerAction(testAnswerId, testLocale);
       expect(result).toEqual({ success: true });
     });
   });
@@ -134,17 +119,17 @@ describe('deleteAnswerAction', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
-      mockUpdateReturning.mockResolvedValue([{ questionKey: testQuestionKey }]);
+      mockUpdateReturning.mockResolvedValue([{ id: testAnswerId, questionKey: testQuestionKey }]);
     });
 
     it('should log activity event on successful delete', async () => {
-      await deleteAnswerAction(testQuestionKey, testLocale);
+      await deleteAnswerAction(testAnswerId, testLocale);
 
       expect(logActivityEvent).toHaveBeenCalledWith({
         userId: testUserId,
         action: 'delete_interview_answer',
         targetType: 'interview_answer',
-        targetId: testQuestionKey,
+        targetId: testAnswerId,
       });
     });
   });

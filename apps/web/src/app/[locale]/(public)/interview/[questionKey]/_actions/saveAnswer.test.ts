@@ -6,10 +6,8 @@ import { saveAnswerAction } from './saveAnswer';
 
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
-const mockInsertValues = vi.fn();
-const mockUpdateSet = vi.fn();
-const mockSelectFromWhere = vi.fn();
-const mockExistingSelectFromWhereLimit = vi.fn();
+const mockInsertValuesReturning = vi.fn();
+const mockSelectFromWhereLimit = vi.fn();
 
 vi.mock('@/lib/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -39,11 +37,10 @@ vi.mock('@/lib/rate-limit', () => ({
   },
 }));
 
-let selectCallCount = 0;
-
 vi.mock('@/lib/db', () => {
   const chessOpeningsTable = { slug: 'slug' };
   const userInterviewAnswersTable = {
+    id: 'id',
     userId: 'user_id',
     questionKey: 'question_key',
     answerValue: 'answer_value',
@@ -53,28 +50,14 @@ vi.mock('@/lib/db', () => {
   return {
     db: {
       insert: () => ({
-        values: mockInsertValues,
-      }),
-      update: () => ({
-        set: (...args: unknown[]) => {
-          mockUpdateSet(...args);
-          return {
-            where: () => Promise.resolve(),
-          };
-        },
+        values: () => ({
+          returning: () => mockInsertValuesReturning(),
+        }),
       }),
       select: () => ({
         from: () => ({
           where: () => ({
-            limit: () => {
-              selectCallCount++;
-              // First select call is for opening validation (master_ref),
-              // Second select call is for existing answer check
-              if (selectCallCount % 2 === 1) {
-                return mockSelectFromWhere();
-              }
-              return mockExistingSelectFromWhereLimit();
-            },
+            limit: () => mockSelectFromWhereLimit(),
           }),
         }),
       }),
@@ -96,6 +79,7 @@ vi.mock('next/cache', () => ({
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
+const testInsertedId = '22222222-2222-2222-2222-222222222222';
 const testQuestionKey = 'favorite_opening';
 const testLocale = 'en';
 const testAnswerValue = 'sicilian-defense';
@@ -111,7 +95,6 @@ function createFormData(answerValue: string | null): FormData {
 describe('saveAnswerAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    selectCallCount = 0;
   });
 
   describe('authentication', () => {
@@ -169,7 +152,7 @@ describe('saveAnswerAction', () => {
     });
 
     it('should return invalidAnswerValue when opening slug is not found', async () => {
-      mockSelectFromWhere.mockResolvedValue([]);
+      mockSelectFromWhereLimit.mockResolvedValue([]);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -186,12 +169,11 @@ describe('saveAnswerAction', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
-      mockSelectFromWhere.mockResolvedValue([{ slug: testAnswerValue }]);
+      mockSelectFromWhereLimit.mockResolvedValue([{ slug: testAnswerValue }]);
     });
 
-    it('should save answer and return success when no existing record', async () => {
-      mockExistingSelectFromWhereLimit.mockResolvedValue([]);
-      mockInsertValues.mockResolvedValue(undefined);
+    it('should save answer and return success', async () => {
+      mockInsertValuesReturning.mockResolvedValue([{ id: testInsertedId }]);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -200,11 +182,13 @@ describe('saveAnswerAction', () => {
         createFormData(testAnswerValue)
       );
       expect(result).toEqual({ success: true });
-      expect(mockInsertValues).toHaveBeenCalled();
+      expect(mockInsertValuesReturning).toHaveBeenCalled();
     });
 
-    it('should return alreadyAnswered when active answer exists', async () => {
-      mockExistingSelectFromWhereLimit.mockResolvedValue([{ deletedAt: null }]);
+    it('should return alreadyAnswered on unique violation', async () => {
+      const uniqueError = new Error('unique_violation');
+      (uniqueError as unknown as Record<string, unknown>).code = '23505';
+      mockInsertValuesReturning.mockRejectedValue(uniqueError);
 
       const result = await saveAnswerAction(
         testQuestionKey,
@@ -216,21 +200,14 @@ describe('saveAnswerAction', () => {
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
 
-    it('should restore soft-deleted answer', async () => {
-      mockExistingSelectFromWhereLimit.mockResolvedValue([{ deletedAt: new Date('2025-01-01') }]);
+    it('should re-throw non-unique-violation errors', async () => {
+      const otherError = new Error('connection_error');
+      mockInsertValuesReturning.mockRejectedValue(otherError);
 
-      const result = await saveAnswerAction(
-        testQuestionKey,
-        testLocale,
-        null,
-        createFormData(testAnswerValue)
-      );
-      expect(result).toEqual({ success: true });
-      expect(mockUpdateSet).toHaveBeenCalledWith({
-        answerValue: testAnswerValue,
-        deletedAt: null,
-      });
-      expect(mockInsertValues).not.toHaveBeenCalled();
+      await expect(
+        saveAnswerAction(testQuestionKey, testLocale, null, createFormData(testAnswerValue))
+      ).rejects.toThrow('connection_error');
+      expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });
 
@@ -238,9 +215,8 @@ describe('saveAnswerAction', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
-      mockSelectFromWhere.mockResolvedValue([{ slug: testAnswerValue }]);
-      mockExistingSelectFromWhereLimit.mockResolvedValue([]);
-      mockInsertValues.mockResolvedValue(undefined);
+      mockSelectFromWhereLimit.mockResolvedValue([{ slug: testAnswerValue }]);
+      mockInsertValuesReturning.mockResolvedValue([{ id: testInsertedId }]);
     });
 
     it('should log activity event on successful save', async () => {
@@ -250,8 +226,8 @@ describe('saveAnswerAction', () => {
         userId: testUserId,
         action: 'save_interview_answer',
         targetType: 'interview_answer',
-        targetId: testQuestionKey,
-        metadata: { answerValue: testAnswerValue },
+        targetId: testInsertedId,
+        metadata: { questionKey: testQuestionKey, answerValue: testAnswerValue },
       });
     });
 
@@ -265,7 +241,7 @@ describe('saveAnswerAction', () => {
 
       expect(logActivityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: { answerValue: testAnswerValue },
+          metadata: { questionKey: testQuestionKey, answerValue: testAnswerValue },
         })
       );
     });

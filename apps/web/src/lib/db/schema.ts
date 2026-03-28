@@ -1059,10 +1059,19 @@ export const subscriptions = pgTable(
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
 
-// User Interview Answers
+/**
+ * @design Partial unique constraint (userId, questionKey) WHERE deletedAt IS NULL
+ *
+ * Currently each user can have at most one active answer per question.
+ * This constraint may be relaxed in the future to allow multiple active
+ * answers (e.g., listing several favorite openings). The partial unique
+ * index is defined in the migration SQL, not in Drizzle schema, because
+ * Drizzle ORM does not support partial (filtered) unique indexes.
+ */
 export const userInterviewAnswers = pgTable(
   'user_interview_answers',
   {
+    id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
     questionKey: varchar('question_key', { length: 50 }).notNull(),
     answerValue: varchar('answer_value', { length: 500 }).notNull(),
@@ -1070,8 +1079,8 @@ export const userInterviewAnswers = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    primaryKey({ name: 'user_interview_answers_pkey', columns: [table.userId, table.questionKey] }),
     index('idx_user_interview_answers_question').on(table.questionKey),
+    index('idx_user_interview_answers_user').on(table.userId),
   ]
 );
 

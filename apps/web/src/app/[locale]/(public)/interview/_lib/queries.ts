@@ -5,6 +5,7 @@ import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { INTERVIEW_QUESTION_KEYS, type InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
 
 export type InterviewAnswerRow = {
+  id: string;
   questionKey: InterviewQuestionKey;
   answerValue: string;
   openingName: string | null;
@@ -19,6 +20,7 @@ export type InterviewAnswerRow = {
 export async function getInterviewAnswers(userId: string): Promise<InterviewAnswerRow[]> {
   const rows = await db
     .select({
+      id: userInterviewAnswers.id,
       questionKey: userInterviewAnswers.questionKey,
       answerValue: userInterviewAnswers.answerValue,
       openingName: chessOpenings.name,

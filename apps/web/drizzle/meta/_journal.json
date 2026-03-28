@@ -99,6 +99,13 @@
       "when": 1774656712747,
       "tag": "20260328001152_add_deleted_at_to_user_interview_answers",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1774658139732,
+      "tag": "20260328003539_change_user_interview_answers_pk_to_uuid",
+      "breakpoints": true
     }
   ]
 }
