@@ -1,0 +1,152 @@
+import { and, asc, eq } from 'drizzle-orm';
+import 'server-only';
+
+import { logActivityEvent } from '../activity-log';
+import { db } from './index';
+import { challengeBestScores, ranks, userRanks } from './schema';
+
+// ---------------------------------------------------------------------------
+// Requirement types
+// ---------------------------------------------------------------------------
+
+type ChallengeScoreRequirement = {
+  type: 'challenge_score';
+  menuType: string;
+  leaderboardKey: string;
+  minScore: number;
+};
+
+// Union type for future extensibility (post_count, like_count, etc.)
+type RankRequirement = ChallengeScoreRequirement;
+
+// ---------------------------------------------------------------------------
+// Type guard (reuse the same pattern from ranks page)
+// ---------------------------------------------------------------------------
+
+function isChallengeScoreRequirement(value: unknown): value is ChallengeScoreRequirement {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    (value as Record<string, unknown>).type === 'challenge_score' &&
+    'menuType' in value &&
+    typeof (value as Record<string, unknown>).menuType === 'string' &&
+    'leaderboardKey' in value &&
+    typeof (value as Record<string, unknown>).leaderboardKey === 'string' &&
+    'minScore' in value &&
+    typeof (value as Record<string, unknown>).minScore === 'number'
+  );
+}
+
+function parseRequirements(raw: unknown): RankRequirement[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isChallengeScoreRequirement);
+}
+
+// ---------------------------------------------------------------------------
+// Evaluators — one per requirement type
+// ---------------------------------------------------------------------------
+
+type RequirementEvaluator<T extends RankRequirement = RankRequirement> = (
+  userId: string,
+  requirement: T,
+  tx?: typeof db
+) => Promise<boolean>;
+
+const evaluators: Record<string, RequirementEvaluator> = {
+  challenge_score: async (userId, req, executor) => {
+    const requirement = req as ChallengeScoreRequirement;
+    const dbInstance = executor ?? db;
+    const [best] = await dbInstance
+      .select({ score: challengeBestScores.score })
+      .from(challengeBestScores)
+      .where(
+        and(
+          eq(challengeBestScores.userId, userId),
+          eq(challengeBestScores.menuType, requirement.menuType),
+          eq(challengeBestScores.leaderboardKey, requirement.leaderboardKey)
+        )
+      );
+    return best !== undefined && best.score >= requirement.minScore;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Core evaluation logic
+// ---------------------------------------------------------------------------
+
+/**
+ * Evaluate whether a user meets ALL requirements for a given rank.
+ * Returns true only if every requirement is satisfied (implicit AND).
+ */
+export async function evaluateRankRequirements(
+  userId: string,
+  requirements: RankRequirement[],
+  executor?: typeof db
+): Promise<boolean> {
+  for (const req of requirements) {
+    const evaluate = evaluators[req.type];
+    if (!evaluate) return false; // Unknown requirement type = fail
+    const met = await evaluate(userId, req, executor);
+    if (!met) return false;
+  }
+  return true;
+}
+
+/**
+ * Check and grant any newly achievable ranks for a user.
+ *
+ * Called after a challenge result is saved. Finds the next rank(s)
+ * the user hasn't achieved yet (ordered by level), evaluates their
+ * requirements, and grants them if all conditions are met.
+ *
+ * Stops at the first rank whose requirements are NOT met, since
+ * progression is linear (can't skip ranks).
+ *
+ * Note: This function uses its own transaction. It should be called
+ * AFTER the challenge result transaction commits, so that
+ * challenge_best_scores reflects the latest data.
+ */
+export async function checkAndGrantRanks(userId: string): Promise<void> {
+  // 1. Get all rank IDs the user already has
+  const achievedRanks = await db
+    .select({ rankId: userRanks.rankId })
+    .from(userRanks)
+    .where(eq(userRanks.userId, userId));
+
+  const achievedRankIds = new Set(achievedRanks.map((r) => r.rankId));
+
+  // 2. Get all ranks ordered by level, filter to unachieved
+  const allRanks = await db.select().from(ranks).orderBy(asc(ranks.level));
+
+  const unachievedRanks = allRanks.filter((r) => !achievedRankIds.has(r.id));
+
+  // 3. For each unachieved rank (in level order), evaluate requirements
+  for (const rank of unachievedRanks) {
+    const requirements = parseRequirements(rank.requirements);
+    if (requirements.length === 0) continue; // No requirements = skip
+
+    const met = await evaluateRankRequirements(userId, requirements);
+    if (!met) break; // Linear progression: stop at first unmet rank
+
+    // 4. Grant the rank
+    await db
+      .insert(userRanks)
+      .values({
+        userId,
+        rankId: rank.id,
+      })
+      .onConflictDoNothing({
+        target: [userRanks.userId, userRanks.rankId],
+      });
+
+    // 5. Log activity event (fire-and-forget)
+    logActivityEvent({
+      userId,
+      action: 'rank_achieved',
+      targetType: 'rank',
+      targetId: rank.id,
+      metadata: { rankSlug: rank.slug, level: rank.level },
+    });
+  }
+}

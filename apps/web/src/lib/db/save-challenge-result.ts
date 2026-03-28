@@ -4,6 +4,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
+import { checkAndGrantRanks } from './rank-evaluation';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
 /** Only insert feed items for ranks at or above this threshold. */
@@ -180,5 +181,16 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
   //    page visit fetches fresh ranking data.
   if (rankingsChanged) {
     revalidateTag('leaderboard', { expire: 60 });
+  }
+
+  // 6. Check and grant any newly achievable belt ranks.
+  // Called outside the transaction so challenge_best_scores reflects the latest data.
+  // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
+  // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
+  // break the challenge result flow that has already committed successfully.
+  try {
+    await checkAndGrantRanks(userId);
+  } catch (error) {
+    console.error('Failed to check/grant ranks:', error);
   }
 }

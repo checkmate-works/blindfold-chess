@@ -15,9 +15,16 @@ const mockExecute = vi.fn();
 const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
+const mockCheckAndGrantRanks = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('server-only', () => ({}));
 
 vi.mock('next/cache', () => ({
   revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
+}));
+
+vi.mock('./rank-evaluation', () => ({
+  checkAndGrantRanks: (...args: unknown[]) => mockCheckAndGrantRanks(...args),
 }));
 
 vi.mock('./challenge-queries', () => ({
