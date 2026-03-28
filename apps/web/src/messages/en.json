@@ -142,6 +142,10 @@
     "leaderboard": {
       "title": "Leaderboard",
       "description": "See the top players across all practice modules"
+    },
+    "ranks": {
+      "title": "Ranks",
+      "description": "Belt ranking system for blindfold chess training — progress from 5th Kyū to 10th Dan"
     }
   },
   "Header": {
@@ -2990,5 +2994,26 @@
     "nextBilling": "Next billing date",
     "noBilling": "No future billing",
     "manageSubscription": "Manage subscription"
+  },
+  "ranks": {
+    "pageTitle": "Ranks",
+    "requirements": "Requirements",
+    "comingSoon": "Coming Soon",
+    "challengeScore": "Score {minScore}+ in {challengeName}",
+    "challengeNames": {
+      "square_colors": "Square Colors",
+      "coordinate_quiz_white": "Coordinate Quiz (White)",
+      "coordinate_quiz_black": "Coordinate Quiz (Black)",
+      "coordinate_quiz_random": "Coordinate Quiz (Random)",
+      "legal_moves": "Legal Moves"
+    },
+    "rankNames": {
+      "5kyu": "5th Kyū",
+      "4kyu": "4th Kyū",
+      "3kyu": "3rd Kyū",
+      "2kyu": "2nd Kyū",
+      "1kyu": "1st Kyū",
+      "1dan": "1st Dan"
+    }
   }
 }

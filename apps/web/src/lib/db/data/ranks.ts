@@ -28,11 +28,29 @@ type RankSeed = {
   requirements: RankRequirement[];
 };
 
+/**
+ * All rank slugs in progression order (lowest to highest).
+ * Used by the ranks page to determine which ranks are "Coming Soon".
+ */
+export const ALL_RANK_SLUGS = ['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'] as const;
+
+export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
+
+/** Belt colors for each rank. */
+export const RANK_COLORS: Record<RankSlug, string> = {
+  '5kyu': 'orange',
+  '4kyu': 'blue',
+  '3kyu': 'yellow',
+  '2kyu': 'green',
+  '1kyu': 'brown',
+  '1dan': 'black',
+};
+
 export const ranksSeedData: RankSeed[] = [
   {
     slug: '5kyu',
     level: 10,
-    color: 'orange',
+    color: RANK_COLORS['5kyu'],
     requirements: [
       {
         type: 'challenge_score',

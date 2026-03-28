@@ -142,6 +142,10 @@
     "leaderboard": {
       "title": "ランキング",
       "description": "すべての練習モジュールのトッププレイヤーを確認"
+    },
+    "ranks": {
+      "title": "段級位",
+      "description": "ブラインドチェストレーニングの段級位制度 — 5級から10段を目指そう"
     }
   },
   "Header": {
@@ -2955,5 +2959,26 @@
     "nextBilling": "次回請求日",
     "noBilling": "今後の請求はありません",
     "manageSubscription": "サブスクリプションを管理"
+  },
+  "ranks": {
+    "pageTitle": "段級位",
+    "requirements": "合格条件",
+    "comingSoon": "近日公開",
+    "challengeScore": "{challengeName}でスコア{minScore}以上",
+    "challengeNames": {
+      "square_colors": "マス色チャレンジ",
+      "coordinate_quiz_white": "座標クイズ（白）",
+      "coordinate_quiz_black": "座標クイズ（黒）",
+      "coordinate_quiz_random": "座標クイズ（ランダム）",
+      "legal_moves": "合法手チャレンジ"
+    },
+    "rankNames": {
+      "5kyu": "5級",
+      "4kyu": "4級",
+      "3kyu": "3級",
+      "2kyu": "2級",
+      "1kyu": "1級",
+      "1dan": "初段"
+    }
   }
 }
