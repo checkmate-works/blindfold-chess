@@ -404,5 +404,5 @@ END;
 $$;
 
 -- Grant necessary permissions (public read, authenticated insert/delete)
-GRANT SELECT, INSERT, DELETE ON TABLE public.user_interview_answers TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.user_interview_answers TO authenticated;
 GRANT SELECT ON TABLE public.user_interview_answers TO anon;

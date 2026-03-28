@@ -1,10 +1,11 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 
 import { INTERVIEW_QUESTION_KEYS, type InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
 
 export type InterviewAnswerRow = {
+  id: string;
   questionKey: InterviewQuestionKey;
   answerValue: string;
   openingName: string | null;
@@ -19,6 +20,7 @@ export type InterviewAnswerRow = {
 export async function getInterviewAnswers(userId: string): Promise<InterviewAnswerRow[]> {
   const rows = await db
     .select({
+      id: userInterviewAnswers.id,
       questionKey: userInterviewAnswers.questionKey,
       answerValue: userInterviewAnswers.answerValue,
       openingName: chessOpenings.name,
@@ -28,7 +30,8 @@ export async function getInterviewAnswers(userId: string): Promise<InterviewAnsw
     .where(
       and(
         eq(userInterviewAnswers.userId, userId),
-        inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS])
+        inArray(userInterviewAnswers.questionKey, [...INTERVIEW_QUESTION_KEYS]),
+        isNull(userInterviewAnswers.deletedAt)
       )
     );
 

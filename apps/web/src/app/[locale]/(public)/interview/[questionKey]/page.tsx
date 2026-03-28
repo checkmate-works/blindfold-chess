@@ -164,7 +164,7 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
               )}
               <div className="flex justify-end mt-3">
                 <DeletePostButton
-                  postId={questionKey}
+                  postId={answer.id}
                   locale={locale}
                   redirectPath={`/${locale}/interview/${questionKey}`}
                   deletePostAction={deleteAnswerAction}

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
+import { logActivityEvent } from '@/lib/activity-log';
 import { isUserBanned } from '@/lib/ban';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
@@ -69,16 +70,35 @@ export async function saveAnswerAction(
     }
   }
 
-  // Check if already answered
+  // Insert new answer — relies on partial unique index
+  // (uq_user_interview_answers_active) to prevent duplicates.
   try {
-    await db.insert(userInterviewAnswers).values({
+    const [inserted] = await db
+      .insert(userInterviewAnswers)
+      .values({
+        userId: user.id,
+        questionKey,
+        answerValue: answerValue.trim(),
+      })
+      .returning({ id: userInterviewAnswers.id });
+
+    logActivityEvent({
       userId: user.id,
-      questionKey,
-      answerValue: answerValue.trim(),
+      action: 'save_interview_answer',
+      targetType: 'interview_answer',
+      targetId: inserted.id,
+      metadata: { questionKey, answerValue: answerValue.trim() },
     });
-  } catch {
-    // Primary key constraint violation means already answered
-    return { error: 'alreadyAnswered' };
+  } catch (err: unknown) {
+    // PostgreSQL unique_violation error code
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as Record<string, unknown>).code === '23505'
+    ) {
+      return { error: 'alreadyAnswered' };
+    }
+    throw err;
   }
 
   revalidatePath(`/${locale}/interview`);
