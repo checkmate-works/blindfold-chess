@@ -42,7 +42,7 @@ export default async function AdminAdsPage() {
       </div>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-secondary">
+          <thead className="bg-accent">
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('slot')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('href')}</th>
@@ -53,7 +53,7 @@ export default async function AdminAdsPage() {
               <th className="text-left px-4 py-3 font-medium">{t('actions')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-card">
             {banners.map((banner) => (
               <BannerEditRow
                 key={banner.id}

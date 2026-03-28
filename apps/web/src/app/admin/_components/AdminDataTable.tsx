@@ -20,7 +20,7 @@ export function AdminDataTable<T>({
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
       <table className="w-full text-sm">
-        <thead className="bg-secondary">
+        <thead className="bg-accent">
           <tr>
             {headers.map((header, i) => (
               <th key={i} className="text-left px-4 py-3 font-medium">
@@ -29,7 +29,7 @@ export function AdminDataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bg-card">
           {items.map((item, index) => renderRow(item, index))}
           {items.length === 0 && (
             <tr>

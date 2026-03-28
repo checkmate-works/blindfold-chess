@@ -228,7 +228,7 @@ export default async function AdminActivityLogPage({
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-secondary">
+          <thead className="bg-accent">
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.action')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.user')}</th>
@@ -237,7 +237,7 @@ export default async function AdminActivityLogPage({
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.timestamp')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-card">
             {logs.map((log) => {
               const userDisplay = formatUserDisplay(log.userId, profileMap, emailMap);
               const targetDisplay = log.targetId
