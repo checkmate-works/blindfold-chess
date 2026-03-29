@@ -12,14 +12,14 @@
  * without renumbering.
  */
 
-type ChallengeScoreRequirement = {
+export type ChallengeScoreRequirement = {
   type: 'challenge_score';
   menuType: string;
   leaderboardKey: string;
   minScore: number;
 };
 
-type RankRequirement = ChallengeScoreRequirement;
+export type RankRequirement = ChallengeScoreRequirement;
 
 type RankSeed = {
   slug: string;
@@ -66,4 +66,11 @@ export const ranksSeedData: RankSeed[] = [
       },
     ],
   },
+  { slug: '4kyu', level: 20, color: RANK_COLORS['4kyu'], requirements: [] },
+  { slug: '3kyu', level: 30, color: RANK_COLORS['3kyu'], requirements: [] },
+  { slug: '2kyu', level: 40, color: RANK_COLORS['2kyu'], requirements: [] },
+  { slug: '1kyu', level: 50, color: RANK_COLORS['1kyu'], requirements: [] },
+  // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
+  // space for future intermediate ranks between kyū and dan tiers.
+  { slug: '1dan', level: 110, color: RANK_COLORS['1dan'], requirements: [] },
 ];
