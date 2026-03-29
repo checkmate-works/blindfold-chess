@@ -1,3 +1,29 @@
+/**
+ * Rank Achievement Evaluation (段級位判定)
+ *
+ * @description
+ * Evaluates whether a user qualifies for belt rank promotions after completing
+ * challenges. Uses an evaluator pattern: one function per requirement `type`
+ * (e.g., `challenge_score`). Ranks are evaluated linearly — stops at the first
+ * unmet rank. Grants are idempotent via `onConflictDoNothing`.
+ *
+ * @design Evaluator pattern, not per-rank strategy
+ *
+ * Evaluators are keyed by `requirement.type`, not by rank slug. This means:
+ * - Adding a new rank: seed data only, no code changes.
+ * - Adding a new requirement type (e.g., `post_count`): add one evaluator to
+ *   the `evaluators` record and a type guard branch.
+ *
+ * @design Called outside the challenge transaction
+ *
+ * `checkAndGrantRanks` must run AFTER `saveChallengeResult`'s transaction
+ * commits, so that `challenge_best_scores` reflects the latest data. It is
+ * wrapped in try-catch at the call site — rank evaluation failure must never
+ * break the challenge result save flow.
+ *
+ * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
+ * @see {@link evaluators} — registry of requirement type evaluators
+ */
 import { and, asc, eq } from 'drizzle-orm';
 import 'server-only';
 
