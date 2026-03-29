@@ -5,23 +5,10 @@ import { useEffect, useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { BELT_COLOR_HEX } from '@/lib/db/data/ranks';
+import type { GrantedRank } from '@/lib/db/data/ranks';
+
 import { Modal } from '@/app/[locale]/_components/Modal';
-
-// Belt color hex mapping (same as ranks page)
-const BELT_COLOR_HEX: Record<string, string> = {
-  orange: '#f97316',
-  blue: '#3b82f6',
-  yellow: '#eab308',
-  green: '#22c55e',
-  brown: '#92400e',
-  black: '#1c1917',
-};
-
-type GrantedRank = {
-  slug: string;
-  level: number;
-  color: string | null;
-};
 
 type Props = {
   locale: string;
