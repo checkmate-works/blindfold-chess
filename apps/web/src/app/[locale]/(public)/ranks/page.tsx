@@ -17,8 +17,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { HiCheckCircle, HiLockClosed } from 'react-icons/hi2';
 
-import { ALL_RANK_SLUGS, RANK_COLORS } from '@/lib/db/data/ranks';
-import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -26,79 +25,10 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
+import { buildChallengeNameKey, getBeltColorHex, getRankCardState } from './_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
-
-/** Map rank color names to CSS hex values. */
-const BELT_COLOR_HEX: Record<string, string> = {
-  orange: '#f97316',
-  blue: '#3b82f6',
-  yellow: '#eab308',
-  green: '#22c55e',
-  brown: '#92400e',
-  black: '#1c1917',
-};
-
-function isChallengeScoreRequirement(value: unknown): value is ChallengeScoreRequirement {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    (value as Record<string, unknown>).type === 'challenge_score' &&
-    'menuType' in value &&
-    typeof (value as Record<string, unknown>).menuType === 'string' &&
-    'leaderboardKey' in value &&
-    typeof (value as Record<string, unknown>).leaderboardKey === 'string' &&
-    'minScore' in value &&
-    typeof (value as Record<string, unknown>).minScore === 'number'
-  );
-}
-
-function parseRequirements(raw: unknown): ChallengeScoreRequirement[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(isChallengeScoreRequirement);
-}
-
-function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
-  if (req.leaderboardKey === 'default') {
-    return req.menuType;
-  }
-  return `${req.menuType}_${req.leaderboardKey}`;
-}
-
-function getBeltColorHex(slug: RankSlug): string {
-  const colorName = RANK_COLORS[slug];
-  return BELT_COLOR_HEX[colorName] ?? '#6b7280';
-}
-
-type RankCardState = 'achieved' | 'next' | 'locked' | 'coming-soon';
-
-function getRankCardState(
-  inDb: boolean,
-  requirements: ChallengeScoreRequirement[],
-  isAchieved: boolean,
-  previousAchieved: boolean,
-  isLoggedIn: boolean,
-  isFirstRank: boolean
-): RankCardState {
-  // Not in DB = Coming Soon
-  if (!inDb) return 'coming-soon';
-
-  // Has empty requirements = coming soon (conditions not yet defined)
-  if (requirements.length === 0) return 'coming-soon';
-
-  // Logged in: check achievement
-  if (isLoggedIn) {
-    if (isAchieved) return 'achieved';
-    if (isFirstRank || previousAchieved) return 'next';
-    return 'locked';
-  }
-
-  // Not logged in: first rank is visible, rest are locked
-  if (isFirstRank) return 'next';
-  return 'locked';
-}
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   const { locale } = await params;
