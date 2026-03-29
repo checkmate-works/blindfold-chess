@@ -46,6 +46,58 @@ export const RANK_COLORS: Record<RankSlug, string> = {
   '1dan': 'black',
 };
 
+// ---------------------------------------------------------------------------
+// Type guard & parser (shared by rank-evaluation and UI)
+// ---------------------------------------------------------------------------
+
+export function isChallengeScoreRequirement(value: unknown): value is ChallengeScoreRequirement {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    (value as Record<string, unknown>).type === 'challenge_score' &&
+    'menuType' in value &&
+    typeof (value as Record<string, unknown>).menuType === 'string' &&
+    'leaderboardKey' in value &&
+    typeof (value as Record<string, unknown>).leaderboardKey === 'string' &&
+    'minScore' in value &&
+    typeof (value as Record<string, unknown>).minScore === 'number'
+  );
+}
+
+export function parseRequirements(raw: unknown): RankRequirement[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(isChallengeScoreRequirement);
+}
+
+// ---------------------------------------------------------------------------
+// Belt color hex mapping (shared by ranks page and achievement modal)
+// ---------------------------------------------------------------------------
+
+/** Map rank color names to CSS hex values. */
+export const BELT_COLOR_HEX: Record<string, string> = {
+  orange: '#f97316',
+  blue: '#3b82f6',
+  yellow: '#eab308',
+  green: '#22c55e',
+  brown: '#92400e',
+  black: '#1c1917',
+};
+
+// ---------------------------------------------------------------------------
+// GrantedRank type (returned by checkAndGrantRanks, used by UI components)
+// ---------------------------------------------------------------------------
+
+export type GrantedRank = {
+  slug: string;
+  level: number;
+  color: string | null;
+};
+
+// ---------------------------------------------------------------------------
+// Seed data
+// ---------------------------------------------------------------------------
+
 export const ranksSeedData: RankSeed[] = [
   {
     slug: '5kyu',
