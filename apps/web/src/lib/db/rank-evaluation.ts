@@ -28,46 +28,10 @@ import { and, asc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { logActivityEvent } from '../activity-log';
+import type { ChallengeScoreRequirement, GrantedRank, RankRequirement } from './data/ranks';
+import { parseRequirements } from './data/ranks';
 import { db } from './index';
 import { challengeBestScores, ranks, userRanks } from './schema';
-
-// ---------------------------------------------------------------------------
-// Requirement types
-// ---------------------------------------------------------------------------
-
-type ChallengeScoreRequirement = {
-  type: 'challenge_score';
-  menuType: string;
-  leaderboardKey: string;
-  minScore: number;
-};
-
-// Union type for future extensibility (post_count, like_count, etc.)
-type RankRequirement = ChallengeScoreRequirement;
-
-// ---------------------------------------------------------------------------
-// Type guard (reuse the same pattern from ranks page)
-// ---------------------------------------------------------------------------
-
-function isChallengeScoreRequirement(value: unknown): value is ChallengeScoreRequirement {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'type' in value &&
-    (value as Record<string, unknown>).type === 'challenge_score' &&
-    'menuType' in value &&
-    typeof (value as Record<string, unknown>).menuType === 'string' &&
-    'leaderboardKey' in value &&
-    typeof (value as Record<string, unknown>).leaderboardKey === 'string' &&
-    'minScore' in value &&
-    typeof (value as Record<string, unknown>).minScore === 'number'
-  );
-}
-
-function parseRequirements(raw: unknown): RankRequirement[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.filter(isChallengeScoreRequirement);
-}
 
 // ---------------------------------------------------------------------------
 // Evaluators — one per requirement type
@@ -133,11 +97,7 @@ export async function evaluateRankRequirements(
  * AFTER the challenge result transaction commits, so that
  * challenge_best_scores reflects the latest data.
  */
-export type GrantedRank = {
-  slug: string;
-  level: number;
-  color: string | null;
-};
+export type { GrantedRank } from './data/ranks';
 
 export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]> {
   const granted: GrantedRank[] = [];
