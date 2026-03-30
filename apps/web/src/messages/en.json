@@ -146,6 +146,14 @@
     "ranks": {
       "title": "Ranks",
       "description": "Belt ranking system for blindfold chess training — progress from 5th Kyū to 10th Dan"
+    },
+    "rankDetail": {
+      "title": "{rankName} - Ranks",
+      "description": "Requirements and criteria for achieving {rankName} rank in blindfold chess training."
+    },
+    "rankGuide": {
+      "title": "{rankName} Guide - Ranks",
+      "description": "Detailed guide and tips for achieving {rankName} rank in blindfold chess training."
     }
   },
   "Header": {
@@ -1221,7 +1229,7 @@
       "startGame": "Start VS AI",
       "resume": "Resume",
       "newGame": "New Game",
-      "allGames": "All games \u2192",
+      "allGames": "All games →",
       "level": "Lv",
       "moves": "moves",
       "recent": "Recent"
@@ -1736,7 +1744,7 @@
     "passwordMismatch": "Passwords do not match.",
     "passwordTooShort": "Password must be at least 8 characters.",
     "freeBadge": "FREE",
-    "freeAssurance": "Completely free \u00b7 No credit card required",
+    "freeAssurance": "Completely free · No credit card required",
     "features": {
       "sectionTitle": "Unlock the Full Experience",
       "sectionSubtitle": "Create a free account to access these features",
@@ -2504,8 +2512,8 @@
       "saving": "Saving...",
       "deleting": "Deleting...",
       "cancel": "Cancel",
-      "sharePrompt": "\ud83d\udcac Share your thoughts on {name}!",
-      "shareLink": "\u270f\ufe0f Post",
+      "sharePrompt": "💬 Share your thoughts on {name}!",
+      "shareLink": "✏️ Post",
       "deleteAnswer": {
         "button": "Delete",
         "confirmTitle": "Delete Answer",
@@ -3014,6 +3022,47 @@
       "2kyu": "2nd Kyū",
       "1kyu": "1st Kyū",
       "1dan": "1st Dan"
+    },
+    "detail": {
+      "criteria": "Criteria",
+      "requirements": "Score Requirements",
+      "criteriaDescriptions": {
+        "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7)."
+      },
+      "tips": "Tips",
+      "guide": "Guide",
+      "showMore": "Show more",
+      "prevPage": "Previous",
+      "nextPage": "Next",
+      "pageOf": "Page {current} of {total}",
+      "guidePages": {
+        "5kyu": [
+          {
+            "paragraphs": [
+              "If you're having trouble solving the problems, try using anchor points.",
+              "For example, the four corner squares — a8, h8, a1, h1 — are easy to memorize. You can also instantly tell the color of these squares.",
+              "Squares like these, which are easy to remember and can serve as reference points, are called anchor points.",
+              "Furthermore, you can divide the chess board into four quadrants.",
+              "Let's start by focusing on just the top-left area.",
+              "Each of the four divided sections always contains one of the full board's four corner squares. In the top-left area we're looking at, that's a8.",
+              "The square diagonally opposite to a8 within this section is d5. The remaining two points can be derived through horizontal and vertical symmetry: a5 and d8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Since all four sections are self-similar — they share the same structure — we can apply the same logic to create anchor points for the entire board.",
+              "Notice also the pattern: each corner square of the full board pairs with one of the center squares. For example, in the top-left section, a8 pairs with d5.",
+              "Once you've established these anchor points, you're ready to put them into practice.",
+              "The greatest advantage of this method is that every single square on the board is either an anchor point itself, or adjacent to one.",
+              "For example, suppose your opponent plays 1...Nf6. Here's how you might recognize f6:",
+              "Step 1: Identify the area.\nEven if you can't pinpoint f6 immediately, you can quickly determine that it falls within the top-right area (e5–h8).",
+              "Step 2: Determine the anchor point.\nThe anchor points in this area are e5, h5, e8, and h8. Look for the nearest anchor point by file and rank — in this case, e5 works well.",
+              "Step 3: Check the relative position.\nf6 is one square to the right and one square up from e5 — in other words, diagonally upper-right.",
+              "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization."
+            ]
+          }
+        ]
+      }
     }
   },
   "rankAchievement": {

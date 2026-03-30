@@ -1,5 +1,12 @@
-import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  RANK_COLORS,
+  parseRequirements,
+} from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+
+import { getRankBySlug } from './queries';
 
 export type RankCardState = 'achieved' | 'next' | 'locked' | 'coming-soon';
 
@@ -8,6 +15,16 @@ export function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
     return req.menuType;
   }
   return `${req.menuType}_${req.leaderboardKey}`;
+}
+
+export async function getValidatedRank(slug: string) {
+  if (!(ALL_RANK_SLUGS as readonly string[]).includes(slug)) return null;
+  const rankSlug = slug as RankSlug;
+  const rank = await getRankBySlug(rankSlug);
+  if (!rank) return null;
+  const requirements = parseRequirements(rank.requirements);
+  if (requirements.length === 0) return null;
+  return { rank, rankSlug, requirements };
 }
 
 export function getBeltColorHex(slug: RankSlug): string {
