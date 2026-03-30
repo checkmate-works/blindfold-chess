@@ -5,7 +5,7 @@ export { GameSectionCard } from './GameSectionCard';
 export { GameShortcutCard } from './GameShortcutCard';
 export { HeroSection } from './HeroSection';
 export { LanguageSelector } from './LanguageSelector';
-export { LearnSection } from './LearnSection';
+export { RanksSection } from './RanksSection';
 export { NewGameCard } from './NewGameCard';
 export { ScrollIndicator } from './ScrollIndicator';
 export { TrainingCard } from './TrainingCard';

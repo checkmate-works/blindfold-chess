@@ -4,6 +4,8 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
+import type { GrantedRank } from './rank-evaluation';
+import { checkAndGrantRanks } from './rank-evaluation';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
 /** Only insert feed items for ranks at or above this threshold. */
@@ -29,7 +31,9 @@ export type ChallengeResultInput = {
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
  */
-export async function saveChallengeResult(input: ChallengeResultInput): Promise<void> {
+export async function saveChallengeResult(
+  input: ChallengeResultInput
+): Promise<{ grantedRanks: GrantedRank[] }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
@@ -181,4 +185,18 @@ export async function saveChallengeResult(input: ChallengeResultInput): Promise<
   if (rankingsChanged) {
     revalidateTag('leaderboard', { expire: 60 });
   }
+
+  // 6. Check and grant any newly achievable belt ranks.
+  // Called outside the transaction so challenge_best_scores reflects the latest data.
+  // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
+  // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
+  // break the challenge result flow that has already committed successfully.
+  let grantedRanks: GrantedRank[] = [];
+  try {
+    grantedRanks = await checkAndGrantRanks(userId);
+  } catch (error) {
+    console.error('Failed to check/grant ranks:', error);
+  }
+
+  return { grantedRanks };
 }

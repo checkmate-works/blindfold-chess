@@ -248,6 +248,50 @@ The moderation system uses a **dual-source pattern** adopted from Discourse, Git
 
 See `moderation_actions` table TSDoc in `src/lib/db/schema.ts` for detailed design rationale.
 
+## Belt Ranking System (段級位)
+
+A martial arts-inspired progression system (5級 → 初段). Users earn ranks by meeting challenge score thresholds.
+
+### Architecture Overview
+
+| Layer                 | File                                                                      | Responsibility                                                                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**            | `src/lib/db/schema.ts` (`ranks`, `userRanks`)                             | DB table definitions. `ranks` is admin-managed master data; `user_ranks` is immutable achievement history (INSERT-only, service role only)                                                              |
+| **Seed data**         | `src/lib/db/data/ranks.ts`                                                | Code-is-source-of-truth rank definitions with `ALL_RANK_SLUGS`, `RANK_COLORS`, and `ranksSeedData`. Requirements are JSONB arrays (implicit AND). Empty `requirements: []` = conditions not yet defined |
+| **Evaluation**        | `src/lib/db/rank-evaluation.ts`                                           | `checkAndGrantRanks(userId)` — called after every challenge completion. Evaluator pattern: one function per requirement `type` (currently `challenge_score`). Returns `GrantedRank[]`                   |
+| **Integration**       | `src/lib/db/save-challenge-result.ts`                                     | Calls `checkAndGrantRanks` in try-catch after the challenge transaction commits. Failure does not break the challenge save flow                                                                         |
+| **Server Action**     | `src/app/[locale]/(public)/practice/_actions/save-practice-result.ts`     | `SaveResultResponse` includes `grantedRanks?` field, propagated from `saveChallengeResult`                                                                                                              |
+| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx` | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/ranks`                                                                      |
+| **Ranks Page**        | `src/app/[locale]/(public)/ranks/page.tsx`                                | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
+| **RLS**               | `drizzle/supabase/rls_policies.sql`                                       | Both tables: SELECT only for authenticated/anon. No INSERT/UPDATE/DELETE policies — writes via service role only                                                                                        |
+
+### Key Design Decisions
+
+- **Evaluator pattern (not per-rank strategy)**: Evaluators are keyed by requirement `type` (e.g., `challenge_score`), not by rank. Adding a new rank = seed data only. Adding a new requirement type (e.g., `post_count`) = one new evaluator function.
+- **JSONB requirements, not normalized table**: Heterogeneous condition schemas (scores, post counts, likes) make EAV or wide tables impractical. Validation is at the app layer (type guards), not DB level.
+- **No `profiles.currentRankId` cache (YAGNI)**: User's current rank is derived from `user_ranks` JOIN. With ≤15 rows per user, this is trivially fast. A cache column can be added if performance becomes an issue.
+- **Immutable `user_ranks`**: No `updatedAt`. `achievedAt` serves as creation timestamp. Records are never deleted or updated (grandfathering principle).
+- **`onDelete: 'restrict'`** on `user_ranks.rankId` → `ranks.id` — protects achievement history from master data deletion.
+- **Linear progression**: `checkAndGrantRanks` stops at the first unmet rank. No skipping.
+- **Idempotent grants**: `onConflictDoNothing` on INSERT into `user_ranks`. Safe to call repeatedly.
+- **sessionStorage for modal**: Challenge components store `grantedRanks` in sessionStorage before redirecting to result page. `RankAchievementModal` reads and removes it on mount.
+
+### Adding a New Rank Requirement Type
+
+1. Define the type in `src/lib/db/data/ranks.ts` (add to `RankRequirement` union)
+2. Add an evaluator function in `src/lib/db/rank-evaluation.ts` (`evaluators` record)
+3. Add type guard logic in `parseRequirements` (both `rank-evaluation.ts` and `ranks/page.tsx`)
+4. Add i18n display logic in `ranks/page.tsx` if needed
+5. Update seed data with the new requirement
+
+### Adding a New Rank
+
+1. Add entry to `ranksSeedData` in `src/lib/db/data/ranks.ts` (with requirements or `[]` for placeholder)
+2. Add slug to `ALL_RANK_SLUGS` and color to `RANK_COLORS` in same file
+3. Add i18n entries in `src/messages/{en,ja}.json` under `ranks.rankNames` and `rankAchievement.rankNames`
+4. Run `pnpm db:seed`
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
+- **Database schema** is defined in `src/lib/db/schema.ts` (Drizzle ORM). See TSDoc `@design` tags on each table for design rationale.

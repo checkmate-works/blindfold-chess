@@ -15,9 +15,16 @@ const mockExecute = vi.fn();
 const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
+const mockCheckAndGrantRanks = vi.fn().mockResolvedValue([]);
+
+vi.mock('server-only', () => ({}));
 
 vi.mock('next/cache', () => ({
   revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
+}));
+
+vi.mock('./rank-evaluation', () => ({
+  checkAndGrantRanks: (...args: unknown[]) => mockCheckAndGrantRanks(...args),
 }));
 
 vi.mock('./challenge-queries', () => ({
@@ -115,6 +122,31 @@ describe('saveChallengeResult', () => {
     await saveChallengeResult(validInput);
 
     expect(mockTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return grantedRanks from checkAndGrantRanks', async () => {
+    const mockRanks = [{ slug: '5kyu', level: 10, color: 'orange' }];
+    mockCheckAndGrantRanks.mockResolvedValueOnce(mockRanks);
+
+    const result = await saveChallengeResult(validInput);
+
+    expect(result).toEqual({ grantedRanks: mockRanks });
+  });
+
+  it('should return empty grantedRanks when no ranks are granted', async () => {
+    mockCheckAndGrantRanks.mockResolvedValueOnce([]);
+
+    const result = await saveChallengeResult(validInput);
+
+    expect(result).toEqual({ grantedRanks: [] });
+  });
+
+  it('should return empty grantedRanks when checkAndGrantRanks throws', async () => {
+    mockCheckAndGrantRanks.mockRejectedValueOnce(new Error('rank check failed'));
+
+    const result = await saveChallengeResult(validInput);
+
+    expect(result).toEqual({ grantedRanks: [] });
   });
 
   // -------------------------------------------------------------------------

@@ -66,7 +66,7 @@ describe('savePracticeResult', () => {
     mockIsUserBanned.mockResolvedValue(false);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockDeriveLeaderboardKey.mockReturnValue('white');
-    mockSaveChallengeResult.mockResolvedValue(undefined);
+    mockSaveChallengeResult.mockResolvedValue({ grantedRanks: [] });
   });
 
   // -------------------------------------------------------------------------
@@ -80,7 +80,7 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, grantedRanks: [] });
   });
 
   it('should call saveChallengeResult with rounded values', async () => {
@@ -250,7 +250,7 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, grantedRanks: [] });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({
         menuType: 'legal_moves',
@@ -264,7 +264,7 @@ describe('savePracticeResult', () => {
 
     const result = await savePracticeResult('square_colors', {}, validChallengeFields);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, grantedRanks: [] });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({
         menuType: 'square_colors',

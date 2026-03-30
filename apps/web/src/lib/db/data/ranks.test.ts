@@ -1,0 +1,200 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  RANK_COLORS,
+  isChallengeScoreRequirement,
+  parseRequirements,
+} from './ranks';
+import type { ChallengeScoreRequirement } from './ranks';
+
+// ---------------------------------------------------------------------------
+// isChallengeScoreRequirement
+// ---------------------------------------------------------------------------
+
+describe('isChallengeScoreRequirement', () => {
+  const validReq: ChallengeScoreRequirement = {
+    type: 'challenge_score',
+    menuType: 'coordinate_quiz',
+    leaderboardKey: 'white',
+    minScore: 20,
+  };
+
+  it('should return true for a valid ChallengeScoreRequirement', () => {
+    expect(isChallengeScoreRequirement(validReq)).toBe(true);
+  });
+
+  it('should return false for null', () => {
+    expect(isChallengeScoreRequirement(null)).toBe(false);
+  });
+
+  it('should return false for undefined', () => {
+    expect(isChallengeScoreRequirement(undefined)).toBe(false);
+  });
+
+  it('should return false for a string', () => {
+    expect(isChallengeScoreRequirement('challenge_score')).toBe(false);
+  });
+
+  it('should return false for a number', () => {
+    expect(isChallengeScoreRequirement(42)).toBe(false);
+  });
+
+  it('should return false for an empty object', () => {
+    expect(isChallengeScoreRequirement({})).toBe(false);
+  });
+
+  it('should return false when type is wrong', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, type: 'post_count' })).toBe(false);
+  });
+
+  it('should return false when type is missing', () => {
+    const { type: _, ...rest } = validReq;
+    expect(isChallengeScoreRequirement(rest)).toBe(false);
+  });
+
+  it('should return false when menuType is missing', () => {
+    const { menuType: _, ...rest } = validReq;
+    expect(isChallengeScoreRequirement(rest)).toBe(false);
+  });
+
+  it('should return false when menuType is not a string', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, menuType: 123 })).toBe(false);
+  });
+
+  it('should return false when leaderboardKey is missing', () => {
+    const { leaderboardKey: _, ...rest } = validReq;
+    expect(isChallengeScoreRequirement(rest)).toBe(false);
+  });
+
+  it('should return false when leaderboardKey is not a string', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, leaderboardKey: true })).toBe(false);
+  });
+
+  it('should return false when minScore is missing', () => {
+    const { minScore: _, ...rest } = validReq;
+    expect(isChallengeScoreRequirement(rest)).toBe(false);
+  });
+
+  it('should return false when minScore is not a number', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, minScore: '20' })).toBe(false);
+  });
+
+  it('should return true when extra properties are present', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, extra: 'field' })).toBe(true);
+  });
+
+  it('should return true for minScore of 0', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, minScore: 0 })).toBe(true);
+  });
+
+  it('should return true for negative minScore', () => {
+    expect(isChallengeScoreRequirement({ ...validReq, minScore: -1 })).toBe(true);
+  });
+
+  it('should return false for an array', () => {
+    expect(isChallengeScoreRequirement([validReq])).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseRequirements
+// ---------------------------------------------------------------------------
+
+describe('parseRequirements', () => {
+  const validReq: ChallengeScoreRequirement = {
+    type: 'challenge_score',
+    menuType: 'square_colors',
+    leaderboardKey: 'default',
+    minScore: 15,
+  };
+
+  it('should return an empty array for null input', () => {
+    expect(parseRequirements(null)).toEqual([]);
+  });
+
+  it('should return an empty array for undefined input', () => {
+    expect(parseRequirements(undefined)).toEqual([]);
+  });
+
+  it('should return an empty array for a string input', () => {
+    expect(parseRequirements('not an array')).toEqual([]);
+  });
+
+  it('should return an empty array for a number input', () => {
+    expect(parseRequirements(42)).toEqual([]);
+  });
+
+  it('should return an empty array for an object input', () => {
+    expect(parseRequirements({ type: 'challenge_score' })).toEqual([]);
+  });
+
+  it('should return an empty array for an empty array', () => {
+    expect(parseRequirements([])).toEqual([]);
+  });
+
+  it('should parse a single valid requirement', () => {
+    expect(parseRequirements([validReq])).toEqual([validReq]);
+  });
+
+  it('should parse multiple valid requirements', () => {
+    const req2: ChallengeScoreRequirement = {
+      type: 'challenge_score',
+      menuType: 'coordinate_quiz',
+      leaderboardKey: 'white',
+      minScore: 20,
+    };
+    expect(parseRequirements([validReq, req2])).toEqual([validReq, req2]);
+  });
+
+  it('should filter out invalid entries from the array', () => {
+    expect(parseRequirements([validReq, { type: 'unknown' }, null, 42, validReq])).toEqual([
+      validReq,
+      validReq,
+    ]);
+  });
+
+  it('should return an empty array when all entries are invalid', () => {
+    expect(parseRequirements([null, undefined, 'bad', { type: 'nope' }])).toEqual([]);
+  });
+
+  it('should handle JSONB-like data (parsed JSON array)', () => {
+    const raw = JSON.parse(JSON.stringify([validReq]));
+    expect(parseRequirements(raw)).toEqual([validReq]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Exported constants sanity checks
+// ---------------------------------------------------------------------------
+
+describe('ALL_RANK_SLUGS', () => {
+  it('should contain 6 ranks', () => {
+    expect(ALL_RANK_SLUGS).toHaveLength(6);
+  });
+
+  it('should start with 5kyu and end with 1dan', () => {
+    expect(ALL_RANK_SLUGS[0]).toBe('5kyu');
+    expect(ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]).toBe('1dan');
+  });
+});
+
+describe('RANK_COLORS', () => {
+  it('should have a color for every rank slug', () => {
+    for (const slug of ALL_RANK_SLUGS) {
+      expect(RANK_COLORS[slug]).toBeDefined();
+      expect(typeof RANK_COLORS[slug]).toBe('string');
+    }
+  });
+});
+
+describe('BELT_COLOR_HEX', () => {
+  it('should have a hex value for every color used in RANK_COLORS', () => {
+    const colors = new Set(Object.values(RANK_COLORS));
+    for (const color of colors) {
+      expect(BELT_COLOR_HEX[color]).toBeDefined();
+      expect(BELT_COLOR_HEX[color]).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
+  });
+});

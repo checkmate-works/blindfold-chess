@@ -124,6 +124,11 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
           if (!result.success) {
             console.error('Failed to save legal_moves result:', result.error);
             sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
+            sessionStorage.setItem(
+              'blindfold_chess_granted_ranks',
+              JSON.stringify(result.grantedRanks)
+            );
           }
         })
         .catch((error) => {

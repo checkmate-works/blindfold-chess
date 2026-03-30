@@ -14,7 +14,7 @@ type Props = {
 
 export function TrainingSection({ locale, t }: Props) {
   return (
-    <section className="py-24 px-6 bg-background">
+    <section className="py-24 px-6 bg-card border-y border-border/50">
       <div className="max-w-6xl mx-auto space-y-16">
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">{t('training.title')}</h2>

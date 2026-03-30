@@ -16,6 +16,7 @@ import type {
 } from '../_lib/practice-complete-types';
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
 import { ProblemResultList } from './ProblemResultList';
+import { RankAchievementModal } from './RankAchievementModal';
 
 type Props = {
   score: number;
@@ -130,6 +131,8 @@ export function PracticeComplete({
           />
         </div>
       )}
+
+      <RankAchievementModal locale={locale} />
     </>
   );
 }

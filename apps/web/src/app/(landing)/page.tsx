@@ -11,7 +11,7 @@ import {
   AiBattleSection,
   DashboardPlaceholder,
   HeroSection,
-  LearnSection,
+  RanksSection,
   TrainingSection,
 } from './_components';
 import { DashboardFooter } from './_components/DashboardFooter';
@@ -69,8 +69,8 @@ export default async function RootPage() {
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <HeroSection locale={locale} t={t} siteName={metaT('siteName')} />
       <AiBattleSection locale={locale} t={t} />
+      <RanksSection locale={locale} t={t} />
       <TrainingSection locale={locale} t={t} />
-      <LearnSection locale={locale} t={t} />
       <Footer locale={locale} t={t} />
     </main>
   );
