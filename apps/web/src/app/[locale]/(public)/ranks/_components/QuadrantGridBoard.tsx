@@ -4,9 +4,7 @@ import type { ReactNode } from 'react';
 
 import { isLightSquare } from '@blindfold-chess/features/common';
 
-import { getBoardThemeColors } from '@/lib/boardThemes';
-
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useBoardTheme } from './useBoardTheme';
 
 type QuadrantGridBoardProps = {
   files: string[];
@@ -25,8 +23,7 @@ export function QuadrantGridBoard({
   highlightedSquares = [],
   svgOverlay,
 }: QuadrantGridBoardProps) {
-  const { preferences, isLoaded } = useGamePreferences();
-  const themeColors = getBoardThemeColors(preferences.boardTheme);
+  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
 
   if (!isLoaded) {
     return (
@@ -61,7 +58,7 @@ export function QuadrantGridBoard({
                     className={`w-[25%] h-full relative flex items-center justify-center ${squareColorClass} ${highlightClass}`}
                   >
                     {/* Rank coordinate on left edge */}
-                    {preferences.showCoordinates && fileDisplayIndex === 0 && (
+                    {showCoordinates && fileDisplayIndex === 0 && (
                       <div
                         className={`absolute left-0.5 top-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${coordinateColorClass}`}
                       >
@@ -69,7 +66,7 @@ export function QuadrantGridBoard({
                       </div>
                     )}
                     {/* File coordinate on bottom edge */}
-                    {preferences.showCoordinates && rankDisplayIndex === 3 && (
+                    {showCoordinates && rankDisplayIndex === 3 && (
                       <div
                         className={`absolute right-0.5 bottom-0.5 text-[0.6rem] sm:text-xs font-semibold pointer-events-none ${coordinateColorClass}`}
                       >
