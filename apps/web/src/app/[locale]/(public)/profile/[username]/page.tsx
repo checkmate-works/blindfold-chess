@@ -11,7 +11,7 @@ import { db, profiles, userFollows } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { LinkedText, PagePanel, SectionTitle, UserAvatar } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
@@ -200,7 +200,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         {/* Bio */}
         {profile.bio && (
           <div className="space-y-3">
-            <SectionTitle>{t('bio')}</SectionTitle>
+            <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
+              {t('bio')}
+            </h2>
             <p className="text-foreground whitespace-pre-wrap break-words">
               <LinkedText text={profile.bio} locale={locale} />
             </p>
