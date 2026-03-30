@@ -21,19 +21,15 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
-import { AllAnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AllAnchorPointsBoard';
-import { AnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AnchorPointsBoard';
-import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
-import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
-import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
-import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
-import { getBeltColorHex, getValidatedRank } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { getValidatedRank } from '@/app/[locale]/(public)/ranks/_lib/queries';
 import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { getVisualAid } from './_lib/visualAidConfig';
 
 type Props = {
   params: Promise<{
@@ -138,18 +134,7 @@ export default async function RankGuidePage({ params }: Props) {
                 <p className="text-foreground/80">{paragraph}</p>
               )}
               {/* Visual aids based on page and position */}
-              {pageNumber === 1 && i === 1 && rankSlug === '5kyu' && <AnchorPointsBoard />}
-              {pageNumber === 1 && i === 3 && rankSlug === '5kyu' && <QuadrantBoard />}
-              {pageNumber === 1 && i === 4 && rankSlug === '5kyu' && <MiniBoard />}
-              {pageNumber === 1 && i === 6 && rankSlug === '5kyu' && <SymmetryBoard />}
-              {pageNumber === 2 && i === 0 && rankSlug === '5kyu' && <AllAnchorPointsBoard />}
-              {pageNumber === 2 && i === 5 && rankSlug === '5kyu' && (
-                <HighlightQuadrantBoard quadrant="top-right" />
-              )}
-              {pageNumber === 2 && i === 6 && rankSlug === '5kyu' && (
-                <MiniBoard quadrant="top-right" highlightedSquares={['e5']} />
-              )}
-              {pageNumber === 2 && i === 7 && rankSlug === '5kyu' && <Step3Board />}
+              {getVisualAid(rankSlug, pageNumber, i)}
             </React.Fragment>
           ))}
         </div>

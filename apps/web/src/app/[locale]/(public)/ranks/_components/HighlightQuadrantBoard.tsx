@@ -5,9 +5,7 @@ import { useCallback } from 'react';
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 
-import { getBoardThemeColors } from '@/lib/boardThemes';
-
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useBoardTheme } from './useBoardTheme';
 
 type Quadrant = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -32,8 +30,7 @@ type Props = {
 };
 
 export function HighlightQuadrantBoard({ quadrant }: Props) {
-  const { preferences, isLoaded } = useGamePreferences();
-  const themeColors = getBoardThemeColors(preferences.boardTheme);
+  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
 
   const renderSquare = useCallback(
     ({ fileIndex, rankIndex }: SquareRenderInfo) => {
@@ -59,7 +56,7 @@ export function HighlightQuadrantBoard({ quadrant }: Props) {
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
       <BoardLayout
-        showCoordinates={preferences.showCoordinates}
+        showCoordinates={showCoordinates}
         themeColors={themeColors}
         renderSquare={renderSquare}
         squareProps={squareProps}

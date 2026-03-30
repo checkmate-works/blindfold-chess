@@ -1,13 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
-
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
-import type { SquareRenderInfo } from '@/app/_components';
-
-import { getBoardThemeColors } from '@/lib/boardThemes';
-
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { AnchorPointsBoard } from './AnchorPointsBoard';
 
 const ALL_ANCHOR_SQUARES = [
   'a8',
@@ -29,36 +22,5 @@ const ALL_ANCHOR_SQUARES = [
 ];
 
 export function AllAnchorPointsBoard() {
-  const { preferences, isLoaded } = useGamePreferences();
-  const themeColors = getBoardThemeColors(preferences.boardTheme);
-
-  const renderSquare = useCallback(() => null, []);
-
-  const squareProps = useCallback(
-    ({ square }: SquareRenderInfo) => ({
-      highlightType: (ALL_ANCHOR_SQUARES.includes(square) ? 'last-move' : 'none') as
-        | 'last-move'
-        | 'none',
-    }),
-    []
-  );
-
-  if (!isLoaded) {
-    return (
-      <div className="mx-auto max-w-xs sm:max-w-sm">
-        <BoardSkeleton />
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-auto max-w-xs sm:max-w-sm">
-      <BoardLayout
-        showCoordinates={preferences.showCoordinates}
-        themeColors={themeColors}
-        renderSquare={renderSquare}
-        squareProps={squareProps}
-      />
-    </div>
-  );
+  return <AnchorPointsBoard squares={ALL_ANCHOR_SQUARES} />;
 }

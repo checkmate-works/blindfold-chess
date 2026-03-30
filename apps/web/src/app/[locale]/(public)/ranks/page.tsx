@@ -14,9 +14,6 @@
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
-
-import { HiCheckCircle, HiLockClosed, HiMiniStar } from 'react-icons/hi2';
 
 import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
@@ -26,6 +23,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
+import { RankCard } from './_components/RankCard';
 import { buildChallengeNameKey, getBeltColorHex, getRankCardState } from './_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from './_lib/queries';
 
@@ -90,87 +88,26 @@ export default async function RanksPage({ params }: LocalePageProps) {
               isFirstRank
             );
 
-            const isClickable = state === 'achieved' || state === 'next';
-
-            const cardContent = (
-              <>
-                {/* Belt color bar */}
-                <div className="h-2" style={{ backgroundColor: beltColor }} />
-
-                <div className="space-y-4 p-4 sm:p-5">
-                  {/* Rank name with color badge */}
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="inline-block size-4 shrink-0 rounded-full"
-                      style={{ backgroundColor: beltColor }}
-                    />
-                    <h3 className="text-lg font-bold text-foreground">{t(`rankNames.${slug}`)}</h3>
-                    {state === 'achieved' && (
-                      <HiCheckCircle className="ml-auto size-6 shrink-0 text-emerald-500" />
-                    )}
-                  </div>
-
-                  {/* Requirements (only for ranks with defined requirements) */}
-                  {requirements.length > 0 && (
-                    <div>
-                      <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
-                        {t('requirements')}
-                      </h4>
-                      <ul className="space-y-2">
-                        {requirements.map((req, i) => {
-                          const challengeKey = buildChallengeNameKey(req);
-                          return (
-                            <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                              <HiMiniStar className="mt-0.5 size-4 shrink-0 text-amber-500" />
-                              <span>
-                                {t('challengeScore', {
-                                  minScore: req.minScore,
-                                  challengeName: t(`challengeNames.${challengeKey}`),
-                                })}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Placeholder height for overlay cards */}
-                  {(state === 'coming-soon' || state === 'locked') && <div className="h-8" />}
-                </div>
-              </>
-            );
+            const requirementLabels = requirements.map((req) => {
+              const challengeKey = buildChallengeNameKey(req);
+              return t('challengeScore', {
+                minScore: req.minScore,
+                challengeName: t(`challengeNames.${challengeKey}`),
+              });
+            });
 
             return (
-              <div key={slug} className="relative">
-                {/* Rank card */}
-                {isClickable ? (
-                  <Link
-                    href={`/${locale}/ranks/${slug}`}
-                    className="block relative overflow-hidden rounded-lg border border-border bg-card shadow-sm hover:border-foreground/20 transition-colors"
-                  >
-                    {cardContent}
-                  </Link>
-                ) : (
-                  <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-                    {cardContent}
-                  </div>
-                )}
-
-                {/* Locked overlay */}
-                {state === 'locked' && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-foreground/30 backdrop-blur-sm">
-                    <HiLockClosed className="size-6 text-card" />
-                  </div>
-                )}
-
-                {/* Coming Soon overlay */}
-                {state === 'coming-soon' && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-foreground/30 backdrop-blur-sm">
-                    <span className="text-sm font-semibold text-card">{t('comingSoon')}</span>
-                  </div>
-                )}
-              </div>
+              <RankCard
+                key={slug}
+                slug={slug}
+                locale={locale}
+                beltColor={beltColor}
+                rankName={t(`rankNames.${slug}`)}
+                state={state}
+                requirementLabels={requirementLabels}
+                requirementsHeading={t('requirements')}
+                comingSoonLabel={t('comingSoon')}
+              />
             );
           })}
         </div>

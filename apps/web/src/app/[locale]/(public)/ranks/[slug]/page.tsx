@@ -16,7 +16,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
-import { HiMiniStar } from 'react-icons/hi2';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -27,7 +26,9 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RankHeader } from '../_components/RankHeader';
-import { buildChallengeNameKey, getBeltColorHex, getValidatedRank } from '../_lib/helpers';
+import { RequirementsList } from '../_components/RequirementsList';
+import { buildChallengeNameKey, getBeltColorHex } from '../_lib/helpers';
+import { getValidatedRank } from '../_lib/queries';
 
 type Props = {
   params: Promise<{
@@ -115,22 +116,18 @@ export default async function RankDetailPage({ params }: Props) {
 
         {/* Score requirements */}
         <SectionTitle>{t('detail.requirements')}</SectionTitle>
-        <ul className="mt-4 space-y-3">
-          {requirements.map((req, i) => {
+        <RequirementsList
+          className="mt-4 space-y-3"
+          iconSize="size-5"
+          textSize="text-base"
+          items={requirements.map((req) => {
             const challengeKey = buildChallengeNameKey(req);
-            return (
-              <li key={i} className="flex items-start gap-2 text-foreground">
-                <HiMiniStar className="mt-0.5 size-5 shrink-0 text-amber-500" />
-                <span>
-                  {t('challengeScore', {
-                    minScore: req.minScore,
-                    challengeName: t(`challengeNames.${challengeKey}`),
-                  })}
-                </span>
-              </li>
-            );
+            return t('challengeScore', {
+              minScore: req.minScore,
+              challengeName: t(`challengeNames.${challengeKey}`),
+            });
           })}
-        </ul>
+        />
 
         <Divider />
 

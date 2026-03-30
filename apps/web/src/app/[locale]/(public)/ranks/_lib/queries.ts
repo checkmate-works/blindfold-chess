@@ -1,6 +1,8 @@
 import { asc, eq } from 'drizzle-orm';
 
 import { db, ranks, userRanks } from '@/lib/db';
+import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
+import type { RankSlug } from '@/lib/db/data/ranks';
 
 export async function getAllRanks() {
   return db.select().from(ranks).orderBy(asc(ranks.level));
@@ -17,4 +19,14 @@ export async function getUserAchievedRankIds(userId: string): Promise<Set<string
     .from(userRanks)
     .where(eq(userRanks.userId, userId));
   return new Set(rows.map((r) => r.rankId));
+}
+
+export async function getValidatedRank(slug: string) {
+  if (!(ALL_RANK_SLUGS as readonly string[]).includes(slug)) return null;
+  const rankSlug = slug as RankSlug;
+  const rank = await getRankBySlug(rankSlug);
+  if (!rank) return null;
+  const requirements = parseRequirements(rank.requirements);
+  if (requirements.length === 0) return null;
+  return { rank, rankSlug, requirements };
 }
