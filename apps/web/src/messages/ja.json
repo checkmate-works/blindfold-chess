@@ -1981,7 +1981,8 @@
       "algebraic_notation": "代数記法",
       "fen": "FEN再構成",
       "quadrant_anchors": "象限アンカー"
-    }
+    },
+    "practiceThisChallenge": "このチャレンジを練習する"
   },
   "MypageLikes": {
     "title": "いいねした投稿",

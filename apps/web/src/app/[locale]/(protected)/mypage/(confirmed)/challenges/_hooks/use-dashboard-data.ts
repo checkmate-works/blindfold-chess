@@ -272,6 +272,7 @@ export function useDashboardData(locale: string) {
     availableMenuTypes,
 
     // Computed
+    activePiece,
     currentStats,
     bestScoreComparison,
     avgScoreComparison,

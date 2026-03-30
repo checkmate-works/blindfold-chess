@@ -7,6 +7,8 @@ import { Link } from '@/i18n/routing';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
+import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { buildChallengePath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -46,6 +48,7 @@ export function Dashboard({ locale }: { locale: string }) {
     handlePieceSelect,
     isLoading,
     availableMenuTypes,
+    activePiece,
     currentStats,
     bestScoreComparison,
     avgScoreComparison,
@@ -210,6 +213,25 @@ export function Dashboard({ locale }: { locale: string }) {
               </div>
             )}
           </div>
+
+          {selectedMenu && (
+            <div className="flex justify-center py-4">
+              <Link
+                href={buildChallengePath(
+                  selectedMenu as LeaderboardModule,
+                  selectedMenu === 'coordinate_quiz'
+                    ? boardOrientationFilter
+                    : selectedMenu === 'legal_moves'
+                      ? activePiece
+                      : 'default'
+                )}
+                locale={locale}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {t('practiceThisChallenge')}
+              </Link>
+            </div>
+          )}
         </>
       )}
     </div>

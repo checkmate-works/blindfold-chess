@@ -1980,7 +1980,8 @@
       "algebraic_notation": "Algebraic Notation",
       "fen": "FEN Reconstruction",
       "quadrant_anchors": "Quadrant Anchors"
-    }
+    },
+    "practiceThisChallenge": "Practice This Challenge"
   },
   "MypageLikes": {
     "title": "Liked Posts",
