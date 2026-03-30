@@ -6,42 +6,103 @@ type PaginationNavProps = {
   buildHref: (page: number) => string;
 };
 
+/**
+ * Build the list of page items to display in pagination.
+ * Inspired by GitHub/Primer pagination truncation logic.
+ *
+ * - Always shows first and last page
+ * - Shows `surroundingPageCount` pages around the current page
+ * - Uses ellipsis (null) for gaps
+ * - When totalPages <= 7, shows all pages without truncation
+ */
+function buildPageItems(currentPage: number, totalPages: number): (number | null)[] {
+  const surroundingPageCount = 2;
+
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const items: (number | null)[] = [];
+
+  // Always include first page
+  items.push(1);
+
+  const rangeStart = Math.max(2, currentPage - surroundingPageCount);
+  const rangeEnd = Math.min(totalPages - 1, currentPage + surroundingPageCount);
+
+  // Ellipsis after first page if needed
+  if (rangeStart > 2) {
+    items.push(null);
+  }
+
+  // Pages around current
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    items.push(i);
+  }
+
+  // Ellipsis before last page if needed
+  if (rangeEnd < totalPages - 1) {
+    items.push(null);
+  }
+
+  // Always include last page
+  items.push(totalPages);
+
+  return items;
+}
+
+const linkClass =
+  'px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors';
+const disabledClass =
+  'px-3 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed';
+const pageClass =
+  'px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors min-w-[2.5rem] text-center';
+const currentPageClass =
+  'px-3 py-2 text-sm rounded border border-border bg-foreground text-background font-semibold min-w-[2.5rem] text-center';
+
 export function PaginationNav({ currentPage, totalPages, buildHref }: PaginationNavProps) {
   if (totalPages <= 1) {
     return null;
   }
 
+  const pageItems = buildPageItems(currentPage, totalPages);
+
   return (
-    <nav aria-label="Pagination" className="flex items-center justify-between mt-4">
-      <div className="text-sm text-muted-foreground">
-        Page {currentPage} / {totalPages}
-      </div>
-      <div className="flex gap-2">
-        {currentPage > 1 ? (
-          <Link
-            href={buildHref(currentPage - 1)}
-            className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-          >
-            Previous
-          </Link>
-        ) : (
-          <span className="px-4 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed">
-            Previous
+    <nav aria-label="Pagination" className="flex items-center justify-center gap-1 mt-4">
+      {/* Previous button */}
+      {currentPage > 1 ? (
+        <Link href={buildHref(currentPage - 1)} className={linkClass}>
+          Previous
+        </Link>
+      ) : (
+        <span className={disabledClass}>Previous</span>
+      )}
+
+      {/* Page numbers */}
+      {pageItems.map((item, index) =>
+        item === null ? (
+          <span key={`ellipsis-${index}`} className="px-2 py-2 text-sm text-muted-foreground">
+            ...
           </span>
-        )}
-        {currentPage < totalPages ? (
-          <Link
-            href={buildHref(currentPage + 1)}
-            className="px-4 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-          >
-            Next
-          </Link>
-        ) : (
-          <span className="px-4 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed">
-            Next
+        ) : item === currentPage ? (
+          <span key={item} aria-current="page" className={currentPageClass}>
+            {item}
           </span>
-        )}
-      </div>
+        ) : (
+          <Link key={item} href={buildHref(item)} className={pageClass}>
+            {item}
+          </Link>
+        )
+      )}
+
+      {/* Next button */}
+      {currentPage < totalPages ? (
+        <Link href={buildHref(currentPage + 1)} className={linkClass}>
+          Next
+        </Link>
+      ) : (
+        <span className={disabledClass}>Next</span>
+      )}
     </nav>
   );
 }

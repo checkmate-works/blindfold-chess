@@ -14,7 +14,6 @@ import React from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
@@ -31,7 +30,7 @@ import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader
 import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
 import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
 import { getBeltColorHex, getValidatedRank } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -159,31 +158,15 @@ export default async function RankGuidePage({ params }: Props) {
         {pages.length > 1 && (
           <>
             <Divider />
-            <div className="flex items-center justify-between">
-              {pageNumber > 1 ? (
-                <Link
-                  href={`/${locale}/ranks/${rankSlug}/guide${pageNumber === 2 ? '' : `/${pageNumber - 1}`}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← {t('detail.prevPage')}
-                </Link>
-              ) : (
-                <span />
-              )}
-              <span className="text-sm text-muted-foreground">
-                {t('detail.pageOf', { current: pageNumber, total: pages.length })}
-              </span>
-              {pageNumber < pages.length ? (
-                <Link
-                  href={`/${locale}/ranks/${rankSlug}/guide/${pageNumber + 1}`}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t('detail.nextPage')} →
-                </Link>
-              ) : (
-                <span />
-              )}
-            </div>
+            <PaginationNav
+              currentPage={pageNumber}
+              totalPages={pages.length}
+              buildHref={(p) =>
+                p === 1
+                  ? `/${locale}/ranks/${rankSlug}/guide`
+                  : `/${locale}/ranks/${rankSlug}/guide/${p}`
+              }
+            />
           </>
         )}
 
