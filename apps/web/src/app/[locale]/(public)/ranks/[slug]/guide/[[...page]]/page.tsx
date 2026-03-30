@@ -9,6 +9,8 @@
  * 1. Validate slug is a known rank and page number is valid.
  * 2. Fetch rank from DB, check requirements and guide pages exist.
  * 3. Render belt color bar, rank name, guide content, and pagination navigation.
+ * 4. On the last guide page, display practice links via RequirementsList so users
+ *    can immediately navigate to the relevant challenges after finishing the guide.
  */
 import React from 'react';
 
@@ -22,9 +24,16 @@ import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
+import { buildRequirementItems, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getValidatedRank } from '@/app/[locale]/(public)/ranks/_lib/queries';
-import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
+import {
+  Divider,
+  PagePanel,
+  PageTitle,
+  PaginationNav,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -93,7 +102,7 @@ export default async function RankGuidePage({ params }: Props) {
 
   const result = await getValidatedRank(slug);
   if (!result) notFound();
-  const { rankSlug } = result;
+  const { rankSlug, requirements } = result;
 
   const t = await getTranslations({ locale, namespace: 'ranks' });
   const beltColor = getBeltColorHex(rankSlug);
@@ -136,6 +145,20 @@ export default async function RankGuidePage({ params }: Props) {
             </React.Fragment>
           ))}
         </div>
+
+        {/* Practice links on last page */}
+        {pageNumber === pages.length && (
+          <>
+            <Divider />
+            <SectionTitle>{t('detail.tryChallenge')}</SectionTitle>
+            <RequirementsList
+              className="mt-4 space-y-3"
+              iconSize="size-5"
+              textSize="text-base"
+              items={buildRequirementItems(requirements, locale, t)}
+            />
+          </>
+        )}
 
         {/* Pagination */}
         {pages.length > 1 && (

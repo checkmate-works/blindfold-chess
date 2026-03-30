@@ -9,6 +9,8 @@
  * 1. Look up the rank by slug from the database.
  * 2. If not found or has no requirements, show not-found.
  * 3. Render belt color bar, rank name, criteria, and score requirements.
+ *    Each score requirement includes an inline "Challenge" link to the
+ *    corresponding practice page (`/practice/{menuType}`).
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -27,7 +29,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RankHeader } from '../_components/RankHeader';
 import { RequirementsList } from '../_components/RequirementsList';
-import { buildChallengeNameKey, getBeltColorHex } from '../_lib/helpers';
+import { buildRequirementItems, getBeltColorHex } from '../_lib/helpers';
 import { getValidatedRank } from '../_lib/queries';
 
 type Props = {
@@ -118,13 +120,7 @@ export default async function RankDetailPage({ params }: Props) {
           className="mt-4 space-y-3"
           iconSize="size-5"
           textSize="text-base"
-          items={requirements.map((req) => {
-            const challengeKey = buildChallengeNameKey(req);
-            return t('challengeScore', {
-              minScore: req.minScore,
-              challengeName: t(`challengeNames.${challengeKey}`),
-            });
-          })}
+          items={buildRequirementItems(requirements, locale, t)}
         />
 
         <Divider />
