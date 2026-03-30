@@ -15,7 +15,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { HiCheckCircle, HiLockClosed } from 'react-icons/hi2';
+import { HiCheckCircle, HiLockClosed, HiMiniStar } from 'react-icons/hi2';
 
 import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
@@ -106,6 +106,9 @@ export default async function RanksPage({ params }: LocalePageProps) {
                       <h3 className="text-lg font-bold text-foreground">
                         {t(`rankNames.${slug}`)}
                       </h3>
+                      {state === 'achieved' && (
+                        <HiCheckCircle className="ml-auto size-6 shrink-0 text-emerald-500" />
+                      )}
                     </div>
 
                     {/* Requirements (only for ranks with defined requirements) */}
@@ -122,7 +125,7 @@ export default async function RanksPage({ params }: LocalePageProps) {
                                 key={i}
                                 className="flex items-start gap-2 text-sm text-foreground"
                               >
-                                <HiCheckCircle className="mt-0.5 size-4 shrink-0 text-emerald-500" />
+                                <HiMiniStar className="mt-0.5 size-4 shrink-0 text-amber-500" />
                                 <span>
                                   {t('challengeScore', {
                                     minScore: req.minScore,
@@ -140,13 +143,6 @@ export default async function RanksPage({ params }: LocalePageProps) {
                     {(state === 'coming-soon' || state === 'locked') && <div className="h-8" />}
                   </div>
                 </div>
-
-                {/* Achieved badge */}
-                {state === 'achieved' && (
-                  <div className="absolute right-3 top-3">
-                    <HiCheckCircle className="size-6 text-emerald-500" />
-                  </div>
-                )}
 
                 {/* Locked overlay */}
                 {state === 'locked' && (
