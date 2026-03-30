@@ -114,6 +114,12 @@ export default async function MypagePage({ params }: Props) {
             <div className="flex flex-wrap gap-3 mt-3">
               <ChallengeCard
                 locale={locale}
+                href="/ranks"
+                label={t('dashboard.beltSystem')}
+                icon="🥋"
+              />
+              <ChallengeCard
+                locale={locale}
                 href="/mypage/challenges"
                 label={t('dashboard.myRecords')}
                 icon="📈"
