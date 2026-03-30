@@ -34,6 +34,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -175,6 +176,8 @@ export default async function RankGuidePage({ params }: Props) {
             />
           </>
         )}
+
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 

@@ -19,6 +19,7 @@ import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -111,6 +112,8 @@ export default async function RanksPage({ params }: LocalePageProps) {
             );
           })}
         </div>
+
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 
