@@ -119,8 +119,6 @@ export default async function RankGuidePage({ params }: Props) {
       <PagePanel>
         <RankHeader beltColor={beltColor}>{t('detail.guide')}</RankHeader>
 
-        <Divider />
-
         {/* Page content */}
         <div className="space-y-4">
           {currentPage.paragraphs.map((paragraph, i) => (

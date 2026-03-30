@@ -84,8 +84,6 @@ export default async function RankDetailPage({ params }: Props) {
       <PagePanel>
         <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
 
-        <Divider />
-
         {/* Criteria description (only if available for this slug) */}
         {hasCriteriaDescription && (
           <>

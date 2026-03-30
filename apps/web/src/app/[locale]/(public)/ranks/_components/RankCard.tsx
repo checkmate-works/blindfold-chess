@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { HiCheckCircle, HiLockClosed } from 'react-icons/hi2';
+import { HiCheckCircle, HiChevronRight, HiLockClosed } from 'react-icons/hi2';
 
 import type { RankCardState } from '../_lib/helpers';
 import { RequirementsList } from './RequirementsList';
@@ -42,7 +42,19 @@ export function RankCard({
           />
           <h3 className="text-lg font-bold text-foreground">{rankName}</h3>
           {state === 'achieved' && (
-            <HiCheckCircle className="ml-auto size-6 shrink-0 text-emerald-500" />
+            <>
+              <HiCheckCircle className="ml-auto size-6 shrink-0 text-emerald-500" />
+              <HiChevronRight
+                className="size-5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </>
+          )}
+          {state === 'next' && (
+            <HiChevronRight
+              className="ml-auto size-5 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
           )}
         </div>
 
