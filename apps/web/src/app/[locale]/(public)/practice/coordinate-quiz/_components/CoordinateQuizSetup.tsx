@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
@@ -10,7 +10,10 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
+import { CoordinateQuizBoard } from './CoordinateQuizBoard';
 import { CoordinateQuizSettings } from './CoordinateQuizSettings';
+
+const noop = () => {};
 
 type Props = {
   locale: Locale;
@@ -29,27 +32,27 @@ export function CoordinateQuizSetup({
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tp = useTranslations('practice');
-  const router = useRouter();
 
   const settingsQuery = `orientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
 
-  const handleStartTraining = () => {
-    router.push(
-      `/${locale}/practice/coordinate-quiz/training?${settingsQuery}#coordinate-quiz-training-session`
-    );
-  };
-
-  const handleStartChallenge = () => {
-    router.push(`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`);
-  };
-
   return (
     <div>
-      <SectionTitle className="text-xl mb-4">{t('settings')}</SectionTitle>
-
-      <div className="mb-6">
-        <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
+      <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
+      <div className="mb-6 rounded-xl border border-border bg-card p-6 text-center">
+        <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
+        <div className="scale-75 origin-top">
+          <div className="relative inline-block w-full max-w-xs mx-auto">
+            <CoordinateQuizBoard orientation="white" onSquareClick={noop} />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-5xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                e4
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
@@ -58,24 +61,19 @@ export function CoordinateQuizSetup({
         onFeedbackSpeedChange={onFeedbackSpeedChange}
       />
 
-      <Button
-        onClick={handleStartTraining}
-        variant="secondary"
-        size="lg"
-        className="w-full mt-6"
-        icon={<FaPlay />}
-      >
-        {tp('startTraining')}
-      </Button>
-      <Button
-        onClick={handleStartChallenge}
-        variant="primary"
-        size="lg"
-        icon={<FaPlay />}
-        className="w-full mt-3"
-      >
-        {tp('startChallenge')}
-      </Button>
+      <Link href={`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`}>
+        <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full mt-6">
+          {tp('startChallenge')}
+        </Button>
+      </Link>
+      <div className="mt-4 text-center">
+        <Link
+          href={`/${locale}/practice/coordinate-quiz/training?${settingsQuery}#coordinate-quiz-training-session`}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {tp('switchToTraining')}
+        </Link>
+      </div>
     </div>
   );
 }

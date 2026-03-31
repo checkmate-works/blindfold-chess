@@ -1,16 +1,19 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import { BoardOverlay, Button } from '@/app/_components';
 import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
 import type { CoordinateQuestion } from '../../_lib/types';
 
 type Props = {
+  locale: Locale;
   currentQuestion: CoordinateQuestion | null;
   correctAnswers: number;
   wrongAnswers: number;
@@ -23,6 +26,7 @@ type Props = {
 };
 
 export function CoordinateQuizTrainingPlaying({
+  locale,
   currentQuestion,
   correctAnswers,
   wrongAnswers,
@@ -100,6 +104,19 @@ export function CoordinateQuizTrainingPlaying({
         <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
           {tp('endTraining')}
         </Button>
+      </div>
+
+      <hr className="border-border mt-8" />
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
+        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
+        <div className="mt-4">
+          <Link href={`/${locale}/practice/coordinate-quiz/challenge/session`}>
+            <Button asChild variant="primary" size="lg" className="w-full">
+              {tp('goToChallenge')}
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -103,6 +103,7 @@ export default function CoordinateQuizTrainingSession({
   return (
     <div id="coordinate-quiz-training-session" className="min-h-screen">
       <CoordinateQuizTrainingPlaying
+        locale={locale}
         currentQuestion={currentQuestion}
         correctAnswers={correctAnswers}
         wrongAnswers={wrongAnswers}

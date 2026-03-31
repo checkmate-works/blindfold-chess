@@ -625,6 +625,8 @@
     "coordinateQuiz": {
       "title": "Coordinate Quiz",
       "description": "Quick exercises to master board coordinates",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "A square name is shown on the board. Click the correct square as quickly as you can.",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
       "boardOrientation": "Board Orientation",

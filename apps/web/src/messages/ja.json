@@ -626,6 +626,8 @@
     "coordinateQuiz": {
       "title": "座標クイズ",
       "description": "盤の座標をマスターするためのクイック演習",
+      "howToPlayTitle": "問題方式",
+      "howToPlayDescription": "ボード上にマス名が表示されます。該当するマスをできるだけ素早くクリックしましょう。",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "boardOrientation": "盤の向き",
