@@ -8,6 +8,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 
 import { OPENING_CATEGORIES, classifyEcoCode } from '../_lib/categories';
 import type { OpeningCategory } from '../_lib/categories';
+import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import type { OpeningWithChildren } from '../_lib/queries';
 import { OpeningCard } from './OpeningCard';
 
@@ -29,18 +30,13 @@ export function OpeningsListByCategory({ openings, locale }: Props) {
     [openings, currentCategory]
   );
 
-  const getDisplayName = (slug: string, fallback: string) => {
-    const translated = nameT(slug as never);
-    return translated === `topics.openings.names.${slug}` ? fallback : translated;
-  };
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {filteredOpenings.map((opening) => (
         <div key={opening.id}>
           <OpeningCard
             opening={opening}
-            displayName={getDisplayName(opening.slug, opening.name)}
+            displayName={getOpeningDisplayName(nameT, opening.slug, opening.name)}
             locale={locale}
           />
           {opening.children.length > 0 && (
@@ -49,7 +45,7 @@ export function OpeningsListByCategory({ openings, locale }: Props) {
                 <OpeningCard
                   key={child.id}
                   opening={child}
-                  displayName={getDisplayName(child.slug, child.name)}
+                  displayName={getOpeningDisplayName(nameT, child.slug, child.name)}
                   locale={locale}
                   compact
                 />

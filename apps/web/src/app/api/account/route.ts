@@ -3,30 +3,17 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
 
 export async function DELETE() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.deleteAccount);
+  if ('response' in guardResult) {
+    return guardResult.response;
   }
-
-  if (await isUserBanned(user.id)) {
-    return NextResponse.json({ error: 'banned' }, { status: 403 });
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.deleteAccount);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
+  const { user } = guardResult;
 
   // Soft-delete the auth user first via admin client.
   // This order ensures that if deleteUser fails, profile data remains intact.

@@ -5,17 +5,17 @@ import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { paginateItems } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
-import { paginateItems } from '@/lib/pagination';
-
+import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -80,11 +80,6 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     paginatedItems: posts,
   } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
 
-  const getDisplayName = (slug: string, fallback: string) => {
-    const translated = nameT(slug as never);
-    return translated === `topics.openings.names.${slug}` ? fallback : translated;
-  };
-
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
   const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
@@ -104,7 +99,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
               <OpeningCard
                 key={opening.id}
                 opening={opening}
-                displayName={getDisplayName(opening.slug, opening.name)}
+                displayName={getOpeningDisplayName(nameT, opening.slug, opening.name)}
                 locale={locale}
               />
             ))}

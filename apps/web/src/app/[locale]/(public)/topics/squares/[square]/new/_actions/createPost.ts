@@ -1,6 +1,7 @@
 'use server';
 
 import { RATE_LIMITS } from '@/lib/rate-limit';
+import { validateContent } from '@/lib/validations/content';
 
 import {
   type CreatePostState,
@@ -24,19 +25,7 @@ export async function createPost(
     validateTopic: isValidSquare,
     invalidTopicError: 'Invalid square',
     rateLimit: RATE_LIMITS.createPost,
-    validateContent: (fd) => {
-      const content = fd.get('content');
-
-      if (!content || typeof content !== 'string' || content.trim().length === 0) {
-        return { error: 'contentRequired' };
-      }
-
-      if (content.length > 5000) {
-        return { error: 'contentTooLong' };
-      }
-
-      return { content: content.trim() };
-    },
+    validateContent,
     formData,
   });
 }

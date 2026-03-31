@@ -4,19 +4,16 @@ import { SITE_URL } from '@/config';
 
 import type { ActionResult } from '@/lib/action-types';
 import { getClientIp } from '@/lib/client-ip';
-import { IP_RATE_LIMITS, checkIpRateLimit } from '@/lib/rate-limit-ip';
+import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { getPasswordValidationError } from '@/lib/validations/password';
 
 export type SignUpResult = ActionResult;
 
 export async function signUp(email: string, password: string): Promise<SignUpResult> {
-  const ip = await getClientIp();
-  if (ip) {
-    const { allowed } = checkIpRateLimit(ip, 'signUp', IP_RATE_LIMITS.signUp);
-    if (!allowed) {
-      return { error: 'rateLimited' };
-    }
+  const ipRateLimited = checkIpRateLimitGuard(await getClientIp(), 'signUp', IP_RATE_LIMITS.signUp);
+  if (ipRateLimited) {
+    return ipRateLimited;
   }
 
   const passwordError = getPasswordValidationError(password);

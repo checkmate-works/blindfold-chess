@@ -57,3 +57,27 @@ export const IP_RATE_LIMITS = {
   forgotPassword: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
   resendEmail: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
 } as const;
+
+/**
+ * IP-based rate limit guard for Server Actions (unauthenticated endpoints).
+ *
+ * Resolves the client IP and checks the in-memory rate limiter.
+ * Returns `{ error: 'rateLimited' }` if the limit is exceeded, or `null` if allowed.
+ *
+ * @param ip - The client IP address (from `getClientIp()`), or `null` if unavailable.
+ * @param key - The action key for the rate limiter (e.g., `'signIn'`).
+ * @param config - The IP rate limit configuration.
+ */
+export function checkIpRateLimitGuard(
+  ip: string | null,
+  key: string,
+  config: IpRateLimitConfig
+): { error: 'rateLimited' } | null {
+  if (ip) {
+    const { allowed } = checkIpRateLimit(ip, key, config);
+    if (!allowed) {
+      return { error: 'rateLimited' };
+    }
+  }
+  return null;
+}

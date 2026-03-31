@@ -2,6 +2,7 @@
 
 import { topicPostRatings } from '@/lib/db';
 import { createOpeningPostRateLimit } from '@/lib/rate-limit';
+import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
 import {
   type CreatePostState,
@@ -40,7 +41,7 @@ export async function createOpeningPost(
         return { error: 'contentOrRatingRequired' };
       }
 
-      if (contentStr.length > 5000) {
+      if (contentStr.length > MAX_CONTENT_LENGTH) {
         return { error: 'contentTooLong' };
       }
 

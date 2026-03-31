@@ -17,3 +17,10 @@ export function extractPgErrorCode(err: unknown): string | undefined {
 
   return undefined;
 }
+
+/**
+ * Check whether an error is a PostgreSQL unique constraint violation (code 23505).
+ */
+export function isUniqueViolation(err: unknown): boolean {
+  return extractPgErrorCode(err) === '23505';
+}

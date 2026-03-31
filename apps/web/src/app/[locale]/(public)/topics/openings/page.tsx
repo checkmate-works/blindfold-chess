@@ -29,6 +29,7 @@ import {
   OpeningCategorySectionTitle,
   OpeningsListByCategory,
 } from './_components';
+import { getOpeningDisplayName } from './_lib/get-opening-display-name';
 import {
   getOpeningsAsTree,
   getOpeningsAsTreeByFirstMoveSquare,
@@ -95,11 +96,6 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
     return `/${locale}/topics/openings${qs ? `?${qs}` : ''}`;
   };
 
-  const getDisplayName = (slug: string, fallback: string) => {
-    const translated = nameT(slug as never);
-    return translated === `topics.openings.names.${slug}` ? fallback : translated;
-  };
-
   return (
     <div className="space-y-8">
       <PageTitle>{t('openings.title')}</PageTitle>
@@ -145,7 +141,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                     <div key={opening.id}>
                       <OpeningCard
                         opening={opening}
-                        displayName={getDisplayName(opening.slug, opening.name)}
+                        displayName={getOpeningDisplayName(nameT, opening.slug, opening.name)}
                         locale={locale}
                       />
                       {opening.children.length > 0 && (
@@ -154,7 +150,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                             <OpeningCard
                               key={child.id}
                               opening={child}
-                              displayName={getDisplayName(child.slug, child.name)}
+                              displayName={getOpeningDisplayName(nameT, child.slug, child.name)}
                               locale={locale}
                               compact
                             />

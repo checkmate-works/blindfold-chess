@@ -1,9 +1,2 @@
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  robots: { index: false },
-};
-
-export default function BulkDeleteLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
+export { noIndexMetadata as metadata } from '@/app/_layouts/noindex-layout';
+export { NoIndexLayout as default } from '@/app/_layouts/noindex-layout';

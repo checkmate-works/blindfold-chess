@@ -6,10 +6,9 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuard } from '@/lib/auth';
 import { db, userInterviewAnswers } from '@/lib/db';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 
 export type DeleteAnswerResult = ActionResult;
 
@@ -17,23 +16,11 @@ export async function deleteAnswerAction(
   answerId: string,
   locale: string
 ): Promise<DeleteAnswerResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.deleteInterviewAnswer);
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.deleteInterviewAnswer);
-  if ('error' in rateLimitResult) {
-    return { error: rateLimitResult.error };
-  }
+  const { user } = guardResult;
 
   const result = await db
     .update(userInterviewAnswers)

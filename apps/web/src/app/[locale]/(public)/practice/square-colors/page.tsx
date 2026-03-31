@@ -1,71 +1,25 @@
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
-import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
+import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
 import { SquareColorsSetup } from './_components/SquareColorsSetup';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
-
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/square-colors' }),
-    title: t('practice.squareColors.title'),
-    description: t('practice.squareColors.description'),
-  };
-}
-
-export default async function SquareColorsPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.squareColors.title')}</PageTitle>
-
-      <PagePanel>
-        <SquareColorsSetup locale={locale} />
-
-        <AdBannerGuard slot="banner-wide" />
-
-        <div className="mt-8 space-y-3">
-          <SectionTitle>{t('practice.squareColors.requiredKnowledge')}</SectionTitle>
-          <CardLink
-            href="/learn/coordinates/square-colors"
-            icon="🎨"
-            title={t('practice.squareColors.viewArticle')}
-            description={t('practice.squareColors.articleDescription')}
-            locale={locale}
-          />
-        </div>
-
-        <AdBannerGuard slot="banner-standard" />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.squareColors.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
+const { dynamic, generateMetadata, Page } = createPracticeTopPage({
+  i18nKey: 'squareColors',
+  canonicalPath: 'practice/square-colors',
+  renderSetup: (locale) => <SquareColorsSetup locale={locale} />,
+  renderArticles: (t, locale) => (
+    <div className="mt-8 space-y-3">
+      <SectionTitle>{t('practice.squareColors.requiredKnowledge')}</SectionTitle>
+      <CardLink
+        href="/learn/coordinates/square-colors"
+        icon="🎨"
+        title={t('practice.squareColors.viewArticle')}
+        description={t('practice.squareColors.articleDescription')}
+        locale={locale}
+      />
     </div>
-  );
-}
+  ),
+});
+
+export { dynamic, generateMetadata };
+export default Page;

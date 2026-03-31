@@ -4,22 +4,22 @@ import { notFound } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { paginateItems } from '@/lib/pagination';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
-import { paginateItems } from '@/lib/pagination';
-
+import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OpeningSortTabs } from '../_components';
 import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
+import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
 
@@ -44,8 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   const t = await getTranslations({ locale, namespace: 'metadata.topicsOpeningDetail' });
 
@@ -71,18 +70,12 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   // Fetch parent opening for breadcrumb if this is a child variation
   const parentOpening = opening.parentSlug ? await getOpeningBySlug(opening.parentSlug) : null;
   const parentDisplayName = parentOpening
-    ? (() => {
-        const translated = nameT(parentOpening.slug as never);
-        return translated === `topics.openings.names.${parentOpening.slug}`
-          ? parentOpening.name
-          : translated;
-      })()
+    ? getOpeningDisplayName(nameT, parentOpening.slug, parentOpening.name)
     : null;
 
   const supabase = await createClient();
@@ -110,7 +103,9 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
       pageTitle={dt('pageTitle')}
       sectionTitle={displayName}
       topicHeader={
-        currentPage === 1 ? <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} /> : undefined
+        currentPage === 1 ? (
+          <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
+        ) : undefined
       }
       postCountText={dt('postCount', { count: totalCount })}
       newPostButton={

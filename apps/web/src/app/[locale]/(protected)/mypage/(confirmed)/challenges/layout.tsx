@@ -1,5 +1,1 @@
-import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
-
-export default function ChallengesLayout({ children }: { children: React.ReactNode }) {
-  return <GamePreferencesProvider>{children}</GamePreferencesProvider>;
-}
+export { GamePreferencesLayout as default } from '@/app/_layouts/game-preferences-layout';

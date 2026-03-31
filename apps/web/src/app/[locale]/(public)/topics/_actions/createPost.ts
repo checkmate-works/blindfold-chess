@@ -3,12 +3,11 @@
 import { redirect } from 'next/navigation';
 
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import { notifyFollowersOfNewPost } from '@/lib/notification';
 import type { RateLimitConfig } from '@/lib/rate-limit';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 
@@ -50,18 +49,11 @@ export async function createPostBase(params: {
     return { error: invalidTopicError };
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'signInRequired' };
+  const guardResult = await authenticateAndCheckBan();
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
+  const { user } = guardResult;
 
   const contentResult = validateContent(formData);
   if ('error' in contentResult) {
