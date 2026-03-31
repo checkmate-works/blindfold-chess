@@ -77,6 +77,22 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
 
   useScrollToElement('legal-moves-session');
 
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const handleQuitRequest = useCallback(() => {
+    if (!isPaused) togglePause();
+    setShowQuitModal(true);
+  }, [isPaused, togglePause]);
+
+  const handleQuitConfirm = useCallback(() => {
+    router.push(`/${locale}/practice/legal-moves/challenge`);
+  }, [router, locale]);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+    if (isPaused) togglePause();
+  }, [isPaused, togglePause]);
+
   // Clear module-specific feedback state when hook feedback ends
   useEffect(() => {
     if (!showFeedback) {
@@ -184,6 +200,10 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
         onTogglePause={togglePause}
         remainingLives={MISTAKE_LIMIT - incorrectCount}
         maxLives={MISTAKE_LIMIT}
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );

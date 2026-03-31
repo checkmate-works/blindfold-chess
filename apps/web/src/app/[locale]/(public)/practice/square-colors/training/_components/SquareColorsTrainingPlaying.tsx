@@ -66,10 +66,13 @@ export function SquareColorsTrainingPlaying({
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
 
-      <div className="mt-6">
-        <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
+      <div className="mt-6 text-center">
+        <button
+          onClick={onEndTraining}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           {tp('endTraining')}
-        </Button>
+        </button>
       </div>
 
       <hr className="border-border mt-8" />

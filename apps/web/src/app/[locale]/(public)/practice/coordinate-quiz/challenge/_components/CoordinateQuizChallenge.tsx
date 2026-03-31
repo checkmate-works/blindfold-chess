@@ -70,6 +70,22 @@ export default function CoordinateQuizChallenge({
 
   useScrollToElement('quiz-session', !!currentQuestion);
 
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const handleQuitRequest = useCallback(() => {
+    if (!isPaused) togglePause();
+    setShowQuitModal(true);
+  }, [isPaused, togglePause]);
+
+  const handleQuitConfirm = useCallback(() => {
+    router.push(`/${locale}/practice/coordinate-quiz/challenge`);
+  }, [router, locale]);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+    if (isPaused) togglePause();
+  }, [isPaused, togglePause]);
+
   // Clear lastClickedSquare when question changes (feedback ended)
   useEffect(() => {
     if (!showFeedback) {
@@ -169,6 +185,10 @@ export default function CoordinateQuizChallenge({
         onTogglePause={togglePause}
         remainingLives={MISTAKE_LIMIT - incorrectCount}
         maxLives={MISTAKE_LIMIT}
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );

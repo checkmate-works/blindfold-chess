@@ -100,10 +100,13 @@ export function CoordinateQuizTrainingPlaying({
 
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
 
-      <div className="mt-6">
-        <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
+      <div className="mt-6 text-center">
+        <button
+          onClick={onEndTraining}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           {tp('endTraining')}
-        </Button>
+        </button>
       </div>
 
       <hr className="border-border mt-8" />

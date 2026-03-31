@@ -6,8 +6,10 @@ import { BoardOverlay } from '@/app/_components';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 
 import { pieceDisplayMap } from '../../_data/constants';
 import type { MoveQuestion } from '../../_lib/types';
@@ -32,6 +34,10 @@ type Props = {
   onTogglePause?: () => void;
   remainingLives: number;
   maxLives: number;
+  onQuitRequest: () => void;
+  showQuitModal: boolean;
+  onQuitConfirm: () => void;
+  onQuitCancel: () => void;
 };
 
 export function LegalMovesPlaying({
@@ -50,9 +56,14 @@ export function LegalMovesPlaying({
   onTogglePause,
   remainingLives,
   maxLives,
+  onQuitRequest,
+  showQuitModal,
+  onQuitConfirm,
+  onQuitCancel,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tPractice = useTranslations('practice');
+  const quitConfirmLabels = useQuitConfirmLabels();
   return (
     <div>
       <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
@@ -164,6 +175,22 @@ export function LegalMovesPlaying({
       </div>
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={onQuitRequest}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {tPractice('quit')}
+        </button>
+      </div>
+
+      <QuitConfirmModal
+        isOpen={showQuitModal}
+        onConfirm={onQuitConfirm}
+        onCancel={onQuitCancel}
+        labels={quitConfirmLabels}
+      />
     </div>
   );
 }

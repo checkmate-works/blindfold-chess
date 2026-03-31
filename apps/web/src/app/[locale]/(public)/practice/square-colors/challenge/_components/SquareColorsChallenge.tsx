@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -67,6 +67,22 @@ export default function SquareColorsChallenge({ locale }: Props) {
   });
 
   useScrollToElement('square-colors-challenge');
+
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const handleQuitRequest = useCallback(() => {
+    if (!isPaused) togglePause();
+    setShowQuitModal(true);
+  }, [isPaused, togglePause]);
+
+  const handleQuitConfirm = useCallback(() => {
+    router.push(`/${locale}/practice/square-colors/challenge`);
+  }, [router, locale]);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+    if (isPaused) togglePause();
+  }, [isPaused, togglePause]);
 
   const handleColorAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {
@@ -158,6 +174,10 @@ export default function SquareColorsChallenge({ locale }: Props) {
         onTogglePause={togglePause}
         remainingLives={MISTAKE_LIMIT - incorrectCount}
         maxLives={MISTAKE_LIMIT}
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );

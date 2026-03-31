@@ -7,8 +7,10 @@ import type { Square } from '@blindfold-chess/types';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 
 import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
 import type { CoordinateQuestion } from '../../_lib/types';
@@ -29,6 +31,10 @@ type Props = {
   onTogglePause?: () => void;
   remainingLives: number;
   maxLives: number;
+  onQuitRequest: () => void;
+  showQuitModal: boolean;
+  onQuitConfirm: () => void;
+  onQuitCancel: () => void;
 };
 
 export function CoordinateQuizChallengePlaying({
@@ -47,9 +53,14 @@ export function CoordinateQuizChallengePlaying({
   onTogglePause,
   remainingLives,
   maxLives,
+  onQuitRequest,
+  showQuitModal,
+  onQuitConfirm,
+  onQuitCancel,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
+  const quitConfirmLabels = useQuitConfirmLabels();
   return (
     <div id="quiz-session">
       <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
@@ -162,6 +173,22 @@ export function CoordinateQuizChallengePlaying({
       </div>
 
       <ScoreCounter correct={correctAnswers} incorrect={wrongAnswers} className="mt-4" />
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={onQuitRequest}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {tPractice('quit')}
+        </button>
+      </div>
+
+      <QuitConfirmModal
+        isOpen={showQuitModal}
+        onConfirm={onQuitConfirm}
+        onCancel={onQuitCancel}
+        labels={quitConfirmLabels}
+      />
     </div>
   );
 }
