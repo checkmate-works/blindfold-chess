@@ -26,6 +26,7 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedRank, setSelectedRank] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const generateQuestion = useCallback((): BoardSymmetryProblem => {
     return generateProblem();
@@ -81,6 +82,20 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
 
+  const handleQuitRequest = () => {
+    togglePause();
+    setShowQuitModal(true);
+  };
+
+  const handleQuitConfirm = () => {
+    router.push(`/${locale}/practice/board-symmetry`);
+  };
+
+  const handleQuitCancel = () => {
+    setShowQuitModal(false);
+    togglePause();
+  };
+
   // Auto-submit when both file and rank are selected
   useEffect(() => {
     if (
@@ -132,6 +147,10 @@ export default function BoardSymmetrySession({ locale, initialTimeLimit }: Props
         countdown={countdown}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );

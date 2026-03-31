@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
-import { Link } from '@/i18n/routing';
-import { FaPlay } from 'react-icons/fa';
+import { FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
@@ -56,12 +56,6 @@ export default function BoardSymmetrySettings({ locale }: Props) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ timeLimit }));
   }, [timeLimit, hasLoaded]);
 
-  const handleStart = () => {
-    router.push(
-      `/${locale}/practice/board-symmetry/session?timeLimit=${timeLimit}#board-symmetry-session`
-    );
-  };
-
   const handleResetConfirm = () => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY);
@@ -81,6 +75,24 @@ export default function BoardSymmetrySettings({ locale }: Props) {
   return (
     <div>
       <div className="mb-8">
+        <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
+        <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
+          <div className="flex items-center justify-center gap-3 text-foreground">
+            <span className="text-lg font-bold">e4</span>
+            <FaArrowRight className="text-muted-foreground" />
+            <span className="text-lg font-bold">?</span>
+          </div>
+        </div>
+        <div className="mb-6 text-center">
+          <Link
+            href={`/${locale}/practice/board-symmetry/tutorial`}
+            className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {t('viewTutorial')}
+          </Link>
+        </div>
+
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
 
         <div className="mb-6">
@@ -94,31 +106,13 @@ export default function BoardSymmetrySettings({ locale }: Props) {
           />
         </div>
 
-        <Button
-          onClick={handleStart}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full"
+        <Link
+          href={`/${locale}/practice/board-symmetry/session?timeLimit=${timeLimit}#board-symmetry-session`}
         >
-          {tSettings('start')}
-        </Button>
-
-        <div className="mt-4 text-center">
-          <Link
-            href="/practice/board-symmetry/tutorial"
-            locale={locale}
-            className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
-          >
-            {t('viewTutorial')}
-          </Link>
-        </div>
-      </div>
-
-      <div className="mt-8 flex justify-end">
-        <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
-          {t('resetSettings')}
-        </Button>
+          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
+            {tSettings('start')}
+          </Button>
+        </Link>
       </div>
 
       <div className="mt-8 space-y-3">
@@ -130,6 +124,12 @@ export default function BoardSymmetrySettings({ locale }: Props) {
           description={t('articleDescription')}
           locale={locale}
         />
+      </div>
+
+      <div className="mt-8 flex justify-end">
+        <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
+          {t('resetSettings')}
+        </Button>
       </div>
 
       <ConfirmationModal

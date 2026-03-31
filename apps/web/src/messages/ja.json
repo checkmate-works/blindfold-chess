@@ -470,6 +470,8 @@
     "boardSymmetry": {
       "title": "ボードの対称性",
       "description": "盤上の対称的なマスを識別する練習",
+      "howToPlayTitle": "問題方式",
+      "howToPlayDescription": "指定された対称タイプに基づき、ボード上の対称なマスを答えましょう。",
       "question": "{square}の{type}は？",
       "types": {
         "horizontal": "左右対称",

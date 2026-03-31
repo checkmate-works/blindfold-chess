@@ -6,8 +6,10 @@ import { BoardOverlay } from '@/app/_components';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 
@@ -28,6 +30,10 @@ type Props = {
   countdown: number | null;
   isPaused: boolean;
   onTogglePause: () => void;
+  onQuitRequest: () => void;
+  showQuitModal: boolean;
+  onQuitConfirm: () => void;
+  onQuitCancel: () => void;
 };
 
 export function BoardSymmetryPlaying({
@@ -45,9 +51,14 @@ export function BoardSymmetryPlaying({
   countdown,
   isPaused,
   onTogglePause,
+  onQuitRequest,
+  showQuitModal,
+  onQuitConfirm,
+  onQuitCancel,
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tPractice = useTranslations('practice');
+  const quitConfirmLabels = useQuitConfirmLabels();
   const timeElapsed = timeLimit - timeRemaining;
 
   // Helper for conditional classes since cn might be missing
@@ -144,6 +155,22 @@ export function BoardSymmetryPlaying({
       </div>
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
+
+      <div className="flex flex-col items-center gap-2 mt-4">
+        <button
+          onClick={onQuitRequest}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+        >
+          {tPractice('quit')}
+        </button>
+      </div>
+
+      <QuitConfirmModal
+        isOpen={showQuitModal}
+        onConfirm={onQuitConfirm}
+        onCancel={onQuitCancel}
+        labels={quitConfirmLabels}
+      />
     </div>
   );
 }

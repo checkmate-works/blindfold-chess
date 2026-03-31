@@ -469,6 +469,8 @@
     "boardSymmetry": {
       "title": "Board Symmetry",
       "description": "Practice identifying symmetrical squares on the board",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "Find the symmetrical square on the board for the given symmetry type.",
       "question": "{type} of {square}?",
       "types": {
         "horizontal": "File symmetry",

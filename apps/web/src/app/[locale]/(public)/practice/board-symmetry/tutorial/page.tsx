@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -38,7 +38,7 @@ export default async function BoardSymmetryTutorialPage({ params }: Props) {
   const t = await getTranslations({ locale });
 
   return (
-    <div className="space-y-8">
+    <PagePanel>
       <PageTitle>{t('practice.boardSymmetry.title')}</PageTitle>
 
       <SectionTitle>{t('practice.boardSymmetry.tutorial.title')}</SectionTitle>
@@ -59,6 +59,6 @@ export default async function BoardSymmetryTutorialPage({ params }: Props) {
         ]}
         locale={locale}
       />
-    </div>
+    </PagePanel>
   );
 }
