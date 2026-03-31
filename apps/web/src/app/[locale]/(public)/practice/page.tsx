@@ -1,18 +1,23 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ChallengeCard } from '@/app/_components';
 import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import {
+  DashboardCard,
+  DashboardSection,
+  DashboardSectionHeader,
+  Divider,
+  PagePanel,
+  PageTitle,
+} from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { PracticeCard } from './_components/PracticeCard';
-import { PracticeTabs } from './_components/PracticeTabs';
 
 type Props = {
   params: Promise<{
@@ -42,128 +47,41 @@ export default async function PracticePage({ params }: Props) {
   const sections = [
     {
       title: t('practice.levelBeginner'),
+      sectionIcon: '🌱',
       practices: [
-        {
-          id: 'square-colors',
-          title: t('practice.squareColors.title'),
-          description: t('practice.squareColors.description'),
-          icon: '🎨',
-          thumbnail: '/images/practice/square-colors.png',
-        },
-        {
-          id: 'legal-moves',
-          title: t('practice.legalMoves.title'),
-          description: t('practice.legalMoves.description'),
-          icon: '♟️',
-          thumbnail: '/images/practice/legal-moves.png',
-        },
-        {
-          id: 'coordinate-quiz',
-          title: t('practice.coordinateQuiz.title'),
-          description: t('practice.coordinateQuiz.description'),
-          icon: '🎯',
-          thumbnail: '/images/practice/coordinate-quiz.png',
-        },
+        { id: 'square-colors', title: t('practice.squareColors.title'), icon: '🎨' },
+        { id: 'legal-moves', title: t('practice.legalMoves.title'), icon: '♟️' },
+        { id: 'coordinate-quiz', title: t('practice.coordinateQuiz.title'), icon: '🎯' },
       ],
     },
     {
       title: t('practice.levelIntermediate'),
+      sectionIcon: '📚',
       practices: [
-        {
-          id: 'board-symmetry',
-          title: t('practice.boardSymmetry.title'),
-          description: t('practice.boardSymmetry.description'),
-          icon: '🦋',
-          thumbnail: '/images/practice/board-symmetry.png',
-        },
-        {
-          id: 'route-planner',
-          title: t('practice.routePlanner.title'),
-          description: t('practice.routePlanner.description'),
-          icon: '📍',
-          thumbnail: '/images/practice/route-planner.png',
-        },
-        {
-          id: 'diagonal-quiz',
-          title: t('practice.diagonalQuiz.title'),
-          description: t('practice.diagonalQuiz.description'),
-          icon: '↗️',
-          thumbnail: '/images/practice/diagonal-quiz.png',
-        },
+        { id: 'board-symmetry', title: t('practice.boardSymmetry.title'), icon: '🦋' },
+        { id: 'route-planner', title: t('practice.routePlanner.title'), icon: '📍' },
+        { id: 'diagonal-quiz', title: t('practice.diagonalQuiz.title'), icon: '↗️' },
       ],
     },
     {
       title: t('practice.levelAdvanced'),
+      sectionIcon: '🎓',
       practices: [
-        {
-          id: 'position-memory',
-          title: t('practice.positionMemory.title'),
-          description: t('practice.positionMemory.description'),
-          icon: '🧠',
-          thumbnail: '/images/practice/position-memory.png',
-        },
-        {
-          id: 'knight-tour',
-          title: t('practice.knightTour.title'),
-          description: t('practice.knightTour.description'),
-          icon: '♞',
-          thumbnail: '/images/practice/knight-tour.png',
-        },
-        {
-          id: 'move-sequence',
-          title: t('practice.moveSequence.title'),
-          description: t('practice.moveSequence.description'),
-          icon: '🥋',
-          thumbnail: '/images/practice/move-sequence.png',
-        },
+        { id: 'position-memory', title: t('practice.positionMemory.title'), icon: '🧠' },
+        { id: 'knight-tour', title: t('practice.knightTour.title'), icon: '♞' },
+        { id: 'move-sequence', title: t('practice.moveSequence.title'), icon: '🥋' },
       ],
     },
     {
       title: t('practice.levelIntroduction'),
+      sectionIcon: '📖',
       practices: [
-        {
-          id: 'algebraic-notation',
-          title: t('practice.algebraicNotation.title'),
-          description: t('practice.algebraicNotation.description'),
-          icon: '🔤',
-          thumbnail: '/images/practice/algebraic-notation.png',
-        },
-        {
-          id: 'fen',
-          title: t('practice.fen.title'),
-          description: t('practice.fen.description'),
-          icon: '📝',
-          thumbnail: '/images/practice/fen.png',
-        },
-        {
-          id: 'quadrants',
-          title: t('practice.quadrantAnchors.title'),
-          description: t('practice.quadrantAnchors.description'),
-          icon: '⚃',
-          thumbnail: '/images/practice/quadrants.png',
-        },
+        { id: 'algebraic-notation', title: t('practice.algebraicNotation.title'), icon: '🔤' },
+        { id: 'fen', title: t('practice.fen.title'), icon: '📝' },
+        { id: 'quadrants', title: t('practice.quadrantAnchors.title'), icon: '⚃' },
       ],
     },
   ];
-
-  const tabs = sections.map((section) => ({
-    label: section.title,
-    content: (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {section.practices.map((practice) => (
-          <PracticeCard
-            key={practice.id}
-            href={`/practice/${practice.id}`}
-            icon={practice.icon}
-            title={practice.title}
-            description={practice.description}
-            thumbnail={practice.thumbnail}
-            locale={locale}
-          />
-        ))}
-      </div>
-    ),
-  }));
 
   const itemListItems = sections.flatMap((section) =>
     section.practices.map((practice) => ({
@@ -178,7 +96,27 @@ export default async function PracticePage({ params }: Props) {
       <PageTitle>{t('practice.title')}</PageTitle>
 
       <PagePanel>
-        <PracticeTabs tabs={tabs} />
+        <DashboardCard>
+          {sections.map((section) => (
+            <DashboardSection key={section.title}>
+              <DashboardSectionHeader
+                icon={<span className="text-lg">{section.sectionIcon}</span>}
+                title={section.title}
+              />
+              <div className="flex flex-wrap gap-3 mt-3">
+                {section.practices.map((practice) => (
+                  <ChallengeCard
+                    key={practice.id}
+                    locale={locale}
+                    href={`/practice/${practice.id}`}
+                    label={practice.title}
+                    icon={practice.icon}
+                  />
+                ))}
+              </div>
+            </DashboardSection>
+          ))}
+        </DashboardCard>
 
         <Divider />
 
