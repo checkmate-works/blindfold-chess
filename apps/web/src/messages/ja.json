@@ -1152,6 +1152,8 @@
       "correct": "正解！",
       "incorrect": "不正解",
       "correctAnswer": "{diagonal}, {antiDiagonal}",
+      "howToPlayTitle": "問題方式",
+      "howToPlayDescription": "表示されたマスを通る2つの斜めライン（ダイアゴナル）を答えましょう。",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "seconds": "秒",

@@ -9,8 +9,10 @@ import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
@@ -35,6 +37,10 @@ type Props = {
   showStats?: boolean;
   isPaused?: boolean;
   onTogglePause?: () => void;
+  onQuitRequest?: () => void;
+  showQuitModal?: boolean;
+  onQuitConfirm?: () => void;
+  onQuitCancel?: () => void;
 };
 
 export function DiagonalQuizPlaying({
@@ -50,8 +56,14 @@ export function DiagonalQuizPlaying({
   showStats = true,
   isPaused = false,
   onTogglePause,
+  onQuitRequest,
+  showQuitModal,
+  onQuitConfirm,
+  onQuitCancel,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
+  const tPractice = useTranslations('practice');
+  const quitConfirmLabels = useQuitConfirmLabels();
   const timeElapsed = timeLimit - timeRemaining;
   const isDisabled = showResult || countdown !== null || isPaused;
 
@@ -245,6 +257,26 @@ export function DiagonalQuizPlaying({
 
       {showStats && (
         <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
+      )}
+
+      {onQuitRequest && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={onQuitRequest}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {tPractice('quit')}
+          </button>
+        </div>
+      )}
+
+      {onQuitConfirm && onQuitCancel && (
+        <QuitConfirmModal
+          isOpen={showQuitModal ?? false}
+          onConfirm={onQuitConfirm}
+          onCancel={onQuitCancel}
+          labels={quitConfirmLabels}
+        />
       )}
     </div>
   );

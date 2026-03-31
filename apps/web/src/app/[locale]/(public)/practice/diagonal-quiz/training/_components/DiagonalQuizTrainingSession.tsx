@@ -82,6 +82,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   return (
     <div id="diagonal-quiz-training-session" className="min-h-screen">
       <DiagonalQuizTrainingPlaying
+        locale={locale}
         currentSquare={currentSquare}
         showResult={showResult}
         lastAnswer={

@@ -1151,6 +1151,8 @@
       "correct": "Correct!",
       "incorrect": "Incorrect",
       "correctAnswer": "{diagonal}, {antiDiagonal}",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "Identify the two diagonals that pass through the given square.",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
       "seconds": "seconds",

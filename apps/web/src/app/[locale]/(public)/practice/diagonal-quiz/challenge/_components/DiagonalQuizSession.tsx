@@ -73,6 +73,22 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
   useScrollToElement('diagonal-quiz-session');
 
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const handleQuitRequest = useCallback(() => {
+    if (!isPaused) togglePause();
+    setShowQuitModal(true);
+  }, [isPaused, togglePause]);
+
+  const handleQuitConfirm = useCallback(() => {
+    router.push(`/${locale}/practice/diagonal-quiz/challenge`);
+  }, [router, locale]);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+    if (isPaused) togglePause();
+  }, [isPaused, togglePause]);
+
   // Clear module-specific feedback state when hook feedback ends
   useEffect(() => {
     if (!showFeedback) {
@@ -177,6 +193,10 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        onQuitRequest={handleQuitRequest}
+        showQuitModal={showQuitModal}
+        onQuitConfirm={handleQuitConfirm}
+        onQuitCancel={handleQuitCancel}
       />
     </div>
   );

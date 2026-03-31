@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import { BoardOverlay, Button } from '@/app/_components';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
@@ -10,6 +11,7 @@ import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { SectionTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';
@@ -17,6 +19,7 @@ import type { ActiveField } from '../../_hooks/use-diagonal-input';
 import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
 
 type Props = {
+  locale: Locale;
   currentSquare: string;
   showResult: boolean;
   lastAnswer: {
@@ -32,6 +35,7 @@ type Props = {
 };
 
 export function DiagonalQuizTrainingPlaying({
+  locale,
   currentSquare,
   showResult,
   lastAnswer,
@@ -187,10 +191,26 @@ export function DiagonalQuizTrainingPlaying({
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
 
-      <div className="mt-6">
-        <Button onClick={onEndTraining} variant="outline" size="lg" className="w-full">
+      <div className="mt-6 text-center">
+        <button
+          onClick={onEndTraining}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
           {tp('endTraining')}
-        </Button>
+        </button>
+      </div>
+
+      <hr className="border-border mt-8" />
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
+        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
+        <div className="mt-4">
+          <Link href={`/${locale}/practice/diagonal-quiz/challenge`}>
+            <Button asChild variant="primary" size="lg" className="w-full">
+              {tp('goToChallenge')}
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
