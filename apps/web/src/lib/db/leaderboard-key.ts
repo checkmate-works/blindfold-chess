@@ -27,6 +27,8 @@ export function deriveLeaderboardKey(
       return typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null;
     case 'square_colors':
       return 'default';
+    case 'diagonal_quiz':
+      return 'default';
     default:
       return null;
   }

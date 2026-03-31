@@ -31,6 +31,11 @@ export type PracticeMenuType = (typeof PRACTICE_MENU_TYPES)[number];
 // Challenge Menu Types (modules that support challenge mode + leaderboard)
 // ---------------------------------------------------------------------------
 
-export const CHALLENGE_MENU_TYPES = ['square_colors', 'legal_moves', 'coordinate_quiz'] as const;
+export const CHALLENGE_MENU_TYPES = [
+  'square_colors',
+  'legal_moves',
+  'coordinate_quiz',
+  'diagonal_quiz',
+] as const;
 
 export type ChallengeMenuType = (typeof CHALLENGE_MENU_TYPES)[number];

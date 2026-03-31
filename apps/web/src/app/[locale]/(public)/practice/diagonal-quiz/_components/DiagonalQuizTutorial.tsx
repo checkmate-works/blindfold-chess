@@ -100,9 +100,14 @@ export function DiagonalQuizTutorial({ locale }: Props) {
     setTrialAnswered(true);
   }, []);
 
-  const handleStartPractice = () => {
+  const handleStartChallenge = () => {
     localStorage.setItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY, 'true');
-    router.push(`/${locale}/practice/diagonal-quiz`);
+    router.push(`/${locale}/practice/diagonal-quiz/challenge`);
+  };
+
+  const handleSwitchToTraining = () => {
+    localStorage.setItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY, 'true');
+    router.push(`/${locale}/practice/diagonal-quiz/training`);
   };
 
   const getOverlayContent = () => {
@@ -272,28 +277,35 @@ export function DiagonalQuizTutorial({ locale }: Props) {
           </div>
         )}
 
-        <div className="flex gap-4">
-          {step !== 'diagonal' && step !== 'trial' && (
-            <Button variant="outline" onClick={handlePrevious} className="flex-1">
-              <FaArrowLeft className="mr-2 h-4 w-4" />
-              {t('previous')}
+        {step === 'trial' ? (
+          <div className="space-y-3">
+            <Button onClick={handleStartChallenge} variant="primary" className="w-full">
+              <FaPlay className="mr-2 h-4 w-4" />
+              {t('startChallenge')}
             </Button>
-          )}
-
-          {step === 'trial' ? (
-            trialAnswered && (
-              <Button onClick={handleStartPractice} variant="primary" className="flex-1">
-                <FaPlay className="mr-2 h-4 w-4" />
-                {t('startPractice')}
+            <div className="text-center">
+              <button
+                onClick={handleSwitchToTraining}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t('switchToTraining')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            {step !== 'diagonal' && (
+              <Button variant="outline" onClick={handlePrevious} className="flex-1">
+                <FaArrowLeft className="mr-2 h-4 w-4" />
+                {t('previous')}
               </Button>
-            )
-          ) : (
+            )}
             <Button onClick={handleNext} variant="primary" className="flex-1">
               {t('next')}
               <FaArrowRight className="ml-2 h-4 w-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

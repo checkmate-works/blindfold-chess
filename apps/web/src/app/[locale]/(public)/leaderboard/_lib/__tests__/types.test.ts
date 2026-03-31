@@ -16,9 +16,9 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('MODULES', () => {
-  it('contains exactly three modules', () => {
-    expect(MODULES).toHaveLength(3);
-    expect(MODULES).toEqual(['coordinate_quiz', 'legal_moves', 'square_colors']);
+  it('contains exactly four modules', () => {
+    expect(MODULES).toHaveLength(4);
+    expect(MODULES).toEqual(['coordinate_quiz', 'legal_moves', 'square_colors', 'diagonal_quiz']);
   });
 });
 
@@ -60,8 +60,8 @@ describe('PAGE_SIZE', () => {
 // ---------------------------------------------------------------------------
 
 describe('ALL_LEADERBOARD_ENTRIES', () => {
-  it('has 10 entries total (3 + 6 + 1)', () => {
-    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(10);
+  it('has 11 entries total (3 + 6 + 1 + 1)', () => {
+    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(11);
   });
 
   it('contains all coordinate_quiz keys', () => {

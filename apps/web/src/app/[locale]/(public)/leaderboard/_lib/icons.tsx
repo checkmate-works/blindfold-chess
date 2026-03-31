@@ -10,6 +10,7 @@ const MODULE_EMOJIS: Record<LeaderboardModule, string> = {
   coordinate_quiz: '🎯',
   legal_moves: '♟️',
   square_colors: '🎨',
+  diagonal_quiz: '♗',
 };
 
 const PIECE_ICON_SIZE = 24;

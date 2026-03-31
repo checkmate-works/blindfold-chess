@@ -100,13 +100,12 @@ describe('getUserRanks', () => {
   });
 
   describe('querying all leaderboard entries', () => {
-    it('queries all 10 leaderboard entries', async () => {
+    it('queries all leaderboard entries', async () => {
       mockGetUserAllTimeRank.mockResolvedValue(null);
 
       await getUserRanks(TEST_USER_ID, 'all-time');
 
       expect(mockGetUserAllTimeRank).toHaveBeenCalledTimes(ALL_LEADERBOARD_ENTRIES.length);
-      expect(mockGetUserAllTimeRank).toHaveBeenCalledTimes(10);
     });
 
     it('passes correct userId, module, and key to rank function', async () => {
@@ -169,7 +168,7 @@ describe('getUserRanks', () => {
   });
 
   describe('all ranks present', () => {
-    it('returns all 10 entries when user ranks in every leaderboard', async () => {
+    it('returns all entries when user ranks in every leaderboard', async () => {
       const allResults: Record<string, { rank: number }> = {};
       let rankCounter = 1;
       for (const entry of ALL_LEADERBOARD_ENTRIES) {
@@ -179,7 +178,7 @@ describe('getUserRanks', () => {
 
       const result = await getUserRanks(TEST_USER_ID, 'all-time');
 
-      expect(result).toHaveLength(10);
+      expect(result).toHaveLength(ALL_LEADERBOARD_ENTRIES.length);
     });
   });
 
@@ -268,8 +267,8 @@ describe('getUserRanks', () => {
 
       const result = await getUserRanks(TEST_USER_ID, 'all-time');
 
-      // 9 out of 10 queries succeed (callCount 5 is rejected)
-      expect(result).toHaveLength(9);
+      // All queries except callCount 5 succeed
+      expect(result).toHaveLength(ALL_LEADERBOARD_ENTRIES.length - 1);
     });
 
     it('filters out rejected entries while preserving fulfilled null results', async () => {
@@ -326,7 +325,7 @@ describe('getUserRanks', () => {
       let callNum = 0;
       mockGetUserAllTimeRank.mockImplementation(() => {
         callNum++;
-        if (callNum === 10) {
+        if (callNum === ALL_LEADERBOARD_ENTRIES.length) {
           return Promise.reject(new Error('Last query failed'));
         }
         return Promise.resolve({ rank: callNum });
@@ -334,7 +333,7 @@ describe('getUserRanks', () => {
 
       const result = await getUserRanks(TEST_USER_ID, 'all-time');
 
-      expect(result).toHaveLength(9);
+      expect(result).toHaveLength(ALL_LEADERBOARD_ENTRIES.length - 1);
     });
 
     it('preserves results when only the first query fails', async () => {
@@ -349,7 +348,7 @@ describe('getUserRanks', () => {
 
       const result = await getUserRanks(TEST_USER_ID, 'all-time');
 
-      expect(result).toHaveLength(9);
+      expect(result).toHaveLength(ALL_LEADERBOARD_ENTRIES.length - 1);
     });
   });
 

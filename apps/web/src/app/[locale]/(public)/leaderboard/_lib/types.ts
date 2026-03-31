@@ -2,11 +2,19 @@ import type { RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 
 export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 
-export type LeaderboardModule = 'coordinate_quiz' | 'legal_moves' | 'square_colors';
+export type LeaderboardModule =
+  | 'coordinate_quiz'
+  | 'legal_moves'
+  | 'square_colors'
+  | 'diagonal_quiz';
 
 export type ModuleFilterValue = 'all' | LeaderboardModule;
 
-export type LeaderboardModuleSlug = 'coordinate-quiz' | 'legal-moves' | 'square-colors';
+export type LeaderboardModuleSlug =
+  | 'coordinate-quiz'
+  | 'legal-moves'
+  | 'square-colors'
+  | 'diagonal-quiz';
 
 export type LeaderboardRow = RankedLeaderboardRow;
 
@@ -31,12 +39,14 @@ export const MODULES = [
   'coordinate_quiz',
   'legal_moves',
   'square_colors',
+  'diagonal_quiz',
 ] as const satisfies readonly LeaderboardModule[];
 
 export const MODULE_KEYS = {
   coordinate_quiz: ['white', 'black', 'random'],
   legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
   square_colors: ['default'],
+  diagonal_quiz: ['default'],
 } as const satisfies Record<LeaderboardModule, readonly string[]>;
 
 export const VALID_PERIODS = [
@@ -50,11 +60,12 @@ export const VALID_MODULE_FILTERS = [
   'coordinate_quiz',
   'legal_moves',
   'square_colors',
+  'diagonal_quiz',
 ] as const satisfies readonly ModuleFilterValue[];
 
 export const PAGE_SIZE = 20;
 
-/** All 10 leaderboard entries in display order */
+/** All leaderboard entries in display order */
 export const ALL_LEADERBOARD_ENTRIES: LeaderboardEntry[] = MODULES.flatMap((module) =>
   MODULE_KEYS[module].map((key) => ({ module, key }))
 );
@@ -67,12 +78,14 @@ const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
   coordinate_quiz: 'coordinate-quiz',
   legal_moves: 'legal-moves',
   square_colors: 'square-colors',
+  diagonal_quiz: 'diagonal-quiz',
 };
 
 const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
   'coordinate-quiz': 'coordinate_quiz',
   'legal-moves': 'legal_moves',
   'square-colors': 'square_colors',
+  'diagonal-quiz': 'diagonal_quiz',
 };
 
 export function moduleToSlug(module: LeaderboardModule): LeaderboardModuleSlug {
@@ -108,5 +121,7 @@ export function buildChallengePath(module: LeaderboardModule, key: string): stri
       return `/practice/${slug}/challenge?piece=${key}`;
     case 'square_colors':
       return `/practice/${slug}/challenge`;
+    case 'diagonal_quiz':
+      return `/practice/${slug}/challenge/session`;
   }
 }

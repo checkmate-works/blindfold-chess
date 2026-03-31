@@ -51,9 +51,15 @@ describe('deriveLeaderboardKey', () => {
     });
   });
 
+  describe('diagonal_quiz', () => {
+    it('always returns "default" regardless of settings', () => {
+      expect(deriveLeaderboardKey('diagonal_quiz', {})).toBe('default');
+      expect(deriveLeaderboardKey('diagonal_quiz', { anything: 'value' })).toBe('default');
+    });
+  });
+
   describe('unsupported menu types', () => {
     it('returns null for menu types without leaderboard segmentation', () => {
-      expect(deriveLeaderboardKey('diagonal_quiz', {})).toBeNull();
       expect(deriveLeaderboardKey('route_planner', {})).toBeNull();
       expect(deriveLeaderboardKey('board_symmetry', {})).toBeNull();
       expect(deriveLeaderboardKey('position_memory', {})).toBeNull();
@@ -61,7 +67,6 @@ describe('deriveLeaderboardKey', () => {
     });
 
     it('returns null for unsupported menu types even when settings contain valid keys', () => {
-      expect(deriveLeaderboardKey('diagonal_quiz', { boardOrientation: 'white' })).toBeNull();
       expect(deriveLeaderboardKey('route_planner', { selectedPiece: 'king' })).toBeNull();
     });
   });

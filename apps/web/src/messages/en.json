@@ -1190,7 +1190,8 @@
         "viewTutorial": "View Tutorial",
         "next": "Next",
         "previous": "Back",
-        "startPractice": "Start Practice",
+        "startChallenge": "Start Challenge",
+        "switchToTraining": "📖 Practice in training mode",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
@@ -2904,7 +2905,8 @@
     "module": {
       "coordinate_quiz": "Coordinate Quiz",
       "legal_moves": "Legal Moves",
-      "square_colors": "Square Colors"
+      "square_colors": "Square Colors",
+      "diagonal_quiz": "Diagonal Quiz"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2943,7 +2945,8 @@
       "all": "All",
       "coordinate_quiz": "Coordinate Quiz",
       "legal_moves": "Legal Moves",
-      "square_colors": "Square Colors"
+      "square_colors": "Square Colors",
+      "diagonal_quiz": "Diagonal Quiz"
     },
     "allLeaderboardsSection": "All Leaderboards",
     "rankLabel": "Your Rank: #{rank}",
@@ -2964,6 +2967,9 @@
       },
       "square_colors": {
         "default": "Square Colors"
+      },
+      "diagonal_quiz": {
+        "default": "Diagonal Quiz"
       }
     },
     "tryChallenge": "Try This Challenge",

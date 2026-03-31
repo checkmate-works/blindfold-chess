@@ -1191,7 +1191,8 @@
         "viewTutorial": "チュートリアルを見る",
         "next": "次へ",
         "previous": "戻る",
-        "startPractice": "練習を開始する",
+        "startChallenge": "チャレンジ開始",
+        "switchToTraining": "📖 トレーニングモードで練習する",
         "diagonalLegend": "対角線 (a1-h8)",
         "antiDiagonalLegend": "逆対角線 (h1-a8)",
         "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"
@@ -2869,7 +2870,8 @@
     "module": {
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
-      "square_colors": "マスの色"
+      "square_colors": "マスの色",
+      "diagonal_quiz": "ダイアゴナルクイズ"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2908,7 +2910,8 @@
       "all": "すべて",
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
-      "square_colors": "マスの色"
+      "square_colors": "マスの色",
+      "diagonal_quiz": "ダイアゴナルクイズ"
     },
     "allLeaderboardsSection": "すべてのランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
@@ -2929,6 +2932,9 @@
       },
       "square_colors": {
         "default": "マスの色"
+      },
+      "diagonal_quiz": {
+        "default": "ダイアゴナルクイズ"
       }
     },
     "tryChallenge": "この種目にチャレンジ",

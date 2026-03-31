@@ -1,6 +1,6 @@
 import {
+  createLeaderboardPracticeResultPage,
   createPracticeResultMetadata,
-  createSimplePracticeResultPage,
 } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 
 import { ResultClient } from './ResultClient';
@@ -12,4 +12,7 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/diagonal-quiz/result',
 });
 
-export default createSimplePracticeResultPage(ResultClient);
+export default createLeaderboardPracticeResultPage(ResultClient, {
+  module: 'diagonal_quiz',
+  resolveKey: () => 'default',
+});

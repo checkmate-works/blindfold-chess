@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
@@ -29,10 +29,6 @@ export function DiagonalQuizSetup({ locale }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <BetaNotice className="mb-6">
-          <p>{t('betaNotice')}</p>
-        </BetaNotice>
-
         <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
         <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
@@ -51,7 +47,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
           </button>
         </div>
 
-        <Link href={`/${locale}/practice/diagonal-quiz/challenge`}>
+        <Link href={`/${locale}/practice/diagonal-quiz/challenge/session`}>
           <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
             {tp('startChallenge')}
           </Button>

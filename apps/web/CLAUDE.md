@@ -291,6 +291,26 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 3. Add i18n entries in `src/messages/{en,ja}.json` under `ranks.rankNames` and `rankAchievement.rankNames`
 4. Run `pnpm db:seed`
 
+### Adding Leaderboard Support to a Practice Module
+
+When a practice module has challenge mode and should record scores on the leaderboard, follow these steps:
+
+1. **Register as challenge module** — Add module name to `CHALLENGE_MENU_TYPES` in `src/lib/db/practice-menu-types.ts`
+2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz)
+3. **Register in leaderboard types** — In `src/app/[locale]/(public)/leaderboard/_lib/types.ts`:
+   - Add to `LeaderboardModule` type
+   - Add to `LeaderboardModuleSlug` type (kebab-case)
+   - Add to `MODULES` array
+   - Add to `MODULE_KEYS` (e.g., `diagonal_quiz: ['default']`)
+   - Add to `VALID_MODULE_FILTERS`
+   - Add to `MODULE_TO_SLUG` and `SLUG_TO_MODULE` mappings
+   - Add to `buildChallengePath()` switch
+4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/leaderboard/_lib/icons.tsx` (`MODULE_EMOJIS`)
+5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`
+6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag)
+7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`
+8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
