@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -41,24 +41,26 @@ export default async function DiagonalQuizTutorialPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('practice.diagonalQuiz.title')}</PageTitle>
 
-      <SectionTitle>{t('practice.diagonalQuiz.tutorial.title')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('practice.diagonalQuiz.tutorial.title')}</SectionTitle>
 
-      <div className="text-right">
-        <DiagonalQuizTutorialSkipLink locale={locale} />
-      </div>
+        <div className="text-right">
+          <DiagonalQuizTutorialSkipLink locale={locale} />
+        </div>
 
-      <DiagonalQuizTutorial locale={locale} />
+        <DiagonalQuizTutorial locale={locale} />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.diagonalQuiz.title'), href: '/practice/diagonal-quiz' },
-          { label: t('practice.diagonalQuiz.tutorial.title') },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.diagonalQuiz.title'), href: '/practice/diagonal-quiz' },
+            { label: t('practice.diagonalQuiz.tutorial.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

@@ -34,13 +34,21 @@ export function DiagonalQuizSetup({ locale }: Props) {
         </BetaNotice>
 
         <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
-        <div className="mb-6 rounded-xl border border-border bg-card p-6 text-center">
+        <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
           <div className="text-5xl font-bold text-foreground mb-4">e4</div>
           <div className="space-y-1 text-sm text-muted-foreground">
             <p>{t('diagonalLabel')}: ??-??</p>
             <p>{t('antiDiagonalLabel')}: ??-??</p>
           </div>
+        </div>
+        <div className="mb-6 text-center">
+          <button
+            onClick={handleViewTutorial}
+            className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+          >
+            {t('tutorial.viewTutorial')}
+          </button>
         </div>
 
         <Link href={`/${locale}/practice/diagonal-quiz/challenge`}>
@@ -55,15 +63,6 @@ export function DiagonalQuizSetup({ locale }: Props) {
           >
             {tp('switchToTraining')}
           </Link>
-        </div>
-
-        <div className="flex justify-center mt-6">
-          <button
-            onClick={handleViewTutorial}
-            className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-          >
-            {t('tutorial.viewTutorial')}
-          </button>
         </div>
       </div>
     </div>
