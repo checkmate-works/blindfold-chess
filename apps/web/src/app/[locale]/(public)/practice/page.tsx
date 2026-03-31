@@ -50,8 +50,8 @@ export default async function PracticePage({ params }: Props) {
       sectionIcon: '🌱',
       practices: [
         { id: 'square-colors', title: t('practice.squareColors.title'), icon: '🎨' },
-        { id: 'legal-moves', title: t('practice.legalMoves.title'), icon: '♟️' },
         { id: 'coordinate-quiz', title: t('practice.coordinateQuiz.title'), icon: '🎯' },
+        { id: 'legal-moves', title: t('practice.legalMoves.title'), icon: '♟️' },
       ],
     },
     {
