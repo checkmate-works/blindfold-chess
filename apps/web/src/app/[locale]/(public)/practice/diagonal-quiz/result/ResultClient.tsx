@@ -8,11 +8,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { DiagonalQuizProblemList } from '../_components/DiagonalQuizProblemList';
@@ -88,23 +86,29 @@ export function ResultClient({
         { label: t('title'), href: '/practice/diagonal-quiz' },
         { label: tPractice('result') },
       ]}
+      containerClassName="space-y-8"
     >
       <PracticeComplete
         score={score}
         total={total}
         onTryAgain={() => router.push(`/${locale}/practice/diagonal-quiz/challenge/session`)}
-        onExit={() => router.push(`/${locale}/practice/diagonal-quiz`)}
+        onExit={() => router.push(`/${locale}/practice/diagonal-quiz/challenge`)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),
+          recreationProgress: tPractice('accuracy'),
           averageTime: tPractice('averageTime'),
+          correct: tPractice('correct'),
+          incorrect: tPractice('incorrect'),
         }}
+        scoreStats={{ correct: score, incorrect: total - score, total }}
         averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
         beforeRelatedContent={adBannerWide}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
+        afterActions={<SignUpBanner locale={locale} />}
       >
         <div className="mt-8">
           <DiagonalQuizProblemList results={questionResults} />
@@ -118,20 +122,6 @@ export function ResultClient({
         />
       )}
       {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-      <PracticeLayout>
-        <PracticePanel className="p-6 mt-8 space-y-3">
-          <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CardLink
-              href="/learn/moves/bishop-movement"
-              icon="♗"
-              title={tPractice('relatedArticles.bishopMovement.title')}
-              description={tPractice('relatedArticles.bishopMovement.description')}
-              locale={locale}
-            />
-          </div>
-        </PracticePanel>
-      </PracticeLayout>
     </PracticeResultPage>
   );
 }

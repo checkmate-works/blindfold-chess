@@ -33,13 +33,33 @@ describe('buildChallengePath', () => {
     });
   });
 
+  describe('diagonal_quiz', () => {
+    it('returns path without query parameters for diagonal_quiz', () => {
+      expect(buildChallengePath('diagonal_quiz', 'default')).toBe(
+        '/practice/diagonal-quiz/challenge'
+      );
+    });
+
+    it('ignores key value (no query param emitted)', () => {
+      expect(buildChallengePath('diagonal_quiz', 'anything')).toBe(
+        '/practice/diagonal-quiz/challenge'
+      );
+      expect(buildChallengePath('diagonal_quiz', '')).toBe('/practice/diagonal-quiz/challenge');
+    });
+  });
+
   // -----------------------------------------------------------------------
   // Path structure validation
   // -----------------------------------------------------------------------
 
   describe('path structure', () => {
     it('always starts with /practice/', () => {
-      const modules: LeaderboardModule[] = ['coordinate_quiz', 'legal_moves', 'square_colors'];
+      const modules: LeaderboardModule[] = [
+        'coordinate_quiz',
+        'legal_moves',
+        'square_colors',
+        'diagonal_quiz',
+      ];
       for (const mod of modules) {
         const path = buildChallengePath(mod, 'any-key');
         expect(path).toMatch(/^\/practice\//);
@@ -53,10 +73,17 @@ describe('buildChallengePath', () => {
       expect(buildChallengePath('legal_moves', 'king')).not.toContain('legal_moves');
       expect(buildChallengePath('square_colors', 'default')).toContain('square-colors');
       expect(buildChallengePath('square_colors', 'default')).not.toContain('square_colors');
+      expect(buildChallengePath('diagonal_quiz', 'default')).toContain('diagonal-quiz');
+      expect(buildChallengePath('diagonal_quiz', 'default')).not.toContain('diagonal_quiz');
     });
 
     it('always includes /challenge in the path', () => {
-      const modules: LeaderboardModule[] = ['coordinate_quiz', 'legal_moves', 'square_colors'];
+      const modules: LeaderboardModule[] = [
+        'coordinate_quiz',
+        'legal_moves',
+        'square_colors',
+        'diagonal_quiz',
+      ];
       for (const mod of modules) {
         const path = buildChallengePath(mod, 'some-key');
         expect(path).toContain('/challenge');
@@ -82,6 +109,11 @@ describe('buildChallengePath', () => {
 
     it('square_colors has no query string', () => {
       const path = buildChallengePath('square_colors', 'default');
+      expect(path).not.toContain('?');
+    });
+
+    it('diagonal_quiz has no query string', () => {
+      const path = buildChallengePath('diagonal_quiz', 'default');
       expect(path).not.toContain('?');
     });
   });

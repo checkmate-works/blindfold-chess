@@ -41,6 +41,10 @@ describe('MODULE_KEYS', () => {
   it('square_colors has only default', () => {
     expect(MODULE_KEYS.square_colors).toEqual(['default']);
   });
+
+  it('diagonal_quiz has only default', () => {
+    expect(MODULE_KEYS.diagonal_quiz).toEqual(['default']);
+  });
 });
 
 describe('VALID_PERIODS', () => {
@@ -90,15 +94,23 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     expect(squareColorsEntries).toEqual([{ module: 'square_colors', key: 'default' }]);
   });
 
-  it('entries are in module order: coordinate_quiz, legal_moves, square_colors', () => {
+  it('contains diagonal_quiz default', () => {
+    const diagonalQuizEntries = ALL_LEADERBOARD_ENTRIES.filter((e) => e.module === 'diagonal_quiz');
+    expect(diagonalQuizEntries).toEqual([{ module: 'diagonal_quiz', key: 'default' }]);
+  });
+
+  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz', () => {
     const modules = ALL_LEADERBOARD_ENTRIES.map((e) => e.module);
     const firstLegalMoves = modules.indexOf('legal_moves');
     const lastCoordinateQuiz = modules.lastIndexOf('coordinate_quiz');
     const firstSquareColors = modules.indexOf('square_colors');
     const lastLegalMoves = modules.lastIndexOf('legal_moves');
+    const firstDiagonalQuiz = modules.indexOf('diagonal_quiz');
+    const lastSquareColors = modules.lastIndexOf('square_colors');
 
     expect(lastCoordinateQuiz).toBeLessThan(firstLegalMoves);
     expect(lastLegalMoves).toBeLessThan(firstSquareColors);
+    expect(lastSquareColors).toBeLessThan(firstDiagonalQuiz);
   });
 });
 
@@ -118,6 +130,10 @@ describe('moduleToSlug', () => {
   it('converts square_colors to square-colors', () => {
     expect(moduleToSlug('square_colors')).toBe('square-colors');
   });
+
+  it('converts diagonal_quiz to diagonal-quiz', () => {
+    expect(moduleToSlug('diagonal_quiz')).toBe('diagonal-quiz');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -135,6 +151,10 @@ describe('slugToModule', () => {
 
   it('converts square-colors to square_colors', () => {
     expect(slugToModule('square-colors')).toBe('square_colors');
+  });
+
+  it('converts diagonal-quiz to diagonal_quiz', () => {
+    expect(slugToModule('diagonal-quiz')).toBe('diagonal_quiz');
   });
 
   it('returns null for invalid slug', () => {
@@ -198,6 +218,12 @@ describe('buildDetailPath', () => {
   it('builds correct path for monthly square_colors default', () => {
     expect(buildDetailPath('monthly', 'square_colors', 'default')).toBe(
       '/leaderboard/monthly/square-colors/default'
+    );
+  });
+
+  it('builds correct path for all-time diagonal_quiz default', () => {
+    expect(buildDetailPath('all-time', 'diagonal_quiz', 'default')).toBe(
+      '/leaderboard/all-time/diagonal-quiz/default'
     );
   });
 

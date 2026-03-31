@@ -122,6 +122,6 @@ export function buildChallengePath(module: LeaderboardModule, key: string): stri
     case 'square_colors':
       return `/practice/${slug}/challenge`;
     case 'diagonal_quiz':
-      return `/practice/${slug}/challenge/session`;
+      return `/practice/${slug}/challenge`;
   }
 }
