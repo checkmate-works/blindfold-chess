@@ -58,9 +58,9 @@ export default async function PracticePage({ params }: Props) {
       title: t('practice.levelIntermediate'),
       sectionIcon: '📚',
       practices: [
-        { id: 'board-symmetry', title: t('practice.boardSymmetry.title'), icon: '🦋' },
-        { id: 'route-planner', title: t('practice.routePlanner.title'), icon: '📍' },
         { id: 'diagonal-quiz', title: t('practice.diagonalQuiz.title'), icon: '↗️' },
+        { id: 'route-planner', title: t('practice.routePlanner.title'), icon: '📍' },
+        { id: 'board-symmetry', title: t('practice.boardSymmetry.title'), icon: '🦋' },
       ],
     },
     {

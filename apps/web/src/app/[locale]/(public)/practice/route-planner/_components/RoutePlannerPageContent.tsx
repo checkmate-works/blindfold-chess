@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import type { PracticeMode } from '@blindfold-chess/features/common';
-
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerSettings } from './RoutePlannerSettings';
@@ -13,7 +11,6 @@ import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLi
 type Settings = {
   problemCount: number;
   selectedPieces: Record<string, boolean>;
-  mode: PracticeMode;
 };
 
 type Props = {
@@ -45,10 +42,8 @@ export function RoutePlannerPageContent({ locale, settings, onUpdateSettings }: 
       locale={locale}
       problemCount={settings.problemCount}
       selectedPieces={settings.selectedPieces}
-      mode={settings.mode}
       onProblemCountChange={(problemCount) => onUpdateSettings({ problemCount })}
       onSelectedPiecesChange={(selectedPieces) => onUpdateSettings({ selectedPieces })}
-      onModeChange={(mode) => onUpdateSettings({ mode })}
       onShowTutorial={() => setShowTutorial(true)}
     />
   );

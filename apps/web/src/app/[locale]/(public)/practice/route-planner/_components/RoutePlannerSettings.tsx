@@ -3,34 +3,27 @@
 import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
-import type { PracticeMode } from '@blindfold-chess/features/common';
-import { FaPlay } from 'react-icons/fa';
+import { FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { ProblemCountSlider } from '@/app/[locale]/(public)/practice/_components/ProblemCountSlider';
-import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PIECES } from '../_lib/utils';
-import {
-  ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY,
-  RoutePlannerTutorialSkipLink,
-} from './RoutePlannerTutorialSkipLink';
+import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
 import { STORAGE_KEY } from './constants';
 
 type Props = {
   locale: Locale;
   problemCount: number;
   selectedPieces: Record<string, boolean>;
-  mode: PracticeMode;
   onProblemCountChange: (count: number) => void;
   onSelectedPiecesChange: (pieces: Record<string, boolean>) => void;
-  onModeChange: (mode: PracticeMode) => void;
   onShowTutorial?: () => void;
 };
 
@@ -38,23 +31,15 @@ export function RoutePlannerSettings({
   locale,
   problemCount,
   selectedPieces,
-  mode,
   onProblemCountChange,
   onSelectedPiecesChange,
-  onModeChange,
   onShowTutorial,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tp = useTranslations('practice');
   const tSettings = useTranslations('practice.settings');
-  const router = useRouter();
 
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-
-  const modeOptions: { value: PracticeMode; label: string }[] = [
-    { value: 'timed', label: tp('modeTimed') },
-    { value: 'training', label: tp('modeTraining') },
-  ];
 
   const handleResetConfirm = () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -73,54 +58,48 @@ export function RoutePlannerSettings({
     onSelectedPiecesChange(next);
   };
 
-  const handleStart = () => {
-    const piecesStr = PIECES.filter((p) => selectedPieces[p]).join('');
-    if (mode === 'training') {
-      router.push(
-        `/${locale}/practice/route-planner/training?pieces=${piecesStr}#route-planner-session`
-      );
-    } else {
-      router.push(
-        `/${locale}/practice/route-planner/challenge?count=${problemCount}&pieces=${piecesStr}#route-planner-session`
-      );
-    }
-  };
+  const piecesStr = PIECES.filter((p) => selectedPieces[p]).join('');
 
   return (
     <div>
       <div className="mb-8">
-        <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
-
-        <div className="mb-6">
-          <SegmentedControl options={modeOptions} value={mode} onChange={onModeChange} />
-        </div>
-
         <BetaNotice className="mb-6">
           <p>{t('betaNotice')}</p>
         </BetaNotice>
 
-        <div className="mb-6 text-muted-foreground">
-          <p>{t('description')}</p>
+        <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
+        <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
+          <div className="flex items-center justify-center gap-3 text-foreground">
+            <ChessPiece type="n" color="w" size={36} />
+            <span className="text-lg font-bold">e2</span>
+            <FaArrowRight className="text-muted-foreground" />
+            <span className="text-lg font-bold">g3</span>
+          </div>
         </div>
-
-        {mode === 'timed' && (
-          <div className="mb-6">
-            <ProblemCountSlider
-              count={problemCount}
-              onCountChange={onProblemCountChange}
-              labels={{
-                count: tSettings('problemCount'),
-                unit: tSettings('problems'),
-              }}
-            />
+        {onShowTutorial && (
+          <div className="mb-6 text-center">
+            <button
+              onClick={onShowTutorial}
+              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+            >
+              {t('tutorial.viewTutorial')}
+            </button>
           </div>
         )}
 
-        {mode === 'training' && (
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">{tp('trainingDescription')}</p>
-          </div>
-        )}
+        <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
+
+        <div className="mb-6">
+          <ProblemCountSlider
+            count={problemCount}
+            onCountChange={onProblemCountChange}
+            labels={{
+              count: tSettings('problemCount'),
+              unit: tSettings('problems'),
+            }}
+          />
+        </div>
 
         {/* Piece Selector */}
         <div className="mb-6">
@@ -151,17 +130,21 @@ export function RoutePlannerSettings({
           </div>
         </div>
 
-        <Button
-          onClick={handleStart}
-          variant="primary"
-          size="lg"
-          icon={<FaPlay />}
-          className="w-full"
+        <Link
+          href={`/${locale}/practice/route-planner/challenge?count=${problemCount}&pieces=${piecesStr}#route-planner-session`}
         >
-          {mode === 'training' ? tp('startTraining') : tSettings('start')}
-        </Button>
-
-        {onShowTutorial && <RoutePlannerTutorialSkipLink onStartTutorial={onShowTutorial} />}
+          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
+            {tp('startChallenge')}
+          </Button>
+        </Link>
+        <div className="mt-4 text-center">
+          <Link
+            href={`/${locale}/practice/route-planner/training?pieces=${piecesStr}#route-planner-session`}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {tp('switchToTraining')}
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 flex justify-end">

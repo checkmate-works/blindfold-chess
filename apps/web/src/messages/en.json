@@ -939,6 +939,8 @@
       "session": "In Progress",
       "description": "Calculate the shortest path for a piece to reach a target square",
       "betaNotice": "This feature is in beta and may contain unexpected bugs.",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "Calculate the shortest path for a piece to reach a target square.",
       "settings": "Settings",
       "start": "Start",
       "piece": "Piece to Move",

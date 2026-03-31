@@ -1,7 +1,5 @@
 'use client';
 
-import type { PracticeMode } from '@blindfold-chess/features/common';
-
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -15,12 +13,10 @@ type Props = {
 type RoutePlannerLocalSettings = {
   problemCount: number;
   selectedPieces: Record<string, boolean>;
-  mode: PracticeMode;
 };
 const DEFAULTS: RoutePlannerLocalSettings = {
   problemCount: 5,
   selectedPieces: { n: true, b: true, r: true, q: true },
-  mode: 'timed',
 };
 
 export default function RoutePlanner({ locale }: Props) {
