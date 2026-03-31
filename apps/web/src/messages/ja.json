@@ -553,6 +553,8 @@
       "description": "マスが明るいか暗いかを素早く識別する能力を鍛えます",
       "session": "練習中",
       "question": "{square}マスは何色ですか？",
+      "howToPlayTitle": "問題方式",
+      "howToPlayDescription": "以下のような問題が繰り返し出題されます。表示されたマスが白か黒かを答えましょう。",
       "white": "白",
       "black": "黒",
       "correct": "正解",
@@ -1928,7 +1930,7 @@
       "postsTitle": "自分の投稿",
       "editProfile": "編集",
       "interviewTitle": "インタビュー",
-      "beltSystem": "帯システム",
+      "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
       "interviewBanner": "インタビューに答えてあなたのことを教えてください"

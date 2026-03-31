@@ -552,6 +552,8 @@
       "description": "Train your ability to quickly identify whether a square is light or dark",
       "session": "In Progress",
       "question": "What color is square {square}?",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "Questions like the following will be asked repeatedly. Identify whether the given square is light or dark.",
       "white": "Light",
       "black": "Dark",
       "correct": "Correct",

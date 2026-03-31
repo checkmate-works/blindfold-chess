@@ -1,11 +1,16 @@
 type Props = {
   currentSquare: string;
   lastAnswer: { correct: boolean; square: string } | null;
+  className?: string;
 };
 
-export function SquareColorQuestionDisplay({ currentSquare, lastAnswer }: Props) {
+export function SquareColorQuestionDisplay({
+  currentSquare,
+  lastAnswer,
+  className = 'mb-8',
+}: Props) {
   return (
-    <div className="mb-8">
+    <div className={className}>
       <div
         className={`text-6xl font-bold mb-4 transition-colors duration-200 ${
           lastAnswer

@@ -50,8 +50,6 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
         <PagePanel>
           {config.renderSetup(locale)}
 
-          <AdBannerGuard slot="banner-wide" />
-
           {config.renderArticles(t, locale)}
 
           <AdBannerGuard slot="banner-standard" />
