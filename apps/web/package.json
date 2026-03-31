@@ -15,8 +15,7 @@
     "copy-stockfish": "tsx scripts/copy-stockfish.ts",
     "db:run-migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/lib/db/seed.ts",
-    "capture-screenshots": "tsx scripts/capture-screenshots.ts"
+    "db:seed": "tsx src/lib/db/seed.ts"
   },
   "dependencies": {
     "@blindfold-chess/features": "workspace:^",

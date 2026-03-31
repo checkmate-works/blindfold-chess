@@ -43,7 +43,7 @@
  *    - `ScoreCounter`          — Live correct/incorrect counter during a session
  *    - `TimeDisplay`           — Formatted time remaining/elapsed display
  *    - `ProgressBar`           — Simple progress bar for problem-count-based sessions
- *    - `PracticeTabs`          — Tab switcher for training/challenge mode selection
+ *    - `SegmentedControl`      — Button group selector for training/challenge mode selection
  *    - `ProblemCountSlider`    — Slider for selecting number of problems in setup
  *    - `TimeSlider`            — Slider for selecting time limit in setup
  *    - `AnswerFeedback`        — Correct/incorrect flash feedback overlay
@@ -65,8 +65,7 @@
  *    - `validateFEN()`           — FEN string format validation
  *
  * ### 4. Add to practice index (`practice/page.tsx`)
- *    - Add thumbnail image to `public/images/practice/<module-slug>.png`
- *    - Add a `PracticeCard` entry in the appropriate difficulty section
+ *    - Add a `ChallengeCard` entry in the appropriate difficulty section
  *
  * ### 5. Add i18n messages (`src/messages/en.json` + `src/messages/ja.json`)
  *    - Add `practice.<translationKey>.title` and `practice.<translationKey>.description`
