@@ -77,7 +77,7 @@ describe('deleteAnswerAction', () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
 
       const result = await deleteAnswerAction(testAnswerId, testLocale);
-      expect(result).toEqual({ error: 'unauthorized' });
+      expect(result).toEqual({ error: 'signInRequired' });
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });

@@ -50,12 +50,12 @@ describe('isChallengeScoreRequirement', () => {
   });
 
   it('should return false when type is missing', () => {
-    const { type: _, ...rest } = validReq;
+    const { type: _type, ...rest } = validReq;
     expect(isChallengeScoreRequirement(rest)).toBe(false);
   });
 
   it('should return false when menuType is missing', () => {
-    const { menuType: _, ...rest } = validReq;
+    const { menuType: _menuType, ...rest } = validReq;
     expect(isChallengeScoreRequirement(rest)).toBe(false);
   });
 
@@ -64,7 +64,7 @@ describe('isChallengeScoreRequirement', () => {
   });
 
   it('should return false when leaderboardKey is missing', () => {
-    const { leaderboardKey: _, ...rest } = validReq;
+    const { leaderboardKey: _leaderboardKey, ...rest } = validReq;
     expect(isChallengeScoreRequirement(rest)).toBe(false);
   });
 
@@ -73,7 +73,7 @@ describe('isChallengeScoreRequirement', () => {
   });
 
   it('should return false when minScore is missing', () => {
-    const { minScore: _, ...rest } = validReq;
+    const { minScore: _minScore, ...rest } = validReq;
     expect(isChallengeScoreRequirement(rest)).toBe(false);
   });
 

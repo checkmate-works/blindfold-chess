@@ -104,7 +104,7 @@ describe('savePracticeResult', () => {
   // Auth failure
   // -------------------------------------------------------------------------
 
-  it('should return { success: false, error: "auth_failed" } when user is null', async () => {
+  it('should return { success: false, error: "signInRequired" } when user is null', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     const result = await savePracticeResult(
@@ -113,7 +113,7 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: false, error: 'auth_failed' });
+    expect(result).toEqual({ success: false, error: 'signInRequired' });
   });
 
   it('should not call saveChallengeResult when user is null', async () => {
@@ -132,7 +132,7 @@ describe('savePracticeResult', () => {
   // Banned user
   // -------------------------------------------------------------------------
 
-  it('should return { success: false, error: "user_banned" } when user is banned', async () => {
+  it('should return { success: false, error: "banned" } when user is banned', async () => {
     mockIsUserBanned.mockResolvedValue(true);
 
     const result = await savePracticeResult(
@@ -141,15 +141,15 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: false, error: 'user_banned' });
+    expect(result).toEqual({ success: false, error: 'banned' });
   });
 
   // -------------------------------------------------------------------------
   // Rate limiting
   // -------------------------------------------------------------------------
 
-  it('should return { success: false, error: "rate_limited" } when rate limited', async () => {
-    mockCheckRateLimit.mockResolvedValue({ error: 'too_many_requests' });
+  it('should return { success: false, error: "rateLimited" } when rate limited', async () => {
+    mockCheckRateLimit.mockResolvedValue({ error: 'rateLimited' });
 
     const result = await savePracticeResult(
       'coordinate_quiz',
@@ -157,7 +157,7 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: false, error: 'rate_limited' });
+    expect(result).toEqual({ success: false, error: 'rateLimited' });
   });
 
   // -------------------------------------------------------------------------

@@ -70,11 +70,11 @@ describe('deletePost', () => {
     vi.clearAllMocks();
   });
 
-  it('should return unauthorized when user is not authenticated', async () => {
+  it('should return signInRequired when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     const result = await deletePost(testPostId, 'en');
-    expect(result).toEqual({ error: 'unauthorized' });
+    expect(result).toEqual({ error: 'signInRequired' });
   });
 
   it('should return banned when user is banned', async () => {

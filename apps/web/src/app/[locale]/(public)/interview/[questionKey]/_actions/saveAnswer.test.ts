@@ -107,7 +107,7 @@ describe('saveAnswerAction', () => {
         null,
         createFormData(testAnswerValue)
       );
-      expect(result).toEqual({ error: 'unauthorized' });
+      expect(result).toEqual({ error: 'signInRequired' });
       expect(logActivityEvent).not.toHaveBeenCalled();
     });
   });

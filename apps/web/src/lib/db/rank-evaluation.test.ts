@@ -17,9 +17,6 @@ const mockOnConflictDoNothing = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
 const mockLogActivityEvent = vi.fn();
 
-// Tracks which table was passed to select().from()
-let _lastFromTable: unknown = null;
-
 vi.mock('../activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
@@ -36,9 +33,8 @@ vi.mock('./index', () => {
         };
       },
     }),
-    select: (_fields?: unknown) => ({
-      from: (table: unknown) => {
-        _lastFromTable = table;
+    select: () => ({
+      from: () => {
         return {
           where: () => mockSelectResult(),
           orderBy: () => {
