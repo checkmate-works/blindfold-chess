@@ -7,7 +7,6 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { getRandomSquare } from '../_lib/utils';
@@ -48,7 +47,7 @@ export function KnightTourSetup({
 
   return (
     <div>
-      <PracticePanel className="p-6">
+      <div className="mb-8">
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
@@ -111,9 +110,9 @@ export function KnightTourSetup({
             {t('viewTutorial')}
           </Link>
         </div>
-      </PracticePanel>
+      </div>
 
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
+      <div className="mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink

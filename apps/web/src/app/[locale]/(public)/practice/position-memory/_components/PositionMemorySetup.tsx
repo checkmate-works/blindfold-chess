@@ -8,8 +8,6 @@ import { useRouter } from 'next/navigation';
 import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { useCopyToClipboard } from '@/app/[locale]/(public)/practice/_hooks/use-copy-to-clipboard';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -155,8 +153,8 @@ export function PositionMemorySetup({
   };
 
   return (
-    <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+    <>
+      <div className="mb-8">
         {!isLoaded ? (
           <div className="flex justify-center">
             <div className="w-full max-w-xs">
@@ -200,7 +198,7 @@ export function PositionMemorySetup({
         </Button>
       </div>
 
-      <PracticePanel className="mt-8 p-6 space-y-3">
+      <div className="mt-8 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/memory/position-memory"
@@ -209,7 +207,7 @@ export function PositionMemorySetup({
           description={t('articleDescription')}
           locale={locale}
         />
-      </PracticePanel>
+      </div>
 
       <ConfirmationModal
         isOpen={isResetConfirmOpen}
@@ -221,6 +219,6 @@ export function PositionMemorySetup({
         onConfirm={handleResetConfirm}
         onCancel={() => setIsResetConfirmOpen(false)}
       />
-    </PracticeLayout>
+    </>
   );
 }

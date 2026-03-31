@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -32,7 +31,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
 
   return (
     <div>
-      <PracticePanel className="p-6">
+      <div className="mb-8">
         <BetaNotice className="mb-6">
           <p>{t('betaNotice')}</p>
         </BetaNotice>
@@ -61,7 +60,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
             {t('tutorial.viewTutorial')}
           </button>
         </div>
-      </PracticePanel>
+      </div>
     </div>
   );
 }

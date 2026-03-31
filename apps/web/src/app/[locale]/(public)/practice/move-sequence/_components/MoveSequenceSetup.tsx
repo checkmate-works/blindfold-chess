@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaInfoCircle, FaPlay } from 'react-icons/fa';
 
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { BetaNotice, CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -123,8 +122,8 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
   };
 
   return (
-    <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+    <>
+      <div className="mb-8">
         <SectionTitle className="mb-6">
           <span className="inline-flex items-center gap-2">
             {t('title')}
@@ -238,7 +237,7 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         </Button>
       </div>
 
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
+      <div className="mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <CardLink
           href="/learn/notation/algebraic-notation"
@@ -264,6 +263,6 @@ export function MoveSequenceSetup({ locale, urlFen, urlPgn, urlError }: Props) {
         isOpen={isAboutFeatureOpen}
         onClose={() => setIsAboutFeatureOpen(false)}
       />
-    </PracticeLayout>
+    </>
   );
 }

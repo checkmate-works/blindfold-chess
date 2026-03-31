@@ -8,8 +8,6 @@ import { useRouter } from 'next/navigation';
 import { BoardSkeleton, Button } from '@/app/_components';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { validateFEN } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -86,8 +84,8 @@ export function FenSetup({ locale }: Props) {
   };
 
   return (
-    <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+    <>
+      <div className="mb-8">
         <div className="space-y-6">
           {/* Problem Source */}
           <div>
@@ -170,7 +168,7 @@ export function FenSetup({ locale }: Props) {
         </Button>
       </div>
 
-      <PracticePanel className="mt-8 p-6 space-y-3">
+      <div className="mt-8 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/notation/fen-notation"
@@ -179,7 +177,7 @@ export function FenSetup({ locale }: Props) {
           description={t('articleDescription')}
           locale={locale}
         />
-      </PracticePanel>
+      </div>
 
       <ConfirmationModal
         isOpen={isResetConfirmOpen}
@@ -191,6 +189,6 @@ export function FenSetup({ locale }: Props) {
         onConfirm={handleResetConfirm}
         onCancel={() => setIsResetConfirmOpen(false)}
       />
-    </PracticeLayout>
+    </>
   );
 }

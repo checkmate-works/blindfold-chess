@@ -14,7 +14,7 @@
  */
 import { getTranslations } from 'next-intl/server';
 
-import { Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -97,29 +97,31 @@ export default async function PositionMemoryPage({ params, searchParams }: Props
     <div className="space-y-8">
       <PageTitle>{t('practice.positionMemory.title')}</PageTitle>
 
-      <SectionTitle>{t('practice.positionMemory.settings')}</SectionTitle>
+      <PagePanel>
+        <SectionTitle>{t('practice.positionMemory.settings')}</SectionTitle>
 
-      {hasFenParam ? (
-        <PositionMemorySetup
+        {hasFenParam ? (
+          <PositionMemorySetup
+            locale={locale}
+            urlError={urlError}
+            urlFens={urlFens}
+            urlTimeLimit={urlTimeLimit}
+            urlShuffle={urlShuffle}
+          />
+        ) : (
+          <PositionMemoryPageContent locale={locale} />
+        )}
+
+        <Divider />
+
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.positionMemory.title') },
+          ]}
           locale={locale}
-          urlError={urlError}
-          urlFens={urlFens}
-          urlTimeLimit={urlTimeLimit}
-          urlShuffle={urlShuffle}
         />
-      ) : (
-        <PositionMemoryPageContent locale={locale} />
-      )}
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.positionMemory.title') },
-        ]}
-        locale={locale}
-      />
+      </PagePanel>
     </div>
   );
 }

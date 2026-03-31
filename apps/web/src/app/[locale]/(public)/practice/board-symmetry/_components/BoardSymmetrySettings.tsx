@@ -9,7 +9,6 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { TimeSlider } from '@/app/[locale]/(public)/practice/_components/TimeSlider';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -81,7 +80,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
 
   return (
     <div>
-      <PracticePanel className="p-6">
+      <div className="mb-8">
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
 
         <div className="mb-6">
@@ -114,7 +113,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
             {t('viewTutorial')}
           </Link>
         </div>
-      </PracticePanel>
+      </div>
 
       <div className="mt-8 flex justify-end">
         <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
@@ -122,7 +121,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
         </Button>
       </div>
 
-      <PracticePanel className="mt-8 p-6 space-y-3">
+      <div className="mt-8 space-y-3">
         <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
         <CardLink
           href="/learn/coordinates/board-symmetry"
@@ -131,7 +130,7 @@ export default function BoardSymmetrySettings({ locale }: Props) {
           description={t('articleDescription')}
           locale={locale}
         />
-      </PracticePanel>
+      </div>
 
       <ConfirmationModal
         isOpen={isResetConfirmOpen}

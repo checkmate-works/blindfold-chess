@@ -21,7 +21,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Divider, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -85,22 +85,24 @@ export default async function MoveSequencePage({ params, searchParams }: Props) 
     <div className="space-y-8">
       <PageTitle>{t('practice.moveSequence.title')}</PageTitle>
 
-      <MoveSequencePageContent
-        locale={locale}
-        urlFen={urlFen}
-        urlPgn={urlPgn}
-        urlError={urlError}
-      />
+      <PagePanel>
+        <MoveSequencePageContent
+          locale={locale}
+          urlFen={urlFen}
+          urlPgn={urlPgn}
+          urlError={urlError}
+        />
 
-      <Divider />
+        <Divider />
 
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.moveSequence.title') },
-        ]}
-        locale={locale}
-      />
+        <Breadcrumb
+          items={[
+            { label: t('navigation.practice'), href: '/practice' },
+            { label: t('practice.moveSequence.title') },
+          ]}
+          locale={locale}
+        />
+      </PagePanel>
     </div>
   );
 }

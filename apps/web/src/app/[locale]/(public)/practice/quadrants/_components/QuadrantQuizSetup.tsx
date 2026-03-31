@@ -8,7 +8,6 @@ import type { PracticeMode } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/_components/BoardOrientationSelector';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { ProblemCountSlider } from '@/app/[locale]/(public)/practice/_components/ProblemCountSlider';
 import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { BetaNotice, CardLink, SectionTitle } from '@/app/[locale]/_components';
@@ -58,7 +57,7 @@ export default function QuadrantQuizSetup({
 
   return (
     <div>
-      <PracticePanel className="p-6 mb-8">
+      <div className="mb-8">
         <SectionTitle className="mb-4">{tSettings('title')}</SectionTitle>
 
         <BetaNotice className="mb-6">
@@ -114,9 +113,9 @@ export default function QuadrantQuizSetup({
         >
           {mode === 'training' ? tp('startTraining') : tSettings('start')}
         </Button>
-      </PracticePanel>
+      </div>
 
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mt-8 space-y-4">
+      <div className="mt-8 space-y-4">
         <SectionTitle>{t('relatedArticles')}</SectionTitle>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CardLink
