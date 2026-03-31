@@ -40,14 +40,12 @@ export function CoordinateQuizSetup({
       <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
       <div className="mb-6 rounded-xl border border-border bg-card p-6 text-center">
         <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
-        <div className="scale-75 origin-top">
-          <div className="relative inline-block w-full max-w-xs mx-auto">
-            <CoordinateQuizBoard orientation="white" onSquareClick={noop} />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-5xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                e4
-              </span>
-            </div>
+        <div className="relative inline-block w-full max-w-[240px] mx-auto">
+          <CoordinateQuizBoard orientation="white" onSquareClick={noop} />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              e4
+            </span>
           </div>
         </div>
       </div>

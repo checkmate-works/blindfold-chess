@@ -10,7 +10,6 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SquareColorAnswerButtons } from './SquareColorAnswerButtons';
-import { SquareColorQuestionDisplay } from './SquareColorQuestionDisplay';
 
 const noop = () => {};
 
@@ -28,8 +27,8 @@ export function SquareColorsSetup({ locale }: Props) {
 
       <div className="mb-6 rounded-xl border border-border bg-card p-6 text-center">
         <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
-        <div className="scale-75 origin-top">
-          <SquareColorQuestionDisplay currentSquare="e4" lastAnswer={null} className="mb-4" />
+        <div className="text-4xl font-bold text-foreground mb-3">e4</div>
+        <div className="max-w-[200px] mx-auto">
           <SquareColorAnswerButtons
             onAnswer={noop}
             disabled
