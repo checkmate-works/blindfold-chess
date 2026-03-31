@@ -124,12 +124,20 @@ describe('PaginationNav', () => {
       expect(screen.queryByText('...')).not.toBeInTheDocument();
     });
 
-    it('shows all pages when total is 7', () => {
+    it('shows ellipsis when total is 7', () => {
       render(<PaginationNav currentPage={4} totalPages={7} buildHref={buildHref} />);
-      for (let i = 1; i <= 7; i++) {
-        expect(screen.getByText(String(i))).toBeInTheDocument();
-      }
-      expect(screen.queryByText('...')).not.toBeInTheDocument();
+      // surroundingPageCount=1: 1 ... 3 [4] 5 ... 7
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText('4')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('7')).toBeInTheDocument();
+
+      const ellipses = screen.getAllByText('...');
+      expect(ellipses).toHaveLength(2);
+
+      expect(screen.queryByText('2')).not.toBeInTheDocument();
+      expect(screen.queryByText('6')).not.toBeInTheDocument();
     });
   });
 
@@ -137,41 +145,38 @@ describe('PaginationNav', () => {
     it('shows ellipsis for large page counts when on first page', () => {
       render(<PaginationNav currentPage={1} totalPages={10} buildHref={buildHref} />);
 
-      // Should show: 1 2 3 ... 10
+      // Should show: 1 2 ... 10
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
       expect(screen.getByText('...')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
 
       // Should not show middle pages
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
       expect(screen.queryByText('5')).not.toBeInTheDocument();
-      expect(screen.queryByText('6')).not.toBeInTheDocument();
     });
 
     it('shows ellipsis for large page counts when on last page', () => {
       render(<PaginationNav currentPage={10} totalPages={10} buildHref={buildHref} />);
 
-      // Should show: 1 ... 8 9 10
+      // Should show: 1 ... 9 10
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('...')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
       expect(screen.getByText('9')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
 
       expect(screen.queryByText('5')).not.toBeInTheDocument();
+      expect(screen.queryByText('8')).not.toBeInTheDocument();
     });
 
     it('shows two ellipses when current page is in the middle of a large set', () => {
       render(<PaginationNav currentPage={5} totalPages={10} buildHref={buildHref} />);
 
-      // Should show: 1 ... 3 4 5 6 7 ... 10
+      // Should show: 1 ... 4 5 6 ... 10
       expect(screen.getByText('1')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
       expect(screen.getByText('4')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
       expect(screen.getByText('6')).toBeInTheDocument();
-      expect(screen.getByText('7')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
@@ -179,37 +184,42 @@ describe('PaginationNav', () => {
 
       // Should not show pages outside the window
       expect(screen.queryByText('2')).not.toBeInTheDocument();
-      expect(screen.queryByText('8')).not.toBeInTheDocument();
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
+      expect(screen.queryByText('7')).not.toBeInTheDocument();
     });
 
     it('does not show leading ellipsis when window touches first page', () => {
-      render(<PaginationNav currentPage={3} totalPages={10} buildHref={buildHref} />);
+      render(<PaginationNav currentPage={2} totalPages={10} buildHref={buildHref} />);
 
-      // Should show: 1 2 3 4 5 ... 10
+      // surroundingPageCount=1: rangeStart=max(2,1)=2, rangeEnd=min(9,3)=3
+      // No leading ellipsis (rangeStart=2), trailing ellipsis (rangeEnd=3<9)
+      // Should show: 1 2 3 ... 10
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
-      expect(screen.getByText('4')).toBeInTheDocument();
-      expect(screen.getByText('5')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
+
+      expect(screen.queryByText('4')).not.toBeInTheDocument();
     });
 
     it('does not show trailing ellipsis when window touches last page', () => {
-      render(<PaginationNav currentPage={8} totalPages={10} buildHref={buildHref} />);
+      render(<PaginationNav currentPage={9} totalPages={10} buildHref={buildHref} />);
 
-      // Should show: 1 ... 6 7 8 9 10
+      // surroundingPageCount=1: rangeStart=max(2,8)=8, rangeEnd=min(9,10)=9
+      // Leading ellipsis (rangeStart=8>2), no trailing ellipsis (rangeEnd=9=totalPages-1)
+      // Should show: 1 ... 8 9 10
       expect(screen.getByText('1')).toBeInTheDocument();
-      expect(screen.getByText('6')).toBeInTheDocument();
-      expect(screen.getByText('7')).toBeInTheDocument();
       expect(screen.getByText('8')).toBeInTheDocument();
       expect(screen.getByText('9')).toBeInTheDocument();
       expect(screen.getByText('10')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
+
+      expect(screen.queryByText('7')).not.toBeInTheDocument();
     });
   });
 
@@ -312,75 +322,72 @@ describe('PaginationNav', () => {
     });
   });
 
-  describe('truncation boundary at 8 pages (smallest truncated set)', () => {
-    it('shows all pages without ellipsis when on page 4 of 8 (window touches first)', () => {
-      render(<PaginationNav currentPage={4} totalPages={8} buildHref={buildHref} />);
+  describe('truncation boundary at 6 pages (smallest truncated set)', () => {
+    it('shows trailing ellipsis only when on page 3 of 6 (middle)', () => {
+      render(<PaginationNav currentPage={3} totalPages={6} buildHref={buildHref} />);
 
-      // Window: currentPage-2=2 to currentPage+2=6, plus first(1) and last(8)
-      // rangeStart=2, rangeEnd=6 => no leading ellipsis (rangeStart <= 2)
-      // rangeEnd=6 < 7 (totalPages-1) => trailing ellipsis
+      // surroundingPageCount=1: rangeStart=max(2,2)=2, rangeEnd=min(5,4)=4
+      // rangeStart=2 => no leading ellipsis (2 <= 2)
+      // rangeEnd=4 < 5 => trailing ellipsis
+      // Should show: 1 2 3 4 ... 6
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
       expect(screen.getByText('4')).toBeInTheDocument();
-      expect(screen.getByText('5')).toBeInTheDocument();
       expect(screen.getByText('6')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
+
+      expect(screen.queryByText('5')).not.toBeInTheDocument();
     });
 
-    it('shows trailing ellipsis only when on page 1 of 8', () => {
-      render(<PaginationNav currentPage={1} totalPages={8} buildHref={buildHref} />);
+    it('shows trailing ellipsis only when on page 1 of 6', () => {
+      render(<PaginationNav currentPage={1} totalPages={6} buildHref={buildHref} />);
 
-      // rangeStart=max(2, 1-2)=2, rangeEnd=min(7, 1+2)=3
-      // Should show: 1 2 3 ... 8
+      // rangeStart=max(2,0)=2, rangeEnd=min(5,2)=2
+      // Should show: 1 2 ... 6
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('3')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
+      expect(screen.getByText('6')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
 
-      // Pages 4-7 should not be shown
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
       expect(screen.queryByText('4')).not.toBeInTheDocument();
       expect(screen.queryByText('5')).not.toBeInTheDocument();
     });
 
-    it('shows leading ellipsis only when on page 8 of 8', () => {
-      render(<PaginationNav currentPage={8} totalPages={8} buildHref={buildHref} />);
+    it('shows leading ellipsis only when on page 6 of 6', () => {
+      render(<PaginationNav currentPage={6} totalPages={6} buildHref={buildHref} />);
 
-      // rangeStart=max(2, 8-2)=6, rangeEnd=min(7, 8+2)=7
-      // Should show: 1 ... 6 7 8
+      // rangeStart=max(2,5)=5, rangeEnd=min(5,7)=5
+      // Should show: 1 ... 5 6
       expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
       expect(screen.getByText('6')).toBeInTheDocument();
-      expect(screen.getByText('7')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
 
-      // Pages 2-5 should not be shown
       expect(screen.queryByText('2')).not.toBeInTheDocument();
       expect(screen.queryByText('3')).not.toBeInTheDocument();
+      expect(screen.queryByText('4')).not.toBeInTheDocument();
     });
 
-    it('shows two ellipses when on page 5 of 8', () => {
-      render(<PaginationNav currentPage={5} totalPages={8} buildHref={buildHref} />);
+    it('shows leading ellipsis only when on page 4 of 6', () => {
+      render(<PaginationNav currentPage={4} totalPages={6} buildHref={buildHref} />);
 
-      // rangeStart=max(2, 5-2)=3, rangeEnd=min(7, 5+2)=7
+      // rangeStart=max(2,3)=3, rangeEnd=min(5,5)=5
       // rangeStart=3 > 2 => leading ellipsis
-      // rangeEnd=7 = totalPages-1=7 => no trailing ellipsis
-      // Should show: 1 ... 3 4 5 6 7 8
+      // rangeEnd=5 = totalPages-1=5 => no trailing ellipsis
+      // Should show: 1 ... 3 4 5 6
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(screen.getByText('3')).toBeInTheDocument();
       expect(screen.getByText('4')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
       expect(screen.getByText('6')).toBeInTheDocument();
-      expect(screen.getByText('7')).toBeInTheDocument();
-      expect(screen.getByText('8')).toBeInTheDocument();
 
       const ellipses = screen.getAllByText('...');
       expect(ellipses).toHaveLength(1);
@@ -423,9 +430,112 @@ describe('PaginationNav', () => {
       expect(page5).toHaveAttribute('aria-current', 'page');
 
       // Check all visible page numbers except current
-      for (const num of [1, 3, 4, 6, 7, 10]) {
+      for (const num of [1, 4, 6, 10]) {
         const el = screen.getByText(String(num));
         expect(el).not.toHaveAttribute('aria-current');
+      }
+    });
+  });
+
+  describe('boundary: totalPages=5 (last non-truncated case)', () => {
+    it('shows all pages when on first page (currentPage=1)', () => {
+      render(<PaginationNav currentPage={1} totalPages={5} buildHref={buildHref} />);
+      for (let i = 1; i <= 5; i++) {
+        expect(screen.getByText(String(i))).toBeInTheDocument();
+      }
+      expect(screen.queryByText('...')).not.toBeInTheDocument();
+
+      // Page 1 is current (span), others are links
+      expect(screen.getByText('1').tagName).toBe('SPAN');
+      expect(screen.getByText('1')).toHaveAttribute('aria-current', 'page');
+      for (const num of [2, 3, 4, 5]) {
+        expect(screen.getByText(String(num)).tagName).toBe('A');
+      }
+    });
+
+    it('shows all pages when on last page (currentPage=5)', () => {
+      render(<PaginationNav currentPage={5} totalPages={5} buildHref={buildHref} />);
+      for (let i = 1; i <= 5; i++) {
+        expect(screen.getByText(String(i))).toBeInTheDocument();
+      }
+      expect(screen.queryByText('...')).not.toBeInTheDocument();
+
+      // Page 5 is current (span), others are links
+      expect(screen.getByText('5').tagName).toBe('SPAN');
+      expect(screen.getByText('5')).toHaveAttribute('aria-current', 'page');
+      for (const num of [1, 2, 3, 4]) {
+        expect(screen.getByText(String(num)).tagName).toBe('A');
+      }
+    });
+  });
+
+  describe('boundary: totalPages=6 near start and end', () => {
+    it('shows correct pages when on page 2 of 6 (near start)', () => {
+      render(<PaginationNav currentPage={2} totalPages={6} buildHref={buildHref} />);
+
+      // surroundingPageCount=1: rangeStart=max(2,1)=2, rangeEnd=min(5,3)=3
+      // No leading ellipsis (rangeStart=2), trailing ellipsis (rangeEnd=3<5)
+      // Should show: 1 2 3 ... 6
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.getByText('6')).toBeInTheDocument();
+
+      const ellipses = screen.getAllByText('...');
+      expect(ellipses).toHaveLength(1);
+
+      expect(screen.queryByText('4')).not.toBeInTheDocument();
+      expect(screen.queryByText('5')).not.toBeInTheDocument();
+    });
+
+    it('shows correct pages when on page 5 of 6 (near end)', () => {
+      render(<PaginationNav currentPage={5} totalPages={6} buildHref={buildHref} />);
+
+      // surroundingPageCount=1: rangeStart=max(2,4)=4, rangeEnd=min(5,6)=5
+      // Leading ellipsis (rangeStart=4>2), no trailing ellipsis (rangeEnd=5=totalPages-1)
+      // Should show: 1 ... 4 5 6
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('4')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('6')).toBeInTheDocument();
+
+      const ellipses = screen.getAllByText('...');
+      expect(ellipses).toHaveLength(1);
+
+      expect(screen.queryByText('2')).not.toBeInTheDocument();
+      expect(screen.queryByText('3')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('max displayed items count', () => {
+    it('never shows more than 7 items in the page number area (for mobile fit)', () => {
+      // The maximum items occur when both ellipses are shown:
+      // 1 ... (current-1) current (current+1) ... last = 7 items
+      // Test across various page counts and positions
+      const testCases = [
+        { currentPage: 1, totalPages: 6 },
+        { currentPage: 6, totalPages: 6 },
+        { currentPage: 5, totalPages: 10 },
+        { currentPage: 50, totalPages: 100 },
+        { currentPage: 1, totalPages: 100 },
+        { currentPage: 100, totalPages: 100 },
+        { currentPage: 3, totalPages: 7 },
+      ];
+
+      for (const { currentPage, totalPages } of testCases) {
+        const { container, unmount } = render(
+          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        );
+
+        // Count page number items (spans and links inside nav, excluding Previous/Next)
+        const nav = container.querySelector('nav')!;
+        const allChildren = Array.from(nav.children);
+        // Exclude first (Previous) and last (Next) elements
+        const pageItems = allChildren.slice(1, -1);
+
+        expect(pageItems.length).toBeLessThanOrEqual(7);
+
+        unmount();
       }
     });
   });

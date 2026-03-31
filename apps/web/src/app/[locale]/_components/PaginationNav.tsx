@@ -13,12 +13,12 @@ type PaginationNavProps = {
  * - Always shows first and last page
  * - Shows `surroundingPageCount` pages around the current page
  * - Uses ellipsis (null) for gaps
- * - When totalPages <= 7, shows all pages without truncation
+ * - When totalPages <= 5, shows all pages without truncation
  */
 function buildPageItems(currentPage: number, totalPages: number): (number | null)[] {
-  const surroundingPageCount = 2;
+  const surroundingPageCount = 1;
 
-  if (totalPages <= 7) {
+  if (totalPages <= 5) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
