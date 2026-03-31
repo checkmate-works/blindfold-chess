@@ -576,6 +576,8 @@
     "legalMoves": {
       "title": "合法手",
       "description": "ある局面でのすべての合法手を見つける練習",
+      "howToPlayTitle": "問題方式",
+      "howToPlayDescription": "駒と2つのマスが表示されます。その動きが合法かどうかを判断しましょう。",
       "session": "練習中",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",

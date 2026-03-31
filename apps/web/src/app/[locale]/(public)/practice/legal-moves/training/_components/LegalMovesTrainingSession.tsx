@@ -70,6 +70,7 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
   return (
     <div id="legal-moves-training-session" className="min-h-screen">
       <LegalMovesTrainingPlaying
+        locale={locale}
         currentQuestion={currentQuestion}
         showResult={showResult}
         lastAnswer={

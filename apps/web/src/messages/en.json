@@ -575,6 +575,8 @@
     "legalMoves": {
       "title": "Legal Moves",
       "description": "Practice finding all legal moves in a position",
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "A piece and two squares are shown. Determine whether the move is legal or not.",
       "session": "In Progress",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
