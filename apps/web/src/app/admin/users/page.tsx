@@ -86,11 +86,13 @@ export default async function AdminUsersPage({
       const profile = allProfileMap.get(user.id);
       switch (statusFilter) {
         case 'active':
-          return profile != null && profile.bannedAt == null;
+          return profile != null && profile.deletedAt == null && profile.bannedAt == null;
         case 'banned':
-          return profile != null && profile.bannedAt != null;
+          return profile != null && profile.deletedAt == null && profile.bannedAt != null;
         case 'anonymous':
           return profile == null;
+        case 'deleted':
+          return profile != null && profile.deletedAt != null;
         default:
           return true;
       }
@@ -198,6 +200,7 @@ export default async function AdminUsersPage({
             active: t('usersTable.active'),
             banned: t('usersTable.banned'),
             anonymous: t('usersTable.anonymous'),
+            deleted: t('usersTable.deleted'),
           }}
         />
       </div>
@@ -216,6 +219,7 @@ export default async function AdminUsersPage({
         emptyMessage={t('usersTable.noUsersFound')}
         renderRow={(user) => {
           const profile = profileMap.get(user.id);
+          const isDeleted = profile?.deletedAt != null;
           const isBanned = profile?.bannedAt != null;
           const isCurrentUser = currentUser?.id === user.id;
           const banReason = banReasonMap.get(user.id) ?? null;
@@ -263,6 +267,17 @@ export default async function AdminUsersPage({
                   <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-warning-soft text-warning-soft-foreground">
                     {t('usersTable.anonymous')}
                   </span>
+                ) : isDeleted ? (
+                  <div>
+                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground">
+                      {t('usersTable.deleted')}
+                    </span>
+                    {profile.deletedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(profile.deletedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
                 ) : isBanned ? (
                   <div>
                     <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-destructive-soft text-destructive-soft-foreground">
@@ -289,35 +304,43 @@ export default async function AdminUsersPage({
                 {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
               </td>
               <td className="px-4 py-3">
-                <div className="flex items-center gap-2">
-                  {profile && (
-                    <>
-                      <Link
-                        href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
-                        className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                      >
-                        {t('usersTable.viewPosts')}
-                      </Link>
-                      <Link
-                        href={`/admin/activity-log?user=${encodeURIComponent(profile.username)}`}
-                        className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                      >
-                        {t('usersTable.viewActivity')}
-                      </Link>
-                      <Link
-                        href={`/admin/subscriptions?user=${user.id}`}
-                        className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                      >
-                        {t('usersTable.viewSubscriptions')}
-                      </Link>
-                    </>
-                  )}
-                  {!isCurrentUser && profile && (
-                    <>
-                      {isBanned ? <UnbanButton userId={user.id} /> : <BanButton userId={user.id} />}
-                    </>
-                  )}
-                </div>
+                {isDeleted ? (
+                  <span className="text-muted-foreground">—</span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {profile && (
+                      <>
+                        <Link
+                          href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
+                          className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+                        >
+                          {t('usersTable.viewPosts')}
+                        </Link>
+                        <Link
+                          href={`/admin/activity-log?user=${encodeURIComponent(profile.username)}`}
+                          className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+                        >
+                          {t('usersTable.viewActivity')}
+                        </Link>
+                        <Link
+                          href={`/admin/subscriptions?user=${user.id}`}
+                          className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
+                        >
+                          {t('usersTable.viewSubscriptions')}
+                        </Link>
+                      </>
+                    )}
+                    {!isCurrentUser && profile && (
+                      <>
+                        {isBanned ? (
+                          <UnbanButton userId={user.id} />
+                        ) : (
+                          <BanButton userId={user.id} />
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </td>
             </tr>
           );

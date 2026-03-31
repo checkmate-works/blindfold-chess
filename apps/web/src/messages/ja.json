@@ -2201,7 +2201,8 @@
       "plan": "プラン",
       "premium": "Premium",
       "free": "Free",
-      "viewSubscriptions": "サブスクリプション"
+      "viewSubscriptions": "サブスクリプション",
+      "deleted": "退会済み"
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {

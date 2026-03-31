@@ -9,6 +9,7 @@ type StatusFilterProps = {
     active: string;
     banned: string;
     anonymous: string;
+    deleted: string;
   };
 };
 
@@ -38,6 +39,7 @@ export function StatusFilter({ labels }: StatusFilterProps) {
         <option value="active">{labels.active}</option>
         <option value="banned">{labels.banned}</option>
         <option value="anonymous">{labels.anonymous}</option>
+        <option value="deleted">{labels.deleted}</option>
       </select>
     </div>
   );

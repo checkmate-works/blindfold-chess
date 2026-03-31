@@ -14,6 +14,7 @@ const defaultLabels = {
   active: 'Active',
   banned: 'Banned',
   anonymous: 'Anonymous',
+  deleted: 'Deleted',
 };
 
 function renderWithNuqs(
@@ -44,14 +45,15 @@ describe('StatusFilter', () => {
       expect(select).toHaveAttribute('id', 'status-filter');
     });
 
-    it('should render all four options', () => {
+    it('should render all five options', () => {
       renderWithNuqs();
       const options = screen.getAllByRole('option');
-      expect(options).toHaveLength(4);
+      expect(options).toHaveLength(5);
       expect(options[0]).toHaveTextContent('All');
       expect(options[1]).toHaveTextContent('Active');
       expect(options[2]).toHaveTextContent('Banned');
       expect(options[3]).toHaveTextContent('Anonymous');
+      expect(options[4]).toHaveTextContent('Deleted');
     });
 
     it('should render option values correctly', () => {
@@ -61,6 +63,7 @@ describe('StatusFilter', () => {
       expect(options[1]).toHaveAttribute('value', 'active');
       expect(options[2]).toHaveAttribute('value', 'banned');
       expect(options[3]).toHaveAttribute('value', 'anonymous');
+      expect(options[4]).toHaveAttribute('value', 'deleted');
     });
 
     it('should use provided labels for options', () => {
@@ -70,6 +73,7 @@ describe('StatusFilter', () => {
         active: 'Active Users',
         banned: 'Banned Users',
         anonymous: 'Anonymous Users',
+        deleted: 'Deleted Users',
       };
       render(
         <NuqsTestingAdapter>
