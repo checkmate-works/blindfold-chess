@@ -6,10 +6,10 @@ import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuard } from '@/lib/auth';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 
 import {
   INTERVIEW_QUESTION_KEYS,
@@ -27,23 +27,11 @@ export async function saveAnswerAction(
 ): Promise<SaveAnswerResult> {
   const answerValue = formData.get('answerValue') as string | null;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'unauthorized' };
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.saveInterviewAnswer);
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.saveInterviewAnswer);
-  if ('error' in rateLimitResult) {
-    return { error: rateLimitResult.error };
-  }
+  const { user } = guardResult;
 
   // Validate question key
   if (!(INTERVIEW_QUESTION_KEYS as readonly string[]).includes(questionKey)) {
@@ -90,12 +78,7 @@ export async function saveAnswerAction(
       metadata: { questionKey, answerValue: answerValue.trim() },
     });
   } catch (err: unknown) {
-    // PostgreSQL unique_violation error code
-    if (
-      err instanceof Error &&
-      'code' in err &&
-      (err as Record<string, unknown>).code === '23505'
-    ) {
+    if (isUniqueViolation(err)) {
       return { error: 'alreadyAnswered' };
     }
     throw err;

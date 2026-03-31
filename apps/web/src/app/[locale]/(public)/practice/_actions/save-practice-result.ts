@@ -1,12 +1,11 @@
 'use server';
 
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuard } from '@/lib/auth';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { saveChallengeResult } from '@/lib/db/save-challenge-result';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 
 export type SaveResultResponse =
   | { success: true; grantedRanks?: { slug: string; level: number; color: string | null }[] }
@@ -31,26 +30,12 @@ export async function savePracticeResult(
   challengeFields: ChallengeFields
 ): Promise<SaveResultResponse> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      console.warn(`[savePracticeResult] ${menuType}: auth failed — getUser() returned null`);
-      return { success: false, error: 'auth_failed' };
+    const guardResult = await authenticateAndGuard(RATE_LIMITS.savePracticeResult);
+    if ('error' in guardResult) {
+      console.warn(`[savePracticeResult] ${menuType}: guard failed — ${guardResult.error}`);
+      return { success: false, error: guardResult.error };
     }
-
-    if (await isUserBanned(user.id)) {
-      console.warn(`[savePracticeResult] ${menuType}: user ${user.id} is banned`);
-      return { success: false, error: 'user_banned' };
-    }
-
-    const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.savePracticeResult);
-    if ('error' in rateLimitResult) {
-      console.warn(`[savePracticeResult] ${menuType}: rate limited for user ${user.id}`);
-      return { success: false, error: 'rate_limited' };
-    }
+    const { user } = guardResult;
 
     if (!(PRACTICE_MENU_TYPES as readonly string[]).includes(menuType)) {
       console.warn(`[savePracticeResult] invalid menuType: ${menuType}`);

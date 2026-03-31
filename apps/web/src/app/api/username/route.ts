@@ -2,37 +2,19 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { isLameName } from '@/lib/lame-name';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 import { validateUsername } from '@/lib/username';
 
-const PG_UNIQUE_VIOLATION = '23505';
-
-function isUniqueViolation(e: unknown): boolean {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'code' in e &&
-    (e as { code: string }).code === PG_UNIQUE_VIOLATION
-  );
-}
-
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.setupUsername);
+  if ('response' in guardResult) {
+    return guardResult.response;
   }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.setupUsername);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
+  const { user } = guardResult;
 
   let body: { username?: string; displayName?: string };
   try {

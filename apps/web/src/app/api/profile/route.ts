@@ -3,30 +3,17 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { isLameName } from '@/lib/lame-name';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function PUT(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.updateProfile);
+  if ('response' in guardResult) {
+    return guardResult.response;
   }
-
-  if (await isUserBanned(user.id)) {
-    return NextResponse.json({ error: 'banned' }, { status: 403 });
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.updateProfile);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
+  const { user } = guardResult;
 
   let body: {
     displayName?: string;

@@ -6,14 +6,12 @@ import { redirect } from 'next/navigation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts, userFollows } from '@/lib/db';
 import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const MAX_CONTENT_LENGTH = 5000;
+import { RATE_LIMITS } from '@/lib/rate-limit';
+import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
+import { UUID_RE } from '@/lib/validations/uuid';
 
 export type CreateReplyState = {
   error?: string;
@@ -55,23 +53,11 @@ export async function createReplyBase(params: {
   const targetId =
     replyToId && typeof replyToId === 'string' && UUID_RE.test(replyToId) ? replyToId : postId;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'signInRequired' };
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.createReply);
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.createReply);
-  if ('error' in rateLimitResult) {
-    return { error: rateLimitResult.error };
-  }
+  const { user } = guardResult;
 
   // Determine parentId, rootPostId, and which post to check permissions on.
   let parentId: string;

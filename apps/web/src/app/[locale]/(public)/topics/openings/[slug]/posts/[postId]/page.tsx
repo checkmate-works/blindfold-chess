@@ -9,6 +9,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OpeningBoardWithMoves } from '../../../_components/OpeningBoardWithMoves';
+import { getOpeningDisplayName } from '../../../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostById } from '../../../_lib/queries';
 import { RatingDisplay } from '../../_components';
 import { createReply } from './_actions/createReply';
@@ -34,8 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.topicsOpeningPost' });
 
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   return {
     ...generateCanonicalMetadata({
@@ -71,8 +71,7 @@ export default async function OpeningPostDetailPage({ params }: Props) {
       ? dt('replies.followRequired')
       : null;
 
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
 

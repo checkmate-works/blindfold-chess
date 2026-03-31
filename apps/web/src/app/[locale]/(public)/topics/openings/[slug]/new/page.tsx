@@ -10,6 +10,7 @@ import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MiniBoard } from '../../_components/MiniBoard';
+import { getOpeningDisplayName } from '../../_lib/get-opening-display-name';
 import { isBlackOpening } from '../../_lib/openings';
 import { getOpeningBySlug } from '../../_lib/queries';
 import { NewOpeningPostForm } from './_components';
@@ -27,8 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   const t = await getTranslations({ locale, namespace: 'metadata.topicsOpeningNewPost' });
 
@@ -64,8 +64,7 @@ export default async function NewOpeningPostPage({ params }: Props) {
   const dt = await getTranslations({ locale, namespace: 'topics.openings.detail' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
-  const translated = nameT(slug as never);
-  const displayName = translated === `topics.openings.names.${slug}` ? opening.name : translated;
+  const displayName = getOpeningDisplayName(nameT, slug, opening.name);
 
   return (
     <NewTopicPostLayout

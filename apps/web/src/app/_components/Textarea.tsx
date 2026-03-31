@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { TextareaHTMLAttributes } from 'react';
 
+import { INPUT_BASE_CLASSES } from './inputStyles';
+
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   /** Show character counter. Defaults to true when maxLength is set. */
   showCount?: boolean;
@@ -40,7 +42,7 @@ export function Textarea({
   return (
     <div>
       <textarea
-        className={`w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-y ${className}`.trim()}
+        className={`${INPUT_BASE_CLASSES} resize-y ${className}`.trim()}
         maxLength={maxLength}
         value={value}
         defaultValue={defaultValue}

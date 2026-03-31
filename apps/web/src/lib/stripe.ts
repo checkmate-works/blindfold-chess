@@ -16,26 +16,20 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-let _stripePriceId: string | null = null;
-
-export function getStripePriceId(): string {
-  if (!_stripePriceId) {
-    if (!process.env.STRIPE_PRICE_ID) {
-      throw new Error('STRIPE_PRICE_ID is not set');
+function lazyEnv(envVarName: string): () => string {
+  let cached: string | null = null;
+  return () => {
+    if (!cached) {
+      const value = process.env[envVarName];
+      if (!value) {
+        throw new Error(`${envVarName} is not set`);
+      }
+      cached = value;
     }
-    _stripePriceId = process.env.STRIPE_PRICE_ID;
-  }
-  return _stripePriceId;
+    return cached;
+  };
 }
 
-let _stripeWebhookSecret: string | null = null;
+export const getStripePriceId: () => string = lazyEnv('STRIPE_PRICE_ID');
 
-export function getStripeWebhookSecret(): string {
-  if (!_stripeWebhookSecret) {
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      throw new Error('STRIPE_WEBHOOK_SECRET is not set');
-    }
-    _stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  }
-  return _stripeWebhookSecret;
-}
+export const getStripeWebhookSecret: () => string = lazyEnv('STRIPE_WEBHOOK_SECRET');

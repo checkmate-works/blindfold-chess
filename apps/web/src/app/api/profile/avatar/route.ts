@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -17,23 +17,13 @@ const EXTENSION_MAP: Record<string, string> = {
 };
 
 export async function POST(request: Request) {
+  const guardResult = await authenticateAndGuardApi(RATE_LIMITS.uploadAvatar);
+  if ('response' in guardResult) {
+    return guardResult.response;
+  }
+  const { user } = guardResult;
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
-
-  if (await isUserBanned(user.id)) {
-    return NextResponse.json({ error: 'banned' }, { status: 403 });
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.uploadAvatar);
-  if ('error' in rateLimitResult) {
-    return NextResponse.json({ error: 'rateLimited' }, { status: 429 });
-  }
 
   let formData: FormData;
   try {

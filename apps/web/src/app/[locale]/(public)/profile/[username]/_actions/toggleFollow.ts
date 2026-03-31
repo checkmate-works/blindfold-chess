@@ -5,11 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { logActivityEvent } from '@/lib/activity-log';
-import { isUserBanned } from '@/lib/ban';
+import { authenticateAndGuard } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
+import { toggleByInsert } from '@/lib/db/toggle-by-insert';
 import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { createClient } from '@/lib/supabase/server';
+import { RATE_LIMITS } from '@/lib/rate-limit';
 
 type ToggleFollowResult = { following: boolean } | { error: string };
 
@@ -17,23 +17,11 @@ export async function toggleFollow(
   targetUsername: string,
   locale: string
 ): Promise<ToggleFollowResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: 'signInRequired' };
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleFollow);
+  if ('error' in guardResult) {
+    return { error: guardResult.error };
   }
-
-  if (await isUserBanned(user.id)) {
-    return { error: 'banned' };
-  }
-
-  const rateLimitResult = await checkRateLimit(user.id, RATE_LIMITS.toggleFollow);
-  if ('error' in rateLimitResult) {
-    return { error: rateLimitResult.error };
-  }
+  const { user } = guardResult;
 
   // Look up the target user's profile by username
   const [targetProfile] = await db
@@ -50,37 +38,15 @@ export async function toggleFollow(
     return { error: 'cannotFollowSelf' };
   }
 
-  // INSERT-first pattern: attempt to insert, catch unique violation to toggle.
-  // This avoids the race condition of SELECT-then-INSERT.
-  let following: boolean;
-  try {
-    await db.insert(userFollows).values({
-      followerId: user.id,
-      followingId: targetProfile.id,
-    });
-    following = true;
-  } catch (err: unknown) {
-    // drizzle-orm may wrap PostgresError in a generic Error with the original
-    // as `cause`. Check both the error itself and its cause for the PG code.
-    const pgCode =
-      (err instanceof Error &&
-        (('code' in err && (err as { code: string }).code) ||
-          (err.cause instanceof Error &&
-            'code' in err.cause &&
-            (err.cause as { code: string }).code))) ||
-      undefined;
-    const isUniqueViolation = pgCode === '23505';
-    if (!isUniqueViolation) {
-      throw err;
-    }
-    // Already following — unfollow
-    await db
-      .delete(userFollows)
-      .where(
-        and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfile.id))
-      );
-    following = false;
-  }
+  const following = await toggleByInsert(
+    () => db.insert(userFollows).values({ followerId: user.id, followingId: targetProfile.id }),
+    () =>
+      db
+        .delete(userFollows)
+        .where(
+          and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, targetProfile.id))
+        )
+  );
 
   logActivityEvent({
     userId: user.id,
