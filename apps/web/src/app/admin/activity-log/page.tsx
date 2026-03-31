@@ -1,7 +1,9 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -231,7 +233,7 @@ export default async function AdminActivityLogPage({
           <thead className="bg-accent">
             <tr>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.action')}</th>
-              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.user')}</th>
+              <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.username')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.target')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.metadata')}</th>
               <th className="text-left px-4 py-3 font-medium">{t('activityLogTable.timestamp')}</th>
@@ -240,10 +242,8 @@ export default async function AdminActivityLogPage({
           <tbody className="bg-card">
             {logs.map((log) => {
               const userDisplay = formatUserDisplay(log.userId, profileMap, emailMap);
-              const targetDisplay = log.targetId
-                ? formatUserDisplay(log.targetId, profileMap, emailMap)
-                : '-';
               const metadataStr = log.metadata ? JSON.stringify(log.metadata) : '-';
+              const metadata = log.metadata as Record<string, unknown> | null;
 
               return (
                 <tr key={log.id} className="border-t border-border">
@@ -254,12 +254,56 @@ export default async function AdminActivityLogPage({
                       {log.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{userDisplay}</td>
                   <td className="px-4 py-3">
-                    {log.targetType && (
-                      <span className="text-muted-foreground text-xs mr-1">[{log.targetType}]</span>
+                    {profileMap.get(log.userId)?.username ? (
+                      <Link
+                        href={`/en/profile/${encodeURIComponent(profileMap.get(log.userId)!.username!)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        {profileMap.get(log.userId)!.username}
+                        <FaExternalLinkAlt className="h-3 w-3" />
+                      </Link>
+                    ) : (
+                      userDisplay
                     )}
-                    {targetDisplay}
+                  </td>
+                  <td className="px-4 py-3">
+                    {log.targetType ? (
+                      <>
+                        <span className="text-muted-foreground text-xs mr-1">
+                          [{log.targetType}]
+                        </span>
+                        {log.targetType === 'user' && log.targetId ? (
+                          profileMap.get(log.targetId)?.username ? (
+                            <Link
+                              href={`/en/profile/${encodeURIComponent(profileMap.get(log.targetId)!.username!)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              {profileMap.get(log.targetId)!.username}
+                              <FaExternalLinkAlt className="h-3 w-3" />
+                            </Link>
+                          ) : (
+                            formatUserDisplay(log.targetId, profileMap, emailMap)
+                          )
+                        ) : log.targetType === 'rank' ? (
+                          <span className="text-xs">
+                            {metadata?.rankSlug ? String(metadata.rankSlug) : (log.targetId ?? '-')}
+                          </span>
+                        ) : log.targetType === 'topic_post' && log.targetId ? (
+                          <span className="text-xs" title={log.targetId}>
+                            {log.targetId.slice(0, 8)}...
+                          </span>
+                        ) : (
+                          <span className="text-xs">{log.targetId ?? '-'}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {metadataStr !== '-' && metadataStr !== '{}' ? (

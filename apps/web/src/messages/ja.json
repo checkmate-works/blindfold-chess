@@ -2272,7 +2272,7 @@
     "activityLog": "Activity Log",
     "activityLogTable": {
       "action": "Action",
-      "user": "User",
+      "username": "UserName",
       "target": "Target",
       "metadata": "Metadata",
       "timestamp": "Timestamp",
