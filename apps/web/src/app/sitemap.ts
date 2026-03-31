@@ -1,12 +1,19 @@
 import { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import enMessages from '@/messages/en.json';
+import { and, eq, isNull } from 'drizzle-orm';
 
+import { db, topicPosts } from '@/lib/db';
+import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+
+import { getPublishedAnnouncements } from './[locale]/(public)/announcements/_lib/queries';
 import { getPublishedArticlesForSitemap } from './[locale]/(public)/articles/_lib/queries';
 import { getCategoryCounts, getUniqueLetters } from './[locale]/(public)/glossary/_lib/queries';
 import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
 import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
+import { INTERVIEW_QUESTION_KEYS } from './[locale]/_lib/interview';
 
 const BASE_URL = SITE_URL;
 
@@ -62,10 +69,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/practice/quadrants',
     '/getting-started',
     '/articles',
+    '/announcements',
+    '/leaderboard',
+    '/ranks',
+    '/pricing',
+    '/affiliate-disclosure',
+    '/topics',
+    '/topics/openings',
+    '/topics/squares',
+    '/interview',
+    '/games',
     '/games/new',
     '/games/new/standard',
     '/games/new/pgn',
     '/games/new/position',
+    '/games/new/opening',
     '/games/play',
   ];
 
@@ -170,6 +188,121 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error('Error fetching articles for sitemap:', error);
+  }
+
+  // Dynamic pages - Announcements
+  try {
+    const allAnnouncements = await getPublishedAnnouncements();
+    const seenSlugs = new Set<string>();
+
+    for (const announcement of allAnnouncements) {
+      if (seenSlugs.has(announcement.slug)) continue;
+      seenSlugs.add(announcement.slug);
+
+      const path = `/announcements/${announcement.slug}`;
+      for (const locale of SUPPORTED_LOCALES) {
+        sitemap.push({
+          url: `${BASE_URL}/${locale}${path}`,
+          lastModified: announcement.publishedAt ?? now,
+          alternates: generateAlternates(path),
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching announcements for sitemap:', error);
+  }
+
+  // Dynamic pages - Ranks
+  for (const slug of ALL_RANK_SLUGS) {
+    const path = `/ranks/${slug}`;
+    for (const locale of SUPPORTED_LOCALES) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}${path}`,
+        lastModified: now,
+        alternates: generateAlternates(path),
+      });
+    }
+  }
+
+  // Dynamic pages - Rank guide pages
+  const guidePages = enMessages.ranks.detail.guidePages as Record<string, unknown[]>;
+  for (const [slug, pages] of Object.entries(guidePages)) {
+    for (let page = 1; page <= pages.length; page++) {
+      const path = page === 1 ? `/ranks/${slug}/guide` : `/ranks/${slug}/guide/${page}`;
+      for (const locale of SUPPORTED_LOCALES) {
+        sitemap.push({
+          url: `${BASE_URL}/${locale}${path}`,
+          lastModified: now,
+          alternates: generateAlternates(path),
+        });
+      }
+    }
+  }
+
+  // Dynamic pages - Topics (openings with posts)
+  try {
+    const openingTopics = await db
+      .selectDistinct({ topicKey: topicPosts.topicKey })
+      .from(topicPosts)
+      .where(
+        and(
+          eq(topicPosts.topicType, 'opening'),
+          isNull(topicPosts.parentId),
+          isNull(topicPosts.deletedAt)
+        )
+      );
+
+    for (const { topicKey } of openingTopics) {
+      const path = `/topics/openings/${topicKey}`;
+      for (const locale of SUPPORTED_LOCALES) {
+        sitemap.push({
+          url: `${BASE_URL}/${locale}${path}`,
+          lastModified: now,
+          alternates: generateAlternates(path),
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching opening topics for sitemap:', error);
+  }
+
+  // Dynamic pages - Topics (squares with posts)
+  try {
+    const squareTopics = await db
+      .selectDistinct({ topicKey: topicPosts.topicKey })
+      .from(topicPosts)
+      .where(
+        and(
+          eq(topicPosts.topicType, 'square'),
+          isNull(topicPosts.parentId),
+          isNull(topicPosts.deletedAt)
+        )
+      );
+
+    for (const { topicKey } of squareTopics) {
+      const path = `/topics/squares/${topicKey}`;
+      for (const locale of SUPPORTED_LOCALES) {
+        sitemap.push({
+          url: `${BASE_URL}/${locale}${path}`,
+          lastModified: now,
+          alternates: generateAlternates(path),
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching square topics for sitemap:', error);
+  }
+
+  // Dynamic pages - Interview questions
+  for (const key of INTERVIEW_QUESTION_KEYS) {
+    const path = `/interview/${key}`;
+    for (const locale of SUPPORTED_LOCALES) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}${path}`,
+        lastModified: now,
+        alternates: generateAlternates(path),
+      });
+    }
   }
 
   return sitemap;
