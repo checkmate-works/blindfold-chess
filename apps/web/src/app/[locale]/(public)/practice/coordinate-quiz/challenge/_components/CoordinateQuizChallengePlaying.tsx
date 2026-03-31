@@ -12,7 +12,7 @@ import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTime
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 
-import { CoordinateQuizBoard } from '../../_components/CoordinateQuizBoard';
+import { CoordinateQuizGameBoard } from '../../_components/CoordinateQuizGameBoard';
 import type { CoordinateQuestion } from '../../_lib/types';
 
 type Props = {
@@ -58,16 +58,15 @@ export function CoordinateQuizChallengePlaying({
   onQuitConfirm,
   onQuitCancel,
 }: Props) {
-  const t = useTranslations('practice.coordinateQuiz');
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
   return (
     <div id="quiz-session">
       <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
-          <div className="mb-4 relative flex items-center justify-center min-h-[50px]">
+          <div className="mb-4 relative flex items-center justify-between min-h-[50px]">
             {/* Lives - left side */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <div className="flex items-center gap-1">
               {Array.from({ length: maxLives }, (_, i) => (
                 <span key={i} className="text-destructive">
                   {i < remainingLives ? (
@@ -78,20 +77,8 @@ export function CoordinateQuizChallengePlaying({
                 </span>
               ))}
             </div>
-            {/* Orientation indicator - center */}
+            {/* Timer and Pause - right side */}
             <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded-full border-2 ${
-                  currentQuestion?.orientation === 'white'
-                    ? 'bg-white border-gray-800 dark:border-gray-600'
-                    : 'bg-gray-800 dark:bg-gray-700 border-gray-800 dark:border-gray-600'
-                }`}
-              />
-              <span className="text-sm font-medium text-muted-foreground">
-                {currentQuestion?.orientation === 'white' ? t('whiteToMove') : t('blackToMove')}
-              </span>
-            </div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {onTogglePause && (
                 <button
                   onClick={onTogglePause}
@@ -116,9 +103,12 @@ export function CoordinateQuizChallengePlaying({
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-lg">
+          <div className="relative">
             {/* Pause Overlay with Play Button */}
-            <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
+            <BoardOverlay
+              isVisible={isPaused}
+              className="backdrop-blur-sm bg-black/40 z-50 rounded-lg"
+            >
               <button
                 onClick={onTogglePause}
                 className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
@@ -128,46 +118,15 @@ export function CoordinateQuizChallengePlaying({
               </button>
             </BoardOverlay>
 
-            {/* Countdown Overlay */}
-            <BoardOverlay
-              isVisible={countdown !== null}
-              className="backdrop-blur-md z-50"
-              data-testid="countdown-overlay"
-            >
-              <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-                {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-              </span>
-            </BoardOverlay>
-
-            <div
-              className={`transition-all duration-300 ${isPaused || countdown !== null ? 'blur-sm' : ''}`}
-            >
-              <CoordinateQuizBoard
-                orientation={currentQuestion?.orientation || 'white'}
-                onSquareClick={onSquareClick}
-                highlightedSquares={
-                  countdown === null && showFeedback && currentQuestion
-                    ? {
-                        ...(lastClickedSquare
-                          ? { [lastClickedSquare]: isCorrect ? 'correct' : 'incorrect' }
-                          : {}),
-                        ...(currentQuestion
-                          ? { [currentQuestion.targetSquare]: 'target' as const }
-                          : {}),
-                      }
-                    : {}
-                }
-              ></CoordinateQuizBoard>
-
-              {/* Target Square Overlay */}
-              {currentQuestion && !showFeedback && countdown === null && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-6xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in fade-in zoom-in duration-300">
-                    {currentQuestion.targetSquare}
-                  </span>
-                </div>
-              )}
-            </div>
+            <CoordinateQuizGameBoard
+              currentQuestion={currentQuestion}
+              onSquareClick={onSquareClick}
+              lastClickedSquare={lastClickedSquare}
+              showFeedback={showFeedback}
+              isCorrect={isCorrect}
+              countdown={countdown}
+              isObscured={isPaused}
+            />
           </div>
         </div>
       </div>
