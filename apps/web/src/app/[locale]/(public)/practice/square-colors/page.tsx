@@ -3,7 +3,9 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
 import { SquareColorsSetup } from './_components/SquareColorsSetup';
 
-const { dynamic, generateMetadata, Page } = createPracticeTopPage({
+export const dynamic = 'force-dynamic';
+
+const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'squareColors',
   canonicalPath: 'practice/square-colors',
   renderSetup: (locale) => <SquareColorsSetup locale={locale} />,
@@ -21,5 +23,5 @@ const { dynamic, generateMetadata, Page } = createPracticeTopPage({
   ),
 });
 
-export { dynamic, generateMetadata };
+export { generateMetadata };
 export default Page;

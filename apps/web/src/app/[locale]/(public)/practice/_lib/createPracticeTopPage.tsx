@@ -27,8 +27,6 @@ type PracticeTopPageConfig = {
 };
 
 export function createPracticeTopPage(config: PracticeTopPageConfig) {
-  const dynamic = 'force-dynamic' as const;
-
   async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
     setRequestLocale(locale);
@@ -72,5 +70,5 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     );
   }
 
-  return { dynamic, generateMetadata, Page };
+  return { generateMetadata, Page };
 }

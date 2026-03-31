@@ -3,7 +3,9 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
 import { LegalMoves } from './_components/LegalMoves';
 
-const { dynamic, generateMetadata, Page } = createPracticeTopPage({
+export const dynamic = 'force-dynamic';
+
+const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'legalMoves',
   canonicalPath: 'practice/legal-moves',
   renderSetup: (locale) => <LegalMoves locale={locale} />,
@@ -44,5 +46,5 @@ const { dynamic, generateMetadata, Page } = createPracticeTopPage({
   ),
 });
 
-export { dynamic, generateMetadata };
+export { generateMetadata };
 export default Page;

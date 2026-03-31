@@ -3,7 +3,9 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
 import CoordinateQuiz from './_components/CoordinateQuiz';
 
-const { dynamic, generateMetadata, Page } = createPracticeTopPage({
+export const dynamic = 'force-dynamic';
+
+const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'coordinateQuiz',
   canonicalPath: 'practice/coordinate-quiz',
   renderSetup: (locale) => <CoordinateQuiz locale={locale} />,
@@ -37,5 +39,5 @@ const { dynamic, generateMetadata, Page } = createPracticeTopPage({
   ),
 });
 
-export { dynamic, generateMetadata };
+export { generateMetadata };
 export default Page;
