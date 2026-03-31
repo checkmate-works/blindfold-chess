@@ -433,6 +433,7 @@
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
     "startChallenge": "Start Challenge",
+    "switchToTraining": "📖 Practice in training mode",
     "challengeSetup": {
       "title": "Challenge Rules",
       "timeLimit": "Answer as many questions as you can within {seconds} seconds.",
@@ -442,6 +443,9 @@
     },
     "endTraining": "End",
     "trainingEnded": "Training ended",
+    "trainingModeActive": "📖 Practicing in training mode",
+    "readyForChallenge": "Are you ready?",
+    "goToChallenge": "⚔️ Take the Challenge",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",

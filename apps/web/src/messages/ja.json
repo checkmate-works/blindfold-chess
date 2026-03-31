@@ -434,6 +434,7 @@
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
     "startChallenge": "チャレンジ開始",
+    "switchToTraining": "📖 トレーニングモードで練習する",
     "challengeSetup": {
       "title": "チャレンジルール",
       "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
@@ -443,6 +444,9 @@
     },
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
+    "trainingModeActive": "📖 トレーニングモードで練習中",
+    "readyForChallenge": "準備はできましたか？",
+    "goToChallenge": "⚔️ チャレンジに挑戦",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",

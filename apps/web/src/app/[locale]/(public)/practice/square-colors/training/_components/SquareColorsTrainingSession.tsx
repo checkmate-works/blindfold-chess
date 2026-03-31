@@ -88,6 +88,7 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}
+        locale={locale}
       />
     </div>
   );
