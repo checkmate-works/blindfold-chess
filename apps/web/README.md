@@ -142,6 +142,19 @@ Stripe-based subscription billing ($1/month ad-free plan). Covers API keys, Prod
 
 See [docs/stripe-setup.md](docs/stripe-setup.md) for setup instructions.
 
+## Cron Jobs
+
+Monthly leaderboard badges are granted automatically via a Vercel Cron Job.
+
+- **Schedule:** Every 1st of the month at UTC 01:00 (JST 10:00)
+- **Endpoint:** `/api/cron/grant-monthly-leaderboard-badges`
+- **Configuration:** `vercel.json` (`crons` field)
+
+After deploying, verify the following in the Vercel dashboard:
+
+1. **Settings > Cron Jobs** - Confirm the job is registered and shows the correct schedule
+2. **Settings > Environment Variables** - Confirm `CRON_SECRET` is set in the Production environment (Vercel auto-generates this variable for Cron Jobs)
+
 ## Available Scripts
 
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:

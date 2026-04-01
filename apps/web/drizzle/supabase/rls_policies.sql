@@ -313,3 +313,21 @@ ALTER TABLE "user_ranks" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "user_ranks_select_policy" ON "user_ranks";
 CREATE POLICY "user_ranks_select_policy" ON "user_ranks"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- achievements (master data — public read, service role only write)
+-- =============================================================================
+ALTER TABLE "achievements" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "achievements_select_policy" ON "achievements";
+CREATE POLICY "achievements_select_policy" ON "achievements"
+  FOR SELECT USING (true);
+
+-- =============================================================================
+-- user_achievements (immutable log — public read, service role only write)
+-- =============================================================================
+ALTER TABLE "user_achievements" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_achievements_select_policy" ON "user_achievements";
+CREATE POLICY "user_achievements_select_policy" ON "user_achievements"
+  FOR SELECT USING (true);
