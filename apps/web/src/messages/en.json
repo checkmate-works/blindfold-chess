@@ -2512,6 +2512,8 @@
     "achievementsSection": "Achievements",
     "noAchievements": "No achievements yet.",
     "achievedOn": "Achieved:",
+    "viewAllAchievements": "View all",
+    "achievementsPageTitle": "All Achievements",
     "achievementCategory": {
       "monthly_leaderboard": "Monthly Leaderboard",
       "cumulative": "Cumulative",

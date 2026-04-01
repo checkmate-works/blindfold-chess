@@ -214,25 +214,6 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           </div>
         )}
 
-        {/* Achievements */}
-        <ProfileAchievements
-          achievements={userAchievementRows}
-          locale={locale}
-          labels={{
-            sectionTitle: t('achievementsSection'),
-            noAchievements: t('noAchievements'),
-            achievedOn: t('achievedOn'),
-            categoryNames: {
-              monthly_leaderboard: t('achievementCategory.monthly_leaderboard'),
-              cumulative: t('achievementCategory.cumulative'),
-              streak: t('achievementCategory.streak'),
-              one_shot: t('achievementCategory.one_shot'),
-              social: t('achievementCategory.social'),
-              ai_defeat: t('achievementCategory.ai_defeat'),
-            },
-          }}
-        />
-
         {/* Topics Tab */}
         <ProfilePosts
           posts={posts}
@@ -251,6 +232,29 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
               topicType === 'opening'
                 ? tOpenings('newReply', { time: '{time}' })
                 : tSquares('newReply', { time: '{time}' }),
+          }}
+        />
+
+        {/* Achievements */}
+        <ProfileAchievements
+          achievements={userAchievementRows}
+          locale={locale}
+          limit={4}
+          totalCount={userAchievementRows.length}
+          username={username}
+          labels={{
+            sectionTitle: t('achievementsSection'),
+            noAchievements: t('noAchievements'),
+            achievedOn: t('achievedOn'),
+            viewAll: t('viewAllAchievements'),
+            categoryNames: {
+              monthly_leaderboard: t('achievementCategory.monthly_leaderboard'),
+              cumulative: t('achievementCategory.cumulative'),
+              streak: t('achievementCategory.streak'),
+              one_shot: t('achievementCategory.one_shot'),
+              social: t('achievementCategory.social'),
+              ai_defeat: t('achievementCategory.ai_defeat'),
+            },
           }}
         />
       </div>

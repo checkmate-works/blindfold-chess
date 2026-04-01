@@ -37,6 +37,29 @@ export async function getUserAchievements(userId: string): Promise<UserAchieveme
   return rows;
 }
 
+/** Fetch achievements for a user with pagination. Sorted by achievedAt DESC. */
+export async function getUserAchievementsPaginated(
+  userId: string,
+  options: { limit: number; offset: number }
+): Promise<UserAchievementRow[]> {
+  const rows = await db
+    .select({
+      slug: achievements.slug,
+      category: achievements.category,
+      iconKey: achievements.iconKey,
+      metadata: userAchievements.metadata,
+      achievedAt: userAchievements.achievedAt,
+    })
+    .from(userAchievements)
+    .innerJoin(achievements, eq(userAchievements.achievementId, achievements.id))
+    .where(eq(userAchievements.userId, userId))
+    .orderBy(desc(userAchievements.achievedAt))
+    .limit(options.limit)
+    .offset(options.offset);
+
+  return rows;
+}
+
 /** Count achievements for a user (profile summary). */
 export async function getUserAchievementCount(userId: string): Promise<number> {
   const [row] = await db

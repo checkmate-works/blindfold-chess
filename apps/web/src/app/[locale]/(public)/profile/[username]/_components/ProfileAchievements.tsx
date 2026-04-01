@@ -1,3 +1,5 @@
+import { Link } from '@/i18n/routing';
+
 import type { UserAchievementRow } from '@/lib/db/achievement-queries';
 
 // ---------------------------------------------------------------------------
@@ -7,11 +9,19 @@ import type { UserAchievementRow } from '@/lib/db/achievement-queries';
 type Props = {
   achievements: UserAchievementRow[];
   locale: string;
+  /** Maximum number of badges to display. When omitted, all are shown. */
+  limit?: number;
+  /** Total count of achievements (needed to decide whether to show "View all"). */
+  totalCount?: number;
+  /** Username for building the "View all" link. */
+  username?: string;
   labels: {
     sectionTitle: string;
     noAchievements: string;
     categoryNames: Record<string, string>;
     achievedOn: string;
+    /** Label for the "View all" link. Only required when limit is set. */
+    viewAll?: string;
   };
 };
 
@@ -74,7 +84,17 @@ function slugToDisplayName(slug: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function ProfileAchievements({ achievements, locale, labels }: Props) {
+export function ProfileAchievements({
+  achievements,
+  locale,
+  limit,
+  totalCount,
+  username,
+  labels,
+}: Props) {
+  const displayCount = totalCount ?? achievements.length;
+  const hasMore = limit != null && username != null && displayCount > limit;
+
   if (achievements.length === 0) {
     return (
       <div className="space-y-3">
@@ -86,9 +106,12 @@ export function ProfileAchievements({ achievements, locale, labels }: Props) {
     );
   }
 
-  // Group by category
+  // When limit is specified, show a flat list (no category grouping) of the most recent items
+  const displayItems = limit != null ? achievements.slice(0, limit) : achievements;
+
+  // Group by category (used only in full view)
   const grouped = new Map<string, UserAchievementRow[]>();
-  for (const achievement of achievements) {
+  for (const achievement of displayItems) {
     const list = grouped.get(achievement.category) ?? [];
     list.push(achievement);
     grouped.set(achievement.category, list);
@@ -98,7 +121,7 @@ export function ProfileAchievements({ achievements, locale, labels }: Props) {
     <div className="space-y-3">
       <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
         {labels.sectionTitle}{' '}
-        <span className="text-muted-foreground font-normal">{achievements.length}</span>
+        <span className="text-muted-foreground font-normal">{displayCount}</span>
       </h2>
 
       {Array.from(grouped.entries()).map(([category, items]) => (
@@ -141,6 +164,18 @@ export function ProfileAchievements({ achievements, locale, labels }: Props) {
           </div>
         </div>
       ))}
+
+      {hasMore && labels.viewAll && (
+        <div className="text-center">
+          <Link
+            href={`/@/${username}/achievements`}
+            locale={locale}
+            className="text-sm text-primary hover:underline"
+          >
+            {labels.viewAll}
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

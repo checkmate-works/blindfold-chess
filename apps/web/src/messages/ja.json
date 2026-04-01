@@ -2477,6 +2477,8 @@
     "achievementsSection": "アチーブメント",
     "noAchievements": "まだアチーブメントはありません。",
     "achievedOn": "取得日:",
+    "viewAllAchievements": "すべて見る",
+    "achievementsPageTitle": "すべてのアチーブメント",
     "achievementCategory": {
       "monthly_leaderboard": "月間リーダーボード",
       "cumulative": "累積",
