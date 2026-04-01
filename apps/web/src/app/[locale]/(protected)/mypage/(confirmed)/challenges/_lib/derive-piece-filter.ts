@@ -1,34 +1,18 @@
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
+import { PIECE_NAME_TO_SHORT, PIECE_TYPES, type PieceFullName } from '@/lib/chess-pieces';
+
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 
 export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
-
-export const PIECE_TYPES = ['k', 'q', 'r', 'b', 'n'] as const;
+export {
+  PIECE_TYPES,
+  PIECE_SHORT_TO_NAME,
+  PIECE_NAME_TO_SHORT,
+  type PieceFullName,
+} from '@/lib/chess-pieces';
 
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
-
-/** Map from PieceType short code to full piece name (stored as leaderboardKey in DB). */
-export const PIECE_SHORT_TO_NAME: Record<(typeof PIECE_TYPES)[number], string> = {
-  k: 'king',
-  q: 'queen',
-  r: 'rook',
-  b: 'bishop',
-  n: 'knight',
-};
-
-/** Piece full names used as leaderboard keys in DB. */
-export type PieceFullName = 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'random';
-
-/** Map from full piece name (stored as leaderboardKey in DB) to PieceType short code. */
-export const PIECE_NAME_TO_SHORT: Record<PieceFullName, PieceSelection> = {
-  king: 'k',
-  queen: 'q',
-  rook: 'r',
-  bishop: 'b',
-  knight: 'n',
-  random: 'random',
-};
 
 /**
  * Derive a piece selection from session data.

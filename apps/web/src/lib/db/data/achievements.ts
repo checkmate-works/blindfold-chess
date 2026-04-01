@@ -8,22 +8,12 @@
  * These are repeatable achievements: a user can earn the same badge every
  * month they place in the top 3.
  */
+import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
+
 import type { AchievementCriteria } from '../achievement-criteria-types';
-import { CHALLENGE_MENU_TYPES, type ChallengeMenuType } from '../practice-menu-types';
+import { CHALLENGE_MENU_TYPES } from '../practice-menu-types';
 
-// ---------------------------------------------------------------------------
-// Leaderboard keys per challenge menu type
-// (mirrors MODULE_KEYS from leaderboard/_lib/types.ts, kept here to avoid
-//  importing from app-layer code into data-layer seed files)
-// ---------------------------------------------------------------------------
-
-export const LEADERBOARD_KEYS: Record<ChallengeMenuType, readonly string[]> = {
-  coordinate_quiz: ['white', 'black', 'random'],
-  legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
-  square_colors: ['default'],
-  diagonal_quiz: ['default'],
-  board_symmetry: ['default'],
-};
+export { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
 
 // ---------------------------------------------------------------------------
 // Placement helpers

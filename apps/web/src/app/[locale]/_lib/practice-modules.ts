@@ -9,7 +9,7 @@
  * ### 1. Register the module (this file: `_lib/practice-modules.ts`)
  *    - Add identifier to `PRACTICE_MODULES` (UPPER_SNAKE for key, kebab-case for value)
  *    - Add translation key to `PRACTICE_MODULE_TRANSLATION_KEYS` (camelCase)
- *    - Add icon to `PRACTICE_MODULE_ICONS`
+ *    - Add icon to `PRACTICE_EMOJIS` in `practice/_lib/practice-emojis.ts`
  *
  * ### 2. Create route directory (`practice/<module-slug>/`)
  *    Typical structure (see `coordinate-quiz/` as reference):
@@ -75,6 +75,7 @@
  * ### 6. Learn integration (if a related article exists)
  *    - `learn/_lib/types.ts` — Add entry to `ARTICLE_PRACTICE_MAPPING`
  */
+import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 
 // Practice module identifiers (kebab-case for URLs)
 export const PRACTICE_MODULES = {
@@ -104,19 +105,6 @@ export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> 
   [PRACTICE_MODULES.BOARD_SYMMETRY]: 'boardSymmetry',
 } as const;
 
-// Icon mapping for visual representation
-export const PRACTICE_MODULE_ICONS: Record<PracticeModuleId, string> = {
-  [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: '🔤',
-  [PRACTICE_MODULES.COORDINATE_QUIZ]: '🎯',
-  [PRACTICE_MODULES.DIAGONAL_QUIZ]: '↗️',
-  [PRACTICE_MODULES.FEN]: '📝',
-  [PRACTICE_MODULES.KNIGHT_TOUR]: '♞',
-  [PRACTICE_MODULES.LEGAL_MOVES]: '♗',
-  [PRACTICE_MODULES.POSITION_MEMORY]: '🧠',
-  [PRACTICE_MODULES.SQUARE_COLORS]: '🏁',
-  [PRACTICE_MODULES.BOARD_SYMMETRY]: '🦋',
-} as const;
-
 /**
  * Get translation key for a practice module
  * @param moduleId - The practice module identifier
@@ -127,10 +115,19 @@ export function getPracticeModuleTranslationKey(moduleId: PracticeModuleId): str
 }
 
 /**
- * Get icon for a practice module
- * @param moduleId - The practice module identifier
+ * Get icon for a practice module.
+ *
+ * Delegates to PRACTICE_EMOJIS (the single source of truth for practice
+ * module emojis) by converting the kebab-case module ID to snake_case.
+ *
+ * @param moduleId - The practice module identifier (kebab-case)
  * @returns Emoji icon string
  */
 export function getPracticeModuleIcon(moduleId: PracticeModuleId): string {
-  return PRACTICE_MODULE_ICONS[moduleId];
+  // PRACTICE_EMOJIS uses snake_case keys; PracticeModuleId uses kebab-case
+  const snakeKey = moduleId.replace(/-/g, '_');
+  return PRACTICE_EMOJIS[snakeKey as keyof typeof PRACTICE_EMOJIS] ?? '';
 }
+
+// Re-export PRACTICE_EMOJIS for consumers that need it with snake_case keys
+export { PRACTICE_EMOJIS };

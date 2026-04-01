@@ -4,13 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { shuffleArray } from '@blindfold-chess/features/common';
+
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/_hooks/use-piece-accuracy';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import { aggregateResults } from '@/app/[locale]/(public)/practice/_lib/aggregate-results';
-import { shuffleArray } from '@/app/[locale]/(public)/practice/_lib/shuffle';
 import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';

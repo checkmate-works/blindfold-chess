@@ -1,4 +1,5 @@
 import type { RankedLeaderboardRow } from '@/lib/db/challenge-queries';
+import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
 
 export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 
@@ -45,13 +46,7 @@ export const MODULES = [
   'board_symmetry',
 ] as const satisfies readonly LeaderboardModule[];
 
-export const MODULE_KEYS = {
-  coordinate_quiz: ['white', 'black', 'random'],
-  legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
-  square_colors: ['default'],
-  diagonal_quiz: ['default'],
-  board_symmetry: ['default'],
-} as const satisfies Record<LeaderboardModule, readonly string[]>;
+export const MODULE_KEYS = LEADERBOARD_KEYS;
 
 export const VALID_PERIODS = [
   'all-time',

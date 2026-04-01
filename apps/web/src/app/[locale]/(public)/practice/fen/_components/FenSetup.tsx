@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton, Button } from '@/app/_components';
+import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
 import { FaPlay } from 'react-icons/fa';
 
-import { validateFEN } from '@/app/[locale]/(public)/practice/_lib/accuracy';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

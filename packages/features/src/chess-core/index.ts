@@ -15,11 +15,13 @@ export { toMoveResult } from "./types";
 
 export {
   validateFen,
+  validateFenFormat,
   fenToBoard,
   fenToBoardFlat,
   getTurnFromFen,
   getFenAfterMoves,
   getStartingFen,
+  fenToLichessUrl,
 } from "./fen";
 
 export {
@@ -71,5 +73,7 @@ export {
   findKingSquare,
   validatePosition,
 } from "./position";
+
+export { formatLastMove } from "./format";
 
 export { ChessGameManager } from "./game-manager";

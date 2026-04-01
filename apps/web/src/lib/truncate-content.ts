@@ -1,4 +1,5 @@
-export function truncateContent(content: string, maxLength = 200): string {
-  if (content.length <= maxLength) return content;
-  return content.slice(0, maxLength).trimEnd() + '...';
-}
+/**
+ * Re-export from @blindfold-chess/features for backward compatibility.
+ * The canonical source is now in packages/features/src/utils/.
+ */
+export { truncateContent } from '@blindfold-chess/features/utils';

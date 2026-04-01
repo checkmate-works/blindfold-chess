@@ -1,11 +1,13 @@
-import { shuffleArray } from '@/app/[locale]/(public)/practice/_lib/shuffle';
+import { shuffleArray } from '@blindfold-chess/features/common';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FEN_STRINGS } from '../_data/positions';
 import type { PositionData } from './types';
 
 // Re-export shared accuracy utilities
-export { calculateAccuracy, calculateSquareDifferences, validateFEN } from '../../_lib/accuracy';
+export { calculateAccuracy, calculateSquareDifferences } from '../../_lib/accuracy';
+export { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {

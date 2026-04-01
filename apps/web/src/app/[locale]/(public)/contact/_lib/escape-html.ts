@@ -1,13 +1,5 @@
-const ESCAPE_MAP: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#x27;',
-};
-
-const ESCAPE_REGEX = /[&<>"']/g;
-
-export function escapeHtml(str: string): string {
-  return str.replace(ESCAPE_REGEX, (char) => ESCAPE_MAP[char]!);
-}
+/**
+ * Re-export from @blindfold-chess/features for backward compatibility.
+ * The canonical source is now in packages/features/src/utils/.
+ */
+export { escapeHtml } from '@blindfold-chess/features/utils';

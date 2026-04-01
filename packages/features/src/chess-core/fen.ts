@@ -66,3 +66,51 @@ export function getFenAfterMoves(initialFen: string, moves: string[]): string {
 export function getStartingFen(): string {
   return DEFAULT_POSITION;
 }
+
+/**
+ * Convert a FEN string to a Lichess analysis URL
+ * @param fen - The FEN string representing the chess position
+ * @returns The Lichess analysis URL compatible with both web and mobile app
+ */
+export function fenToLichessUrl(fen: string): string {
+  // Replace spaces with underscores for URL encoding
+  const encodedFen = fen.replace(/ /g, "_");
+  return `https://lichess.org/analysis/${encodedFen}`;
+}
+
+/**
+ * Lightweight FEN format validation without chess.js.
+ * Checks structural validity (8 ranks, valid characters, valid turn)
+ * but does not verify position legality.
+ */
+export function validateFenFormat(fen: string): boolean {
+  const parts = fen.trim().split(" ");
+
+  // FEN must have at least 2 parts (board and turn)
+  if (parts.length < 2) return false;
+
+  // Validate board part (8 ranks separated by /)
+  const board = parts[0];
+  const ranks = board.split("/");
+  if (ranks.length !== 8) return false;
+
+  // Validate each rank
+  for (const rank of ranks) {
+    let squareCount = 0;
+    for (const char of rank) {
+      if (/[1-8]/.test(char)) {
+        squareCount += parseInt(char);
+      } else if (/[pnbrqkPNBRQK]/.test(char)) {
+        squareCount += 1;
+      } else {
+        return false;
+      }
+    }
+    if (squareCount !== 8) return false;
+  }
+
+  // Validate turn
+  if (parts[1] !== "w" && parts[1] !== "b") return false;
+
+  return true;
+}

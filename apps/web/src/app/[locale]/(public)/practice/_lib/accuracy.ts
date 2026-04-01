@@ -22,41 +22,6 @@ function getPieceDescription(piece: string, pieceNames: Record<string, string>):
 }
 
 /**
- * Validate FEN string format
- */
-export function validateFEN(fen: string): boolean {
-  const parts = fen.trim().split(' ');
-
-  // FEN must have at least 2 parts (board and turn)
-  if (parts.length < 2) return false;
-
-  // Validate board part (8 ranks separated by /)
-  const board = parts[0];
-  const ranks = board.split('/');
-  if (ranks.length !== 8) return false;
-
-  // Validate each rank
-  for (const rank of ranks) {
-    let squareCount = 0;
-    for (const char of rank) {
-      if (/[1-8]/.test(char)) {
-        squareCount += parseInt(char);
-      } else if (/[pnbrqkPNBRQK]/.test(char)) {
-        squareCount += 1;
-      } else {
-        return false;
-      }
-    }
-    if (squareCount !== 8) return false;
-  }
-
-  // Validate turn
-  if (parts[1] !== 'w' && parts[1] !== 'b') return false;
-
-  return true;
-}
-
-/**
  * Calculate accuracy between original and recreated positions
  */
 export function calculateAccuracy(
