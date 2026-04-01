@@ -22,6 +22,9 @@ vi.mock('next-intl', () => ({
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
     if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
+    if (key === 'achievementSingleMessage' && params) return `🏆 You earned ${params.name}`;
+    if (key === 'achievementMultipleMessage' && params)
+      return `🏆 You earned ${params.count} achievements`;
     return key;
   },
 }));
@@ -306,6 +309,136 @@ describe('NotificationItem', () => {
       const link = screen.getByText('Alice liked your post').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/squares/d5/posts/post-99');
+    });
+  });
+
+  describe('achievement_granted notification', () => {
+    it('should display single badge name when one badge is granted', () => {
+      const notification = createNotification({
+        type: 'achievement_granted',
+        actor: null,
+        metadata: {
+          badges: [
+            {
+              slug: 'monthly-coordinate_quiz-white-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'white',
+              placement: 1,
+            },
+          ],
+          year: 2026,
+          month: 3,
+        },
+      });
+
+      render(<NotificationItem notification={notification} currentUsername="testuser" />);
+
+      expect(screen.getByText('🏆 You earned Monthly Coordinate Quiz White 1st')).toBeDefined();
+    });
+
+    it('should display aggregated message when multiple badges are granted', () => {
+      const notification = createNotification({
+        type: 'achievement_granted',
+        actor: null,
+        metadata: {
+          badges: [
+            {
+              slug: 'monthly-coordinate_quiz-white-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'white',
+              placement: 1,
+            },
+            {
+              slug: 'monthly-coordinate_quiz-black-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'black',
+              placement: 1,
+            },
+          ],
+          year: 2026,
+          month: 3,
+        },
+      });
+
+      render(<NotificationItem notification={notification} currentUsername="testuser" />);
+
+      expect(screen.getByText('🏆 You earned 2 achievements')).toBeDefined();
+    });
+
+    it('should link to achievements page when currentUsername is provided', () => {
+      const notification = createNotification({
+        type: 'achievement_granted',
+        actor: null,
+        metadata: {
+          badges: [
+            {
+              slug: 'monthly-coordinate_quiz-white-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'white',
+              placement: 1,
+            },
+          ],
+          year: 2026,
+          month: 3,
+        },
+      });
+
+      render(<NotificationItem notification={notification} currentUsername="testuser" />);
+
+      const link = screen.getByText('🏆 You earned Monthly Coordinate Quiz White 1st').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/@/testuser/achievements');
+    });
+
+    it('should render as button when currentUsername is not provided', () => {
+      const notification = createNotification({
+        type: 'achievement_granted',
+        actor: null,
+        metadata: {
+          badges: [
+            {
+              slug: 'monthly-coordinate_quiz-white-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'white',
+              placement: 1,
+            },
+          ],
+          year: 2026,
+          month: 3,
+        },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const button = screen.getByRole('button');
+      expect(button).toBeDefined();
+    });
+
+    it('should show trophy icon for achievement_granted type', () => {
+      const notification = createNotification({
+        type: 'achievement_granted',
+        actor: null,
+        metadata: {
+          badges: [
+            {
+              slug: 'monthly-coordinate_quiz-white-1st',
+              menuType: 'coordinate_quiz',
+              leaderboardKey: 'white',
+              placement: 1,
+            },
+          ],
+          year: 2026,
+          month: 3,
+        },
+      });
+
+      const { container } = render(
+        <NotificationItem notification={notification} currentUsername="testuser" />
+      );
+
+      // The trophy icon should be rendered (HiTrophy from react-icons)
+      const svgElement = container.querySelector('svg');
+      expect(svgElement).not.toBeNull();
     });
   });
 });

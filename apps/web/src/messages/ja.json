@@ -2052,7 +2052,9 @@
     "replyMessage": "{actor} があなたの投稿に返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
-    "newPostMessage": "{actor} が新しい投稿をしました"
+    "newPostMessage": "{actor} が新しい投稿をしました",
+    "achievementSingleMessage": "🏆 {name} を獲得しました",
+    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました"
   },
   "deleteAccount": {
     "title": "退会",
@@ -2473,7 +2475,20 @@
     "followsYou": "フォローされています",
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
-    "noTopicPosts": "まだ投稿がありません。"
+    "noTopicPosts": "まだ投稿がありません。",
+    "achievementsSection": "アチーブメント",
+    "noAchievements": "まだアチーブメントはありません。",
+    "achievedOn": "取得日:",
+    "viewAllAchievements": "すべて見る",
+    "achievementsPageTitle": "すべてのアチーブメント",
+    "achievementCategory": {
+      "monthly_leaderboard": "月間リーダーボード",
+      "cumulative": "累積",
+      "streak": "連続記録",
+      "one_shot": "一発達成",
+      "social": "ソーシャル",
+      "ai_defeat": "AI撃破"
+    }
   },
   "interview": {
     "title": "インタビュー",

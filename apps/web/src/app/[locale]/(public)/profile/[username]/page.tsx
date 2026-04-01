@@ -6,8 +6,10 @@ import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
+import { getUserAchievements } from '@/lib/db/achievement-queries';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
@@ -15,6 +17,7 @@ import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
+import { ProfileAchievements } from './_components/ProfileAchievements';
 import { ProfilePosts } from './_components/ProfilePosts';
 import { SocialLinks } from './_components/SocialLinks';
 import { getProfileByUsername } from './_lib/queries';
@@ -109,7 +112,10 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
   const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
 
-  const allPosts = await getPostsByUserId(profile.id, user?.id);
+  const [allPosts, userAchievementRows] = await Promise.all([
+    getPostsByUserId(profile.id, user?.id),
+    getUserAchievements(profile.id),
+  ]);
 
   const { page } = await searchParamsCache.parse(searchParams);
   const totalCount = allPosts.length;
@@ -227,6 +233,22 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
               topicType === 'opening'
                 ? tOpenings('newReply', { time: '{time}' })
                 : tSquares('newReply', { time: '{time}' }),
+          }}
+        />
+
+        {/* Achievements */}
+        <ProfileAchievements
+          achievements={userAchievementRows}
+          locale={locale}
+          limit={4}
+          totalCount={userAchievementRows.length}
+          username={username}
+          labels={{
+            sectionTitle: t('achievementsSection'),
+            noAchievements: t('noAchievements'),
+            achievedOn: t('achievedOn'),
+            viewAll: t('viewAllAchievements'),
+            categoryNames: getAchievementCategoryNames(t),
           }}
         />
       </div>

@@ -2051,7 +2051,9 @@
     "replyMessage": "{actor} replied to your post",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
-    "newPostMessage": "{actor} shared a new post"
+    "newPostMessage": "{actor} shared a new post",
+    "achievementSingleMessage": "🏆 You earned {name}",
+    "achievementMultipleMessage": "🏆 You earned {count} achievements"
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -2508,7 +2510,20 @@
     "followsYou": "Follows you",
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
-    "noTopicPosts": "No posts yet."
+    "noTopicPosts": "No posts yet.",
+    "achievementsSection": "Achievements",
+    "noAchievements": "No achievements yet.",
+    "achievedOn": "Achieved:",
+    "viewAllAchievements": "View all",
+    "achievementsPageTitle": "All Achievements",
+    "achievementCategory": {
+      "monthly_leaderboard": "Monthly Leaderboard",
+      "cumulative": "Cumulative",
+      "streak": "Streak",
+      "one_shot": "One-Shot",
+      "social": "Social",
+      "ai_defeat": "AI Defeat"
+    }
   },
   "interview": {
     "title": "Interview",

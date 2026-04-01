@@ -1,0 +1,32 @@
+import { NextResponse } from 'next/server';
+
+import { grantMonthlyLeaderboardBadges } from '@/lib/achievements/grant-monthly-leaderboard-badges';
+
+export async function GET(request: Request): Promise<NextResponse> {
+  // Authenticate via CRON_SECRET
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const result = await grantMonthlyLeaderboardBadges();
+
+    return NextResponse.json({
+      message:
+        result.results.length === 0
+          ? 'No monthly_leaderboard achievements found'
+          : 'Monthly leaderboard badges processed',
+      ...result,
+    });
+  } catch (error) {
+    console.error('Failed to grant monthly leaderboard badges:', error);
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}

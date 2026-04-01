@@ -8,19 +8,26 @@ import { useRouter } from 'next/navigation';
 
 import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
-import { HiMegaphone } from 'react-icons/hi2';
+import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
+import { slugToDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/truncate-content';
 
 import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
-import { isAnnouncementMetadata, isPostMetadata, isReplyMetadata } from '../_lib/type-guards';
+import {
+  isAchievementGrantedMetadata,
+  isAnnouncementMetadata,
+  isPostMetadata,
+  isReplyMetadata,
+} from '../_lib/type-guards';
 
 type Props = {
   notification: NotificationWithActor;
+  currentUsername?: string;
 };
 
-export function NotificationItem({ notification }: Props) {
+export function NotificationItem({ notification, currentUsername }: Props) {
   const locale = useLocale();
   const t = useTranslations('MypageNotifications');
   const router = useRouter();
@@ -42,6 +49,15 @@ export function NotificationItem({ notification }: Props) {
       case 'announcement':
         if (isAnnouncementMetadata(notification.metadata)) {
           return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
+        }
+        return t('unknownNotification');
+      case 'achievement_granted':
+        if (isAchievementGrantedMetadata(notification.metadata)) {
+          const { badges } = notification.metadata;
+          if (badges.length === 1) {
+            return t('achievementSingleMessage', { name: slugToDisplayName(badges[0].slug) });
+          }
+          return t('achievementMultipleMessage', { count: String(badges.length) });
         }
         return t('unknownNotification');
       default:
@@ -74,6 +90,9 @@ export function NotificationItem({ notification }: Props) {
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;
     }
+    if (notification.type === 'achievement_granted' && currentUsername) {
+      return `/@/${currentUsername}/achievements`;
+    }
     return null;
   }
 
@@ -100,7 +119,11 @@ export function NotificationItem({ notification }: Props) {
         !notification.isRead ? 'bg-accent/30' : ''
       }`}
     >
-      {notification.type === 'announcement' ? (
+      {notification.type === 'achievement_granted' ? (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
+          <HiTrophy className="h-5 w-5" />
+        </div>
+      ) : notification.type === 'announcement' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiMegaphone className="h-5 w-5" />
         </div>

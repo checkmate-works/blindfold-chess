@@ -16,10 +16,12 @@
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
 import { eq, not, sql } from 'drizzle-orm';
 
+import { achievementsSeedData } from './data/achievements';
 import { chessOpenings as chessOpeningsData } from './data/chess-openings';
 import { chessTerms } from './data/chess-terms';
 import { ranksSeedData } from './data/ranks';
 import {
+  achievements,
   adBanners,
   articleCategories,
   articleCategoryTranslations,
@@ -348,6 +350,28 @@ async function seedRanks() {
 }
 
 // ---------------------------------------------------------------------------
+// Master data: Achievements (code is source of truth, inserted with conflict skip)
+// ---------------------------------------------------------------------------
+
+async function seedAchievements() {
+  console.log(`Seeding ${achievementsSeedData.length} achievements...`);
+
+  for (const achievement of achievementsSeedData) {
+    await db
+      .insert(achievements)
+      .values({
+        slug: achievement.slug,
+        category: achievement.category,
+        iconKey: achievement.iconKey,
+        criteria: achievement.criteria,
+        displayOrder: achievement.displayOrder,
+        repeatable: achievement.repeatable,
+      })
+      .onConflictDoNothing({ target: achievements.slug });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Initial data: Ads & site settings (DB is source of truth, insert once only)
 // ---------------------------------------------------------------------------
 
@@ -392,6 +416,7 @@ async function seed() {
   await seedArticleCategories();
   await seedChessOpenings();
   await seedRanks();
+  await seedAchievements();
   await seedAds();
 
   console.log('Seeding complete.');

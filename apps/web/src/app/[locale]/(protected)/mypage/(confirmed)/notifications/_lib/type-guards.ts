@@ -25,3 +25,27 @@ export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   const r = m as Record<string, unknown>;
   return typeof r.slug === 'string' && typeof r.title === 'string';
 }
+
+export type AchievementBadge = {
+  slug: string;
+  menuType: string;
+  leaderboardKey: string;
+  placement: number;
+};
+
+export type AchievementGrantedMetadata = {
+  badges: AchievementBadge[];
+  year: number;
+  month: number;
+};
+
+export function isAchievementGrantedMetadata(m: unknown): m is AchievementGrantedMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    Array.isArray(r.badges) &&
+    r.badges.length > 0 &&
+    typeof r.year === 'number' &&
+    typeof r.month === 'number'
+  );
+}

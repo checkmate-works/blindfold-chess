@@ -113,6 +113,13 @@
       "when": 1774688680770,
       "tag": "20260328090440_create_ranks_and_user_ranks",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1775017172362,
+      "tag": "20260401041932_create_achievements_and_user_achievements",
+      "breakpoints": true
     }
   ]
 }
