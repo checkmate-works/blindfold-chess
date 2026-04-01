@@ -1,5 +1,7 @@
 import { Link } from '@/i18n/routing';
 
+import { slugToDisplayName } from '@/lib/achievements/display';
+import { isMonthlyMetadata } from '@/lib/achievements/type-guards';
 import type { UserAchievementRow } from '@/lib/db/achievement-queries';
 
 // ---------------------------------------------------------------------------
@@ -25,13 +27,6 @@ type Props = {
   };
 };
 
-type MonthlyLeaderboardMetadata = {
-  year: number;
-  month: number;
-  score?: number;
-  placement?: number;
-};
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -46,12 +41,6 @@ function getIconForKey(iconKey: string): string {
   return ICON_MAP[iconKey] ?? '\u{1F3C6}';
 }
 
-function isMonthlyMetadata(metadata: unknown): metadata is MonthlyLeaderboardMetadata {
-  if (typeof metadata !== 'object' || metadata === null) return false;
-  const m = metadata as Record<string, unknown>;
-  return typeof m.year === 'number' && typeof m.month === 'number';
-}
-
 function formatYearMonth(year: number, month: number, locale: string): string {
   const date = new Date(year, month - 1, 1);
   return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
@@ -63,21 +52,6 @@ function formatDate(date: Date, locale: string): string {
     month: 'short',
     day: 'numeric',
   });
-}
-
-/**
- * Derive a display-friendly badge name from slug.
- * Example: "monthly-coordinate_quiz-white-1st" -> "Monthly Coordinate Quiz White 1st"
- *
- * TODO: This is a provisional display-name generator. In the future, badge
- * display names should be defined in i18n message files and looked up by slug.
- * At that point this function can serve as a fallback or be removed entirely.
- */
-function slugToDisplayName(slug: string): string {
-  return slug
-    .replace(/-/g, ' ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 // ---------------------------------------------------------------------------

@@ -2,10 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { db, profiles } from '@/lib/db';
+import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import {
   getUserAchievementCount,
   getUserAchievementsPaginated,
@@ -16,6 +15,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileAchievements } from '../_components/ProfileAchievements';
+import { getProfileByUsername } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,11 +33,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({ displayName: profiles.displayName })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     return {};
@@ -57,11 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AchievementsPage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const [profile] = await db
-    .select({ id: profiles.id, displayName: profiles.displayName })
-    .from(profiles)
-    .where(and(eq(profiles.username, username), isNull(profiles.deletedAt)))
-    .limit(1);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();
@@ -99,14 +91,7 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
             sectionTitle: t('achievementsSection'),
             noAchievements: t('noAchievements'),
             achievedOn: t('achievedOn'),
-            categoryNames: {
-              monthly_leaderboard: t('achievementCategory.monthly_leaderboard'),
-              cumulative: t('achievementCategory.cumulative'),
-              streak: t('achievementCategory.streak'),
-              one_shot: t('achievementCategory.one_shot'),
-              social: t('achievementCategory.social'),
-              ai_defeat: t('achievementCategory.ai_defeat'),
-            },
+            categoryNames: getAchievementCategoryNames(t),
           }}
         />
 

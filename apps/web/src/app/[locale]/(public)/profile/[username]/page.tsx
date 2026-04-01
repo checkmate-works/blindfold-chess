@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
 import { getUserAchievements } from '@/lib/db/achievement-queries';
@@ -247,14 +248,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             noAchievements: t('noAchievements'),
             achievedOn: t('achievedOn'),
             viewAll: t('viewAllAchievements'),
-            categoryNames: {
-              monthly_leaderboard: t('achievementCategory.monthly_leaderboard'),
-              cumulative: t('achievementCategory.cumulative'),
-              streak: t('achievementCategory.streak'),
-              one_shot: t('achievementCategory.one_shot'),
-              social: t('achievementCategory.social'),
-              ai_defeat: t('achievementCategory.ai_defeat'),
-            },
+            categoryNames: getAchievementCategoryNames(t),
           }}
         />
       </div>

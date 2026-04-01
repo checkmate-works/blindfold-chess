@@ -10,6 +10,7 @@ import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
 import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
+import { slugToDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/truncate-content';
 
 import type { NotificationWithActor } from '../_actions';
@@ -20,14 +21,6 @@ import {
   isPostMetadata,
   isReplyMetadata,
 } from '../_lib/type-guards';
-
-/** Convert a badge slug like "monthly-coordinate_quiz-white-1st" to a human-readable name. */
-function slugToDisplayName(slug: string): string {
-  return slug
-    .replace(/-/g, ' ')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 type Props = {
   notification: NotificationWithActor;
