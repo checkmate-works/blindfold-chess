@@ -1,3 +1,14 @@
+/**
+ * Public Profile (公開プロフィールページ)
+ *
+ * @description Displays another user's public profile including avatar, display name, bio,
+ * follow relationships, topic posts, and achievements. Shows edit link and following count for own profile.
+ *
+ * @flow
+ * 1. Fetch profile by `[username]` from URL (404 if not found)
+ * 2. Determine relationship with logged-in user (follow state)
+ * 3. Fetch posts and achievements in parallel, render with pagination
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -237,20 +248,22 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         />
 
         {/* Achievements */}
-        <ProfileAchievements
-          achievements={userAchievementRows}
-          locale={locale}
-          limit={4}
-          totalCount={userAchievementRows.length}
-          username={username}
-          labels={{
-            sectionTitle: t('achievementsSection'),
-            noAchievements: t('noAchievements'),
-            achievedOn: t('achievedOn'),
-            viewAll: t('viewAllAchievements'),
-            categoryNames: getAchievementCategoryNames(t),
-          }}
-        />
+        {userAchievementRows.length > 0 && (
+          <ProfileAchievements
+            achievements={userAchievementRows}
+            locale={locale}
+            limit={4}
+            totalCount={userAchievementRows.length}
+            username={username}
+            labels={{
+              sectionTitle: t('achievementsSection'),
+              noAchievements: t('noAchievements'),
+              achievedOn: t('achievedOn'),
+              viewAll: t('viewAllAchievements'),
+              categoryNames: getAchievementCategoryNames(t),
+            }}
+          />
+        )}
       </div>
     </PagePanel>
   );
