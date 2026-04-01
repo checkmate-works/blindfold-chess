@@ -6,7 +6,8 @@ export type LeaderboardModule =
   | 'coordinate_quiz'
   | 'legal_moves'
   | 'square_colors'
-  | 'diagonal_quiz';
+  | 'diagonal_quiz'
+  | 'board_symmetry';
 
 export type ModuleFilterValue = 'all' | LeaderboardModule;
 
@@ -14,7 +15,8 @@ export type LeaderboardModuleSlug =
   | 'coordinate-quiz'
   | 'legal-moves'
   | 'square-colors'
-  | 'diagonal-quiz';
+  | 'diagonal-quiz'
+  | 'board-symmetry';
 
 export type LeaderboardRow = RankedLeaderboardRow;
 
@@ -40,6 +42,7 @@ export const MODULES = [
   'legal_moves',
   'square_colors',
   'diagonal_quiz',
+  'board_symmetry',
 ] as const satisfies readonly LeaderboardModule[];
 
 export const MODULE_KEYS = {
@@ -47,6 +50,7 @@ export const MODULE_KEYS = {
   legal_moves: ['king', 'queen', 'rook', 'bishop', 'knight', 'random'],
   square_colors: ['default'],
   diagonal_quiz: ['default'],
+  board_symmetry: ['default'],
 } as const satisfies Record<LeaderboardModule, readonly string[]>;
 
 export const VALID_PERIODS = [
@@ -61,6 +65,7 @@ export const VALID_MODULE_FILTERS = [
   'legal_moves',
   'square_colors',
   'diagonal_quiz',
+  'board_symmetry',
 ] as const satisfies readonly ModuleFilterValue[];
 
 export const PAGE_SIZE = 20;
@@ -79,6 +84,7 @@ const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
   legal_moves: 'legal-moves',
   square_colors: 'square-colors',
   diagonal_quiz: 'diagonal-quiz',
+  board_symmetry: 'board-symmetry',
 };
 
 const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
@@ -86,6 +92,7 @@ const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
   'legal-moves': 'legal_moves',
   'square-colors': 'square_colors',
   'diagonal-quiz': 'diagonal_quiz',
+  'board-symmetry': 'board_symmetry',
 };
 
 export function moduleToSlug(module: LeaderboardModule): LeaderboardModuleSlug {
@@ -122,6 +129,8 @@ export function buildChallengePath(module: LeaderboardModule, key: string): stri
     case 'square_colors':
       return `/practice/${slug}/challenge`;
     case 'diagonal_quiz':
+      return `/practice/${slug}/challenge`;
+    case 'board_symmetry':
       return `/practice/${slug}/challenge`;
   }
 }

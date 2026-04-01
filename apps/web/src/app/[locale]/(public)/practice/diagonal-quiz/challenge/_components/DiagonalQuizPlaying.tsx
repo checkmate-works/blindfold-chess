@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
@@ -37,6 +38,8 @@ type Props = {
   showStats?: boolean;
   isPaused?: boolean;
   onTogglePause?: () => void;
+  remainingLives?: number;
+  maxLives?: number;
   onQuitRequest?: () => void;
   showQuitModal?: boolean;
   onQuitConfirm?: () => void;
@@ -56,6 +59,8 @@ export function DiagonalQuizPlaying({
   showStats = true,
   isPaused = false,
   onTogglePause,
+  remainingLives,
+  maxLives,
   onQuitRequest,
   showQuitModal,
   onQuitConfirm,
@@ -160,8 +165,22 @@ export function DiagonalQuizPlaying({
         >
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
-          <div className="flex justify-end mb-4 min-h-[40px] relative">
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+          <div className="flex justify-between items-center mb-4 min-h-[40px] relative">
+            {/* Lives */}
+            <div className="flex items-center gap-1">
+              {maxLives !== undefined &&
+                remainingLives !== undefined &&
+                Array.from({ length: maxLives }, (_, i) => (
+                  <span key={i} className="text-destructive">
+                    {i < remainingLives ? (
+                      <FaHeart className="w-5 h-5" />
+                    ) : (
+                      <FaRegHeart className="w-5 h-5 opacity-30" />
+                    )}
+                  </span>
+                ))}
+            </div>
+            <div className="flex items-center gap-2 z-20">
               {onTogglePause && (
                 <button
                   onClick={onTogglePause}

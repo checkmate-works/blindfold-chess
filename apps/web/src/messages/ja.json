@@ -470,6 +470,7 @@
     "boardSymmetry": {
       "title": "ボードの対称性",
       "description": "盤上の対称的なマスを識別する練習",
+      "session": "プレイ中",
       "howToPlayTitle": "問題方式",
       "howToPlayDescription": "指定された対称タイプに基づき、ボード上の対称なマスを答えましょう。",
       "question": "{square}の{type}は？",
@@ -504,6 +505,8 @@
         "previous": "戻る",
         "next": "次へ",
         "start": "始める",
+        "startChallenge": "チャレンジ開始",
+        "switchToTraining": "📖 トレーニングモードで練習する",
         "steps": {
           "intro": {
             "title": "ボードの対称性とは",
@@ -2871,7 +2874,8 @@
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
       "square_colors": "マスの色",
-      "diagonal_quiz": "ダイアゴナルクイズ"
+      "diagonal_quiz": "ダイアゴナルクイズ",
+      "board_symmetry": "ボードの対称性"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2888,6 +2892,9 @@
         "random": "ランダム"
       },
       "square_colors": {
+        "default": "デフォルト"
+      },
+      "board_symmetry": {
         "default": "デフォルト"
       }
     },
@@ -2911,7 +2918,8 @@
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
       "square_colors": "マスの色",
-      "diagonal_quiz": "ダイアゴナルクイズ"
+      "diagonal_quiz": "ダイアゴナルクイズ",
+      "board_symmetry": "ボードの対称性"
     },
     "allLeaderboardsSection": "すべてのランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
@@ -2935,6 +2943,9 @@
       },
       "diagonal_quiz": {
         "default": "ダイアゴナルクイズ"
+      },
+      "board_symmetry": {
+        "default": "ボードの対称性"
       }
     },
     "tryChallenge": "この種目にチャレンジ",

@@ -1,56 +1,27 @@
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
+import { BoardSymmetrySetup } from './_components/BoardSymmetrySetup';
 
-import { BoardSymmetryPageContent } from './_components/BoardSymmetryPageContent';
+export const dynamic = 'force-dynamic';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
-
-export const generateStaticParams = generateLocaleStaticParams;
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/board-symmetry' }),
-    title: t('practice.boardSymmetry.title'),
-    description: t('practice.boardSymmetry.description'),
-  };
-}
-
-export default async function BoardSymmetryPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.boardSymmetry.title')}</PageTitle>
-
-      <PagePanel>
-        <BoardSymmetryPageContent locale={locale} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.boardSymmetry.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
+const { generateMetadata, Page } = createPracticeTopPage({
+  i18nKey: 'boardSymmetry',
+  canonicalPath: 'practice/board-symmetry',
+  renderSetup: (locale) => <BoardSymmetrySetup locale={locale} />,
+  renderArticles: (t, locale) => (
+    <div className="mt-8 space-y-3">
+      <SectionTitle>{t('practice.boardSymmetry.requiredKnowledge')}</SectionTitle>
+      <CardLink
+        href="/learn/coordinates/board-symmetry"
+        icon="🦋"
+        title={t('practice.boardSymmetry.viewArticle')}
+        description={t('practice.boardSymmetry.articleDescription')}
+        locale={locale}
+      />
     </div>
-  );
-}
+  ),
+});
+
+export { generateMetadata };
+export default Page;

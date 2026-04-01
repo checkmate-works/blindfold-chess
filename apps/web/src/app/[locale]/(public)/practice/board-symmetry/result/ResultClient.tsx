@@ -3,21 +3,33 @@
 import { useTranslations } from 'next-intl';
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
+import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerWide?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
+  leaderboardRows?: LeaderboardRow[];
+  leaderboardDetailPath?: string;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({
+  locale,
+  adBannerWide,
+  adBannerStandard,
+  leaderboardRows,
+  leaderboardDetailPath,
+}: Props) {
   const router = useRouter();
   const t = useTranslations('practice.boardSymmetry');
   const tPractice = useTranslations('practice');
-  const tNavigation = useTranslations('navigation');
+
   const searchParams = useSearchParams();
 
   // Validate locale
@@ -26,13 +38,9 @@ export function ResultClient({ locale, adBanner }: Props) {
   }
 
   // Parse query params
-  const timeLimitParam = parseInt(searchParams.get('timeLimit') || '0', 10);
-  // Default to 60 seconds if missing or 0
-  const timeLimit = timeLimitParam > 0 ? timeLimitParam : 60;
-
+  const time = parseFloat(searchParams.get('time') || '0');
   const score = parseInt(searchParams.get('score') || '0', 10);
   const total = parseInt(searchParams.get('total') || '0', 10);
-  const time = parseFloat(searchParams.get('time') || '0');
 
   // Calculate average time per question
   const timePerQuestion = total > 0 ? time / total : 0;
@@ -46,14 +54,6 @@ export function ResultClient({ locale, adBanner }: Props) {
     incorrect: tPractice('incorrect'),
   };
 
-  // Define related module
-  const relatedModule = {
-    href: '/learn/coordinates/board-symmetry',
-    icon: '↔️',
-    title: t('viewArticle'),
-    description: t('articleDescription'),
-  };
-
   // Format average time text
   const averageTimeText =
     total > 0 ? tPractice('secondsFormat', { seconds: timePerQuestion.toFixed(1) }) : undefined;
@@ -63,7 +63,7 @@ export function ResultClient({ locale, adBanner }: Props) {
       locale={locale}
       title={t('title')}
       breadcrumbItems={[
-        { label: tNavigation('practice'), href: '/practice' },
+        { label: tPractice('title'), href: '/practice' },
         { label: t('title'), href: '/practice/board-symmetry' },
         { label: tPractice('result') },
       ]}
@@ -73,22 +73,28 @@ export function ResultClient({ locale, adBanner }: Props) {
         score={score}
         total={total}
         onTryAgain={() => {
-          const tryAgainParams = new URLSearchParams();
-          if (timeLimit) tryAgainParams.set('timeLimit', timeLimit.toString());
-          router.push(`/${locale}/practice/board-symmetry/session?${tryAgainParams.toString()}`);
+          router.push(`/${locale}/practice/board-symmetry/challenge/session`);
         }}
         onExit={() => router.push(`/${locale}/practice/board-symmetry`)}
         locale={locale}
         labels={labels}
         scoreStats={{ correct: score, incorrect: total - score, total }}
-        beforeRelatedContent={adBanner}
-        relatedModule={relatedModule}
         averageTimeText={averageTimeText}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
+        afterActions={<SignUpBanner locale={locale} />}
+        beforeRelatedContent={adBannerWide}
       />
+      {leaderboardRows && leaderboardDetailPath && (
+        <LeaderboardPreview
+          rows={leaderboardRows}
+          detailPath={leaderboardDetailPath}
+          locale={locale}
+        />
+      )}
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }

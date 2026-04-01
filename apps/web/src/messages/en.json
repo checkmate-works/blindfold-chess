@@ -469,6 +469,7 @@
     "boardSymmetry": {
       "title": "Board Symmetry",
       "description": "Practice identifying symmetrical squares on the board",
+      "session": "In Progress",
       "howToPlayTitle": "How to Play",
       "howToPlayDescription": "Find the symmetrical square on the board for the given symmetry type.",
       "question": "{type} of {square}?",
@@ -503,6 +504,8 @@
         "previous": "Previous",
         "next": "Next",
         "start": "Start",
+        "startChallenge": "Start Challenge",
+        "switchToTraining": "📖 Practice in training mode",
         "steps": {
           "intro": {
             "title": "What is Board Symmetry?",
@@ -2906,7 +2909,8 @@
       "coordinate_quiz": "Coordinate Quiz",
       "legal_moves": "Legal Moves",
       "square_colors": "Square Colors",
-      "diagonal_quiz": "Diagonal Quiz"
+      "diagonal_quiz": "Diagonal Quiz",
+      "board_symmetry": "Board Symmetry"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2923,6 +2927,9 @@
         "random": "Random"
       },
       "square_colors": {
+        "default": "Default"
+      },
+      "board_symmetry": {
         "default": "Default"
       }
     },
@@ -2946,7 +2953,8 @@
       "coordinate_quiz": "Coordinate Quiz",
       "legal_moves": "Legal Moves",
       "square_colors": "Square Colors",
-      "diagonal_quiz": "Diagonal Quiz"
+      "diagonal_quiz": "Diagonal Quiz",
+      "board_symmetry": "Board Symmetry"
     },
     "allLeaderboardsSection": "All Leaderboards",
     "rankLabel": "Your Rank: #{rank}",
@@ -2970,6 +2978,9 @@
       },
       "diagonal_quiz": {
         "default": "Diagonal Quiz"
+      },
+      "board_symmetry": {
+        "default": "Board Symmetry"
       }
     },
     "tryChallenge": "Try This Challenge",

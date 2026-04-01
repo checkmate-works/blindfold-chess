@@ -15,6 +15,10 @@ import type { PracticeMenuType } from './practice-menu-types';
  *
  * - square_colors: always 'default' — this module has no configurable
  *   variant, so all sessions share a single leaderboard.
+ *
+ * - diagonal_quiz: always 'default' — no configurable variant.
+ *
+ * - board_symmetry: always 'default' — no configurable variant.
  */
 export function deriveLeaderboardKey(
   menuType: PracticeMenuType,
@@ -28,6 +32,8 @@ export function deriveLeaderboardKey(
     case 'square_colors':
       return 'default';
     case 'diagonal_quiz':
+      return 'default';
+    case 'board_symmetry':
       return 'default';
     default:
       return null;

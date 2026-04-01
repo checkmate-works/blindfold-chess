@@ -58,10 +58,16 @@ describe('deriveLeaderboardKey', () => {
     });
   });
 
+  describe('board_symmetry', () => {
+    it('always returns "default" regardless of settings', () => {
+      expect(deriveLeaderboardKey('board_symmetry', {})).toBe('default');
+      expect(deriveLeaderboardKey('board_symmetry', { anything: 'value' })).toBe('default');
+    });
+  });
+
   describe('unsupported menu types', () => {
     it('returns null for menu types without leaderboard segmentation', () => {
       expect(deriveLeaderboardKey('route_planner', {})).toBeNull();
-      expect(deriveLeaderboardKey('board_symmetry', {})).toBeNull();
       expect(deriveLeaderboardKey('position_memory', {})).toBeNull();
       expect(deriveLeaderboardKey('knight_tour', {})).toBeNull();
     });

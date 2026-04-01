@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
@@ -30,6 +31,8 @@ type Props = {
   countdown: number | null;
   isPaused: boolean;
   onTogglePause: () => void;
+  remainingLives?: number;
+  maxLives?: number;
   onQuitRequest: () => void;
   showQuitModal: boolean;
   onQuitConfirm: () => void;
@@ -50,6 +53,8 @@ export function BoardSymmetryPlaying({
   timeLimit,
   countdown,
   isPaused,
+  remainingLives,
+  maxLives,
   onTogglePause,
   onQuitRequest,
   showQuitModal,
@@ -104,8 +109,23 @@ export function BoardSymmetryPlaying({
             })}
           </SectionTitle>
 
-          {/* Header and Timer */}
-          <div className="mb-6 flex justify-end">
+          {/* Header: Lives and Timer */}
+          <div className="mb-6 flex justify-between items-center">
+            {/* Lives */}
+            <div className="flex items-center gap-1">
+              {maxLives !== undefined &&
+                remainingLives !== undefined &&
+                Array.from({ length: maxLives }, (_, i) => (
+                  <span key={i} className="text-destructive">
+                    {i < remainingLives ? (
+                      <FaHeart className="w-5 h-5" />
+                    ) : (
+                      <FaRegHeart className="w-5 h-5 opacity-30" />
+                    )}
+                  </span>
+                ))}
+            </div>
+            {/* Timer */}
             <div className="flex items-center gap-2">
               <button
                 onClick={onTogglePause}

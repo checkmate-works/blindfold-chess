@@ -92,7 +92,7 @@ export function ResultClient({
         score={score}
         total={total}
         onTryAgain={() => router.push(`/${locale}/practice/diagonal-quiz/challenge/session`)}
-        onExit={() => router.push(`/${locale}/practice/diagonal-quiz/challenge`)}
+        onExit={() => router.push(`/${locale}/practice/diagonal-quiz`)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),

@@ -36,6 +36,7 @@ export const CHALLENGE_MENU_TYPES = [
   'legal_moves',
   'coordinate_quiz',
   'diagonal_quiz',
+  'board_symmetry',
 ] as const;
 
 export type ChallengeMenuType = (typeof CHALLENGE_MENU_TYPES)[number];

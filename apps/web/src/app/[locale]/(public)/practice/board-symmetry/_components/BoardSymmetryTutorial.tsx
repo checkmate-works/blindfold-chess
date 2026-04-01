@@ -20,25 +20,20 @@ type Props = {
 
 type TutorialStep = 'intro' | 'horizontal' | 'vertical' | 'point' | 'start';
 
-const TUTORIAL_TIME_LIMIT = 60;
-const TUTORIAL_PROBLEM_COUNT = 3;
-
 export function BoardSymmetryTutorial({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry.tutorial');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('intro');
 
-  const handleStart = () => {
-    // Mark tutorial as completed
+  const handleStartChallenge = () => {
     localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    router.push(`/${locale}/practice/board-symmetry/challenge`);
+  };
 
-    // Start session
-    const params = new URLSearchParams();
-    params.set('timeLimit', TUTORIAL_TIME_LIMIT.toString());
-    params.set('count', TUTORIAL_PROBLEM_COUNT.toString());
-    params.set('mode', 'tutorial');
-    router.push(`/${locale}/practice/board-symmetry/session?${params.toString()}`);
+  const handleSwitchToTraining = () => {
+    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    router.push(`/${locale}/practice/board-symmetry/training`);
   };
 
   const steps: TutorialStep[] = ['intro', 'horizontal', 'vertical', 'point', 'start'];
@@ -220,26 +215,35 @@ export function BoardSymmetryTutorial({ locale }: Props) {
           )}
         </div>
 
-        <div className="flex gap-4">
-          {step !== 'intro' && (
-            <Button variant="outline" onClick={handlePrevious} className="flex-1">
-              <FaArrowLeft className="mr-2 h-4 w-4" />
-              {t('previous')}
-            </Button>
-          )}
-
-          {step === 'start' ? (
-            <Button onClick={handleStart} variant="primary" className="flex-1">
+        {step === 'start' ? (
+          <div className="space-y-3">
+            <Button onClick={handleStartChallenge} variant="primary" className="w-full">
               <FaPlay className="mr-2 h-4 w-4" />
-              {t('start')}
+              {t('startChallenge')}
             </Button>
-          ) : (
+            <div className="text-center">
+              <button
+                onClick={handleSwitchToTraining}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t('switchToTraining')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-4">
+            {step !== 'intro' && (
+              <Button variant="outline" onClick={handlePrevious} className="flex-1">
+                <FaArrowLeft className="mr-2 h-4 w-4" />
+                {t('previous')}
+              </Button>
+            )}
             <Button onClick={handleNext} variant="primary" className="flex-1">
               {t('next')}
               <FaArrowRight className="ml-2 h-4 w-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

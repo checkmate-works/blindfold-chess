@@ -11,6 +11,8 @@ import {
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
@@ -69,6 +71,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   } = useTimedSession<string>({
     timeLimit: initialTimeLimit,
     generateQuestion,
+    mistakeAllowance: MISTAKE_LIMIT,
     feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
   });
 
@@ -224,6 +227,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
         incorrectCount={incorrectCount}
         isPaused={isPaused}
         onTogglePause={togglePause}
+        remainingLives={MISTAKE_LIMIT - incorrectCount}
+        maxLives={MISTAKE_LIMIT}
         onQuitRequest={handleQuitRequest}
         showQuitModal={showQuitModal}
         onQuitConfirm={handleQuitConfirm}

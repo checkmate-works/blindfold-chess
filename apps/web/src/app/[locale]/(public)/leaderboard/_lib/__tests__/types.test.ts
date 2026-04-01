@@ -16,9 +16,15 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('MODULES', () => {
-  it('contains exactly four modules', () => {
-    expect(MODULES).toHaveLength(4);
-    expect(MODULES).toEqual(['coordinate_quiz', 'legal_moves', 'square_colors', 'diagonal_quiz']);
+  it('contains exactly five modules', () => {
+    expect(MODULES).toHaveLength(5);
+    expect(MODULES).toEqual([
+      'coordinate_quiz',
+      'legal_moves',
+      'square_colors',
+      'diagonal_quiz',
+      'board_symmetry',
+    ]);
   });
 });
 
@@ -45,6 +51,10 @@ describe('MODULE_KEYS', () => {
   it('diagonal_quiz has only default', () => {
     expect(MODULE_KEYS.diagonal_quiz).toEqual(['default']);
   });
+
+  it('board_symmetry has only default', () => {
+    expect(MODULE_KEYS.board_symmetry).toEqual(['default']);
+  });
 });
 
 describe('VALID_PERIODS', () => {
@@ -64,8 +74,8 @@ describe('PAGE_SIZE', () => {
 // ---------------------------------------------------------------------------
 
 describe('ALL_LEADERBOARD_ENTRIES', () => {
-  it('has 11 entries total (3 + 6 + 1 + 1)', () => {
-    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(11);
+  it('has 12 entries total (3 + 6 + 1 + 1 + 1)', () => {
+    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(12);
   });
 
   it('contains all coordinate_quiz keys', () => {
@@ -99,7 +109,14 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     expect(diagonalQuizEntries).toEqual([{ module: 'diagonal_quiz', key: 'default' }]);
   });
 
-  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz', () => {
+  it('contains board_symmetry default', () => {
+    const boardSymmetryEntries = ALL_LEADERBOARD_ENTRIES.filter(
+      (e) => e.module === 'board_symmetry'
+    );
+    expect(boardSymmetryEntries).toEqual([{ module: 'board_symmetry', key: 'default' }]);
+  });
+
+  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz, board_symmetry', () => {
     const modules = ALL_LEADERBOARD_ENTRIES.map((e) => e.module);
     const firstLegalMoves = modules.indexOf('legal_moves');
     const lastCoordinateQuiz = modules.lastIndexOf('coordinate_quiz');
@@ -111,6 +128,10 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     expect(lastCoordinateQuiz).toBeLessThan(firstLegalMoves);
     expect(lastLegalMoves).toBeLessThan(firstSquareColors);
     expect(lastSquareColors).toBeLessThan(firstDiagonalQuiz);
+
+    const firstBoardSymmetry = modules.indexOf('board_symmetry');
+    const lastDiagonalQuiz = modules.lastIndexOf('diagonal_quiz');
+    expect(lastDiagonalQuiz).toBeLessThan(firstBoardSymmetry);
   });
 });
 
@@ -134,6 +155,10 @@ describe('moduleToSlug', () => {
   it('converts diagonal_quiz to diagonal-quiz', () => {
     expect(moduleToSlug('diagonal_quiz')).toBe('diagonal-quiz');
   });
+
+  it('converts board_symmetry to board-symmetry', () => {
+    expect(moduleToSlug('board_symmetry')).toBe('board-symmetry');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -155,6 +180,10 @@ describe('slugToModule', () => {
 
   it('converts diagonal-quiz to diagonal_quiz', () => {
     expect(slugToModule('diagonal-quiz')).toBe('diagonal_quiz');
+  });
+
+  it('converts board-symmetry to board_symmetry', () => {
+    expect(slugToModule('board-symmetry')).toBe('board_symmetry');
   });
 
   it('returns null for invalid slug', () => {

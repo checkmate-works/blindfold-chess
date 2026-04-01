@@ -11,6 +11,7 @@ const MODULE_EMOJIS: Record<LeaderboardModule, string> = {
   legal_moves: '♟️',
   square_colors: '🎨',
   diagonal_quiz: '♗',
+  board_symmetry: '🦋',
 };
 
 const PIECE_ICON_SIZE = 24;
