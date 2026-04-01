@@ -1,3 +1,17 @@
+/**
+ * My Page (マイページ — `/mypage`)
+ *
+ * @description
+ * The authenticated user's personal hub. Shows profile card, interview banner,
+ * and dashboard sections (Challenge: belt system & records, Social: posts & likes).
+ * Distinct from the root dashboard (`/`) which provides quick-access shortcuts.
+ *
+ * @flow
+ * - Profile card with avatar, display name, edit/view links
+ * - Interview banner (hidden when all questions answered)
+ * - Challenge section: Belt System, My Records
+ * - Social section: Posts, Likes
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

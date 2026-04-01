@@ -1,3 +1,17 @@
+/**
+ * Practice List (練習一覧 — `/practice`)
+ *
+ * @description
+ * Lists all available practice modules grouped by difficulty level (Beginner,
+ * Intermediate, Advanced, Introduction). Each module links to its dedicated
+ * practice page. Uses PRACTICE_EMOJIS as the single source of truth for icons.
+ *
+ * @flow
+ * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
+ * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
+ * - Advanced: Position Memory, Knight's Tour, Move Sequence
+ * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
+ */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

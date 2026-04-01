@@ -1,3 +1,16 @@
+/**
+ * Root Dashboard / Landing (ルートダッシュボード / ランディング)
+ *
+ * @description
+ * The root URL (`/`) page. Serves two different views based on authentication state:
+ * - **Logged-in users**: Dashboard with shortcut sections (VS AI, Challenge, Topics)
+ *   rendered via `DashboardPlaceholder`.
+ * - **Guests**: Marketing landing page with hero, AI battle, ranks, and training sections.
+ *
+ * @flow
+ * - Auth check → logged-in: DashboardPlaceholder (shortcut cards for games, challenges, topics)
+ * - Auth check → guest: Landing page (HeroSection, AiBattleSection, RanksSection, TrainingSection)
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 

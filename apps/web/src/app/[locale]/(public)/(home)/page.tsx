@@ -17,14 +17,16 @@ import { VsAiCard } from './_components/VsAiCard';
 import { getFeedData } from './_lib/queries';
 
 /**
- * Home Page (ホーム)
+ * Home Page (ホーム — `/[locale]`)
  *
  * @description
- * The main landing page. Displays a timeline feed of topic posts with
- * cursor-based infinite scrolling. Initial data is fetched server-side
- * for SEO; additional pages are loaded client-side via Server Action.
+ * The locale-prefixed home page (e.g. `/en`, `/ja`). Distinct from the root
+ * dashboard (`/`). Displays a VS AI game section and a timeline feed of topic
+ * posts with cursor-based infinite scrolling. Initial data is fetched
+ * server-side for SEO; additional pages are loaded client-side via Server Action.
  *
  * @flow
+ * - VS AI section: Resume or start a new AI game (VsAiCard)
  * - Timeline Feed: Chronological feed of topic posts across all topic types
  * - Infinite scroll: Loads more items when the user scrolls near the bottom
  */

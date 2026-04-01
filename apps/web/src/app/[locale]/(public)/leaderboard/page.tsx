@@ -1,3 +1,16 @@
+/**
+ * Leaderboard (リーダーボード — `/leaderboard`)
+ *
+ * @description
+ * Displays weekly/monthly/all-time score rankings for challenge-enabled practice
+ * modules. Users can filter by module and period. Shows top scores with
+ * leaderboard cards linking to detailed per-module/per-key rankings.
+ *
+ * @flow
+ * - Period selector: weekly / monthly / all-time
+ * - Module filter: all / per-module filter
+ * - LeaderboardTopContent: Top-ranked entries with scores
+ */
 import { Suspense } from 'react';
 
 import { getTranslations } from 'next-intl/server';
