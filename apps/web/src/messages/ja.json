@@ -2473,7 +2473,18 @@
     "followsYou": "フォローされています",
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
-    "noTopicPosts": "まだ投稿がありません。"
+    "noTopicPosts": "まだ投稿がありません。",
+    "achievementsSection": "アチーブメント",
+    "noAchievements": "まだアチーブメントはありません。",
+    "achievedOn": "取得日:",
+    "achievementCategory": {
+      "monthly_leaderboard": "月間リーダーボード",
+      "cumulative": "累積",
+      "streak": "連続記録",
+      "one_shot": "一発達成",
+      "social": "ソーシャル",
+      "ai_defeat": "AI撃破"
+    }
   },
   "interview": {
     "title": "インタビュー",

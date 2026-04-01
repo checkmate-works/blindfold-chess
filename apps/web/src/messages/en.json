@@ -2508,7 +2508,18 @@
     "followsYou": "Follows you",
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
-    "noTopicPosts": "No posts yet."
+    "noTopicPosts": "No posts yet.",
+    "achievementsSection": "Achievements",
+    "noAchievements": "No achievements yet.",
+    "achievedOn": "Achieved:",
+    "achievementCategory": {
+      "monthly_leaderboard": "Monthly Leaderboard",
+      "cumulative": "Cumulative",
+      "streak": "Streak",
+      "one_shot": "One-Shot",
+      "social": "Social",
+      "ai_defeat": "AI Defeat"
+    }
   },
   "interview": {
     "title": "Interview",
