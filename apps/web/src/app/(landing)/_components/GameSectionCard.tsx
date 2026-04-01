@@ -31,7 +31,7 @@ export function GameSectionCard({
       />
       <div className="relative">
         <h3 className="text-sm font-semibold text-muted-foreground mb-4">{label}</h3>
-        <div className="flex flex-row items-center justify-center gap-4">{children}</div>
+        <div className="flex flex-row flex-wrap items-center justify-center gap-4">{children}</div>
         {footer && <div className="mt-4">{footer}</div>}
       </div>
     </div>

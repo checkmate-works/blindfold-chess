@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import { ChallengeCard } from '@/app/_components';
 
+import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
+
 import { DashboardHero } from './DashboardHero';
 import { GameSectionCard } from './GameSectionCard';
 import { GameShortcutCard } from './GameShortcutCard';
@@ -45,19 +47,31 @@ export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarU
             locale={locale}
             href="/practice/square-colors/challenge"
             label={t('dashboard.squareColors')}
-            icon="🎨"
+            icon={PRACTICE_EMOJIS.square_colors}
           />
           <ChallengeCard
             locale={locale}
             href="/practice/coordinate-quiz/challenge"
             label={t('dashboard.coordinateQuiz')}
-            icon="🎯"
+            icon={PRACTICE_EMOJIS.coordinate_quiz}
           />
           <ChallengeCard
             locale={locale}
             href="/practice/legal-moves/challenge"
             label={t('dashboard.legalMoves')}
-            icon="♟️"
+            icon={PRACTICE_EMOJIS.legal_moves}
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/practice/diagonal-quiz/challenge"
+            label={t('dashboard.diagonalQuiz')}
+            icon={PRACTICE_EMOJIS.diagonal_quiz}
+          />
+          <ChallengeCard
+            locale={locale}
+            href="/practice/board-symmetry/challenge"
+            label={t('dashboard.boardSymmetry')}
+            icon={PRACTICE_EMOJIS.board_symmetry}
           />
         </GameSectionCard>
         <GameSectionCard label={t('dashboard.topics')} backgroundImage="/images/topic.webp">

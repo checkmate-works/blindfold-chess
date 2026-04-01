@@ -1704,6 +1704,8 @@
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
       "legalMoves": "合法手",
+      "diagonalQuiz": "ダイアゴナルクイズ",
+      "boardSymmetry": "ボードの対称性",
       "viewLeaderboard": "リーダーボードを見る →",
       "topics": "💬 トピック",
       "topicSquares": "マス目",
