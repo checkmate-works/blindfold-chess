@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -40,6 +41,8 @@ export default async function DiagonalQuizPage({ params }: Props) {
 
       <PagePanel>
         <DiagonalQuizPageContent locale={locale} />
+
+        <AdBannerGuard slot="banner-standard" />
 
         <Divider />
 
