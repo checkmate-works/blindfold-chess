@@ -6,6 +6,7 @@ import { SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
+import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import {
   DashboardCard,
   DashboardSection,
@@ -49,36 +50,80 @@ export default async function PracticePage({ params }: Props) {
       title: t('practice.levelBeginner'),
       sectionIcon: '🌱',
       practices: [
-        { id: 'square-colors', title: t('practice.squareColors.title'), icon: '🎨' },
-        { id: 'coordinate-quiz', title: t('practice.coordinateQuiz.title'), icon: '🎯' },
-        { id: 'legal-moves', title: t('practice.legalMoves.title'), icon: '♟️' },
+        {
+          id: 'square-colors',
+          title: t('practice.squareColors.title'),
+          icon: PRACTICE_EMOJIS.square_colors,
+        },
+        {
+          id: 'coordinate-quiz',
+          title: t('practice.coordinateQuiz.title'),
+          icon: PRACTICE_EMOJIS.coordinate_quiz,
+        },
+        {
+          id: 'legal-moves',
+          title: t('practice.legalMoves.title'),
+          icon: PRACTICE_EMOJIS.legal_moves,
+        },
       ],
     },
     {
       title: t('practice.levelIntermediate'),
       sectionIcon: '📚',
       practices: [
-        { id: 'diagonal-quiz', title: t('practice.diagonalQuiz.title'), icon: '↗️' },
-        { id: 'route-planner', title: t('practice.routePlanner.title'), icon: '📍' },
-        { id: 'board-symmetry', title: t('practice.boardSymmetry.title'), icon: '🦋' },
+        {
+          id: 'diagonal-quiz',
+          title: t('practice.diagonalQuiz.title'),
+          icon: PRACTICE_EMOJIS.diagonal_quiz,
+        },
+        {
+          id: 'board-symmetry',
+          title: t('practice.boardSymmetry.title'),
+          icon: PRACTICE_EMOJIS.board_symmetry,
+        },
+        {
+          id: 'route-planner',
+          title: t('practice.routePlanner.title'),
+          icon: PRACTICE_EMOJIS.route_planner,
+        },
       ],
     },
     {
       title: t('practice.levelAdvanced'),
       sectionIcon: '🎓',
       practices: [
-        { id: 'position-memory', title: t('practice.positionMemory.title'), icon: '🧠' },
-        { id: 'knight-tour', title: t('practice.knightTour.title'), icon: '♞' },
-        { id: 'move-sequence', title: t('practice.moveSequence.title'), icon: '🥋' },
+        {
+          id: 'position-memory',
+          title: t('practice.positionMemory.title'),
+          icon: PRACTICE_EMOJIS.position_memory,
+        },
+        {
+          id: 'knight-tour',
+          title: t('practice.knightTour.title'),
+          icon: PRACTICE_EMOJIS.knight_tour,
+        },
+        {
+          id: 'move-sequence',
+          title: t('practice.moveSequence.title'),
+          icon: PRACTICE_EMOJIS.move_sequence,
+        },
       ],
     },
     {
       title: t('practice.levelIntroduction'),
       sectionIcon: '📖',
       practices: [
-        { id: 'algebraic-notation', title: t('practice.algebraicNotation.title'), icon: '🔤' },
-        { id: 'fen', title: t('practice.fen.title'), icon: '📝' },
-        { id: 'quadrants', title: t('practice.quadrantAnchors.title'), icon: '⚃' },
+        {
+          id: 'algebraic-notation',
+          title: t('practice.algebraicNotation.title'),
+          icon: PRACTICE_EMOJIS.algebraic_notation,
+        },
+        { id: 'fen', title: t('practice.fen.title'), icon: PRACTICE_EMOJIS.fen },
+        {
+          id: 'quadrants',
+          title: t('practice.quadrantAnchors.title'),
+          icon: PRACTICE_EMOJIS.quadrant_anchors,
+        },
       ],
     },
   ];

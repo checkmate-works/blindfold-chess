@@ -4,15 +4,9 @@ import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 import { FaQuestion } from 'react-icons/fa';
 
-import type { LeaderboardModule } from './types';
+import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 
-const MODULE_EMOJIS: Record<LeaderboardModule, string> = {
-  coordinate_quiz: '🎯',
-  legal_moves: '♟️',
-  square_colors: '🎨',
-  diagonal_quiz: '♗',
-  board_symmetry: '🦋',
-};
+import type { LeaderboardModule } from './types';
 
 const PIECE_ICON_SIZE = 24;
 
@@ -34,5 +28,5 @@ export function getLeaderboardIcon(module: LeaderboardModule, settingKey: string
     return <ChessPieceIcon type={pieceType} color="w" size={PIECE_ICON_SIZE} />;
   }
 
-  return <span className="text-2xl leading-none">{MODULE_EMOJIS[module]}</span>;
+  return <span className="text-2xl leading-none">{PRACTICE_EMOJIS[module]}</span>;
 }

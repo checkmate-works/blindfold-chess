@@ -1,6 +1,7 @@
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
+import { PRACTICE_EMOJIS } from '../_lib/practice-emojis';
 import { BoardSymmetrySetup } from './_components/BoardSymmetrySetup';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ const { generateMetadata, Page } = createPracticeTopPage({
       <SectionTitle>{t('practice.boardSymmetry.requiredKnowledge')}</SectionTitle>
       <CardLink
         href="/learn/coordinates/board-symmetry"
-        icon="🦋"
+        icon={PRACTICE_EMOJIS.board_symmetry}
         title={t('practice.boardSymmetry.viewArticle')}
         description={t('practice.boardSymmetry.articleDescription')}
         locale={locale}
