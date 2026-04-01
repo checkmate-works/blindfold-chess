@@ -58,6 +58,10 @@ function formatDate(date: Date, locale: string): string {
 /**
  * Derive a display-friendly badge name from slug.
  * Example: "monthly-coordinate_quiz-white-1st" -> "Monthly Coordinate Quiz White 1st"
+ *
+ * TODO: This is a provisional display-name generator. In the future, badge
+ * display names should be defined in i18n message files and looked up by slug.
+ * At that point this function can serve as a fallback or be removed entirely.
  */
 function slugToDisplayName(slug: string): string {
   return slug
@@ -103,7 +107,7 @@ export function ProfileAchievements({ achievements, locale, labels }: Props) {
             {labels.categoryNames[category] ?? category}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {items.map((item, idx) => {
+            {items.map((item) => {
               const meta = item.metadata;
               const monthLabel = isMonthlyMetadata(meta)
                 ? formatYearMonth(meta.year, meta.month, locale)
@@ -111,7 +115,7 @@ export function ProfileAchievements({ achievements, locale, labels }: Props) {
 
               return (
                 <div
-                  key={`${item.slug}-${idx}`}
+                  key={`${item.slug}-${item.achievedAt.toISOString()}`}
                   className="flex items-start gap-3 rounded-lg border border-border bg-card p-3 transition-colors"
                 >
                   {/* Icon */}
