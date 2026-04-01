@@ -11,7 +11,7 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { parseFenMeta } from '../_lib/fen-utils';
+import { getMovingSide, parseFenMeta } from '../_lib/fen-utils';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
@@ -277,14 +277,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
 
     const isAiMove = (index: number) => {
-      const isStartingSideMove = index % 2 === 0;
-      const startingSide = startsAsBlack ? 'black' : 'white';
-      const movingSide = isStartingSideMove
-        ? startingSide
-        : startingSide === 'white'
-          ? 'black'
-          : 'white';
-      return movingSide !== playerSide;
+      return getMovingSide(index, startingFen) !== playerSide;
     };
 
     for (let i = moves.length - 1; i >= 0; i--) {

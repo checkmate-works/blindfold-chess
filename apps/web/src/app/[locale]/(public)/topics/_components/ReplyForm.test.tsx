@@ -25,6 +25,8 @@ vi.mock('@/app/_components', () => ({
   ),
   Textarea: (props: Record<string, unknown>) => <textarea {...props} />,
   UnsavedChangesDialog: () => null,
+  FormErrorBanner: ({ message }: { message?: string | null }) =>
+    message ? <div data-testid="form-error-banner">{message}</div> : null,
 }));
 
 const mockCreateReplyAction = vi.fn();

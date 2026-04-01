@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { getStartingFen, replayMoves, validateMoveSequence } from '@blindfold-chess/features/chess-core';
+import {
+  getStartingFen,
+  replayMoves,
+  validateMoveSequence,
+} from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 
-import { parseFenMeta } from '../../_lib/fen-utils';
+import { getMovingSide, parseFenMeta } from '../../_lib/fen-utils';
 import type { EvaluationFilters, MoveLogEntry } from '../_lib';
 import { clearEvaluationCache, formatMovesToPgn, getCurrentEvaluationMark } from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
@@ -171,15 +175,8 @@ export function usePostmortemGame({
   const isPlayerTurn = useMemo(() => {
     if (!autoOpponent) return true;
 
-    const isStartingSideMove = currentMoveIndex % 2 === 0;
-    const startingSide = startsAsBlack ? 'black' : 'white';
-    const movingSide = isStartingSideMove
-      ? startingSide
-      : startingSide === 'white'
-        ? 'black'
-        : 'white';
-    return movingSide === playerColor;
-  }, [currentMoveIndex, playerColor, autoOpponent, startsAsBlack]);
+    return getMovingSide(currentMoveIndex, startingFen) === playerColor;
+  }, [currentMoveIndex, playerColor, autoOpponent, startingFen]);
 
   // Update URL with current offset
   useEffect(() => {

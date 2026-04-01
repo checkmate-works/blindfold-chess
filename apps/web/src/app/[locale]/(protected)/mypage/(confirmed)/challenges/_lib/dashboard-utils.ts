@@ -1,5 +1,3 @@
-import { useTranslations } from 'next-intl';
-
 import type { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
@@ -36,55 +34,6 @@ export function formatShortDate(date: Date | null, locale: string): string {
     month: 'short',
     day: 'numeric',
   }).format(new Date(date));
-}
-
-export function getComparisonLabel(
-  period: DatePeriod,
-  t: ReturnType<typeof useTranslations>
-): string {
-  switch (period) {
-    case 'thisWeek':
-      return t('vsLastWeek');
-    case 'lastWeek':
-      return t('vs2WeeksAgo');
-    case 'thisMonth':
-      return t('vsLastMonth');
-    case 'lastMonth':
-      return t('vs2MonthsAgo');
-  }
-}
-
-export function getPreviousPeriodLabel(period: DatePeriod): string {
-  switch (period) {
-    case 'thisWeek':
-      return 'lastWeek';
-    case 'lastWeek':
-      return 'twoWeeksAgo';
-    case 'thisMonth':
-      return 'lastMonth';
-    case 'lastMonth':
-      return 'twoMonthsAgo';
-  }
-}
-
-/**
- * Returns the DatePeriod that the previous-period legend label should navigate to,
- * or null if the previous period is not a selectable option.
- *
- * thisWeek  → lastWeek  (selectable)
- * thisMonth → lastMonth (selectable)
- * lastWeek  → null      ("2 weeks ago" is not selectable)
- * lastMonth → null      ("2 months ago" is not selectable)
- */
-export function getNavigablePreviousPeriod(period: DatePeriod): DatePeriod | null {
-  switch (period) {
-    case 'thisWeek':
-      return 'lastWeek';
-    case 'thisMonth':
-      return 'lastMonth';
-    default:
-      return null;
-  }
 }
 
 export function computeStats(sessions: ChallengeResultRow[], mistakeLimit: number) {

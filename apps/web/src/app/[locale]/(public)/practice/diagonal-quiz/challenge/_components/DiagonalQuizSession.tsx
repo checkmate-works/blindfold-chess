@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -14,6 +14,7 @@ import {
 import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/_hooks/use-challenge-result-save';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveDiagonalQuizResult } from '@/app/[locale]/(public)/practice/diagonal-quiz/_actions/save-result';
@@ -142,13 +143,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
   );
 
   // Save result and redirect on finish
-  const savedRef = useRef(false);
-  useEffect(() => {
-    if (!isFinished || savedRef.current) return;
-    savedRef.current = true;
-
-    const total = correctCount + incorrectCount;
-
+  const total = correctCount + incorrectCount;
+  const resultUrl = useMemo(() => {
     const serializedData = JSON.stringify(
       questionResults.map((r) => ({
         s: r.square,
@@ -169,45 +165,26 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     params.set('timeLimit', initialTimeLimit.toString());
     params.set('data', encodeURIComponent(serializedData));
 
-    const resultUrl = `/${locale}/practice/diagonal-quiz/result?${params.toString()}`;
+    return `/${locale}/practice/diagonal-quiz/result?${params.toString()}`;
+  }, [correctCount, total, totalTime, initialTimeLimit, questionResults, locale]);
 
-    if (total > 0) {
+  const saveResult = useCallback(
+    () =>
       saveDiagonalQuizResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-      })
-        .then((result) => {
-          if (!result.success) {
-            console.error('Failed to save diagonal_quiz result:', result.error);
-            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
-            sessionStorage.setItem(
-              'blindfold_chess_granted_ranks',
-              JSON.stringify(result.grantedRanks)
-            );
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to save diagonal_quiz result:', error);
-          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-        })
-        .finally(() => {
-          router.push(resultUrl);
-        });
-    } else {
-      router.push(resultUrl);
-    }
-  }, [
+      }),
+    [correctCount, incorrectCount, totalTime]
+  );
+
+  useChallengeResultSave({
     isFinished,
-    correctCount,
-    incorrectCount,
-    questionResults,
-    locale,
-    router,
-    initialTimeLimit,
-    totalTime,
-  ]);
+    totalAnswers: total,
+    resultUrl,
+    saveResult,
+    moduleName: 'diagonal_quiz',
+  });
 
   if (!currentSquare || isFinished) {
     return <PracticeResultSkeleton />;

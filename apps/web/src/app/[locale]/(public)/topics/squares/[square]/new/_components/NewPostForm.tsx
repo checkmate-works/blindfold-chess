@@ -5,7 +5,7 @@ import { useActionState, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, Textarea, UnsavedChangesDialog } from '@/app/_components';
+import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 
 import { createPost } from '../_actions/createPost';
 
@@ -39,11 +39,7 @@ export function NewPostForm({ locale, square }: Props) {
 
   return (
     <form action={formAction} className="space-y-4">
-      {errorMessage && (
-        <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-          {errorMessage}
-        </div>
-      )}
+      <FormErrorBanner message={errorMessage} />
 
       <div className="space-y-2">
         <label htmlFor="content" className="block text-sm font-medium text-foreground">

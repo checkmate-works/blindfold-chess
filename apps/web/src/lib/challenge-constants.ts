@@ -20,9 +20,3 @@ export const MISTAKE_LIMIT = 3;
  * セキュリティ上もビジネスロジック上も許容しない。
  */
 export const CHALLENGE_TIME_LIMIT = 60;
-
-export function getMissColorClass(incorrectAnswers: number): string {
-  if (incorrectAnswers >= MISTAKE_LIMIT) return 'text-destructive';
-  if (incorrectAnswers === 0) return 'text-success';
-  return 'text-foreground';
-}

@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { Button, FormErrorBanner } from '@/app/_components';
 
 import type { ActionResult } from '@/lib/action-types';
 
@@ -51,11 +51,7 @@ export function OpeningSelectForm({ locale, questionKey, openings }: Props) {
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="answerValue" value={selectedSlug} />
-      {errorMessage && (
-        <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-          {errorMessage}
-        </div>
-      )}
+      <FormErrorBanner message={errorMessage} />
 
       <OpeningSearch openings={openings} selectedSlug={selectedSlug} onSelect={setSelectedSlug} />
 

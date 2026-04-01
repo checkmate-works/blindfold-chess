@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/_hooks/use-challenge-result-save';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/legal-moves/_actions/save-result';
@@ -114,59 +115,33 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
   );
 
   // Save result and redirect on finish
-  const savedRef = useRef(false);
-  useEffect(() => {
-    if (!isFinished || savedRef.current) return;
-    savedRef.current = true;
-
-    const total = correctCount + incorrectCount;
-
+  const resultUrl = useMemo(() => {
     const params = new URLSearchParams();
     params.set('score', correctCount.toString());
-    params.set('total', total.toString());
+    params.set('total', (correctCount + incorrectCount).toString());
     params.set('time', totalTime.toString());
     params.set('piece', selectedPiece);
+    return `/${locale}/practice/legal-moves/result?${params.toString()}`;
+  }, [correctCount, incorrectCount, totalTime, selectedPiece, locale]);
 
-    const resultUrl = `/${locale}/practice/legal-moves/result?${params.toString()}`;
-
-    if (totalCount > 0) {
+  const saveResult = useCallback(
+    () =>
       saveLegalMovesResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
         selectedPiece,
-      })
-        .then((result) => {
-          if (!result.success) {
-            console.error('Failed to save legal_moves result:', result.error);
-            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
-            sessionStorage.setItem(
-              'blindfold_chess_granted_ranks',
-              JSON.stringify(result.grantedRanks)
-            );
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to save legal_moves result:', error);
-          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-        })
-        .finally(() => {
-          router.push(resultUrl);
-        });
-    } else {
-      router.push(resultUrl);
-    }
-  }, [
+      }),
+    [correctCount, incorrectCount, totalTime, selectedPiece]
+  );
+
+  useChallengeResultSave({
     isFinished,
-    correctCount,
-    incorrectCount,
-    totalCount,
-    locale,
-    router,
-    selectedPiece,
-    totalTime,
-  ]);
+    totalAnswers: totalCount,
+    resultUrl,
+    saveResult,
+    moduleName: 'legal_moves',
+  });
 
   if (isFinished) {
     return <PracticeResultSkeleton />;

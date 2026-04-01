@@ -1,5 +1,5 @@
 import type { SkillLevel as AiGameSkillLevel } from '@blindfold-chess/features/ai-game';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
+import type { AlgebraicNotation, GameOutcome, Side } from '@blindfold-chess/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -18,8 +18,8 @@ export type GameSettings = {
   skillLevel: SkillLevel;
 };
 
-// Game outcome from player's perspective
-export type GameOutcome = 'in_progress' | 'win' | 'loss' | 'draw';
+// Re-export the canonical GameOutcome type from @blindfold-chess/types
+export type { GameOutcome } from '@blindfold-chess/types';
 
 export type Game = {
   id: string;

@@ -22,7 +22,7 @@ import {
   getComparisonLabel,
   getNavigablePreviousPeriod,
   getPreviousPeriodLabel,
-} from '../_lib/dashboard-utils';
+} from '../_lib/dashboard-ui-utils';
 import { selectClassName } from '../_lib/ui-constants';
 import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
 import { ScoreChart } from './ScoreChart';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +10,7 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/_hooks/use-challenge-result-save';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveBoardSymmetryResult } from '@/app/[locale]/(public)/practice/board-symmetry/_actions/save-result';
@@ -114,47 +115,33 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
   }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown, isPaused]);
 
   // Save result and redirect on finish
-  const savedRef = useRef(false);
-  useEffect(() => {
-    if (!isFinished || savedRef.current) return;
-    savedRef.current = true;
-
-    const total = correctCount + incorrectCount;
+  const total = correctCount + incorrectCount;
+  const resultUrl = useMemo(() => {
     const params = new URLSearchParams({
       score: correctCount.toString(),
       total: total.toString(),
       time: totalTime.toString(),
     });
-    const resultUrl = `/${locale}/practice/board-symmetry/result?${params.toString()}`;
+    return `/${locale}/practice/board-symmetry/result?${params.toString()}`;
+  }, [correctCount, total, totalTime, locale]);
 
-    if (total > 0) {
+  const saveResult = useCallback(
+    () =>
       saveBoardSymmetryResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
-      })
-        .then((result) => {
-          if (!result.success) {
-            console.error('Failed to save board_symmetry result:', result.error);
-            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
-            sessionStorage.setItem(
-              'blindfold_chess_granted_ranks',
-              JSON.stringify(result.grantedRanks)
-            );
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to save board_symmetry result:', error);
-          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-        })
-        .finally(() => {
-          router.push(resultUrl);
-        });
-    } else {
-      router.push(resultUrl);
-    }
-  }, [isFinished, correctCount, incorrectCount, locale, router, totalTime]);
+      }),
+    [correctCount, incorrectCount, totalTime]
+  );
+
+  useChallengeResultSave({
+    isFinished,
+    totalAnswers: total,
+    resultUrl,
+    saveResult,
+    moduleName: 'board_symmetry',
+  });
 
   if (isFinished) {
     return <PracticeResultSkeleton />;

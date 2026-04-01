@@ -1,4 +1,4 @@
-import { getMissColorClass } from '@/lib/challenge-constants';
+import { getMissColorClass } from '@/lib/challenge-ui';
 
 type SessionRow = {
   date: string;

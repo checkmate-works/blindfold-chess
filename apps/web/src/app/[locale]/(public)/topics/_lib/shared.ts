@@ -2,6 +2,17 @@ import { profiles, topicPostRatings } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 /**
+ * Normalize a rating value: returns the rating if at least one field is non-null,
+ * otherwise returns null. Prevents storing empty rating objects.
+ */
+export function normalizeRating(
+  rating: Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null
+): Pick<TopicPostRating, 'preferenceRating' | 'proficiencyRating'> | null {
+  if (!rating) return null;
+  return rating.preferenceRating !== null || rating.proficiencyRating !== null ? rating : null;
+}
+
+/**
  * Shared Drizzle select fragments reused across topic query files.
  */
 export const authorSelect = {

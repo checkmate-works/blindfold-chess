@@ -2,11 +2,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 import { FaCheck, FaStar } from 'react-icons/fa';
 
-export type EvaluationMark = {
-  square: string;
-  loss: number;
-  isMate?: boolean;
-};
+export type { EvaluationMark } from './evaluation-types';
 
 type EvaluationIconSize = 'sm' | 'md';
 

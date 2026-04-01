@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -9,6 +9,7 @@ import type { Square } from '@blindfold-chess/types';
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/_hooks/use-challenge-result-save';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
 import { saveCoordinateQuizResult } from '@/app/[locale]/(public)/practice/coordinate-quiz/_actions/save-result';
@@ -105,11 +106,7 @@ export default function CoordinateQuizChallenge({
   );
 
   // Save result and redirect on finish
-  const savedRef = useRef(false);
-  useEffect(() => {
-    if (!isFinished || savedRef.current) return;
-    savedRef.current = true;
-
+  const resultUrl = useMemo(() => {
     const params = new URLSearchParams({
       score: correctCount.toString(),
       total: totalCount.toString(),
@@ -117,47 +114,27 @@ export default function CoordinateQuizChallenge({
       orientation: boardOrientation,
       speed: feedbackSpeed,
     });
-    const resultUrl = `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
+    return `/${locale}/practice/coordinate-quiz/result?${params.toString()}`;
+  }, [correctCount, totalCount, totalTime, boardOrientation, feedbackSpeed, locale]);
 
-    if (totalCount > 0) {
+  const saveResult = useCallback(
+    () =>
       saveCoordinateQuizResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
         timeTaken: totalTime,
         boardOrientation,
-      })
-        .then((result) => {
-          if (!result.success) {
-            console.error('Failed to save coordinate_quiz result:', result.error);
-            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
-            sessionStorage.setItem(
-              'blindfold_chess_granted_ranks',
-              JSON.stringify(result.grantedRanks)
-            );
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to save coordinate_quiz result:', error);
-          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
-        })
-        .finally(() => {
-          router.push(resultUrl);
-        });
-    } else {
-      router.push(resultUrl);
-    }
-  }, [
+      }),
+    [correctCount, incorrectCount, totalTime, boardOrientation]
+  );
+
+  useChallengeResultSave({
     isFinished,
-    correctCount,
-    incorrectCount,
-    totalCount,
-    locale,
-    router,
-    totalTime,
-    boardOrientation,
-    feedbackSpeed,
-  ]);
+    totalAnswers: totalCount,
+    resultUrl,
+    saveResult,
+    moduleName: 'coordinate_quiz',
+  });
 
   if (isFinished) {
     return <PracticeResultSkeleton />;

@@ -1,4 +1,4 @@
-import { getMissColorClass } from '@/lib/challenge-constants';
+import { getMissColorClass } from '@/lib/challenge-ui';
 
 import type { LeaderboardRow } from '../_lib/types';
 import { PlayerCell } from './PlayerCell';

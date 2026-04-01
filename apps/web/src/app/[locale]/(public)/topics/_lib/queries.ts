@@ -11,6 +11,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 
+import { buildProfilePostQuery } from './build-profile-post-query';
 import { attachPostMeta, attachProfilePostMeta } from './post-meta';
 import { authorSelect, ratingSelect, sortPosts } from './shared';
 import type {
@@ -266,18 +267,7 @@ export async function getRecentPostsAcrossTopics(
   limit = 5,
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+  const results = await buildProfilePostQuery()
     .where(
       and(
         inArray(topicPosts.topicType, ['square', 'opening']),
@@ -320,18 +310,7 @@ export async function getPostsAcrossTopicsPaginated(
   offset: number,
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+  const results = await buildProfilePostQuery()
     .where(
       and(
         inArray(topicPosts.topicType, ['square', 'opening']),
@@ -409,18 +388,7 @@ export async function getPostsByUserId(
   limit?: number,
   offset?: number
 ): Promise<ProfilePostWithReplyMeta[]> {
-  let query = db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+  let query = buildProfilePostQuery()
     .where(
       and(
         eq(topicPosts.userId, userId),
@@ -429,8 +397,7 @@ export async function getPostsByUserId(
         isNull(topicPosts.deletedAt)
       )
     )
-    .orderBy(desc(topicPosts.createdAt))
-    .$dynamic();
+    .orderBy(desc(topicPosts.createdAt));
 
   if (limit !== undefined) {
     query = query.limit(limit);

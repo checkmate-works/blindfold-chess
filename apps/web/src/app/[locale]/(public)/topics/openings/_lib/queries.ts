@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
 import type { ChessOpening, Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
+import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
 import {
   attachPostMeta,
   attachProfilePostMeta,
@@ -21,6 +22,7 @@ import type {
   ProfilePostWithReplyMeta,
   SortMode,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { normalizeRating } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 export { getLikeMetaForPost, getRepliesByPostId };
 export type { LikeMeta, PostWithReplyMeta, SortMode };
@@ -185,8 +187,7 @@ export async function getPostsForOpening(slug: string): Promise<OpeningPostWithA
   return results.map((r) => ({
     ...r.post,
     author: r.author,
-    rating:
-      r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null ? r.rating : null,
+    rating: normalizeRating(r.rating),
   }));
 }
 
@@ -229,8 +230,7 @@ export async function getOpeningPostById(
   return {
     ...r.post,
     author: r.author,
-    rating:
-      r.rating?.preferenceRating !== null || r.rating?.proficiencyRating !== null ? r.rating : null,
+    rating: normalizeRating(r.rating),
   };
 }
 
@@ -270,18 +270,7 @@ export async function getPostsAcrossOpeningsPaginated(
   offset: number,
   currentUserId?: string
 ): Promise<ProfilePostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+  const results = await buildProfilePostQuery()
     .where(
       and(
         eq(topicPosts.topicType, 'opening'),
@@ -341,18 +330,7 @@ export async function getPostsByFirstMoveSquarePaginated(
 
   const slugs = openingSlugs.map((o) => o.slug);
 
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-      openingName: chessOpenings.name,
-      openingFen: chessOpenings.fen,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
+  const results = await buildProfilePostQuery()
     .where(
       and(
         eq(topicPosts.topicType, 'opening'),
