@@ -1,25 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
-
 import { useTranslations } from 'next-intl';
 
 import { BoardOverlay } from '@/app/_components';
-import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { LuPause, LuPlay } from 'react-icons/lu';
+import { LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
-import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';
-import type { ActiveField } from '../../_hooks/use-diagonal-input';
-import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
+import { useKeypadInput } from '../_hooks/use-keypad-input';
+import { ChallengePlayingHeader } from './ChallengePlayingHeader';
 
 type Props = {
   currentSquare: string;
@@ -69,26 +64,16 @@ export function DiagonalQuizPlaying({
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
-  const timeElapsed = timeLimit - timeRemaining;
   const isDisabled = showResult || countdown !== null || isPaused;
 
-  const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
-
-  const onBothComplete = useCallback(
-    (diagonal: string, antiDiagonal: string) => {
-      if (isDisabled) return;
-      onAnswer(diagonal, antiDiagonal);
-    },
-    [isDisabled, onAnswer]
-  );
-
   const {
+    singleDiagonal,
+    singleAntiDiagonal,
     diagonalStartText,
     diagonalEndText,
     antiDiagonalStartText,
     antiDiagonalEndText,
     activeField,
-    setActiveField,
     isDiagonalComplete,
     isAntiDiagonalComplete,
     expectingFile,
@@ -99,37 +84,13 @@ export function DiagonalQuizPlaying({
     handleRankPress,
     handleBackspace,
     handleClear,
-    reset,
-  } = useDiagonalInput({
-    onBothComplete,
-    disabled: isDisabled,
-    allowSingleSquareDiagonal: singleDiagonal,
-    allowSingleSquareAntiDiagonal: singleAntiDiagonal,
+    handleFieldClick,
+  } = useKeypadInput({
+    currentSquare,
+    showResult,
+    isDisabled,
+    onAnswer,
   });
-
-  // Reset input when the question changes
-  const prevSquareRef = useRef(currentSquare);
-  useEffect(() => {
-    if (prevSquareRef.current !== currentSquare) {
-      prevSquareRef.current = currentSquare;
-      reset();
-    }
-  }, [currentSquare, reset]);
-
-  // Also reset when showResult transitions from true to false (new question)
-  const prevShowResultRef = useRef(showResult);
-  useEffect(() => {
-    if (prevShowResultRef.current && !showResult) {
-      reset();
-    }
-    prevShowResultRef.current = showResult;
-  }, [showResult, reset]);
-
-  const handleFieldClick = (field: ActiveField) => {
-    if (isDisabled) return;
-    // Allow switching to an already-complete field to edit it
-    setActiveField(field);
-  };
 
   return (
     <div className="max-w-md mx-auto">
@@ -165,45 +126,15 @@ export function DiagonalQuizPlaying({
         >
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
-          <div className="flex justify-between items-center mb-4 min-h-[40px] relative">
-            {/* Lives */}
-            <div className="flex items-center gap-1">
-              {maxLives !== undefined &&
-                remainingLives !== undefined &&
-                Array.from({ length: maxLives }, (_, i) => (
-                  <span key={i} className="text-destructive">
-                    {i < remainingLives ? (
-                      <FaHeart className="w-5 h-5" />
-                    ) : (
-                      <FaRegHeart className="w-5 h-5 opacity-30" />
-                    )}
-                  </span>
-                ))}
-            </div>
-            <div className="flex items-center gap-2 z-20">
-              {onTogglePause && (
-                <button
-                  onClick={onTogglePause}
-                  className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
-                  disabled={countdown !== null}
-                  aria-label={isPaused ? 'Resume' : 'Pause'}
-                >
-                  {isPaused ? (
-                    <LuPlay size={18} className="fill-current" />
-                  ) : (
-                    <LuPause size={18} className="fill-current" />
-                  )}
-                </button>
-              )}
-              <QuizTimer
-                timeRemaining={timeRemaining}
-                progress={timeLimit > 0 ? timeElapsed / timeLimit : 0}
-                size={40}
-                fontSize="text-xs"
-                strokeWidth={4}
-              />
-            </div>
-          </div>
+          <ChallengePlayingHeader
+            remainingLives={remainingLives}
+            maxLives={maxLives}
+            isPaused={isPaused}
+            onTogglePause={onTogglePause}
+            countdown={countdown}
+            timeRemaining={timeRemaining}
+            timeLimit={timeLimit}
+          />
 
           <div className="mb-6">
             <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>

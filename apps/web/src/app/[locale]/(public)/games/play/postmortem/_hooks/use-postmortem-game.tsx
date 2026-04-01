@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  getStartingFen,
-  replayMoves,
-  validateMoveSequence,
-} from '@blindfold-chess/features/chess-core';
+import { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 
-import { getMovingSide, parseFenMeta } from '../../_lib/fen-utils';
+import { getMovingSide } from '../../_lib/fen-utils';
 import type { EvaluationFilters, MoveLogEntry } from '../_lib';
-import { clearEvaluationCache, formatMovesToPgn, getCurrentEvaluationMark } from '../_lib';
+import {
+  isPlayerTurn as computeIsPlayerTurn,
+  formatMoveNotation,
+  formatMovesToPgn,
+  getCurrentEvaluationMark,
+} from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
 import { usePostmortemFilters } from './use-postmortem-filters';
+import { usePostmortemInit } from './use-postmortem-init';
 import { usePostmortemNavigation } from './use-postmortem-navigation';
 
 /**
@@ -107,53 +109,25 @@ export function usePostmortemGame({
   startingFen,
   onSelectedMoveChange,
 }: Props): PostmortemGameReturn {
-  // State that lives in the main hook
-  const [originalMoves, setOriginalMoves] = useState<AlgebraicNotation[]>([]);
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(initialOffset);
-  const [userMoves, setUserMoves] = useState<AlgebraicNotation[]>([]);
+  // Initialization: PGN parsing, move validation, game positions
+  const {
+    originalMoves,
+    currentMoveIndex,
+    setCurrentMoveIndex,
+    userMoves,
+    setUserMoves,
+    isCompleted,
+    setIsCompleted,
+    startsAsBlack,
+    startMoveNumber,
+    gamePositions,
+  } = usePostmortemInit({ pgn, initialOffset, startingFen });
+
+  // Local state
   const [moveInputValue, setMoveInputValue] = useState('');
-  const [isCompleted, setIsCompleted] = useState(false);
   const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
   const [showEvaluation, setShowEvaluation] = useState(false);
-
-  // Pre-compute starting position info from FEN
-  const { startsAsBlack, startMoveNumber } = useMemo(
-    () => parseFenMeta(startingFen),
-    [startingFen]
-  );
-
-  // Parse PGN on mount and clear evaluation cache
-  useEffect(() => {
-    clearEvaluationCache();
-
-    try {
-      const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
-      const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);
-
-      const fen = startingFen ?? getStartingFen();
-      const result = validateMoveSequence(fen, moves);
-      const validMoves = result.validMoves as AlgebraicNotation[];
-
-      setOriginalMoves(validMoves);
-
-      if (initialOffset > 0 && initialOffset <= validMoves.length) {
-        const restoredMoves = validMoves.slice(0, initialOffset);
-        setUserMoves(restoredMoves);
-
-        if (initialOffset >= validMoves.length) {
-          setIsCompleted(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error parsing PGN:', error);
-    }
-  }, [pgn, initialOffset, startingFen]);
-
-  // Pre-compute all game positions
-  const gamePositions = useMemo(() => {
-    return replayMoves(originalMoves as string[], startingFen);
-  }, [originalMoves, startingFen]);
 
   // Hooks: Navigation
   const navigation = usePostmortemNavigation({
@@ -172,21 +146,11 @@ export function usePostmortemGame({
   }, [userMoves.length, gamePositions, selectedMoveIndex]);
 
   // Check if current move is player's turn
-  const isPlayerTurn = useMemo(() => {
-    if (!autoOpponent) return true;
-
-    return getMovingSide(currentMoveIndex, startingFen) === playerColor;
-  }, [currentMoveIndex, playerColor, autoOpponent, startingFen]);
-
-  // Update URL with current offset
-  useEffect(() => {
-    if (originalMoves.length > 0 && currentMoveIndex > 0) {
-      const params = new URLSearchParams(window.location.search);
-      params.set('offset', currentMoveIndex.toString());
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, [currentMoveIndex, originalMoves.length]);
+  const playerTurn = useMemo(
+    () =>
+      computeIsPlayerTurn(currentMoveIndex, playerColor, autoOpponent, startingFen, getMovingSide),
+    [currentMoveIndex, playerColor, autoOpponent, startingFen]
+  );
 
   // Hooks: Actions
   const {
@@ -205,7 +169,7 @@ export function usePostmortemGame({
     startsAsBlack,
     startMoveNumber,
     showEvaluation,
-    isPlayerTurn,
+    isPlayerTurn: playerTurn,
     autoOpponent,
     isCompleted,
     setUserMoves,
@@ -265,15 +229,6 @@ export function usePostmortemGame({
     [moveLog, navigateToPosition, navigateToStart]
   );
 
-  // Helper to format a move notation string
-  const formatMoveNotation = useCallback(
-    (entry: MoveLogEntry): string =>
-      entry.isWhiteMove
-        ? `${entry.moveNumber}. ${entry.move}`
-        : `${entry.moveNumber}... ${entry.move}`,
-    []
-  );
-
   // Update parent with latest move result during play
   useEffect(() => {
     if (!onSelectedMoveChange) return;
@@ -304,7 +259,7 @@ export function usePostmortemGame({
         moveNotation: formatMoveNotation(latestEntry),
       });
     }
-  }, [moveLog, isCompleted, onSelectedMoveChange, formatMoveNotation]);
+  }, [moveLog, isCompleted, onSelectedMoveChange]);
 
   // Update parent component with selected move display (post-completion navigation)
   useEffect(() => {
@@ -340,7 +295,7 @@ export function usePostmortemGame({
         ? { loss: entry.evaluation.loss, isMate: entry.evaluation.mate !== undefined }
         : undefined,
     });
-  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange, formatMoveNotation]);
+  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange]);
 
   const currentFen = getCurrentFen() || gamePositions[0]?.fen;
   const totalMoves = originalMoves.length;
@@ -402,7 +357,7 @@ export function usePostmortemGame({
       showEvaluation,
       setShowEvaluation,
       dontKnowCount,
-      isPlayerTurn,
+      isPlayerTurn: playerTurn,
     },
     navigation: {
       ...navigation,

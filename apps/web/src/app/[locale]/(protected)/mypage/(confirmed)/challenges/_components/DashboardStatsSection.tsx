@@ -1,0 +1,47 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+import { StatsCard } from './StatsCard';
+
+type DashboardStatsSectionProps = {
+  bestScore: number | null;
+  avgCompletionScore: number | null;
+  bestScoreComparison: number | null;
+  avgScoreComparison: number | null;
+  comparisonLabel: string;
+};
+
+export function DashboardStatsSection({
+  bestScore,
+  avgCompletionScore,
+  bestScoreComparison,
+  avgScoreComparison,
+  comparisonLabel,
+}: DashboardStatsSectionProps) {
+  const t = useTranslations('Mypage');
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <StatsCard
+        label={t('bestScore')}
+        value={bestScore !== null ? bestScore.toString() : '-'}
+        comparison={{
+          percentChange: bestScoreComparison,
+          absoluteChange: null,
+          label: comparisonLabel,
+        }}
+      />
+      <StatsCard
+        label={t('avgScore')}
+        value={avgCompletionScore !== null ? avgCompletionScore.toFixed(1) : '-'}
+        tooltip={t('avgScoreTooltip')}
+        comparison={{
+          percentChange: avgScoreComparison,
+          absoluteChange: null,
+          label: comparisonLabel,
+        }}
+      />
+    </div>
+  );
+}
