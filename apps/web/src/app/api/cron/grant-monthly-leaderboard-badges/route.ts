@@ -4,7 +4,7 @@ import { and, eq, sql } from 'drizzle-orm';
 
 import type { AchievementCriteria } from '@/lib/db/achievement-criteria-types';
 import { db } from '@/lib/db/index';
-import { achievements, userAchievements } from '@/lib/db/schema';
+import { achievements, notifications, userAchievements } from '@/lib/db/schema';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,6 +25,13 @@ type GrantSummary = {
   placement: number;
   granted: number;
   skipped: number;
+};
+
+type GrantedBadgeInfo = {
+  slug: string;
+  menuType: string;
+  leaderboardKey: string;
+  placement: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -93,6 +100,9 @@ export async function GET(request: Request): Promise<NextResponse> {
     }
 
     const results: GrantSummary[] = [];
+
+    // Map to aggregate granted badges per user for notification
+    const grantedByUser = new Map<string, GrantedBadgeInfo[]>();
 
     // 4. Process each achievement definition
     for (const def of achievementDefs) {
@@ -172,6 +182,11 @@ export async function GET(request: Request): Promise<NextResponse> {
         });
 
         granted += 1;
+
+        // Track granted badge per user for notification
+        const badges = grantedByUser.get(row.user_id) ?? [];
+        badges.push({ slug: def.slug, menuType, leaderboardKey, placement });
+        grantedByUser.set(row.user_id, badges);
       }
 
       results.push({
@@ -184,6 +199,35 @@ export async function GET(request: Request): Promise<NextResponse> {
       });
     }
 
+    // 7. Send one notification per user for all granted badges
+    let notificationsSent = 0;
+    for (const [userId, badges] of grantedByUser) {
+      const groupKey = `achievement-monthly-${userId}-${year}-${month}`;
+
+      // Idempotency: skip if a notification with this group_key already exists
+      const existingNotification = await db
+        .select({ id: notifications.id })
+        .from(notifications)
+        .where(and(eq(notifications.userId, userId), eq(notifications.groupKey, groupKey)))
+        .limit(1);
+
+      if (existingNotification.length > 0) {
+        continue;
+      }
+
+      await db.insert(notifications).values({
+        userId,
+        actorId: null,
+        type: 'achievement_granted',
+        targetType: 'achievement',
+        targetId: null,
+        groupKey,
+        metadata: { badges, year, month },
+      });
+
+      notificationsSent += 1;
+    }
+
     const totalGranted = results.reduce((sum, r) => sum + r.granted, 0);
     const totalSkipped = results.reduce((sum, r) => sum + r.skipped, 0);
 
@@ -193,6 +237,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       month,
       totalGranted,
       totalSkipped,
+      notificationsSent,
       results,
     });
   } catch (error) {

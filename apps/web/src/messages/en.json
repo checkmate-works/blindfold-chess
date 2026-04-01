@@ -2051,7 +2051,9 @@
     "replyMessage": "{actor} replied to your post",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
-    "newPostMessage": "{actor} shared a new post"
+    "newPostMessage": "{actor} shared a new post",
+    "achievementSingleMessage": "🏆 You earned {name}",
+    "achievementMultipleMessage": "🏆 You earned {count} achievements"
   },
   "deleteAccount": {
     "title": "Delete Account",
