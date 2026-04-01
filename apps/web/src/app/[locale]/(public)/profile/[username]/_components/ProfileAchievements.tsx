@@ -21,7 +21,6 @@ type Props = {
     sectionTitle: string;
     noAchievements: string;
     categoryNames: Record<string, string>;
-    achievedOn: string;
     /** Label for the "View all" link. Only required when limit is set. */
     viewAll?: string;
   };
@@ -44,14 +43,6 @@ function getIconForKey(iconKey: string): string {
 function formatYearMonth(year: number, month: number, locale: string): string {
   const date = new Date(year, month - 1, 1);
   return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
-}
-
-function formatDate(date: Date, locale: string): string {
-  return new Date(date).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -128,9 +119,6 @@ export function ProfileAchievements({
                     {monthLabel && (
                       <p className="text-xs text-muted-foreground mt-0.5">{monthLabel}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {labels.achievedOn} {formatDate(item.achievedAt, locale)}
-                    </p>
                   </div>
                 </div>
               );

@@ -258,7 +258,6 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             labels={{
               sectionTitle: t('achievementsSection'),
               noAchievements: t('noAchievements'),
-              achievedOn: t('achievedOn'),
               viewAll: t('viewAllAchievements'),
               categoryNames: getAchievementCategoryNames(t),
             }}

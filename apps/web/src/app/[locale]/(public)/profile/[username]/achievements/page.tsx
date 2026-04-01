@@ -90,7 +90,6 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
           labels={{
             sectionTitle: t('achievementsSection'),
             noAchievements: t('noAchievements'),
-            achievedOn: t('achievedOn'),
             categoryNames: getAchievementCategoryNames(t),
           }}
         />
