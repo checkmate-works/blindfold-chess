@@ -427,6 +427,7 @@
     "accuracy": "正解率",
     "averageTime": "平均時間",
     "undo": "戻る",
+    "pause": "一時停止",
     "resume": "再開",
     "modeTimed": "チャレンジ",
     "modeTraining": "トレーニング",
@@ -944,7 +945,7 @@
       "title": "ルートプランナー",
       "session": "練習中",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
-      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
+      "betaNotice": "スコアの保存とリーダーボードへの表示は現在開発中です。",
       "howToPlayTitle": "問題方式",
       "howToPlayDescription": "駒がターゲットのマスに到達するための最短経路を考えましょう。",
       "settings": "設定",
@@ -966,9 +967,7 @@
       "selectedCount": "{count}個選択中",
       "pieces": {
         "n": "ナイト",
-        "b": "ビショップ",
-        "r": "ルーク",
-        "q": "クイーン"
+        "b": "ビショップ"
       },
       "moves": "移動",
       "currentPosition": "現在位置",
@@ -1012,7 +1011,9 @@
         "previous": "戻る",
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
-        "restart": "もう一度"
+        "restart": "もう一度",
+        "startChallenge": "チャレンジを開始",
+        "switchToTraining": "📖 トレーニングモードで練習する"
       }
     },
     "moveSequence": {

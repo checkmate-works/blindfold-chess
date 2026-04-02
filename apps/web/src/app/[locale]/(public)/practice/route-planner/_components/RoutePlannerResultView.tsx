@@ -22,6 +22,7 @@ type Props = {
   onNextProblem: () => void;
   isTraining: boolean;
   isLastProblem: boolean;
+  hideNextButton?: boolean;
 };
 
 export function RoutePlannerResultView({
@@ -34,6 +35,7 @@ export function RoutePlannerResultView({
   onNextProblem,
   isTraining,
   isLastProblem,
+  hideNextButton = false,
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const { preferences, isLoaded } = useGamePreferences();
@@ -79,8 +81,6 @@ export function RoutePlannerResultView({
             </div>
           </div>
         )}
-
-        {result.success && <div className="mt-2 text-sm text-muted-foreground"></div>}
       </div>
 
       {/* Visual Board Result */}
@@ -107,12 +107,14 @@ export function RoutePlannerResultView({
         </div>
       </div>
 
-      <div className="flex gap-4">
-        <Button onClick={onNextProblem} variant="primary" className="flex-1">
-          <FaRedo className="mr-2" />
-          {isTraining ? t('nextProblem') : isLastProblem ? t('finish') : t('nextProblem')}
-        </Button>
-      </div>
+      {!hideNextButton && (
+        <div className="flex gap-4">
+          <Button onClick={onNextProblem} variant="primary" className="flex-1">
+            <FaRedo className="mr-2" />
+            {isTraining ? t('nextProblem') : isLastProblem ? t('finish') : t('nextProblem')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

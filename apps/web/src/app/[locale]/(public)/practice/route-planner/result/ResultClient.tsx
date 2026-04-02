@@ -6,9 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -21,10 +20,10 @@ import {
 
 type Props = {
   locale: Locale;
-  adBanner?: React.ReactNode;
+  adBannerStandard?: React.ReactNode;
 };
 
-export function ResultClient({ locale, adBanner }: Props) {
+export function ResultClient({ locale, adBannerStandard }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -32,8 +31,8 @@ export function ResultClient({ locale, adBanner }: Props) {
   const { preferences, isLoaded } = useGamePreferences();
 
   const dataParam = searchParams.get('data');
-  const modeParam = searchParams.get('mode');
-  const isTutorial = modeParam === 'tutorial';
+  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
+  const piece = searchParams.get('piece');
 
   const { score, total, results } = useMemo(() => {
     if (!dataParam) {
@@ -41,8 +40,6 @@ export function ResultClient({ locale, adBanner }: Props) {
     }
     try {
       const parsed = JSON.parse(decodeURIComponent(dataParam));
-
-      // ... (inside component)
       const results = Array.isArray(parsed) ? (parsed as RoutePlannerResult[]) : [];
       const score = results.filter((r) => r.success).length;
       return { score, total: results.length, results };
@@ -51,19 +48,16 @@ export function ResultClient({ locale, adBanner }: Props) {
     }
   }, [dataParam]);
 
-  const handleTryAgain = () => {
-    if (isTutorial) {
-      router.push(`/${locale}/practice/route-planner?mode=tutorial`);
-    } else {
-      const count = searchParams.get('count');
-      const pieces = searchParams.get('pieces');
-      if (count && pieces) {
-        router.push(`/${locale}/practice/route-planner/challenge?count=${count}&pieces=${pieces}`);
-      } else {
-        router.push(`/${locale}/practice/route-planner`);
-      }
-    }
-  };
+  // Calculate average time per question
+  const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
+
+  // Try Again: 同じ設定でセッションを即座にやり直す
+  const sessionParams = new URLSearchParams();
+  if (piece) sessionParams.set('piece', piece);
+  const tryAgainUrl = `/${locale}/practice/route-planner/challenge/session?${sessionParams.toString()}`;
+
+  // Change Settings: セットアップ画面に遷移
+  const changeSettingsUrl = `/${locale}/practice/route-planner`;
 
   const relatedLinks = [
     {
@@ -78,12 +72,6 @@ export function ResultClient({ locale, adBanner }: Props) {
       title: tPractice('legalMoves.articles.knight.title'),
       description: tPractice('legalMoves.articles.knight.description'),
     },
-    {
-      href: '/learn/moves/rook-movement',
-      icon: '♜',
-      title: tPractice('legalMoves.articles.rook.title'),
-      description: tPractice('legalMoves.articles.rook.description'),
-    },
   ];
 
   return (
@@ -95,27 +83,28 @@ export function ResultClient({ locale, adBanner }: Props) {
         { label: t('title'), href: '/practice/route-planner' },
         { label: tPractice('result') },
       ]}
+      containerClassName="space-y-8"
     >
       <PracticeComplete
         score={score}
         total={total}
-        onTryAgain={handleTryAgain}
-        onExit={() => router.push(`/${locale}/practice/route-planner`)}
+        onTryAgain={() => (window.location.href = tryAgainUrl)}
+        onExit={() => router.push(changeSettingsUrl)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),
-          ...(isTutorial
-            ? {
-                practiceComplete: t('tutorial.complete'),
-                tryAgain: t('tutorial.restart'),
-                morePractice: t('tutorial.finish'),
-              }
-            : { morePractice: tPractice('morePractice') }),
+          averageTime: tPractice('averageTime'),
+          recreationProgress: tPractice('accuracy'),
+          correct: tPractice('correct'),
+          incorrect: tPractice('incorrect'),
         }}
+        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
+        scoreStats={{ correct: score, incorrect: total - score, total }}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),
         }}
+        afterActions={<SignUpBanner locale={locale} />}
       >
         {results.length > 0 && isLoaded && (
           <div className="space-y-4">
@@ -138,27 +127,23 @@ export function ResultClient({ locale, adBanner }: Props) {
         )}
       </PracticeComplete>
 
-      {adBanner}
+      <div className="mt-8 space-y-3">
+        <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {relatedLinks.map((link) => (
+            <CardLink
+              key={link.href}
+              href={link.href}
+              icon={link.icon}
+              title={link.title}
+              description={link.description}
+              locale={locale}
+            />
+          ))}
+        </div>
+      </div>
 
-      {!isTutorial && (
-        <PracticeLayout>
-          <PracticePanel className="p-6 mt-8 space-y-3">
-            <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {relatedLinks.map((link) => (
-                <CardLink
-                  key={link.href}
-                  href={link.href}
-                  icon={link.icon}
-                  title={link.title}
-                  description={link.description}
-                  locale={locale}
-                />
-              ))}
-            </div>
-          </PracticePanel>
-        </PracticeLayout>
-      )}
+      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
     </PracticeResultPage>
   );
 }

@@ -1,49 +1,37 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
-import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
-import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
-import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 
 import { PracticeResultSkeleton } from '../../_components/PracticeResultSkeleton';
 import { useCoordinateInput } from '../_hooks/use-coordinate-input';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
-import { PIECES, type PieceType } from '../_lib/utils';
+import { PIECES } from '../_lib/utils';
+import type { PieceType } from '../_lib/utils';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
 type Props = {
   locale: string;
-  problemCount?: number;
   allowedPieces?: PieceType[];
-  mode?: 'standard' | 'tutorial' | 'training';
-  initialProblem?: {
-    piece: PieceType;
-    start: string;
-    end: string;
-  };
+  mode?: 'training';
 };
 
 export function RoutePlannerSession({
   locale,
-  problemCount = 5,
   allowedPieces = [...PIECES],
-  mode = 'standard',
-  initialProblem,
+  mode = 'training',
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
-  const quitConfirmLabels = useQuitConfirmLabels();
-
-  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const {
     selectedFile,
@@ -58,25 +46,20 @@ export function RoutePlannerSession({
 
   const {
     gameState,
-    currentProblemIndex,
     results,
     problem,
     moves,
     result,
-    isTraining,
     addMove,
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
     handleNextProblem,
     handleEndTraining,
-    confirmQuit: gameConfirmQuit,
   } = useRoutePlannerGame({
     locale,
-    problemCount,
     allowedPieces,
     mode,
-    initialProblem,
     resetInput,
   });
 
@@ -111,51 +94,30 @@ export function RoutePlannerSession({
     [selectedFile, selectedRank, attemptMoveSubmit, setSelectedRank]
   );
 
-  const handleQuit = useCallback(() => {
-    setShowQuitModal(true);
-  }, []);
-
-  const confirmQuit = useCallback(() => {
-    setShowQuitModal(false);
-    gameConfirmQuit();
-  }, [gameConfirmQuit]);
-
   if (!problem) return <PracticeResultSkeleton />;
 
   return (
-    <div className="min-h-screen max-w-2xl mx-auto space-y-4">
+    <div className="min-h-screen max-w-md mx-auto">
       <div
         id="route-planner-session"
-        className="bg-card border border-border rounded-lg p-6 space-y-6"
+        className="bg-card border border-border rounded-xl p-8 text-center relative overflow-hidden shadow-sm"
       >
-        {!isTraining && problemCount > 1 && (
-          <ProgressBar current={currentProblemIndex + 1} total={problemCount} />
-        )}
-
-        {isTraining && (
-          <ScoreCounter
-            correct={results.filter((r) => r.success).length}
-            incorrect={results.filter((r) => !r.success).length}
-          />
-        )}
-
-        <div className="flex justify-between items-center border-b border-border pb-4">
-          <div className="flex items-center gap-6">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
-              <ChessPiece type={problem.piece} color="w" size={32} />
+        {/* Problem Header */}
+        <div className="flex justify-center items-center gap-6 border-b border-border pb-4 mb-4">
+          <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
+            <ChessPiece type={problem.piece} color="w" size={32} />
+          </div>
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">{t('startSquare')}</div>
+              <div className="text-xl font-mono font-bold">{problem.start}</div>
             </div>
-            <div className="flex items-center gap-4">
-              <div>
-                <div className="text-sm text-muted-foreground">{t('startSquare')}</div>
-                <div className="text-xl font-mono font-bold">{problem.start}</div>
-              </div>
-              <div className="text-muted-foreground pt-4">
-                <FaArrowRight />
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">{t('targetSquare')}</div>
-                <div className="text-xl font-mono font-bold">{problem.end}</div>
-              </div>
+            <div className="text-muted-foreground pt-4">
+              <FaArrowRight />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">{t('targetSquare')}</div>
+              <div className="text-xl font-mono font-bold">{problem.end}</div>
             </div>
           </div>
         </div>
@@ -227,47 +189,55 @@ export function RoutePlannerSession({
             onHoverPathIndex={setHoveredPathIndex}
             onLockPathIndex={setLockedPathIndex}
             onNextProblem={handleNextProblem}
-            isTraining={isTraining}
-            isLastProblem={currentProblemIndex >= problemCount - 1}
+            isTraining={true}
+            isLastProblem={false}
           />
         )}
       </div>
 
-      {/* Quit / End Training section outside the card */}
-      <div className="flex flex-col items-center gap-2">
+      <ScoreCounter
+        correct={results.filter((r) => r.success).length}
+        incorrect={results.filter((r) => !r.success).length}
+        className="mt-8"
+      />
+
+      {/* Skip / End Training section outside the card */}
+      <div className="mt-6 text-center space-y-2">
         {gameState === 'playing' && (
-          <button
-            onClick={handleSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
-            {t('skip')}
-          </button>
+          <div>
+            <button
+              onClick={handleSkip}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t('skip')}
+            </button>
+          </div>
         )}
-        {isTraining ? (
+        <div>
           <button
             onClick={handleEndTraining}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             {tPractice('endTraining')}
           </button>
-        ) : (
-          <button
-            onClick={handleQuit}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
-            {t('quit')}
-          </button>
-        )}
+        </div>
       </div>
 
-      {!isTraining && (
-        <QuitConfirmModal
-          isOpen={showQuitModal}
-          onConfirm={confirmQuit}
-          onCancel={() => setShowQuitModal(false)}
-          labels={quitConfirmLabels}
-        />
-      )}
+      {/* Challenge link */}
+      <hr className="border-border mt-8" />
+      <div className="mt-6 text-center">
+        <p className="text-sm text-muted-foreground">{tPractice('trainingModeActive')}</p>
+        <p className="mt-2 text-base font-medium text-foreground">
+          {tPractice('readyForChallenge')}
+        </p>
+        <div className="mt-4">
+          <Link href={`/${locale}/practice/route-planner/challenge`}>
+            <Button asChild variant="primary" size="lg" className="w-full">
+              {tPractice('goToChallenge')}
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

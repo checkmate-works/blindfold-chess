@@ -14,7 +14,7 @@ import {
   validateUserPath,
 } from '../_lib/utils';
 
-type GameState = 'playing' | 'result' | 'summary';
+type GameState = 'playing' | 'result';
 
 type RoutePlannerResult = {
   piece: PieceType;
@@ -30,38 +30,23 @@ type ResultState = {
   success: boolean;
   shortestPath: string[];
   message?: string;
+  skipped?: boolean;
 };
 
 type Options = {
   locale: string;
-  problemCount: number;
   allowedPieces: PieceType[];
-  mode: 'standard' | 'tutorial' | 'training';
-  initialProblem?: {
-    piece: PieceType;
-    start: string;
-    end: string;
-  };
+  mode: 'training';
   resetInput: () => void;
 };
 
-export function useRoutePlannerGame({
-  locale,
-  problemCount,
-  allowedPieces,
-  mode,
-  initialProblem,
-  resetInput,
-}: Options) {
+export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }: Options) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
   const router = useRouter();
   const { showToast } = useToast();
 
-  const isTraining = mode === 'training';
-
   const [gameState, setGameState] = useState<GameState>('playing');
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [results, setResults] = useState<RoutePlannerResult[]>([]);
 
   const [problem, setProblem] = useState<{
@@ -73,19 +58,13 @@ export function useRoutePlannerGame({
   const [result, setResult] = useState<ResultState | null>(null);
 
   const startNewProblem = useCallback(() => {
-    let newProblem;
-    if (mode === 'tutorial' && initialProblem && currentProblemIndex === 0) {
-      newProblem = initialProblem;
-    } else {
-      newProblem = generateProblem(allowedPieces);
-    }
-
+    const newProblem = generateProblem(allowedPieces);
     setProblem(newProblem);
     setMoves([]);
     setGameState('playing');
     setResult(null);
     resetInput();
-  }, [allowedPieces, resetInput, mode, initialProblem, currentProblemIndex]);
+  }, [allowedPieces, resetInput]);
 
   // Initialize first problem on mount
   useEffect(() => {
@@ -94,7 +73,7 @@ export function useRoutePlannerGame({
     }
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useScrollToElement('route-planner-session', mode === 'standard' || mode === 'training');
+  useScrollToElement('route-planner-session', true);
 
   const addMove = useCallback(
     (square: string) => {
@@ -124,12 +103,13 @@ export function useRoutePlannerGame({
     const shortestPath = findShortestPath(problem.piece, problem.start, problem.end) || [];
 
     if (validation.valid) {
-      setResult({ success: true, shortestPath, message: t('correct') });
+      setResult({ success: true, shortestPath, message: t('correct'), skipped: false });
     } else {
       setResult({
         success: false,
         shortestPath,
         message: validation.error === 'Path does not end at goal' ? t('badEnd') : t('incorrect'),
+        skipped: false,
       });
     }
 
@@ -140,7 +120,7 @@ export function useRoutePlannerGame({
   const handleSkip = useCallback(() => {
     if (!problem) return;
     const shortestPath = findShortestPath(problem.piece, problem.start, problem.end) || [];
-    setResult({ success: false, shortestPath, message: t('skipped') });
+    setResult({ success: false, shortestPath, message: t('skipped'), skipped: true });
     setGameState('result');
   }, [problem, t]);
 
@@ -152,100 +132,33 @@ export function useRoutePlannerGame({
         start: problem.start,
         end: problem.end,
         success: result.success,
-        userPath: result.message === t('skipped') ? [] : moves,
+        userPath: result.skipped === true ? [] : moves,
         shortestPath: result.shortestPath,
-        skipped: result.message === t('skipped'),
+        skipped: result.skipped === true,
       });
       setResults(newResults);
     }
 
-    if (isTraining) {
-      setCurrentProblemIndex((prev) => prev + 1);
-      startNewProblem();
-      return;
-    }
-
-    const nextIndex = currentProblemIndex + 1;
-    if (nextIndex < problemCount) {
-      setCurrentProblemIndex(nextIndex);
-      startNewProblem();
-    } else {
-      const dataStr = encodeURIComponent(JSON.stringify(newResults));
-      const piecesStr = allowedPieces.join('');
-      router.push(
-        `/${locale}/practice/route-planner/result?data=${dataStr}&mode=${mode}&count=${problemCount}&pieces=${piecesStr}`
-      );
-    }
-  }, [
-    currentProblemIndex,
-    problemCount,
-    result,
-    startNewProblem,
-    problem,
-    t,
-    moves,
-    results,
-    router,
-    locale,
-    mode,
-    allowedPieces,
-    isTraining,
-  ]);
+    startNewProblem();
+  }, [result, startNewProblem, problem, t, moves, results]);
 
   const handleEndTraining = useCallback(() => {
     showToast(tPractice('trainingEnded'), 'info');
     router.push(`/${locale}/practice/route-planner`);
   }, [showToast, tPractice, router, locale]);
 
-  const confirmQuit = useCallback(() => {
-    const finalResults = [...results];
-    if (gameState === 'result' && result && problem) {
-      finalResults.push({
-        piece: problem.piece,
-        start: problem.start,
-        end: problem.end,
-        success: result.success,
-        userPath: result.message === t('skipped') ? [] : moves,
-        shortestPath: result.shortestPath,
-        skipped: result.message === t('skipped'),
-      });
-      setResults(finalResults);
-    }
-
-    const dataStr = encodeURIComponent(JSON.stringify(finalResults));
-    const piecesStr = allowedPieces.join('');
-    router.push(
-      `/${locale}/practice/route-planner/result?data=${dataStr}&mode=${mode}&count=${problemCount}&pieces=${piecesStr}`
-    );
-  }, [
-    gameState,
-    result,
-    problem,
-    moves,
-    t,
-    results,
-    router,
-    locale,
-    mode,
-    problemCount,
-    allowedPieces,
-  ]);
-
   return {
     gameState,
-    currentProblemIndex,
     results,
     problem,
     moves,
     result,
-    isTraining,
     addMove,
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
     handleNextProblem,
     handleEndTraining,
-    confirmQuit,
   };
 }
 

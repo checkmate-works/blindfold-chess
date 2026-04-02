@@ -2,49 +2,44 @@
 
 import { useEffect, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { RoutePlannerSettings } from './RoutePlannerSettings';
-import { RoutePlannerTutorial } from './RoutePlannerTutorial';
+import type { RoutePlannerPieceSelection } from '../_lib/utils';
+import { RoutePlannerSetup } from './RoutePlannerSetup';
 import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
-
-type Settings = {
-  problemCount: number;
-  selectedPieces: Record<string, boolean>;
-};
 
 type Props = {
   locale: Locale;
-  settings: Settings;
-  onUpdateSettings: (partial: Partial<Settings>) => void;
+  pieceSelection: RoutePlannerPieceSelection;
+  onPieceSelect: (selection: RoutePlannerPieceSelection) => void;
 };
 
-export function RoutePlannerPageContent({ locale, settings, onUpdateSettings }: Props) {
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [hasCheckedTutorial, setHasCheckedTutorial] = useState(false);
+export function RoutePlannerPageContent({ locale, pieceSelection, onPieceSelect }: Props) {
+  const router = useRouter();
+  const [tutorialSkipped, setTutorialSkipped] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const skipped = localStorage.getItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY);
-    if (!skipped) {
-      setShowTutorial(true);
-    }
-    setHasCheckedTutorial(true);
+    const skipped = localStorage.getItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY) === 'true';
+    setTutorialSkipped(skipped);
   }, []);
 
-  if (!hasCheckedTutorial) return null;
+  useEffect(() => {
+    if (tutorialSkipped === false) {
+      router.replace(`/${locale}/practice/route-planner/tutorial`);
+    }
+  }, [tutorialSkipped, locale, router]);
 
-  if (showTutorial) {
-    return <RoutePlannerTutorial locale={locale} />;
+  if (tutorialSkipped === null || tutorialSkipped === false) {
+    return null;
   }
 
   return (
-    <RoutePlannerSettings
+    <RoutePlannerSetup
       locale={locale}
-      problemCount={settings.problemCount}
-      selectedPieces={settings.selectedPieces}
-      onProblemCountChange={(problemCount) => onUpdateSettings({ problemCount })}
-      onSelectedPiecesChange={(selectedPieces) => onUpdateSettings({ selectedPieces })}
-      onShowTutorial={() => setShowTutorial(true)}
+      pieceSelection={pieceSelection}
+      onPieceSelect={onPieceSelect}
     />
   );
 }

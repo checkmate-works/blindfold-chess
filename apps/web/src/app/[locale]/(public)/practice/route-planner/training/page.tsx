@@ -13,12 +13,14 @@ import dynamic from 'next/dynamic';
 
 import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import { PIECES } from '../_lib/utils';
+import { PIECE_NAME_TO_TYPE } from '../_lib/utils';
 import type { PieceType } from '../_lib/utils';
 
 const RoutePlannerSession = dynamic(() =>
   import('../_components/RoutePlannerSession').then((mod) => mod.RoutePlannerSession)
 );
+
+const VALID_PIECE_NAMES = ['bishop', 'knight'] as const;
 
 const { generateMetadata, Page } = createPracticeTrainingPage({
   i18nKey: 'routePlanner',
@@ -31,16 +33,10 @@ const { generateMetadata, Page } = createPracticeTrainingPage({
     { labelKey: 'modeTraining' },
   ],
   renderContent: ({ locale, searchParams }) => {
-    // Parse allowed pieces
-    const piecesParam = searchParams.pieces;
-    let allowedPieces: PieceType[] = [];
-    if (piecesParam && typeof piecesParam === 'string') {
-      const potentialPieces = piecesParam.split('') as PieceType[];
-      allowedPieces = potentialPieces.filter((p) => PIECES.includes(p));
-    }
-    if (allowedPieces.length === 0) {
-      allowedPieces = [...PIECES];
-    }
+    const piece = searchParams.piece as string | undefined;
+    const validPieceName =
+      piece && (VALID_PIECE_NAMES as readonly string[]).includes(piece) ? piece : 'knight';
+    const allowedPieces: PieceType[] = [PIECE_NAME_TO_TYPE[validPieceName]];
 
     return <RoutePlannerSession locale={locale} allowedPieces={allowedPieces} mode="training" />;
   },

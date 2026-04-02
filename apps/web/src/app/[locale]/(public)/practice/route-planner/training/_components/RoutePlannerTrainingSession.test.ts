@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import {
-  ROUTE_PLANNER_PIECES,
   findShortestPath,
   generateProblem,
   getPossibleMoves,
@@ -9,7 +8,8 @@ import {
 import type { RoutePlannerPieceType } from '@blindfold-chess/features/route-planner';
 import { describe, expect, it } from 'vitest';
 
-const ALL_PIECES: RoutePlannerPieceType[] = [...ROUTE_PLANNER_PIECES];
+/** Pieces available in route-planner practice (knight and bishop only). */
+const ALL_PIECES: RoutePlannerPieceType[] = ['n', 'b'];
 
 describe('RoutePlannerTrainingSession logic', () => {
   describe('problem generation for training mode', () => {
@@ -119,12 +119,6 @@ describe('RoutePlannerTrainingSession logic', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('validates a correct path for a rook', () => {
-      // Rook on a1 can go a1 -> a4 -> d4
-      const result = validateUserPath('r', 'a1', ['a4', 'd4'], 'd4');
-      expect(result.valid).toBe(true);
-    });
-
     it('validates a correct path for a bishop', () => {
       // Bishop on c1 can go c1 -> e3 -> g5
       const result = validateUserPath('b', 'c1', ['e3', 'g5'], 'g5');
@@ -194,6 +188,100 @@ describe('RoutePlannerTrainingSession logic', () => {
       const hasTimer = false;
       expect(hasFixedCount).toBe(false);
       expect(hasTimer).toBe(false);
+    });
+  });
+
+  describe('skipped field in result tracking', () => {
+    it('marks submitted answers as not skipped', () => {
+      // When a user submits an answer (correct or incorrect), skipped should be false
+      const result = {
+        piece: 'n' as RoutePlannerPieceType,
+        start: 'a1',
+        end: 'c5',
+        success: true,
+        userPath: ['b3', 'c5'],
+        shortestPath: ['a1', 'b3', 'c5'],
+        skipped: false,
+      };
+      expect(result.skipped).toBe(false);
+      expect(result.userPath.length).toBeGreaterThan(0);
+    });
+
+    it('marks skipped problems with skipped=true and empty userPath', () => {
+      // When a user skips a problem, skipped should be true and userPath should be empty
+      const problem = generateProblem(ALL_PIECES);
+      const shortestPath = findShortestPath(problem.piece, problem.start, problem.end) || [];
+      const result = {
+        piece: problem.piece,
+        start: problem.start,
+        end: problem.end,
+        success: false,
+        userPath: [] as string[],
+        shortestPath,
+        skipped: true,
+      };
+      expect(result.skipped).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.userPath).toEqual([]);
+      expect(result.shortestPath.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('correctly derives userPath based on skipped flag', () => {
+      // This mirrors the logic in handleNextProblem: result.skipped === true ? [] : moves
+      const moves = ['b3', 'c5'];
+
+      const skippedResult = { skipped: true, success: false, shortestPath: ['a1', 'b3', 'c5'] };
+      const submittedResult = {
+        skipped: false,
+        success: true,
+        shortestPath: ['a1', 'b3', 'c5'],
+      };
+
+      const skippedUserPath = skippedResult.skipped === true ? [] : moves;
+      const submittedUserPath = submittedResult.skipped === true ? [] : moves;
+
+      expect(skippedUserPath).toEqual([]);
+      expect(submittedUserPath).toEqual(['b3', 'c5']);
+    });
+
+    it('handles mixed results with skipped and non-skipped problems', () => {
+      const results = [
+        {
+          piece: 'n' as RoutePlannerPieceType,
+          start: 'a1',
+          end: 'c5',
+          success: true,
+          userPath: ['b3', 'c5'],
+          shortestPath: ['a1', 'b3', 'c5'],
+          skipped: false,
+        },
+        {
+          piece: 'n' as RoutePlannerPieceType,
+          start: 'a1',
+          end: 'c2',
+          success: false,
+          userPath: [],
+          shortestPath: ['a1', 'c2'],
+          skipped: true,
+        },
+        {
+          piece: 'b' as RoutePlannerPieceType,
+          start: 'c1',
+          end: 'h6',
+          success: false,
+          userPath: ['d2'],
+          shortestPath: ['c1', 'h6'],
+          skipped: false,
+        },
+      ];
+
+      const skippedCount = results.filter((r) => r.skipped).length;
+      const answeredCount = results.filter((r) => !r.skipped).length;
+      const correctCount = results.filter((r) => r.success).length;
+
+      expect(skippedCount).toBe(1);
+      expect(answeredCount).toBe(2);
+      expect(correctCount).toBe(1);
     });
   });
 

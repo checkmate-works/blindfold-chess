@@ -426,6 +426,7 @@
     "accuracy": "Accuracy",
     "averageTime": "Average Time",
     "undo": "Undo",
+    "pause": "Pause",
     "resume": "Resume",
     "modeTimed": "Challenge",
     "modeTraining": "Training",
@@ -943,7 +944,7 @@
       "title": "Route Planner",
       "session": "In Progress",
       "description": "Calculate the shortest path for a piece to reach a target square",
-      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
+      "betaNotice": "Score saving and leaderboard display are currently under development.",
       "howToPlayTitle": "How to Play",
       "howToPlayDescription": "Calculate the shortest path for a piece to reach a target square.",
       "settings": "Settings",
@@ -965,9 +966,7 @@
       "selectedCount": "{count} selected",
       "pieces": {
         "n": "Knight",
-        "b": "Bishop",
-        "r": "Rook",
-        "q": "Queen"
+        "b": "Bishop"
       },
       "moves": "Moves",
       "currentPosition": "Current Position",
@@ -1011,7 +1010,9 @@
         "previous": "Back",
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
-        "restart": "Restart"
+        "restart": "Restart",
+        "startChallenge": "Start Challenge",
+        "switchToTraining": "📖 Practice in training mode"
       }
     },
     "moveSequence": {

@@ -3,6 +3,7 @@
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import type { RoutePlannerPieceSelection } from '../_lib/utils';
 import { RoutePlannerPageContent } from './RoutePlannerPageContent';
 import { STORAGE_KEY } from './constants';
 
@@ -11,12 +12,10 @@ type Props = {
 };
 
 type RoutePlannerLocalSettings = {
-  problemCount: number;
-  selectedPieces: Record<string, boolean>;
+  pieceSelection: RoutePlannerPieceSelection;
 };
 const DEFAULTS: RoutePlannerLocalSettings = {
-  problemCount: 5,
-  selectedPieces: { n: true, b: true, r: true, q: true },
+  pieceSelection: 'n',
 };
 
 export default function RoutePlanner({ locale }: Props) {
@@ -25,8 +24,8 @@ export default function RoutePlanner({ locale }: Props) {
   return (
     <RoutePlannerPageContent
       locale={locale}
-      settings={settings}
-      onUpdateSettings={updateSettings}
+      pieceSelection={settings.pieceSelection}
+      onPieceSelect={(pieceSelection) => updateSettings({ pieceSelection })}
     />
   );
 }

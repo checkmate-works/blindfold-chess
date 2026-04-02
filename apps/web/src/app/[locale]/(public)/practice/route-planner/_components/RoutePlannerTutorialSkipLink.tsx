@@ -1,21 +1,22 @@
 'use client';
 
-import { TutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
+import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 export const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = 'routePlannerTutorialSkipped';
 
 type Props = {
-  onStartTutorial: () => void;
+  locale: Locale;
 };
 
-export function RoutePlannerTutorialSkipLink({ onStartTutorial }: Props) {
+export function RoutePlannerTutorialSkipLink({ locale }: Props) {
   return (
-    <div className="flex justify-center mt-6">
-      <TutorialSkipLink
-        onClick={onStartTutorial}
-        translationNamespace="practice.routePlanner.tutorial"
-        translationKey="viewTutorial"
-      />
-    </div>
+    <SharedTutorialSkipLink
+      locale={locale}
+      storageKey={ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY}
+      redirectPath="route-planner"
+      translationNamespace="practice.routePlanner.tutorial"
+      translationKey="skip"
+    />
   );
 }
