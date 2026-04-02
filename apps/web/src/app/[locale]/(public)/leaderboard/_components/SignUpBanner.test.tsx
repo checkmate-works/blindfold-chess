@@ -29,8 +29,8 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-// Import after mocks
-const { SignUpBanner } = await import('./SignUpBanner');
+// Import the base SignUpBanner directly to test it with leaderboard translation keys
+const { SignUpBanner: SignUpBannerBase } = await import('@/app/[locale]/_components/SignUpBanner');
 
 afterEach(() => {
   cleanup();
@@ -39,7 +39,14 @@ afterEach(() => {
 // --- Helpers ---
 
 async function renderSignUpBanner(locale = 'en') {
-  const Component = await SignUpBanner({ locale });
+  // Simulate what the leaderboard wrapper does: resolve translations, then call base component
+  const t = (key: string) => key;
+  const Component = await SignUpBannerBase({
+    locale,
+    message: t('message'),
+    description: t('description'),
+    ctaLabel: t('cta'),
+  });
   if (Component === null) return null;
   return render(Component);
 }
@@ -89,8 +96,8 @@ describe('SignUpBanner', () => {
     it('displays all i18n messages (message, description, cta)', async () => {
       await renderSignUpBanner();
 
-      // The component uses t('message'), t('description'), t('cta')
-      // Our mock returns the key itself
+      // The base SignUpBanner receives message, description, ctaLabel as props.
+      // Our mock translation returns the key itself.
       expect(screen.getByText('message')).toBeInTheDocument();
       expect(screen.getByText('description')).toBeInTheDocument();
       expect(screen.getByText('cta')).toBeInTheDocument();

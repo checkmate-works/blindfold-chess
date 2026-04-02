@@ -22,6 +22,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ModuleFilter, PeriodSelector } from './_components';
 import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
+import { SignUpBanner } from './_components/SignUpBanner';
 import type { LeaderboardPeriod, ModuleFilterValue } from './_lib/types';
 import { isValidModuleFilter, isValidPeriod } from './_lib/validators';
 
@@ -60,6 +61,10 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
 
   return (
     <PagePanel>
+      <Suspense fallback={null}>
+        <SignUpBanner locale={locale} />
+      </Suspense>
+
       <PeriodSelector currentPeriod={period} />
       <ModuleFilter currentModule={moduleFilter} />
 

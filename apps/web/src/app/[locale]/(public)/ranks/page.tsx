@@ -12,6 +12,8 @@
  * 2. Optionally fetch the current user's achieved ranks (if logged in).
  * 3. Render each rank as a card with belt color indicator and state overlay.
  */
+import { Suspense } from 'react';
+
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -21,6 +23,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -70,6 +73,15 @@ export default async function RanksPage({ params }: LocalePageProps) {
       <PagePanel>
         <SectionTitle>{t('pageTitle')}</SectionTitle>
         <p className="text-muted-foreground">{t('pageSubtitle')}</p>
+
+        <Suspense fallback={null}>
+          <SignUpBanner
+            locale={locale}
+            message={t('signUpBanner.message')}
+            description={t('signUpBanner.description')}
+            ctaLabel={t('signUpBanner.cta')}
+          />
+        </Suspense>
 
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {ALL_RANK_SLUGS.map((slug, index) => {

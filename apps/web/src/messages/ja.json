@@ -3083,6 +3083,11 @@
           }
         ]
       }
+    },
+    "signUpBanner": {
+      "message": "黒帯を取得しよう！",
+      "description": "段級位の取得には会員登録が必要です",
+      "cta": "無料登録"
     }
   },
   "rankAchievement": {
