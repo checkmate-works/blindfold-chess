@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
 type SaveResultResponse = {
@@ -56,6 +58,7 @@ export function useChallengeResultSave({
         })
         .catch((error) => {
           console.error(`Failed to save ${moduleName} result:`, error);
+          Sentry.captureException(error);
           sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
         })
         .finally(() => {

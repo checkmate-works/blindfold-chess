@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import * as Sentry from '@sentry/nextjs';
+
 import type { Subscription } from '@/lib/db';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
@@ -19,6 +21,7 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
     const result = await createPortalSession(locale);
     if (result && 'error' in result) {
       console.error('Portal error:', result.error);
+      Sentry.captureException(new Error(`Portal session error: ${result.error}`));
     }
     // If successful, redirect happens via Server Action
   }

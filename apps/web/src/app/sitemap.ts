@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
+import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
@@ -114,6 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     } catch (error) {
       console.error(`Error fetching learn articles for locale ${locale}:`, error);
+      Sentry.captureException(error);
     }
   }
 
@@ -144,6 +146,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     } catch (error) {
       console.error(`Error fetching manual sections for locale ${locale}:`, error);
+      Sentry.captureException(error);
     }
   }
 
@@ -188,6 +191,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error('Error fetching articles for sitemap:', error);
+    Sentry.captureException(error);
   }
 
   // Dynamic pages - Announcements
@@ -210,6 +214,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error('Error fetching announcements for sitemap:', error);
+    Sentry.captureException(error);
   }
 
   // Dynamic pages - Ranks
@@ -264,6 +269,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error('Error fetching opening topics for sitemap:', error);
+    Sentry.captureException(error);
   }
 
   // Dynamic pages - Topics (squares with posts)
@@ -291,6 +297,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error('Error fetching square topics for sitemap:', error);
+    Sentry.captureException(error);
   }
 
   // Dynamic pages - Interview questions

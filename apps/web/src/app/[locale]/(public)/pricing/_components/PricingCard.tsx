@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
+import * as Sentry from '@sentry/nextjs';
 import { FiCheck } from 'react-icons/fi';
 
 import { createCheckoutSession } from '@/app/[locale]/(protected)/mypage/(confirmed)/subscription/_actions/createCheckoutSession';
@@ -43,6 +44,7 @@ export function PricingCard(props: Props) {
     if (result && 'error' in result) {
       // Handle error (rate limit, etc.)
       console.error('Checkout error:', result.error);
+      Sentry.captureException(new Error(`Checkout session error: ${result.error}`));
     }
     // If successful, redirect happens via Server Action
   }

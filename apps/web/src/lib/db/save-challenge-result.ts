@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache';
 
+import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { getUserAllTimeRank } from './challenge-queries';
@@ -196,6 +197,7 @@ export async function saveChallengeResult(
     grantedRanks = await checkAndGrantRanks(userId);
   } catch (error) {
     console.error('Failed to check/grant ranks:', error);
+    Sentry.captureException(error);
   }
 
   return { grantedRanks };

@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { PagePanel } from '@/app/[locale]/_components';
 
 export default function LeaderboardError({
@@ -16,7 +18,10 @@ export default function LeaderboardError({
   const t = useTranslations('error');
 
   useEffect(() => {
-    console.error('[Leaderboard]', error);
+    Sentry.captureException(error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Leaderboard]', error);
+    }
   }, [error]);
 
   return (

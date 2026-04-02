@@ -4,6 +4,8 @@ import { headers } from 'next/headers';
 
 import { Resend } from 'resend';
 
+import { handleServerActionError } from '@/lib/server-action-error';
+
 import { type ContactFormData, contactFormSchema } from './contact-schema';
 import { escapeHtml } from './escape-html';
 import { checkRateLimit } from './rate-limiter';
@@ -48,19 +50,14 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactF
     });
 
     if (result.error) {
-      console.error('Resend API error:', result.error);
-      return {
-        success: false,
-        error: result.error.message || 'Failed to send email',
-      };
+      return handleServerActionError(
+        new Error(result.error.message || 'Failed to send email'),
+        '[submitContactForm] Resend API'
+      );
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Contact form submission error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    return handleServerActionError(error, '[submitContactForm]');
   }
 }

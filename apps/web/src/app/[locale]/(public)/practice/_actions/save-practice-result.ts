@@ -6,6 +6,7 @@ import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS } from '@/lib/rate-limit';
+import { handleServerActionError } from '@/lib/server-action-error';
 
 export type SaveResultResponse =
   | { success: true; grantedRanks?: { slug: string; level: number; color: string | null }[] }
@@ -63,7 +64,6 @@ export async function savePracticeResult(
 
     return { success: true, grantedRanks };
   } catch (error) {
-    console.error(`[savePracticeResult] ${menuType}: unexpected error during save:`, error);
-    return { success: false, error: 'unexpected_error' };
+    return handleServerActionError(error, `[savePracticeResult] ${menuType}`);
   }
 }

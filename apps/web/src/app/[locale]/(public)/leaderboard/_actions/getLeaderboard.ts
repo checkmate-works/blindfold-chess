@@ -2,6 +2,7 @@
 
 import { unstable_cache } from 'next/cache';
 
+import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
 import { getQueriesForPeriod } from '../_lib/period-queries';
@@ -96,7 +97,7 @@ export async function getLeaderboard(
 
     return { rows: leaderboardRows, totalCount: total, currentUserRank };
   } catch (error) {
-    console.error('[getLeaderboard] DB query failed:', error);
+    handleServerActionError(error, '[getLeaderboard]');
     return EMPTY_RESULT;
   }
 }

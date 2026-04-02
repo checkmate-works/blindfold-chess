@@ -1,11 +1,13 @@
 'use server';
 
+import * as Sentry from '@sentry/nextjs';
 import { and, desc, eq, gte, lt } from 'drizzle-orm';
 
 import { db } from '@/lib/db';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import { challengeResults } from '@/lib/db/schema';
+import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
 export type { DatePeriod } from '../_lib/period-utils';
@@ -84,7 +86,7 @@ export async function getChallengeSessions(
 
     return { success: true, sessions, previousSessions };
   } catch (error) {
-    console.error('Failed to fetch challenge sessions:', error);
+    handleServerActionError(error, '[getChallengeSessions]');
     return { success: false, sessions: [], previousSessions: [] };
   }
 }
@@ -102,7 +104,8 @@ export async function getAvailableMenuTypes(): Promise<ChallengeMenuType[]> {
     return rows
       .map((r) => r.menuType)
       .filter((m): m is ChallengeMenuType => CHALLENGE_MENU_TYPES.includes(m as ChallengeMenuType));
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error);
     return [];
   }
 }

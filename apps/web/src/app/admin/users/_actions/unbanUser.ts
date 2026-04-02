@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -33,6 +34,7 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
 
   if (error) {
     console.error(`Failed to unban user ${targetUserId} at Supabase Auth level:`, error);
+    Sentry.captureException(error);
     return { error: 'failedToUnban' };
   }
 
@@ -56,7 +58,8 @@ export async function unbanUser(targetUserId: string): Promise<ActionResult> {
         ipAddress,
       });
     });
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error);
     // Rollback Supabase Auth: re-ban the user, restoring original bannedAt
     await adminClient.auth.admin.updateUserById(targetUserId, {
       ban_duration: '876000h',

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { grantMonthlyLeaderboardBadges } from '@/lib/achievements/grant-monthly-leaderboard-badges';
 
 export async function GET(request: Request): Promise<NextResponse> {
@@ -21,6 +23,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('Failed to grant monthly leaderboard badges:', error);
+    Sentry.captureException(error);
     return NextResponse.json(
       {
         error: 'Internal server error',

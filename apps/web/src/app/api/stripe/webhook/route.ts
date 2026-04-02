@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
 import type Stripe from 'stripe';
 
 import { getStripe, getStripeWebhookSecret } from '@/lib/stripe';
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     event = getStripe().webhooks.constructEvent(body, sig, getStripeWebhookSecret());
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
+    Sentry.captureException(err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -42,6 +44,7 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error(`Webhook handler error for ${event.type}:`, error);
+    Sentry.captureException(error);
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
   }
 
