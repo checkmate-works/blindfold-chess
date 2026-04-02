@@ -1214,6 +1214,7 @@
       "draw": "Draw",
       "inProgress": "In Progress",
       "bulkDelete": "Bulk Delete",
+      "ranksLink": "🥋 Curriculum to beat the AI",
       "startGuidance": "You can start a blindfold chess game against AI from <link>here</link>.",
       "sortBy": "Sort by",
       "lastPlayedDesc": "Last played ↓",
@@ -3057,6 +3058,7 @@
   },
   "ranks": {
     "pageTitle": "Ranks",
+    "pageSubtitle": "🥋 A step-by-step training curriculum to master blindfold chess against AI",
     "requirements": "Requirements",
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",

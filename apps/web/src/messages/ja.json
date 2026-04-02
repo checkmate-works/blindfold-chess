@@ -1215,6 +1215,7 @@
       "draw": "引き分け",
       "inProgress": "進行中",
       "bulkDelete": "一括削除",
+      "ranksLink": "🥋 AIに勝つためのカリキュラム",
       "startGuidance": "AIとの目隠しチェス対局は<link>ここ</link>から開始できます。",
       "sortBy": "並び替え",
       "lastPlayedDesc": "最終プレイ ↓",
@@ -3022,6 +3023,7 @@
   },
   "ranks": {
     "pageTitle": "段級位",
+    "pageSubtitle": "🥋 目隠しチェスでAIに勝つための、段階別トレーニングカリキュラム",
     "requirements": "合格条件",
     "comingSoon": "近日公開",
     "challengeScore": "{challengeName}でスコア{minScore}以上",

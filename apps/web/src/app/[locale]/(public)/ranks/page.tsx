@@ -69,6 +69,7 @@ export default async function RanksPage({ params }: LocalePageProps) {
 
       <PagePanel>
         <SectionTitle>{t('pageTitle')}</SectionTitle>
+        <p className="text-muted-foreground">{t('pageSubtitle')}</p>
 
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {ALL_RANK_SLUGS.map((slug, index) => {
