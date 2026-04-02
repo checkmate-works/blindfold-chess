@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+
 type SaveResultResponse = {
   success: boolean;
   error?: string;
@@ -22,6 +24,7 @@ type UseChallengeResultSaveOptions = {
  * Shared hook for challenge completion: saves result, stores granted ranks
  * in sessionStorage, and redirects to the result page.
  * Prevents double-saving via a ref guard.
+ * Skips save for unauthenticated users (redirects directly to result page).
  */
 export function useChallengeResultSave({
   isFinished,
@@ -32,12 +35,13 @@ export function useChallengeResultSave({
 }: UseChallengeResultSaveOptions) {
   const router = useRouter();
   const savedRef = useRef(false);
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isFinished || savedRef.current) return;
+    if (!isFinished || savedRef.current || isLoading) return;
     savedRef.current = true;
 
-    if (totalAnswers > 0) {
+    if (totalAnswers > 0 && user) {
       saveResult()
         .then((result) => {
           if (!result.success) {
@@ -60,5 +64,5 @@ export function useChallengeResultSave({
     } else {
       router.push(resultUrl);
     }
-  }, [isFinished, totalAnswers, resultUrl, saveResult, moduleName, router]);
+  }, [isFinished, totalAnswers, resultUrl, saveResult, moduleName, router, user, isLoading]);
 }
