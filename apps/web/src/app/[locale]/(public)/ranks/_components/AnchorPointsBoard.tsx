@@ -11,9 +11,13 @@ const DEFAULT_ANCHOR_SQUARES = ['a8', 'h8', 'a1', 'h1'];
 
 type AnchorPointsBoardProps = {
   squares?: string[];
+  className?: string;
 };
 
-export function AnchorPointsBoard({ squares = DEFAULT_ANCHOR_SQUARES }: AnchorPointsBoardProps) {
+export function AnchorPointsBoard({
+  squares = DEFAULT_ANCHOR_SQUARES,
+  className,
+}: AnchorPointsBoardProps) {
   const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
 
   const renderSquare = useCallback(() => null, []);
@@ -27,14 +31,14 @@ export function AnchorPointsBoard({ squares = DEFAULT_ANCHOR_SQUARES }: AnchorPo
 
   if (!isLoaded) {
     return (
-      <div className="mx-auto max-w-xs sm:max-w-sm">
+      <div className={className ?? 'mx-auto max-w-xs sm:max-w-sm'}>
         <BoardSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xs sm:max-w-sm">
+    <div className={className ?? 'mx-auto max-w-xs sm:max-w-sm'}>
       <BoardLayout
         showCoordinates={showCoordinates}
         themeColors={themeColors}
