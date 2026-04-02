@@ -1176,6 +1176,7 @@
       "problem": "問題",
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解",
+      "nextProblem": "次の問題",
       "tutorial": {
         "title": "チュートリアル",
         "skip": "スキップ",

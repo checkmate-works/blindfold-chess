@@ -259,7 +259,7 @@ describe('useBatchTrainingSession', () => {
     });
 
     it('uses function-based feedbackDelayMs correctly for skip', () => {
-      const customDelay = vi.fn((_isCorrect: boolean) => 1000);
+      const customDelay = vi.fn<(isCorrect: boolean) => number>().mockReturnValue(1000);
       const { result } = renderSession({ feedbackDelayMs: customDelay });
 
       act(() => {
@@ -384,6 +384,77 @@ describe('useBatchTrainingSession', () => {
       });
 
       expect(onFeedbackStart).not.toHaveBeenCalled();
+    });
+  });
+
+  // ===========================================================================
+  // skipAutoAdvance: false behavior
+  // ===========================================================================
+  describe('skipAutoAdvance: false', () => {
+    it('does not auto-advance after handleSkip when skipAutoAdvance is false', () => {
+      const { result } = renderSession({ skipAutoAdvance: false });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleSkip();
+      });
+
+      expect(result.current.showResult).toBe(true);
+
+      // Advance well past the feedback delay
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY * 10);
+      });
+
+      // Should still be showing result — no auto-advance
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(firstQuestion);
+    });
+
+    it('handleNextAfterSkip advances to next question and clears showResult', () => {
+      const { result } = renderSession({ skipAutoAdvance: false });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleSkip();
+      });
+
+      expect(result.current.showResult).toBe(true);
+
+      act(() => {
+        result.current.handleNextAfterSkip();
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.lastAnswer).toBeNull();
+      expect(result.current.currentQuestion).not.toBe(firstQuestion);
+    });
+  });
+
+  // ===========================================================================
+  // skipAutoAdvance: true (default) — handleNextAfterSkip is no-op
+  // ===========================================================================
+  describe('skipAutoAdvance: true (default)', () => {
+    it('handleNextAfterSkip is a no-op when skipAutoAdvance is true', () => {
+      const { result } = renderSession(); // default skipAutoAdvance: true
+
+      act(() => {
+        result.current.handleSkip();
+      });
+
+      expect(result.current.showResult).toBe(true);
+      const questionDuringSkip = result.current.currentQuestion;
+
+      // Call handleNextAfterSkip — should be no-op
+      act(() => {
+        result.current.handleNextAfterSkip();
+      });
+
+      // State should remain unchanged
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(questionDuringSkip);
     });
   });
 });

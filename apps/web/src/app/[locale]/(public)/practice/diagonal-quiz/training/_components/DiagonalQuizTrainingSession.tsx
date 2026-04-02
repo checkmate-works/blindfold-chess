@@ -42,6 +42,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     incorrectCount,
     handleAnswer,
     handleSkip,
+    handleNextAfterSkip,
   } = useBatchTrainingSession<string, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE),
@@ -61,6 +62,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     },
     scrollTargetId: 'diagonal-quiz-training-session',
     feedbackDelayMs: (isCorrect) => (isCorrect ? 1000 : 2000),
+    skipAutoAdvance: false,
   });
 
   const onAnswer = useCallback(
@@ -95,13 +97,16 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
           lastAnswer
             ? {
                 correct: lastAnswer.correct,
+                question: lastAnswer.question,
                 correctDiagonal: getDiagonals(lastAnswer.question).diagonal,
                 correctAntiDiagonal: getDiagonals(lastAnswer.question).antiDiagonal,
+                skipped: lastAnswer.skipped,
               }
             : null
         }
         onAnswer={onAnswer}
         onSkip={onSkip}
+        onNextAfterSkip={handleNextAfterSkip}
         countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}

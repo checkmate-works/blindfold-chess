@@ -17,6 +17,7 @@ import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';
 import type { ActiveField } from '../../_hooks/use-diagonal-input';
 import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
+import { DiagonalQuizSkipResultView } from './DiagonalQuizSkipResultView';
 
 type Props = {
   locale: Locale;
@@ -24,11 +25,14 @@ type Props = {
   showResult: boolean;
   lastAnswer: {
     correct: boolean;
+    question: string;
     correctDiagonal: string;
     correctAntiDiagonal: string;
+    skipped: boolean;
   } | null;
   onAnswer: (diagonal: string, antiDiagonal: string) => void;
   onSkip: () => void;
+  onNextAfterSkip: () => void;
   countdown: number | null;
   correctCount: number;
   incorrectCount: number;
@@ -42,6 +46,7 @@ export function DiagonalQuizTrainingPlaying({
   lastAnswer,
   onAnswer,
   onSkip,
+  onNextAfterSkip,
   countdown,
   correctCount,
   incorrectCount,
@@ -108,6 +113,24 @@ export function DiagonalQuizTrainingPlaying({
     if (isDisabled) return;
     setActiveField(field);
   };
+
+  const isSkipResult = showResult && lastAnswer?.skipped;
+
+  if (isSkipResult && lastAnswer) {
+    return (
+      <div className="max-w-md mx-auto">
+        <DiagonalQuizSkipResultView
+          question={lastAnswer.question}
+          correctDiagonal={lastAnswer.correctDiagonal}
+          correctAntiDiagonal={lastAnswer.correctAntiDiagonal}
+          correctCount={correctCount}
+          incorrectCount={incorrectCount}
+          onNextAfterSkip={onNextAfterSkip}
+          onEndTraining={onEndTraining}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto">

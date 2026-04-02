@@ -8,6 +8,7 @@ type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
   checkAnswer: (question: TQuestion, answerParams: TAnswerData) => boolean;
   feedbackDelayMs?: number | ((isCorrect: boolean) => number);
   scrollTargetId?: string;
+  skipAutoAdvance?: boolean;
 };
 
 export function useBatchTrainingSession<TQuestion, TAnswerData>({
@@ -16,6 +17,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   checkAnswer,
   feedbackDelayMs = 500,
   scrollTargetId,
+  skipAutoAdvance = true,
 }: UseBatchTrainingSessionConfig<TQuestion, TAnswerData>) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<TQuestion[]>([]);
@@ -112,17 +114,26 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
 
       onFeedbackStart?.(false);
 
-      const delay =
-        typeof feedbackDelayMs === 'function' ? feedbackDelayMs(false) : feedbackDelayMs;
+      if (skipAutoAdvance) {
+        const delay =
+          typeof feedbackDelayMs === 'function' ? feedbackDelayMs(false) : feedbackDelayMs;
 
-      setTimeout(() => {
-        setShowResult(false);
-        setLastAnswer(null);
-        setCurrentIndex((prev) => prev + 1);
-      }, delay);
+        setTimeout(() => {
+          setShowResult(false);
+          setLastAnswer(null);
+          setCurrentIndex((prev) => prev + 1);
+        }, delay);
+      }
     },
-    [currentIndex, questions, showResult, feedbackDelayMs]
+    [currentIndex, questions, showResult, feedbackDelayMs, skipAutoAdvance]
   );
+
+  const handleNextAfterSkip = useCallback(() => {
+    if (skipAutoAdvance) return;
+    setShowResult(false);
+    setLastAnswer(null);
+    setCurrentIndex((prev) => prev + 1);
+  }, [skipAutoAdvance]);
 
   return {
     currentQuestion: questions[currentIndex] ?? null,
@@ -133,5 +144,6 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     incorrectCount: answers.filter((a) => !a).length,
     handleAnswer,
     handleSkip,
+    handleNextAfterSkip,
   };
 }

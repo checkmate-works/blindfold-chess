@@ -1175,6 +1175,7 @@
       "problem": "Problem",
       "yourAnswer": "Your answer",
       "correctAnswerLabel": "Correct answer",
+      "nextProblem": "Next Problem",
       "tutorial": {
         "title": "Tutorial",
         "skip": "Skip",
