@@ -28,6 +28,7 @@ type Props = {
     correctAntiDiagonal: string;
   } | null;
   onAnswer: (diagonal: string, antiDiagonal: string) => void;
+  onSkip: () => void;
   countdown: number | null;
   correctCount: number;
   incorrectCount: number;
@@ -40,6 +41,7 @@ export function DiagonalQuizTrainingPlaying({
   showResult,
   lastAnswer,
   onAnswer,
+  onSkip,
   countdown,
   correctCount,
   incorrectCount,
@@ -191,13 +193,25 @@ export function DiagonalQuizTrainingPlaying({
 
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
 
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
+      <div className="mt-6 text-center space-y-2">
+        {!isDisabled && (
+          <div>
+            <button
+              onClick={onSkip}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {tp('skip')}
+            </button>
+          </div>
+        )}
+        <div>
+          <button
+            onClick={onEndTraining}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {tp('endTraining')}
+          </button>
+        </div>
       </div>
 
       <hr className="border-border mt-8" />

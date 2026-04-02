@@ -442,6 +442,7 @@
       "noMistakeLimit": "There is no limit on incorrect answers.",
       "leaderboard": "Your score will be recorded on the leaderboard."
     },
+    "skip": "Skip",
     "endTraining": "End",
     "trainingEnded": "Training ended",
     "trainingModeActive": "📖 Practicing in training mode",

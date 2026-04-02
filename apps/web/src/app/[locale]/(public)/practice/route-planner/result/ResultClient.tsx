@@ -120,7 +120,7 @@ export function ResultClient({ locale, adBannerStandard }: Props) {
                 badMove: t('incorrect'),
                 shortestPath: t('shortestPath'),
                 yourPath: t('yourPath'),
-                skipped: t('skip'),
+                skipped: tPractice('skip'),
               }}
             />
           </div>

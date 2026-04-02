@@ -41,6 +41,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     correctCount,
     incorrectCount,
     handleAnswer,
+    handleSkip,
   } = useBatchTrainingSession<string, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE),
@@ -69,6 +70,11 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     [handleAnswer, countdown]
   );
 
+  const onSkip = useCallback(() => {
+    if (countdown !== null) return;
+    handleSkip();
+  }, [handleSkip, countdown]);
+
   const handleEndTraining = useCallback(() => {
     showToast(tp('trainingEnded'), 'info');
     router.push(`/${locale}/practice/diagonal-quiz`);
@@ -95,6 +101,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
             : null
         }
         onAnswer={onAnswer}
+        onSkip={onSkip}
         countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}

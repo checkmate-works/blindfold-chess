@@ -209,7 +209,7 @@ export function RoutePlannerSession({
               onClick={handleSkip}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {t('skip')}
+              {tPractice('skip')}
             </button>
           </div>
         )}

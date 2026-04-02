@@ -443,6 +443,7 @@
       "noMistakeLimit": "ミス回数の制限はありません。",
       "leaderboard": "スコアはリーダーボードに記録されます。"
     },
+    "skip": "スキップ",
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
     "trainingModeActive": "📖 トレーニングモードで練習中",

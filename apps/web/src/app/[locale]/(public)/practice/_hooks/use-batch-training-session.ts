@@ -21,11 +21,21 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   const [questions, setQuestions] = useState<TQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const [lastAnswer, setLastAnswer] = useState<{
-    correct: boolean;
-    question: TQuestion;
-    userAnswerData: TAnswerData;
-  } | null>(null);
+  const [lastAnswer, setLastAnswer] = useState<
+    | {
+        correct: boolean;
+        question: TQuestion;
+        userAnswerData: TAnswerData;
+        skipped: false;
+      }
+    | {
+        correct: false;
+        question: TQuestion;
+        userAnswerData: null;
+        skipped: true;
+      }
+    | null
+  >(null);
 
   const hasStarted = useRef(false);
   const [hasMounted, setHasMounted] = useState(false);
@@ -67,6 +77,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
         correct: isCorrect,
         question: currentQuestion,
         userAnswerData: answerData,
+        skipped: false,
       });
       setShowResult(true);
 
@@ -84,6 +95,35 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     [currentIndex, questions, showResult, checkAnswer, feedbackDelayMs]
   );
 
+  const handleSkip = useCallback(
+    (onFeedbackStart?: (isCorrect: boolean) => void) => {
+      if (showResult) return;
+
+      const currentQuestion = questions[currentIndex];
+
+      setAnswers((prev) => [...prev, false]);
+      setLastAnswer({
+        correct: false,
+        question: currentQuestion,
+        userAnswerData: null,
+        skipped: true,
+      });
+      setShowResult(true);
+
+      onFeedbackStart?.(false);
+
+      const delay =
+        typeof feedbackDelayMs === 'function' ? feedbackDelayMs(false) : feedbackDelayMs;
+
+      setTimeout(() => {
+        setShowResult(false);
+        setLastAnswer(null);
+        setCurrentIndex((prev) => prev + 1);
+      }, delay);
+    },
+    [currentIndex, questions, showResult, feedbackDelayMs]
+  );
+
   return {
     currentQuestion: questions[currentIndex] ?? null,
     hasQuestions: questions.length > 0,
@@ -92,5 +132,6 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     correctCount: answers.filter((a) => a).length,
     incorrectCount: answers.filter((a) => !a).length,
     handleAnswer,
+    handleSkip,
   };
 }

@@ -74,7 +74,7 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
         currentQuestion={currentQuestion}
         showResult={showResult}
         lastAnswer={
-          lastAnswer
+          lastAnswer && !lastAnswer.skipped
             ? {
                 correct: lastAnswer.correct,
                 userAnswer: lastAnswer.userAnswerData.userAnswer,
