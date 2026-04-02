@@ -1,5 +1,5 @@
 /**
- * Play Page (プレイ画面)
+ * Play Page (プレイ画面 / ゲーム画面)
  *
  * @description
  * The main blindfold chess game screen where users play against Stockfish AI.

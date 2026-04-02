@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Link } from '@/i18n/routing';
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
@@ -125,6 +126,16 @@ export function GameInProgressPanel({
         >
           {t('configureSkillLevel')}
         </button>
+      </div>
+
+      {/* Save and Exit */}
+      <div className="text-center">
+        <Link
+          href="/games"
+          className="text-sm text-muted-foreground hover:text-foreground underline"
+        >
+          💾 {t('saveAndExit')}
+        </Link>
       </div>
     </div>
   );
