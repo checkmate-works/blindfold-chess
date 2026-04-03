@@ -161,7 +161,31 @@ export const ranksSeedData: RankSeed[] = [
       },
     ],
   },
-  { slug: '4kyu', level: 20, color: RANK_COLORS['4kyu'], requirements: [] },
+  {
+    slug: '4kyu',
+    level: 20,
+    color: RANK_COLORS['4kyu'],
+    requirements: [
+      {
+        type: 'challenge_score',
+        menuType: 'legal_moves',
+        leaderboardKey: 'king',
+        minScore: 20,
+      },
+      {
+        type: 'challenge_score',
+        menuType: 'legal_moves',
+        leaderboardKey: 'knight',
+        minScore: 20,
+      },
+      {
+        type: 'challenge_score',
+        menuType: 'legal_moves',
+        leaderboardKey: 'bishop',
+        minScore: 10,
+      },
+    ],
+  },
   { slug: '3kyu', level: 30, color: RANK_COLORS['3kyu'], requirements: [] },
   { slug: '2kyu', level: 40, color: RANK_COLORS['2kyu'], requirements: [] },
   { slug: '1kyu', level: 50, color: RANK_COLORS['1kyu'], requirements: [] },

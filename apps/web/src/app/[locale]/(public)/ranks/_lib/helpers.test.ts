@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
 
-import { buildChallengeNameKey, getBeltColorHex, getRankCardState } from './helpers';
+import {
+  buildChallengeNameKey,
+  buildRequirementItems,
+  getBeltColorHex,
+  getRankCardState,
+} from './helpers';
 
 // ---------------------------------------------------------------------------
 // buildChallengeNameKey
@@ -38,6 +43,89 @@ describe('buildChallengeNameKey', () => {
       minScore: 10,
     };
     expect(buildChallengeNameKey(req)).toBe('coordinate_quiz_');
+  });
+
+  it('should return "legal_moves_bishop" for the 4kyu bishop requirement', () => {
+    const req: ChallengeScoreRequirement = {
+      type: 'challenge_score',
+      menuType: 'legal_moves',
+      leaderboardKey: 'bishop',
+      minScore: 10,
+    };
+    expect(buildChallengeNameKey(req)).toBe('legal_moves_bishop');
+  });
+
+  it('should return "legal_moves_knight" for the 4kyu knight requirement', () => {
+    const req: ChallengeScoreRequirement = {
+      type: 'challenge_score',
+      menuType: 'legal_moves',
+      leaderboardKey: 'knight',
+      minScore: 20,
+    };
+    expect(buildChallengeNameKey(req)).toBe('legal_moves_knight');
+  });
+
+  it('should return "legal_moves_king" for legal_moves with king leaderboardKey', () => {
+    const req: ChallengeScoreRequirement = {
+      type: 'challenge_score',
+      menuType: 'legal_moves',
+      leaderboardKey: 'king',
+      minScore: 20,
+    };
+    expect(buildChallengeNameKey(req)).toBe('legal_moves_king');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildRequirementItems
+// ---------------------------------------------------------------------------
+
+describe('buildRequirementItems', () => {
+  const mockT = (key: string, values?: Record<string, string | number | Date>) => {
+    if (key === 'challengeScore') return `Score ${values?.minScore}+ in ${values?.challengeName}`;
+    if (key.startsWith('challengeNames.')) return key.replace('challengeNames.', '');
+    return key;
+  };
+
+  it('should generate challenge URL with piece parameter for legal_moves', () => {
+    const items = buildRequirementItems(
+      [{ type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'king', minScore: 20 }],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/legal-moves/challenge?piece=king');
+  });
+
+  it('should generate standard practice URL for non-legal_moves', () => {
+    const items = buildRequirementItems(
+      [
+        {
+          type: 'challenge_score',
+          menuType: 'square_colors',
+          leaderboardKey: 'default',
+          minScore: 15,
+        },
+      ],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/square-colors');
+  });
+
+  it('should generate standard practice URL for legal_moves with default leaderboardKey', () => {
+    const items = buildRequirementItems(
+      [
+        {
+          type: 'challenge_score',
+          menuType: 'legal_moves',
+          leaderboardKey: 'default',
+          minScore: 20,
+        },
+      ],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/legal-moves');
   });
 });
 
@@ -172,5 +260,40 @@ describe('getRankCardState', () => {
 
   it('"coming-soon" (empty requirements) takes priority over logged-in achieved state', () => {
     expect(call({ requirements: [], isAchieved: true, isLoggedIn: true })).toBe('coming-soon');
+  });
+
+  // --- 4kyu-specific: non-empty requirements should NOT be "coming-soon" ---
+
+  it('should not return "coming-soon" for a rank with legal_moves requirements (4kyu)', () => {
+    const legalMovesRequirements: ChallengeScoreRequirement[] = [
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
+    ];
+    const result = call({ requirements: legalMovesRequirements });
+    expect(result).not.toBe('coming-soon');
+  });
+
+  it('should return "locked" for 4kyu requirements when not first rank and previous not achieved', () => {
+    const legalMovesRequirements: ChallengeScoreRequirement[] = [
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
+    ];
+    expect(call({ requirements: legalMovesRequirements })).toBe('locked');
+  });
+
+  it('should return "next" for 4kyu requirements when previous rank is achieved', () => {
+    const legalMovesRequirements: ChallengeScoreRequirement[] = [
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
+    ];
+    expect(call({ requirements: legalMovesRequirements, previousAchieved: true })).toBe('next');
+  });
+
+  it('should return "achieved" for 4kyu requirements when rank is achieved', () => {
+    const legalMovesRequirements: ChallengeScoreRequirement[] = [
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'bishop', minScore: 10 },
+      { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
+    ];
+    expect(call({ requirements: legalMovesRequirements, isAchieved: true })).toBe('achieved');
   });
 });

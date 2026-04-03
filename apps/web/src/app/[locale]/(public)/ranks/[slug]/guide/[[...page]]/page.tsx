@@ -42,6 +42,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { getGuideInlineLink } from './_lib/guideLinkConfig';
 import { getVisualAid } from './_lib/visualAidConfig';
 
 type Props = {
@@ -58,6 +59,7 @@ export function generateStaticParams() {
       { locale, slug, page: undefined },
       { locale, slug, page: ['2'] },
       { locale, slug, page: ['3'] },
+      { locale, slug, page: ['4'] },
     ])
   );
 }
@@ -313,20 +315,27 @@ export default async function RankGuidePage({ params }: Props) {
 
         {/* Page content */}
         <div className="space-y-4">
-          {currentPage.paragraphs.map((paragraph, i) => (
-            <React.Fragment key={i}>
-              {paragraph.includes('\n') ? (
-                <p className="text-foreground/80">
-                  <strong className="block">{paragraph.split('\n')[0]}</strong>
-                  {paragraph.split('\n').slice(1).join('\n')}
-                </p>
-              ) : (
-                <p className="text-foreground/80">{paragraph}</p>
-              )}
-              {/* Visual aids based on page and position */}
-              {getVisualAid(rankSlug, pageNumber, i)}
-            </React.Fragment>
-          ))}
+          {currentPage.paragraphs.map((paragraph, i) => {
+            const linkInfo = getGuideInlineLink(rankSlug, pageNumber, i, locale, t);
+            return (
+              <React.Fragment key={i}>
+                {paragraph.includes('\n') ? (
+                  <p className="text-foreground/80">
+                    <strong className="block">{paragraph.split('\n')[0]}</strong>
+                    {paragraph.split('\n').slice(1).join('\n')}
+                  </p>
+                ) : (
+                  <p className="text-foreground/80">{paragraph}</p>
+                )}
+                {/* Visual aids based on page and position */}
+                {getVisualAid(rankSlug, pageNumber, i)}
+                {/* Inline guide links */}
+                {linkInfo && (
+                  <GuideLinkCard items={[{ label: linkInfo.label, href: linkInfo.href }]} />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Practice links on last page */}

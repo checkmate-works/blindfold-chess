@@ -32,6 +32,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { AnchorPointsBoard } from '../_components/AnchorPointsBoard';
 import { CoordinateBoard } from '../_components/CoordinateBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
+import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { RankHeader } from '../_components/RankHeader';
 import { RequirementsList } from '../_components/RequirementsList';
 import { buildRequirementItems, getBeltColorHex } from '../_lib/helpers';
@@ -211,7 +212,11 @@ export default async function RankDetailPage({ params }: Props) {
                 : guidePages[rankSlug][0].paragraphs[0]}
             </p>
             <Link href={`/${locale}/ranks/${rankSlug}/guide`} className="mt-3 block">
-              <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
+              {rankSlug === '4kyu' ? (
+                <KingMovementBoard className="mx-auto max-w-[10rem]" />
+              ) : (
+                <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
+              )}
               <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
                 {t('detail.showMore')}
               </span>

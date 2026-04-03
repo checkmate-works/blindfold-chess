@@ -7,6 +7,7 @@ import {
   isChallengeScoreRequirement,
   isMukyuSlug,
   parseRequirements,
+  ranksSeedData,
 } from './ranks';
 import type { ChallengeScoreRequirement } from './ranks';
 
@@ -201,6 +202,48 @@ describe('BELT_COLOR_HEX', () => {
 
   it('should include white for mukyu', () => {
     expect(BELT_COLOR_HEX['white']).toBe('#ffffff');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ranksSeedData – 4kyu entry
+// ---------------------------------------------------------------------------
+
+describe('ranksSeedData – 4kyu', () => {
+  const entry4kyu = ranksSeedData.find((r) => r.slug === '4kyu');
+
+  it('should exist in ranksSeedData', () => {
+    expect(entry4kyu).toBeDefined();
+  });
+
+  it('should have exactly 3 requirements', () => {
+    expect(entry4kyu!.requirements).toHaveLength(3);
+  });
+
+  it('should have king as the first requirement with minScore 20', () => {
+    const firstReq = entry4kyu!.requirements[0];
+    expect(firstReq.menuType).toBe('legal_moves');
+    expect(firstReq.leaderboardKey).toBe('king');
+    expect(firstReq.minScore).toBe(20);
+  });
+
+  it('should have knight as the second requirement with minScore 20', () => {
+    const secondReq = entry4kyu!.requirements[1];
+    expect(secondReq.menuType).toBe('legal_moves');
+    expect(secondReq.leaderboardKey).toBe('knight');
+    expect(secondReq.minScore).toBe(20);
+  });
+
+  it('should have bishop as the third requirement with minScore 10', () => {
+    const thirdReq = entry4kyu!.requirements[2];
+    expect(thirdReq.menuType).toBe('legal_moves');
+    expect(thirdReq.leaderboardKey).toBe('bishop');
+    expect(thirdReq.minScore).toBe(10);
+  });
+
+  it('should have level 20 and blue color', () => {
+    expect(entry4kyu!.level).toBe(20);
+    expect(entry4kyu!.color).toBe(RANK_COLORS['4kyu']);
   });
 });
 

@@ -3069,7 +3069,10 @@
       "coordinate_quiz_white": "Coordinate Quiz (White)",
       "coordinate_quiz_black": "Coordinate Quiz (Black)",
       "coordinate_quiz_random": "Coordinate Quiz (Random)",
-      "legal_moves": "Legal Moves"
+      "legal_moves": "Legal Moves",
+      "legal_moves_bishop": "Legal Moves (Bishop)",
+      "legal_moves_king": "Legal Moves (King)",
+      "legal_moves_knight": "Legal Moves (Knight)"
     },
     "rankNames": {
       "mukyu": "Unranked",
@@ -3085,7 +3088,8 @@
       "requirements": "Score Requirements",
       "criteriaDescriptions": {
         "mukyu": "Ready to begin simple blindfold chess training.",
-        "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7)."
+        "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
+        "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids."
       },
       "tips": "Tips",
       "guide": "Guide",
@@ -3145,9 +3149,53 @@
               "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization."
             ]
           }
+        ],
+        "4kyu": [
+          {
+            "paragraphs": [
+              "With a physical chess board in front of you, experienced chess players can determine legal moves for all pieces almost unconsciously.",
+              "However, in blindfold chess, you must determine legal moves based solely on text-based information like 'a knight is placed on c3'. This is surprisingly difficult if you're not used to it.",
+              "Let's start by considering the relatively simple case of determining the King's legal moves. The King can move in all directions, but only one square at a time.",
+              "For any piece, the concept of change (delta) is important.",
+              "For example, let's think about rank change. When moving from g1 to h2, the rank difference is 1. For a8 to a6, the difference is 2. This is what mathematicians call absolute value, but we'll use the friendlier term 'change' here.",
+              "File change works the same way — assign numbers to files (a=1, b=2, ... h=8) and calculate the difference.",
+              "The King can move when the maximum of the rank change and file change is 1, and both are not 0. Expressed as a formula:"
+            ]
+          },
+          {
+            "paragraphs": [
+              "Next, let's consider how to determine the Knight's legal moves. The Knight moves in an L-shaped pattern.",
+              "A Knight can move from one square to another only when the combination of file change and rank change is (1,2) or (2,1).",
+              "This means the Knight must move either two squares vertically and one square horizontally, or two squares horizontally and one square vertically. Expressed as a formula:",
+              "Unless restricted by the edge of the board, a Knight can move to 8 different squares from any given square. The 8 move directions are (+2,+1), (+2,-1), (-2,+1), (-2,-1), (+1,+2), (+1,-2), (-1,+2), (-1,-2).",
+              "The Knight has special properties that other pieces don't have. Knights can jump over other pieces, and they always land on a square of the opposite color to their starting square."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Finally, let's consider how to determine the Bishop's legal moves. The Bishop moves diagonally.",
+              "A Bishop can move from one square to another only when the file change equals the rank change. Expressed as a formula:",
+              "In other words, a move is legal only when the absolute difference in file and rank is equal.",
+              "The Bishop has an important characteristic. A Bishop always stays on squares of the same color. A light-squared Bishop can only ever move to light squares, and a dark-squared Bishop can only ever move to dark squares."
+            ]
+          },
+          {
+            "paragraphs": [
+              "As for the Rook, it's quite straightforward — it can move to any square that shares the same file or rank.",
+              "The Queen can be thought of as a combination of the Rook and the Bishop.",
+              "The way we use the term 'legal moves' here is actually a bit imprecise. In a real game, you can't move to a square occupied by a friendly piece, and the King cannot move to a square that is under attack. Legal moves should properly be determined based on more complex conditions.",
+              "That said, let's start by practicing how to move pieces correctly in a simplified scenario where no other pieces are on the board."
+            ]
+          }
         ]
       },
       "mukyuRequirements": ["Understanding of algebraic notation"],
+      "4kyuGuideLinks": {
+        "kingMovementLabel": "King's Movement (detailed guide)",
+        "knightMovementLabel": "Knight's Movement (detailed guide)",
+        "bishopMovementLabel": "Bishop's Movement (detailed guide)",
+        "rookMovementLabel": "Rook Movement (Detailed Guide)"
+      },
       "mukyuGuideLinks": {
         "learnArticle": "For more details, refer to the following article.",
         "practiceLink": "You can also practice with a simple exercise.",

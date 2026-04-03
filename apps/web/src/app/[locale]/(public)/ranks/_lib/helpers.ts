@@ -35,12 +35,20 @@ export function buildRequirementItems(
 ): RequirementItem[] {
   return requirements.map((req) => {
     const challengeKey = buildChallengeNameKey(req);
+    const practiceSlug = menuTypeToPracticeSlug(req.menuType);
+
+    // For legal_moves, link directly to challenge page with piece parameter
+    const href =
+      req.menuType === 'legal_moves' && req.leaderboardKey !== 'default'
+        ? `/${locale}/practice/${practiceSlug}/challenge?piece=${req.leaderboardKey}`
+        : `/${locale}/practice/${practiceSlug}`;
+
     return {
       label: t('challengeScore', {
         minScore: req.minScore,
         challengeName: t(`challengeNames.${challengeKey}`),
       }),
-      href: `/${locale}/practice/${menuTypeToPracticeSlug(req.menuType)}`,
+      href,
     };
   });
 }
