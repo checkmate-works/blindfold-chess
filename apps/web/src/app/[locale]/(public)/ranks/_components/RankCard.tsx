@@ -1,8 +1,9 @@
 import Link from 'next/link';
 
-import { HiCheckCircle, HiChevronRight, HiLockClosed } from 'react-icons/hi2';
+import { HiCheckCircle, HiChevronRight } from 'react-icons/hi2';
 
 import type { RankCardState } from '../_lib/helpers';
+import { LockedRankIndicator } from './LockedRankIndicator';
 import { RequirementsList } from './RequirementsList';
 
 type RankCardProps = {
@@ -14,6 +15,8 @@ type RankCardProps = {
   requirementLabels: string[];
   requirementsHeading: string;
   comingSoonLabel: string;
+  previousRankName?: string;
+  previousSlug?: string;
 };
 
 export function RankCard({
@@ -25,8 +28,10 @@ export function RankCard({
   requirementLabels,
   requirementsHeading,
   comingSoonLabel,
+  previousRankName,
+  previousSlug,
 }: RankCardProps) {
-  const isClickable = state === 'achieved' || state === 'next';
+  const isClickable = state === 'achieved' || state === 'next' || state === 'locked';
 
   // White belt needs a visible border since #ffffff is invisible on light backgrounds
   const isWhiteBelt = beltColor === '#ffffff';
@@ -68,6 +73,19 @@ export function RankCard({
               aria-hidden="true"
             />
           )}
+          {state === 'locked' && previousRankName && previousSlug && (
+            <>
+              <LockedRankIndicator
+                locale={locale}
+                previousRankName={previousRankName}
+                previousSlug={previousSlug}
+              />
+              <HiChevronRight
+                className="size-5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </>
+          )}
         </div>
 
         {/* Requirements (only for ranks with defined requirements) */}
@@ -80,8 +98,8 @@ export function RankCard({
           </div>
         )}
 
-        {/* Placeholder height for overlay cards */}
-        {(state === 'coming-soon' || state === 'locked') && <div className="h-8" />}
+        {/* Placeholder height for coming-soon cards */}
+        {state === 'coming-soon' && <div className="h-8" />}
       </div>
     </>
   );
@@ -99,13 +117,6 @@ export function RankCard({
       ) : (
         <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           {cardContent}
-        </div>
-      )}
-
-      {/* Locked overlay */}
-      {state === 'locked' && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-foreground/30 backdrop-blur-sm">
-          <HiLockClosed className="size-6 text-card" />
         </div>
       )}
 

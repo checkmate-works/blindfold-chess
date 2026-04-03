@@ -141,6 +141,8 @@ export default async function RanksPage({ params }: LocalePageProps) {
                 requirementLabels={requirementLabels}
                 requirementsHeading={t('requirements')}
                 comingSoonLabel={t('comingSoon')}
+                previousRankName={previousSlug ? t(`rankNames.${previousSlug}`) : undefined}
+                previousSlug={previousSlug}
               />
             );
           })}

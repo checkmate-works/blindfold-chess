@@ -3211,6 +3211,12 @@
       "message": "Earn your black belt!",
       "description": "Sign up to track your rank progress.",
       "cta": "Sign Up Free"
+    },
+    "lockedModal": {
+      "title": "Locked Rank",
+      "message": "Pass {rankName} to unlock this rank",
+      "linkLabel": "View {rankName} details",
+      "ariaLabel": "Locked"
     }
   },
   "rankAchievement": {
