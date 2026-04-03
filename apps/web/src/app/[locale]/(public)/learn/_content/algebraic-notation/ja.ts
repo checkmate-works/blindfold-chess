@@ -18,7 +18,7 @@ FIDEがトーナメントや対局で公認している唯一の表記法であ�
 - **ファイル（列）**：左から右にa-hでラベル付け
 - **ランク（行）**：下から上に1-8で番号付け（白の視点）
 
-![盤面の表示](/images/articles/screenshots/squares-in-algebraic-notation.png)
+![demo:coordinate-board]()
 
 ## 基本記法ルール
 

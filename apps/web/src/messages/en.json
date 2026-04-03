@@ -3072,6 +3072,7 @@
       "legal_moves": "Legal Moves"
     },
     "rankNames": {
+      "mukyu": "Unranked",
       "5kyu": "5th Kyū",
       "4kyu": "4th Kyū",
       "3kyu": "3rd Kyū",
@@ -3083,6 +3084,7 @@
       "criteria": "Criteria",
       "requirements": "Score Requirements",
       "criteriaDescriptions": {
+        "mukyu": "Ready to begin simple blindfold chess training.",
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7)."
       },
       "tips": "Tips",
@@ -3093,6 +3095,31 @@
       "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
       "guidePages": {
+        "mukyu": [
+          {
+            "paragraphs": [
+              "If you don't understand what notations like e4 or Nf3 mean, you need to start by learning algebraic notation.",
+              "Algebraic notation is the de facto common language for blindfold chess.",
+              "In brief, algebraic notation assigns a unique coordinate to every square on the chess board. Those coordinates are things like e4 or f3.",
+              "This system identifies squares using these symbols."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Even after understanding algebraic notation, it takes practice to instantly recognize the exact position of coordinates like c7 or g4.",
+              "The following training is recommended.",
+              "It's a good idea to start from White's perspective.",
+              "In blindfold chess, some players keep a fixed White-perspective board in their mind even when playing as Black. This is called the fixed-perspective model. If you're interested, read the following article."
+            ]
+          },
+          {
+            "paragraphs": [
+              "If you're not getting good results on the coordinate quiz, try training to identify which area of the board a coordinate belongs to by dividing the chess board into four quadrants.",
+              "Once you can do this quickly, you'll be able to use anchor points to efficiently identify coordinates.",
+              "This technique is taught at 5th Kyū."
+            ]
+          }
+        ],
         "5kyu": [
           {
             "paragraphs": [
@@ -3119,6 +3146,17 @@
             ]
           }
         ]
+      },
+      "mukyuRequirements": ["Understanding of algebraic notation"],
+      "mukyuGuideLinks": {
+        "learnArticle": "For more details, refer to the following article.",
+        "practiceLink": "You can also practice with a simple exercise.",
+        "learnArticleLabel": "Learn about algebraic notation",
+        "practiceLabel": "Practice algebraic notation",
+        "coordinateQuizLabel": "Coordinate Quiz",
+        "coordinateConfusionLabel": "About coordinate confusion",
+        "quadrantsLabel": "Quadrant Training",
+        "5kyuGuideLabel": "View the 5th Kyū guide"
       }
     },
     "signUpBanner": {
@@ -3133,6 +3171,7 @@
     "viewRanks": "View Ranks",
     "close": "Close",
     "rankNames": {
+      "mukyu": "Unranked",
       "5kyu": "5th Kyū",
       "4kyu": "4th Kyū",
       "3kyu": "3rd Kyū",

@@ -1,5 +1,7 @@
 export { AllAnchorPointsBoard } from './AllAnchorPointsBoard';
 export { AnchorPointsBoard } from './AnchorPointsBoard';
+export { CoordinateBoard } from './CoordinateBoard';
+export { GuideLinkCard } from './GuideLinkCard';
 export { HighlightQuadrantBoard } from './HighlightQuadrantBoard';
 export { MiniBoard } from './MiniBoard';
 export { QuadrantBoard } from './QuadrantBoard';

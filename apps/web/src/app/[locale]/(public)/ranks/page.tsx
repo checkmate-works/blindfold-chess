@@ -17,7 +17,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ALL_RANK_SLUGS, parseRequirements } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -85,10 +85,30 @@ export default async function RanksPage({ params }: LocalePageProps) {
 
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {ALL_RANK_SLUGS.map((slug, index) => {
+            // Mukyu (無級) is a UI-only rank — not in DB, always accessible.
+            // It uses i18n text for requirements instead of challenge_score entries.
+            if (isMukyuSlug(slug)) {
+              const beltColor = getBeltColorHex(slug);
+              const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
+              return (
+                <RankCard
+                  key={slug}
+                  slug={slug}
+                  locale={locale}
+                  beltColor={beltColor}
+                  rankName={t(`rankNames.${slug}`)}
+                  state="next"
+                  requirementLabels={mukyuRequirements}
+                  requirementsHeading={t('requirements')}
+                  comingSoonLabel={t('comingSoon')}
+                />
+              );
+            }
+
             const rank = dbRanksBySlug.get(slug);
             const beltColor = getBeltColorHex(slug);
-            const isFirstRank = index === 0;
-            const previousSlug = index > 0 ? ALL_RANK_SLUGS[index - 1] : undefined;
+            const isFirstRank = index === 1; // index 1 because mukyu is index 0
+            const previousSlug = ALL_RANK_SLUGS[index - 1];
             const previousAchieved = previousSlug ? achievedSlugs.has(previousSlug) : false;
             const isAchieved = achievedSlugs.has(slug);
             const requirements = rank ? parseRequirements(rank.requirements) : [];

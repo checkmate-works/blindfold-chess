@@ -4,6 +4,7 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { AllAnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AllAnchorPointsBoard';
 import { AnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AnchorPointsBoard';
+import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components/CoordinateBoard';
 import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
 import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
 import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
@@ -17,6 +18,11 @@ type VisualAidKey = `${RankSlug}:${number}:${number}`;
  * rendered after that paragraph.
  */
 const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
+  // Mukyu guide: coordinate board after the coordinate explanation paragraph
+  'mukyu:1:2': <CoordinateBoard />,
+  // Mukyu guide page 3: quadrant board after the quadrant training paragraph
+  'mukyu:3:0': <QuadrantBoard />,
+  // 5kyu guide
   '5kyu:1:1': <AnchorPointsBoard />,
   '5kyu:1:3': <QuadrantBoard />,
   '5kyu:1:4': <MiniBoard />,

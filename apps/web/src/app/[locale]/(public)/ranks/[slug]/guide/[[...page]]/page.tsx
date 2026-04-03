@@ -8,9 +8,11 @@
  * @flow
  * 1. Validate slug is a known rank and page number is valid.
  * 2. Fetch rank from DB, check requirements and guide pages exist.
+ *    Exception: Mukyu (無級) is UI-only and bypasses the DB lookup entirely.
  * 3. Render belt color bar, rank name, guide content, and pagination navigation.
  * 4. On the last guide page, display practice links via RequirementsList so users
  *    can immediately navigate to the relevant challenges after finishing the guide.
+ *    For Mukyu, links point to learn articles and practice pages instead.
  */
 import React from 'react';
 
@@ -20,9 +22,10 @@ import { notFound, redirect } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
+import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import { buildRequirementItems, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
@@ -54,6 +57,7 @@ export function generateStaticParams() {
     ALL_RANK_SLUGS.flatMap((slug) => [
       { locale, slug, page: undefined },
       { locale, slug, page: ['2'] },
+      { locale, slug, page: ['3'] },
     ])
   );
 }
@@ -101,11 +105,189 @@ export default async function RankGuidePage({ params }: Props) {
     redirect(`/${locale}/ranks/${slug}/guide`);
   }
 
+  const t = await getTranslations({ locale, namespace: 'ranks' });
+
+  // -----------------------------------------------------------------------
+  // Mukyu (無級) — UI-only rank, not stored in DB.
+  // Guide content is sourced entirely from i18n.
+  // -----------------------------------------------------------------------
+  if (isMukyuSlug(slug)) {
+    const beltColor = getBeltColorHex(slug);
+    const rankName = t(`rankNames.${slug}`);
+
+    const guidePages = t.raw('detail.guidePages') as Record<
+      string,
+      Array<{ paragraphs: string[] }>
+    >;
+    if (!(slug in guidePages)) notFound();
+
+    const pages = guidePages[slug];
+    if (pageNumber > pages.length) notFound();
+
+    const currentPage = pages[pageNumber - 1];
+    const mukyuGuideLinks = t.raw('detail.mukyuGuideLinks') as {
+      learnArticle: string;
+      practiceLink: string;
+      learnArticleLabel: string;
+      practiceLabel: string;
+      coordinateQuizLabel: string;
+      coordinateConfusionLabel: string;
+      quadrantsLabel: string;
+      '5kyuGuideLabel': string;
+    };
+
+    /**
+     * Inline links: inserted after specific paragraphs on each page.
+     *
+     * Page 2:
+     * - After paragraph 1 ("以下のトレーニングがおすすめです。") → coordinate quiz
+     * - After paragraph 3 ("...興味があれば以下の記事を読んでみるといいでしょう。") → article
+     *
+     * Page 3:
+     * - After paragraph 0 + visual aid ("...4分割して...") → quadrants practice
+     * - After paragraph 2 ("このテクニックは5級で習います。") → 5kyu guide
+     */
+    const getMukyuInlineLink = (paragraphIndex: number): React.ReactNode => {
+      if (pageNumber === 1) {
+        if (paragraphIndex === 3) {
+          return (
+            <div className="space-y-3 mt-4">
+              <p className="text-foreground/80">{mukyuGuideLinks.learnArticle}</p>
+              <GuideLinkCard
+                items={[
+                  {
+                    label: mukyuGuideLinks.learnArticleLabel,
+                    href: `/${locale}/learn/notation/algebraic-notation`,
+                  },
+                ]}
+              />
+            </div>
+          );
+        }
+      }
+
+      if (pageNumber === 2) {
+        if (paragraphIndex === 1) {
+          return (
+            <GuideLinkCard
+              items={[
+                {
+                  label: mukyuGuideLinks.coordinateQuizLabel,
+                  href: `/${locale}/practice/coordinate-quiz`,
+                },
+              ]}
+            />
+          );
+        }
+        if (paragraphIndex === 3) {
+          return (
+            <GuideLinkCard
+              items={[
+                {
+                  label: mukyuGuideLinks.coordinateConfusionLabel,
+                  href: `/${locale}/learn/coordinates/coordinate-confusion`,
+                },
+              ]}
+            />
+          );
+        }
+      }
+
+      if (pageNumber === 3) {
+        if (paragraphIndex === 0) {
+          return (
+            <GuideLinkCard
+              items={[
+                {
+                  label: mukyuGuideLinks.quadrantsLabel,
+                  href: `/${locale}/practice/quadrants`,
+                },
+              ]}
+            />
+          );
+        }
+        if (paragraphIndex === 2) {
+          return (
+            <GuideLinkCard
+              items={[
+                {
+                  label: mukyuGuideLinks['5kyuGuideLabel'],
+                  href: `/${locale}/ranks/5kyu/guide`,
+                },
+              ]}
+            />
+          );
+        }
+      }
+
+      return null;
+    };
+
+    return (
+      <div className="space-y-8">
+        <PageTitle>{rankName}</PageTitle>
+
+        <PagePanel>
+          <RankHeader beltColor={beltColor}>{t('detail.guide')}</RankHeader>
+
+          {/* Page content */}
+          <div className="space-y-4">
+            {currentPage.paragraphs.map((paragraph, i) => (
+              <React.Fragment key={i}>
+                {paragraph.includes('\n') ? (
+                  <p className="text-foreground/80">
+                    <strong className="block">{paragraph.split('\n')[0]}</strong>
+                    {paragraph.split('\n').slice(1).join('\n')}
+                  </p>
+                ) : (
+                  <p className="text-foreground/80">{paragraph}</p>
+                )}
+                {/* Visual aids based on page and position */}
+                {getVisualAid(slug, pageNumber, i)}
+                {/* Inline links for page 2 */}
+                {getMukyuInlineLink(i)}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {pages.length > 1 && (
+            <>
+              <Divider />
+              <PaginationNav
+                currentPage={pageNumber}
+                totalPages={pages.length}
+                buildHref={(p) =>
+                  p === 1 ? `/${locale}/ranks/${slug}/guide` : `/${locale}/ranks/${slug}/guide/${p}`
+                }
+              />
+            </>
+          )}
+
+          <AdBannerGuard slot="banner-standard" />
+
+          <Divider />
+
+          <Breadcrumb
+            items={[
+              { label: t('pageTitle'), href: '/ranks' },
+              { label: rankName, href: `/ranks/${slug}` },
+              { label: t('detail.guide') },
+            ]}
+            locale={locale}
+          />
+        </PagePanel>
+      </div>
+    );
+  }
+
+  // -----------------------------------------------------------------------
+  // Standard ranks (5kyū–1dan) — DB-backed with challenge score requirements
+  // -----------------------------------------------------------------------
   const result = await getValidatedRank(slug);
   if (!result) notFound();
   const { rankSlug, requirements } = result;
 
-  const t = await getTranslations({ locale, namespace: 'ranks' });
   const beltColor = getBeltColorHex(rankSlug);
   const rankName = t(`rankNames.${rankSlug}`);
 

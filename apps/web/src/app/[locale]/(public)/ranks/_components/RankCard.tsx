@@ -28,17 +28,29 @@ export function RankCard({
 }: RankCardProps) {
   const isClickable = state === 'achieved' || state === 'next';
 
+  // White belt needs a visible border since #ffffff is invisible on light backgrounds
+  const isWhiteBelt = beltColor === '#ffffff';
+
   const cardContent = (
     <>
       {/* Belt color bar */}
-      <div className="h-2" style={{ backgroundColor: beltColor }} />
+      <div
+        className="h-2"
+        style={{
+          backgroundColor: beltColor,
+          ...(isWhiteBelt ? { borderBottom: '1px solid #d4d4d4' } : {}),
+        }}
+      />
 
       <div className="space-y-4 p-4 sm:p-5">
         {/* Rank name with color badge */}
         <div className="flex items-center gap-3">
           <span
             className="inline-block size-4 shrink-0 rounded-full"
-            style={{ backgroundColor: beltColor }}
+            style={{
+              backgroundColor: beltColor,
+              ...(isWhiteBelt ? { border: '1px solid #d4d4d4' } : {}),
+            }}
           />
           <h3 className="text-lg font-bold text-foreground">{rankName}</h3>
           {state === 'achieved' && (

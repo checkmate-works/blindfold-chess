@@ -9,6 +9,8 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components';
+
 import { ChessBoardDemo } from './ChessBoardDemo';
 import { PageTitle } from './PageTitle';
 import { SectionTitle } from './SectionTitle';
@@ -101,6 +103,13 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         img: ({ src, alt }) => {
           // Handle demo: prefix for interactive ChessBoard demos
           // In markdown ![demo:type](), the demo type is in the alt text
+          if (alt === 'demo:coordinate-board') {
+            return (
+              <div className="my-8">
+                <CoordinateBoard />
+              </div>
+            );
+          }
           if (alt?.startsWith('demo:')) {
             const demoType = alt.replace('demo:', '') as
               | 'board-normal'

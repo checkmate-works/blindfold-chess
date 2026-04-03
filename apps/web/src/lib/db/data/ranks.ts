@@ -31,13 +31,17 @@ type RankSeed = {
 /**
  * All rank slugs in progression order (lowest to highest).
  * Used by the ranks page to determine which ranks are "Coming Soon".
+ *
+ * Mukyu (無級 — "no rank") is included at the start as the default rank.
+ * @see {@link MUKYU_SLUG} for the business logic rationale.
  */
-export const ALL_RANK_SLUGS = ['5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'] as const;
+export const ALL_RANK_SLUGS = ['mukyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu', '1dan'] as const;
 
 export type RankSlug = (typeof ALL_RANK_SLUGS)[number];
 
 /** Belt colors for each rank. */
 export const RANK_COLORS: Record<RankSlug, string> = {
+  mukyu: 'white',
   '5kyu': 'orange',
   '4kyu': 'blue',
   '3kyu': 'yellow',
@@ -74,8 +78,14 @@ export function parseRequirements(raw: unknown): RankRequirement[] {
 // Belt color hex mapping (shared by ranks page and achievement modal)
 // ---------------------------------------------------------------------------
 
-/** Map rank color names to CSS hex values. */
+/**
+ * Map rank color names to CSS hex values.
+ *
+ * White (#ffffff) is used for Mukyu. UI components rendering this color
+ * should add a border or outline for visibility against light backgrounds.
+ */
 export const BELT_COLOR_HEX: Record<string, string> = {
+  white: '#ffffff',
   orange: '#f97316',
   blue: '#3b82f6',
   yellow: '#eab308',
@@ -83,6 +93,39 @@ export const BELT_COLOR_HEX: Record<string, string> = {
   brown: '#92400e',
   black: '#1c1917',
 };
+
+// ---------------------------------------------------------------------------
+// Mukyu (無級) — UI-only default rank
+// ---------------------------------------------------------------------------
+
+/**
+ * Mukyu (無級 — "no rank") is the default rank assigned to all users.
+ *
+ * @design UI-only, not stored in the database
+ *
+ * Unlike other ranks (5kyū–1dan), Mukyu is never inserted into the `ranks`
+ * table or granted via `user_ranks`. It represents the starting state that
+ * every user implicitly holds before earning their first rank through
+ * challenge completion. Think of it as the "white belt" in martial arts.
+ *
+ * @design No requirements, no evaluation
+ *
+ * Mukyu has no `challenge_score` requirements and is never processed by
+ * `checkAndGrantRanks`. Its presence in `ALL_RANK_SLUGS` is purely for
+ * UI rendering on the ranks page and for generating static params / sitemap.
+ *
+ * @design Separate from "Coming Soon" ranks
+ *
+ * Other ranks with empty requirements (4kyū–1dan) are displayed as "Coming Soon"
+ * because their conditions haven't been defined yet. Mukyu has no requirements
+ * by design — it is always accessible and clickable.
+ */
+export const MUKYU_SLUG = 'mukyu' as const;
+
+/** Check whether a given slug is the Mukyu (unranked) slug. */
+export function isMukyuSlug(slug: string): slug is typeof MUKYU_SLUG {
+  return slug === MUKYU_SLUG;
+}
 
 // ---------------------------------------------------------------------------
 // GrantedRank type (returned by checkAndGrantRanks, used by UI components)

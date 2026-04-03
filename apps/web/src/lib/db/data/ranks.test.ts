@@ -5,6 +5,7 @@ import {
   BELT_COLOR_HEX,
   RANK_COLORS,
   isChallengeScoreRequirement,
+  isMukyuSlug,
   parseRequirements,
 } from './ranks';
 import type { ChallengeScoreRequirement } from './ranks';
@@ -170,12 +171,12 @@ describe('parseRequirements', () => {
 // ---------------------------------------------------------------------------
 
 describe('ALL_RANK_SLUGS', () => {
-  it('should contain 6 ranks', () => {
-    expect(ALL_RANK_SLUGS).toHaveLength(6);
+  it('should contain 7 ranks', () => {
+    expect(ALL_RANK_SLUGS).toHaveLength(7);
   });
 
-  it('should start with 5kyu and end with 1dan', () => {
-    expect(ALL_RANK_SLUGS[0]).toBe('5kyu');
+  it('should start with mukyu and end with 1dan', () => {
+    expect(ALL_RANK_SLUGS[0]).toBe('mukyu');
     expect(ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]).toBe('1dan');
   });
 });
@@ -196,5 +197,29 @@ describe('BELT_COLOR_HEX', () => {
       expect(BELT_COLOR_HEX[color]).toBeDefined();
       expect(BELT_COLOR_HEX[color]).toMatch(/^#[0-9a-fA-F]{6}$/);
     }
+  });
+
+  it('should include white for mukyu', () => {
+    expect(BELT_COLOR_HEX['white']).toBe('#ffffff');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isMukyuSlug
+// ---------------------------------------------------------------------------
+
+describe('isMukyuSlug', () => {
+  it('should return true for "mukyu"', () => {
+    expect(isMukyuSlug('mukyu')).toBe(true);
+  });
+
+  it('should return false for other rank slugs', () => {
+    expect(isMukyuSlug('5kyu')).toBe(false);
+    expect(isMukyuSlug('1dan')).toBe(false);
+  });
+
+  it('should return false for arbitrary strings', () => {
+    expect(isMukyuSlug('unknown')).toBe(false);
+    expect(isMukyuSlug('')).toBe(false);
   });
 });

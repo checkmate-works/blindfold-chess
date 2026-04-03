@@ -18,7 +18,7 @@ In algebraic notation, every square on the chessboard has a unique coordinate:
 - **Files (columns)**: Labeled a-h from left to right.
 - **Ranks (rows)**: Numbered 1-8 from bottom to top (from White's perspective).
 
-![Board Display](/images/articles/screenshots/squares-in-algebraic-notation.png)
+![demo:coordinate-board]()
 
 ## Basic Notation Rules
 

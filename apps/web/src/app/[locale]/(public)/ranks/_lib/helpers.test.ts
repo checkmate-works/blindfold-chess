@@ -48,6 +48,7 @@ describe('buildChallengeNameKey', () => {
 describe('getBeltColorHex', () => {
   it('should return the correct hex for each known rank slug', () => {
     const expected: Record<RankSlug, string> = {
+      mukyu: BELT_COLOR_HEX[RANK_COLORS['mukyu']],
       '5kyu': BELT_COLOR_HEX[RANK_COLORS['5kyu']],
       '4kyu': BELT_COLOR_HEX[RANK_COLORS['4kyu']],
       '3kyu': BELT_COLOR_HEX[RANK_COLORS['3kyu']],
@@ -58,6 +59,10 @@ describe('getBeltColorHex', () => {
     for (const [slug, hex] of Object.entries(expected)) {
       expect(getBeltColorHex(slug as RankSlug)).toBe(hex);
     }
+  });
+
+  it('should return #ffffff for mukyu (white belt)', () => {
+    expect(getBeltColorHex('mukyu')).toBe('#ffffff');
   });
 
   it('should return fallback gray for an unknown slug', () => {
