@@ -35,6 +35,8 @@ export function deriveLeaderboardKey(
       return 'default';
     case 'board_symmetry':
       return 'default';
+    case 'route_planner':
+      return typeof settings.selectedPiece === 'string' ? settings.selectedPiece : null;
     default:
       return null;
   }

@@ -8,7 +8,8 @@ export type LeaderboardModule =
   | 'legal_moves'
   | 'square_colors'
   | 'diagonal_quiz'
-  | 'board_symmetry';
+  | 'board_symmetry'
+  | 'route_planner';
 
 export type ModuleFilterValue = 'all' | LeaderboardModule;
 
@@ -17,7 +18,8 @@ export type LeaderboardModuleSlug =
   | 'legal-moves'
   | 'square-colors'
   | 'diagonal-quiz'
-  | 'board-symmetry';
+  | 'board-symmetry'
+  | 'route-planner';
 
 export type LeaderboardRow = RankedLeaderboardRow;
 
@@ -44,6 +46,7 @@ export const MODULES = [
   'square_colors',
   'diagonal_quiz',
   'board_symmetry',
+  'route_planner',
 ] as const satisfies readonly LeaderboardModule[];
 
 export const MODULE_KEYS = LEADERBOARD_KEYS;
@@ -61,6 +64,7 @@ export const VALID_MODULE_FILTERS = [
   'square_colors',
   'diagonal_quiz',
   'board_symmetry',
+  'route_planner',
 ] as const satisfies readonly ModuleFilterValue[];
 
 export const PAGE_SIZE = 20;
@@ -80,6 +84,7 @@ const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
   square_colors: 'square-colors',
   diagonal_quiz: 'diagonal-quiz',
   board_symmetry: 'board-symmetry',
+  route_planner: 'route-planner',
 };
 
 const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
@@ -88,6 +93,7 @@ const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
   'square-colors': 'square_colors',
   'diagonal-quiz': 'diagonal_quiz',
   'board-symmetry': 'board_symmetry',
+  'route-planner': 'route_planner',
 };
 
 export function moduleToSlug(module: LeaderboardModule): LeaderboardModuleSlug {
@@ -127,5 +133,7 @@ export function buildChallengePath(module: LeaderboardModule, key: string): stri
       return `/practice/${slug}/challenge`;
     case 'board_symmetry':
       return `/practice/${slug}/challenge`;
+    case 'route_planner':
+      return `/practice/${slug}/challenge?piece=${key}`;
   }
 }

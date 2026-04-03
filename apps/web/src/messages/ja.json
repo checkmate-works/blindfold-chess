@@ -2896,7 +2896,8 @@
       "legal_moves": "合法手",
       "square_colors": "マスの色",
       "diagonal_quiz": "ダイアゴナルクイズ",
-      "board_symmetry": "ボードの対称性"
+      "board_symmetry": "ボードの対称性",
+      "route_planner": "ルートプランナー"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2917,6 +2918,10 @@
       },
       "board_symmetry": {
         "default": "デフォルト"
+      },
+      "route_planner": {
+        "knight": "ナイト",
+        "bishop": "ビショップ"
       }
     },
     "table": {
@@ -2940,7 +2945,8 @@
       "legal_moves": "合法手",
       "square_colors": "マスの色",
       "diagonal_quiz": "ダイアゴナルクイズ",
-      "board_symmetry": "ボードの対称性"
+      "board_symmetry": "ボードの対称性",
+      "route_planner": "ルートプランナー"
     },
     "allLeaderboardsSection": "すべてのランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
@@ -2967,6 +2973,10 @@
       },
       "board_symmetry": {
         "default": "ボードの対称性"
+      },
+      "route_planner": {
+        "knight": "ルートプランナー — ナイト",
+        "bishop": "ルートプランナー — ビショップ"
       }
     },
     "tryChallenge": "この種目にチャレンジ",

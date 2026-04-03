@@ -48,6 +48,17 @@ describe('buildChallengePath', () => {
     });
   });
 
+  describe('route_planner', () => {
+    it.each(['knight', 'bishop'] as const)(
+      'returns path with piece=%s for route_planner',
+      (key) => {
+        expect(buildChallengePath('route_planner', key)).toBe(
+          `/practice/route-planner/challenge?piece=${key}`
+        );
+      }
+    );
+  });
+
   // -----------------------------------------------------------------------
   // Path structure validation
   // -----------------------------------------------------------------------
@@ -59,6 +70,7 @@ describe('buildChallengePath', () => {
         'legal_moves',
         'square_colors',
         'diagonal_quiz',
+        'route_planner',
       ];
       for (const mod of modules) {
         const path = buildChallengePath(mod, 'any-key');
@@ -75,6 +87,8 @@ describe('buildChallengePath', () => {
       expect(buildChallengePath('square_colors', 'default')).not.toContain('square_colors');
       expect(buildChallengePath('diagonal_quiz', 'default')).toContain('diagonal-quiz');
       expect(buildChallengePath('diagonal_quiz', 'default')).not.toContain('diagonal_quiz');
+      expect(buildChallengePath('route_planner', 'knight')).toContain('route-planner');
+      expect(buildChallengePath('route_planner', 'knight')).not.toContain('route_planner');
     });
 
     it('always includes /challenge in the path', () => {
@@ -83,6 +97,7 @@ describe('buildChallengePath', () => {
         'legal_moves',
         'square_colors',
         'diagonal_quiz',
+        'route_planner',
       ];
       for (const mod of modules) {
         const path = buildChallengePath(mod, 'some-key');
@@ -116,6 +131,11 @@ describe('buildChallengePath', () => {
       const path = buildChallengePath('diagonal_quiz', 'default');
       expect(path).not.toContain('?');
     });
+
+    it('route_planner uses "piece" as query param', () => {
+      const path = buildChallengePath('route_planner', 'knight');
+      expect(path).toContain('piece=');
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -133,6 +153,12 @@ describe('buildChallengePath', () => {
     it('passes arbitrary key values as-is for legal_moves', () => {
       expect(buildChallengePath('legal_moves', 'custom-value')).toBe(
         '/practice/legal-moves/challenge?piece=custom-value'
+      );
+    });
+
+    it('passes arbitrary key values as-is for route_planner', () => {
+      expect(buildChallengePath('route_planner', 'custom-value')).toBe(
+        '/practice/route-planner/challenge?piece=custom-value'
       );
     });
 

@@ -2931,7 +2931,8 @@
       "legal_moves": "Legal Moves",
       "square_colors": "Square Colors",
       "diagonal_quiz": "Diagonal Quiz",
-      "board_symmetry": "Board Symmetry"
+      "board_symmetry": "Board Symmetry",
+      "route_planner": "Route Planner"
     },
     "setting": {
       "coordinate_quiz": {
@@ -2952,6 +2953,10 @@
       },
       "board_symmetry": {
         "default": "Default"
+      },
+      "route_planner": {
+        "knight": "Knight",
+        "bishop": "Bishop"
       }
     },
     "table": {
@@ -2975,7 +2980,8 @@
       "legal_moves": "Legal Moves",
       "square_colors": "Square Colors",
       "diagonal_quiz": "Diagonal Quiz",
-      "board_symmetry": "Board Symmetry"
+      "board_symmetry": "Board Symmetry",
+      "route_planner": "Route Planner"
     },
     "allLeaderboardsSection": "All Leaderboards",
     "rankLabel": "Your Rank: #{rank}",
@@ -3002,6 +3008,10 @@
       },
       "board_symmetry": {
         "default": "Board Symmetry"
+      },
+      "route_planner": {
+        "knight": "Route Planner — Knight",
+        "bishop": "Route Planner — Bishop"
       }
     },
     "tryChallenge": "Try This Challenge",

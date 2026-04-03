@@ -12,4 +12,5 @@ export const LEADERBOARD_KEYS = {
   square_colors: ['default'],
   diagonal_quiz: ['default'],
   board_symmetry: ['default'],
+  route_planner: ['knight', 'bishop'],
 } as const satisfies Record<ChallengeMenuType, readonly string[]>;

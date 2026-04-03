@@ -16,14 +16,15 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('MODULES', () => {
-  it('contains exactly five modules', () => {
-    expect(MODULES).toHaveLength(5);
+  it('contains exactly six modules', () => {
+    expect(MODULES).toHaveLength(6);
     expect(MODULES).toEqual([
       'coordinate_quiz',
       'legal_moves',
       'square_colors',
       'diagonal_quiz',
       'board_symmetry',
+      'route_planner',
     ]);
   });
 });
@@ -55,6 +56,10 @@ describe('MODULE_KEYS', () => {
   it('board_symmetry has only default', () => {
     expect(MODULE_KEYS.board_symmetry).toEqual(['default']);
   });
+
+  it('route_planner has knight and bishop', () => {
+    expect(MODULE_KEYS.route_planner).toEqual(['knight', 'bishop']);
+  });
 });
 
 describe('VALID_PERIODS', () => {
@@ -74,8 +79,8 @@ describe('PAGE_SIZE', () => {
 // ---------------------------------------------------------------------------
 
 describe('ALL_LEADERBOARD_ENTRIES', () => {
-  it('has 12 entries total (3 + 6 + 1 + 1 + 1)', () => {
-    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(12);
+  it('has 14 entries total (3 + 6 + 1 + 1 + 1 + 2)', () => {
+    expect(ALL_LEADERBOARD_ENTRIES).toHaveLength(14);
   });
 
   it('contains all coordinate_quiz keys', () => {
@@ -116,7 +121,15 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     expect(boardSymmetryEntries).toEqual([{ module: 'board_symmetry', key: 'default' }]);
   });
 
-  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz, board_symmetry', () => {
+  it('contains all route_planner keys', () => {
+    const routePlannerEntries = ALL_LEADERBOARD_ENTRIES.filter((e) => e.module === 'route_planner');
+    expect(routePlannerEntries).toEqual([
+      { module: 'route_planner', key: 'knight' },
+      { module: 'route_planner', key: 'bishop' },
+    ]);
+  });
+
+  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz, board_symmetry, route_planner', () => {
     const modules = ALL_LEADERBOARD_ENTRIES.map((e) => e.module);
     const firstLegalMoves = modules.indexOf('legal_moves');
     const lastCoordinateQuiz = modules.lastIndexOf('coordinate_quiz');
@@ -132,6 +145,10 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     const firstBoardSymmetry = modules.indexOf('board_symmetry');
     const lastDiagonalQuiz = modules.lastIndexOf('diagonal_quiz');
     expect(lastDiagonalQuiz).toBeLessThan(firstBoardSymmetry);
+
+    const firstRoutePlanner = modules.indexOf('route_planner');
+    const lastBoardSymmetry = modules.lastIndexOf('board_symmetry');
+    expect(lastBoardSymmetry).toBeLessThan(firstRoutePlanner);
   });
 });
 
@@ -159,6 +176,10 @@ describe('moduleToSlug', () => {
   it('converts board_symmetry to board-symmetry', () => {
     expect(moduleToSlug('board_symmetry')).toBe('board-symmetry');
   });
+
+  it('converts route_planner to route-planner', () => {
+    expect(moduleToSlug('route_planner')).toBe('route-planner');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -184,6 +205,10 @@ describe('slugToModule', () => {
 
   it('converts board-symmetry to board_symmetry', () => {
     expect(slugToModule('board-symmetry')).toBe('board_symmetry');
+  });
+
+  it('converts route-planner to route_planner', () => {
+    expect(slugToModule('route-planner')).toBe('route_planner');
   });
 
   it('returns null for invalid slug', () => {

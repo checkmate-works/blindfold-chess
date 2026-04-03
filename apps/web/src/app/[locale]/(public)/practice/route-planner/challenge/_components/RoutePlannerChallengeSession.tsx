@@ -12,15 +12,16 @@ import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 
-import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/_hooks/use-challenge-result-save';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/_hooks/use-timed-session';
+import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/route-planner/_actions/save-result';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useCoordinateInput } from '../../_hooks/use-coordinate-input';
@@ -76,6 +77,7 @@ export default function RoutePlannerChallengeSession({
   const {
     currentQuestion: currentProblem,
     timeRemaining,
+    totalTime,
     correctCount,
     incorrectCount,
     showFeedback,
@@ -249,15 +251,32 @@ export default function RoutePlannerChallengeSession({
     return `/${locale}/practice/route-planner/result?${params.toString()}`;
   }, [problemResults, allowedPieces, total, locale, timeElapsed]);
 
-  const redirectedRef = useRef(false);
-
-  // TODO: Add save-result action for leaderboard integration (see CLAUDE.md "Adding Leaderboard Support to a Practice Module")
-  useEffect(() => {
-    if (isFinished && !redirectedRef.current) {
-      redirectedRef.current = true;
-      router.push(resultUrl);
+  // Determine piece name for leaderboard segmentation
+  const pieceName = useMemo(() => {
+    if (allowedPieces.length === 1) {
+      return allowedPieces[0] === 'n' ? 'knight' : 'bishop';
     }
-  }, [isFinished, resultUrl, router]);
+    return 'knight'; // fallback, challenge mode always uses single piece
+  }, [allowedPieces]);
+
+  const saveResult = useCallback(
+    () =>
+      saveRoutePlannerResult({
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        timeTaken: totalTime,
+        piece: pieceName,
+      }),
+    [correctCount, incorrectCount, totalTime, pieceName]
+  );
+
+  useChallengeResultSave({
+    isFinished,
+    totalAnswers: total,
+    resultUrl,
+    saveResult,
+    moduleName: 'route_planner',
+  });
 
   if (!currentProblem || isFinished) {
     return <PracticeResultSkeleton />;
@@ -352,49 +371,50 @@ export default function RoutePlannerChallengeSession({
           </div>
 
           <div className="space-y-4">
-            {/* Answer Feedback (shown briefly after answering) */}
-            {showFeedback && lastAnswerCorrect !== null && (
-              <div className="py-4">
-                <AnswerFeedback isCorrect={lastAnswerCorrect} isVisible={true} />
-              </div>
-            )}
-
             {/* Moves History */}
-            {!showFeedback && (
-              <div className="flex flex-wrap gap-2 items-center min-h-[3rem] p-4 bg-muted/50 rounded-md">
-                <span className="font-mono font-bold text-muted-foreground">
-                  {currentProblem.start}
-                </span>
-                {moves.map((move, i) => (
-                  <div key={i} className="flex items-center">
-                    <span className="text-muted-foreground mx-1">&rarr;</span>
-                    <span className="font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm">
-                      {move}
-                    </span>
-                  </div>
-                ))}
-
-                {moves.length > 0 && (
-                  <button
-                    onClick={handleUndo}
-                    className="ml-2 w-8 h-8 flex items-center justify-center rounded-full bg-background hover:bg-muted border border-border text-muted-foreground hover:text-foreground transition-colors"
-                    title={tPractice('undo')}
-                  >
-                    <FaUndo size={12} />
-                  </button>
-                )}
-
-                <div className="flex items-center ml-2">
+            <div
+              className={`flex flex-wrap gap-2 items-center min-h-[3rem] p-4 rounded-md border transition-colors duration-300 ${
+                showFeedback && lastAnswerCorrect !== null
+                  ? lastAnswerCorrect
+                    ? 'border-success bg-success/10'
+                    : 'border-destructive bg-destructive/10'
+                  : 'border-transparent bg-muted/50'
+              }`}
+            >
+              <span className="font-mono font-bold text-muted-foreground">
+                {currentProblem.start}
+              </span>
+              {moves.map((move, i) => (
+                <div key={i} className="flex items-center">
                   <span className="text-muted-foreground mx-1">&rarr;</span>
-                  <span className="font-mono font-bold text-muted-foreground border border-dashed border-border px-2 py-1 rounded opacity-70">
-                    {currentProblem.end}
+                  <span className="font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm">
+                    {move}
                   </span>
                 </div>
+              ))}
+
+              {moves.length > 0 && !showFeedback && (
+                <button
+                  onClick={handleUndo}
+                  className="ml-2 w-8 h-8 flex items-center justify-center rounded-full bg-background hover:bg-muted border border-border text-muted-foreground hover:text-foreground transition-colors"
+                  title={tPractice('undo')}
+                >
+                  <FaUndo size={12} />
+                </button>
+              )}
+
+              <div className="flex items-center ml-2">
+                <span className="text-muted-foreground mx-1">&rarr;</span>
+                <span className="font-mono font-bold text-muted-foreground border border-dashed border-border px-2 py-1 rounded opacity-70">
+                  {currentProblem.end}
+                </span>
               </div>
-            )}
+            </div>
 
             {/* Coordinate Input */}
-            {!showFeedback && (
+            <div
+              className={`transition-opacity duration-300 ${showFeedback ? 'opacity-40 pointer-events-none' : ''}`}
+            >
               <PieceCoordinateInput
                 activePiece={currentProblem.piece}
                 selectedFile={selectedFile}
@@ -417,7 +437,7 @@ export default function RoutePlannerChallengeSession({
                   </Button>
                 </div>
               </PieceCoordinateInput>
-            )}
+            </div>
           </div>
         </div>
       </div>

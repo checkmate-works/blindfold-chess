@@ -65,15 +65,25 @@ describe('deriveLeaderboardKey', () => {
     });
   });
 
-  describe('unsupported menu types', () => {
-    it('returns null for menu types without leaderboard segmentation', () => {
-      expect(deriveLeaderboardKey('route_planner', {})).toBeNull();
-      expect(deriveLeaderboardKey('position_memory', {})).toBeNull();
-      expect(deriveLeaderboardKey('knight_tour', {})).toBeNull();
+  describe('route_planner', () => {
+    it('returns selectedPiece value when it is a string', () => {
+      expect(deriveLeaderboardKey('route_planner', { selectedPiece: 'knight' })).toBe('knight');
+      expect(deriveLeaderboardKey('route_planner', { selectedPiece: 'bishop' })).toBe('bishop');
     });
 
-    it('returns null for unsupported menu types even when settings contain valid keys', () => {
-      expect(deriveLeaderboardKey('route_planner', { selectedPiece: 'king' })).toBeNull();
+    it('returns null when selectedPiece is missing', () => {
+      expect(deriveLeaderboardKey('route_planner', {})).toBeNull();
+    });
+
+    it('returns null when selectedPiece is not a string', () => {
+      expect(deriveLeaderboardKey('route_planner', { selectedPiece: 123 })).toBeNull();
+    });
+  });
+
+  describe('unsupported menu types', () => {
+    it('returns null for menu types without leaderboard segmentation', () => {
+      expect(deriveLeaderboardKey('position_memory', {})).toBeNull();
+      expect(deriveLeaderboardKey('knight_tour', {})).toBeNull();
     });
   });
 

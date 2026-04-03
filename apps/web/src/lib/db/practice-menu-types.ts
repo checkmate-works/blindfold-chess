@@ -37,6 +37,7 @@ export const CHALLENGE_MENU_TYPES = [
   'coordinate_quiz',
   'diagonal_quiz',
   'board_symmetry',
+  'route_planner',
 ] as const;
 
 export type ChallengeMenuType = (typeof CHALLENGE_MENU_TYPES)[number];

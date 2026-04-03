@@ -1,10 +1,7 @@
-import { Suspense } from 'react';
-
-import { setRequestLocale } from 'next-intl/server';
-
-import { createPracticeResultMetadata } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+import {
+  createLeaderboardPracticeResultPage,
+  createPracticeResultMetadata,
+} from '@/app/[locale]/(public)/practice/_lib/createPracticeResultPage';
 
 import { ResultClient } from './ResultClient';
 
@@ -15,13 +12,10 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/route-planner/result',
 });
 
-export default async function Page(props: LocalePageProps) {
-  const { locale } = await props.params;
-  setRequestLocale(locale);
-
-  return (
-    <Suspense>
-      <ResultClient locale={locale} adBannerStandard={<AdBannerGuard slot="banner-standard" />} />
-    </Suspense>
-  );
-}
+export default createLeaderboardPracticeResultPage(ResultClient, {
+  module: 'route_planner',
+  resolveKey: (searchParams) => {
+    const piece = typeof searchParams.piece === 'string' ? searchParams.piece : undefined;
+    return piece || 'knight';
+  },
+});
