@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { AdBannerConfig } from '@/lib/ad';
 
@@ -56,19 +56,17 @@ export function FeedClient({
   // 広告を含む表示要素の構築
   // feed items と ad items を交互に配置するため、
   // 統一的なインデックスで管理する
-  const getDisplayItems = useCallback(() => {
-    const displayItems: DisplayItem[] = [];
+  const displayItems = useMemo(() => {
+    const result: DisplayItem[] = [];
     items.forEach((item, index) => {
-      displayItems.push({ type: 'feed', item });
+      result.push({ type: 'feed', item });
       if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
         const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
-        displayItems.push({ type: 'ad', ad: adBanners[adIndex] });
+        result.push({ type: 'ad', ad: adBanners[adIndex] });
       }
     });
-    return displayItems;
+    return result;
   }, [items, adBanners]);
-
-  const displayItems = getDisplayItems();
 
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {

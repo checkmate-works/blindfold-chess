@@ -12,7 +12,13 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ avatarUrl: null, displayName: null }, { status: 401 });
+    return NextResponse.json(
+      { avatarUrl: null, displayName: null },
+      {
+        status: 401,
+        headers: { 'Cache-Control': 'no-store' },
+      }
+    );
   }
 
   const [profile] = await db
@@ -21,8 +27,15 @@ export async function GET() {
     .where(eq(profiles.id, user.id))
     .limit(1);
 
-  return NextResponse.json({
-    avatarUrl: profile?.avatarUrl ?? null,
-    displayName: profile?.displayName ?? null,
-  });
+  return NextResponse.json(
+    {
+      avatarUrl: profile?.avatarUrl ?? null,
+      displayName: profile?.displayName ?? null,
+    },
+    {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    }
+  );
 }

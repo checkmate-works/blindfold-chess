@@ -65,12 +65,16 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [initialFeed, showAds] = await Promise.all([
+  // Always prefetch ad banners in parallel to eliminate waterfall.
+  // getAdBannersForFeed is wrapped with unstable_cache (60s TTL),
+  // so the cost of calling it even when showAds=false is negligible.
+  const [initialFeed, showAds, adBannersAll] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
+    getAdBannersForFeed(),
   ]);
 
-  const adBanners = showAds ? await getAdBannersForFeed() : [];
+  const adBanners = showAds ? adBannersAll : [];
 
   return (
     <>
