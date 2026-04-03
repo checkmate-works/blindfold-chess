@@ -104,13 +104,26 @@ export function RankCard({
     </>
   );
 
+  const isNext = state === 'next';
+
   return (
     <div className="relative">
       {/* Rank card */}
       {isClickable ? (
         <Link
           href={`/${locale}/ranks/${slug}`}
-          className="block relative overflow-hidden rounded-lg border border-border bg-card shadow-sm hover:border-foreground/20 transition-colors"
+          className={[
+            'block relative overflow-hidden rounded-lg border bg-card shadow-sm transition-all',
+            isNext ? 'scale-[1.02]' : 'border-border hover:border-foreground/20',
+          ].join(' ')}
+          style={
+            isNext
+              ? {
+                  borderColor: beltColor,
+                  boxShadow: `0 4px 14px -2px rgb(0 0 0 / 0.15), 0 0 20px 4px ${beltColor}50`,
+                }
+              : undefined
+          }
         >
           {cardContent}
         </Link>

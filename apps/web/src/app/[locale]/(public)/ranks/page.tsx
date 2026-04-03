@@ -90,6 +90,7 @@ export default async function RanksPage({ params }: LocalePageProps) {
             if (isMukyuSlug(slug)) {
               const beltColor = getBeltColorHex(slug);
               const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
+              const mukyuState = user && achievedSlugs.has('5kyu') ? 'achieved' : 'next';
               return (
                 <RankCard
                   key={slug}
@@ -97,7 +98,7 @@ export default async function RanksPage({ params }: LocalePageProps) {
                   locale={locale}
                   beltColor={beltColor}
                   rankName={t(`rankNames.${slug}`)}
-                  state="next"
+                  state={mukyuState}
                   requirementLabels={mukyuRequirements}
                   requirementsHeading={t('requirements')}
                   comingSoonLabel={t('comingSoon')}
