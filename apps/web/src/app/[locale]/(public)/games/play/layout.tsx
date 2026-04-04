@@ -15,13 +15,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     getTranslations({ locale, namespace: 'metadata' }),
   ]);
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/play' }),
+    ...generateCanonicalMetadata({ locale, path: 'games/play', title, description }),
     title: {
-      default: t('title'),
-      template: `%s | ${t('title')} | ${metaT('seoSiteName')}`,
+      default: title,
+      template: `%s | ${title} | ${metaT('seoSiteName')}`,
     },
-    description: t('description'),
+    description,
   };
 }
 
