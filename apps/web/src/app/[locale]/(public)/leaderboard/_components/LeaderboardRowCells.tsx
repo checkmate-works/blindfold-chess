@@ -18,13 +18,11 @@ export function LeaderboardRowCells({ row, locale }: Props) {
       <td className="py-3 px-3">
         <PlayerCell row={row} locale={locale} />
       </td>
-      <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-20">
+      <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-24">
         {row.score}
-      </td>
-      <td
-        className={`py-3 px-3 text-right tabular-nums w-24 ${getMissColorClass(row.incorrectAnswers)}`}
-      >
-        {row.incorrectAnswers}
+        <span className={`text-xs ml-0.5 font-normal ${getMissColorClass(row.incorrectAnswers)}`}>
+          ({row.incorrectAnswers})
+        </span>
       </td>
     </>
   );

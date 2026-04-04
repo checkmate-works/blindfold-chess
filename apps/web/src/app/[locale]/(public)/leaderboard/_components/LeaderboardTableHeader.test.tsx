@@ -30,19 +30,18 @@ describe('LeaderboardTableHeader', () => {
     expect(thead).toBeInTheDocument();
   });
 
-  it('should render four column headers', () => {
+  it('should render three column headers', () => {
     renderInTable();
 
     const headers = screen.getAllByRole('columnheader');
-    expect(headers).toHaveLength(4);
+    expect(headers).toHaveLength(3);
   });
 
-  it('should render rank, player, score, and miss headers', () => {
+  it('should render rank, player, and score headers', () => {
     renderInTable();
 
-    expect(screen.getByText('table.rank')).toBeInTheDocument();
-    expect(screen.getByText('table.player')).toBeInTheDocument();
-    expect(screen.getByText('table.score')).toBeInTheDocument();
-    expect(screen.getByText('table.miss')).toBeInTheDocument();
+    expect(screen.getByText('leaderboard.table.rank')).toBeInTheDocument();
+    expect(screen.getByText('leaderboard.table.player')).toBeInTheDocument();
+    expect(screen.getByText('leaderboard.table.score')).toBeInTheDocument();
   });
 });

@@ -4,6 +4,8 @@ import { memo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { getMedalEmoji } from '@/lib/rank-emoji';
+
 import {
   type LeaderboardModule,
   moduleToSlug,
@@ -15,13 +17,10 @@ import type { ChallengeRankUpdateData } from '../_lib/types';
 import { FeedItemCard } from './FeedItemCard';
 
 // ---------------------------------------------------------------------------
-// Rank → Emoji mapping
+// Rank → Emoji mapping (ranks 4–10 are local to this card)
 // ---------------------------------------------------------------------------
 
 const RANK_EMOJI: Record<number, string> = {
-  1: '\u{1F947}',
-  2: '\u{1F948}',
-  3: '\u{1F949}',
   4: '4\uFE0F\u20E3',
   5: '5\uFE0F\u20E3',
   6: '6\uFE0F\u20E3',
@@ -32,7 +31,7 @@ const RANK_EMOJI: Record<number, string> = {
 };
 
 function getRankEmoji(rank: number): string | null {
-  return RANK_EMOJI[rank] ?? null;
+  return getMedalEmoji(rank) ?? RANK_EMOJI[rank] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +91,7 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
       </span>
       <p className="text-sm text-foreground mt-1">
         {data.isNewEntry ? tFeed('newEntry') : tFeed('improved')}
-        {rankEmoji && <span className="mr-1">{rankEmoji}</span>}
+        {rankEmoji && <span className="ml-1">{rankEmoji}</span>}
       </p>
     </FeedItemCard>
   );

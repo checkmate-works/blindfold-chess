@@ -27,10 +27,10 @@ export function LeaderboardTable({ rows, currentUserId, currentUserRank, locale 
 
   return (
     <div className="space-y-0">
-      <div>
+      <div className="rounded-lg border border-border overflow-hidden">
         <table className="w-full table-fixed" aria-label={t('title')}>
           <LeaderboardTableHeader />
-          <tbody>
+          <tbody className="divide-y divide-border">
             {rows.map((row) => (
               <LeaderboardTableRow
                 key={row.userId}

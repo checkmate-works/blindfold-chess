@@ -6,6 +6,10 @@
  * modules. Users can filter by module and period. Shows top scores with
  * leaderboard cards linking to detailed per-module/per-key rankings.
  *
+ * Top-3 ranks are displayed with medal emojis and highlighted rows (left border
+ * accent + subtle background). The SCORE column shows miss count inline as
+ * `score(misses)` with color-coded miss indicators.
+ *
  * @flow
  * - Period selector: weekly / monthly / all-time
  * - Module filter: all / per-module filter
