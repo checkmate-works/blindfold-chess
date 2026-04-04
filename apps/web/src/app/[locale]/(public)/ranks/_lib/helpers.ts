@@ -1,4 +1,4 @@
-import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
+import { BELT_COLOR_HEX, RANK_COLORS, parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
 
 import type { RequirementItem } from '../_components/RequirementsList';
@@ -82,4 +82,57 @@ export function getRankCardState(
   // Not logged in: first rank is visible, rest are locked
   if (isFirstRank) return 'next';
   return 'locked';
+}
+
+export type RankTeaserCardProps = {
+  slug: string;
+  locale: string;
+  beltColor: string;
+  rankName: string;
+  state: 'locked';
+  requirementLabels: string[];
+  requirementsHeading: string;
+  comingSoonLabel: string;
+  previousRankName?: string;
+  previousSlug?: string;
+};
+
+const TEASER_SLUGS = ['5kyu', '4kyu'] as const;
+
+/**
+ * Build RankCard props for the teaser cards shown on the landing page and getting-started page.
+ *
+ * Centralises the slug list, seed-data lookup, requirement parsing, and label
+ * formatting so callers only need to supply locale and translations.
+ */
+export function buildRankTeaserCards(
+  locale: string,
+  tRanks: (key: string, values?: Record<string, string | number | Date>) => string
+): RankTeaserCardProps[] {
+  return TEASER_SLUGS.map((slug, index) => {
+    const seed = ranksSeedData.find((r) => r.slug === slug);
+    const requirements = seed ? parseRequirements(seed.requirements) : [];
+    const beltColor = getBeltColorHex(slug);
+    const requirementLabels = requirements.map((req) => {
+      const challengeKey = buildChallengeNameKey(req);
+      return tRanks('challengeScore', {
+        minScore: req.minScore,
+        challengeName: tRanks(`challengeNames.${challengeKey}`),
+      });
+    });
+    const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
+
+    return {
+      slug,
+      locale,
+      beltColor,
+      rankName: tRanks(`rankNames.${slug}`),
+      state: 'locked' as const,
+      requirementLabels,
+      requirementsHeading: tRanks('requirements'),
+      comingSoonLabel: tRanks('comingSoon'),
+      previousRankName: previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined,
+      previousSlug,
+    };
+  });
 }

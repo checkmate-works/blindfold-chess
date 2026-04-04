@@ -5,10 +5,8 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
-import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
-
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { buildChallengeNameKey, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -46,36 +44,9 @@ export default async function GettingStartedPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'gettingStarted' });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
-  const teaserSlugs = ['5kyu', '4kyu'] as const;
-  const teaserCards = teaserSlugs.map((slug, index) => {
-    const seed = ranksSeedData.find((r) => r.slug === slug);
-    const requirements = seed ? parseRequirements(seed.requirements) : [];
-    const beltColor = getBeltColorHex(slug);
-    const requirementLabels = requirements.map((req) => {
-      const challengeKey = buildChallengeNameKey(req);
-      return tRanks('challengeScore', {
-        minScore: req.minScore,
-        challengeName: tRanks(`challengeNames.${challengeKey}`),
-      });
-    });
-    const previousSlug = index > 0 ? teaserSlugs[index - 1] : undefined;
-
-    return (
-      <RankCard
-        key={slug}
-        slug={slug}
-        locale={locale}
-        beltColor={beltColor}
-        rankName={tRanks(`rankNames.${slug}`)}
-        state="locked"
-        requirementLabels={requirementLabels}
-        requirementsHeading={tRanks('requirements')}
-        comingSoonLabel={tRanks('comingSoon')}
-        previousRankName={previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined}
-        previousSlug={previousSlug}
-      />
-    );
-  });
+  const teaserCards = buildRankTeaserCards(locale, tRanks).map((props) => (
+    <RankCard key={props.slug} {...props} />
+  ));
 
   return (
     <div className="space-y-8">

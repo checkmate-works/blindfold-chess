@@ -3,10 +3,8 @@ import Link from 'next/link';
 
 import { GiBlackBelt } from 'react-icons/gi';
 
-import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
-
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { buildChallengeNameKey, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -15,38 +13,10 @@ type Props = {
   tRanks: Awaited<ReturnType<typeof getTranslations<'ranks'>>>;
 };
 
-const teaserSlugs = ['5kyu', '4kyu'] as const;
-
 export function RanksSection({ locale, t, tRanks }: Props) {
-  const teaserCards = teaserSlugs.map((slug, index) => {
-    const seed = ranksSeedData.find((r) => r.slug === slug);
-    const requirements = seed ? parseRequirements(seed.requirements) : [];
-    const beltColor = getBeltColorHex(slug);
-    const requirementLabels = requirements.map((req) => {
-      const challengeKey = buildChallengeNameKey(req);
-      return tRanks('challengeScore', {
-        minScore: req.minScore,
-        challengeName: tRanks(`challengeNames.${challengeKey}`),
-      });
-    });
-    const previousSlug = index > 0 ? teaserSlugs[index - 1] : undefined;
-
-    return (
-      <RankCard
-        key={slug}
-        slug={slug}
-        locale={locale}
-        beltColor={beltColor}
-        rankName={tRanks(`rankNames.${slug}`)}
-        state="locked"
-        requirementLabels={requirementLabels}
-        requirementsHeading={tRanks('requirements')}
-        comingSoonLabel={tRanks('comingSoon')}
-        previousRankName={previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined}
-        previousSlug={previousSlug}
-      />
-    );
-  });
+  const teaserCards = buildRankTeaserCards(locale, tRanks).map((props) => (
+    <RankCard key={props.slug} {...props} />
+  ));
 
   return (
     <section className="py-24 px-6 bg-gradient-to-b from-secondary/30 to-background border-t border-border/50">
