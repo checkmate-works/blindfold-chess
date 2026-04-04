@@ -45,7 +45,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
   const definedTerms = allTerms.map((term) => ({
     name: locale === 'ja' && term.termJa ? term.termJa : term.term,
     description: term.definition,
-    url: glossaryUrl,
+    url: `${glossaryUrl}#${term.term.toLowerCase().replace(/\s+/g, '-')}`,
   }));
 
   const definedTermSetSchema = generateDefinedTermSetSchema({
