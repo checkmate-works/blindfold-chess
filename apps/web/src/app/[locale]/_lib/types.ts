@@ -24,7 +24,8 @@ export type NavigationIconName =
   | 'faq'
   | 'glossary'
   | 'contact'
-  | 'settings';
+  | 'settings'
+  | 'ranks';
 
 export interface NavigationItem {
   id: string;
