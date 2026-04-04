@@ -35,10 +35,48 @@ export async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]
   return allUsers;
 }
 
+type FilteredUsersResult = {
+  filteredUsers: User[];
+  profileMap: Map<string, Profile>;
+};
+
+async function fetchFilteredUsers(
+  adminClient: SupabaseClient,
+  statusFilter: string
+): Promise<FilteredUsersResult> {
+  const allUsers = await fetchAllUsers(adminClient);
+  const allUserIds = allUsers.map((u) => u.id);
+
+  const allProfiles =
+    allUserIds.length > 0
+      ? await db.select().from(profiles).where(inArray(profiles.id, allUserIds))
+      : [];
+  const profileMap = new Map(allProfiles.map((p) => [p.id, p]));
+
+  const filteredUsers = allUsers.filter((user) => {
+    const profile = profileMap.get(user.id);
+    switch (statusFilter) {
+      case 'active':
+        return profile != null && profile.deletedAt == null && profile.bannedAt == null;
+      case 'banned':
+        return profile != null && profile.deletedAt == null && profile.bannedAt != null;
+      case 'anonymous':
+        return profile == null;
+      case 'deleted':
+        return profile != null && profile.deletedAt != null;
+      default:
+        return true;
+    }
+  });
+
+  return { filteredUsers, profileMap };
+}
+
 export type UsersPageData = {
   users: User[];
   currentPage: number;
   totalPages: number;
+  totalCount: number;
   profileMap: Map<string, Profile>;
   roleMap: Map<string, string>;
   subscriptionMap: Map<string, string>;
@@ -53,40 +91,21 @@ export async function fetchUsersPageData(
   let users: User[];
   let currentPage: number;
   let totalPages: number;
+  let totalCount: number;
   let profileMap: Map<string, Profile>;
 
   if (statusFilter) {
-    const allUsers = await fetchAllUsers(adminClient);
-    const allUserIds = allUsers.map((u) => u.id);
+    const { filteredUsers, profileMap: allProfileMap } = await fetchFilteredUsers(
+      adminClient,
+      statusFilter
+    );
 
-    const allProfiles =
-      allUserIds.length > 0
-        ? await db.select().from(profiles).where(inArray(profiles.id, allUserIds))
-        : [];
-    const allProfileMap = new Map(allProfiles.map((p) => [p.id, p]));
-
-    const filtered = allUsers.filter((user) => {
-      const profile = allProfileMap.get(user.id);
-      switch (statusFilter) {
-        case 'active':
-          return profile != null && profile.deletedAt == null && profile.bannedAt == null;
-        case 'banned':
-          return profile != null && profile.deletedAt == null && profile.bannedAt != null;
-        case 'anonymous':
-          return profile == null;
-        case 'deleted':
-          return profile != null && profile.deletedAt != null;
-        default:
-          return true;
-      }
-    });
-
-    const totalCount = filtered.length;
+    totalCount = filteredUsers.length;
     const pagination = getPaginationData(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 
-    users = filtered.slice(pagination.offset, pagination.offset + pagination.limit);
+    users = filteredUsers.slice(pagination.offset, pagination.offset + pagination.limit);
 
     profileMap = new Map<string, Profile>();
     for (const u of users) {
@@ -100,7 +119,7 @@ export async function fetchUsersPageData(
     });
 
     users = usersData?.users ?? [];
-    const totalCount = usersData && 'total' in usersData ? usersData.total : 0;
+    totalCount = usersData && 'total' in usersData ? (usersData.total as number) : 0;
     const pagination = getPaginationData(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
@@ -165,9 +184,35 @@ export async function fetchUsersPageData(
     users,
     currentPage,
     totalPages,
+    totalCount,
     profileMap,
     roleMap,
     subscriptionMap,
     banReasonMap,
   };
+}
+
+export type CountryStat = {
+  country: string;
+  count: number;
+};
+
+export async function fetchCountryStats(
+  adminClient: SupabaseClient,
+  statusFilter: string
+): Promise<CountryStat[]> {
+  // Always use fetchFilteredUsers to ensure the same user population as the list view.
+  // When statusFilter is empty, fetchFilteredUsers returns all users (default branch).
+  const { filteredUsers, profileMap } = await fetchFilteredUsers(adminClient, statusFilter);
+
+  const countMap = new Map<string, number>();
+  for (const user of filteredUsers) {
+    const profile = profileMap.get(user.id);
+    const country = profile?.country ?? 'Unknown';
+    countMap.set(country, (countMap.get(country) ?? 0) + 1);
+  }
+
+  return Array.from(countMap.entries())
+    .map(([country, cnt]) => ({ country, count: cnt }))
+    .sort((a, b) => b.count - a.count);
 }

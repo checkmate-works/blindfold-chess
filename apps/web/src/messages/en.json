@@ -2257,6 +2257,15 @@
       "viewSubscriptions": "Subscriptions",
       "deleted": "Deleted"
     },
+    "tabs": {
+      "users": "Users",
+      "statistics": "Statistics"
+    },
+    "stats": {
+      "usersByCountry": "Users by Country",
+      "noData": "No data available",
+      "users": "users"
+    },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "Subscriptions",
