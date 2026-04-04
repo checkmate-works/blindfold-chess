@@ -3,14 +3,51 @@ import Link from 'next/link';
 
 import { GiBlackBelt } from 'react-icons/gi';
 
+import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
+
+import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
+import { buildChallengeNameKey, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
+  tRanks: Awaited<ReturnType<typeof getTranslations<'ranks'>>>;
 };
 
-export function RanksSection({ locale, t }: Props) {
+const teaserSlugs = ['5kyu', '4kyu'] as const;
+
+export function RanksSection({ locale, t, tRanks }: Props) {
+  const teaserCards = teaserSlugs.map((slug, index) => {
+    const seed = ranksSeedData.find((r) => r.slug === slug);
+    const requirements = seed ? parseRequirements(seed.requirements) : [];
+    const beltColor = getBeltColorHex(slug);
+    const requirementLabels = requirements.map((req) => {
+      const challengeKey = buildChallengeNameKey(req);
+      return tRanks('challengeScore', {
+        minScore: req.minScore,
+        challengeName: tRanks(`challengeNames.${challengeKey}`),
+      });
+    });
+    const previousSlug = index > 0 ? teaserSlugs[index - 1] : undefined;
+
+    return (
+      <RankCard
+        key={slug}
+        slug={slug}
+        locale={locale}
+        beltColor={beltColor}
+        rankName={tRanks(`rankNames.${slug}`)}
+        state="locked"
+        requirementLabels={requirementLabels}
+        requirementsHeading={tRanks('requirements')}
+        comingSoonLabel={tRanks('comingSoon')}
+        previousRankName={previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined}
+        previousSlug={previousSlug}
+      />
+    );
+  });
+
   return (
     <section className="py-24 px-6 bg-gradient-to-b from-secondary/30 to-background border-t border-border/50">
       <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -21,6 +58,9 @@ export function RanksSection({ locale, t }: Props) {
           <h2 className="text-3xl font-bold">{t('ranks.title')}</h2>
         </div>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('ranks.description')}</p>
+
+        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">{teaserCards}</div>
+
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-8">
           <Link
             href={`/${locale}/ranks`}

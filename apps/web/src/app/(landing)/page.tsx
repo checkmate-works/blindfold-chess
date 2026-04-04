@@ -43,9 +43,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootPage() {
   const locale = await getLocaleFromRequest();
-  const [t, metaT, user] = await Promise.all([
+  const [t, metaT, tRanks, user] = await Promise.all([
     getTranslations({ locale, namespace: 'landing' }),
     getTranslations({ locale, namespace: 'metadata' }),
+    getTranslations({ locale, namespace: 'ranks' }),
     getOptionalUser(),
   ]);
 
@@ -82,7 +83,7 @@ export default async function RootPage() {
     <main className="min-h-screen bg-background text-foreground flex flex-col">
       <HeroSection locale={locale} t={t} siteName={metaT('siteName')} />
       <AiBattleSection locale={locale} t={t} />
-      <RanksSection locale={locale} t={t} />
+      <RanksSection locale={locale} t={t} tRanks={tRanks} />
       <TrainingSection locale={locale} t={t} />
       <Footer locale={locale} t={t} />
     </main>
