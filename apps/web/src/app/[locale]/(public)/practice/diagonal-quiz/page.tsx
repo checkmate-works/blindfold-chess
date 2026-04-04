@@ -38,10 +38,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
+  const title = t('practice.diagonalQuiz.title');
+  const description = t('practice.diagonalQuiz.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz' }),
-    title: t('practice.diagonalQuiz.title'),
-    description: t('practice.diagonalQuiz.description'),
+    ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz', title, description }),
+    title,
+    description,
   };
 }
 

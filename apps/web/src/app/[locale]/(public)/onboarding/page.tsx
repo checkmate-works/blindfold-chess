@@ -26,10 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.onboarding' });
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'onboarding' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'onboarding', title, description }),
+    title,
+    description,
   };
 }
 

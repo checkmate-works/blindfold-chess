@@ -13,6 +13,7 @@ import {
   FaTrophy,
   FaUsers,
 } from 'react-icons/fa';
+import { GiBlackBelt } from 'react-icons/gi';
 
 import type { NavigationIconName } from './types';
 
@@ -46,5 +47,7 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaEnvelope className="h-5 w-5" />;
     case 'settings':
       return <FaCog className="h-5 w-5" />;
+    case 'ranks':
+      return <GiBlackBelt className="h-5 w-5" />;
   }
 };

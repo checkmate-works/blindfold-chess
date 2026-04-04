@@ -47,10 +47,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const t = await getTranslations({ locale, namespace: 'metadata.topicsSquare' });
 
+  const title = t('title', { square });
+  const description = t('description', { square });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `topics/squares/${square}` }),
-    title: t('title', { square }),
-    description: t('description', { square }),
+    ...generateCanonicalMetadata({ locale, path: `topics/squares/${square}`, title, description }),
+    title,
+    description,
   };
 }
 

@@ -17,9 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'verifyEmail' });
 
+  const title = t('title');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'sign-up/verify-email' }),
-    title: t('title'),
+    ...generateCanonicalMetadata({ locale, path: 'sign-up/verify-email', title }),
+    title,
     robots: { index: false, follow: false },
   };
 }

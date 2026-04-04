@@ -42,12 +42,12 @@ export async function generateMetadata({ params }: Props) {
   }
 
   const title = article.metadata.title;
-  const excerpt = article.metadata.excerpt;
+  const description = article.metadata.excerpt;
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `manual/${slug}` }),
+    ...generateCanonicalMetadata({ locale, path: `manual/${slug}`, title, description }),
     title,
-    description: excerpt,
+    description,
   };
 }
 

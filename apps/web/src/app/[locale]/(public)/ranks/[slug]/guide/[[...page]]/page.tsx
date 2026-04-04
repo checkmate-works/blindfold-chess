@@ -83,13 +83,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalPath =
     pageNumber > 1 ? `ranks/${slug}/guide/${pageNumber}` : `ranks/${slug}/guide`;
 
+  const title =
+    pageNumber > 1 ? `${t('title', { rankName })} - Page ${pageNumber}` : t('title', { rankName });
+  const description = t('description', { rankName });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: canonicalPath }),
-    title:
-      pageNumber > 1
-        ? `${t('title', { rankName })} - Page ${pageNumber}`
-        : t('title', { rankName }),
-    description: t('description', { rankName }),
+    ...generateCanonicalMetadata({ locale, path: canonicalPath, title, description }),
+    title,
+    description,
   };
 }
 

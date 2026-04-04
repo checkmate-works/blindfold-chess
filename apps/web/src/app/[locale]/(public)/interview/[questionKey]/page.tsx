@@ -46,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const label = tQuestions(`${questionKey}.label` as never);
 
+  const title = t('title', { label });
+  const description = t('description', { label });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `interview/${questionKey}` }),
-    title: t('title', { label }),
-    description: t('description', { label }),
+    ...generateCanonicalMetadata({ locale, path: `interview/${questionKey}`, title, description }),
+    title,
+    description,
   };
 }
 

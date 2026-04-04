@@ -17,9 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'forgotPassword' });
 
+  const title = t('title');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'forgot-password' }),
-    title: t('title'),
+    ...generateCanonicalMetadata({ locale, path: 'forgot-password', title }),
+    title,
     robots: { index: false, follow: false },
   };
 }

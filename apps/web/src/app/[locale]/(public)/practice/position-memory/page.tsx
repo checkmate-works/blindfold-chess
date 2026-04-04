@@ -33,10 +33,13 @@ type Props = {
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale });
+  const title = t('practice.positionMemory.title');
+  const description = t('practice.positionMemory.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/position-memory' }),
-    title: t('practice.positionMemory.title'),
-    description: t('practice.positionMemory.description'),
+    ...generateCanonicalMetadata({ locale, path: 'practice/position-memory', title, description }),
+    title,
+    description,
   };
 }
 

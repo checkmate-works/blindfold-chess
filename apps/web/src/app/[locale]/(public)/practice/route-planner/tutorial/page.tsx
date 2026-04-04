@@ -25,10 +25,18 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const title = `${t('practice.routePlanner.title')} - ${t('practice.routePlanner.tutorial.title')}`;
+  const description = t('practice.routePlanner.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/route-planner/tutorial' }),
-    title: `${t('practice.routePlanner.title')} - ${t('practice.routePlanner.tutorial.title')}`,
-    description: t('practice.routePlanner.description'),
+    ...generateCanonicalMetadata({
+      locale,
+      path: 'practice/route-planner/tutorial',
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 

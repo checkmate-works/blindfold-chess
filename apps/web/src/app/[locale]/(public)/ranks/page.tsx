@@ -37,10 +37,13 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.ranks' });
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'ranks' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'ranks', title, description }),
+    title,
+    description,
   };
 }
 

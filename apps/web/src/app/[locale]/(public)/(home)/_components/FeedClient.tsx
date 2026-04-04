@@ -5,25 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AdBannerConfig } from '@/lib/ad';
 
 import { getFeed } from '../_actions/getFeed';
-import type { FeedItem } from '../_lib/types';
+import { buildDisplayItems } from '../_lib/feed-display';
+import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
 import { NativeAdCard } from './NativeAdCard';
 
-/**
- * Number of feed items between each native ad insertion.
- *
- * @design Native ads (NativeAdCard) are interleaved client-side rather than
- * stored in feed_items because ad display is presentation logic, not user
- * activity. Ads cycle through the `adBanners` array via modulo indexing.
- * When `adBanners` is empty (ads disabled or none active), no ads appear.
- */
-const AD_INTERVAL = 5;
-
-type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
-
 type Props = {
-  initialItems: FeedItem[];
   initialCursor: string | null;
   locale: string;
   showMoreLabel: string;
@@ -33,10 +21,15 @@ type Props = {
   adLabel?: string;
   sponsorLabel?: string;
   sponsoredLinkLabel?: string;
+  /**
+   * Number of feed items already rendered server-side. Used to continue the
+   * ad insertion cycle seamlessly (i.e. the first client-loaded item is treated
+   * as item N+1 for AD_INTERVAL calculation).
+   */
+  adIndexOffset?: number;
 };
 
 export function FeedClient({
-  initialItems,
   initialCursor,
   locale,
   showMoreLabel,
@@ -46,27 +39,18 @@ export function FeedClient({
   adLabel = '',
   sponsorLabel = '',
   sponsoredLinkLabel = '',
+  adIndexOffset = 0,
 }: Props) {
-  const [items, setItems] = useState<FeedItem[]>(initialItems);
+  const [items, setItems] = useState<FeedItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
   const isLoadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // 広告を含む表示要素の構築
-  // feed items と ad items を交互に配置するため、
-  // 統一的なインデックスで管理する
-  const displayItems = useMemo(() => {
-    const result: DisplayItem[] = [];
-    items.forEach((item, index) => {
-      result.push({ type: 'feed', item });
-      if (adBanners.length > 0 && (index + 1) % AD_INTERVAL === 0) {
-        const adIndex = Math.floor(index / AD_INTERVAL) % adBanners.length;
-        result.push({ type: 'ad', ad: adBanners[adIndex] });
-      }
-    });
-    return result;
-  }, [items, adBanners]);
+  const displayItems = useMemo(
+    () => buildDisplayItems(items, adBanners, adIndexOffset),
+    [items, adBanners, adIndexOffset]
+  );
 
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {
@@ -136,10 +120,6 @@ export function FeedClient({
     observer.observe(el);
     return () => observer.disconnect();
   }, [cursor, loadMore]);
-
-  if (items.length === 0) {
-    return null;
-  }
 
   return (
     <div>

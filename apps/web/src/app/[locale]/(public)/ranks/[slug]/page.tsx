@@ -59,10 +59,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const rankName = ranksT(`rankNames.${slug as RankSlug}`);
 
+  const title = t('title', { rankName });
+  const description = t('description', { rankName });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `ranks/${slug}` }),
-    title: t('title', { rankName }),
-    description: t('description', { rankName }),
+    ...generateCanonicalMetadata({ locale, path: `ranks/${slug}`, title, description }),
+    title,
+    description,
   };
 }
 

@@ -16,10 +16,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'contact.success' });
 
+  const title = t('title');
+  const description = t('message');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'contact/success' }),
-    title: t('title'),
-    description: t('message'),
+    ...generateCanonicalMetadata({ locale, path: 'contact/success', title, description }),
+    title,
+    description,
     robots: 'noindex',
   };
 }

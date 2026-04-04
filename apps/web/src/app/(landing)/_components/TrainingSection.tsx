@@ -1,7 +1,7 @@
 import type { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { FaBrain, FaChessKnight } from 'react-icons/fa';
+import { FaPalette, FaRoute } from 'react-icons/fa';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -18,6 +18,9 @@ export function TrainingSection({ locale, t }: Props) {
       <div className="max-w-6xl mx-auto space-y-16">
         <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold">{t('training.title')}</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            {t('training.description')}
+          </p>
         </div>
         <div className="flex justify-center mb-8">
           <Link
@@ -30,20 +33,20 @@ export function TrainingSection({ locale, t }: Props) {
 
         <div className="grid md:grid-cols-2 gap-8">
           <TrainingCard
-            icon={<FaBrain />}
+            icon={<FaPalette />}
             iconColor="blue"
-            title={t('training.positionMemory.title')}
-            description={t('training.positionMemory.description')}
-            href={`/${locale}/practice/position-memory`}
-            cta={t('training.positionMemory.cta')}
+            title={t('training.squareColors.title')}
+            description={t('training.squareColors.description')}
+            href={`/${locale}/practice/square-colors`}
+            cta={t('training.squareColors.cta')}
           />
           <TrainingCard
-            icon={<FaChessKnight />}
+            icon={<FaRoute />}
             iconColor="orange"
-            title={t('training.knightTour.title')}
-            description={t('training.knightTour.description')}
-            href={`/${locale}/practice/knight-tour`}
-            cta={t('training.knightTour.cta')}
+            title={t('training.routePlanner.title')}
+            description={t('training.routePlanner.description')}
+            href={`/${locale}/practice/route-planner`}
+            cta={t('training.routePlanner.cta')}
           />
         </div>
       </div>

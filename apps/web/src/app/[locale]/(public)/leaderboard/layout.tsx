@@ -15,12 +15,15 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'metadata.leaderboard' });
+
+  const title = t('title');
+  const description = t('description');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'leaderboard' }),
-    title: t('leaderboard.title'),
-    description: t('leaderboard.description'),
+    ...generateCanonicalMetadata({ locale, path: 'leaderboard', title, description }),
+    title,
+    description,
   };
 }
 

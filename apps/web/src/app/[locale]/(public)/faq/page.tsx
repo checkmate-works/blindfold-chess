@@ -21,10 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'faq' });
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'faq' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'faq', title, description }),
+    title,
+    description,
   };
 }
 
@@ -91,6 +94,8 @@ export default async function FAQPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* NOTE: FAQPage rich results are limited to government/healthcare sites since Aug 2023.
+          Keeping schema for semantic markup purposes, but no rich result expected. */}
       <JsonLd data={generateFAQPageSchema(faqSchemaItems)} />
       <PageTitle>{t('title')}</PageTitle>
 

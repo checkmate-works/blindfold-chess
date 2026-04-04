@@ -20,11 +20,15 @@ export const generateStaticParams = generateLocaleStaticParams;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'metadata.newGame' });
+
+  const title = t('title');
+  const description = t('description');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/new' }),
-    title: t('newGame.title'),
+    ...generateCanonicalMetadata({ locale, path: 'games/new', title, description }),
+    title,
+    description,
   };
 }
 

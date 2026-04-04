@@ -16,10 +16,13 @@ export async function generateMetadata({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'metadata.company' });
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'company' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'company', title, description }),
+    title,
+    description,
   };
 }
 

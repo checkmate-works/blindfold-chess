@@ -22,10 +22,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
+  const title = t('practice.algebraicNotation.pageTitle');
+  const description = t('practice.algebraicNotation.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/algebraic-notation' }),
-    title: t('practice.algebraicNotation.pageTitle'),
-    description: t('practice.algebraicNotation.description'),
+    ...generateCanonicalMetadata({
+      locale,
+      path: 'practice/algebraic-notation',
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 

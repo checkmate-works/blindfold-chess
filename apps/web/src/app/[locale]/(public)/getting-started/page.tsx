@@ -5,6 +5,8 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
+import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
+import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -22,12 +24,15 @@ export const generateStaticParams = generateLocaleStaticParams;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'gettingStarted' });
+  const t = await getTranslations({ locale, namespace: 'metadata.gettingStarted' });
+
+  const title = t('title');
+  const description = t('description');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'getting-started' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'getting-started', title, description }),
+    title,
+    description,
   };
 }
 
@@ -37,6 +42,11 @@ export default async function GettingStartedPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gettingStarted' });
+  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
+
+  const teaserCards = buildRankTeaserCards(locale, tRanks).map((props) => (
+    <RankCard key={props.slug} {...props} />
+  ));
 
   return (
     <div className="space-y-8">
@@ -76,6 +86,7 @@ export default async function GettingStartedPage({ params }: Props) {
               <FaDumbbell />
             </div>
             <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
+            <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
             <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
               <p className="text-sm font-bold text-foreground">
                 {t('cards.train.previewQuestion')}
@@ -127,6 +138,21 @@ export default async function GettingStartedPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Belt Ranks Teaser */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold text-foreground text-center">{t('ranks.title')}</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{teaserCards}</div>
+
+          <div className="text-center">
+            <Link href="/ranks">
+              <Button asChild variant="secondary" size="lg">
+                {t('ranks.viewAll')}
+              </Button>
+            </Link>
+          </div>
+        </section>
 
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </PagePanel>

@@ -25,10 +25,18 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const title = `${t('practice.diagonalQuiz.title')} - ${t('practice.diagonalQuiz.tutorial.title')}`;
+  const description = t('practice.diagonalQuiz.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/diagonal-quiz/tutorial' }),
-    title: `${t('practice.diagonalQuiz.title')} - ${t('practice.diagonalQuiz.tutorial.title')}`,
-    description: t('practice.diagonalQuiz.description'),
+    ...generateCanonicalMetadata({
+      locale,
+      path: 'practice/diagonal-quiz/tutorial',
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 

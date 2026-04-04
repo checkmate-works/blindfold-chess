@@ -61,7 +61,7 @@ export async function generateMetadata({
       apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
     },
     openGraph: {
-      title: siteName,
+      title: seoSiteName,
       description,
       siteName: siteName,
       type: 'website',
@@ -77,7 +77,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: siteName,
+      title: seoSiteName,
       description,
       images: ['/logo.png'],
     },

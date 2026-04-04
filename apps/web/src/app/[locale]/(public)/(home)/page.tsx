@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { FaTachometerAlt } from 'react-icons/fa';
 
+import type { AdBannerConfig } from '@/lib/ad';
 import { getAdBannersForFeed, shouldShowAdsForUser } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
@@ -12,9 +13,13 @@ import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { FeedCard } from './_components/FeedCard';
 import { FeedClient } from './_components/FeedClient';
+import { NativeAdCard } from './_components/NativeAdCard';
 import { VsAiCard } from './_components/VsAiCard';
+import { buildDisplayItems } from './_lib/feed-display';
 import { getFeedData } from './_lib/queries';
+import type { FeedItem } from './_lib/types';
 
 /**
  * Home Page (ホーム — `/[locale]`)
@@ -22,17 +27,27 @@ import { getFeedData } from './_lib/queries';
  * @description
  * The locale-prefixed home page (e.g. `/en`, `/ja`). Distinct from the root
  * dashboard (`/`). Displays a VS AI game section and a timeline feed of topic
- * posts with cursor-based infinite scrolling. Initial data is fetched
- * server-side for SEO; additional pages are loaded client-side via Server Action.
+ * posts with cursor-based infinite scrolling. Initial feed items are rendered
+ * server-side (SSR) for SEO; additional pages are loaded client-side via
+ * Server Action.
  *
  * @flow
  * - VS AI section: Resume or start a new AI game (VsAiCard)
  * - Timeline Feed: Chronological feed of topic posts across all topic types
  * - Infinite scroll: Loads more items when the user scrolls near the bottom
+ *
+ * @design SSR + loading.tsx
+ * Initial feed items (INITIAL_FEED_SIZE) are rendered by ServerFeedList (Server
+ * Component) so the HTML includes real content for Googlebot. Because the page
+ * is `force-dynamic`, Next.js shows `loading.tsx` as a Suspense fallback during
+ * server-side data fetching. This skeleton flash is intentional — the
+ * alternative (no loading.tsx) would keep the previous page visible during
+ * navigation, which is a worse UX. The loading skeleton does NOT affect SEO;
+ * Googlebot waits for the final streamed HTML.
  */
 export const dynamic = 'force-dynamic';
 
-const INITIAL_FEED_SIZE = 10;
+const INITIAL_FEED_SIZE = 20;
 
 type Props = {
   params: Promise<{
@@ -44,10 +59,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata.home' });
 
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: '' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: '', title, description }),
+    title,
+    description,
   };
 }
 
@@ -68,6 +86,7 @@ export default async function HomePage({ params }: Props) {
   // Always prefetch ad banners in parallel to eliminate waterfall.
   // getAdBannersForFeed is wrapped with unstable_cache (60s TTL),
   // so the cost of calling it even when showAds=false is negligible.
+  // NOTE: Monitor TTFB as feed/ad queries grow. Consider pagination or caching if response time degrades.
   const [initialFeed, showAds, adBannersAll] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
@@ -96,9 +115,9 @@ export default async function HomePage({ params }: Props) {
 
         <DashboardCard>
           <VsAiCard locale={locale} />
-          <FeedClient
-            initialItems={initialFeed.items}
-            initialCursor={initialFeed.nextCursor}
+          {/* SSR: Initial feed items rendered server-side for SEO */}
+          <ServerFeedList
+            items={initialFeed.items}
             locale={locale}
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
@@ -108,8 +127,84 @@ export default async function HomePage({ params }: Props) {
             sponsorLabel={tCommon('sponsor')}
             sponsoredLinkLabel={tCommon('sponsoredLink')}
           />
+          {/* Client: Infinite scroll for additional items (page 2+) */}
+          <FeedClient
+            initialCursor={initialFeed.nextCursor}
+            locale={locale}
+            showMoreLabel={tTopics('showMore')}
+            justNowLabel={tSquares('justNow')}
+            newReplyTemplate={tSquares('newReply', { time: '{time}' })}
+            adBanners={adBanners}
+            adLabel={tCommon('adLabel')}
+            sponsorLabel={tCommon('sponsor')}
+            sponsoredLinkLabel={tCommon('sponsoredLink')}
+            adIndexOffset={initialFeed.items.length}
+          />
         </DashboardCard>
       </div>
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Server-rendered feed list (SSR for SEO)
+// ---------------------------------------------------------------------------
+
+type ServerFeedListProps = {
+  items: FeedItem[];
+  locale: string;
+  showMoreLabel: string;
+  justNowLabel: string;
+  newReplyTemplate: string;
+  adBanners: AdBannerConfig[];
+  adLabel: string;
+  sponsorLabel: string;
+  sponsoredLinkLabel: string;
+};
+
+function ServerFeedList({
+  items,
+  locale,
+  showMoreLabel,
+  justNowLabel,
+  newReplyTemplate,
+  adBanners,
+  adLabel,
+  sponsorLabel,
+  sponsoredLinkLabel,
+}: ServerFeedListProps) {
+  if (items.length === 0) return null;
+
+  const displayItems = buildDisplayItems(items, adBanners);
+
+  return (
+    <div>
+      {displayItems.map((displayItem, index) => {
+        if (displayItem.type === 'ad') {
+          return (
+            <div key={`ad-${index}`} className="border-b border-border">
+              <NativeAdCard
+                ad={displayItem.ad}
+                adLabel={adLabel}
+                sponsorLabel={sponsorLabel}
+                sponsoredLinkLabel={sponsoredLinkLabel}
+                locale={locale}
+              />
+            </div>
+          );
+        }
+        return (
+          <div key={displayItem.item.id} className="border-b border-border">
+            <FeedCard
+              item={displayItem.item}
+              locale={locale}
+              showMoreLabel={showMoreLabel}
+              justNowLabel={justNowLabel}
+              newReplyTemplate={newReplyTemplate}
+            />
+          </div>
+        );
+      })}
+    </div>
   );
 }

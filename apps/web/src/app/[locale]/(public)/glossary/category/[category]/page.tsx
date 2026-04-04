@@ -34,10 +34,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const categoryT = await getTranslations({ locale, namespace: 'glossary.categories' });
   const categoryName = categoryT(category);
 
+  const title = t('title', { category: categoryName });
+  const description = t('description', { category: categoryName });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `glossary/category/${category}` }),
-    title: t('title', { category: categoryName }),
-    description: t('description', { category: categoryName }),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `glossary/category/${category}`,
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 
