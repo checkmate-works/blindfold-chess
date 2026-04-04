@@ -22,12 +22,12 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'metadata.learn' });
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'learn' }),
-    title: t('learn.title'),
-    description: t('learn.description'),
+    title: t('title'),
+    description: t('description'),
   };
 }
 

@@ -22,7 +22,7 @@ export const generateStaticParams = generateLocaleStaticParams;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'gettingStarted' });
+  const t = await getTranslations({ locale, namespace: 'metadata.gettingStarted' });
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'getting-started' }),

@@ -45,12 +45,12 @@ export const generateStaticParams = generateLocaleStaticParams;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'metadata.practice' });
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice' }),
-    title: t('practice.title'),
-    description: t('practice.description'),
+    title: t('title'),
+    description: t('description'),
   };
 }
 

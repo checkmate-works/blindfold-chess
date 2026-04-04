@@ -4,8 +4,8 @@
     "seoSiteName": "Blindfold Chess",
     "siteDescription": "A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.",
     "home": {
-      "title": "Home",
-      "description": "A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills."
+      "title": "Blindfold Chess Training - Free Online Visualization Practice",
+      "description": "Play blindfold chess against AI, follow a structured training curriculum, and share knowledge through social features."
     },
     "play": {
       "title": "Play",
@@ -14,18 +14,6 @@
     "preferences": {
       "title": "Settings",
       "description": "Customize your blindfold chess experience with personalized settings and preferences."
-    },
-    "glossary": {
-      "title": "Chess Glossary",
-      "description": "Learn chess terminology with our comprehensive glossary of chess terms and definitions.",
-      "category": {
-        "title": "Category: {category}",
-        "description": "Browse chess terms in the {category} category. Learn chess terminology and improve your understanding."
-      },
-      "letter": {
-        "title": "Terms starting with {letter}",
-        "description": "Chess terms and definitions starting with the letter {letter}."
-      }
     },
     "company": {
       "title": "Company Information",
@@ -143,9 +131,41 @@
       "title": "Leaderboard",
       "description": "See the top players across all practice modules"
     },
+    "practice": {
+      "title": "Blindfold Chess Practice Exercises",
+      "description": "Hone your blindfold chess skills with a variety of free interactive exercises — coordinate recognition, square-color drills, legal-move quizzes, and more. Boost your visualization ability at your own pace."
+    },
+    "gettingStarted": {
+      "title": "Getting Started with Blindfold Chess",
+      "description": "Get started with blindfold chess. Step-by-step guidance on playing your first AI game, making the most of practice drills, and joining the community. Begin your training journey today."
+    },
+    "newGame": {
+      "title": "Play Blindfold Chess Against AI",
+      "description": "Play blindfold chess against Stockfish, one of the strongest chess engines. Start from a standard position, a custom setup, or import PGN. Visual hints and other assistance features are available."
+    },
+    "articles": {
+      "title": "Blindfold Chess Articles & Guides",
+      "description": "Read in-depth articles about blindfold chess techniques, training methods, and strategies. Stay updated with the latest guides and insights to improve your visualization and calculation skills."
+    },
+    "learn": {
+      "title": "Blindfold Chess Knowledge & Theory",
+      "description": "Explore techniques and theories for blindfold chess through articles organized by category. Topics include piece movement, coordinates, notation, visualization methods, and memory techniques — learn at your own pace."
+    },
     "ranks": {
-      "title": "Ranks",
-      "description": "Belt ranking system for blindfold chess training — progress from 5th Kyū to 10th Dan"
+      "title": "Belt Ranking System",
+      "description": "A unique curriculum designed to build the skills needed to defeat AI at blindfold chess. Aim for the black belt."
+    },
+    "glossary": {
+      "title": "Chess Glossary - Terms & Definitions",
+      "description": "Look up chess terminology in our comprehensive glossary. Browse alphabetically or by category to learn definitions of chess terms, tactics, strategies, and positional concepts used in blindfold chess.",
+      "category": {
+        "title": "Category: {category}",
+        "description": "Browse chess terms in the {category} category. Learn chess terminology and improve your understanding."
+      },
+      "letter": {
+        "title": "Terms starting with {letter}",
+        "description": "Chess terms and definitions starting with the letter {letter}."
+      }
     },
     "rankDetail": {
       "title": "{rankName} - Ranks",
@@ -348,7 +368,6 @@
   },
   "gettingStarted": {
     "title": "Let's Get Started!",
-    "description": "Learn how to get started with blindfold chess training and improve your visualization skills.",
     "headline": "Let's try blindfold chess",
     "cards": {
       "train": {
@@ -394,7 +413,6 @@
   },
   "practice": {
     "title": "Practice",
-    "description": "Improve your blindfold chess skills with interactive exercises",
     "modulesTitle": "Practice Modules",
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
@@ -1205,7 +1223,7 @@
     }
   },
   "home": {
-    "pageTitle": "Home",
+    "pageTitle": "Latest Activity",
     "gameList": {
       "title": "Your Games",
       "noGames": "No games yet",
@@ -1832,7 +1850,6 @@
   },
   "articles": {
     "pageTitle": "Articles",
-    "pageDescription": "Articles about Blindfold Chess",
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
     "moreArticles": "More articles",
