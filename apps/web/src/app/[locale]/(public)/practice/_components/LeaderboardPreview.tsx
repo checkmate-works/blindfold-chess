@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { LeaderboardTableHeader } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardTableHeader';
 import { LeaderboardTableRow } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardTableRow';

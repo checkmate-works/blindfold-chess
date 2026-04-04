@@ -2,9 +2,8 @@
 
 import { type ReactNode, useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaUndo } from 'react-icons/fa';
 
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';

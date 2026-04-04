@@ -1,7 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { parseAsString, useQueryState } from 'nuqs';
 
 import { OPENING_CATEGORIES } from '../_lib/categories';

@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { notifyGameListUpdated } from '@/config';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
 

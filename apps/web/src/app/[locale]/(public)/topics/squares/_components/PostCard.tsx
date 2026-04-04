@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BaseTopicPostCard } from '@/app/[locale]/(public)/topics/_components';
 

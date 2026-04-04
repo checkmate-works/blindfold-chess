@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 

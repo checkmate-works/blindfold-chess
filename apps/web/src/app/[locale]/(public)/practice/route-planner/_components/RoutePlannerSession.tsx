@@ -2,11 +2,11 @@
 
 import { useCallback } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';

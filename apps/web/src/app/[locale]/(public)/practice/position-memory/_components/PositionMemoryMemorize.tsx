@@ -1,6 +1,5 @@
-import { useTranslations } from 'next-intl';
-
 import { BoardOverlay, Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';

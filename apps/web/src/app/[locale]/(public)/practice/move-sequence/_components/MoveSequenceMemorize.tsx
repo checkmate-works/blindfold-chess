@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { BoardSkeleton, Button, ChessBoard } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

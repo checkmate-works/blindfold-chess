@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';

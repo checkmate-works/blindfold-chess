@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
 

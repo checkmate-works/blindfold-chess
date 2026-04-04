@@ -1,9 +1,9 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRedo } from 'react-icons/fa';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';

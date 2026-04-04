@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';

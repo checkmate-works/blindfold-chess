@@ -2,12 +2,13 @@
 
 import { useTransition } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import { slugToDisplayName } from '@/lib/achievements/display';

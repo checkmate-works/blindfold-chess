@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';

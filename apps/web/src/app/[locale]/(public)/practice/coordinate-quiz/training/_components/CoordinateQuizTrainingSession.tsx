@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';

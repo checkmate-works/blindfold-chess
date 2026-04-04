@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 export function LeaderboardTableHeader() {
   const t = useTranslations('leaderboard');

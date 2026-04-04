@@ -10,9 +10,9 @@ import {
   useState,
 } from 'react';
 
-import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 import { createClient } from '@/lib/supabase/client';

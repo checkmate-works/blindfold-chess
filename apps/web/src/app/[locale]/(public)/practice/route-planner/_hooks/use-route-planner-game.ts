@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';

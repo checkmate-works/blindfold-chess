@@ -1,10 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { MAX_GAMES } from '@/config';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
 import type { Locale } from '@/app/[locale]/_lib/types';

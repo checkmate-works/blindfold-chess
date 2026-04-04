@@ -1,7 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import * as Sentry from '@sentry/nextjs';
 
 import type { Subscription } from '@/lib/db';

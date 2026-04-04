@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getLeaderboardIcon } from '../_lib/icons';
 import type { LeaderboardModule, LeaderboardPeriod } from '../_lib/types';

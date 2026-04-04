@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton, Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
 import { useCopyToClipboard } from '@/app/[locale]/(public)/practice/_hooks/use-copy-to-clipboard';

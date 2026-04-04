@@ -2,8 +2,9 @@
 
 import { useEffect, useId, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BELT_COLOR_HEX } from '@/lib/db/data/ranks';
 import type { GrantedRank } from '@/lib/db/data/ranks';

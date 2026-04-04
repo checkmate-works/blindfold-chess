@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 

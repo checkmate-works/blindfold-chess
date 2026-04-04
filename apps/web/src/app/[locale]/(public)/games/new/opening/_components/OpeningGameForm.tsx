@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { parsePgn } from '@blindfold-chess/features/chess-core';
 
 import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';

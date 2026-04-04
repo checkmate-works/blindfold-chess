@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { shuffleArray } from '@blindfold-chess/features/common';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';

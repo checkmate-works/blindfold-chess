@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { HiLockClosed } from 'react-icons/hi2';
 
 import { Modal } from '@/app/[locale]/_components/Modal';

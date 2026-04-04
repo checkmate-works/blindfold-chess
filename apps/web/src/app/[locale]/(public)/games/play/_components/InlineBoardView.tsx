@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessBoard } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown, FaEye } from 'react-icons/fa';
 

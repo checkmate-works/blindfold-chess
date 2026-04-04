@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';

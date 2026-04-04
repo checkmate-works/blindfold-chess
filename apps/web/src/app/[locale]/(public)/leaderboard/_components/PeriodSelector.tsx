@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { LeaderboardPeriod } from '../_lib/types';
 import { VALID_PERIODS } from '../_lib/types';

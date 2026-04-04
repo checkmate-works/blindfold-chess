@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getEloRating } from '@/lib/chess/elo';
 import type { SkillLevel } from '@/lib/types';

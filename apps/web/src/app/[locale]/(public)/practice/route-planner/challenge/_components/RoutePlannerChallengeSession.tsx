@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { BoardOverlay, Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight, FaFlagCheckered, FaHeart, FaRegHeart, FaUndo } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 

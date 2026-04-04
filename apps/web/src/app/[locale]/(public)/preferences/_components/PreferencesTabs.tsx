@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { AppearanceSettings } from './AppearanceSettings';
 import { ControlSettings } from './ControlSettings';

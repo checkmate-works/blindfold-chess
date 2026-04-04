@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildChallengePath } from '@/app/[locale]/(public)/leaderboard/_lib/types';

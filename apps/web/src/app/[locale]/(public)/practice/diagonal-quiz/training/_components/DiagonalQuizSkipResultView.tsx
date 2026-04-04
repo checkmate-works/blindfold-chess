@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRedo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';

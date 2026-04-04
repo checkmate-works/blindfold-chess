@@ -1,8 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRegComment } from 'react-icons/fa';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';

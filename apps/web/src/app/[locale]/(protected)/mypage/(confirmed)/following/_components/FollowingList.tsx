@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { toggleFollow } from '@/app/[locale]/(public)/profile/[username]/_actions/toggleFollow';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';

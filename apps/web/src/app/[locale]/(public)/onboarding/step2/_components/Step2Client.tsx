@@ -2,8 +2,9 @@
 
 import { useCallback } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_components/PreferenceOption';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

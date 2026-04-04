@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
-
 import { Link } from '@/i18n/routing';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 

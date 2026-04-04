@@ -1,9 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { PieceSelector } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 

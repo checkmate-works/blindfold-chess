@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';

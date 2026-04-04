@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFen } from '@blindfold-chess/features/chess-core';
 
 import { parseMoveSequence } from '../_lib/pgn-parser';

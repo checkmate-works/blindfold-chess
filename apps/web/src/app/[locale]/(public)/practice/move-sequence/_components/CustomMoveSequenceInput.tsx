@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaInfoCircle, FaLink } from 'react-icons/fa';
 
 import { PgnInput } from '@/app/[locale]/_components';

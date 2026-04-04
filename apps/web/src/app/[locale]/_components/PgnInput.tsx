@@ -2,9 +2,8 @@
 
 import { useMemo, useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getPgnSuggestion } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 

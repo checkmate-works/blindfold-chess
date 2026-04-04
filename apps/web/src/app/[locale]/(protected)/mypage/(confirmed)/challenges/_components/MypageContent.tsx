@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 

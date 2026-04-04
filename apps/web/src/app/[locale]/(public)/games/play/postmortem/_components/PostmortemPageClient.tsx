@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
 import { getEvaluationIcon } from '@/lib/evaluation';

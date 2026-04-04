@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button, ProgressBar } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaCheck, FaEye, FaInfoCircle, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';

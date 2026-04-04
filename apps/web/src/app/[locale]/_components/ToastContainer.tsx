@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import type { ToastType } from '@/app/[locale]/_contexts/ToastContext';

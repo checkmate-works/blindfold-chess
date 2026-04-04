@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useTransition } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 

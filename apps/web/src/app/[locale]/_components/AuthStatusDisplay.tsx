@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
 import { useAuth } from '../_contexts/AuthContext';

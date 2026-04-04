@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { BoardOverlay } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';

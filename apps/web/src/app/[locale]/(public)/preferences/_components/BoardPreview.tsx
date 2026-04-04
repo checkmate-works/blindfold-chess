@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessBoard } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

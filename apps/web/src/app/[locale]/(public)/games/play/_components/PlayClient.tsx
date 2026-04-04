@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { notFound, useRouter } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

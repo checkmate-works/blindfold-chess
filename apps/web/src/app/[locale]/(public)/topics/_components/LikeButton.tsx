@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';

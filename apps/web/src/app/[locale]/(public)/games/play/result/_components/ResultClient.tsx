@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { FaChartLine, FaCheck, FaEye, FaMinus, FaPlus, FaTimes } from 'react-icons/fa';
 

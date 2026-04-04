@@ -2,9 +2,8 @@
 
 import { useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/boardThemes';

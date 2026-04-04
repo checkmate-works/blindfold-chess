@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
 
 import type { PresetPosition } from '../_data/positions';

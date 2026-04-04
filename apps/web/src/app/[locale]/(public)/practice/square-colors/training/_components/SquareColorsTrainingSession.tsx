@@ -2,10 +2,10 @@
 
 import { useCallback } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/_hooks/use-batch-training-session';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';

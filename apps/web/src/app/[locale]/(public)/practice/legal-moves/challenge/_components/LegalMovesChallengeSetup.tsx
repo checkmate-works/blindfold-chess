@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';

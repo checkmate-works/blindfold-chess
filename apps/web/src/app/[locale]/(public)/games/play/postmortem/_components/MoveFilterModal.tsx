@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { Button, InfoModal } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaCheck, FaStar } from 'react-icons/fa';
 
 import type { EvaluationFilters } from '../_lib';

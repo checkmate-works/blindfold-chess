@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { GameSortOption, SortDirection } from '@/lib/types';
 

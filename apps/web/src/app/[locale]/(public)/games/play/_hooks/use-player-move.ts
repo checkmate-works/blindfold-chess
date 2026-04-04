@@ -1,7 +1,6 @@
 import { useCallback, useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateGameMove } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';

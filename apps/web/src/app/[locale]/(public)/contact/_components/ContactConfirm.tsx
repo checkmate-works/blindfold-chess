@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { submitContactForm } from '../_lib/contact-action';
 import type { ContactFormData } from '../_lib/contact-schema';

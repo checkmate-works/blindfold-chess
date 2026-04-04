@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { validatePgnWithDetails } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 

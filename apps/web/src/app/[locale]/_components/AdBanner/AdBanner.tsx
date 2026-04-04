@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { AdBannerConfig } from '@/lib/ad';
 

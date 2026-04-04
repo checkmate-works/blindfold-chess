@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { MIN_PASSWORD_LENGTH } from '@/config';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import {
   getPasswordValidationError,

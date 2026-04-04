@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { BoardOverlay } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
 import type { CoordinateQuestion } from '../_lib/types';

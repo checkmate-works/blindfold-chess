@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';

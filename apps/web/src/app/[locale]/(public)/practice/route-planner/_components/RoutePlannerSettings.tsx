@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PIECES } from '../_lib/utils';
 import type { RoutePlannerPieceSelection } from '../_lib/utils';

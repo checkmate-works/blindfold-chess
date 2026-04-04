@@ -1,4 +1,4 @@
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 type Props = {
   isCorrect: boolean | null; // null means no feedback yet/reset

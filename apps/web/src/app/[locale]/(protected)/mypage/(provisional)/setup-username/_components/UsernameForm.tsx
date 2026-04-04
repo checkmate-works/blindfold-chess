@@ -2,10 +2,10 @@
 
 import { FormEvent, useCallback, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Button, TextInput } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { validateUsername } from '@/lib/username';
 

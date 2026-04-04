@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
 import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import type { Locale } from '@/app/[locale]/_lib/types';

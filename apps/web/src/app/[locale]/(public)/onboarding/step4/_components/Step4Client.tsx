@@ -2,10 +2,10 @@
 
 import { useCallback } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

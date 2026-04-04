@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { parseAsString, useQueryState } from 'nuqs';
 
 import { OPENING_CATEGORIES, classifyEcoCode } from '../_lib/categories';

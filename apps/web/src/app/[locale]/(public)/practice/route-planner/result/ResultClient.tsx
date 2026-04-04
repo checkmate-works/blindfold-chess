@@ -2,8 +2,9 @@
 
 import { useMemo } from 'react';
 
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';

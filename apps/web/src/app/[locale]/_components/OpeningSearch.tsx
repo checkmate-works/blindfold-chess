@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 export type Opening = {
   slug: string;

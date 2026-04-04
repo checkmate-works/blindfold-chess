@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { BoardOverlay, Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/_components/AnswerFeedback';

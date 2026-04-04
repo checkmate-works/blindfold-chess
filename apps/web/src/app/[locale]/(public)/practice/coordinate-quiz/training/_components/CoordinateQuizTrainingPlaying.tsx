@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';

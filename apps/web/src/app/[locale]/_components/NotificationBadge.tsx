@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { NOTIFICATIONS_READ_EVENT } from '@/config';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { FiBell } from 'react-icons/fi';
 
 import { getUnreadCount } from '@/app/[locale]/(protected)/mypage/(confirmed)/notifications/_actions';

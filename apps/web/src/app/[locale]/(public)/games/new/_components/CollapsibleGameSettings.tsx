@@ -3,8 +3,7 @@
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChevronDown } from 'react-icons/fa';
 
 import { GameSettingsContent } from '@/app/[locale]/(public)/preferences/_components/GameSettingsContent';

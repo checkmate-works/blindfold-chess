@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
-
 import { ChessPiece, Square } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 

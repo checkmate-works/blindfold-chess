@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { MIN_PASSWORD_LENGTH } from '@/config';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import {
   getPasswordValidationError,
