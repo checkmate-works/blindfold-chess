@@ -19,6 +19,8 @@
  * `true` when the user's first-ever score for a leaderboard key is recorded;
  * `false` when an existing best score is surpassed.
  */
+import type { AdBannerConfig } from '@/lib/ad';
+
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 type FeedItemBase = {
@@ -66,3 +68,6 @@ export type FeedResponse = {
   items: FeedItem[];
   nextCursor: string | null;
 };
+
+/** A single entry in the interleaved feed + ad display list. */
+export type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
