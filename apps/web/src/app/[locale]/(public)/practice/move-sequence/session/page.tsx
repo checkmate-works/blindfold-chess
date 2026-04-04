@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { decodeMoveSequenceFromBase64, validateFEN } from '../_lib/share';
@@ -30,10 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...generateCanonicalMetadata({
       locale,
       path: 'practice/move-sequence/session',
-      title,
+      title: title,
       description,
     }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

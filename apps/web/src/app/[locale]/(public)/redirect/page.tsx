@@ -5,6 +5,7 @@ import { isInternalUrl } from '@/lib/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedirectActions } from './_components/RedirectActions';
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'redirect' });
 
   return {
-    title: t('title'),
+    title: resolveTitle(t('title'), locale),
     robots: { index: false, follow: false },
   };
 }

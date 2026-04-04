@@ -14,7 +14,7 @@ import {
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OpeningSortTabs } from '../_components';
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: `topics/openings/${slug}`, title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

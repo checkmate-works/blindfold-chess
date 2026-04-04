@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getManualArticle } from '../_lib/utils';
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props) {
 
   return {
     ...generateCanonicalMetadata({ locale, path: `manual/${slug}`, title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

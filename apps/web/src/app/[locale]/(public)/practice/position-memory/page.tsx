@@ -16,7 +16,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionMemoryPageContent } from './_components/PositionMemoryPageContent';
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props) {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'practice/position-memory', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

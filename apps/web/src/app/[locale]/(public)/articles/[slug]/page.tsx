@@ -12,7 +12,7 @@ import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticle } from '../_lib/queries';
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) {
     const t = await getTranslations({ locale, namespace: 'articles' });
     return {
-      title: t('articleNotFound'),
+      title: resolveTitle(t('articleNotFound'), locale),
     };
   }
 
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: `articles/${slug}`, title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

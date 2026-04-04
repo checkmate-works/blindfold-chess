@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { decodeFensFromBase64, validateFEN } from '../_lib/utils';
@@ -28,10 +28,10 @@ export async function generateMetadata({ params }: Props) {
     ...generateCanonicalMetadata({
       locale,
       path: 'practice/position-memory/session',
-      title,
+      title: title,
       description,
     }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

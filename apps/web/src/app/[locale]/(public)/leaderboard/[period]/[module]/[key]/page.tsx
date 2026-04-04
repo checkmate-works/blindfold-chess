@@ -15,6 +15,7 @@ import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_
 import { Divider, PagePanel } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -62,7 +63,7 @@ export async function generateMetadata({ params }: Props) {
   const periodLabel = t(`period.${validated.period}`);
 
   return {
-    title: `${title} (${periodLabel}) — ${t('title')}`,
+    title: resolveTitle(`${title} (${periodLabel}) — ${t('title')}`, locale),
   };
 }
 

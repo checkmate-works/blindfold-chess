@@ -14,6 +14,7 @@ import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
+import { buildPageTitle } from './_lib/metadata';
 import { Providers } from './_lib/providers';
 
 const inter = Inter({
@@ -61,7 +62,7 @@ export async function generateMetadata({
       apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
     },
     openGraph: {
-      title: seoSiteName,
+      title: buildPageTitle(seoSiteName, locale),
       description,
       siteName: siteName,
       type: 'website',
@@ -77,7 +78,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: seoSiteName,
+      title: buildPageTitle(seoSiteName, locale),
       description,
       images: ['/logo.png'],
     },

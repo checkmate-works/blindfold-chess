@@ -8,7 +8,7 @@ import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { FAQClient } from './_components/FAQClient';
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'faq', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

@@ -10,7 +10,7 @@ import { db, profiles } from '@/lib/db';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 import { ChangePasswordForm, ProfileForm } from './_components';
 
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'mypage/profile', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
     robots: { index: false, follow: false },
   };

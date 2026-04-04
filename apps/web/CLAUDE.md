@@ -36,6 +36,11 @@ Route segment names use **singular or plural form depending on the nature of the
 - **Link Components** - Always use Next.js Link with required `href` attributes for crawler accessibility
   - Reference: https://nextjs.org/learn/seo/on-page-seo#nextlink
 - **Semantic HTML** - Use proper HTML elements for better SEO
+- **Title Suffix Rule** - Page titles use a dynamic suffix to avoid keyword stuffing:
+  - If the title contains the SEO site name phrase ("Blindfold Chess" / "目隠しチェス") → suffix is the brand name ("Shingan Chess" / "心眼チェス")
+  - Otherwise → suffix is the SEO site name ("Blindfold Chess" / "目隠しチェス")
+  - Use `resolveTitle(title, locale)` from `_lib/metadata.ts` for the `title` field in `generateMetadata`
+  - Use `buildPageTitle(title, locale)` for OGP titles and other contexts needing the full title string
 
 ## Technology Stack
 

@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { ContactConfirm } from '../_components/ContactConfirm';
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'contact/confirm', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
     robots: 'noindex',
   };

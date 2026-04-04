@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/app/_components';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'contact/success', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
     robots: 'noindex',
   };

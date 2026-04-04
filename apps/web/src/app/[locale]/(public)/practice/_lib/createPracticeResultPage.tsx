@@ -4,10 +4,13 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
-import type { LeaderboardModule, LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import type {
+  LeaderboardModule,
+  LeaderboardRow,
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 // ---------------------------------------------------------------------------
@@ -26,7 +29,7 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
     const t = await getTranslations({ locale, namespace: 'practice' });
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
-      title: `${t(`${config.i18nKey}.title`)} - ${t('result')}`,
+      title: resolveTitle(`${t(`${config.i18nKey}.title`)} - ${t('result')}`, locale),
     };
   };
 }

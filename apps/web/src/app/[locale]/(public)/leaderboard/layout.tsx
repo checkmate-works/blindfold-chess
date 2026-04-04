@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 type Props = {
   children: ReactNode;
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'leaderboard', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

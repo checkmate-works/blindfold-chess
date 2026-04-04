@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { buildPageTitle, generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
 
 type Props = {
   children: React.ReactNode;
@@ -10,10 +10,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const [t, metaT] = await Promise.all([
-    getTranslations({ locale, namespace: 'metadata.play' }),
-    getTranslations({ locale, namespace: 'metadata' }),
-  ]);
+  const t = await getTranslations({ locale, namespace: 'metadata.play' });
 
   const title = t('title');
   const description = t('description');
@@ -22,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...generateCanonicalMetadata({ locale, path: 'games/play', title, description }),
     title: {
       default: title,
-      template: `%s | ${title} | ${metaT('seoSiteName')}`,
+      template: `%s | ${buildPageTitle(title, locale)}`,
     },
     description,
   };

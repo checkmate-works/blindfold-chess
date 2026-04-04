@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { generateCanonicalMetadata } from './metadata';
+import { buildPageTitle, generateCanonicalMetadata, resolveTitle } from './metadata';
 
 describe('generateCanonicalMetadata', () => {
   const originalEnv = process.env.NEXT_PUBLIC_SITE_URL;
@@ -146,6 +146,249 @@ describe('generateCanonicalMetadata', () => {
 
       expect(result.alternates?.canonical).not.toContain('//learn');
       expect(result.alternates?.languages?.en).not.toContain('//learn');
+    });
+  });
+
+  describe('openGraph title with suffix logic', () => {
+    it('should apply buildPageTitle to openGraph title when title is provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '/learn',
+        title: 'Learn Chess',
+      });
+
+      expect(result.openGraph?.title).toBe('Learn Chess | Blindfold Chess');
+    });
+
+    it('should use brand name suffix when title contains seoSiteName (EN)', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '',
+        title: 'Blindfold Chess Training - Free Online Practice',
+      });
+
+      expect(result.openGraph?.title).toBe(
+        'Blindfold Chess Training - Free Online Practice | Shingan Chess'
+      );
+    });
+
+    it('should use brand name suffix when title contains seoSiteName (JA)', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'ja',
+        path: '',
+        title: '目隠しチェストレーニング - 無料オンライン練習',
+      });
+
+      expect(result.openGraph?.title).toBe(
+        '目隠しチェストレーニング - 無料オンライン練習 | 心眼チェス'
+      );
+    });
+
+    it('should not include openGraph title when title is not provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '/learn',
+      });
+
+      expect(result.openGraph?.title).toBeUndefined();
+    });
+
+    it('should use brand name suffix for JA locale when title contains seoSiteName', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'ja',
+        path: '/learn',
+        title: '目隠しチェスの練習',
+      });
+
+      expect(result.openGraph?.title).toBe('目隠しチェスの練習 | 心眼チェス');
+    });
+
+    it('should use seoSiteName suffix for JA locale when title does not contain seoSiteName', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'ja',
+        path: '/learn',
+        title: 'チェスを学ぶ',
+      });
+
+      expect(result.openGraph?.title).toBe('チェスを学ぶ | 目隠しチェス');
+    });
+
+    it('should include description in openGraph when provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '/learn',
+        title: 'Learn Chess',
+        description: 'A guide to learning chess.',
+      });
+
+      expect(result.openGraph?.description).toBe('A guide to learning chess.');
+    });
+
+    it('should handle empty string title by not including openGraph title', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '/learn',
+        title: '',
+      });
+
+      // Empty string is falsy, so openGraph title should not be set
+      expect(result.openGraph?.title).toBeUndefined();
+    });
+  });
+});
+
+describe('buildPageTitle', () => {
+  describe('English locale', () => {
+    it('should append seoSiteName when title does not contain it', () => {
+      expect(buildPageTitle('Learn Chess', 'en')).toBe('Learn Chess | Blindfold Chess');
+    });
+
+    it('should append siteName when title contains seoSiteName', () => {
+      expect(buildPageTitle('Blindfold Chess Training - Free Online Practice', 'en')).toBe(
+        'Blindfold Chess Training - Free Online Practice | Shingan Chess'
+      );
+    });
+
+    it('should detect seoSiteName as a substring', () => {
+      expect(buildPageTitle('Learn Blindfold Chess Techniques', 'en')).toBe(
+        'Learn Blindfold Chess Techniques | Shingan Chess'
+      );
+    });
+  });
+
+  describe('Japanese locale', () => {
+    it('should append seoSiteName when title does not contain it', () => {
+      expect(buildPageTitle('チェスを学ぶ', 'ja')).toBe('チェスを学ぶ | 目隠しチェス');
+    });
+
+    it('should append siteName when title contains seoSiteName', () => {
+      expect(buildPageTitle('目隠しチェストレーニング', 'ja')).toBe(
+        '目隠しチェストレーニング | 心眼チェス'
+      );
+    });
+  });
+
+  describe('unknown locale fallback', () => {
+    it('should fall back to English site names for unknown locale', () => {
+      expect(buildPageTitle('Learn Chess', 'fr')).toBe('Learn Chess | Blindfold Chess');
+    });
+
+    it('should use brand suffix when unknown locale title contains English seoSiteName', () => {
+      expect(buildPageTitle('Blindfold Chess Guide', 'fr')).toBe(
+        'Blindfold Chess Guide | Shingan Chess'
+      );
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle empty string title', () => {
+      expect(buildPageTitle('', 'en')).toBe(' | Blindfold Chess');
+    });
+
+    it('should handle title that is exactly the seoSiteName (EN)', () => {
+      expect(buildPageTitle('Blindfold Chess', 'en')).toBe('Blindfold Chess | Shingan Chess');
+    });
+
+    it('should handle title that is exactly the seoSiteName (JA)', () => {
+      expect(buildPageTitle('目隠しチェス', 'ja')).toBe('目隠しチェス | 心眼チェス');
+    });
+
+    it('should handle title containing seoSiteName multiple times', () => {
+      expect(buildPageTitle('Blindfold Chess vs Blindfold Chess Training', 'en')).toBe(
+        'Blindfold Chess vs Blindfold Chess Training | Shingan Chess'
+      );
+    });
+
+    it('should handle title where seoSiteName appears at the very end', () => {
+      expect(buildPageTitle('Learn Blindfold Chess', 'en')).toBe(
+        'Learn Blindfold Chess | Shingan Chess'
+      );
+    });
+
+    it('should handle title where seoSiteName appears at the very beginning', () => {
+      expect(buildPageTitle('Blindfold Chess Training', 'en')).toBe(
+        'Blindfold Chess Training | Shingan Chess'
+      );
+    });
+
+    it('should not match partial keyword "Blindfold" alone', () => {
+      expect(buildPageTitle('Blindfold Training', 'en')).toBe(
+        'Blindfold Training | Blindfold Chess'
+      );
+    });
+
+    it('should not match partial keyword "Chess" alone', () => {
+      expect(buildPageTitle('Chess Tactics', 'en')).toBe('Chess Tactics | Blindfold Chess');
+    });
+  });
+});
+
+describe('resolveTitle', () => {
+  describe('English locale', () => {
+    it('should return plain string when title does not contain seoSiteName', () => {
+      const result = resolveTitle('Learn Chess', 'en');
+      expect(result).toBe('Learn Chess');
+    });
+
+    it('should return absolute object when title contains seoSiteName', () => {
+      const result = resolveTitle('Blindfold Chess Training - Free Online Practice', 'en');
+      expect(result).toEqual({
+        absolute: 'Blindfold Chess Training - Free Online Practice | Shingan Chess',
+      });
+    });
+  });
+
+  describe('Japanese locale', () => {
+    it('should return plain string when title does not contain seoSiteName', () => {
+      const result = resolveTitle('チェスを学ぶ', 'ja');
+      expect(result).toBe('チェスを学ぶ');
+    });
+
+    it('should return absolute object when title contains seoSiteName', () => {
+      const result = resolveTitle('目隠しチェストレーニング', 'ja');
+      expect(result).toEqual({
+        absolute: '目隠しチェストレーニング | 心眼チェス',
+      });
+    });
+  });
+
+  describe('return type contract', () => {
+    it('should return string type for non-matching titles', () => {
+      const result = resolveTitle('Practice', 'en');
+      expect(typeof result).toBe('string');
+    });
+
+    it('should return object type for matching titles', () => {
+      const result = resolveTitle('Blindfold Chess Guide', 'en');
+      expect(typeof result).toBe('object');
+      expect(result).toHaveProperty('absolute');
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should return plain string for empty title', () => {
+      const result = resolveTitle('', 'en');
+      expect(result).toBe('');
+    });
+
+    it('should return absolute object when title is exactly seoSiteName', () => {
+      const result = resolveTitle('Blindfold Chess', 'en');
+      expect(result).toEqual({ absolute: 'Blindfold Chess | Shingan Chess' });
+    });
+
+    it('should fall back to English detection for unknown locale', () => {
+      const result = resolveTitle('Blindfold Chess Guide', 'fr');
+      expect(result).toEqual({ absolute: 'Blindfold Chess Guide | Shingan Chess' });
+    });
+
+    it('should return plain string for unknown locale with non-matching title', () => {
+      const result = resolveTitle('Some Page', 'fr');
+      expect(result).toBe('Some Page');
+    });
+
+    it('should return absolute object for JA title with seoSiteName at end', () => {
+      const result = resolveTitle('無料目隠しチェス', 'ja');
+      expect(result).toEqual({ absolute: '無料目隠しチェス | 心眼チェス' });
     });
   });
 });

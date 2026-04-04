@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -21,7 +21,7 @@ export async function generateMetadata({
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'company', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

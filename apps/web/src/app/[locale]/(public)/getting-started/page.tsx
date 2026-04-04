@@ -9,7 +9,7 @@ import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'getting-started', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

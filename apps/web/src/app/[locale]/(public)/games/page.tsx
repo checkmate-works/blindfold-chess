@@ -16,7 +16,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'games', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
     robots: { index: false },
   };

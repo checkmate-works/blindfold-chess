@@ -24,7 +24,7 @@ import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_com
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { RankCard } from './_components/RankCard';
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'ranks', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

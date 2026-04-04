@@ -16,6 +16,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 import { getAvailableMenuTypes } from '../_actions/get-challenge-sessions';
 import { formatDate } from '../_lib/dashboard-utils';
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'MypageChallengeResults' });
 
   return {
-    title: t('title'),
+    title: resolveTitle(t('title'), locale),
     description: t('description'),
     robots: { index: false, follow: false },
   };

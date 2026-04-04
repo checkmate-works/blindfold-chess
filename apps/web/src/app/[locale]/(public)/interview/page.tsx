@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { InterviewQuestionCard } from './_components/InterviewQuestionCard';
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'interview', title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

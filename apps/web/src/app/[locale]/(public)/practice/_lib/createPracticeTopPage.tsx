@@ -6,7 +6,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -33,7 +33,7 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     const t = await getTranslations({ locale });
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
-      title: t(`practice.${config.i18nKey}.title`),
+      title: resolveTitle(t(`practice.${config.i18nKey}.title`), locale),
       description: t(`practice.${config.i18nKey}.description`),
     };
   }

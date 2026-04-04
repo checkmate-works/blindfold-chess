@@ -9,6 +9,7 @@ import { db, profiles } from '@/lib/db';
 
 import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 import { MarkAllReadButton, NotificationItem } from './_components';
 import { getNotifications, getUnreadCount } from './_lib/queries';
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.mypageNotifications' });
 
   return {
-    title: t('title'),
+    title: resolveTitle(t('title'), locale),
     description: t('description'),
     robots: { index: false, follow: false },
   };

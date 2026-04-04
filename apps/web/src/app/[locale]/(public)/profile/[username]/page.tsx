@@ -25,6 +25,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
@@ -58,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'publicProfile' });
 
   return {
-    title: t('title', { displayName: profile.displayName ?? username }),
+    title: resolveTitle(t('title', { displayName: profile.displayName ?? username }), locale),
     description:
       profile.bio || t('defaultDescription', { displayName: profile.displayName ?? username }),
     alternates: {

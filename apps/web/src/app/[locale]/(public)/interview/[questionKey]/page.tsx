@@ -21,7 +21,7 @@ import {
   type InterviewQuestionKey,
   QUESTION_CONFIG,
 } from '@/app/[locale]/_lib/interview';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { deleteAnswerAction } from './_actions/deleteAnswer';
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: `interview/${questionKey}`, title, description }),
-    title,
+    title: resolveTitle(title, locale),
     description,
   };
 }

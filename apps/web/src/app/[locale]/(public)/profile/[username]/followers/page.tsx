@@ -9,6 +9,7 @@ import { db, profiles, userFollows } from '@/lib/db';
 
 import { Divider, PagePanel, PageTitle, PaginationNav, UserCard } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = profile.displayName ?? username;
 
   return {
-    title: `${t('followersPageTitle')} - ${displayName}`,
+    title: resolveTitle(`${t('followersPageTitle')} - ${displayName}`, locale),
     alternates: {
       canonical: `/${locale}/@/${username}/followers`,
     },

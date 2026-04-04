@@ -12,6 +12,7 @@ import {
 
 import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ProfileAchievements } from '../_components/ProfileAchievements';
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const displayName = profile.displayName ?? username;
 
   return {
-    title: `${t('achievementsPageTitle')} - ${displayName}`,
+    title: resolveTitle(`${t('achievementsPageTitle')} - ${displayName}`, locale),
     alternates: {
       canonical: `/${locale}/@/${username}/achievements`,
     },

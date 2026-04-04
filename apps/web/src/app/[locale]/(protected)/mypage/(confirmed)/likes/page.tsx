@@ -20,6 +20,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.mypageLikes' });
 
   return {
-    title: t('title'),
+    title: resolveTitle(t('title'), locale),
     description: t('description'),
     robots: { index: false, follow: false },
   };

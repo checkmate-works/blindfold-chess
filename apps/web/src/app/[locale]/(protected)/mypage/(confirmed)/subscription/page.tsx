@@ -6,7 +6,7 @@ import { getUserSubscription } from '@/lib/subscription';
 
 import { PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { SubscriptionStatus } from './_components/SubscriptionStatus';
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'mypage/subscription', title }),
-    title,
+    title: resolveTitle(title, locale),
   };
 }
 

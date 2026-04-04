@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResendEmailButton } from './_components';
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     ...generateCanonicalMetadata({ locale, path: 'sign-up/verify-email', title }),
-    title,
+    title: resolveTitle(title, locale),
     robots: { index: false, follow: false },
   };
 }

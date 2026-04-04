@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
+import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -31,7 +31,10 @@ function createPracticeSessionMetadata(config: MetadataConfig) {
 
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
-      title: `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.modeLabelKey}`)}`,
+      title: resolveTitle(
+        `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.modeLabelKey}`)}`,
+        locale
+      ),
       description: t(`practice.${config.i18nKey}.description`),
       ...(config.robots ? { robots: config.robots } : {}),
     };
@@ -57,7 +60,8 @@ function resolveBreadcrumbs(
 ) {
   return segments.map((seg) => {
     const ns = seg.namespace ?? 'practice';
-    const label = ns === 'navigation' ? t(`navigation.${seg.labelKey}`) : t(`practice.${seg.labelKey}`);
+    const label =
+      ns === 'navigation' ? t(`navigation.${seg.labelKey}`) : t(`practice.${seg.labelKey}`);
     return seg.href ? { label, href: seg.href } : { label };
   });
 }
@@ -104,7 +108,10 @@ export function createPracticeChallengePage(config: ChallengePageConfig) {
     const t = await getTranslations({ locale });
 
     const breadcrumbItems = resolveBreadcrumbs(
-      [{ labelKey: 'practice', namespace: 'navigation', href: '/practice' }, ...config.breadcrumbSegments],
+      [
+        { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
+        ...config.breadcrumbSegments,
+      ],
       t
     );
 
@@ -151,14 +158,19 @@ type ChallengeSessionPageConfig = {
 };
 
 export function createPracticeChallengeSessionPage(config: ChallengeSessionPageConfig) {
-  const generateMetadata = async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
+  const generateMetadata = async function generateMetadata({
+    params,
+  }: LocalePageProps): Promise<Metadata> {
     const { locale } = await params;
     setRequestLocale(locale);
     const t = await getTranslations({ locale });
 
     return {
       ...generateCanonicalMetadata({ locale, path: config.canonicalPath }),
-      title: `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.i18nKey}.${config.sessionLabelKey}`)}`,
+      title: resolveTitle(
+        `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.i18nKey}.${config.sessionLabelKey}`)}`,
+        locale
+      ),
       description: t(`practice.${config.i18nKey}.description`),
       ...(config.robots ? { robots: config.robots } : {}),
     };
@@ -173,7 +185,10 @@ export function createPracticeChallengeSessionPage(config: ChallengeSessionPageC
     const t = await getTranslations({ locale });
 
     const breadcrumbItems = resolveBreadcrumbs(
-      [{ labelKey: 'practice', namespace: 'navigation', href: '/practice' }, ...config.breadcrumbSegments],
+      [
+        { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
+        ...config.breadcrumbSegments,
+      ],
       t
     );
 
@@ -234,7 +249,10 @@ export function createPracticeTrainingPage(config: TrainingPageConfig) {
     const t = await getTranslations({ locale });
 
     const breadcrumbItems = resolveBreadcrumbs(
-      [{ labelKey: 'practice', namespace: 'navigation', href: '/practice' }, ...config.breadcrumbSegments],
+      [
+        { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
+        ...config.breadcrumbSegments,
+      ],
       t
     );
 
