@@ -46,10 +46,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = article.title;
+  const description = article.content.slice(0, 160).replace(/\n/g, ' ').trim();
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `articles/${slug}`, title }),
+    ...generateCanonicalMetadata({ locale, path: `articles/${slug}`, title, description }),
     title,
+    description,
   };
 }
 
