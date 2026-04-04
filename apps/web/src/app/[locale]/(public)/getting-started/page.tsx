@@ -5,6 +5,10 @@ import { Button, ChessBoard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
+import { parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
+
+import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
+import { buildChallengeNameKey, getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata } from '@/app/[locale]/_lib/metadata';
@@ -37,6 +41,38 @@ export default async function GettingStartedPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gettingStarted' });
+  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
+
+  const teaserSlugs = ['5kyu', '4kyu'] as const;
+  const teaserCards = teaserSlugs.map((slug, index) => {
+    const seed = ranksSeedData.find((r) => r.slug === slug);
+    const requirements = seed ? parseRequirements(seed.requirements) : [];
+    const beltColor = getBeltColorHex(slug);
+    const requirementLabels = requirements.map((req) => {
+      const challengeKey = buildChallengeNameKey(req);
+      return tRanks('challengeScore', {
+        minScore: req.minScore,
+        challengeName: tRanks(`challengeNames.${challengeKey}`),
+      });
+    });
+    const previousSlug = index > 0 ? teaserSlugs[index - 1] : undefined;
+
+    return (
+      <RankCard
+        key={slug}
+        slug={slug}
+        locale={locale}
+        beltColor={beltColor}
+        rankName={tRanks(`rankNames.${slug}`)}
+        state="locked"
+        requirementLabels={requirementLabels}
+        requirementsHeading={tRanks('requirements')}
+        comingSoonLabel={tRanks('comingSoon')}
+        previousRankName={previousSlug ? tRanks(`rankNames.${previousSlug}`) : undefined}
+        previousSlug={previousSlug}
+      />
+    );
+  });
 
   return (
     <div className="space-y-8">
@@ -76,6 +112,7 @@ export default async function GettingStartedPage({ params }: Props) {
               <FaDumbbell />
             </div>
             <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
+            <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
             <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
               <p className="text-sm font-bold text-foreground">
                 {t('cards.train.previewQuestion')}
@@ -127,6 +164,21 @@ export default async function GettingStartedPage({ params }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Belt Ranks Teaser */}
+        <section className="space-y-6">
+          <h2 className="text-xl font-bold text-foreground text-center">{t('ranks.title')}</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{teaserCards}</div>
+
+          <div className="text-center">
+            <Link href="/ranks">
+              <Button asChild variant="secondary" size="lg">
+                {t('ranks.viewAll')}
+              </Button>
+            </Link>
+          </div>
+        </section>
 
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </PagePanel>

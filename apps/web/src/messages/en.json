@@ -373,6 +373,7 @@
     "cards": {
       "train": {
         "title": "Build Your Skills",
+        "description": "If jumping straight into blindfold chess feels too challenging, start with simple drills to build a solid foundation.",
         "previewQuestion": "Can it move from d5 to e7?",
         "cta": "Try It",
         "viewOtherMenus": "View other menus"
@@ -388,6 +389,10 @@
         "cta": "Browse Topics",
         "signUp": "Free sign up"
       }
+    },
+    "ranks": {
+      "title": "Train Your Way to the Black Belt",
+      "viewAll": "View All Ranks"
     }
   },
   "learn": {
@@ -1700,16 +1705,17 @@
     },
     "training": {
       "title": "Extensive Training Modes",
+      "description": "If jumping straight into blindfold chess feels too challenging, start with simple drills to build a solid foundation.",
       "viewAll": "View All Trainings",
-      "positionMemory": {
-        "title": "Position Memory",
-        "description": "Practice memorizing board positions and recreating them on an empty board. Develops crucial pattern recognition skills for blindfold chess.",
+      "squareColors": {
+        "title": "Square Colors",
+        "description": "Train your ability to quickly identify whether a square is light or dark — a fundamental skill for board visualization.",
         "cta": "Try Practice"
       },
-      "knightTour": {
-        "title": "Knight's Tour",
-        "description": "Knight's Tour is a classic puzzle where you visit every square on the board exactly once. Use it to train your board visualization.",
-        "cta": "Try Puzzle"
+      "routePlanner": {
+        "title": "Route Planner",
+        "description": "Calculate the shortest path for a piece to reach a target square. Strengthen your ability to visualize piece movement.",
+        "cta": "Try Practice"
       }
     },
     "ranks": {
