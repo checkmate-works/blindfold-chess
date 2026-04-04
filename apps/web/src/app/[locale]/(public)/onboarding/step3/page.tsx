@@ -20,9 +20,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'onboarding' });
 
+  const title = t('pageTitle', { step: 3 });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'onboarding/step3' }),
-    title: t('pageTitle', { step: 3 }),
+    ...generateCanonicalMetadata({ locale, path: 'onboarding/step3', title }),
+    title,
   };
 }
 

@@ -39,9 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
+  const title = t('postmortem.title');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/play/postmortem' }),
-    title: t('postmortem.title'),
+    ...generateCanonicalMetadata({ locale, path: 'games/play/postmortem', title }),
+    title,
   };
 }
 

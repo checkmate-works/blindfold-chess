@@ -46,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const categoryLabel = t(`learn.categories.${category}`);
 
+  const title = t('learn.categoryTitle', { category: categoryLabel });
+  const description = t('learn.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `learn/${category}` }),
-    title: t('learn.categoryTitle', { category: categoryLabel }),
-    description: t('learn.description'),
+    ...generateCanonicalMetadata({ locale, path: `learn/${category}`, title, description }),
+    title,
+    description,
   };
 }
 

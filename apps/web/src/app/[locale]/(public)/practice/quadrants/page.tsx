@@ -20,10 +20,13 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const title = t('practice.quadrantAnchors.title');
+  const description = t('practice.quadrantAnchors.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/quadrants' }),
-    title: t('practice.quadrantAnchors.title'),
-    description: t('practice.quadrantAnchors.description'),
+    ...generateCanonicalMetadata({ locale, path: 'practice/quadrants', title, description }),
+    title,
+    description,
   };
 }
 

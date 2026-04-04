@@ -16,9 +16,11 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'subscription' });
+  const title = t('title');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/subscription' }),
-    title: t('title'),
+    ...generateCanonicalMetadata({ locale, path: 'mypage/subscription', title }),
+    title,
   };
 }
 

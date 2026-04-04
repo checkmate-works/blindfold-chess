@@ -12,9 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
+  const title = `${t('practice.fen.title')} - ${t('practice.fen.session')}`;
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/fen/session' }),
-    title: `${t('practice.fen.title')} - ${t('practice.fen.session')}`,
+    ...generateCanonicalMetadata({ locale, path: 'practice/fen/session', title }),
+    title,
   };
 }
 

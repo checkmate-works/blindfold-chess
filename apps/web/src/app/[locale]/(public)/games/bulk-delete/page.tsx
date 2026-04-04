@@ -22,9 +22,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'bulkDelete' });
 
+  const title = t('title');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'games/bulk-delete' }),
-    title: t('title'),
+    ...generateCanonicalMetadata({ locale, path: 'games/bulk-delete', title }),
+    title,
   };
 }
 

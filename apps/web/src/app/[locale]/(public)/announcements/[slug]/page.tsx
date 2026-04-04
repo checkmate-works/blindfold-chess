@@ -44,9 +44,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const title = announcement.title;
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `announcements/${slug}` }),
-    title: announcement.title,
+    ...generateCanonicalMetadata({ locale, path: `announcements/${slug}`, title }),
+    title,
   };
 }
 

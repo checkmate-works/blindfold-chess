@@ -48,10 +48,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
 
+  const title = t('practice.knightTour.title');
+  const description = t('practice.knightTour.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/knight-tour' }),
-    title: t('practice.knightTour.title'),
-    description: t('practice.knightTour.description'),
+    ...generateCanonicalMetadata({ locale, path: 'practice/knight-tour', title, description }),
+    title,
+    description,
   };
 }
 

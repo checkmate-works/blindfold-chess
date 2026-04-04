@@ -16,10 +16,13 @@ export const dynamic = 'force-dynamic'; // Needs auth check for CTA
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pricing' });
+  const title = t('title');
+  const description = t('description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'pricing' }),
-    title: t('title'),
-    description: t('description'),
+    ...generateCanonicalMetadata({ locale, path: 'pricing', title, description }),
+    title,
+    description,
   };
 }
 

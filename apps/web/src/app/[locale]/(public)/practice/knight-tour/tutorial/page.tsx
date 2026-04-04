@@ -25,10 +25,18 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const title = `${t('practice.knightTour.title')} - ${t('practice.knightTour.tutorial.title')}`;
+  const description = t('practice.knightTour.tutorial.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/knight-tour/tutorial' }),
-    title: `${t('practice.knightTour.title')} - ${t('practice.knightTour.tutorial.title')}`,
-    description: t('practice.knightTour.tutorial.description'),
+    ...generateCanonicalMetadata({
+      locale,
+      path: 'practice/knight-tour/tutorial',
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 

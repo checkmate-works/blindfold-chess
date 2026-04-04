@@ -25,10 +25,18 @@ export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const title = `${t('practice.boardSymmetry.title')} - ${t('practice.boardSymmetry.tutorial.title')}`;
+  const description = t('practice.boardSymmetry.tutorial.description');
+
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/board-symmetry/tutorial' }),
-    title: `${t('practice.boardSymmetry.title')} - ${t('practice.boardSymmetry.tutorial.title')}`,
-    description: t('practice.boardSymmetry.tutorial.description'),
+    ...generateCanonicalMetadata({
+      locale,
+      path: 'practice/board-symmetry/tutorial',
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 

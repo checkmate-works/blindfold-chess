@@ -27,10 +27,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: 'metadata.glossary.letter' });
   const upperLetter = letter.toUpperCase();
 
+  const title = t('title', { letter: upperLetter });
+  const description = t('description', { letter: upperLetter });
+
   return {
-    ...generateCanonicalMetadata({ locale, path: `glossary/letter/${letter.toLowerCase()}` }),
-    title: t('title', { letter: upperLetter }),
-    description: t('description', { letter: upperLetter }),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `glossary/letter/${letter.toLowerCase()}`,
+      title,
+      description,
+    }),
+    title,
+    description,
   };
 }
 
