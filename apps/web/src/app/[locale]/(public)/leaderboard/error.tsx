@@ -2,11 +2,33 @@
 
 import { useEffect } from 'react';
 
-import { useTranslations } from 'next-intl';
-
+import { Button } from '@/app/_components';
 import * as Sentry from '@sentry/nextjs';
 
-import { PagePanel } from '@/app/[locale]/_components';
+import { PagePanel } from '@/app/[locale]/_components/PagePanel';
+
+/**
+ * Leaderboard error boundary.
+ *
+ * Avoids `useTranslations` so this page remains functional even when the
+ * `NextIntlClientProvider` context is temporarily unavailable (e.g. during
+ * HMR after `.env.local` changes).
+ *
+ * A hardcoded translation map keyed by locale is used instead.
+ */
+
+const errorMessages = {
+  en: {
+    title: 'Something went wrong',
+    description: 'An unexpected error occurred. Please try again.',
+    tryAgain: 'Try again',
+  },
+  ja: {
+    title: '問題が発生しました',
+    description: '予期しないエラーが発生しました。もう一度お試しください。',
+    tryAgain: 'もう一度試す',
+  },
+} as const;
 
 export default function LeaderboardError({
   error,
@@ -15,7 +37,9 @@ export default function LeaderboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const t = useTranslations('error');
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const locale = pathname.startsWith('/ja') ? 'ja' : 'en';
+  const t = errorMessages[locale];
 
   useEffect(() => {
     Sentry.captureException(error);
@@ -27,14 +51,11 @@ export default function LeaderboardError({
   return (
     <PagePanel>
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-foreground mb-2">{t('title')}</h2>
-        <p className="text-muted-foreground mb-6">{t('description')}</p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
-        >
-          {t('tryAgain')}
-        </button>
+        <h2 className="text-xl font-semibold text-foreground mb-2">{t.title}</h2>
+        <p className="text-muted-foreground mb-6">{t.description}</p>
+        <Button variant="primary" onClick={reset}>
+          {t.tryAgain}
+        </Button>
       </div>
     </PagePanel>
   );
