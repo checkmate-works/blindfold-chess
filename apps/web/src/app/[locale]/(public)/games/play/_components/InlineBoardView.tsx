@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown, FaEye } from 'react-icons/fa';
+import { FaChevronDown, FaExchangeAlt, FaEye } from 'react-icons/fa';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -15,6 +15,7 @@ import { MoveNavigationControls } from './MoveNavigationControls';
 type Props = {
   fen: string;
   playerSide: Side;
+  flipped?: boolean;
   lastMove: { from: string; to: string } | null;
   preferences: GamePreferences;
   movesLength: number;
@@ -25,11 +26,13 @@ type Props = {
   onNavigateNext: () => void;
   onNavigateToEnd: () => void;
   onNavigateToPosition: (position: number) => void;
+  onFlipBoard?: () => void;
 };
 
 export function InlineBoardView({
   fen,
   playerSide,
+  flipped,
   lastMove,
   preferences,
   movesLength,
@@ -40,6 +43,7 @@ export function InlineBoardView({
   onNavigateNext,
   onNavigateToEnd,
   onNavigateToPosition,
+  onFlipBoard,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -119,7 +123,7 @@ export function InlineBoardView({
 
           <ChessBoard
             fen={fen}
-            flipped={playerSide === 'black'}
+            flipped={flipped ?? playerSide === 'black'}
             playerSide={playerSide}
             lastMove={lastMove}
             showCoordinates={preferences.showCoordinates}
@@ -131,9 +135,9 @@ export function InlineBoardView({
             rounded={false}
           />
 
-          {/* Navigation Controls */}
-          {movesLength > 0 && (
-            <div className="flex items-center justify-center" style={{ aspectRatio: '8/1' }}>
+          {/* Navigation Controls & Flip Button */}
+          <div className="flex items-center justify-center relative" style={{ aspectRatio: '8/1' }}>
+            {movesLength > 0 && (
               <MoveNavigationControls
                 onNavigateToStart={onNavigateToStart}
                 onNavigatePrevious={onNavigatePrevious}
@@ -146,8 +150,18 @@ export function InlineBoardView({
                   currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
                 }
               />
-            </div>
-          )}
+            )}
+            {onFlipBoard && (
+              <button
+                type="button"
+                onClick={onFlipBoard}
+                className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                title={t('flipBoard')}
+              >
+                <FaExchangeAlt className="w-3 h-3 rotate-90" />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

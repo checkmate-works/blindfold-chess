@@ -11,7 +11,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
+import { useBoardFlip, useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -66,6 +66,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // UI state
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+
+  // Board flip state
+  const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
 
   // Navigation hook
   const {
@@ -143,6 +146,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                     <InlineBoardView
                       fen={displayFen || currentFen}
                       playerSide={playerSide}
+                      flipped={effectiveFlipped}
                       lastMove={
                         preferences.highlightLastMove && currentPosition === -1 ? lastMove : null
                       }
@@ -155,6 +159,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       onNavigateNext={navigateNext}
                       onNavigateToEnd={navigateToEnd}
                       onNavigateToPosition={navigateToPosition}
+                      onFlipBoard={handleFlipBoard}
                     />
                   ) : undefined
                 }
@@ -224,6 +229,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onClose={() => setIsBoardVisible(false)}
         fen={displayFen || currentFen}
         playerSide={playerSide}
+        flipped={effectiveFlipped}
         lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
         preferences={preferences}
         movesLength={moves.length}
@@ -234,6 +240,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onNavigateNext={navigateNext}
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
+        onFlipBoard={handleFlipBoard}
       />
 
       {/* Skill Level Settings Modal */}

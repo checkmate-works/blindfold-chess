@@ -3,7 +3,9 @@
 import { useEffect } from 'react';
 
 import { ChessBoard } from '@/app/_components';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
+import { FaExchangeAlt } from 'react-icons/fa';
 
 import type { EvaluationMark } from '@/lib/evaluation';
 
@@ -18,6 +20,7 @@ type Props = {
   onClose: () => void;
   fen: string;
   playerSide: Side;
+  flipped?: boolean;
   lastMove: { from: string; to: string } | null;
   preferences: GamePreferences;
   movesLength: number;
@@ -29,6 +32,7 @@ type Props = {
   onNavigateNext: () => void;
   onNavigateToEnd: () => void;
   onNavigateToPosition: (position: number) => void;
+  onFlipBoard?: () => void;
 };
 
 export function BoardViewModal({
@@ -36,6 +40,7 @@ export function BoardViewModal({
   onClose,
   fen,
   playerSide,
+  flipped,
   lastMove,
   preferences,
   movesLength,
@@ -47,7 +52,9 @@ export function BoardViewModal({
   onNavigateNext,
   onNavigateToEnd,
   onNavigateToPosition,
+  onFlipBoard,
 }: Props) {
+  const t = useTranslations('play');
   useScrollLock(isOpen);
 
   useEffect(() => {
@@ -135,7 +142,7 @@ export function BoardViewModal({
 
           <ChessBoard
             fen={fen}
-            flipped={playerSide === 'black'}
+            flipped={flipped ?? playerSide === 'black'}
             playerSide={playerSide}
             lastMove={lastMove}
             showCoordinates={preferences.showCoordinates}
@@ -148,13 +155,13 @@ export function BoardViewModal({
             evaluationMark={evaluationMark}
           />
 
-          {/* Navigation Controls */}
-          {movesLength > 0 && (
-            <div
-              className="bg-card flex items-center justify-center"
-              style={{ aspectRatio: '8/1' }}
-              onClick={(e) => e.stopPropagation()}
-            >
+          {/* Navigation Controls & Flip Button */}
+          <div
+            className="bg-card flex items-center justify-center relative"
+            style={{ aspectRatio: '8/1' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {movesLength > 0 && (
               <MoveNavigationControls
                 onNavigateToStart={onNavigateToStart}
                 onNavigatePrevious={onNavigatePrevious}
@@ -167,8 +174,18 @@ export function BoardViewModal({
                   currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
                 }
               />
-            </div>
-          )}
+            )}
+            {onFlipBoard && (
+              <button
+                type="button"
+                onClick={onFlipBoard}
+                className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                title={t('flipBoard')}
+              >
+                <FaExchangeAlt className="w-3 h-3 rotate-90" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

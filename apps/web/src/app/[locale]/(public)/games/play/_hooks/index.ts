@@ -1,4 +1,5 @@
 export { useAiMoveOrchestration } from './use-ai-move-orchestration';
+export { useBoardFlip } from './use-board-flip';
 export { useAiVersus } from './use-ai-versus';
 export { useAutoSave } from './use-auto-save';
 export { useConfirmationDialogs } from './use-confirmation-dialogs';

@@ -1317,6 +1317,7 @@
     "save": "Save",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
+    "flipBoard": "Flip Board",
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",
     "copied": "Copied!",
