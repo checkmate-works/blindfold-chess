@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SITE_URL } from '@/config';
+
+import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
+
 import {
   Divider,
   ListLink,
@@ -60,8 +64,14 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   const offset = (currentPage - 1) * ARTICLES_PER_PAGE;
   const articles = await getPublishedArticlesPaginated(locale, ARTICLES_PER_PAGE, offset);
 
+  const itemListItems = articles.map((article) => ({
+    name: article.title,
+    url: `${SITE_URL}/${locale}/articles/${article.slug}`,
+  }));
+
   return (
     <div className="space-y-12">
+      <JsonLd data={generateItemListSchema(itemListItems)} />
       <header>
         <PageTitle>{t('pageTitle')}</PageTitle>
       </header>

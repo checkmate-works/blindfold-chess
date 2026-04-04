@@ -5,10 +5,13 @@ import {
   BlogPostData,
   BreadcrumbItem,
   FAQItemData,
+  ItemListItemData,
   generateArticleSchema,
   generateBlogPostingSchema,
   generateBreadcrumbListSchema,
+  generateDefinedTermSetSchema,
   generateFAQPageSchema,
+  generateItemListSchema,
   generateOrganizationSchema,
   generateWebSiteSchema,
 } from './jsonld';
@@ -386,6 +389,156 @@ describe('JSON-LD Schema Generators', () => {
       const schema = generateBlogPostingSchema(post);
 
       expect(schema.datePublished).toBe('2024-06-15T08:45:30.500Z');
+    });
+  });
+
+  describe('generateItemListSchema', () => {
+    it('should generate correct schema structure', () => {
+      const items: ItemListItemData[] = [{ name: 'Item 1', url: 'https://example.com/item-1' }];
+      const schema = generateItemListSchema(items);
+
+      expect(schema['@context']).toBe('https://schema.org');
+      expect(schema['@type']).toBe('ItemList');
+      expect(schema.itemListElement).toHaveLength(1);
+      expect(schema.itemListElement[0]).toEqual({
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Item 1',
+        url: 'https://example.com/item-1',
+      });
+    });
+
+    it('should generate empty itemListElement for empty array', () => {
+      const schema = generateItemListSchema([]);
+
+      expect(schema['@type']).toBe('ItemList');
+      expect(schema.itemListElement).toEqual([]);
+    });
+
+    it('should assign correct positions for multiple items', () => {
+      const items: ItemListItemData[] = [
+        { name: 'First', url: 'https://example.com/1' },
+        { name: 'Second', url: 'https://example.com/2' },
+        { name: 'Third', url: 'https://example.com/3' },
+      ];
+      const schema = generateItemListSchema(items);
+
+      expect(schema.itemListElement).toHaveLength(3);
+      expect(schema.itemListElement[0].position).toBe(1);
+      expect(schema.itemListElement[1].position).toBe(2);
+      expect(schema.itemListElement[2].position).toBe(3);
+    });
+
+    it('should preserve item names and URLs', () => {
+      const items: ItemListItemData[] = [
+        { name: 'チェス練習', url: 'https://example.com/ja/practice' },
+      ];
+      const schema = generateItemListSchema(items);
+
+      expect(schema.itemListElement[0].name).toBe('チェス練習');
+      expect(schema.itemListElement[0].url).toBe('https://example.com/ja/practice');
+    });
+  });
+
+  describe('generateDefinedTermSetSchema', () => {
+    it('should generate correct basic schema structure', () => {
+      const schema = generateDefinedTermSetSchema({
+        name: 'Chess Glossary',
+        description: 'A glossary of chess terms',
+        url: 'https://example.com/glossary',
+        inLanguage: 'en-US',
+        terms: [
+          {
+            name: 'Checkmate',
+            description: 'A position where the king is in check and cannot escape.',
+            url: 'https://example.com/glossary/checkmate',
+          },
+        ],
+      });
+
+      expect(schema['@context']).toBe('https://schema.org');
+      expect(schema['@type']).toBe('DefinedTermSet');
+      expect(schema.name).toBe('Chess Glossary');
+      expect(schema.description).toBe('A glossary of chess terms');
+      expect(schema.url).toBe('https://example.com/glossary');
+      expect(schema.inLanguage).toBe('en-US');
+      expect(schema.hasDefinedTerm).toHaveLength(1);
+      expect(schema.hasDefinedTerm[0]).toEqual({
+        '@type': 'DefinedTerm',
+        name: 'Checkmate',
+        description: 'A position where the king is in check and cannot escape.',
+        url: 'https://example.com/glossary/checkmate',
+        inDefinedTermSet: 'https://example.com/glossary',
+      });
+    });
+
+    it('should generate schema with empty terms array', () => {
+      const schema = generateDefinedTermSetSchema({
+        name: 'Chess Glossary',
+        description: 'A glossary of chess terms',
+        url: 'https://example.com/glossary',
+        inLanguage: 'en-US',
+        terms: [],
+      });
+
+      expect(schema['@type']).toBe('DefinedTermSet');
+      expect(schema.hasDefinedTerm).toEqual([]);
+    });
+
+    it('should generate schema with multiple terms', () => {
+      const schema = generateDefinedTermSetSchema({
+        name: 'Chess Glossary',
+        description: 'A glossary of chess terms',
+        url: 'https://example.com/glossary',
+        inLanguage: 'en-US',
+        terms: [
+          {
+            name: 'Checkmate',
+            description: 'King is in check and cannot escape.',
+            url: 'https://example.com/glossary/checkmate',
+          },
+          {
+            name: 'Stalemate',
+            description: 'Player has no legal moves but is not in check.',
+            url: 'https://example.com/glossary/stalemate',
+          },
+          {
+            name: 'En Passant',
+            description: 'A special pawn capture.',
+            url: 'https://example.com/glossary/en-passant',
+          },
+        ],
+      });
+
+      expect(schema.hasDefinedTerm).toHaveLength(3);
+      expect(schema.hasDefinedTerm[0].name).toBe('Checkmate');
+      expect(schema.hasDefinedTerm[1].name).toBe('Stalemate');
+      expect(schema.hasDefinedTerm[2].name).toBe('En Passant');
+      // All terms should reference the parent DefinedTermSet
+      schema.hasDefinedTerm.forEach((term) => {
+        expect(term.inDefinedTermSet).toBe('https://example.com/glossary');
+      });
+    });
+
+    it('should handle Japanese locale', () => {
+      const schema = generateDefinedTermSetSchema({
+        name: 'チェス用語集',
+        description: 'チェス用語の総合辞典',
+        url: 'https://example.com/ja/glossary',
+        inLanguage: 'ja-JP',
+        terms: [
+          {
+            name: 'チェックメイト',
+            description: 'キングがチェックされ、逃げることができない状態。',
+            url: 'https://example.com/ja/glossary/checkmate',
+          },
+        ],
+      });
+
+      expect(schema.inLanguage).toBe('ja-JP');
+      expect(schema.name).toBe('チェス用語集');
+      expect(schema.hasDefinedTerm[0].name).toBe('チェックメイト');
+      expect(schema.hasDefinedTerm[0].inDefinedTermSet).toBe('https://example.com/ja/glossary');
     });
   });
 });

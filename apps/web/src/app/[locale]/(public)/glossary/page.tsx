@@ -2,6 +2,10 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
+import { SITE_URL } from '@/config';
+
+import { JsonLd, generateDefinedTermSetSchema } from '@/lib/jsonld';
+
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -10,6 +14,7 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { AlphabeticalIndex } from './_components/AlphabeticalIndex';
 import { CategoryIndex } from './_components/CategoryIndex';
+import { getGlossaryTerms } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +38,27 @@ export default async function GlossaryIndexPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
+  const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
+  const inLanguage = locale === 'ja' ? 'ja-JP' : 'en-US';
+
+  const allTerms = await getGlossaryTerms(locale);
+  const definedTerms = allTerms.map((term) => ({
+    name: locale === 'ja' && term.termJa ? term.termJa : term.term,
+    description: term.definition,
+    url: glossaryUrl,
+  }));
+
+  const definedTermSetSchema = generateDefinedTermSetSchema({
+    name: t('title'),
+    description: t('description'),
+    url: glossaryUrl,
+    inLanguage,
+    terms: definedTerms,
+  });
+
   return (
     <div className="space-y-8">
+      <JsonLd data={definedTermSetSchema} />
       <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
