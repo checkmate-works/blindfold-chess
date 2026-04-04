@@ -10,8 +10,8 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, values?: Record<string, string>) => {
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string, values?: Record<string, string>) => {
     if (values) {
       return Object.entries(values).reduce((acc, [k, v]) => acc.replace(`{${k}}`, v), key);
     }

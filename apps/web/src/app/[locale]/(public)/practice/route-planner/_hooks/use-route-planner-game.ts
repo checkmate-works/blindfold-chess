@@ -141,7 +141,7 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }:
     }
 
     startNewProblem();
-  }, [result, startNewProblem, problem, t, moves, results]);
+  }, [result, startNewProblem, problem, moves, results]);
 
   const handleEndTraining = useCallback(() => {
     showToast(tPractice('trainingEnded'), 'info');

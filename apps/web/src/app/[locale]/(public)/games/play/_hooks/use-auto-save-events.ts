@@ -58,10 +58,13 @@ export function useAutoSaveEvents({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Cleanup intentionally reads ref.current at unmount time to get the latest values.
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
       if (currentMovesRef.current.length > 0 && !gameFinished) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
         if (hasPendingChanges.current) {
           saveGame(false);
         }

@@ -12,8 +12,8 @@ afterEach(() => {
 
 const mockSignInWithOAuth = vi.fn().mockResolvedValue({ error: null });
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
 }));
 
 vi.mock('@/lib/supabase/client', () => ({

@@ -105,6 +105,12 @@ export function useAutoSave({
     gamePreferences,
     saveOnInit,
     enabled,
+    gameDataRefs.moves,
+    gameDataRefs.status,
+    gameDataRefs.playerColor,
+    gameDataRefs.skillLevel,
+    gameDataRefs.startingFen,
+    gameDataRefs.gamePreferences,
   ]);
 
   // Initial save for new games
@@ -282,6 +288,7 @@ export function useAutoSave({
       // Save immediately to ensure both player and AI moves are saved
       saveGame(false); // Don't show notification on auto-save
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- hasInitialSaveExecuted is a ref (stable identity)
   }, [moves.length, status, saveGame, currentGameId, enabled]);
 
   // Event listener management (visibilitychange, beforeunload, pathname change)

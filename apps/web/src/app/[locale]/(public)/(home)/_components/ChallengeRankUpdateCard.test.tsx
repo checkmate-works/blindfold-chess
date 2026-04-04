@@ -8,8 +8,8 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('next-intl', () => ({
-  useTranslations: (namespace: string) => {
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: (namespace: string) => {
     const keys: Record<string, Record<string, string>> = {
       'home.feed.rankUpdate': {
         newEntry: 'Entered the leaderboard!',

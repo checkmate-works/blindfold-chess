@@ -55,6 +55,7 @@ export function ImageNodeView({ node, updateAttributes, selected }: NodeViewProp
       data-size={size}
       data-align={align}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={node.attrs.src}
         alt={node.attrs.alt ?? ''}

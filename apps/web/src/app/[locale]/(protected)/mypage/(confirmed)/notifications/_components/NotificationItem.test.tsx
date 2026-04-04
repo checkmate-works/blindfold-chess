@@ -15,9 +15,8 @@ vi.mock('../_actions', () => ({
   markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
 }));
 
-vi.mock('next-intl', () => ({
-  useLocale: () => 'en',
-  useTranslations: () => (key: string, params?: Record<string, string>) => {
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string, params?: Record<string, string>) => {
     if (key === 'followMessage' && params) return `${params.actor} followed you`;
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
     if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
@@ -27,6 +26,10 @@ vi.mock('next-intl', () => ({
       return `🏆 You earned ${params.count} achievements`;
     return key;
   },
+}));
+
+vi.mock('@/i18n/use-safe-locale', () => ({
+  useSafeLocale: () => 'en',
 }));
 
 const mockRefresh = vi.fn();

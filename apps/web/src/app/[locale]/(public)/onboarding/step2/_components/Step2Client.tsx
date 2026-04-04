@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { PreferenceOption } from '@/app/[locale]/(public)/preferences/_components/PreferenceOption';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OnboardingStepLayout, PeekModeStep } from '../../_components';
@@ -22,7 +23,7 @@ export function Step2Client({ locale }: Props) {
   const t = useTranslations('onboarding');
 
   const handleSelectMode = useCallback(
-    (mode: typeof preferences.peekMode) => {
+    (mode: GamePreferences['peekMode']) => {
       updatePreferences({ peekMode: mode });
     },
     [updatePreferences]

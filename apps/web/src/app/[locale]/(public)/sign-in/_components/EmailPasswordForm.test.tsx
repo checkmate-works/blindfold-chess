@@ -12,9 +12,12 @@ afterEach(() => {
 
 const mockSignIn = vi.fn();
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-  useLocale: () => 'en',
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
+}));
+
+vi.mock('@/i18n/use-safe-locale', () => ({
+  useSafeLocale: () => 'en',
 }));
 
 vi.mock('@/i18n/routing', () => ({

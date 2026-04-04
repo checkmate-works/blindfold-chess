@@ -25,7 +25,7 @@ function createFallbackT(namespace?: string): TranslationFn {
   fn.rich = fn as unknown as TranslationFn['rich'];
   fn.markup = fn as unknown as TranslationFn['markup'];
   fn.raw = fn as unknown as TranslationFn['raw'];
-  fn.has = (_key: string) => false;
+  fn.has = () => false;
   return fn as unknown as TranslationFn;
 }
 

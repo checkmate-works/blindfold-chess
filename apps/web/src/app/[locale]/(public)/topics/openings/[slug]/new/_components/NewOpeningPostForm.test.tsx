@@ -5,8 +5,8 @@ import { NewOpeningPostForm } from './NewOpeningPostForm';
 
 vi.mock('server-only', () => ({}));
 
-vi.mock('next-intl', () => ({
-  useTranslations: (namespace: string) => {
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: (namespace: string) => {
     const translations: Record<string, Record<string, string>> = {
       'topics.openings.newPostForm': {
         preferenceLabel: 'Preference',

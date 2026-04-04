@@ -7,8 +7,8 @@ afterEach(() => {
   cleanup();
 });
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
 }));
 
 const mockPush = vi.fn();

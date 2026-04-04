@@ -75,6 +75,7 @@ describe('FeedItemCard', () => {
   describe('thumbnail', () => {
     it('should render the thumbnail content', () => {
       render(
+        // eslint-disable-next-line @next/next/no-img-element
         <FeedItemCard href="/test" thumbnail={<img src="/img.png" alt="test-thumb" />}>
           <p>body</p>
         </FeedItemCard>

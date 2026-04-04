@@ -8,8 +8,8 @@ import { useGameDelete } from './use-game-delete';
 const mockShowToast = vi.fn();
 const mockDelete = vi.fn();
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
 }));
 
 vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({

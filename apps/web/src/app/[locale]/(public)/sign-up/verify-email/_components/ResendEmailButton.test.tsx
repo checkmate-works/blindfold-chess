@@ -12,8 +12,8 @@ afterEach(() => {
 
 const mockResendEmail = vi.fn();
 
-vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string, params?: Record<string, unknown>) => {
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string, params?: Record<string, unknown>) => {
     if (params && 'seconds' in params) return `${key}:${params.seconds}`;
     return key;
   },
