@@ -1,13 +1,8 @@
 'use client';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaRedo } from 'react-icons/fa';
 
-import { ScoreCounter } from '@/app/[locale]/(public)/practice/_components/ScoreCounter';
-import { SectionTitle } from '@/app/[locale]/_components';
-
-import { DiagonalBoard } from '../../_components/DiagonalQuizProblemList';
+import { DiagonalQuizResultLayout } from './DiagonalQuizResultLayout';
 
 type Props = {
   question: string;
@@ -29,42 +24,23 @@ export function DiagonalQuizSkipResultView({
   onEndTraining,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
-  const tp = useTranslations('practice');
 
   return (
-    <>
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
-        <SectionTitle className="mb-4">{t('question', { square: question })}</SectionTitle>
-
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground mb-2">
-            {t('correctAnswer', {
-              diagonal: correctDiagonal,
-              antiDiagonal: correctAntiDiagonal,
-            })}
-          </p>
-        </div>
-
-        <DiagonalBoard targetSquare={question} />
-
-        <div className="mt-6">
-          <Button onClick={onNextAfterSkip} variant="primary" className="w-full">
-            <FaRedo className="mr-2" />
-            {t('nextProblem')}
-          </Button>
-        </div>
+    <DiagonalQuizResultLayout
+      question={question}
+      correctCount={correctCount}
+      incorrectCount={incorrectCount}
+      onNext={onNextAfterSkip}
+      onEndTraining={onEndTraining}
+    >
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground mb-2">
+          {t('correctAnswer', {
+            diagonal: correctDiagonal,
+            antiDiagonal: correctAntiDiagonal,
+          })}
+        </p>
       </div>
-
-      <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-8" />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={onEndTraining}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('endTraining')}
-        </button>
-      </div>
-    </>
+    </DiagonalQuizResultLayout>
   );
 }

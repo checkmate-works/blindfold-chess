@@ -9,6 +9,7 @@ type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
   feedbackDelayMs?: number | ((isCorrect: boolean) => number);
   scrollTargetId?: string;
   skipAutoAdvance?: boolean;
+  incorrectAutoAdvance?: boolean;
 };
 
 export function useBatchTrainingSession<TQuestion, TAnswerData>({
@@ -18,6 +19,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   feedbackDelayMs = 500,
   scrollTargetId,
   skipAutoAdvance = true,
+  incorrectAutoAdvance = true,
 }: UseBatchTrainingSessionConfig<TQuestion, TAnswerData>) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<TQuestion[]>([]);
@@ -85,16 +87,18 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
 
       onFeedbackStart?.(isCorrect);
 
-      const delay =
-        typeof feedbackDelayMs === 'function' ? feedbackDelayMs(isCorrect) : feedbackDelayMs;
+      if (isCorrect || incorrectAutoAdvance) {
+        const delay =
+          typeof feedbackDelayMs === 'function' ? feedbackDelayMs(isCorrect) : feedbackDelayMs;
 
-      setTimeout(() => {
-        setShowResult(false);
-        setLastAnswer(null);
-        setCurrentIndex((prev) => prev + 1);
-      }, delay);
+        setTimeout(() => {
+          setShowResult(false);
+          setLastAnswer(null);
+          setCurrentIndex((prev) => prev + 1);
+        }, delay);
+      }
     },
-    [currentIndex, questions, showResult, checkAnswer, feedbackDelayMs]
+    [currentIndex, questions, showResult, checkAnswer, feedbackDelayMs, incorrectAutoAdvance]
   );
 
   const handleSkip = useCallback(
@@ -128,12 +132,21 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     [currentIndex, questions, showResult, feedbackDelayMs, skipAutoAdvance]
   );
 
-  const handleNextAfterSkip = useCallback(() => {
-    if (skipAutoAdvance) return;
+  const advanceToNext = useCallback(() => {
     setShowResult(false);
     setLastAnswer(null);
     setCurrentIndex((prev) => prev + 1);
-  }, [skipAutoAdvance]);
+  }, []);
+
+  const handleNextAfterSkip = useCallback(() => {
+    if (skipAutoAdvance) return;
+    advanceToNext();
+  }, [skipAutoAdvance, advanceToNext]);
+
+  const handleNextAfterIncorrect = useCallback(() => {
+    if (incorrectAutoAdvance) return;
+    advanceToNext();
+  }, [incorrectAutoAdvance, advanceToNext]);
 
   return {
     currentQuestion: questions[currentIndex] ?? null,
@@ -145,5 +158,6 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     handleAnswer,
     handleSkip,
     handleNextAfterSkip,
+    handleNextAfterIncorrect,
   };
 }

@@ -17,6 +17,7 @@ import { ChessCoordinateKeypad } from '../../_components/ChessCoordinateKeypad';
 import { DiagonalInputField } from '../../_components/DiagonalInputField';
 import type { ActiveField } from '../../_hooks/use-diagonal-input';
 import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
+import { DiagonalQuizIncorrectResultView } from './DiagonalQuizIncorrectResultView';
 import { DiagonalQuizSkipResultView } from './DiagonalQuizSkipResultView';
 
 type Props = {
@@ -29,10 +30,13 @@ type Props = {
     correctDiagonal: string;
     correctAntiDiagonal: string;
     skipped: boolean;
+    userDiagonal?: string;
+    userAntiDiagonal?: string;
   } | null;
   onAnswer: (diagonal: string, antiDiagonal: string) => void;
   onSkip: () => void;
   onNextAfterSkip: () => void;
+  onNextAfterIncorrect: () => void;
   countdown: number | null;
   correctCount: number;
   incorrectCount: number;
@@ -47,6 +51,7 @@ export function DiagonalQuizTrainingPlaying({
   onAnswer,
   onSkip,
   onNextAfterSkip,
+  onNextAfterIncorrect,
   countdown,
   correctCount,
   incorrectCount,
@@ -115,6 +120,7 @@ export function DiagonalQuizTrainingPlaying({
   };
 
   const isSkipResult = showResult && lastAnswer?.skipped;
+  const isIncorrectResult = showResult && lastAnswer && !lastAnswer.correct && !lastAnswer.skipped;
 
   if (isSkipResult && lastAnswer) {
     return (
@@ -126,6 +132,24 @@ export function DiagonalQuizTrainingPlaying({
           correctCount={correctCount}
           incorrectCount={incorrectCount}
           onNextAfterSkip={onNextAfterSkip}
+          onEndTraining={onEndTraining}
+        />
+      </div>
+    );
+  }
+
+  if (isIncorrectResult && lastAnswer.userDiagonal && lastAnswer.userAntiDiagonal) {
+    return (
+      <div className="max-w-md mx-auto">
+        <DiagonalQuizIncorrectResultView
+          question={lastAnswer.question}
+          correctDiagonal={lastAnswer.correctDiagonal}
+          correctAntiDiagonal={lastAnswer.correctAntiDiagonal}
+          userDiagonal={lastAnswer.userDiagonal}
+          userAntiDiagonal={lastAnswer.userAntiDiagonal}
+          correctCount={correctCount}
+          incorrectCount={incorrectCount}
+          onNextAfterIncorrect={onNextAfterIncorrect}
           onEndTraining={onEndTraining}
         />
       </div>

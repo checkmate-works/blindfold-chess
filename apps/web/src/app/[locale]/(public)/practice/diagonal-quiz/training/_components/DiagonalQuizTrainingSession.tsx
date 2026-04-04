@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -43,6 +43,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     handleAnswer,
     handleSkip,
     handleNextAfterSkip,
+    handleNextAfterIncorrect,
   } = useBatchTrainingSession<string, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE),
@@ -63,6 +64,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     scrollTargetId: 'diagonal-quiz-training-session',
     feedbackDelayMs: (isCorrect) => (isCorrect ? 1000 : 2000),
     skipAutoAdvance: false,
+    incorrectAutoAdvance: false,
   });
 
   const onAnswer = useCallback(
@@ -82,6 +84,20 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     router.push(`/${locale}/practice/diagonal-quiz`);
   }, [showToast, tp, router, locale]);
 
+  const lastAnswerForDisplay = useMemo(() => {
+    if (!lastAnswer) return null;
+    const { diagonal, antiDiagonal } = getDiagonals(lastAnswer.question);
+    return {
+      correct: lastAnswer.correct,
+      question: lastAnswer.question,
+      correctDiagonal: diagonal,
+      correctAntiDiagonal: antiDiagonal,
+      skipped: lastAnswer.skipped,
+      userDiagonal: lastAnswer.userAnswerData?.diagonalAnswer,
+      userAntiDiagonal: lastAnswer.userAnswerData?.antiDiagonalAnswer,
+    };
+  }, [lastAnswer]);
+
   // Show loading state while squares are being generated
   if (!hasQuestions || !currentSquare) {
     return <PracticeResultSkeleton />;
@@ -93,20 +109,11 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
         locale={locale}
         currentSquare={currentSquare}
         showResult={showResult}
-        lastAnswer={
-          lastAnswer
-            ? {
-                correct: lastAnswer.correct,
-                question: lastAnswer.question,
-                correctDiagonal: getDiagonals(lastAnswer.question).diagonal,
-                correctAntiDiagonal: getDiagonals(lastAnswer.question).antiDiagonal,
-                skipped: lastAnswer.skipped,
-              }
-            : null
-        }
+        lastAnswer={lastAnswerForDisplay}
         onAnswer={onAnswer}
         onSkip={onSkip}
         onNextAfterSkip={handleNextAfterSkip}
+        onNextAfterIncorrect={handleNextAfterIncorrect}
         countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}

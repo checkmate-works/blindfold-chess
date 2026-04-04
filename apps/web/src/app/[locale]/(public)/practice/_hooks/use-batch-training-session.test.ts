@@ -457,4 +457,258 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).toBe(questionDuringSkip);
     });
   });
+
+  // ===========================================================================
+  // incorrectAutoAdvance: false behavior
+  // ===========================================================================
+  describe('incorrectAutoAdvance: false', () => {
+    it('does not auto-advance after an incorrect answer', () => {
+      const { result } = renderSession({ incorrectAutoAdvance: false });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      expect(result.current.showResult).toBe(true);
+
+      // Advance well past the feedback delay — should NOT auto-advance
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY * 10);
+      });
+
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(firstQuestion);
+    });
+
+    it('still auto-advances after a correct answer', () => {
+      const { result } = renderSession({ incorrectAutoAdvance: false });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleAnswer('correct');
+      });
+
+      expect(result.current.showResult).toBe(true);
+
+      // Advance past the feedback delay — correct answers should still auto-advance
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY);
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.lastAnswer).toBeNull();
+      expect(result.current.currentQuestion).not.toBe(firstQuestion);
+    });
+
+    it('handleNextAfterIncorrect advances to next question and clears showResult', () => {
+      const { result } = renderSession({ incorrectAutoAdvance: false });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      expect(result.current.showResult).toBe(true);
+
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.lastAnswer).toBeNull();
+      expect(result.current.currentQuestion).not.toBe(firstQuestion);
+    });
+
+    it('handleNextAfterIncorrect clears incorrectCount tracking correctly', () => {
+      const { result } = renderSession({ incorrectAutoAdvance: false });
+
+      // First incorrect answer
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      expect(result.current.incorrectCount).toBe(1);
+
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      // Second incorrect answer
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      expect(result.current.incorrectCount).toBe(2);
+
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      // Correct answer
+      act(() => {
+        result.current.handleAnswer('correct');
+      });
+
+      expect(result.current.correctCount).toBe(1);
+      expect(result.current.incorrectCount).toBe(2);
+    });
+
+    it('uses function-based feedbackDelayMs only for correct answers', () => {
+      const customDelay = vi.fn<(isCorrect: boolean) => number>((isCorrect) =>
+        isCorrect ? 300 : 1000
+      );
+      const { result } = renderSession({
+        incorrectAutoAdvance: false,
+        feedbackDelayMs: customDelay,
+      });
+
+      // Incorrect answer — feedbackDelayMs should NOT be called since no auto-advance
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      // The function is not called for incorrect answers when incorrectAutoAdvance is false
+      expect(customDelay).not.toHaveBeenCalled();
+
+      // Manually advance
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      // Correct answer — feedbackDelayMs should be called
+      act(() => {
+        result.current.handleAnswer('correct');
+      });
+
+      expect(customDelay).toHaveBeenCalledWith(true);
+
+      // Should auto-advance after 300ms (the correct delay)
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(result.current.showResult).toBe(false);
+    });
+  });
+
+  // ===========================================================================
+  // incorrectAutoAdvance: true (default) — handleNextAfterIncorrect is no-op
+  // ===========================================================================
+  describe('incorrectAutoAdvance: true (default)', () => {
+    it('handleNextAfterIncorrect is a no-op when incorrectAutoAdvance is true', () => {
+      const { result } = renderSession(); // default incorrectAutoAdvance: true
+
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      expect(result.current.showResult).toBe(true);
+      const questionDuringFeedback = result.current.currentQuestion;
+
+      // Call handleNextAfterIncorrect — should be no-op
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      // State should remain unchanged
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(questionDuringFeedback);
+    });
+
+    it('auto-advances after incorrect answer with default settings', () => {
+      const { result } = renderSession(); // default incorrectAutoAdvance: true
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY);
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.lastAnswer).toBeNull();
+      expect(result.current.currentQuestion).not.toBe(firstQuestion);
+    });
+  });
+
+  // ===========================================================================
+  // Combined: incorrectAutoAdvance: false and skipAutoAdvance: false
+  // ===========================================================================
+  describe('incorrectAutoAdvance: false with skipAutoAdvance: false', () => {
+    it('neither skip nor incorrect answer auto-advances', () => {
+      const { result } = renderSession({
+        incorrectAutoAdvance: false,
+        skipAutoAdvance: false,
+      });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      // Skip — should not auto-advance
+      act(() => {
+        result.current.handleSkip();
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY * 10);
+      });
+
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(firstQuestion);
+
+      // Manually advance after skip
+      act(() => {
+        result.current.handleNextAfterSkip();
+      });
+
+      const secondQuestion = result.current.currentQuestion;
+      expect(secondQuestion).not.toBe(firstQuestion);
+
+      // Incorrect answer — should not auto-advance
+      act(() => {
+        result.current.handleAnswer('wrong');
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY * 10);
+      });
+
+      expect(result.current.showResult).toBe(true);
+      expect(result.current.currentQuestion).toBe(secondQuestion);
+
+      // Manually advance after incorrect
+      act(() => {
+        result.current.handleNextAfterIncorrect();
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.currentQuestion).not.toBe(secondQuestion);
+    });
+
+    it('correct answer still auto-advances even when both flags are false', () => {
+      const { result } = renderSession({
+        incorrectAutoAdvance: false,
+        skipAutoAdvance: false,
+      });
+
+      const firstQuestion = result.current.currentQuestion;
+
+      act(() => {
+        result.current.handleAnswer('correct');
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(FEEDBACK_DELAY);
+      });
+
+      expect(result.current.showResult).toBe(false);
+      expect(result.current.currentQuestion).not.toBe(firstQuestion);
+    });
+  });
 });
