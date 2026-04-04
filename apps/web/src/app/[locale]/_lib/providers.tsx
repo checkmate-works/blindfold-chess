@@ -6,6 +6,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { ThemeProvider } from 'next-themes';
 
+import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
+import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
+import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { ToastContainer } from '../_components/ToastContainer';
@@ -20,21 +23,36 @@ type Props = {
 
 export function Providers({ children, locale, messages }: Props) {
   return (
-    <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        <NavigationGuardProvider>
-          <NuqsAdapter>
-            <AuthProvider>
-              <ToastProvider>
-                {children}
-                <Suspense>
-                  <ToastContainer />
-                </Suspense>
-              </ToastProvider>
-            </AuthProvider>
-          </NuqsAdapter>
-        </NavigationGuardProvider>
-      </ThemeProvider>
-    </NextIntlClientProvider>
+    <ErrorBoundary autoRecover>
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        timeZone="UTC"
+        onError={handleIntlError}
+        getMessageFallback={getMessageFallback}
+      >
+        <IntlAvailableContext.Provider value={true}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NavigationGuardProvider>
+              <NuqsAdapter>
+                <AuthProvider>
+                  <ToastProvider>
+                    {children}
+                    <Suspense>
+                      <ToastContainer />
+                    </Suspense>
+                  </ToastProvider>
+                </AuthProvider>
+              </NuqsAdapter>
+            </NavigationGuardProvider>
+          </ThemeProvider>
+        </IntlAvailableContext.Provider>
+      </NextIntlClientProvider>
+    </ErrorBoundary>
   );
 }

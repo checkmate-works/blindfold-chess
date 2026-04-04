@@ -28,7 +28,16 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata' });
+
+  let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
+  try {
+    t = await getTranslations({ locale, namespace: 'metadata' });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[generateMetadata] getTranslations failed, using fallback:', error);
+    }
+    t = ((key: string) => key) as typeof t;
+  }
 
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
@@ -100,8 +109,28 @@ export default async function Layout({
     notFound();
   }
 
-  const t = await getTranslations({ locale, namespace: 'metadata' });
-  const allMessages = await getMessages({ locale });
+  let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
+  let allMessages: Awaited<ReturnType<typeof getMessages>>;
+
+  try {
+    t = await getTranslations({ locale, namespace: 'metadata' });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[layout] getTranslations failed, using fallback:', error);
+    }
+    // Minimal fallback that supports only the t(key) call form used in this file.
+    // Methods like t.rich(), t.markup() etc. are NOT available on this fallback.
+    t = ((key: string) => key) as typeof t;
+  }
+
+  try {
+    allMessages = await getMessages({ locale });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[layout] getMessages failed, using empty messages:', error);
+    }
+    allMessages = {};
+  }
 
   // Namespaces used only by Server Components (via getTranslations()), not by
   // client-side useTranslations(). Excluding them reduces the client payload.
