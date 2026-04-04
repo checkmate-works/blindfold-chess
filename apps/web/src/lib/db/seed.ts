@@ -402,6 +402,14 @@ async function seedAds() {
       width: 400,
       height: 400,
     },
+    {
+      slot: 'native-ad',
+      href: 'https://example.com',
+      imagePath: '/images/banners/native-ad.webp',
+      alt: 'Advertisement',
+      width: 400,
+      height: 300,
+    },
   ] as const;
 
   for (const banner of bannerData) {
