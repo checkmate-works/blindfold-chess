@@ -127,7 +127,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Game Area */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg p-4">
+          <div>
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && (
               <GameInProgressPanel
@@ -200,6 +200,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             onNavigateToEnd={navigateToEnd}
             onRestartFromPosition={confirmationDialogs.restart.openWithPosition}
             onNewGameFromPosition={handleNewGameFromPosition}
+            showBackground={false}
           />
         </div>
       </div>

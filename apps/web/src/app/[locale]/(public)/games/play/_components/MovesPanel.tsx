@@ -36,6 +36,7 @@ type Props = {
   onNavigateToEnd: () => void;
   onRestartFromPosition: (position: number) => void;
   onNewGameFromPosition: (position: number) => void;
+  showBackground?: boolean;
 };
 
 /**
@@ -64,6 +65,7 @@ export function MovesPanel({
   onNavigateToEnd,
   onRestartFromPosition,
   onNewGameFromPosition,
+  showBackground = true,
 }: Props) {
   const t = useTranslations('play');
   const [isMovesVisible, setIsMovesVisible] = useState(false);
@@ -110,7 +112,11 @@ export function MovesPanel({
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-lg">
+    <div
+      className={
+        showBackground ? 'bg-card rounded-lg shadow-lg' : 'border border-border rounded-lg'
+      }
+    >
       {/* Moves Toggle Header */}
       <button
         onClick={() => setIsMovesVisible(!isMovesVisible)}
