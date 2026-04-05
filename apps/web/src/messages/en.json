@@ -1311,6 +1311,12 @@
     "stalemate": "Stalemate",
     "draw": "Draw",
     "youWin": "You Win!",
+    "certificate": {
+      "title": "Certificate",
+      "honorific": "{name}",
+      "guestName": "Guest",
+      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
+    },
     "youLose": "You Lose",
     "check": "Check",
     "inputMove": "Enter move (e.g., e4, Nf3)",
@@ -1378,8 +1384,10 @@
         "peekCount": "Board Peeks",
         "undoCount": "Undos",
         "hintCount": "Move Hints",
-        "viewDetails": "View move details",
-        "times": "{count} times"
+        "viewDetails": "Log",
+        "times": "{count} times",
+        "columnItem": "Item",
+        "columnDetail": "Detail"
       }
     }
   },

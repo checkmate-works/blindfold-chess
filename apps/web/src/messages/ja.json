@@ -1312,6 +1312,12 @@
     "stalemate": "ステイルメイト",
     "draw": "引き分け",
     "youWin": "あなたの勝利！",
+    "certificate": {
+      "title": "賞状",
+      "honorific": "{name} 殿",
+      "guestName": "ゲスト",
+      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
+    },
     "youLose": "あなたの負け",
     "check": "チェック",
     "inputMove": "手を入力 (例: e4, Nf3)",
@@ -1379,8 +1385,10 @@
         "peekCount": "盤面確認",
         "undoCount": "テイクバック",
         "hintCount": "合法手ヒント",
-        "viewDetails": "手ごとの詳細を表示",
-        "times": "{count}回"
+        "viewDetails": "ログ",
+        "times": "{count}回",
+        "columnItem": "項目",
+        "columnDetail": "詳細"
       }
     }
   },
