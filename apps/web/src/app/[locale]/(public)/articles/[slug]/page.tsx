@@ -73,7 +73,7 @@ export default async function ArticlePage({ params }: Props) {
     : undefined;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       <JsonLd
         data={generateBlogPostingSchema({
           title: article.title,
@@ -84,9 +84,7 @@ export default async function ArticlePage({ params }: Props) {
         })}
       />
 
-      <header>
-        <PageTitle>{article.title}</PageTitle>
-      </header>
+      <PageTitle>{article.title}</PageTitle>
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none">

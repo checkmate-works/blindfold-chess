@@ -64,10 +64,8 @@ export default async function ManualArticlePage({ params }: Props) {
   const title = article.metadata.title;
 
   return (
-    <div className="space-y-12">
-      <header>
-        <PageTitle>{article.metadata.title}</PageTitle>
-      </header>
+    <div className="space-y-8">
+      <PageTitle>{article.metadata.title}</PageTitle>
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none">

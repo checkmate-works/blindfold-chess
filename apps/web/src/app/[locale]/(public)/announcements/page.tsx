@@ -13,6 +13,7 @@ import {
   PagePanel,
   PageTitle,
   PaginationNav,
+  SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -70,17 +71,15 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   );
 
   return (
-    <div className="space-y-12">
-      <header>
-        <PageTitle>{t('pageTitle')}</PageTitle>
-      </header>
+    <div className="space-y-8">
+      <PageTitle>{t('pageTitle')}</PageTitle>
 
       <PagePanel>
         {announcements.length === 0 ? (
           <p className="text-muted-foreground">{t('noAnnouncements')}</p>
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-foreground">{t('announcementsListTitle')}</h2>
+            <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
             <ListLinkContainer>
               {announcements.map((announcement) => {
                 const publishedDate = announcement.publishedAt

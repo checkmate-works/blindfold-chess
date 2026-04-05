@@ -13,6 +13,7 @@ import {
   PagePanel,
   PageTitle,
   PaginationNav,
+  SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -70,18 +71,16 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   }));
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       <JsonLd data={generateItemListSchema(itemListItems)} />
-      <header>
-        <PageTitle>{t('pageTitle')}</PageTitle>
-      </header>
+      <PageTitle>{t('pageTitle')}</PageTitle>
 
       <PagePanel>
         {articles.length === 0 ? (
           <p className="text-muted-foreground">{t('noArticles')}</p>
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-foreground">{t('articlesListTitle')}</h2>
+            <SectionTitle>{t('articlesListTitle')}</SectionTitle>
             <ListLinkContainer>
               {articles.map((article) => {
                 const publishedDate = article.publishedAt

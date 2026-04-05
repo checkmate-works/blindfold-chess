@@ -68,10 +68,8 @@ export default async function AnnouncementPage({ params }: Props) {
 
     if (!user) {
       return (
-        <div className="space-y-12">
-          <header>
-            <PageTitle>{announcement.title}</PageTitle>
-          </header>
+        <div className="space-y-8">
+          <PageTitle>{announcement.title}</PageTitle>
 
           <PagePanel>
             <div className="text-center py-8">
@@ -111,10 +109,8 @@ export default async function AnnouncementPage({ params }: Props) {
     : undefined;
 
   return (
-    <div className="space-y-12">
-      <header>
-        <PageTitle>{announcement.title}</PageTitle>
-      </header>
+    <div className="space-y-8">
+      <PageTitle>{announcement.title}</PageTitle>
 
       <PagePanel>
         <article className="prose prose-slate dark:prose-invert max-w-none break-words">

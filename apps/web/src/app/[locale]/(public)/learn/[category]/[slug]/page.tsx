@@ -105,12 +105,9 @@ export default async function LearnArticlePage({ params }: Props) {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       <JsonLd data={generateArticleSchema(articleSchemaData)} />
-      {/* Article header */}
-      <header>
-        <PageTitle>{article.metadata.title}</PageTitle>
-      </header>
+      <PageTitle>{article.metadata.title}</PageTitle>
 
       <PagePanel>
         {/* Article content with narrower width for readability */}
