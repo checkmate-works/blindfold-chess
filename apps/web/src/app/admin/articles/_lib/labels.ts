@@ -1,5 +1,11 @@
 type TranslationFn = (key: string) => string;
 
+/**
+ * Build a labels object for `ArticleForm` from the i18n translation function.
+ *
+ * Centralizes label resolution so that `NewArticlePage` and `EditArticlePage`
+ * only need to pass the appropriate `formTitle` (create vs. edit).
+ */
 export function getArticleFormLabels(t: TranslationFn, formTitle: string) {
   return {
     formTitle,
@@ -30,5 +36,12 @@ export function getArticleFormLabels(t: TranslationFn, formTitle: string) {
     unsavedChangesMessage: t('form.unsavedChangesMessage'),
     unsavedChangesConfirm: t('form.unsavedChangesConfirm'),
     unsavedChangesCancel: t('form.unsavedChangesCancel'),
+    savePublished: t('form.savePublished'),
+    savingPublished: t('form.savingPublished'),
+    publishedSaved: t('form.publishedSaved'),
+    publishedConfirmTitle: t('form.publishedConfirmTitle'),
+    publishedConfirmMessage: t('form.publishedConfirmMessage'),
+    publishedConfirmConfirm: t('form.publishedConfirmConfirm'),
+    publishedConfirmCancel: t('form.publishedConfirmCancel'),
   };
 }

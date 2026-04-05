@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 
 const MarkdownRenderer = nextDynamic(
   () =>
-    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+    import('@/app/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
     })),
   { ssr: true }

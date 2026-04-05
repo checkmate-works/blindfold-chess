@@ -2457,7 +2457,14 @@
         "unsavedChangesTitle": "未保存の変更",
         "unsavedChangesMessage": "未保存の変更があります。このページを離れてもよろしいですか？",
         "unsavedChangesConfirm": "離れる",
-        "unsavedChangesCancel": "戻る"
+        "unsavedChangesCancel": "戻る",
+        "savePublished": "保存",
+        "savingPublished": "保存中...",
+        "publishedSaved": "記事を保存しました",
+        "publishedConfirmTitle": "保存の確認",
+        "publishedConfirmMessage": "この記事は公開状態です。修正が記事に即座に反映されますがよろしいですか？",
+        "publishedConfirmConfirm": "保存する",
+        "publishedConfirmCancel": "キャンセル"
       }
     },
     "topicPosts": {

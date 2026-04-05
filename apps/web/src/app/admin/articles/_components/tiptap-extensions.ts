@@ -15,6 +15,25 @@ type CreateExtensionsOptions = {
   placeholder: string;
 };
 
+/**
+ * Create the Tiptap extension stack used by the admin article editor.
+ *
+ * Extensions included:
+ * - **StarterKit** — paragraph, heading (h2, h3), bold, italic, strike,
+ *   code, codeBlock, bulletList, orderedList, blockquote, horizontalRule, hardBreak.
+ * - **Link** — inline hyperlinks (opens in new tab from renderer; click disabled in editor).
+ * - **Placeholder** — ghost text when editor is empty.
+ * - **ResizableImage** — image with `size` (large/small) and `align` (left/center/right)
+ *   attributes, rendered via a custom React NodeView with toggle controls.
+ * - **Youtube** — YouTube embed with custom NodeView and privacy-enhanced URLs
+ *   (`youtube-nocookie.com`).
+ * - **XEmbed** — X (formerly Twitter) embed with custom NodeView; uses `react-tweet`
+ *   for rendering on public pages.
+ *
+ * @remarks
+ * The node name for X embeds is kept as `'twitterEmbed'` for backward compatibility
+ * with already-stored Tiptap JSON documents.
+ */
 export function createTiptapExtensions({ placeholder }: CreateExtensionsOptions) {
   return [
     StarterKit.configure({

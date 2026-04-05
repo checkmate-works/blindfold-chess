@@ -10,11 +10,10 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components';
-
-import { ChessBoardDemo } from './ChessBoardDemo';
-import { PageTitle } from './PageTitle';
-import { SectionTitle } from './SectionTitle';
-import { SubsectionTitle } from './SubsectionTitle';
+import { ChessBoardDemo } from '@/app/[locale]/_components/ChessBoardDemo';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
+import { SubsectionTitle } from '@/app/[locale]/_components/SubsectionTitle';
 
 type Props = {
   content: string;

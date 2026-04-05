@@ -14,7 +14,7 @@ import { getManualArticle } from '../_lib/utils';
 
 const MarkdownRenderer = nextDynamic(
   () =>
-    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+    import('@/app/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
     })),
   { ssr: true }

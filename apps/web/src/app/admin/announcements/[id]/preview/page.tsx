@@ -11,7 +11,7 @@ import { AnnouncementPreviewForm } from '../../_components/AnnouncementPreviewFo
 
 const MarkdownRenderer = dynamic(
   () =>
-    import('@/app/[locale]/_components/MarkdownRenderer').then((m) => ({
+    import('@/app/_components/MarkdownRenderer').then((m) => ({
       default: m.MarkdownRenderer,
     })),
   { ssr: true }

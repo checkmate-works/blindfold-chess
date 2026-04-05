@@ -14,6 +14,17 @@ type ArticleData = {
   icon: string | null;
 };
 
+/**
+ * Validate article mutation data before persisting.
+ *
+ * @returns An error message string if validation fails, or `null` if valid.
+ *
+ * @remarks
+ * - `content` is allowed to be empty when `contentFormat` is `'tiptap_json'`
+ *   because content is stored in `contentJson` and `content` is only a
+ *   plain-text fallback (may be empty for image-only articles).
+ * - `publishedAt` is required when `status` is `'published'`.
+ */
 export function validateArticleData(data: ArticleData): string | null {
   if (!data.slug || data.slug.length > 255) {
     return 'invalid slug';

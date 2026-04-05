@@ -2495,7 +2495,14 @@
         "unsavedChangesTitle": "Unsaved Changes",
         "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?",
         "unsavedChangesConfirm": "Leave",
-        "unsavedChangesCancel": "Stay"
+        "unsavedChangesCancel": "Stay",
+        "savePublished": "Save",
+        "savingPublished": "Saving...",
+        "publishedSaved": "Article saved",
+        "publishedConfirmTitle": "Confirm Save",
+        "publishedConfirmMessage": "This article is published. Your changes will be reflected immediately. Are you sure?",
+        "publishedConfirmConfirm": "Save",
+        "publishedConfirmCancel": "Cancel"
       }
     },
     "ads": "Ads",

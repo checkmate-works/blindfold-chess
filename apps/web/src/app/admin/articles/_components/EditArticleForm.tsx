@@ -26,9 +26,15 @@ type EditArticleFormProps = {
 };
 
 export function EditArticleForm({ id, defaultValues, categories, labels }: EditArticleFormProps) {
+  // TODO: publishedAt が未来日時の場合は「公開予定」であり、まだ公開状態ではない。
+  // 現在は未来日時チェックが未実装のため、publishedAt が存在するだけで公開済みと判定している。
+  const isPublished = defaultValues.status === 'published' && defaultValues.publishedAt != null;
+
   return (
     <ArticleForm
       articleId={id}
+      contentFormat={defaultValues.contentFormat}
+      isPublished={isPublished}
       defaultValues={{
         slug: defaultValues.slug,
         title: defaultValues.title,
@@ -45,7 +51,7 @@ export function EditArticleForm({ id, defaultValues, categories, labels }: EditA
       onSaveDraft={(data) =>
         updateArticle(id, {
           ...data,
-          status: 'draft',
+          status: isPublished ? 'published' : 'draft',
           pinnedAt: defaultValues.pinnedAt,
           publishedAt: defaultValues.publishedAt,
           excerpt: data.excerpt || null,

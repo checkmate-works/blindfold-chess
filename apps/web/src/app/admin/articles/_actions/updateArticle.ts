@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -12,6 +12,16 @@ import type { MutationResult } from '../../_lib/action-factories';
 import type { ArticleMutationData } from '../_lib/types';
 import { validateArticleData } from '../_lib/validation';
 
+/**
+ * Server Action: Update an existing article.
+ *
+ * Overwrites all mutable fields on the `articles` row. The `contentFormat`
+ * defaults to `'markdown'` if not provided (for backward compatibility).
+ * Revalidates the edit and publish pages after a successful update.
+ *
+ * @throws Re-throws non-unique-constraint errors. Returns `{ error }` for
+ *         validation failures, not-found, and slug+locale uniqueness violations.
+ */
 export async function updateArticle(
   id: string,
   data: ArticleMutationData
@@ -56,5 +66,8 @@ export async function updateArticle(
 
   revalidatePath(`/admin/articles/${id}/edit`);
   revalidatePath(`/admin/articles/${id}/publish`);
+  // Invalidate public article caches (unstable_cache with tag 'articles')
+  // so that published article changes are reflected immediately on public pages.
+  revalidateTag('articles', { expire: 60 });
   return mutationSuccess(id, '/admin/articles');
 }

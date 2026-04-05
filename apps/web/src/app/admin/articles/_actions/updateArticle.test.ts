@@ -7,6 +7,7 @@ const mockSelectFromWhere = vi.fn();
 const mockUpdateSet = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -60,6 +61,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
@@ -555,6 +557,51 @@ describe('updateArticle', () => {
     await expect(updateArticle(articleId, validData)).rejects.toThrow('Connection failed');
   });
 
+  // --- revalidateTag tests ---
+
+  it('should call revalidateTag with articles tag after successful update', async () => {
+    mockUpdateSetWhere.mockReset();
+    setupAdminWithArticle();
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidateTag).toHaveBeenCalledWith('articles', { expire: 60 });
+  });
+
+  it('should revalidate edit and publish paths for the specific article after successful update', async () => {
+    mockUpdateSetWhere.mockReset();
+    setupAdminWithArticle();
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidatePath).toHaveBeenCalledWith(`/admin/articles/${articleId}/edit`);
+    expect(mockRevalidatePath).toHaveBeenCalledWith(`/admin/articles/${articleId}/publish`);
+  });
+
+  it('should not call revalidateTag when unauthorized', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+  });
+
+  it('should not call revalidateTag when article not found', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+  });
+
+  it('should not call revalidateTag when validation fails', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await updateArticle(articleId, { ...validData, slug: '' });
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+  });
+
+  // --- Tests using mockImplementation (must be placed last since vi.clearAllMocks
+  // does not reset mockImplementation — only vi.restoreAllMocks does) ---
+
   it('should not call revalidatePath on unique violation', async () => {
     setupAdminWithArticle();
 
@@ -566,5 +613,18 @@ describe('updateArticle', () => {
 
     await updateArticle(articleId, validData);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('should not call revalidateTag on unique violation', async () => {
+    setupAdminWithArticle();
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await updateArticle(articleId, validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 });

@@ -11,6 +11,15 @@ import { PlusMenu } from './PlusMenu';
 import './tiptap-editor.css';
 import { createTiptapExtensions } from './tiptap-extensions';
 
+/**
+ * Props for the Tiptap rich-text editor component.
+ *
+ * @remarks
+ * `articleId` controls whether image upload is enabled. New (unsaved) articles
+ * have no `articleId`, so images cannot be uploaded until the first draft save.
+ * This is because images are stored in Supabase Storage under the article's ID
+ * prefix and tracked in the `article_images` table with a foreign key.
+ */
 type TiptapEditorProps = {
   initialContent?: TiptapJsonContent | null;
   onChange: (json: TiptapJsonContent) => void;

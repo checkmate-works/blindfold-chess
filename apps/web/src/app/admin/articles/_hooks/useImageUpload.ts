@@ -15,6 +15,22 @@ type UseImageUploadOptions = {
   onImageUploadError?: (message: string) => void;
 };
 
+/**
+ * Hook that manages image upload lifecycle for the Tiptap article editor.
+ *
+ * Upload flow:
+ * 1. Insert a transparent 1x1 GIF placeholder node into the editor at cursor position.
+ * 2. POST the file as multipart/form-data to `/api/admin/articles/[id]/images`.
+ * 3. On success, replace the placeholder with the final Supabase Storage public URL.
+ * 4. On failure, remove the placeholder and show an error toast.
+ *
+ * @remarks
+ * - Upload is disabled until the article has been saved (no `articleId` yet),
+ *   because images are stored under `article-images/{articleId}/` in Supabase Storage.
+ * - Max file size: 5 MB. Accepted types: JPEG, PNG, WebP, SVG.
+ * - Only one image is uploaded at a time (first file from the input/drop).
+ * - Supports drag-and-drop and paste via editor `handleDrop` / `handlePaste` props.
+ */
 export function useImageUpload({ editor, articleId, onImageUploadError }: UseImageUploadOptions) {
   const [uploadCount, setUploadCount] = useState(0);
   const isUploadingImage = uploadCount > 0;

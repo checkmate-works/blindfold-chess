@@ -8,14 +8,18 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
 import { LuSettings, LuX } from 'react-icons/lu';
 
+import { Modal } from '@/app/[locale]/_components/Modal';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { extractPlainText } from '../_lib/extract-plain-text';
-import type { ArticleEditData, TiptapJsonContent } from '../_lib/types';
+import type { ArticleEditData, ContentFormat, TiptapJsonContent } from '../_lib/types';
+import { MarkdownEditor } from './MarkdownEditor';
 import { TiptapEditor } from './TiptapEditor';
 
 type ArticleFormProps = {
   articleId?: string;
+  contentFormat?: ContentFormat;
+  isPublished?: boolean;
   defaultValues?: ArticleEditData;
   categories?: { id: string; name: string }[];
   onSaveDraft: (
@@ -50,11 +54,40 @@ type ArticleFormProps = {
     unsavedChangesMessage: string;
     unsavedChangesConfirm: string;
     unsavedChangesCancel: string;
+    savePublished: string;
+    savingPublished: string;
+    publishedSaved: string;
+    publishedConfirmTitle: string;
+    publishedConfirmMessage: string;
+    publishedConfirmConfirm: string;
+    publishedConfirmCancel: string;
   };
 };
 
+/**
+ * Main article editor form used for both creating and editing articles.
+ *
+ * Renders a full-height editor layout with:
+ * - Top bar: save draft, publish settings, cancel buttons
+ * - Slug + locale inputs
+ * - Title input
+ * - Tiptap rich-text editor (always `tiptap_json` format)
+ * - Collapsible metadata side panel (category, excerpt, description, icon)
+ *
+ * @remarks
+ * - `contentFormat` in `buildFormData()` is set based on the `contentFormat`
+ *   prop: `'markdown'` articles produce `contentFormat: 'markdown'` with the
+ *   raw Markdown string in `content`, while `'tiptap_json'` articles produce
+ *   `contentFormat: 'tiptap_json'` with the Tiptap JSON document in `contentJson`.
+ * - Markdown articles are edited via a dedicated `MarkdownEditor` (textarea
+ *   with live preview), while Tiptap articles use the rich-text `TiptapEditor`.
+ * - Plain text is extracted from the Tiptap JSON via `extractPlainText()`
+ *   and stored in the `content` field for full-text search compatibility.
+ */
 export function ArticleForm({
   articleId,
+  contentFormat = 'tiptap_json',
+  isPublished = false,
   defaultValues,
   categories = [],
   onSaveDraft,
@@ -65,11 +98,16 @@ export function ArticleForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
+  const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
+  const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
 
   const [slug, setSlug] = useState(defaultValues?.slug ?? '');
   const [title, setTitle] = useState(defaultValues?.title ?? '');
   const [contentJson, setContentJson] = useState<TiptapJsonContent | null>(
     defaultValues?.contentJson ?? null
+  );
+  const [markdownContent, setMarkdownContent] = useState(
+    contentFormat === 'markdown' ? (defaultValues?.content ?? '') : ''
   );
   const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
   const [excerpt, setExcerpt] = useState(defaultValues?.excerpt ?? '');
@@ -81,6 +119,7 @@ export function ArticleForm({
     const initial = defaultValues ?? {
       slug: '',
       title: '',
+      content: '',
       contentJson: null,
       locale: 'en',
       excerpt: '',
@@ -88,25 +127,55 @@ export function ArticleForm({
       categoryId: '',
       icon: '',
     };
+    const contentChanged =
+      contentFormat === 'markdown'
+        ? markdownContent !== (initial.content ?? '')
+        : JSON.stringify(contentJson) !== JSON.stringify(initial.contentJson);
     return (
       slug !== initial.slug ||
       title !== initial.title ||
-      JSON.stringify(contentJson) !== JSON.stringify(initial.contentJson) ||
+      contentChanged ||
       locale !== initial.locale ||
       excerpt !== initial.excerpt ||
       description !== initial.description ||
       categoryId !== initial.categoryId ||
       icon !== initial.icon
     );
-  }, [slug, title, contentJson, locale, excerpt, description, categoryId, icon, defaultValues]);
+  }, [
+    slug,
+    title,
+    contentJson,
+    markdownContent,
+    contentFormat,
+    locale,
+    excerpt,
+    description,
+    categoryId,
+    icon,
+    defaultValues,
+  ]);
 
   const {
     isBlocking,
     confirm: confirmNavigation,
     cancel: cancelNavigation,
-  } = useUnsavedChanges({ isDirty });
+  } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish });
 
   const buildFormData = useCallback((): ArticleEditData => {
+    if (contentFormat === 'markdown') {
+      return {
+        slug,
+        title,
+        content: markdownContent,
+        contentJson: null,
+        contentFormat: 'markdown',
+        locale,
+        excerpt,
+        description,
+        categoryId,
+        icon,
+      };
+    }
     const plainText = extractPlainText(contentJson);
     return {
       slug,
@@ -120,13 +189,24 @@ export function ArticleForm({
       categoryId,
       icon,
     };
-  }, [slug, title, contentJson, locale, excerpt, description, categoryId, icon]);
+  }, [
+    slug,
+    title,
+    contentJson,
+    markdownContent,
+    contentFormat,
+    locale,
+    excerpt,
+    description,
+    categoryId,
+    icon,
+  ]);
 
   const handleContentChange = useCallback((json: TiptapJsonContent) => {
     setContentJson(json);
   }, []);
 
-  const handleSaveDraft = () => {
+  const executeSave = () => {
     setError(null);
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
@@ -134,7 +214,7 @@ export function ArticleForm({
       if ('error' in result) {
         setError(result.error);
       } else {
-        showToast(labels.draftSaved, 'success');
+        showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
         // For new articles, update URL to edit page so subsequent saves are updates
         if (!defaultValues) {
           router.replace(`/admin/articles/${result.id}/edit`);
@@ -143,13 +223,28 @@ export function ArticleForm({
     });
   };
 
+  const handleSaveDraft = () => {
+    if (isPublished) {
+      setPublishedConfirmOpen(true);
+    } else {
+      executeSave();
+    }
+  };
+
+  const handlePublishedConfirm = () => {
+    setPublishedConfirmOpen(false);
+    executeSave();
+  };
+
   const handlePublishSettings = () => {
     setError(null);
+    setIsNavigatingToPublish(true);
     startTransition(async () => {
       const result = await onSaveDraft(buildFormData());
 
       if ('error' in result) {
         setError(result.error);
+        setIsNavigatingToPublish(false);
       } else {
         router.push(`/admin/articles/${result.id}/publish`);
       }
@@ -176,7 +271,13 @@ export function ArticleForm({
             disabled={isPending}
             className="px-4 py-1.5 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isPending ? labels.savingDraft : labels.saveDraft}
+            {isPending
+              ? isPublished
+                ? labels.savingPublished
+                : labels.savingDraft
+              : isPublished
+                ? labels.savePublished
+                : labels.saveDraft}
           </button>
           <button
             type="button"
@@ -241,17 +342,28 @@ export function ArticleForm({
             />
           </div>
 
-          {/* Tiptap editor */}
+          {/* Editor */}
           <div className="flex-1 px-6 pb-4 flex flex-col">
             <div className="flex-1 flex flex-col rounded bg-card">
-              <TiptapEditor
-                initialContent={contentJson}
-                onChange={handleContentChange}
-                placeholder={labels.contentPlaceholder}
-                ariaLabel={labels.content}
-                articleId={articleId}
-                onImageUploadError={(message) => showToast(message, 'error')}
-              />
+              {contentFormat === 'markdown' ? (
+                <MarkdownEditor
+                  defaultContent={markdownContent}
+                  onChange={setMarkdownContent}
+                  placeholder={labels.contentPlaceholder}
+                  ariaLabel={labels.content}
+                  tabEditLabel={labels.tabEdit}
+                  tabPreviewLabel={labels.tabPreview}
+                />
+              ) : (
+                <TiptapEditor
+                  initialContent={contentJson}
+                  onChange={handleContentChange}
+                  placeholder={labels.contentPlaceholder}
+                  ariaLabel={labels.content}
+                  articleId={articleId}
+                  onImageUploadError={(message) => showToast(message, 'error')}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -265,6 +377,35 @@ export function ArticleForm({
           confirmLabel={labels.unsavedChangesConfirm}
           cancelLabel={labels.unsavedChangesCancel}
         />
+
+        <Modal
+          isOpen={publishedConfirmOpen}
+          onClose={() => setPublishedConfirmOpen(false)}
+          maxWidth="max-w-sm"
+        >
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              {labels.publishedConfirmTitle}
+            </h2>
+            <p className="text-sm text-muted-foreground">{labels.publishedConfirmMessage}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPublishedConfirmOpen(false)}
+                className="px-4 py-2 text-sm rounded-md border border-border bg-card text-foreground hover:bg-secondary transition-colors"
+              >
+                {labels.publishedConfirmCancel}
+              </button>
+              <button
+                type="button"
+                onClick={handlePublishedConfirm}
+                className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-colors"
+              >
+                {labels.publishedConfirmConfirm}
+              </button>
+            </div>
+          </div>
+        </Modal>
 
         {/* Metadata side panel */}
         {metadataOpen && (
