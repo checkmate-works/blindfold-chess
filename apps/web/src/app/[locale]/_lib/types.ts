@@ -14,6 +14,7 @@ export type NavigationIconName =
   | 'home'
   | 'dashboard'
   | 'articles'
+  | 'games'
   | 'getting-started'
   | 'learn'
   | 'practice'

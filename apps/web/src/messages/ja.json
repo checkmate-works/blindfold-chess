@@ -3249,5 +3249,11 @@
       "1kyu": "1級",
       "1dan": "初段"
     }
+  },
+  "MobileTabBar": {
+    "games": "ゲーム一覧",
+    "practice": "練習",
+    "topics": "トピック",
+    "mypage": "マイページ"
   }
 }

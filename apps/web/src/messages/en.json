@@ -3293,5 +3293,11 @@
       "1kyu": "1st Kyū",
       "1dan": "1st Dan"
     }
+  },
+  "MobileTabBar": {
+    "games": "Games",
+    "practice": "Practice",
+    "topics": "Topics",
+    "mypage": "My Page"
   }
 }

@@ -5,6 +5,7 @@ import {
   FaDumbbell,
   FaEnvelope,
   FaGraduationCap,
+  FaHome,
   FaList,
   FaNewspaper,
   FaQuestionCircle,
@@ -13,14 +14,16 @@ import {
   FaTrophy,
   FaUsers,
 } from 'react-icons/fa';
-import { GiBlackBelt } from 'react-icons/gi';
+import { GiBlackBelt, GiCrossedSwords } from 'react-icons/gi';
 
 import type { NavigationIconName } from './types';
 
 export const getIcon = (iconName: NavigationIconName) => {
   switch (iconName) {
     case 'home':
-      return null;
+      return <FaHome className="h-5 w-5" />;
+    case 'games':
+      return <GiCrossedSwords className="h-5 w-5" />;
     case 'dashboard':
       return <FaTachometerAlt className="h-5 w-5" />;
     case 'articles':

@@ -14,6 +14,7 @@ import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
+import { MobileTabBar } from './_components/MobileTabBar';
 import { buildPageTitle } from './_lib/metadata';
 import { Providers } from './_lib/providers';
 
@@ -175,6 +176,9 @@ export default async function Layout({
               <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
             </main>
             <Footer locale={locale} />
+            {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
+            <div className="h-20 md:h-0" />
+            <MobileTabBar />
           </div>
         </Providers>
       </body>
