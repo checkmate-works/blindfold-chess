@@ -225,6 +225,13 @@ describe('ArticleForm', () => {
   });
 
   it('should call onSaveDraft with form data including contentJson and show toast', async () => {
+    const mockLocationReplace = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { ...originalLocation, replace: mockLocationReplace },
+      writable: true,
+    });
+
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'test-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -250,8 +257,13 @@ describe('ArticleForm', () => {
       })
     );
     expect(mockPush).not.toHaveBeenCalled();
-    expect(mockReplace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
+    expect(mockLocationReplace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
     expect(mockShowToast).toHaveBeenCalledWith('Draft saved', 'success');
+
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    });
   });
 
   it('should call onSaveDraft and navigate to publish page on Publish Settings', async () => {
@@ -1132,7 +1144,14 @@ describe('ArticleForm', () => {
     expect(lastCallAfterError[0]).toEqual({ enabled: true });
   });
 
-  it('should disable navigation guard after successful Save Draft for new articles (redirect)', async () => {
+  it('should redirect with window.location.replace after successful Save Draft for new articles', async () => {
+    const mockLocationReplace = vi.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { ...originalLocation, replace: mockLocationReplace },
+      writable: true,
+    });
+
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'draft-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -1147,11 +1166,14 @@ describe('ArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    // After successful save of a new article, isNavigatingAfterSave is set to true
-    // so the navigation guard is disabled to allow the redirect to the edit page.
-    const allCalls = mockUseNavigationGuard.mock.calls;
-    const lastCall = allCalls[allCalls.length - 1];
-    expect(lastCall[0]).toEqual({ enabled: false });
+    // After successful save of a new article, window.location.replace is used
+    // to bypass the client-side navigation guard entirely.
+    expect(mockLocationReplace).toHaveBeenCalledWith('/admin/articles/draft-id/edit');
+
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    });
   });
 
   it('should disable navigation guard for markdown Publish Settings navigation', async () => {

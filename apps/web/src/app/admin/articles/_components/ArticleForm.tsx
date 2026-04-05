@@ -104,7 +104,6 @@ export function ArticleForm({
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
-  const [isNavigatingAfterSave, setIsNavigatingAfterSave] = useState(false);
 
   const [slug, setSlug] = useState(defaultValues?.slug ?? defaultSlug ?? '');
   const [title, setTitle] = useState(defaultValues?.title ?? '');
@@ -166,7 +165,7 @@ export function ArticleForm({
     isBlocking,
     confirm: confirmNavigation,
     cancel: cancelNavigation,
-  } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish && !isNavigatingAfterSave });
+  } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish });
 
   const buildFormData = useCallback((): ArticleEditData => {
     if (contentFormat === 'markdown') {
@@ -213,13 +212,9 @@ export function ArticleForm({
     setContentJson(json);
   }, []);
 
-  const redirectAfterSave = useCallback(
-    (id: string) => {
-      setIsNavigatingAfterSave(true);
-      router.replace(`/admin/articles/${id}/edit`);
-    },
-    [router]
-  );
+  const redirectAfterSave = (id: string) => {
+    window.location.replace(`/admin/articles/${id}/edit`);
+  };
 
   const executeSave = () => {
     setError(null);
