@@ -9,27 +9,6 @@ import { attachProfilePostMeta } from './post-meta';
 import type { ProfilePostWithReplyMeta } from './shared';
 
 /**
- * Get the most recent top-level posts across all topic types (square + opening) with reply metadata.
- */
-export async function getRecentPostsAcrossTopics(
-  limit = 5,
-  currentUserId?: string
-): Promise<ProfilePostWithReplyMeta[]> {
-  const results = await buildProfilePostQuery()
-    .where(
-      and(
-        inArray(topicPosts.topicType, ['square', 'opening']),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
-    .orderBy(desc(topicPosts.createdAt))
-    .limit(limit);
-
-  return attachProfilePostMeta(results, currentUserId);
-}
-
-/**
  * Get the count of top-level posts across all topic types (square + opening).
  */
 export const getPostCountAcrossTopics = unstable_cache(

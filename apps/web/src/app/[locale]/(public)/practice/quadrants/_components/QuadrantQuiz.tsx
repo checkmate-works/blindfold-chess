@@ -19,7 +19,7 @@ type QuadrantLocalSettings = {
   mode: PracticeMode;
 };
 
-export const STORAGE_KEY = 'quadrantAnchors_settings';
+const STORAGE_KEY = 'quadrantAnchors_settings';
 const DEFAULTS: QuadrantLocalSettings = {
   problemCount: 10,
   orientation: 'white',

@@ -11,7 +11,7 @@ export type PresetPosition = {
  * FEN problems for FEN reconstruction training
  * Sourced from position-memory module - from simple to complex
  */
-export const FEN_PROBLEMS = [
+const FEN_PROBLEMS = [
   {
     fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     name: 'Starting Position',

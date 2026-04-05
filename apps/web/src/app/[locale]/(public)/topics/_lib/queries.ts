@@ -22,11 +22,7 @@ export type {
 // Re-export from split modules for backward compatibility
 export { getLikeMetaForPost, getLikedPostCountByUser, getLikedPostsByUser } from './like-queries';
 export { getPostCountByUserId, getPostsByUserId } from './user-post-queries';
-export {
-  getPostCountAcrossTopics,
-  getPostsAcrossTopicsPaginated,
-  getRecentPostsAcrossTopics,
-} from './cross-topic-queries';
+export { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './cross-topic-queries';
 
 /**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').

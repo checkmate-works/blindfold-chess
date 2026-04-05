@@ -42,10 +42,6 @@ export function saveSettings(settings: MoveSequenceSettings): void {
   }
 }
 
-export function getDefaultSettings(): MoveSequenceSettings {
-  return { ...defaultSettings };
-}
-
 export function clearSettings(): void {
   if (typeof window === 'undefined') {
     return;

@@ -13,7 +13,7 @@ export type TailwindThemeClasses = {
 };
 
 // Board theme Tailwind class definitions
-export const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
+const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
   lichess: {
     // Lichess brown theme
     light: 'bg-[#f0d9b5] dark:bg-[#f0d9b5]',
