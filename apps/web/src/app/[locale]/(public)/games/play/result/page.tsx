@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -38,13 +38,13 @@ export default async function ResultPage({ params }: Props) {
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
 
   return (
-    <>
-      <div className="mb-8">
-        <PageTitle>{t('title')}</PageTitle>
-      </div>
-      <Suspense>
-        <ResultClient locale={locale} brandName={tMetadata('siteName')} />
-      </Suspense>
-    </>
+    <div className="space-y-8">
+      <PageTitle>{t('title')}</PageTitle>
+      <PagePanel>
+        <Suspense>
+          <ResultClient locale={locale} brandName={tMetadata('siteName')} />
+        </Suspense>
+      </PagePanel>
+    </div>
   );
 }

@@ -210,6 +210,7 @@ function OperationLogSummary({
 
 function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) {
   const t = useTranslations('play');
+  const tGames = useTranslations('gamesPage');
   const router = useRouter();
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
@@ -312,7 +313,7 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Result Area */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg p-4">
+          <div>
             <div className="flex flex-col gap-4">
               {/* Game Result */}
               <div className="py-6 text-center flex flex-col items-center gap-3">
@@ -398,6 +399,7 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
             displayFen={displayFen}
             startingFen={game.startingFen}
             gameInProgress={false}
+            showBackground={false}
             onNavigateToPosition={navigateToPosition}
             onNavigateToStart={navigateToStart}
             onNavigatePrevious={navigatePrevious}
@@ -441,7 +443,11 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
 
       <Divider />
       <ClientBreadcrumb
-        items={[{ label: t('title'), href: '/games/play' }, { label: t('gameOver') }]}
+        items={[
+          { label: tGames('pageTitle'), href: '/games' },
+          { label: t('title'), href: '/games/play' },
+          { label: t('gameOver') },
+        ]}
         locale={locale}
         brandName={brandName}
       />
