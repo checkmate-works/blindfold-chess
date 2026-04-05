@@ -39,6 +39,7 @@ export default async function OpeningGamePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
   const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
   const allOpenings = await db
@@ -69,6 +70,7 @@ export default async function OpeningGamePage({ params }: Props) {
           <Breadcrumb
             locale={locale}
             items={[
+              { label: tGames('pageTitle'), href: '/games' },
               { label: t('newGame.title'), href: '/games/new' },
               { label: t('newGame.openingPageTitle') },
             ]}
