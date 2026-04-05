@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
@@ -93,13 +93,11 @@ export function MoveInputPanel({
     ? preferences.moveInputMode
     : enabledModes[0];
 
-  // Reset legal moves display when input mode changes
-  const prevModeRef = useRef(currentMode);
-  if (prevModeRef.current !== currentMode) {
-    prevModeRef.current = currentMode;
-    if (showLegalMoves) setShowLegalMoves(false);
-    if (invalidAttemptCount > 0) setInvalidAttemptCount(0);
-  }
+  // Reset legal moves display and invalid attempt counter when input mode changes
+  useEffect(() => {
+    setShowLegalMoves(false);
+    setInvalidAttemptCount(0);
+  }, [currentMode]);
 
   // Compute next mode for cycling
   const currentIndex = enabledModes.indexOf(currentMode);

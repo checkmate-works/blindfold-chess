@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -11,7 +12,7 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getMovingSide, parseFenMeta } from '../_lib/fen-utils';
+import { countPlayerMoves, getMovingSide, parseFenMeta } from '../_lib/fen-utils';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
@@ -22,6 +23,17 @@ import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
 import { useUrlSync } from './use-url-sync';
+
+/** Map internal game status + player result to the repository's GameOutcome. */
+function mapGameStatusToOutcome(
+  gameStatus: GameStatus,
+  playerResult: 'win' | 'loss' | 'draw' | null
+): GameOutcome {
+  if (gameStatus === 'in_progress') return 'in_progress';
+  if (playerResult === 'win') return 'win';
+  if (playerResult === 'loss') return 'loss';
+  return 'draw';
+}
 
 type UseGameSessionOptions = {
   locale: Locale;
@@ -129,15 +141,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   }, [loadedGameData]);
 
   // Map board status to game outcome for repository
-  const mapGameStatusToOutcome = useCallback(
-    (bs: typeof gameStatus, pr: typeof playerResult): GameOutcome => {
-      if (bs === 'in_progress') return 'in_progress';
-      if (pr === 'win') return 'win';
-      if (pr === 'loss') return 'loss';
-      return 'draw';
-    },
-    []
-  );
 
   // Auto-save hook
   const { markPlayerInteraction, updateSkillLevel, gameId } = useAutoSave({
@@ -170,7 +173,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   movesRef.current = moves;
 
   // Internal helper to reduce duplicated state updates
-  const recomputeGameState = useCallback(
+  const updateLastMove = useCallback(
     (newMoves: AlgebraicNotation[]) => {
       setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
@@ -182,9 +185,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...movesRef.current, move];
-      recomputeGameState(newMoves);
+      updateLastMove(newMoves);
     },
-    [pushMove, recomputeGameState]
+    [pushMove, updateLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {
@@ -229,13 +232,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     removeMoves(2);
     setError(null);
     const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
-    recomputeGameState(newMoves);
+    updateLastMove(newMoves);
     // handleUndoLog removes the last player's log entry and resets peek/undo counters.
     // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
     // recordUndo then tracks this undo event on the *next* move's log entry.
     handleUndoLog();
     recordUndo();
-  }, [markPlayerInteraction, removeMoves, moves, recomputeGameState, handleUndoLog, recordUndo]);
+  }, [markPlayerInteraction, removeMoves, moves, updateLastMove, handleUndoLog, recordUndo]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -246,23 +249,16 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         removeMoves(movesToRemove);
       }
       const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
-      recomputeGameState(newMoves);
+      updateLastMove(newMoves);
 
       // Truncate operation logs to match the number of player moves remaining.
-      // Uses getMovingSide to correctly handle custom starting FEN (e.g., black-to-move positions).
-      let playerMoveCount = 0;
-      for (let i = 0; i <= position; i++) {
-        if (getMovingSide(i, startingFen) === playerSide) {
-          playerMoveCount++;
-        }
-      }
-      truncateLogs(playerMoveCount);
+      truncateLogs(countPlayerMoves(position, playerSide, startingFen));
     },
     [
       markPlayerInteraction,
       moves,
       removeMoves,
-      recomputeGameState,
+      updateLastMove,
       playerSide,
       startingFen,
       truncateLogs,

@@ -9,6 +9,7 @@ import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { isGameFinished } from '../_lib/game-utils';
 import { useAutoSaveEvents } from './use-auto-save-events';
 import { useInitialSave } from './use-initial-save';
 
@@ -147,13 +148,7 @@ export function useAutoSave({
 
       // Don't save if the game is already finished and we're just viewing it
       const currentStatus = gameDataRefs.status.current;
-      const isGameFinished =
-        currentStatus === 'win' || currentStatus === 'loss' || currentStatus === 'draw';
-      const wasGameFinished =
-        lastSavedStatus.current === 'win' ||
-        lastSavedStatus.current === 'loss' ||
-        lastSavedStatus.current === 'draw';
-      if (isGameFinished && wasGameFinished) {
+      if (isGameFinished(currentStatus) && isGameFinished(lastSavedStatus.current)) {
         return;
       }
 
@@ -277,20 +272,14 @@ export function useAutoSave({
     const hasNewMoves = moves.length !== lastSavedMovesLength.current;
     const hasStatusChanged = status !== lastSavedStatus.current;
     const isGameProgressing = moves.length > 0;
-    const isGameFinished = status === 'win' || status === 'loss' || status === 'draw';
-    const wasGameFinished =
-      lastSavedStatus.current === 'win' ||
-      lastSavedStatus.current === 'loss' ||
-      lastSavedStatus.current === 'draw';
-
     // Don't save if the game was already finished (prevents updating lastPlayed when viewing finished games)
-    if (wasGameFinished) {
+    if (isGameFinished(lastSavedStatus.current)) {
       return;
     }
 
     if ((hasNewMoves || hasStatusChanged) && (hasPlayerInteracted.current || isGameProgressing)) {
       // For finished games, only mark that we have pending changes if the status actually changed
-      if (!isGameFinished || hasStatusChanged) {
+      if (!isGameFinished(status) || hasStatusChanged) {
         hasPendingChanges.current = true;
       }
       // Save immediately to ensure both player and AI moves are saved
