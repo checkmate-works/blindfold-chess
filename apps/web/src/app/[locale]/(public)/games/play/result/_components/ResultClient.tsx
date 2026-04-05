@@ -7,10 +7,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
-import { FaChartLine, FaCheck, FaEye, FaMinus, FaPlus, FaTimes } from 'react-icons/fa';
+import {
+  FaChartLine,
+  FaCheck,
+  FaClipboardList,
+  FaEye,
+  FaMinus,
+  FaPlus,
+  FaTimes,
+} from 'react-icons/fa';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { Game } from '@/lib/types';
+import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -20,6 +28,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { BoardViewModal } from '../../_components/BoardViewModal';
 import { ClientBreadcrumb } from '../../_components/ClientBreadcrumb';
 import { MovesPanel } from '../../_components/MovesPanel';
+import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useMoveNavigation, useNotation } from '../../_hooks';
 import type { FormattedPgnMove } from '../../_lib';
 
@@ -80,10 +89,130 @@ type ResultContentProps = {
   brandName: string;
 };
 
+function OperationLogSummary({
+  logs,
+  onViewDetails,
+}: {
+  logs: MoveOperationLog[];
+  onViewDetails: () => void;
+}) {
+  const t = useTranslations('play');
+
+  const stats = useMemo(() => {
+    const inputMethods: Record<MoveInputMethod, number> = {
+      text: 0,
+      'text-autocomplete': 0,
+      select: 0,
+      button: 0,
+    };
+    let totalPeeks = 0;
+    let totalUndos = 0;
+    let totalHints = 0;
+
+    for (const log of logs) {
+      inputMethods[log.inputMethod]++;
+      totalPeeks += log.peekCount;
+      totalUndos += log.undoCount;
+      totalHints += log.movePeekCount ?? 0;
+    }
+
+    return { inputMethods, totalPeeks, totalUndos, totalHints };
+  }, [logs]);
+
+  const inputMethodLabels: Record<MoveInputMethod, string> = {
+    text: t('operationLog.inputMethodText'),
+    'text-autocomplete': t('operationLog.inputMethodTextAutocomplete'),
+    select: t('operationLog.inputMethodSelect'),
+    button: t('operationLog.inputMethodButton'),
+  };
+
+  const activeInputMethods = (
+    Object.entries(stats.inputMethods) as [MoveInputMethod, number][]
+  ).filter(([, count]) => count > 0);
+
+  const hasAnyStats =
+    activeInputMethods.length > 0 ||
+    stats.totalPeeks > 0 ||
+    stats.totalUndos > 0 ||
+    stats.totalHints > 0;
+
+  if (!hasAnyStats) return null;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <FaClipboardList className="w-3.5 h-3.5" />
+        <span>{t('result.operationSummary.title')}</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+        {activeInputMethods.length > 0 && (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground text-xs">
+              {t('result.operationSummary.inputMethods')}
+            </span>
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+              {activeInputMethods.map(([method, count]) => (
+                <span key={method} className="text-foreground">
+                  {inputMethodLabels[method]}{' '}
+                  <span className="text-muted-foreground">
+                    {t('result.operationSummary.times', { count })}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {stats.totalHints > 0 && (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground text-xs">
+              {t('result.operationSummary.hintCount')}
+            </span>
+            <span className="text-foreground">
+              {t('result.operationSummary.times', { count: stats.totalHints })}
+            </span>
+          </div>
+        )}
+
+        {stats.totalPeeks > 0 && (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground text-xs">
+              {t('result.operationSummary.peekCount')}
+            </span>
+            <span className="text-foreground">
+              {t('result.operationSummary.times', { count: stats.totalPeeks })}
+            </span>
+          </div>
+        )}
+
+        {stats.totalUndos > 0 && (
+          <div className="flex flex-col gap-0.5">
+            <span className="text-muted-foreground text-xs">
+              {t('result.operationSummary.undoCount')}
+            </span>
+            <span className="text-foreground">
+              {t('result.operationSummary.times', { count: stats.totalUndos })}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={onViewDetails}
+        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+      >
+        {t('result.operationSummary.viewDetails')}
+      </button>
+    </div>
+  );
+}
+
 function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) {
   const t = useTranslations('play');
   const router = useRouter();
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
@@ -186,7 +315,7 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
           <div className="bg-card rounded-lg shadow-lg p-4">
             <div className="flex flex-col gap-4">
               {/* Game Result */}
-              <div className="py-8 text-center flex flex-col items-center gap-4">
+              <div className="py-6 text-center flex flex-col items-center gap-3">
                 {playerResult === 'win' && (
                   <>
                     <FaCheck className="w-12 h-12 text-success" />
@@ -207,11 +336,24 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
                 )}
               </div>
 
+              {/* Operation Log Summary */}
+              {game.operationLogs && game.operationLogs.length > 0 && (
+                <>
+                  <div className="border-t border-border" />
+                  <OperationLogSummary
+                    logs={game.operationLogs}
+                    onViewDetails={() => setIsOperationLogVisible(true)}
+                  />
+                </>
+              )}
+
+              <div className="border-t border-border" />
+
               {/* Show Board Button */}
               <div className="flex gap-4 md:gap-2 justify-center">
                 <button
                   onClick={() => setIsBoardVisible(true)}
-                  className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+                  className="px-4 py-2 text-sm border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2 text-muted-foreground"
                   title={t('showBoard')}
                 >
                   <FaEye className="w-4 h-4" />
@@ -220,7 +362,7 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3 pt-2">
                 <Button
                   variant="primary"
                   size="lg"
@@ -284,6 +426,18 @@ function ResultContent({ game, gameId, locale, brandName }: ResultContentProps) 
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
       />
+
+      {/* Operation Log Detail Modal */}
+      {game.operationLogs && (
+        <OperationLogModal
+          isOpen={isOperationLogVisible}
+          onClose={() => setIsOperationLogVisible(false)}
+          logs={game.operationLogs}
+          moves={game.moves}
+          playerSide={game.playerColor}
+          startingFen={game.startingFen}
+        />
+      )}
 
       <Divider />
       <ClientBreadcrumb

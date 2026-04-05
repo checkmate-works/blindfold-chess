@@ -1371,7 +1371,18 @@
       "columnMovePeek": "ヒント"
     },
     "showLegalMoves": "合法手を表示",
-    "legalMovesList": "合法手一覧："
+    "legalMovesList": "合法手一覧：",
+    "result": {
+      "operationSummary": {
+        "title": "対局統計",
+        "inputMethods": "入力方式",
+        "peekCount": "盤面確認",
+        "undoCount": "テイクバック",
+        "hintCount": "合法手ヒント",
+        "viewDetails": "手ごとの詳細を表示",
+        "times": "{count}回"
+      }
+    }
   },
   "postmortem": {
     "title": "感想戦",

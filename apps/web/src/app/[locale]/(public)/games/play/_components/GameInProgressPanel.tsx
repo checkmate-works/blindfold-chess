@@ -138,14 +138,18 @@ export function GameInProgressPanel({
       </div>
 
       {/* Save and Exit */}
-      <div className="flex items-center justify-center gap-3">
+      <div className="text-center">
         <Link
           href="/games"
           className="text-sm text-muted-foreground hover:text-foreground underline"
         >
           💾 {t('saveAndExit')}
         </Link>
-        {onShowOperationLog && (
+      </div>
+
+      {/* Operation Log */}
+      {onShowOperationLog && (
+        <div className="flex justify-end">
           <button
             onClick={onShowOperationLog}
             className="text-muted-foreground hover:text-foreground"
@@ -153,8 +157,8 @@ export function GameInProgressPanel({
           >
             <FaClipboardList className="w-4 h-4" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
