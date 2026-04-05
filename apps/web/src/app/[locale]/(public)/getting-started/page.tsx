@@ -7,7 +7,7 @@ import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -147,12 +147,14 @@ export default async function GettingStartedPage({ params }: Props) {
 
           <div className="text-center">
             <Link href="/ranks">
-              <Button asChild variant="secondary" size="lg">
+              <Button asChild variant="primary" size="lg">
                 {t('ranks.viewAll')}
               </Button>
             </Link>
           </div>
         </section>
+
+        <Divider />
 
         <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
       </PagePanel>

@@ -28,7 +28,7 @@ export function MobileTabBar() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]">
-      <ul className="flex items-center justify-around px-2 py-3">
+      <ul className="flex items-center justify-around px-2 py-2">
         {TAB_ITEMS.map((item) => {
           const href = `/${locale}${item.path}`;
           const isActive = pathname.startsWith(href);
@@ -36,7 +36,7 @@ export function MobileTabBar() {
             <li key={item.labelKey}>
               <Link
                 href={href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs transition-colors ${
                   isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

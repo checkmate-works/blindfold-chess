@@ -118,7 +118,7 @@ export function ToastContainer() {
   }, [pathname, showToast, tToast, router, locale]); // Re-run when pathname changes
 
   return (
-    <div className="fixed bottom-20 md:bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">
       <div className="max-w-sm mx-auto space-y-2">
         {toasts.map((toast) => (
           <Toast key={toast.id} toast={toast} onClose={() => hideToast(toast.id)} />
