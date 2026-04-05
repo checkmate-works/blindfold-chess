@@ -177,7 +177,7 @@ export default async function Layout({
             </main>
             <Footer locale={locale} />
             {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
-            <div className="h-16 md:h-0" />
+            <div className="h-14 md:h-0" />
             <MobileTabBar />
           </div>
         </Providers>

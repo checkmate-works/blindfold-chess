@@ -60,7 +60,7 @@ export async function Header({ locale }: Props) {
       <AnnouncementBannerContainer />
       <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-14 items-center justify-between">
             {/* Left side: Mobile menu + Logo + Title + Desktop navigation */}
             <div className="flex items-center space-x-6">
               {/* Mobile menu button - only this part needs client-side */}

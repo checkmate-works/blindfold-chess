@@ -70,7 +70,7 @@ export function MobileMenu({ title, items }: Props) {
                 isOpen ? 'translate-x-0' : '-translate-x-full'
               }`}
             >
-              <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+              <div className="flex items-center justify-between h-14 px-4 border-b border-border">
                 <span className="text-lg font-semibold text-foreground">{title}</span>
                 <button
                   onClick={() => setIsOpen(false)}
