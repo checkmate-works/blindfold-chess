@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaEye } from 'react-icons/fa';
+import { FaClipboardList, FaEye } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/types';
 
@@ -25,7 +25,7 @@ type Props = {
   setMoveInput: (value: string) => void;
   error: string | null;
   setError: (value: string | null) => void;
-  handleSubmitMove: (move: AlgebraicNotation) => void;
+  handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
   onShowBoard: () => void;
@@ -33,6 +33,8 @@ type Props = {
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
+  onMovePeek?: () => void;
+  onShowOperationLog?: () => void;
 };
 
 export function GameInProgressPanel({
@@ -53,6 +55,8 @@ export function GameInProgressPanel({
   playerColor,
   inlineBoardView,
   onMoveCommitted,
+  onMovePeek,
+  onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
   const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
@@ -81,6 +85,7 @@ export function GameInProgressPanel({
           toggleTitle={t('switchInputMode')}
           playerColor={playerColor}
           onMoveCommitted={onMoveCommitted}
+          onMovePeek={onMovePeek}
         />
       ) : (
         <div>
@@ -133,13 +138,22 @@ export function GameInProgressPanel({
       </div>
 
       {/* Save and Exit */}
-      <div className="text-center">
+      <div className="flex items-center justify-center gap-3">
         <Link
           href="/games"
           className="text-sm text-muted-foreground hover:text-foreground underline"
         >
           💾 {t('saveAndExit')}
         </Link>
+        {onShowOperationLog && (
+          <button
+            onClick={onShowOperationLog}
+            className="text-muted-foreground hover:text-foreground"
+            title={t('operationLog.title')}
+          >
+            <FaClipboardList className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );

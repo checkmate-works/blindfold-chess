@@ -1355,7 +1355,22 @@
     "saving": "Saving...",
     "saved": "Saved",
     "postmortem": "Game Review",
-    "resultTitle": "Game Result"
+    "resultTitle": "Game Result",
+    "operationLog": {
+      "title": "Operation Log",
+      "noLogs": "No operation logs yet.",
+      "columnMove": "Move",
+      "columnInputMethod": "Input Method",
+      "columnPeek": "Peek",
+      "columnUndo": "Undo",
+      "inputMethodButton": "Button",
+      "inputMethodText": "Text",
+      "inputMethodTextAutocomplete": "Text (autocomplete)",
+      "inputMethodSelect": "List",
+      "columnMovePeek": "Hints"
+    },
+    "showLegalMoves": "Show legal moves",
+    "legalMovesList": "Legal moves:"
   },
   "postmortem": {
     "title": "Game Review",

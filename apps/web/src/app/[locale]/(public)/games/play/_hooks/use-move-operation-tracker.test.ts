@@ -12,8 +12,8 @@ describe('useMoveOperationTracker', () => {
 
   it('should initialize with provided initial logs', () => {
     const initialLogs = [
-      { inputMethod: 'text' as const, peekCount: 1, undoCount: 0 },
-      { inputMethod: 'button' as const, peekCount: 0, undoCount: 1 },
+      { inputMethod: 'text' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
+      { inputMethod: 'button' as const, peekCount: 0, undoCount: 1, movePeekCount: 0 },
     ];
     const { result } = renderHook(() => useMoveOperationTracker({ initialLogs }));
     expect(result.current.logs).toEqual(initialLogs);
@@ -26,7 +26,9 @@ describe('useMoveOperationTracker', () => {
       result.current.commitMove('button');
     });
 
-    expect(result.current.logs).toEqual([{ inputMethod: 'button', peekCount: 0, undoCount: 0 }]);
+    expect(result.current.logs).toEqual([
+      { inputMethod: 'button', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+    ]);
   });
 
   it('should track peek count for the current move', () => {
@@ -38,7 +40,9 @@ describe('useMoveOperationTracker', () => {
       result.current.commitMove('text');
     });
 
-    expect(result.current.logs).toEqual([{ inputMethod: 'text', peekCount: 2, undoCount: 0 }]);
+    expect(result.current.logs).toEqual([
+      { inputMethod: 'text', peekCount: 2, undoCount: 0, movePeekCount: 0 },
+    ]);
   });
 
   it('should track undo count for the current move', () => {
@@ -49,7 +53,9 @@ describe('useMoveOperationTracker', () => {
       result.current.commitMove('select');
     });
 
-    expect(result.current.logs).toEqual([{ inputMethod: 'select', peekCount: 0, undoCount: 1 }]);
+    expect(result.current.logs).toEqual([
+      { inputMethod: 'select', peekCount: 0, undoCount: 1, movePeekCount: 0 },
+    ]);
   });
 
   it('should track both peek and undo counts', () => {
@@ -63,7 +69,7 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'text-autocomplete', peekCount: 2, undoCount: 1 },
+      { inputMethod: 'text-autocomplete', peekCount: 2, undoCount: 1, movePeekCount: 0 },
     ]);
   });
 
@@ -81,8 +87,8 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'button', peekCount: 1, undoCount: 1 },
-      { inputMethod: 'text', peekCount: 0, undoCount: 0 },
+      { inputMethod: 'button', peekCount: 1, undoCount: 1, movePeekCount: 0 },
+      { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0 },
     ]);
   });
 
@@ -105,9 +111,24 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toHaveLength(3);
-    expect(result.current.logs[0]).toEqual({ inputMethod: 'button', peekCount: 0, undoCount: 0 });
-    expect(result.current.logs[1]).toEqual({ inputMethod: 'text', peekCount: 1, undoCount: 0 });
-    expect(result.current.logs[2]).toEqual({ inputMethod: 'select', peekCount: 1, undoCount: 1 });
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'button',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+    });
+    expect(result.current.logs[1]).toEqual({
+      inputMethod: 'text',
+      peekCount: 1,
+      undoCount: 0,
+      movePeekCount: 0,
+    });
+    expect(result.current.logs[2]).toEqual({
+      inputMethod: 'select',
+      peekCount: 1,
+      undoCount: 1,
+      movePeekCount: 0,
+    });
   });
 
   it('should remove the last log entry and reset counters on handleUndoLog', () => {
@@ -126,7 +147,12 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toHaveLength(1);
-    expect(result.current.logs[0]).toEqual({ inputMethod: 'button', peekCount: 0, undoCount: 0 });
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'button',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+    });
 
     // Counters should be reset after undo, so next commit starts fresh
     act(() => {
@@ -134,7 +160,12 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toHaveLength(2);
-    expect(result.current.logs[1]).toEqual({ inputMethod: 'text', peekCount: 0, undoCount: 0 });
+    expect(result.current.logs[1]).toEqual({
+      inputMethod: 'text',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+    });
   });
 
   it('should handle handleUndoLog on empty logs gracefully', () => {
@@ -178,6 +209,24 @@ describe('useMoveOperationTracker', () => {
       inputMethod: 'text',
       peekCount: 0,
       undoCount: 1,
+      movePeekCount: 0,
+    });
+  });
+
+  it('should track movePeekCount for the current move', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.recordMovePeek();
+      result.current.recordMovePeek();
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'text',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 2,
     });
   });
 
@@ -202,6 +251,7 @@ describe('useMoveOperationTracker', () => {
         inputMethod: 'button',
         peekCount: 0,
         undoCount: 0,
+        movePeekCount: 0,
       });
     });
 
@@ -225,6 +275,7 @@ describe('useMoveOperationTracker', () => {
         inputMethod: 'text',
         peekCount: 0,
         undoCount: 0,
+        movePeekCount: 0,
       });
     });
 
@@ -249,6 +300,111 @@ describe('useMoveOperationTracker', () => {
       });
 
       expect(result.current.logs).toHaveLength(1);
+    });
+  });
+
+  describe('setLogsTo', () => {
+    it('should replace all logs with the given array', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.commitMove('button');
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.logs).toHaveLength(2);
+
+      const newLogs = [
+        { inputMethod: 'select' as const, peekCount: 3, undoCount: 1, movePeekCount: 2 },
+      ];
+
+      act(() => {
+        result.current.setLogsTo(newLogs);
+      });
+
+      expect(result.current.logs).toEqual(newLogs);
+    });
+
+    it('should reset counters when replacing logs', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      act(() => {
+        result.current.recordPeek();
+        result.current.recordUndo();
+        result.current.recordMovePeek();
+        result.current.setLogsTo([]);
+      });
+
+      // Counters should be reset, so next commit starts fresh
+      act(() => {
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.logs).toEqual([
+        { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+      ]);
+    });
+
+    it('should work correctly after setLogsTo followed by new commits', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      const restoredLogs = [
+        { inputMethod: 'text' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
+        { inputMethod: 'button' as const, peekCount: 0, undoCount: 0, movePeekCount: 0 },
+      ];
+
+      act(() => {
+        result.current.setLogsTo(restoredLogs);
+      });
+
+      // Simulate playing a new move after restoration
+      act(() => {
+        result.current.recordPeek();
+        result.current.commitMove('select');
+      });
+
+      expect(result.current.logs).toHaveLength(3);
+      expect(result.current.logs[0]).toEqual(restoredLogs[0]);
+      expect(result.current.logs[1]).toEqual(restoredLogs[1]);
+      expect(result.current.logs[2]).toEqual({
+        inputMethod: 'select',
+        peekCount: 1,
+        undoCount: 0,
+        movePeekCount: 0,
+      });
+    });
+
+    it('should allow undo after setLogsTo', () => {
+      const { result } = renderHook(() => useMoveOperationTracker());
+
+      const restoredLogs = [
+        { inputMethod: 'text' as const, peekCount: 0, undoCount: 0, movePeekCount: 0 },
+        { inputMethod: 'button' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
+      ];
+
+      act(() => {
+        result.current.setLogsTo(restoredLogs);
+      });
+
+      act(() => {
+        result.current.handleUndoLog();
+        result.current.recordUndo();
+      });
+
+      expect(result.current.logs).toHaveLength(1);
+      expect(result.current.logs[0]).toEqual(restoredLogs[0]);
+
+      // Next move should have undoCount=1
+      act(() => {
+        result.current.commitMove('text');
+      });
+
+      expect(result.current.logs[1]).toEqual({
+        inputMethod: 'text',
+        peekCount: 0,
+        undoCount: 1,
+        movePeekCount: 0,
+      });
     });
   });
 });

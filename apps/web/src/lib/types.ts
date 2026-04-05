@@ -27,6 +27,7 @@ export type MoveOperationLog = {
   inputMethod: MoveInputMethod;
   peekCount: number;
   undoCount: number;
+  movePeekCount: number;
 };
 
 export type Game = {

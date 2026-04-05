@@ -81,6 +81,19 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       initialStartingFen,
     });
 
+  // Operation tracker hook — declared before useGameState so setLogsTo can be
+  // passed to useGameState for synchronized restoration alongside moves.
+  const {
+    logs: operationLogs,
+    recordPeek,
+    recordUndo,
+    recordMovePeek,
+    commitMove,
+    handleUndoLog,
+    truncateLogs,
+    setLogsTo,
+  } = useMoveOperationTracker();
+
   // Game state hook
   const {
     gameStatus,
@@ -103,21 +116,12 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     loadedGameData,
     setMovesTo,
     setStartingFen,
+    setOperationLogsTo: setLogsTo,
   });
 
-  // Operation tracker hook
-  const {
-    logs: operationLogs,
-    recordPeek,
-    recordUndo,
-    commitMove,
-    handleUndoLog,
-    truncateLogs,
-  } = useMoveOperationTracker({
-    initialLogs: loadedGameData?.operationLogs,
-  });
-
-  // Set per-game preferences from loaded game data (game resume)
+  // Restore per-game preferences from loaded game data (game resume).
+  // Note: operationLogs restoration is handled in useGameState's effect alongside moves
+  // to prevent a race condition where auto-save could overwrite logs with stale data.
   useEffect(() => {
     if (loadedGameData?.gamePreferences) {
       setPerGamePrefs(loadedGameData.gamePreferences);
@@ -245,12 +249,24 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       recomputeGameState(newMoves);
 
       // Truncate operation logs to match the number of player moves remaining.
-      // Player moves are at even indices (white) or odd indices (black).
-      const playerMoveCount =
-        playerSide === 'white' ? Math.ceil((position + 1) / 2) : Math.floor((position + 1) / 2);
+      // Uses getMovingSide to correctly handle custom starting FEN (e.g., black-to-move positions).
+      let playerMoveCount = 0;
+      for (let i = 0; i <= position; i++) {
+        if (getMovingSide(i, startingFen) === playerSide) {
+          playerMoveCount++;
+        }
+      }
       truncateLogs(playerMoveCount);
     },
-    [markPlayerInteraction, moves, removeMoves, recomputeGameState, playerSide, truncateLogs]
+    [
+      markPlayerInteraction,
+      moves,
+      removeMoves,
+      recomputeGameState,
+      playerSide,
+      startingFen,
+      truncateLogs,
+    ]
   );
 
   // Handle new game from position
@@ -366,6 +382,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       handleSkillLevelChange,
       commitMoveLog: commitMove,
       recordPeek,
+      recordMovePeek,
     },
+    operationLogs,
   };
 }

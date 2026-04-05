@@ -16,6 +16,7 @@ import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MovesPanel } from './MovesPanel';
+import { OperationLogModal } from './OperationLogModal';
 import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
@@ -27,7 +28,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions } = useGameSession({
+  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = useGameSession({
     locale,
     onAiMoveChange,
   });
@@ -45,6 +46,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     handleSkillLevelChange,
     commitMoveLog,
     recordPeek,
+    recordMovePeek,
   } = actions;
 
   // Global preferences
@@ -68,6 +70,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   // UI state
   const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [showOperationLogModal, setShowOperationLogModal] = useState(false);
 
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
@@ -150,6 +153,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
                 onMoveCommitted={commitMoveLog}
+                onMovePeek={recordMovePeek}
+                onShowOperationLog={() => setShowOperationLogModal(true)}
                 inlineBoardView={
                   preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
                     <InlineBoardView
@@ -259,6 +264,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onClose={() => setShowSkillLevelSettingsModal(false)}
         currentSkillLevel={skillLevel}
         onSkillLevelChange={handleSkillLevelChange}
+      />
+
+      {/* Operation Log Modal */}
+      <OperationLogModal
+        isOpen={showOperationLogModal}
+        onClose={() => setShowOperationLogModal(false)}
+        logs={operationLogs}
+        moves={moves}
+        playerSide={playerSide}
+        startingFen={startingFen}
       />
     </div>
   );

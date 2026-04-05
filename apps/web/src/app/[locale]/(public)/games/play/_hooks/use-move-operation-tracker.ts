@@ -16,6 +16,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   const [logs, setLogs] = useState<MoveOperationLog[]>(initialLogs ?? []);
   const peekCountRef = useRef(0);
   const undoCountRef = useRef(0);
+  const movePeekCountRef = useRef(0);
 
   /** Increment peek counter for the current move. */
   const recordPeek = useCallback(() => {
@@ -27,6 +28,11 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     undoCountRef.current += 1;
   }, []);
 
+  /** Increment move-peek counter for the current move (viewing legal moves hint). */
+  const recordMovePeek = useCallback(() => {
+    movePeekCountRef.current += 1;
+  }, []);
+
   /**
    * Finalize the current move's log entry and reset counters.
    * Called when the player submits a move.
@@ -36,10 +42,12 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
       inputMethod,
       peekCount: peekCountRef.current,
       undoCount: undoCountRef.current,
+      movePeekCount: movePeekCountRef.current,
     };
     setLogs((prev) => [...prev, entry]);
     peekCountRef.current = 0;
     undoCountRef.current = 0;
+    movePeekCountRef.current = 0;
   }, []);
 
   /**
@@ -56,6 +64,7 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     setLogs((prev) => prev.slice(0, -1));
     peekCountRef.current = 0;
     undoCountRef.current = 0;
+    movePeekCountRef.current = 0;
   }, []);
 
   /**
@@ -66,14 +75,28 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     setLogs((prev) => prev.slice(0, count));
     peekCountRef.current = 0;
     undoCountRef.current = 0;
+    movePeekCountRef.current = 0;
+  }, []);
+
+  /**
+   * Replace all logs with the given array and reset counters.
+   * Used to restore logs from a loaded game.
+   */
+  const setLogsTo = useCallback((newLogs: MoveOperationLog[]) => {
+    setLogs(newLogs);
+    peekCountRef.current = 0;
+    undoCountRef.current = 0;
+    movePeekCountRef.current = 0;
   }, []);
 
   return {
     logs,
     recordPeek,
     recordUndo,
+    recordMovePeek,
     commitMove,
     handleUndoLog,
     truncateLogs,
+    setLogsTo,
   };
 }

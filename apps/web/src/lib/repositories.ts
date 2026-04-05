@@ -261,7 +261,9 @@ export class LocalStorageGameRepository implements IGameRepository {
                 (log as Record<string, unknown>).inputMethod as string
               ) &&
               typeof (log as Record<string, unknown>).peekCount === 'number' &&
-              typeof (log as Record<string, unknown>).undoCount === 'number'
+              typeof (log as Record<string, unknown>).undoCount === 'number' &&
+              (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
+                (log as Record<string, unknown>).movePeekCount === undefined)
           )))
     );
   }

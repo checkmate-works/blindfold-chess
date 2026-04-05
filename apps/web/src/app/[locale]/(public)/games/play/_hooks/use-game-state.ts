@@ -6,12 +6,15 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import type { MoveOperationLog } from '@/lib/types';
+
 type LoadedGameData = {
   startingFen?: string;
   moves: AlgebraicNotation[];
   lastMove: { from: string; to: string } | null;
   gameStatus: GameStatus;
   playerResult: 'win' | 'loss' | 'draw' | null;
+  operationLogs?: MoveOperationLog[];
 };
 
 type UseGameStateOptions = {
@@ -25,6 +28,7 @@ type UseGameStateOptions = {
   loadedGameData: LoadedGameData | null;
   setMovesTo: (moves: AlgebraicNotation[]) => void;
   setStartingFen: (fen: string | undefined) => void;
+  setOperationLogsTo?: (logs: MoveOperationLog[]) => void;
 };
 
 export function useGameState({
@@ -38,6 +42,7 @@ export function useGameState({
   loadedGameData,
   setMovesTo,
   setStartingFen,
+  setOperationLogsTo,
 }: UseGameStateOptions) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(playerSide === 'white');
   const [gameStatus, setGameStatus] = useState<GameStatus>('in_progress');
@@ -64,7 +69,10 @@ export function useGameState({
     return playerSide === 'black';
   });
 
-  // Apply loaded game data from persistence hook
+  // Apply loaded game data from persistence hook.
+  // All state restoration (moves, logs, preferences) must happen in this single effect
+  // to ensure React batches all state updates together, preventing auto-save from
+  // triggering with partially-restored data (e.g., moves loaded but operationLogs still empty).
   useEffect(() => {
     if (loadedGameData) {
       if (loadedGameData.startingFen) {
@@ -79,8 +87,11 @@ export function useGameState({
         setPlayerResult(loadedGameData.playerResult);
         setShouldMakeAiMove(false);
       }
+      if (loadedGameData.operationLogs && setOperationLogsTo) {
+        setOperationLogsTo(loadedGameData.operationLogs);
+      }
     }
-  }, [loadedGameData, setMovesTo, setStartingFen]);
+  }, [loadedGameData, setMovesTo, setStartingFen, setOperationLogsTo]);
 
   // Initialize on mount with initial moves
   useEffect(() => {

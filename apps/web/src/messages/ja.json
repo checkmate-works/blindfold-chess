@@ -1356,7 +1356,22 @@
     "saving": "保存中...",
     "saved": "保存済み",
     "postmortem": "感想戦",
-    "resultTitle": "ゲーム結果"
+    "resultTitle": "ゲーム結果",
+    "operationLog": {
+      "title": "操作ログ",
+      "noLogs": "操作ログはまだありません。",
+      "columnMove": "手",
+      "columnInputMethod": "入力方式",
+      "columnPeek": "Peek",
+      "columnUndo": "Undo",
+      "inputMethodButton": "ボタン",
+      "inputMethodText": "テキスト",
+      "inputMethodTextAutocomplete": "テキスト(補完)",
+      "inputMethodSelect": "リスト",
+      "columnMovePeek": "ヒント"
+    },
+    "showLegalMoves": "合法手を表示",
+    "legalMovesList": "合法手一覧："
   },
   "postmortem": {
     "title": "感想戦",
