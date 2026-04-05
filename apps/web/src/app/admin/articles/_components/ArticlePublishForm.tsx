@@ -4,11 +4,14 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
 import { updateArticle } from '../_actions/updateArticle';
 import type { ContentFormat, TiptapJsonContent } from '../_lib/types';
 
 type ArticlePublishFormProps = {
   id: string;
+  slug: string;
   articleData: {
     slug: string;
     title: string;
@@ -30,17 +33,20 @@ type ArticlePublishFormProps = {
     publishedAt: string;
     publish: string;
     publishing: string;
+    published: string;
     backToEdit: string;
   };
 };
 
 export function ArticlePublishForm({
   id,
+  slug,
   articleData,
   defaultValues,
   labels,
 }: ArticlePublishFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +66,8 @@ export function ArticlePublishForm({
       if ('error' in result) {
         setError(result.error);
       } else {
-        router.push('/admin/articles');
+        showToast(labels.published, 'success');
+        router.push(`/admin/articles/slug/${encodeURIComponent(slug)}`);
       }
     });
   };

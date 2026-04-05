@@ -11,6 +11,12 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const mockShowToast = vi.fn();
+
+vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
+  useToast: () => ({ showToast: mockShowToast }),
+}));
+
 const mockUpdateArticle = vi.fn();
 
 vi.mock('../_actions/updateArticle', () => ({
@@ -24,6 +30,7 @@ const defaultLabels = {
   publishedAt: 'Published At',
   publish: 'Publish',
   publishing: 'Publishing...',
+  published: 'Article published',
   backToEdit: 'Back to Edit',
 };
 
@@ -54,6 +61,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -67,6 +75,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -80,6 +89,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -93,6 +103,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -112,6 +123,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={values}
         labels={defaultLabels}
@@ -128,6 +140,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -144,7 +157,7 @@ describe('ArticlePublishForm', () => {
       pinnedAt: null,
       publishedAt: null,
     });
-    expect(mockPush).toHaveBeenCalledWith('/admin/articles');
+    expect(mockPush).toHaveBeenCalledWith('/admin/articles/slug/test-article');
   });
 
   it('should always set status to published regardless of original status', async () => {
@@ -153,6 +166,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -173,6 +187,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={{ pinnedAt: '2024-01-01T12:00', publishedAt: '2024-06-15T14:00' }}
         labels={defaultLabels}
@@ -199,6 +214,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -217,6 +233,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -235,6 +252,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={{ pinnedAt: '', publishedAt: '' }}
         labels={defaultLabels}
@@ -260,6 +278,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -276,6 +295,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -298,6 +318,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -333,6 +354,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleDataWithFields}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -360,6 +382,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleData}
         defaultValues={defaultValues}
         labels={defaultLabels}
@@ -400,6 +423,7 @@ describe('ArticlePublishForm', () => {
     render(
       <ArticlePublishForm
         id={testId}
+        slug="test-article"
         articleData={articleDataWithFields}
         defaultValues={{ pinnedAt: '2024-01-01T12:00', publishedAt: '2024-06-15T14:00' }}
         labels={defaultLabels}

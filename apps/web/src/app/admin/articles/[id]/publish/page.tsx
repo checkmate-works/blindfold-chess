@@ -27,6 +27,7 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
 
       <ArticlePublishForm
         id={article.id}
+        slug={article.slug}
         articleData={{
           slug: article.slug,
           title: article.title,
@@ -48,6 +49,7 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
           publishedAt: t('form.publishedAt'),
           publish: t('form.publish'),
           publishing: t('form.publishing'),
+          published: t('form.published'),
           backToEdit: t('form.backToEdit'),
         }}
       />

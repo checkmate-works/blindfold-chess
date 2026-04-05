@@ -2405,6 +2405,14 @@
       "createdAt": "Created At",
       "actions": "Actions",
       "noArticlesFound": "No articles found.",
+      "variants": "バリアント",
+      "slugDetail": {
+        "title": "記事の言語バリエーション",
+        "noArticlesFound": "このslugの記事が見つかりません。",
+        "missingLocales": "不足している言語バリアントを追加",
+        "createForLocale": "{locale}バリアントを作成",
+        "viewPublished": "表示"
+      },
       "edit": "Edit",
       "delete": "Delete",
       "deleteModalTitle": "Delete Article",
@@ -2441,6 +2449,7 @@
         "publishTitle": "記事を公開",
         "publish": "公開する",
         "publishing": "公開中...",
+        "published": "記事を公開しました",
         "backToEdit": "編集に戻る",
         "contentPreview": "コンテンツプレビュー",
         "excerpt": "抜粋",

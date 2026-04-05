@@ -21,6 +21,8 @@ type ArticleFormProps = {
   contentFormat?: ContentFormat;
   isPublished?: boolean;
   defaultValues?: ArticleEditData;
+  defaultSlug?: string;
+  defaultLocale?: string;
   categories?: { id: string; name: string }[];
   onSaveDraft: (
     data: ArticleEditData
@@ -89,6 +91,8 @@ export function ArticleForm({
   contentFormat = 'tiptap_json',
   isPublished = false,
   defaultValues,
+  defaultSlug,
+  defaultLocale,
   categories = [],
   onSaveDraft,
   labels,
@@ -100,8 +104,9 @@ export function ArticleForm({
   const [metadataOpen, setMetadataOpen] = useState(false);
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
+  const [isNavigatingAfterSave, setIsNavigatingAfterSave] = useState(false);
 
-  const [slug, setSlug] = useState(defaultValues?.slug ?? '');
+  const [slug, setSlug] = useState(defaultValues?.slug ?? defaultSlug ?? '');
   const [title, setTitle] = useState(defaultValues?.title ?? '');
   const [contentJson, setContentJson] = useState<TiptapJsonContent | null>(
     defaultValues?.contentJson ?? null
@@ -109,7 +114,7 @@ export function ArticleForm({
   const [markdownContent, setMarkdownContent] = useState(
     contentFormat === 'markdown' ? (defaultValues?.content ?? '') : ''
   );
-  const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
+  const [locale, setLocale] = useState(defaultValues?.locale ?? defaultLocale ?? 'en');
   const [excerpt, setExcerpt] = useState(defaultValues?.excerpt ?? '');
   const [description, setDescription] = useState(defaultValues?.description ?? '');
   const [categoryId, setCategoryId] = useState(defaultValues?.categoryId ?? '');
@@ -117,11 +122,11 @@ export function ArticleForm({
 
   const isDirty = useMemo(() => {
     const initial = defaultValues ?? {
-      slug: '',
+      slug: defaultSlug ?? '',
       title: '',
       content: '',
       contentJson: null,
-      locale: 'en',
+      locale: defaultLocale ?? 'en',
       excerpt: '',
       description: '',
       categoryId: '',
@@ -153,13 +158,15 @@ export function ArticleForm({
     categoryId,
     icon,
     defaultValues,
+    defaultSlug,
+    defaultLocale,
   ]);
 
   const {
     isBlocking,
     confirm: confirmNavigation,
     cancel: cancelNavigation,
-  } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish });
+  } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish && !isNavigatingAfterSave });
 
   const buildFormData = useCallback((): ArticleEditData => {
     if (contentFormat === 'markdown') {
@@ -206,6 +213,14 @@ export function ArticleForm({
     setContentJson(json);
   }, []);
 
+  const redirectAfterSave = useCallback(
+    (id: string) => {
+      setIsNavigatingAfterSave(true);
+      router.replace(`/admin/articles/${id}/edit`);
+    },
+    [router]
+  );
+
   const executeSave = () => {
     setError(null);
     startTransition(async () => {
@@ -215,9 +230,9 @@ export function ArticleForm({
         setError(result.error);
       } else {
         showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
-        // For new articles, update URL to edit page so subsequent saves are updates
+        // For new articles, redirect to edit page so subsequent saves are updates
         if (!defaultValues) {
-          router.replace(`/admin/articles/${result.id}/edit`);
+          redirectAfterSave(result.id);
         }
       }
     });

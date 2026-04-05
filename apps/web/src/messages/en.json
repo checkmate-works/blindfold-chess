@@ -2443,6 +2443,14 @@
       "createdAt": "Created At",
       "actions": "Actions",
       "noArticlesFound": "No articles found.",
+      "variants": "Variants",
+      "slugDetail": {
+        "title": "Article Locale Variants",
+        "noArticlesFound": "No articles found for this slug.",
+        "missingLocales": "Add missing locale variants",
+        "createForLocale": "Create {locale} variant",
+        "viewPublished": "View"
+      },
       "edit": "Edit",
       "delete": "Delete",
       "deleteModalTitle": "Delete Article",
@@ -2479,6 +2487,7 @@
         "publishTitle": "Publish Article",
         "publish": "Publish",
         "publishing": "Publishing...",
+        "published": "Article published",
         "backToEdit": "Back to Edit",
         "contentPreview": "Content Preview",
         "excerpt": "Excerpt",

@@ -1132,7 +1132,7 @@ describe('ArticleForm', () => {
     expect(lastCallAfterError[0]).toEqual({ enabled: true });
   });
 
-  it('should not disable navigation guard for regular Save Draft action', async () => {
+  it('should disable navigation guard after successful Save Draft for new articles (redirect)', async () => {
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'draft-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -1147,24 +1147,11 @@ describe('ArticleForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
-    // Navigation guard should never have been explicitly disabled by isNavigatingToPublish.
-    // After successful save and URL replace, the form is considered "not new" but title still differs
-    // from defaultValues (which is undefined), so isDirty remains true.
-    // The key point: Save Draft does NOT set isNavigatingToPublish, so guard stays enabled while dirty.
+    // After successful save of a new article, isNavigatingAfterSave is set to true
+    // so the navigation guard is disabled to allow the redirect to the edit page.
     const allCalls = mockUseNavigationGuard.mock.calls;
-    // Check that none of the calls during save had enabled: false while isDirty was true
-    // (Only the initial render has enabled: false because isDirty starts as false)
-    const callsDuringDirtyPhase = allCalls.filter(
-      (_call: unknown[], index: number) => index > 0 // Skip initial render
-    );
-    // None of the calls after making the form dirty should have been disabled
-    // except possibly after save success when form state hasn't changed
-    const disabledCalls = callsDuringDirtyPhase.filter(
-      (call: [{ enabled: boolean }]) => call[0].enabled === false
-    );
-    // If there are disabled calls, they should only be from initial render (not during dirty phase)
-    // The form will still be dirty after save (title changed from default)
-    expect(disabledCalls.length).toBe(0);
+    const lastCall = allCalls[allCalls.length - 1];
+    expect(lastCall[0]).toEqual({ enabled: false });
   });
 
   it('should disable navigation guard for markdown Publish Settings navigation', async () => {
