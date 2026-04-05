@@ -27,6 +27,7 @@ type Props = {
   onNavigateToEnd: () => void;
   onNavigateToPosition: (position: number) => void;
   onFlipBoard?: () => void;
+  onPeek?: () => void;
 };
 
 export function InlineBoardView({
@@ -44,6 +45,7 @@ export function InlineBoardView({
   onNavigateToEnd,
   onNavigateToPosition,
   onFlipBoard,
+  onPeek,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +54,10 @@ export function InlineBoardView({
     <div className="bg-card rounded-md shadow-sm border border-border overflow-hidden">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) onPeek?.();
+          setIsOpen(!isOpen);
+        }}
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
       >
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">

@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
+import type { MoveInputMethod } from '@/lib/types';
+
 import { ButtonInput } from '@/app/[locale]/(public)/games/play/_components/ButtonInput';
 import { MoveInput } from '@/app/[locale]/(public)/games/play/_components/MoveInput';
 import { MoveSelect } from '@/app/[locale]/(public)/games/play/_components/MoveSelect';
@@ -24,6 +26,7 @@ type Props = {
   selectPlaceholder?: string;
   toggleTitle?: string;
   playerColor?: 'w' | 'b';
+  onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -46,6 +49,7 @@ export function MoveInputPanel({
   selectPlaceholder,
   toggleTitle,
   playerColor,
+  onMoveCommitted,
 }: Props) {
   const enabledModes = preferences.enabledMoveInputModes;
 
@@ -64,7 +68,10 @@ export function MoveInputPanel({
         {currentMode === 'select' ? (
           <MoveSelect
             fen={currentFen}
-            onSubmit={onSubmit}
+            onSubmit={(move) => {
+              onSubmit(move);
+              onMoveCommitted?.('select');
+            }}
             onChange={onErrorClear}
             disabled={disabled}
             placeholder={selectPlaceholder}
@@ -72,7 +79,10 @@ export function MoveInputPanel({
         ) : currentMode === 'button' ? (
           <ButtonInput
             fen={currentFen}
-            onSubmit={onSubmit}
+            onSubmit={(move) => {
+              onSubmit(move);
+              onMoveCommitted?.('button');
+            }}
             disabled={disabled}
             playerColor={playerColor}
           />
@@ -83,7 +93,10 @@ export function MoveInputPanel({
               onMoveInputChange(value);
               onErrorClear();
             }}
-            onSubmit={onSubmit}
+            onSubmit={(move, usedAutocomplete) => {
+              onSubmit(move);
+              onMoveCommitted?.(usedAutocomplete ? 'text-autocomplete' : 'text');
+            }}
             disabled={disabled}
             placeholder={inputPlaceholder}
             showSuggestions={preferences.enableAutoComplete}

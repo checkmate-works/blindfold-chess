@@ -5,7 +5,7 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { GameOutcome, SkillLevel } from '@/lib/types';
+import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,6 +22,7 @@ export type GameDataRefs = {
   skillLevel: React.RefObject<SkillLevel>;
   startingFen: React.RefObject<string | undefined>;
   gamePreferences: React.RefObject<PerGamePreferences | undefined>;
+  operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
 };
 
 type UseAutoSaveOptions = {
@@ -32,6 +33,7 @@ type UseAutoSaveOptions = {
   status: GameOutcome;
   startingFen?: string;
   gamePreferences?: PerGamePreferences;
+  operationLogs?: MoveOperationLog[];
   enabled?: boolean;
   saveOnInit?: boolean;
 };
@@ -47,6 +49,7 @@ export function useAutoSave({
   status,
   startingFen,
   gamePreferences,
+  operationLogs,
   enabled = true,
   saveOnInit = false,
 }: UseAutoSaveOptions) {
@@ -63,6 +66,7 @@ export function useAutoSave({
     skillLevel: useRef(skillLevel),
     startingFen: useRef(startingFen),
     gamePreferences: useRef(gamePreferences),
+    operationLogs: useRef(operationLogs),
   };
 
   // Save state refs — track save progress and session state
@@ -92,6 +96,7 @@ export function useAutoSave({
     gameDataRefs.skillLevel.current = skillLevel;
     gameDataRefs.startingFen.current = startingFen;
     gameDataRefs.gamePreferences.current = gamePreferences;
+    gameDataRefs.operationLogs.current = operationLogs;
     saveOnInitRef.current = saveOnInit;
     enabledRef.current = enabled;
   }, [
@@ -103,6 +108,7 @@ export function useAutoSave({
     skillLevel,
     startingFen,
     gamePreferences,
+    operationLogs,
     saveOnInit,
     enabled,
     gameDataRefs.moves,
@@ -111,6 +117,7 @@ export function useAutoSave({
     gameDataRefs.skillLevel,
     gameDataRefs.startingFen,
     gameDataRefs.gamePreferences,
+    gameDataRefs.operationLogs,
   ]);
 
   // Initial save for new games
@@ -162,6 +169,7 @@ export function useAutoSave({
           status: currentStatus,
           startingFen: gameDataRefs.startingFen.current,
           gamePreferences: gameDataRefs.gamePreferences.current,
+          operationLogs: gameDataRefs.operationLogs.current,
         };
 
         let savedGameId: string;

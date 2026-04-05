@@ -43,6 +43,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     handleRestartFromPosition,
     handleNewGameFromPosition,
     handleSkillLevelChange,
+    commitMoveLog,
+    recordPeek,
   } = actions;
 
   // Global preferences
@@ -138,9 +140,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 handleSubmitMove={handleSubmitMove}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
-                onShowBoard={() => setIsBoardVisible(true)}
+                // Peek tracking: counts each "open" action, not view duration.
+                // Modal: counted when opened; closing and reopening counts again.
+                // Inline: counted when accordion expands; collapsing and re-expanding counts again.
+                onShowBoard={() => {
+                  recordPeek();
+                  setIsBoardVisible(true);
+                }}
                 onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
+                onMoveCommitted={commitMoveLog}
                 inlineBoardView={
                   preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
                     <InlineBoardView
@@ -160,6 +169,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       onNavigateToEnd={navigateToEnd}
                       onNavigateToPosition={navigateToPosition}
                       onFlipBoard={handleFlipBoard}
+                      onPeek={recordPeek}
                     />
                   ) : undefined
                 }

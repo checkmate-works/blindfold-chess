@@ -8,6 +8,8 @@ import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
 
+import type { MoveInputMethod } from '@/lib/types';
+
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -30,6 +32,7 @@ type Props = {
   onShowSkillLevelSettings: () => void;
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
+  onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
 };
 
 export function GameInProgressPanel({
@@ -49,6 +52,7 @@ export function GameInProgressPanel({
   onShowSkillLevelSettings,
   playerColor,
   inlineBoardView,
+  onMoveCommitted,
 }: Props) {
   const t = useTranslations('play');
   const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
@@ -76,6 +80,7 @@ export function GameInProgressPanel({
           selectPlaceholder={t('selectMove')}
           toggleTitle={t('switchInputMode')}
           playerColor={playerColor}
+          onMoveCommitted={onMoveCommitted}
         />
       ) : (
         <div>

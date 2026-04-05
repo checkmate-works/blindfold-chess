@@ -18,6 +18,7 @@ import { useAutoSave } from './use-auto-save';
 import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
 import { useGamePersistence } from './use-game-persistence';
 import { useGameState } from './use-game-state';
+import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
 import { useUrlSync } from './use-url-sync';
@@ -104,6 +105,18 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setStartingFen,
   });
 
+  // Operation tracker hook
+  const {
+    logs: operationLogs,
+    recordPeek,
+    recordUndo,
+    commitMove,
+    handleUndoLog,
+    truncateLogs,
+  } = useMoveOperationTracker({
+    initialLogs: loadedGameData?.operationLogs,
+  });
+
   // Set per-game preferences from loaded game data (game resume)
   useEffect(() => {
     if (loadedGameData?.gamePreferences) {
@@ -131,6 +144,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
     gamePreferences: perGamePrefs,
+    operationLogs,
     enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
@@ -212,7 +226,12 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setError(null);
     const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
     recomputeGameState(newMoves);
-  }, [markPlayerInteraction, removeMoves, moves, recomputeGameState]);
+    // handleUndoLog removes the last player's log entry and resets peek/undo counters.
+    // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
+    // recordUndo then tracks this undo event on the *next* move's log entry.
+    handleUndoLog();
+    recordUndo();
+  }, [markPlayerInteraction, removeMoves, moves, recomputeGameState, handleUndoLog, recordUndo]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -224,8 +243,14 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       }
       const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
       recomputeGameState(newMoves);
+
+      // Truncate operation logs to match the number of player moves remaining.
+      // Player moves are at even indices (white) or odd indices (black).
+      const playerMoveCount =
+        playerSide === 'white' ? Math.ceil((position + 1) / 2) : Math.floor((position + 1) / 2);
+      truncateLogs(playerMoveCount);
     },
-    [markPlayerInteraction, moves, removeMoves, recomputeGameState]
+    [markPlayerInteraction, moves, removeMoves, recomputeGameState, playerSide, truncateLogs]
   );
 
   // Handle new game from position
@@ -339,6 +364,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       handleRestartFromPosition,
       handleNewGameFromPosition,
       handleSkillLevelChange,
+      commitMoveLog: commitMove,
+      recordPeek,
     },
   };
 }

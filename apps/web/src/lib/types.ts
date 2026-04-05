@@ -21,6 +21,14 @@ export type GameSettings = {
 // Re-export the canonical GameOutcome type from @blindfold-chess/types
 export type { GameOutcome } from '@blindfold-chess/types';
 
+export type MoveInputMethod = 'text' | 'text-autocomplete' | 'select' | 'button';
+
+export type MoveOperationLog = {
+  inputMethod: MoveInputMethod;
+  peekCount: number;
+  undoCount: number;
+};
+
 export type Game = {
   id: string;
   date: string;
@@ -33,6 +41,8 @@ export type Game = {
   startingFen?: string;
   /** Per-game preferences saved at game start. If undefined, global preferences are used. */
   gamePreferences?: PerGamePreferences;
+  /** Per-move operation logs for player moves. Each entry corresponds to one player move. */
+  operationLogs?: MoveOperationLog[];
 };
 
 export type GameSortOption = 'lastPlayed' | 'created';

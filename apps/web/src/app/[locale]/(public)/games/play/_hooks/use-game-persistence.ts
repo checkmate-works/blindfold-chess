@@ -5,6 +5,7 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/repositories';
+import type { MoveOperationLog } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -16,6 +17,7 @@ type SavedGameData = {
   playerResult: 'win' | 'loss' | 'draw' | null;
   shouldMakeAiMove: boolean;
   gamePreferences?: PerGamePreferences;
+  operationLogs?: MoveOperationLog[];
 };
 
 type UseGamePersistenceOptions = {
@@ -115,6 +117,7 @@ export function useGamePersistence({
             playerResult,
             shouldMakeAiMove,
             gamePreferences: savedGame.gamePreferences,
+            operationLogs: savedGame.operationLogs,
           });
         } else {
           setGameNotFound(true);
