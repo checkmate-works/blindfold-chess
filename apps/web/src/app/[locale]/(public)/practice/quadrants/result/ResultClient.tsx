@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -25,43 +23,13 @@ export function ResultClient({ locale, adBanner }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const dataParam = searchParams.get('data');
-  const settingsParam = searchParams.get('settings');
+  const score = parseInt(searchParams.get('score') || '0', 10);
+  const total = parseInt(searchParams.get('total') || '0', 10);
+  const time = parseFloat(searchParams.get('time') || '0');
 
-  // Parse Results
-  const result = useMemo(() => {
-    if (!dataParam) return null;
-    try {
-      return JSON.parse(decodeURIComponent(dataParam));
-    } catch {
-      return null;
-    }
-  }, [dataParam]);
-
-  // Parse Settings for Restart
-  const settings = useMemo(() => {
-    if (!settingsParam) return null;
-    try {
-      return JSON.parse(decodeURIComponent(settingsParam));
-    } catch {
-      return null;
-    }
-  }, [settingsParam]);
-
-  const handleTryAgain = () => {
-    if (settings) {
-      const params = new URLSearchParams();
-      if (settings.count) params.set('count', settings.count.toString());
-      if (settings.orientation) params.set('orientation', settings.orientation);
-      router.push(`/${locale}/practice/quadrants/challenge?${params.toString()}`);
-    } else {
-      router.push(`/${locale}/practice/quadrants`);
-    }
-  };
-
-  if (!result) {
-    return null; // Or some error state
-  }
+  const timePerQuestion = total > 0 ? time / total : 0;
+  const averageTimeText =
+    total > 0 ? tPractice('secondsFormat', { seconds: timePerQuestion.toFixed(1) }) : undefined;
 
   return (
     <PracticeResultPage
@@ -74,15 +42,17 @@ export function ResultClient({ locale, adBanner }: Props) {
       ]}
     >
       <PracticeComplete
-        score={result.score}
-        total={result.total}
-        onTryAgain={handleTryAgain}
+        score={score}
+        total={total}
+        onTryAgain={() => router.push(`/${locale}/practice/quadrants/challenge`)}
         onExit={() => router.push(`/${locale}/practice/quadrants`)}
         locale={locale}
         labels={{
           ...getCommonPracticeCompleteLabels(tPractice),
           score: tPractice('correctAnswers'),
         }}
+        scoreStats={{ correct: score, incorrect: total - score, total }}
+        averageTimeText={averageTimeText}
         otherPracticeLink={{
           href: `/${locale}/practice`,
           label: tPractice('doOtherPractice'),

@@ -16,6 +16,7 @@
     "./legal-moves": "./src/legal-moves/index.ts",
     "./route-planner": "./src/route-planner/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
+    "./quadrants": "./src/quadrants/index.ts",
     "./square-colors": "./src/square-colors/index.ts",
     "./username": "./src/username/index.ts",
     "./lame-name": "./src/lame-name/index.ts",

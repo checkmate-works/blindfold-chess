@@ -1162,7 +1162,10 @@
           "title": "Anchor Squares",
           "description": "Learn key reference points for board visualization"
         }
-      }
+      },
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "A square name will be shown. Identify which quadrant it belongs to by tapping the correct area on the board.",
+      "challengeSetupNoLeaderboard": "Scores from this exercise will not be recorded in your practice history or leaderboard."
     },
     "diagonalQuiz": {
       "title": "Diagonal Quiz",

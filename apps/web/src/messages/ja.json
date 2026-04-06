@@ -1163,7 +1163,10 @@
           "title": "アンカースクエア",
           "description": "盤面イメージのための基準点を学ぶ"
         }
-      }
+      },
+      "howToPlayTitle": "遊び方",
+      "howToPlayDescription": "マス名が表示されるので、そのマスが属する象限（4分割エリア）をボード上でタップして答えてください。",
+      "challengeSetupNoLeaderboard": "この機能ではスコアはマイページの練習履歴とリーダーボードに記録されません。"
     },
     "diagonalQuiz": {
       "title": "ダイアゴナルクイズ",

@@ -4,15 +4,13 @@ import { useCallback } from 'react';
 
 import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
+import type { QuadrantId } from '@blindfold-chess/features/quadrants';
 
 import { getBoardThemeColors } from '@/lib/boardThemes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-export type QuadrantId = 'q1' | 'q2' | 'q3' | 'q4';
-
 type Props = {
-  activeQuadrant?: QuadrantId | null;
   correctQuadrant?: QuadrantId | null;
   wrongQuadrant?: QuadrantId | null;
   onQuadrantClick: (id: QuadrantId) => void;

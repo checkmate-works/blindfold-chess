@@ -1162,7 +1162,10 @@
           "title": "Casillas Ancla",
           "description": "Aprende puntos de referencia clave para la visualización del tablero"
         }
-      }
+      },
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Se mostrará el nombre de una casilla. Identifica a qué cuadrante pertenece tocando el área correcta en el tablero.",
+      "challengeSetupNoLeaderboard": "Las puntuaciones de este ejercicio no se registrarán en tu historial de práctica ni en la clasificación."
     },
     "diagonalQuiz": {
       "title": "Cuestionario de Diagonales",

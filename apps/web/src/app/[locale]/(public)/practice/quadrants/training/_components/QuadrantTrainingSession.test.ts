@@ -1,51 +1,42 @@
 // @vitest-environment jsdom
+import {
+  checkQuadrantAnswer,
+  generateQuadrantQuestion,
+  generateQuadrantQuestionBatch,
+  getCorrectQuadrant,
+} from '@blindfold-chess/features/quadrants';
 import { describe, expect, it } from 'vitest';
-
-type QuadrantId = 'q1' | 'q2' | 'q3' | 'q4';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
-
-function generateSquare(): string {
-  const file = FILES[Math.floor(Math.random() * FILES.length)];
-  const rank = RANKS[Math.floor(Math.random() * RANKS.length)];
-  return `${file}${rank}`;
-}
-
-function getCorrectQuadrant(square: string): QuadrantId {
-  const file = square[0];
-  const rank = parseInt(square[1]);
-  const isKingSide = ['e', 'f', 'g', 'h'].includes(file);
-  const isUpper = rank >= 5;
-
-  if (isKingSide && isUpper) return 'q1';
-  if (!isKingSide && isUpper) return 'q2';
-  if (!isKingSide && !isUpper) return 'q3';
-  return 'q4';
-}
+const BATCH_SIZE = 100;
 
 describe('QuadrantTrainingSession logic', () => {
   describe('square generation', () => {
-    it('generates valid chess squares with files a-h and ranks 1-8', () => {
+    it('generates valid chess squares', () => {
       for (let i = 0; i < 50; i++) {
-        const square = generateSquare();
-        expect(square).toHaveLength(2);
-        expect(FILES).toContain(square[0]);
-        expect(RANKS).toContain(square[1]);
+        const q = generateQuadrantQuestion('white');
+        expect(q.square).toHaveLength(2);
+        expect(FILES).toContain(q.square[0]);
+        expect(RANKS).toContain(q.square[1]);
       }
     });
 
-    it('generates different squares over many iterations (not constant)', () => {
+    it('generates different squares over many iterations', () => {
       const squares = new Set<string>();
       for (let i = 0; i < 100; i++) {
-        squares.add(generateSquare());
+        squares.add(generateQuadrantQuestion('white').square);
       }
-      // With 64 possible squares and 100 iterations, we should see multiple unique values
       expect(squares.size).toBeGreaterThan(1);
+    });
+
+    it('generates batch of requested size', () => {
+      const batch = generateQuadrantQuestionBatch(BATCH_SIZE, 'white');
+      expect(batch).toHaveLength(BATCH_SIZE);
     });
   });
 
-  describe('quadrant identification (getCorrectQuadrant)', () => {
+  describe('quadrant identification', () => {
     it('identifies q1 (king side upper): e-h files, ranks 5-8', () => {
       const q1Squares = ['e5', 'f6', 'g7', 'h8', 'e8', 'h5'];
       for (const square of q1Squares) {
@@ -106,64 +97,24 @@ describe('QuadrantTrainingSession logic', () => {
     });
   });
 
-  describe('answer tracking', () => {
-    it('tracks correct answers', () => {
-      const answers = [true, true, false, true, false];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(3);
-      expect(incorrect).toBe(2);
+  describe('answer validation', () => {
+    it('returns true for correct answer', () => {
+      expect(checkQuadrantAnswer('e5', 'q1')).toBe(true);
     });
 
-    it('handles empty answers array', () => {
-      const answers: boolean[] = [];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(0);
-      expect(incorrect).toBe(0);
-    });
-
-    it('handles all correct answers', () => {
-      const answers = [true, true, true, true, true];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(5);
-      expect(incorrect).toBe(0);
-    });
-
-    it('handles all incorrect answers', () => {
-      const answers = [false, false, false, false, false];
-      const correct = answers.filter((a) => a).length;
-      const incorrect = answers.filter((a) => !a).length;
-
-      expect(correct).toBe(0);
-      expect(incorrect).toBe(5);
+    it('returns false for incorrect answer', () => {
+      expect(checkQuadrantAnswer('e5', 'q2')).toBe(false);
     });
   });
 
   describe('training mode has no problem count limit', () => {
     it('can generate problems indefinitely (no fixed count)', () => {
-      const problems = [];
-      for (let i = 0; i < 100; i++) {
-        problems.push(generateSquare());
-      }
+      const problems = generateQuadrantQuestionBatch(100, 'white');
       expect(problems).toHaveLength(100);
-      for (const square of problems) {
-        expect(FILES).toContain(square[0]);
-        expect(RANKS).toContain(square[1]);
+      for (const q of problems) {
+        expect(FILES).toContain(q.square[0]);
+        expect(RANKS).toContain(q.square[1]);
       }
-    });
-
-    it('does not use problemCount or timer concepts', () => {
-      // Training mode generates problems on demand indefinitely.
-      // No fixed problemCount, no timer. This test documents the design decision.
-      const hasFixedCount = false;
-      const hasTimer = false;
-      expect(hasFixedCount).toBe(false);
-      expect(hasTimer).toBe(false);
     });
   });
 
