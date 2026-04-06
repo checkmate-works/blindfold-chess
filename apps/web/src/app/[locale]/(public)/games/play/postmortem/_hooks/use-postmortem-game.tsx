@@ -42,7 +42,7 @@ type PostmortemGameReturn = {
     setValue: (v: string) => void;
     isAnalyzingAll: boolean;
     lastFeedback: {
-      type: 'correct' | 'incorrect';
+      type: 'correct' | 'incorrect' | 'skipped';
       moveNumber: number;
       isWhiteMove: boolean;
       move: string;

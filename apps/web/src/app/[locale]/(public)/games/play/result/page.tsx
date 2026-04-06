@@ -61,7 +61,7 @@ export default async function ResultPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+      <PageTitle>{t('resultTitle')}</PageTitle>
       <PagePanel>
         <Suspense>
           <ResultClient

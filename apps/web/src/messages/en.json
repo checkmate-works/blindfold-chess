@@ -1435,10 +1435,12 @@
     "logMoveNumber": "Move",
     "logIncorrectMove": "Your input",
     "logCorrectMove": "Correct",
+    "logAutoFilled": "Auto-filled",
     "noMistakes": "No mistakes!",
     "incorrectMoveError": "{movePrefix} is not {move}",
     "analyzing": "Analyzing",
-    "correctMoveMessage": "{movePrefix} {move} is correct"
+    "correctMoveMessage": "{movePrefix} {move} is correct",
+    "skippedMoveMessage": "The answer was {movePrefix} {move}"
   },
   "playError": {
     "title": "Game Recovery",

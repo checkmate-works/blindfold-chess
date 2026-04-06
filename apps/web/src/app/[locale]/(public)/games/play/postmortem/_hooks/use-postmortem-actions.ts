@@ -39,7 +39,7 @@ export function usePostmortemActions({
   const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
   const [lastFeedback, setLastFeedback] = useState<{
-    type: 'correct' | 'incorrect';
+    type: 'correct' | 'incorrect' | 'skipped';
     moveNumber: number;
     isWhiteMove: boolean;
     move: string;
@@ -151,9 +151,15 @@ export function usePostmortemActions({
       setMoveInputValue('');
 
       const correctMove = originalMoves[currentMoveIndex];
+      const { moveNumber, isWhiteMove } = computeMoveNumber(
+        currentMoveIndex,
+        startsAsBlack,
+        startMoveNumber
+      );
+      setLastFeedback({ type: 'skipped', moveNumber, isWhiteMove, move: correctMove });
       processCorrectMove(correctMove, currentMoveIndex, 'auto');
     },
-    [currentMoveIndex, originalMoves, processCorrectMove]
+    [currentMoveIndex, originalMoves, startsAsBlack, startMoveNumber, processCorrectMove]
   );
 
   // Handle "Auto Fill All" button

@@ -1435,10 +1435,12 @@
     "logMoveNumber": "Movimiento",
     "logIncorrectMove": "Tu entrada",
     "logCorrectMove": "Correcto",
+    "logAutoFilled": "Auto-rellenado",
     "noMistakes": "¡Sin errores!",
     "incorrectMoveError": "{movePrefix} no es {move}",
     "analyzing": "Analizando",
-    "correctMoveMessage": "{movePrefix} {move} es correcto"
+    "correctMoveMessage": "{movePrefix} {move} es correcto",
+    "skippedMoveMessage": "La respuesta era {movePrefix} {move}"
   },
   "playError": {
     "title": "Recuperación de Partida",

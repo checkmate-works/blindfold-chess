@@ -1436,10 +1436,12 @@
     "logMoveNumber": "手",
     "logIncorrectMove": "入力した手",
     "logCorrectMove": "正解",
+    "logAutoFilled": "自動入力",
     "noMistakes": "間違いなし！",
     "incorrectMoveError": "{movePrefix} {move} ではありません",
     "analyzing": "解析中",
-    "correctMoveMessage": "{movePrefix} {move} は正解です"
+    "correctMoveMessage": "{movePrefix} {move} は正解です",
+    "skippedMoveMessage": "正解は {movePrefix} {move} でした"
   },
   "playError": {
     "title": "ゲームの復旧",
