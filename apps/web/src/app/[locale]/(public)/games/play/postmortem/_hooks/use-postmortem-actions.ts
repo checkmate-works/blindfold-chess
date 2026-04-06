@@ -1,20 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveLogEntry } from '../_lib';
-import { buildPreviousEval, computeMoveNumber, getPositionEvaluation } from '../_lib';
+import { computeMoveNumber } from '../_lib';
 
 type Props = {
   originalMoves: AlgebraicNotation[];
   userMoves: AlgebraicNotation[];
   currentMoveIndex: number;
   moveLog: MoveLogEntry[];
-  gamePositions: { fen: string; lastMove?: { from: string; to: string } }[];
   startsAsBlack: boolean;
   startMoveNumber: number;
-  showEvaluation: boolean;
   isPlayerTurn: boolean;
   autoOpponent: boolean;
   isCompleted: boolean;
@@ -29,10 +26,8 @@ export function usePostmortemActions({
   userMoves,
   currentMoveIndex,
   moveLog,
-  gamePositions,
   startsAsBlack,
   startMoveNumber,
-  showEvaluation,
   isPlayerTurn,
   autoOpponent,
   isCompleted,
@@ -41,10 +36,14 @@ export function usePostmortemActions({
   setMoveLog,
   setIsCompleted,
 }: Props) {
-  const t = useTranslations('postmortem');
-  const [isEvaluating, setIsEvaluating] = useState(false);
   const [isAnalyzingAll, setIsAnalyzingAll] = useState(false);
   const [dontKnowCount, setDontKnowCount] = useState(0);
+  const [lastFeedback, setLastFeedback] = useState<{
+    type: 'correct' | 'incorrect';
+    moveNumber: number;
+    isWhiteMove: boolean;
+    move: string;
+  } | null>(null);
 
   // Keep moveLog in a ref to avoid it triggering re-renders in dependency arrays
   const moveLogRef = useRef(moveLog);
@@ -52,30 +51,15 @@ export function usePostmortemActions({
 
   /**
    * Shared logic for processing a correct / auto-filled move:
-   * state update + optional evaluation fetch + log entry + completion check.
+   * state update + log entry + completion check.
    */
   const processCorrectMove = useCallback(
-    async (
-      move: AlgebraicNotation,
-      index: number,
-      status: 'correct' | 'auto',
-      previousEval: { score: number; mate?: number; bestMove?: string } | undefined
-    ) => {
+    (move: AlgebraicNotation, index: number, status: 'correct' | 'auto') => {
       const { moveNumber, isWhiteMove } = computeMoveNumber(index, startsAsBlack, startMoveNumber);
       const newIndex = index + 1;
 
       setUserMoves((prev) => [...prev, move]);
       setCurrentMoveIndex(newIndex);
-
-      const evaluation = showEvaluation
-        ? await getPositionEvaluation(
-            gamePositions[index].fen,
-            gamePositions[index + 1].fen,
-            index,
-            t,
-            previousEval
-          )
-        : undefined;
 
       setMoveLog((prev) => [
         ...prev,
@@ -84,7 +68,6 @@ export function usePostmortemActions({
           isWhiteMove,
           move,
           status,
-          evaluation,
         },
       ]);
 
@@ -95,9 +78,6 @@ export function usePostmortemActions({
     [
       startsAsBlack,
       startMoveNumber,
-      showEvaluation,
-      t,
-      gamePositions,
       originalMoves.length,
       setUserMoves,
       setCurrentMoveIndex,
@@ -108,22 +88,9 @@ export function usePostmortemActions({
 
   // Auto-fill opponent's move if needed
   useEffect(() => {
-    if (
-      autoOpponent &&
-      !isPlayerTurn &&
-      currentMoveIndex < originalMoves.length &&
-      !isCompleted &&
-      !isEvaluating
-    ) {
-      const autoFillMove = async () => {
-        setIsEvaluating(true);
-        const opponentMove = originalMoves[currentMoveIndex];
-        const previousEval = buildPreviousEval(moveLogRef.current);
-        await processCorrectMove(opponentMove, currentMoveIndex, 'auto', previousEval);
-        setIsEvaluating(false);
-      };
-
-      autoFillMove();
+    if (autoOpponent && !isPlayerTurn && currentMoveIndex < originalMoves.length && !isCompleted) {
+      const opponentMove = originalMoves[currentMoveIndex];
+      processCorrectMove(opponentMove, currentMoveIndex, 'auto');
     }
   }, [
     autoOpponent,
@@ -131,32 +98,30 @@ export function usePostmortemActions({
     currentMoveIndex,
     originalMoves,
     isCompleted,
-    isEvaluating,
     processCorrectMove,
   ]);
 
   // Handle move submission
   const handleSubmitMove = useCallback(
-    async (
-      move: AlgebraicNotation,
-      setMoveInputValue: React.Dispatch<React.SetStateAction<string>>
-    ) => {
-      if (isEvaluating) return;
-
+    (move: AlgebraicNotation, setMoveInputValue: React.Dispatch<React.SetStateAction<string>>) => {
       const expectedMove = originalMoves[currentMoveIndex];
 
       if (move === expectedMove) {
-        setIsEvaluating(true);
+        const { moveNumber, isWhiteMove } = computeMoveNumber(
+          currentMoveIndex,
+          startsAsBlack,
+          startMoveNumber
+        );
         setMoveInputValue('');
-        const previousEval = buildPreviousEval(moveLogRef.current);
-        await processCorrectMove(move, currentMoveIndex, 'correct', previousEval);
-        setIsEvaluating(false);
+        setLastFeedback({ type: 'correct', moveNumber, isWhiteMove, move });
+        processCorrectMove(move, currentMoveIndex, 'correct');
       } else {
         const { moveNumber, isWhiteMove } = computeMoveNumber(
           currentMoveIndex,
           startsAsBlack,
           startMoveNumber
         );
+        setLastFeedback({ type: 'incorrect', moveNumber, isWhiteMove, move });
         setMoveLog((prev) => [
           ...prev,
           {
@@ -172,7 +137,6 @@ export function usePostmortemActions({
     [
       currentMoveIndex,
       originalMoves,
-      isEvaluating,
       startsAsBlack,
       startMoveNumber,
       processCorrectMove,
@@ -182,25 +146,18 @@ export function usePostmortemActions({
 
   // Handle "I don't know" button
   const handleDontKnow = useCallback(
-    async (setMoveInputValue: React.Dispatch<React.SetStateAction<string>>) => {
-      if (isEvaluating) return;
-
-      setIsEvaluating(true);
+    (setMoveInputValue: React.Dispatch<React.SetStateAction<string>>) => {
       setDontKnowCount((prev) => prev + 1);
       setMoveInputValue('');
 
       const correctMove = originalMoves[currentMoveIndex];
-      await processCorrectMove(correctMove, currentMoveIndex, 'auto', undefined);
-      setIsEvaluating(false);
+      processCorrectMove(correctMove, currentMoveIndex, 'auto');
     },
-    [currentMoveIndex, originalMoves, isEvaluating, processCorrectMove]
+    [currentMoveIndex, originalMoves, processCorrectMove]
   );
 
-  // Handle "Analyze All" button
-  const handleAnalyzeAll = useCallback(async () => {
-    if (isEvaluating) return;
-
-    setIsEvaluating(true);
+  // Handle "Auto Fill All" button
+  const handleAnalyzeAll = useCallback(() => {
     setIsAnalyzingAll(true);
 
     const remainingMoves = originalMoves.slice(currentMoveIndex);
@@ -208,52 +165,27 @@ export function usePostmortemActions({
     setUserMoves(newMoves);
 
     const newLogEntries: MoveLogEntry[] = [];
-    let previousEval = buildPreviousEval(moveLogRef.current);
 
     for (let i = currentMoveIndex; i < originalMoves.length; i++) {
       const move = originalMoves[i];
       const { moveNumber, isWhiteMove } = computeMoveNumber(i, startsAsBlack, startMoveNumber);
-
-      const evaluation = showEvaluation
-        ? await getPositionEvaluation(
-            gamePositions[i].fen,
-            gamePositions[i + 1].fen,
-            i,
-            t,
-            previousEval
-          )
-        : undefined;
-
-      if (evaluation) {
-        previousEval = {
-          score: evaluation.score,
-          mate: evaluation.mate,
-          bestMove: evaluation.nextBestMove,
-        };
-      }
 
       newLogEntries.push({
         moveNumber,
         isWhiteMove,
         move,
         status: 'auto',
-        evaluation,
       });
     }
 
     setMoveLog((prev) => [...prev, ...newLogEntries]);
     setCurrentMoveIndex(originalMoves.length);
     setIsCompleted(true);
-    setIsEvaluating(false);
     setIsAnalyzingAll(false);
   }, [
     currentMoveIndex,
     originalMoves,
     userMoves,
-    showEvaluation,
-    isEvaluating,
-    t,
-    gamePositions,
     startsAsBlack,
     startMoveNumber,
     setUserMoves,
@@ -262,10 +194,13 @@ export function usePostmortemActions({
     setIsCompleted,
   ]);
 
+  const clearFeedback = useCallback(() => setLastFeedback(null), []);
+
   return {
-    isEvaluating,
     isAnalyzingAll,
     dontKnowCount,
+    lastFeedback,
+    clearFeedback,
     handleSubmitMove,
     handleDontKnow,
     handleAnalyzeAll,

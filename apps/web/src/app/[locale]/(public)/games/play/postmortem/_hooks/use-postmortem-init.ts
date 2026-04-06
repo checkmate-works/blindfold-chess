@@ -8,7 +8,6 @@ import {
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { parseFenMeta } from '../../_lib/fen-utils';
-import { clearEvaluationCache } from '../_lib';
 
 type UsePostmortemInitProps = {
   pgn: string;
@@ -48,10 +47,8 @@ export function usePostmortemInit({
     [startingFen]
   );
 
-  // Parse PGN on mount and clear evaluation cache
+  // Parse PGN on mount
   useEffect(() => {
-    clearEvaluationCache();
-
     try {
       const cleanPgn = pgn.replace(/\d+\.\s*/g, '').replace(/\.\./g, '');
       const moves = cleanPgn.trim().split(/\s+/).filter(Boolean);

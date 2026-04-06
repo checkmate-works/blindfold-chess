@@ -5,16 +5,15 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaCheck, FaTimes } from 'react-icons/fa';
-
-import { getEvaluationIcon } from '@/lib/evaluation';
+import { FaQuestionCircle } from 'react-icons/fa';
 
 import { ClientBreadcrumb } from '@/app/[locale]/(public)/games/play/_components/ClientBreadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
+import { Modal } from '@/app/[locale]/_components/Modal';
+import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { SelectedMoveDisplay } from '../_hooks';
 import { PostmortemClient } from './PostmortemClient';
 
 type Props = {
@@ -22,68 +21,26 @@ type Props = {
   brandName: string;
 };
 
-function SelectedMoveElement({ display }: { display: SelectedMoveDisplay }) {
-  switch (display.type) {
-    case 'correct':
-      return (
-        <span className="flex items-center justify-center gap-2 text-success">
-          <FaCheck className="w-4 h-4" /> {display.moveNotation}
-        </span>
-      );
-    case 'incorrect':
-      return (
-        <span className="flex items-center justify-center gap-2 text-destructive">
-          <FaTimes className="w-4 h-4" /> {display.moveNotation}
-        </span>
-      );
-    case 'auto':
-      return <span className="text-muted-foreground">{display.moveNotation}</span>;
-    case 'navigated':
-      return (
-        <span className="flex items-center gap-2">
-          {display.moveNotation}
-          {display.evaluation &&
-            getEvaluationIcon(display.evaluation.loss, display.evaluation.isMate, 'sm')}
-        </span>
-      );
-  }
-}
-
 export function PostmortemPageClient({ locale, brandName }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
   const tPlay = useTranslations('play');
-  const [selectedMoveDisplay, setSelectedMoveDisplay] = useState<SelectedMoveDisplay | null>(null);
+  const tGames = useTranslations('gamesPage');
+  const [showHelp, setShowHelp] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
   const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
-  const autoOpponent = searchParams.get('autoOpponent') === 'true';
   const offset = parseInt(searchParams.get('offset') || '0', 10);
   const gameId = searchParams.get('gameId');
-  const skillLevel = searchParams.get('skillLevel');
-  const moves = searchParams.get('moves');
   const startingFen = searchParams.get('fen') || undefined;
 
-  // Build the play page URL with original game parameters
-  const getPlayPageUrl = () => {
+  const getResultPageUrl = () => {
+    if (!gameId) return '/games/play';
     const params = new URLSearchParams();
-    params.set('color', playerColor);
-
-    if (gameId) {
-      params.set('gameId', gameId);
-    }
-    if (skillLevel) {
-      params.set('skillLevel', skillLevel);
-    }
-    if (moves) {
-      params.set('moves', moves);
-    }
-    if (startingFen) {
-      params.set('fen', startingFen);
-    }
-
-    return `/games/play?${params.toString()}`;
+    params.set('gameId', gameId);
+    return `/games/play/result?${params.toString()}`;
   };
 
   if (!pgn) {
@@ -97,23 +54,50 @@ export function PostmortemPageClient({ locale, brandName }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>
-        {selectedMoveDisplay ? <SelectedMoveElement display={selectedMoveDisplay} /> : t('title')}
-      </PageTitle>
-      <PostmortemClient
-        pgn={pgn}
-        playerColor={playerColor}
-        autoOpponent={autoOpponent}
-        initialOffset={offset}
-        startingFen={startingFen}
-        onSelectedMoveChange={setSelectedMoveDisplay}
-      />
-      <Divider />
-      <ClientBreadcrumb
-        items={[{ label: tPlay('title'), href: getPlayPageUrl() }, { label: t('title') }]}
-        locale={locale}
-        brandName={brandName}
-      />
+      <div className="flex items-center justify-center gap-2">
+        <PageTitle>{t('title')}</PageTitle>
+        {hasStarted && (
+          <button
+            onClick={() => setShowHelp(true)}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+            aria-label={t('infoModalTitle')}
+          >
+            <FaQuestionCircle className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+      <PagePanel>
+        <PostmortemClient
+          pgn={pgn}
+          playerColor={playerColor}
+          autoOpponent={false}
+          initialOffset={offset}
+          startingFen={startingFen}
+          onStart={() => setHasStarted(true)}
+        />
+        <Divider />
+        <ClientBreadcrumb
+          items={[
+            { label: tGames('pageTitle'), href: '/games' },
+            { label: tPlay('resultTitle'), href: getResultPageUrl() },
+            { label: t('title') },
+          ]}
+          locale={locale}
+          brandName={brandName}
+        />
+      </PagePanel>
+
+      {/* Help Modal */}
+      <Modal isOpen={showHelp} title={t('infoModalTitle')} onClose={() => setShowHelp(false)}>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-muted-foreground">{t('description')}</p>
+          <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1">
+            <li>{t('guidanceStep1')}</li>
+            <li>{t('guidanceStep2')}</li>
+            <li>{t('guidanceStep3')}</li>
+          </ol>
+        </div>
+      </Modal>
     </div>
   );
 }
