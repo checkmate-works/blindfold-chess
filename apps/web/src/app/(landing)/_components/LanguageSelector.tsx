@@ -4,9 +4,15 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { LOCALE_COOKIE_NAME } from '@/config';
+import { LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: 'English',
+  es: 'Español',
+  ja: '日本語',
+};
 
 type Props = {
   currentLocale: Locale;
@@ -41,8 +47,11 @@ export function LanguageSelector({ currentLocale }: Props) {
         disabled={isChanging}
         className="cursor-pointer rounded-md border border-border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       >
-        <option value="en">English</option>
-        <option value="ja">日本語</option>
+        {SUPPORTED_LOCALES.map((locale) => (
+          <option key={locale} value={locale}>
+            {LOCALE_LABELS[locale]}
+          </option>
+        ))}
       </select>
     </div>
   );
