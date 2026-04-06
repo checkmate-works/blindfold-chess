@@ -1864,7 +1864,8 @@
     "submitLoading": "Restableciendo...",
     "error": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo.",
     "passwordMismatch": "Las contraseñas no coinciden.",
-    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "rateLimited": "Demasiadas solicitudes. Inténtalo de nuevo más tarde."
   },
   "articles": {
     "pageTitle": "Artículos",

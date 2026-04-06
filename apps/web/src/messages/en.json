@@ -1864,7 +1864,8 @@
     "submitLoading": "Resetting...",
     "error": "Failed to reset password. Please try again.",
     "passwordMismatch": "Passwords do not match.",
-    "passwordTooShort": "Password must be at least 8 characters."
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "rateLimited": "Too many requests. Please try again later."
   },
   "articles": {
     "pageTitle": "Articles",

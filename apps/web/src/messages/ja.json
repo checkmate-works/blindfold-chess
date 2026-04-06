@@ -1865,7 +1865,8 @@
     "submitLoading": "リセット中...",
     "error": "パスワードのリセットに失敗しました。もう一度お試しください。",
     "passwordMismatch": "パスワードが一致しません。",
-    "passwordTooShort": "パスワードは8文字以上で入力してください。"
+    "passwordTooShort": "パスワードは8文字以上で入力してください。",
+    "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。"
   },
   "articles": {
     "pageTitle": "記事",

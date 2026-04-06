@@ -22,12 +22,14 @@ export async function GET(request: Request): Promise<NextResponse> {
       ...result,
     });
   } catch (error) {
-    console.error('Failed to grant monthly leaderboard badges:', error);
+    console.error(
+      'Failed to grant monthly leaderboard badges:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     Sentry.captureException(error);
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

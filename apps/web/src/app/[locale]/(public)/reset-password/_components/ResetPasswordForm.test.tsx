@@ -10,7 +10,7 @@ afterEach(() => {
   cleanup();
 });
 
-const mockUpdateUser = vi.fn();
+const mockResetPassword = vi.fn();
 const mockPush = vi.fn();
 
 vi.mock('@/i18n/use-safe-translations', () => ({
@@ -25,12 +25,8 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      updateUser: mockUpdateUser,
-    },
-  }),
+vi.mock('../_actions/resetPassword', () => ({
+  resetPassword: (...args: unknown[]) => mockResetPassword(...args),
 }));
 
 describe('ResetPasswordForm', () => {
@@ -61,10 +57,12 @@ describe('ResetPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('passwordMismatch')).toBeInTheDocument();
     });
-    expect(mockUpdateUser).not.toHaveBeenCalled();
+    expect(mockResetPassword).not.toHaveBeenCalled();
   });
 
   it('should show password too short error when password is less than MIN_PASSWORD_LENGTH', async () => {
+    mockResetPassword.mockResolvedValue({ error: 'password:tooShort' });
+
     render(<ResetPasswordForm />);
 
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
@@ -79,10 +77,11 @@ describe('ResetPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('tooShort')).toBeInTheDocument();
     });
-    expect(mockUpdateUser).not.toHaveBeenCalled();
   });
 
   it('should show missingLetter error when password has no letters', async () => {
+    mockResetPassword.mockResolvedValue({ error: 'password:missingLetter' });
+
     render(<ResetPasswordForm />);
 
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
@@ -97,10 +96,11 @@ describe('ResetPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('missingLetter')).toBeInTheDocument();
     });
-    expect(mockUpdateUser).not.toHaveBeenCalled();
   });
 
   it('should show missingDigit error when password has no digits', async () => {
+    mockResetPassword.mockResolvedValue({ error: 'password:missingDigit' });
+
     render(<ResetPasswordForm />);
 
     fireEvent.change(screen.getByLabelText('passwordLabel'), {
@@ -115,11 +115,10 @@ describe('ResetPasswordForm', () => {
     await waitFor(() => {
       expect(screen.getByText('missingDigit')).toBeInTheDocument();
     });
-    expect(mockUpdateUser).not.toHaveBeenCalled();
   });
 
-  it('should call updateUser with valid password and redirect on success', async () => {
-    mockUpdateUser.mockResolvedValue({ error: null });
+  it('should call resetPassword with valid password and redirect on success', async () => {
+    mockResetPassword.mockResolvedValue({ success: true });
 
     render(<ResetPasswordForm />);
 
@@ -133,16 +132,14 @@ describe('ResetPasswordForm', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'submit' }));
 
     await waitFor(() => {
-      expect(mockUpdateUser).toHaveBeenCalledWith({
-        password: 'validpassword123',
-      });
+      expect(mockResetPassword).toHaveBeenCalledWith('validpassword123');
     });
 
     expect(mockPush).toHaveBeenCalledWith('/en/mypage?toast=password_reset_success');
   });
 
-  it('should show error message when updateUser fails', async () => {
-    mockUpdateUser.mockResolvedValue({ error: new Error('Update failed') });
+  it('should show error message when resetPassword fails', async () => {
+    mockResetPassword.mockResolvedValue({ error: 'updateFailed' });
 
     render(<ResetPasswordForm />);
 
@@ -163,7 +160,7 @@ describe('ResetPasswordForm', () => {
 
   it('should show loading state while submitting', async () => {
     let resolveUpdate: (value: unknown) => void;
-    mockUpdateUser.mockReturnValue(
+    mockResetPassword.mockReturnValue(
       new Promise((resolve) => {
         resolveUpdate = resolve;
       })
@@ -185,6 +182,6 @@ describe('ResetPasswordForm', () => {
       expect(screen.getByText('submitLoading')).toBeInTheDocument();
     });
 
-    resolveUpdate!({ error: null });
+    resolveUpdate!({ success: true });
   });
 });

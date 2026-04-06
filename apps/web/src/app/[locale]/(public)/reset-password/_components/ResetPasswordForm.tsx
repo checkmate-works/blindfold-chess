@@ -8,10 +8,9 @@ import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { createClient } from '@/lib/supabase/client';
-import { getPasswordValidationError } from '@/lib/validations/password';
-
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+
+import { resetPassword } from '../_actions/resetPassword';
 
 export function ResetPasswordForm() {
   const t = useTranslations('resetPassword');
@@ -32,26 +31,19 @@ export function ResetPasswordForm() {
       return;
     }
 
-    const passwordError = getPasswordValidationError(password);
-    if (passwordError) {
-      setError(tPassword(passwordError, { minLength: MIN_PASSWORD_LENGTH }));
-      return;
-    }
-
     setIsLoading(true);
 
-    const supabase = createClient();
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
+    const result = await resetPassword(password);
 
-    const { error: updateError } = await supabase.auth.updateUser({
-      password,
-    });
-
-    if (updateError) {
-      setError(t('error'));
+    if ('error' in result) {
+      if (result.error === 'rateLimited') {
+        setError(t('rateLimited'));
+      } else if (result.error.startsWith('password:')) {
+        const key = result.error.replace('password:', '');
+        setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
+      } else {
+        setError(t('error'));
+      }
       setIsLoading(false);
       return;
     }

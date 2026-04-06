@@ -1,6 +1,7 @@
 'use server';
 
 import { SITE_URL } from '@/config';
+import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
 import { logActivityEvent } from '@/lib/activity-log';
@@ -18,6 +19,11 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
   );
   if (ipRateLimited) {
     return ipRateLimited;
+  }
+
+  const emailSchema = z.string().email().max(254);
+  if (!emailSchema.safeParse(email).success) {
+    return { error: 'resetFailed' };
   }
 
   const supabase = await createClient();

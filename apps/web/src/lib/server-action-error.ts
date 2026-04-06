@@ -15,7 +15,10 @@ export function handleServerActionError(
   context: string,
   errorCode = 'unexpected_error'
 ): { success: false; error: string } {
-  console.error(`${context}: unexpected error:`, error);
+  console.error(
+    `${context}: unexpected error:`,
+    error instanceof Error ? error.message : 'Unknown error'
+  );
   Sentry.captureException(error);
   return { success: false, error: errorCode };
 }
