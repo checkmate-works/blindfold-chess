@@ -13,8 +13,6 @@ import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
 import type { AchievementCriteria } from '../achievement-criteria-types';
 import { CHALLENGE_MENU_TYPES } from '../practice-menu-types';
 
-export { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
-
 // ---------------------------------------------------------------------------
 // Placement helpers
 // ---------------------------------------------------------------------------

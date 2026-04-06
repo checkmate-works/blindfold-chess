@@ -13,7 +13,6 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 export { LinkedText } from './LinkedText';
 export { ListLink, ListLinkContainer } from './ListLink';
 export { MobileMenu } from './MobileMenu';
-export { PageDescription } from './PageDescription';
 export { PageTitle } from './PageTitle';
 export { PaginationNav } from './PaginationNav';
 export { PgnInput } from './PgnInput';

@@ -46,7 +46,7 @@ export function PostmortemMovesPanel({
 
   return (
     <div className="lg:col-span-1">
-      <div className="bg-card rounded-lg shadow-lg">
+      <div className="border border-border rounded-lg">
         {/* Moves Header */}
         <div className="px-4 py-3 bg-muted/30 rounded-t-lg">
           <span className="text-foreground font-medium">{t('moves')}</span>

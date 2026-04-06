@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import { isGameFinished } from '../_lib/game-utils';
+
 type UseAutoSaveEventsOptions = {
   saveGame: (showNotification?: boolean) => Promise<string | undefined> | undefined;
   currentMovesRef: React.RefObject<AlgebraicNotation[]>;
@@ -32,9 +34,6 @@ export function useAutoSaveEvents({
 }: UseAutoSaveEventsOptions) {
   const pathname = usePathname();
   const previousPathname = useRef(pathname);
-
-  const isGameFinished = (status: string) =>
-    status === 'win' || status === 'loss' || status === 'draw';
 
   const shouldShowToast = () => {
     return hasSavedInSession.current || hasPendingChanges.current;

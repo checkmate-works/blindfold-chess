@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -11,16 +12,28 @@ import type { GameOutcome, SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getMovingSide, parseFenMeta } from '../_lib/fen-utils';
+import { countPlayerMoves, getMovingSide, parseFenMeta } from '../_lib/fen-utils';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
 import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
 import { useGamePersistence } from './use-game-persistence';
 import { useGameState } from './use-game-state';
+import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
 import { useUrlSync } from './use-url-sync';
+
+/** Map internal game status + player result to the repository's GameOutcome. */
+function mapGameStatusToOutcome(
+  gameStatus: GameStatus,
+  playerResult: 'win' | 'loss' | 'draw' | null
+): GameOutcome {
+  if (gameStatus === 'in_progress') return 'in_progress';
+  if (playerResult === 'win') return 'win';
+  if (playerResult === 'loss') return 'loss';
+  return 'draw';
+}
 
 type UseGameSessionOptions = {
   locale: Locale;
@@ -44,8 +57,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     errorDetails,
   } = useGameInitialization(urlParams);
 
-  // Skill level state (can be changed during game)
-  const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
+  // Skill level is immutable during gameplay — set at game start, never changed mid-game.
+  const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
 
   // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
   const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
@@ -80,6 +93,19 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       initialStartingFen,
     });
 
+  // Operation tracker hook — declared before useGameState so setLogsTo can be
+  // passed to useGameState for synchronized restoration alongside moves.
+  const {
+    logs: operationLogs,
+    recordPeek,
+    recordUndo,
+    recordMovePeek,
+    commitMove,
+    handleUndoLog,
+    truncateLogs,
+    setLogsTo,
+  } = useMoveOperationTracker();
+
   // Game state hook
   const {
     gameStatus,
@@ -102,9 +128,12 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     loadedGameData,
     setMovesTo,
     setStartingFen,
+    setOperationLogsTo: setLogsTo,
   });
 
-  // Set per-game preferences from loaded game data (game resume)
+  // Restore per-game preferences from loaded game data (game resume).
+  // Note: operationLogs restoration is handled in useGameState's effect alongside moves
+  // to prevent a race condition where auto-save could overwrite logs with stale data.
   useEffect(() => {
     if (loadedGameData?.gamePreferences) {
       setPerGamePrefs(loadedGameData.gamePreferences);
@@ -112,18 +141,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   }, [loadedGameData]);
 
   // Map board status to game outcome for repository
-  const mapGameStatusToOutcome = useCallback(
-    (bs: typeof gameStatus, pr: typeof playerResult): GameOutcome => {
-      if (bs === 'in_progress') return 'in_progress';
-      if (pr === 'win') return 'win';
-      if (pr === 'loss') return 'loss';
-      return 'draw';
-    },
-    []
-  );
 
   // Auto-save hook
-  const { markPlayerInteraction, updateSkillLevel, gameId } = useAutoSave({
+  const { markPlayerInteraction, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -131,12 +151,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
     gamePreferences: perGamePrefs,
+    operationLogs,
     enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
   });
 
   // URL sync hook
-  const { searchParams, router } = useUrlSync({
+  const { router } = useUrlSync({
     locale,
     gameId,
     initialGameId,
@@ -152,7 +173,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   movesRef.current = moves;
 
   // Internal helper to reduce duplicated state updates
-  const recomputeGameState = useCallback(
+  const updateLastMove = useCallback(
     (newMoves: AlgebraicNotation[]) => {
       setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
     },
@@ -164,9 +185,9 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...movesRef.current, move];
-      recomputeGameState(newMoves);
+      updateLastMove(newMoves);
     },
-    [pushMove, recomputeGameState]
+    [pushMove, updateLastMove]
   );
 
   const handleAiMoveError = useCallback(() => {
@@ -211,8 +232,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     removeMoves(2);
     setError(null);
     const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
-    recomputeGameState(newMoves);
-  }, [markPlayerInteraction, removeMoves, moves, recomputeGameState]);
+    updateLastMove(newMoves);
+    // handleUndoLog removes the last player's log entry and resets peek/undo counters.
+    // Any peeks accumulated before this undo are intentionally discarded (the move "never happened").
+    // recordUndo then tracks this undo event on the *next* move's log entry.
+    handleUndoLog();
+    recordUndo();
+  }, [markPlayerInteraction, removeMoves, moves, updateLastMove, handleUndoLog, recordUndo]);
 
   // Restart from position handler
   const handleRestartFromPosition = useCallback(
@@ -223,9 +249,20 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
         removeMoves(movesToRemove);
       }
       const newMoves = moves.slice(0, position + 1) as AlgebraicNotation[];
-      recomputeGameState(newMoves);
+      updateLastMove(newMoves);
+
+      // Truncate operation logs to match the number of player moves remaining.
+      truncateLogs(countPlayerMoves(position, playerSide, startingFen));
     },
-    [markPlayerInteraction, moves, removeMoves, recomputeGameState]
+    [
+      markPlayerInteraction,
+      moves,
+      removeMoves,
+      updateLastMove,
+      playerSide,
+      startingFen,
+      truncateLogs,
+    ]
   );
 
   // Handle new game from position
@@ -244,23 +281,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       router.push(`/${locale}/games/new/pgn?${params.toString()}`);
     },
     [moves, playerSide, skillLevel, locale, router, startingFen]
-  );
-
-  // Handle skill level change
-  const handleSkillLevelChange = useCallback(
-    async (newSkillLevel: SkillLevel) => {
-      markPlayerInteraction();
-      setSkillLevel(newSkillLevel);
-
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('skillLevel', newSkillLevel.toString());
-      router.replace(`?${params.toString()}`, { scroll: false });
-
-      if (gameId) {
-        await updateSkillLevel(newSkillLevel);
-      }
-    },
-    [markPlayerInteraction, searchParams, router, gameId, updateSkillLevel]
   );
 
   // Current FEN and formatted PGN are memoized values from useNotation
@@ -338,7 +358,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       handleUndo,
       handleRestartFromPosition,
       handleNewGameFromPosition,
-      handleSkillLevelChange,
+      commitMoveLog: commitMove,
+      recordPeek,
+      recordMovePeek,
     },
+    operationLogs,
   };
 }

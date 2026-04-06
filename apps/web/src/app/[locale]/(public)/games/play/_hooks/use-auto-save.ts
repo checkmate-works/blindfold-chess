@@ -5,10 +5,11 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/repositories';
-import type { GameOutcome, SkillLevel } from '@/lib/types';
+import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { isGameFinished } from '../_lib/game-utils';
 import { useAutoSaveEvents } from './use-auto-save-events';
 import { useInitialSave } from './use-initial-save';
 
@@ -22,6 +23,7 @@ export type GameDataRefs = {
   skillLevel: React.RefObject<SkillLevel>;
   startingFen: React.RefObject<string | undefined>;
   gamePreferences: React.RefObject<PerGamePreferences | undefined>;
+  operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
 };
 
 type UseAutoSaveOptions = {
@@ -32,6 +34,7 @@ type UseAutoSaveOptions = {
   status: GameOutcome;
   startingFen?: string;
   gamePreferences?: PerGamePreferences;
+  operationLogs?: MoveOperationLog[];
   enabled?: boolean;
   saveOnInit?: boolean;
 };
@@ -47,6 +50,7 @@ export function useAutoSave({
   status,
   startingFen,
   gamePreferences,
+  operationLogs,
   enabled = true,
   saveOnInit = false,
 }: UseAutoSaveOptions) {
@@ -63,6 +67,7 @@ export function useAutoSave({
     skillLevel: useRef(skillLevel),
     startingFen: useRef(startingFen),
     gamePreferences: useRef(gamePreferences),
+    operationLogs: useRef(operationLogs),
   };
 
   // Save state refs — track save progress and session state
@@ -92,6 +97,7 @@ export function useAutoSave({
     gameDataRefs.skillLevel.current = skillLevel;
     gameDataRefs.startingFen.current = startingFen;
     gameDataRefs.gamePreferences.current = gamePreferences;
+    gameDataRefs.operationLogs.current = operationLogs;
     saveOnInitRef.current = saveOnInit;
     enabledRef.current = enabled;
   }, [
@@ -103,6 +109,7 @@ export function useAutoSave({
     skillLevel,
     startingFen,
     gamePreferences,
+    operationLogs,
     saveOnInit,
     enabled,
     gameDataRefs.moves,
@@ -111,6 +118,7 @@ export function useAutoSave({
     gameDataRefs.skillLevel,
     gameDataRefs.startingFen,
     gameDataRefs.gamePreferences,
+    gameDataRefs.operationLogs,
   ]);
 
   // Initial save for new games
@@ -140,13 +148,7 @@ export function useAutoSave({
 
       // Don't save if the game is already finished and we're just viewing it
       const currentStatus = gameDataRefs.status.current;
-      const isGameFinished =
-        currentStatus === 'win' || currentStatus === 'loss' || currentStatus === 'draw';
-      const wasGameFinished =
-        lastSavedStatus.current === 'win' ||
-        lastSavedStatus.current === 'loss' ||
-        lastSavedStatus.current === 'draw';
-      if (isGameFinished && wasGameFinished) {
+      if (isGameFinished(currentStatus) && isGameFinished(lastSavedStatus.current)) {
         return;
       }
 
@@ -162,6 +164,7 @@ export function useAutoSave({
           status: currentStatus,
           startingFen: gameDataRefs.startingFen.current,
           gamePreferences: gameDataRefs.gamePreferences.current,
+          operationLogs: gameDataRefs.operationLogs.current,
         };
 
         let savedGameId: string;
@@ -269,20 +272,14 @@ export function useAutoSave({
     const hasNewMoves = moves.length !== lastSavedMovesLength.current;
     const hasStatusChanged = status !== lastSavedStatus.current;
     const isGameProgressing = moves.length > 0;
-    const isGameFinished = status === 'win' || status === 'loss' || status === 'draw';
-    const wasGameFinished =
-      lastSavedStatus.current === 'win' ||
-      lastSavedStatus.current === 'loss' ||
-      lastSavedStatus.current === 'draw';
-
     // Don't save if the game was already finished (prevents updating lastPlayed when viewing finished games)
-    if (wasGameFinished) {
+    if (isGameFinished(lastSavedStatus.current)) {
       return;
     }
 
     if ((hasNewMoves || hasStatusChanged) && (hasPlayerInteracted.current || isGameProgressing)) {
       // For finished games, only mark that we have pending changes if the status actually changed
-      if (!isGameFinished || hasStatusChanged) {
+      if (!isGameFinished(status) || hasStatusChanged) {
         hasPendingChanges.current = true;
       }
       // Save immediately to ensure both player and AI moves are saved
@@ -311,19 +308,9 @@ export function useAutoSave({
     hasPlayerInteracted.current = true;
   }, []);
 
-  // Update a specific game field immediately and trigger a save
-  const updateSkillLevel = useCallback(
-    async (newSkillLevel: SkillLevel) => {
-      gameDataRefs.skillLevel.current = newSkillLevel;
-      return saveGame(false);
-    },
-    [saveGame] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
   return {
     saveGame: manualSave,
     markPlayerInteraction,
-    updateSkillLevel,
     gameId: currentGameId,
     isSaving,
     lastSavedAt,

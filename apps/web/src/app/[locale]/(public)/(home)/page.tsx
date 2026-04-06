@@ -98,7 +98,7 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <div className="mb-8 flex items-center justify-center gap-2">
-        <PageTitle className="!mb-0">{tHome('pageTitle')}</PageTitle>
+        <PageTitle>{tHome('pageTitle')}</PageTitle>
         {user && (
           <Link
             href="/"

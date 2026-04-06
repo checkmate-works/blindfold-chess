@@ -7,13 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
-import {
-  PIECES,
-  type PieceType,
-  findShortestPath,
-  generateProblem,
-  validateUserPath,
-} from '../_lib/utils';
+import { type PieceType, findShortestPath, generateProblem, validateUserPath } from '../_lib/utils';
 
 type GameState = 'playing' | 'result';
 
@@ -162,6 +156,3 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }:
     handleEndTraining,
   };
 }
-
-export { PIECES };
-export type { PieceType, GameState, RoutePlannerResult };

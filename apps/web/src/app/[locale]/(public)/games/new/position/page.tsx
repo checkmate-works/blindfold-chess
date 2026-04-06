@@ -37,6 +37,7 @@ export default async function PositionGamePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
   return (
     <div className="space-y-8">
@@ -50,6 +51,7 @@ export default async function PositionGamePage({ params }: Props) {
           <Breadcrumb
             locale={locale}
             items={[
+              { label: tGames('pageTitle'), href: '/games' },
               { label: t('newGame.title'), href: '/games/new' },
               { label: t('newGame.positionPageTitle') },
             ]}

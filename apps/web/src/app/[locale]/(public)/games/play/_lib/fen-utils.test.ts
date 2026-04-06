@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseFenMeta } from './fen-utils';
+import { countPlayerMoves, parseFenMeta } from './fen-utils';
 
 describe('parseFenMeta', () => {
   describe('startsAsBlack', () => {
@@ -68,5 +68,40 @@ describe('parseFenMeta', () => {
       expect(result.startsAsBlack).toBe(false);
       expect(result.startMoveNumber).toBe(2);
     });
+  });
+});
+
+describe('countPlayerMoves', () => {
+  it('should count white moves in standard position', () => {
+    // moves[0]=white, moves[1]=black, moves[2]=white, moves[3]=black
+    expect(countPlayerMoves(3, 'white')).toBe(2); // indices 0, 2
+  });
+
+  it('should count black moves in standard position', () => {
+    expect(countPlayerMoves(3, 'black')).toBe(2); // indices 1, 3
+  });
+
+  it('should count white moves up to index 0', () => {
+    expect(countPlayerMoves(0, 'white')).toBe(1);
+  });
+
+  it('should count black moves up to index 0', () => {
+    expect(countPlayerMoves(0, 'black')).toBe(0);
+  });
+
+  it('should handle black-to-move starting FEN for white player', () => {
+    const blackStartFen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1';
+    // In this FEN, black moves first: moves[0]=black, moves[1]=white, ...
+    expect(countPlayerMoves(3, 'white', blackStartFen)).toBe(2); // indices 1, 3
+  });
+
+  it('should handle black-to-move starting FEN for black player', () => {
+    const blackStartFen = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1';
+    expect(countPlayerMoves(3, 'black', blackStartFen)).toBe(2); // indices 0, 2
+  });
+
+  it('should return 0 for negative index', () => {
+    // upToIndex < 0 means no moves to count
+    expect(countPlayerMoves(-1, 'white')).toBe(0);
   });
 });

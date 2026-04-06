@@ -88,10 +88,6 @@ const manualContentManager = createContentManager<ManualArticleMetadata>({
   },
 });
 
-export const getAvailableManualArticles = (): string[] => {
-  return manualContentManager.getAvailableSlugs();
-};
-
 export const getManualArticle = async (
   slug: string,
   locale: Locale

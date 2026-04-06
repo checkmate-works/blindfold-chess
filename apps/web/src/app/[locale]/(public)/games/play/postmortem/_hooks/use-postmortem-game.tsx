@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
@@ -7,31 +7,11 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { EvaluationMark } from '@/lib/evaluation';
 
 import { getMovingSide } from '../../_lib/fen-utils';
-import type { EvaluationFilters, MoveLogEntry } from '../_lib';
-import {
-  isPlayerTurn as computeIsPlayerTurn,
-  formatMoveNotation,
-  formatMovesToPgn,
-  getCurrentEvaluationMark,
-} from '../_lib';
+import type { MoveLogEntry } from '../_lib';
+import { isPlayerTurn as computeIsPlayerTurn, formatMovesToPgn } from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
-import { usePostmortemFilters } from './use-postmortem-filters';
 import { usePostmortemInit } from './use-postmortem-init';
 import { usePostmortemNavigation } from './use-postmortem-navigation';
-
-/**
- * Data describing the selected move for display.
- * The consuming component is responsible for rendering this into JSX.
- */
-export type SelectedMoveDisplay =
-  | { type: 'correct'; moveNotation: string }
-  | { type: 'incorrect'; moveNotation: string }
-  | { type: 'auto'; moveNotation: string }
-  | {
-      type: 'navigated';
-      moveNotation: string;
-      evaluation?: { loss: number; isMate: boolean };
-    };
 
 type Props = {
   pgn: string;
@@ -39,7 +19,6 @@ type Props = {
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
-  onSelectedMoveChange?: (moveDisplay: SelectedMoveDisplay | null) => void;
 };
 
 type PostmortemGameReturn = {
@@ -61,19 +40,21 @@ type PostmortemGameReturn = {
   moveInput: {
     value: string;
     setValue: (v: string) => void;
-    isEvaluating: boolean;
     isAnalyzingAll: boolean;
+    lastFeedback: {
+      type: 'correct' | 'incorrect';
+      moveNumber: number;
+      isWhiteMove: boolean;
+      move: string;
+    } | null;
+    clearFeedback: () => void;
   };
   moveLog: {
     entries: MoveLogEntry[];
-    filteredEntries: MoveLogEntry[];
-    hasAnyEvaluation: boolean;
   };
   settings: {
     autoOpponent: boolean;
     setAutoOpponent: (v: boolean) => void;
-    showEvaluation: boolean;
-    setShowEvaluation: (v: boolean) => void;
     dontKnowCount: number;
     isPlayerTurn: boolean;
   };
@@ -87,15 +68,10 @@ type PostmortemGameReturn = {
     navigatePrevious: () => void;
     navigateNext: () => void;
   };
-  filters: {
-    value: EvaluationFilters;
-    setValue: React.Dispatch<React.SetStateAction<EvaluationFilters>>;
-    reset: () => void;
-  };
   actions: {
-    handleSubmitMove: (move: AlgebraicNotation) => Promise<void>;
-    handleDontKnow: () => Promise<void>;
-    handleAnalyzeAll: () => Promise<void>;
+    handleSubmitMove: (move: AlgebraicNotation) => void;
+    handleDontKnow: () => void;
+    handleAnalyzeAll: () => void;
     handleMoveClick: (entry: MoveLogEntry) => void;
   };
   formattedPgn: FormattedPgnMove[];
@@ -107,7 +83,6 @@ export function usePostmortemGame({
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
   startingFen,
-  onSelectedMoveChange,
 }: Props): PostmortemGameReturn {
   // Initialization: PGN parsing, move validation, game positions
   const {
@@ -127,7 +102,6 @@ export function usePostmortemGame({
   const [moveInputValue, setMoveInputValue] = useState('');
   const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
-  const [showEvaluation, setShowEvaluation] = useState(false);
 
   // Hooks: Navigation
   const navigation = usePostmortemNavigation({
@@ -154,9 +128,10 @@ export function usePostmortemGame({
 
   // Hooks: Actions
   const {
-    isEvaluating,
     isAnalyzingAll,
     dontKnowCount,
+    lastFeedback,
+    clearFeedback,
     handleSubmitMove: rawHandleSubmit,
     handleDontKnow: rawHandleDontKnow,
     handleAnalyzeAll,
@@ -165,10 +140,8 @@ export function usePostmortemGame({
     userMoves,
     currentMoveIndex,
     moveLog,
-    gamePositions,
     startsAsBlack,
     startMoveNumber,
-    showEvaluation,
     isPlayerTurn: playerTurn,
     autoOpponent,
     isCompleted,
@@ -179,30 +152,14 @@ export function usePostmortemGame({
   });
 
   const handleSubmitMove = useCallback(
-    async (move: AlgebraicNotation) => rawHandleSubmit(move, setMoveInputValue),
+    (move: AlgebraicNotation) => rawHandleSubmit(move, setMoveInputValue),
     [rawHandleSubmit]
   );
 
   const handleDontKnow = useCallback(
-    async () => rawHandleDontKnow(setMoveInputValue),
+    () => rawHandleDontKnow(setMoveInputValue),
     [rawHandleDontKnow]
   );
-
-  // Hooks: Filters
-  const {
-    filters: filterValue,
-    setFilters,
-    filteredEntries,
-    handleResetFilters,
-  } = usePostmortemFilters({
-    moveLog,
-    playerColor,
-  });
-
-  // Check if any move has evaluation
-  const hasAnyEvaluation = useMemo(() => {
-    return moveLog.some((entry) => entry.evaluation !== undefined);
-  }, [moveLog]);
 
   // Handle move log click
   const handleMoveClick = useCallback(
@@ -229,74 +186,6 @@ export function usePostmortemGame({
     [moveLog, navigateToPosition, navigateToStart]
   );
 
-  // Update parent with latest move result during play
-  useEffect(() => {
-    if (!onSelectedMoveChange) return;
-    if (isCompleted) return;
-    if (moveLog.length === 0) {
-      onSelectedMoveChange(null);
-      return;
-    }
-
-    const latestEntry = moveLog[moveLog.length - 1];
-
-    if (latestEntry.status === 'correct') {
-      onSelectedMoveChange({
-        type: 'correct',
-        moveNotation: formatMoveNotation(latestEntry),
-      });
-    } else if (latestEntry.status === 'incorrect') {
-      const incorrectNotation = latestEntry.isWhiteMove
-        ? `${latestEntry.moveNumber}. ${latestEntry.incorrectMove}`
-        : `${latestEntry.moveNumber}... ${latestEntry.incorrectMove}`;
-      onSelectedMoveChange({
-        type: 'incorrect',
-        moveNotation: incorrectNotation,
-      });
-    } else {
-      onSelectedMoveChange({
-        type: 'auto',
-        moveNotation: formatMoveNotation(latestEntry),
-      });
-    }
-  }, [moveLog, isCompleted, onSelectedMoveChange]);
-
-  // Update parent component with selected move display (post-completion navigation)
-  useEffect(() => {
-    if (!onSelectedMoveChange) return;
-
-    if (selectedMoveIndex === null) {
-      if (!isCompleted) return;
-      onSelectedMoveChange(null);
-      return;
-    }
-
-    let entry: MoveLogEntry | null = null;
-    let originalMoveCounter = 0;
-    for (const logEntry of moveLog) {
-      if (logEntry.status !== 'incorrect') {
-        if (originalMoveCounter === selectedMoveIndex) {
-          entry = logEntry;
-          break;
-        }
-        originalMoveCounter++;
-      }
-    }
-
-    if (!entry) {
-      onSelectedMoveChange(null);
-      return;
-    }
-
-    onSelectedMoveChange({
-      type: 'navigated',
-      moveNotation: formatMoveNotation(entry),
-      evaluation: entry.evaluation
-        ? { loss: entry.evaluation.loss, isMate: entry.evaluation.mate !== undefined }
-        : undefined,
-    });
-  }, [selectedMoveIndex, moveLog, isCompleted, onSelectedMoveChange]);
-
   const currentFen = getCurrentFen() || gamePositions[0]?.fen;
   const totalMoves = originalMoves.length;
   const progress = currentMoveIndex;
@@ -318,11 +207,7 @@ export function usePostmortemGame({
     return gamePositions[posIndex].lastMove ?? null;
   }, [currentPosition, userMoves.length, gamePositions]);
 
-  // Calculate evaluation mark for the current position
-  const currentEvaluationMark = useMemo(
-    () => getCurrentEvaluationMark(currentPosition, userMoves.length, currentLastMove, moveLog),
-    [currentPosition, userMoves.length, currentLastMove, moveLog]
-  );
+  const currentEvaluationMark: EvaluationMark | null = null;
 
   return {
     gameProgress: {
@@ -343,29 +228,21 @@ export function usePostmortemGame({
     moveInput: {
       value: moveInputValue,
       setValue: setMoveInputValue,
-      isEvaluating,
       isAnalyzingAll,
+      lastFeedback,
+      clearFeedback,
     },
     moveLog: {
       entries: moveLog,
-      filteredEntries,
-      hasAnyEvaluation,
     },
     settings: {
       autoOpponent,
       setAutoOpponent,
-      showEvaluation,
-      setShowEvaluation,
       dontKnowCount,
       isPlayerTurn: playerTurn,
     },
     navigation: {
       ...navigation,
-    },
-    filters: {
-      value: filterValue,
-      setValue: setFilters,
-      reset: handleResetFilters,
     },
     actions: {
       handleSubmitMove,

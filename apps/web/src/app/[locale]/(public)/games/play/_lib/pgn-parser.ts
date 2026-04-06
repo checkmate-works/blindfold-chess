@@ -1,5 +1,3 @@
-import { getStartingFen } from '@blindfold-chess/features/chess-core';
-
 /**
  * Re-exports from @blindfold-chess/features/chess-core.
  *
@@ -20,6 +18,3 @@ export {
   validatePgn,
   validatePgnWithDetails,
 } from '@blindfold-chess/features/chess-core';
-
-// Standard starting position FEN
-export const STANDARD_START_FEN = getStartingFen();

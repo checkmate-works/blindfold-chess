@@ -46,13 +46,6 @@ export function isQueryTooLong(encoded: string): boolean {
 }
 
 /**
- * Get max query length for validation
- */
-export function getMaxQueryLength(): number {
-  return MAX_QUERY_LENGTH;
-}
-
-/**
  * Generate share URL for move sequence
  */
 export function generateShareUrl(

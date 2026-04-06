@@ -36,6 +36,7 @@ export default async function NewGamePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
   return (
     <div className="space-y-8">
@@ -69,7 +70,10 @@ export default async function NewGamePage({ params }: Props) {
             />
           </div>
           <Divider />
-          <Breadcrumb locale={locale} items={[{ label: t('newGame.title') }]} />
+          <Breadcrumb
+            locale={locale}
+            items={[{ label: tGames('pageTitle'), href: '/games' }, { label: t('newGame.title') }]}
+          />
         </GameLimitCheck>
       </PagePanel>
     </div>

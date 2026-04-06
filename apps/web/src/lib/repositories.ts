@@ -207,6 +207,7 @@ export class LocalStorageGameRepository implements IGameRepository {
         status: game.status,
         startingFen: game.startingFen,
         gamePreferences: game.gamePreferences,
+        operationLogs: game.operationLogs,
       });
     } catch (error) {
       console.error('Failed to save move:', error);
@@ -249,7 +250,21 @@ export class LocalStorageGameRepository implements IGameRepository {
       (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
       (g.startingFen === undefined || typeof g.startingFen === 'string') &&
       (g.gamePreferences === undefined ||
-        (typeof g.gamePreferences === 'object' && g.gamePreferences !== null))
+        (typeof g.gamePreferences === 'object' && g.gamePreferences !== null)) &&
+      (g.operationLogs === undefined ||
+        (Array.isArray(g.operationLogs) &&
+          g.operationLogs.every(
+            (log) =>
+              typeof log === 'object' &&
+              log !== null &&
+              ['text', 'text-autocomplete', 'select', 'button'].includes(
+                (log as Record<string, unknown>).inputMethod as string
+              ) &&
+              typeof (log as Record<string, unknown>).peekCount === 'number' &&
+              typeof (log as Record<string, unknown>).undoCount === 'number' &&
+              (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
+                (log as Record<string, unknown>).movePeekCount === undefined)
+          )))
     );
   }
 }

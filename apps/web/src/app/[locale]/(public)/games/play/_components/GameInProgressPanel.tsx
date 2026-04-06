@@ -6,7 +6,9 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaEye } from 'react-icons/fa';
+import { FaClipboardList, FaEye } from 'react-icons/fa';
+
+import type { MoveInputMethod } from '@/lib/types';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -23,13 +25,15 @@ type Props = {
   setMoveInput: (value: string) => void;
   error: string | null;
   setError: (value: string | null) => void;
-  handleSubmitMove: (move: AlgebraicNotation) => void;
+  handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
   onShowBoard: () => void;
-  onShowSkillLevelSettings: () => void;
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
+  onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
+  onMovePeek?: () => void;
+  onShowOperationLog?: () => void;
 };
 
 export function GameInProgressPanel({
@@ -46,9 +50,11 @@ export function GameInProgressPanel({
   moves,
   confirmationDialogs,
   onShowBoard,
-  onShowSkillLevelSettings,
   playerColor,
   inlineBoardView,
+  onMoveCommitted,
+  onMovePeek,
+  onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
   const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
@@ -76,6 +82,8 @@ export function GameInProgressPanel({
           selectPlaceholder={t('selectMove')}
           toggleTitle={t('switchInputMode')}
           playerColor={playerColor}
+          onMoveCommitted={onMoveCommitted}
+          onMovePeek={onMovePeek}
         />
       ) : (
         <div>
@@ -117,16 +125,6 @@ export function GameInProgressPanel({
         </button>
       </div>
 
-      {/* Settings Links */}
-      <div className="text-center">
-        <button
-          onClick={onShowSkillLevelSettings}
-          className="text-sm text-muted-foreground hover:text-foreground underline"
-        >
-          {t('configureSkillLevel')}
-        </button>
-      </div>
-
       {/* Save and Exit */}
       <div className="text-center">
         <Link
@@ -136,6 +134,19 @@ export function GameInProgressPanel({
           💾 {t('saveAndExit')}
         </Link>
       </div>
+
+      {/* Operation Log */}
+      {onShowOperationLog && (
+        <div className="flex justify-end">
+          <button
+            onClick={onShowOperationLog}
+            className="text-muted-foreground hover:text-foreground"
+            title={t('operationLog.title')}
+          >
+            <FaClipboardList className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,9 +7,6 @@ import { FILES, RANKS } from '@blindfold-chess/types';
 
 export type { File, Rank, Square } from '@blindfold-chess/types';
 
-export const VALID_FILES = FILES;
-export const VALID_RANKS = RANKS;
-
 export function isValidSquare(value: string): value is Square {
   return isValidSquareBase(value);
 }

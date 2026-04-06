@@ -11,7 +11,7 @@ const MAX_PAGES = 100;
 
 type Profile = typeof profiles.$inferSelect;
 
-export async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
+async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
   const allUsers: User[] = [];
   let page = 1;
 

@@ -93,7 +93,7 @@ export const PRACTICE_MODULES = {
 export type PracticeModuleId = (typeof PRACTICE_MODULES)[keyof typeof PRACTICE_MODULES];
 
 // Translation key mapping (camelCase for i18n keys)
-export const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> = {
+const PRACTICE_MODULE_TRANSLATION_KEYS: Record<PracticeModuleId, string> = {
   [PRACTICE_MODULES.ALGEBRAIC_NOTATION]: 'algebraicNotation',
   [PRACTICE_MODULES.COORDINATE_QUIZ]: 'coordinateQuiz',
   [PRACTICE_MODULES.DIAGONAL_QUIZ]: 'diagonalQuiz',
@@ -128,6 +128,3 @@ export function getPracticeModuleIcon(moduleId: PracticeModuleId): string {
   const snakeKey = moduleId.replace(/-/g, '_');
   return PRACTICE_EMOJIS[snakeKey as keyof typeof PRACTICE_EMOJIS] ?? '';
 }
-
-// Re-export PRACTICE_EMOJIS for consumers that need it with snake_case keys
-export { PRACTICE_EMOJIS };

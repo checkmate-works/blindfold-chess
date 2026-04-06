@@ -1,4 +1,4 @@
-export { ChessEngine, getChessEngine, destroyChessEngine } from './chess-engine';
+export { ChessEngine, getChessEngine } from './chess-engine';
 export type { EvaluationResult } from './chess-engine';
 export { sortMoves } from './move-sorter';
 export { generateMoveSuggestions } from './move-suggestions';
@@ -8,7 +8,6 @@ export {
   getPgnSuggestion,
   parsePgn,
   parsePgnWithFen,
-  STANDARD_START_FEN,
   validateFen,
   validatePgn,
   validatePgnWithDetails,

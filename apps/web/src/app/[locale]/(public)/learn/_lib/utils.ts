@@ -6,7 +6,7 @@ import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { Article, ArticleCategory, ArticleMetadata, ArticleSlug } from './types';
-import { ARTICLE_CATEGORIES, ARTICLE_ICONS, ARTICLE_PRACTICE_MAPPING } from './types';
+import { ARTICLE_CATEGORIES, ARTICLE_PRACTICE_MAPPING } from './types';
 
 const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
   'algebraic-notation': {
@@ -170,13 +170,6 @@ const learnContentManager = createContentManager<ArticleMetadata>({
 });
 
 /**
- * Get list of available article slugs
- */
-export function getAvailableArticles(): string[] {
-  return learnContentManager.getAvailableSlugs();
-}
-
-/**
  * Get a single article with its content
  * @param slug - Article slug
  * @param locale - Locale
@@ -193,15 +186,6 @@ export async function getArticle(slug: string, locale: Locale): Promise<Article 
  */
 export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]> {
   return learnContentManager.getAllArticles(locale);
-}
-
-/**
- * Get icon for an article
- * @param slug - The article slug
- * @returns Emoji icon string
- */
-export function getArticleIcon(slug: ArticleSlug): string {
-  return ARTICLE_ICONS[slug];
 }
 
 /**

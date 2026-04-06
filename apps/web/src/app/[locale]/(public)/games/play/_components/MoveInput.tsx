@@ -13,7 +13,7 @@ import { useMoveSuggestions } from '../_hooks';
 type SuggestionInputProps = {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (value: string) => void;
+  onSubmit: (value: string, usedAutocomplete?: boolean) => void;
   suggestions: string[];
   disabled?: boolean;
   placeholder?: string;
@@ -22,7 +22,7 @@ type SuggestionInputProps = {
   className?: string;
 };
 
-export function SuggestionInput({
+function SuggestionInput({
   value,
   onChange,
   onSubmit,
@@ -44,7 +44,7 @@ export function SuggestionInput({
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (value.trim()) {
-      onSubmit(value.trim());
+      onSubmit(value.trim(), false);
       onChange('');
     }
   };
@@ -69,7 +69,7 @@ export function SuggestionInput({
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    onSubmit(suggestion);
+    onSubmit(suggestion, true);
     onChange('');
     setIsFocused(false);
   };
@@ -133,7 +133,7 @@ export function SuggestionInput({
 type Props = {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (move: AlgebraicNotation) => void;
+  onSubmit: (move: AlgebraicNotation, usedAutocomplete?: boolean) => void;
   disabled?: boolean;
   placeholder?: string;
   showSuggestions?: boolean;
@@ -172,13 +172,8 @@ export function MoveInput({
     <SuggestionInput
       value={value}
       onChange={onChange}
-      onSubmit={(val) => {
-        // If val is in suggestions, treat as selection? Or just direct submit.
-        // Since SuggestionInput handles click vs enter:
-        // Click -> calls onSubmit with suggestion
-        // Enter -> calls onSubmit with current value
-        // We can just pass through.
-        onSubmit(val as AlgebraicNotation);
+      onSubmit={(val, usedAutocomplete) => {
+        onSubmit(val as AlgebraicNotation, usedAutocomplete);
         hideSuggestions();
       }}
       suggestions={shouldShowSuggestions ? suggestions : []}

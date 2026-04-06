@@ -332,10 +332,3 @@ export function getChessEngine(): ChessEngine {
   }
   return engineInstance;
 }
-
-export function destroyChessEngine(): void {
-  if (engineInstance) {
-    engineInstance.destroy();
-    engineInstance = null;
-  }
-}

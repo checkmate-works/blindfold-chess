@@ -90,5 +90,3 @@ export function usePositionMemorySettings(urlOverrides: UrlOverrides) {
     clearSettings,
   };
 }
-
-export { STORAGE_KEY as POSITION_MEMORY_STORAGE_KEY };

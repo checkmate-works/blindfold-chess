@@ -32,20 +32,20 @@ export function usePlayerMove({
   const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null);
 
   const handleSubmitMove = useCallback(
-    (move: AlgebraicNotation) => {
+    (move: AlgebraicNotation): boolean => {
       if (isLoading) {
-        return;
+        return false;
       }
 
       if (!isPlayerTurn) {
-        return;
+        return false;
       }
 
       const now = Date.now();
       if (lastSubmittedMoveRef.current) {
         const { move: lastMove, timestamp } = lastSubmittedMoveRef.current;
         if (lastMove === move && now - timestamp < 500) {
-          return;
+          return false;
         }
       }
 
@@ -58,8 +58,10 @@ export function usePlayerMove({
 
         const newMoves = [...moves, move];
         setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
+        return true;
       } else {
         setError(t('invalidMove'));
+        return false;
       }
     },
     [

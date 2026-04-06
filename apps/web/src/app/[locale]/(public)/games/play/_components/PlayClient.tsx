@@ -16,7 +16,7 @@ import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MovesPanel } from './MovesPanel';
-import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
+import { OperationLogModal } from './OperationLogModal';
 
 type Props = {
   locale: Locale;
@@ -27,12 +27,12 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions } = useGameSession({
+  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = useGameSession({
     locale,
     onAiMoveChange,
   });
 
-  const { playerSide, skillLevel, startingFen, perGamePrefs, gameId } = gameConfig;
+  const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
@@ -42,7 +42,9 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     handleUndo,
     handleRestartFromPosition,
     handleNewGameFromPosition,
-    handleSkillLevelChange,
+    commitMoveLog,
+    recordPeek,
+    recordMovePeek,
   } = actions;
 
   // Global preferences
@@ -64,8 +66,8 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [globalPreferences, perGamePrefs]);
 
   // UI state
-  const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
+  const [showOperationLogModal, setShowOperationLogModal] = useState(false);
 
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
@@ -122,7 +124,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Game Area */}
         <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg shadow-lg p-4">
+          <div>
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && (
               <GameInProgressPanel
@@ -138,9 +140,17 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 handleSubmitMove={handleSubmitMove}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
-                onShowBoard={() => setIsBoardVisible(true)}
-                onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
+                // Peek tracking: counts each "open" action, not view duration.
+                // Modal: counted when opened; closing and reopening counts again.
+                // Inline: counted when accordion expands; collapsing and re-expanding counts again.
+                onShowBoard={() => {
+                  recordPeek();
+                  setIsBoardVisible(true);
+                }}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
+                onMoveCommitted={commitMoveLog}
+                onMovePeek={recordMovePeek}
+                onShowOperationLog={() => setShowOperationLogModal(true)}
                 inlineBoardView={
                   preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
                     <InlineBoardView
@@ -160,6 +170,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                       onNavigateToEnd={navigateToEnd}
                       onNavigateToPosition={navigateToPosition}
                       onFlipBoard={handleFlipBoard}
+                      onPeek={recordPeek}
                     />
                   ) : undefined
                 }
@@ -185,6 +196,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
             onNavigateToEnd={navigateToEnd}
             onRestartFromPosition={confirmationDialogs.restart.openWithPosition}
             onNewGameFromPosition={handleNewGameFromPosition}
+            showBackground={false}
           />
         </div>
       </div>
@@ -243,12 +255,14 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onFlipBoard={handleFlipBoard}
       />
 
-      {/* Skill Level Settings Modal */}
-      <SkillLevelSettingsModal
-        isOpen={showSkillLevelSettingsModal}
-        onClose={() => setShowSkillLevelSettingsModal(false)}
-        currentSkillLevel={skillLevel}
-        onSkillLevelChange={handleSkillLevelChange}
+      {/* Operation Log Modal */}
+      <OperationLogModal
+        isOpen={showOperationLogModal}
+        onClose={() => setShowOperationLogModal(false)}
+        logs={operationLogs}
+        moves={moves}
+        playerSide={playerSide}
+        startingFen={startingFen}
       />
     </div>
   );

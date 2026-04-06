@@ -26,3 +26,19 @@ export function getMovingSide(moveIndex: number, startingFen?: string | null): '
   const startingSide: 'white' | 'black' = startsAsBlack ? 'black' : 'white';
   return isStartingSideMove ? startingSide : startingSide === 'white' ? 'black' : 'white';
 }
+
+/**
+ * Count how many moves belong to a given side up to (and including) `upToIndex`.
+ * Useful for mapping moves array indices to operation log indices.
+ */
+export function countPlayerMoves(
+  upToIndex: number,
+  playerSide: 'white' | 'black',
+  startingFen?: string | null
+): number {
+  let count = 0;
+  for (let i = 0; i <= upToIndex; i++) {
+    if (getMovingSide(i, startingFen) === playerSide) count++;
+  }
+  return count;
+}
