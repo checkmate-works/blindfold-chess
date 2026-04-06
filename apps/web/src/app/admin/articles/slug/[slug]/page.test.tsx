@@ -39,7 +39,7 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/config', () => ({
-  SUPPORTED_LOCALES: ['en', 'ja', 'es'],
+  SUPPORTED_LOCALES: ['en', 'es', 'ja'],
 }));
 
 vi.mock('../../../_components/AdminDataTable', () => ({

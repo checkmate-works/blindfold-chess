@@ -11,8 +11,8 @@ type LocaleLabels = {
 
 const LOCALE_LABELS: LocaleLabels = {
   en: 'English',
-  ja: '日本語',
   es: 'Español',
+  ja: '日本語',
 } as const;
 
 type Props = {
