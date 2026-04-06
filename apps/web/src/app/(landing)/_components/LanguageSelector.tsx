@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -20,11 +20,10 @@ type Props = {
 
 export function LanguageSelector({ currentLocale }: Props) {
   const router = useRouter();
-  const [isChanging, setIsChanging] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value as Locale;
-    setIsChanging(true);
 
     // Set cookie with 1 year expiry
     const expires = new Date();
@@ -32,7 +31,9 @@ export function LanguageSelector({ currentLocale }: Props) {
     document.cookie = `${LOCALE_COOKIE_NAME}=${newLocale}; path=/; expires=${expires.toUTCString()}`;
 
     // Refresh to apply new locale
-    router.refresh();
+    startTransition(() => {
+      router.refresh();
+    });
   };
 
   return (
@@ -44,7 +45,7 @@ export function LanguageSelector({ currentLocale }: Props) {
         id="language-selector"
         value={currentLocale}
         onChange={handleChange}
-        disabled={isChanging}
+        disabled={isPending}
         className="cursor-pointer rounded-md border border-border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
       >
         {SUPPORTED_LOCALES.map((locale) => (
