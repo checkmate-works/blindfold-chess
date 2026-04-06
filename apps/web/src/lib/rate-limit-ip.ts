@@ -73,11 +73,11 @@ export function checkIpRateLimitGuard(
   key: string,
   config: IpRateLimitConfig
 ): { error: 'rateLimited' } | null {
-  if (ip) {
-    const { allowed } = checkIpRateLimit(ip, key, config);
-    if (!allowed) {
-      return { error: 'rateLimited' };
-    }
+  // Use a shared bucket for null IPs so they cannot bypass rate limiting.
+  const effectiveIp = ip ?? 'unknown';
+  const { allowed } = checkIpRateLimit(effectiveIp, key, config);
+  if (!allowed) {
+    return { error: 'rateLimited' };
   }
   return null;
 }

@@ -57,12 +57,12 @@ describe('forgotPassword', () => {
     });
   });
 
-  it('should return error when resetPasswordForEmail fails', async () => {
+  it('should return success even when resetPasswordForEmail fails (prevents account enumeration)', async () => {
     mockResetPasswordForEmail.mockResolvedValue({ error: new Error('fail') });
 
     const result = await forgotPassword('test@example.com');
 
-    expect(result).toEqual({ error: 'resetFailed' });
+    expect(result).toEqual({ success: true });
   });
 
   it('should return rateLimited when IP rate limit is exceeded', async () => {

@@ -21,13 +21,13 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${SITE_URL}/auth/callback?type=recovery`,
   });
 
-  if (error) {
-    return { error: 'resetFailed' };
-  }
+  // Always fall through regardless of error to prevent account enumeration.
+  // Returning a distinct error when the email doesn't exist would let an
+  // attacker probe which addresses are registered.
 
   // Log the password reset request if a session exists (e.g. user is already
   // signed in and requests a reset). In the typical unauthenticated flow,
