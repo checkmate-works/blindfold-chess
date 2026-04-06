@@ -3,7 +3,13 @@ import { getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import {
+  AUTHOR_NAME,
+  COOKIEYES_ID,
+  GA_MEASUREMENT_ID,
+  SITE_URL,
+  SUPPORTED_LOCALES,
+} from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
@@ -26,7 +32,8 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
+  const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const siteDescription = t('siteDescription');
@@ -37,17 +44,16 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: AUTHOR_NAME }],
     metadataBase: new URL(SITE_URL),
     alternates: {
-      canonical: locale === 'en' ? '/en' : '/ja',
+      canonical: `/${locale}`,
       languages: {
-        en: '/en',
-        ja: '/ja',
+        ...Object.fromEntries(SUPPORTED_LOCALES.map((l) => [l, `/${l}`])),
         'x-default': '/en',
       },
     },
     openGraph: {
       title: seoSiteName,
       description: siteDescription,
-      url: locale === 'en' ? `${SITE_URL}/en` : `${SITE_URL}/ja`,
+      url: `${SITE_URL}/${locale}`,
       siteName: siteName,
       type: 'website',
       locale: currentLocale,

@@ -2,6 +2,7 @@
 
 import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
+import { SUPPORTED_LOCALES } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
@@ -34,7 +35,7 @@ export function ResultClient({
   const searchParams = useSearchParams();
 
   // Validate locale
-  if (!['en', 'ja'].includes(locale)) {
+  if (!(SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
     notFound();
   }
 

@@ -11,6 +11,7 @@ type LocaleLabels = {
 
 const LOCALE_LABELS: LocaleLabels = {
   en: 'English',
+  es: 'Español',
   ja: '日本語',
 } as const;
 
