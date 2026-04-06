@@ -29,7 +29,6 @@ type Props = {
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
   onShowBoard: () => void;
-  onShowSkillLevelSettings: () => void;
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
@@ -51,7 +50,6 @@ export function GameInProgressPanel({
   moves,
   confirmationDialogs,
   onShowBoard,
-  onShowSkillLevelSettings,
   playerColor,
   inlineBoardView,
   onMoveCommitted,
@@ -124,16 +122,6 @@ export function GameInProgressPanel({
         >
           <FlagIcon className="w-4 h-4" />
           <span className="hidden md:inline">{t('resign')}</span>
-        </button>
-      </div>
-
-      {/* Settings Links */}
-      <div className="text-center">
-        <button
-          onClick={onShowSkillLevelSettings}
-          className="text-sm text-muted-foreground hover:text-foreground underline"
-        >
-          {t('configureSkillLevel')}
         </button>
       </div>
 

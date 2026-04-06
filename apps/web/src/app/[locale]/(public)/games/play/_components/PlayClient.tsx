@@ -17,7 +17,6 @@ import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MovesPanel } from './MovesPanel';
 import { OperationLogModal } from './OperationLogModal';
-import { SkillLevelSettingsModal } from './SkillLevelSettingsModal';
 
 type Props = {
   locale: Locale;
@@ -33,7 +32,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     onAiMoveChange,
   });
 
-  const { playerSide, skillLevel, startingFen, perGamePrefs, gameId } = gameConfig;
+  const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
@@ -43,7 +42,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
     handleUndo,
     handleRestartFromPosition,
     handleNewGameFromPosition,
-    handleSkillLevelChange,
     commitMoveLog,
     recordPeek,
     recordMovePeek,
@@ -68,7 +66,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   }, [globalPreferences, perGamePrefs]);
 
   // UI state
-  const [showSkillLevelSettingsModal, setShowSkillLevelSettingsModal] = useState(false);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
 
@@ -150,7 +147,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                   recordPeek();
                   setIsBoardVisible(true);
                 }}
-                onShowSkillLevelSettings={() => setShowSkillLevelSettingsModal(true)}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
                 onMoveCommitted={commitMoveLog}
                 onMovePeek={recordMovePeek}
@@ -257,14 +253,6 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
         onFlipBoard={handleFlipBoard}
-      />
-
-      {/* Skill Level Settings Modal */}
-      <SkillLevelSettingsModal
-        isOpen={showSkillLevelSettingsModal}
-        onClose={() => setShowSkillLevelSettingsModal(false)}
-        currentSkillLevel={skillLevel}
-        onSkillLevelChange={handleSkillLevelChange}
       />
 
       {/* Operation Log Modal */}

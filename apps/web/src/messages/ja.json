@@ -1340,7 +1340,6 @@
     "confirmUndo": "取り消す",
     "configureBoardAppearance": "ボードの外観を設定する",
     "configureInputMethod": "入力方式を設定する",
-    "configureSkillLevel": "スキルレベルを設定する",
     "saveAndExit": "保存して終了",
     "skillLevel": "スキルレベル",
     "levelWithNumber": "レベル {level}",

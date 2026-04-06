@@ -83,5 +83,5 @@ export function useUrlSync({
     }
   }, [gameId, initialGameId, searchParams, router]);
 
-  return { searchParams, router };
+  return { router };
 }

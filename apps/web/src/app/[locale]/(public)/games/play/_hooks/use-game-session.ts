@@ -57,8 +57,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     errorDetails,
   } = useGameInitialization(urlParams);
 
-  // Skill level state (can be changed during game)
-  const [skillLevel, setSkillLevel] = useState<SkillLevel>(initialSkillLevel);
+  // Skill level is immutable during gameplay — set at game start, never changed mid-game.
+  const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
 
   // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
   const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
@@ -143,7 +143,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Map board status to game outcome for repository
 
   // Auto-save hook
-  const { markPlayerInteraction, updateSkillLevel, gameId } = useAutoSave({
+  const { markPlayerInteraction, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -157,7 +157,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   });
 
   // URL sync hook
-  const { searchParams, router } = useUrlSync({
+  const { router } = useUrlSync({
     locale,
     gameId,
     initialGameId,
@@ -283,23 +283,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     [moves, playerSide, skillLevel, locale, router, startingFen]
   );
 
-  // Handle skill level change
-  const handleSkillLevelChange = useCallback(
-    async (newSkillLevel: SkillLevel) => {
-      markPlayerInteraction();
-      setSkillLevel(newSkillLevel);
-
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('skillLevel', newSkillLevel.toString());
-      router.replace(`?${params.toString()}`, { scroll: false });
-
-      if (gameId) {
-        await updateSkillLevel(newSkillLevel);
-      }
-    },
-    [markPlayerInteraction, searchParams, router, gameId, updateSkillLevel]
-  );
-
   // Current FEN and formatted PGN are memoized values from useNotation
 
   // Update parent component with AI's last move
@@ -375,7 +358,6 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       handleUndo,
       handleRestartFromPosition,
       handleNewGameFromPosition,
-      handleSkillLevelChange,
       commitMoveLog: commitMove,
       recordPeek,
       recordMovePeek,
