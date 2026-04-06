@@ -44,7 +44,8 @@ export async function generateMetadata({
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
-  const currentLocale = locale === 'ja' ? 'ja_JP' : 'en_US';
+  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
+  const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
 
   return {
     title: {

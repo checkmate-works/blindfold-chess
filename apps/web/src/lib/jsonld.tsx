@@ -1,5 +1,7 @@
 import { AUTHOR_NAME, SITE_URL } from '@/config';
 
+const LANGUAGE_MAP: Record<string, string> = { en: 'en-US', ja: 'ja-JP', es: 'es-ES' };
+
 /**
  * Renders JSON-LD structured data as a script tag
  */
@@ -19,7 +21,7 @@ export function generateWebSiteSchema(locale: string, brandName: string) {
     '@type': 'WebSite',
     name: brandName,
     url: SITE_URL,
-    inLanguage: locale === 'ja' ? 'ja-JP' : 'en-US',
+    inLanguage: LANGUAGE_MAP[locale] ?? 'en-US',
     publisher: {
       '@type': 'Organization',
       name: AUTHOR_NAME,
@@ -53,8 +55,12 @@ export function generateOrganizationSchema() {
  * @see https://schema.org/WebApplication
  */
 export function generateWebApplicationSchema(locale: string, brandName: string) {
-  const description =
-    locale === 'ja' ? '目隠しチェスの無料練習アプリ' : 'A free training app for blindfold chess';
+  const descriptionMap: Record<string, string> = {
+    en: 'A free training app for blindfold chess',
+    ja: '目隠しチェスの無料練習アプリ',
+    es: 'Una aplicación gratuita de entrenamiento para ajedrez a ciegas',
+  };
+  const description = descriptionMap[locale] ?? descriptionMap.en;
 
   return {
     '@context': 'https://schema.org',
@@ -69,7 +75,7 @@ export function generateWebApplicationSchema(locale: string, brandName: string) 
       priceCurrency: 'USD',
     },
     description,
-    inLanguage: ['en-US', 'ja-JP'],
+    inLanguage: Object.values(LANGUAGE_MAP),
   };
 }
 
@@ -206,7 +212,7 @@ export function generateArticleSchema(article: ArticleData) {
       '@type': 'WebPage',
       '@id': articleUrl,
     },
-    inLanguage: article.locale === 'ja' ? 'ja-JP' : 'en-US',
+    inLanguage: LANGUAGE_MAP[article.locale] ?? 'en-US',
   };
 }
 
@@ -249,7 +255,7 @@ export function generateBlogPostingSchema(post: BlogPostData) {
       '@type': 'WebPage',
       '@id': postUrl,
     },
-    inLanguage: post.locale === 'ja' ? 'ja-JP' : 'en-US',
+    inLanguage: LANGUAGE_MAP[post.locale] ?? 'en-US',
   };
 }
 

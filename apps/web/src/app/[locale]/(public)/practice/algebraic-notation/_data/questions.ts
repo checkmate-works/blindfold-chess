@@ -6,6 +6,7 @@ export const questions: Question[] = [
     description: {
       en: 'Select the correct notation for the following move:',
       ja: '次のmoveに対応する記法を選択してください：',
+      es: 'Selecciona la notación correcta para la siguiente jugada:',
     },
     fenBefore: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     fenAfter: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1',
@@ -27,6 +28,13 @@ export const questions: Question[] = [
         '大文字の"E4"は間違い - マスは常に小文字で記述',
         '"Pe4"や"pe4"は間違い - ポーンに"P"の接頭辞は使いません',
       ],
+      es: [
+        'Los movimientos de peón no requieren un símbolo de pieza',
+        'Solo se necesita la casilla de destino "e4"',
+        'A diferencia de otras piezas (K, Q, R, B, N), los peones se escriben sin prefijo',
+        '"E4" en mayúscula es incorrecto: las casillas siempre se escriben en minúscula',
+        '"Pe4" y "pe4" son incorrectos: el prefijo "P" no se usa para los peones',
+      ],
     },
   },
   {
@@ -34,6 +42,7 @@ export const questions: Question[] = [
     description: {
       en: 'Select the correct notation for the following move:',
       ja: '次のmoveに対応する記法を選択してください：',
+      es: 'Selecciona la notación correcta para la siguiente jugada:',
     },
     fenBefore: '8/2k2p2/8/6K1/6P1/8/5r2/8 b - - 0 39',
     fenAfter: '8/5p2/3k4/6K1/6P1/8/5r2/8 w - - 1 40',
@@ -53,6 +62,12 @@ export const questions: Question[] = [
         'キングの移動は K + 移動先マス で記述',
         '小文字の"k"は間違い - 駒記号は常に大文字',
       ],
+      es: [
+        'El símbolo del Rey es "K" (mayúscula)',
+        'La casilla de destino es "d6"',
+        'Los movimientos del Rey se escriben como K + casilla de destino',
+        '"k" en minúscula es incorrecto: los símbolos de piezas siempre van en mayúscula',
+      ],
     },
   },
   {
@@ -60,6 +75,7 @@ export const questions: Question[] = [
     description: {
       en: 'Select the correct notation for the following move:',
       ja: '次のmoveに対応する記法を選択してください：',
+      es: 'Selecciona la notación correcta para la siguiente jugada:',
     },
     fenBefore: '8/8/5k2/4p2p/1pP1K1pP/1P6/5P2/8 b - c3 0 51',
     fenAfter: '8/8/5k2/4p2p/4K1pP/1pP5/5P2/8 w - - 0 52',
@@ -85,6 +101,15 @@ export const questions: Question[] = [
         '"bc3"は間違い - 駒取りには"x"記号が必要',
         '"Bxc3"は間違い - ポーンの移動に駒記号は使いません',
       ],
+      es: [
+        'Esta es una captura al paso: el peón en b4 captura al peón que avanzó a c4',
+        'La notación puede escribirse como "bxc3" o "bxc3 e.p."',
+        'El sufijo "e.p." es opcional: ambas formas son correctas',
+        'En este ejercicio, "bxc3 e.p." se muestra como respuesta para destacar la jugada especial',
+        '"c3" es incorrecto: las capturas deben incluir tanto la columna como el símbolo "x"',
+        '"bc3" es incorrecto: las capturas deben incluir el símbolo "x"',
+        '"Bxc3" es incorrecto: los movimientos de peón no usan símbolos de pieza',
+      ],
     },
   },
   {
@@ -92,6 +117,7 @@ export const questions: Question[] = [
     description: {
       en: 'Select the correct notation for the following move:',
       ja: '次のmoveに対応する記法を選択してください：',
+      es: 'Selecciona la notación correcta para la siguiente jugada:',
     },
     fenBefore: '5k2/1Q6/8/3Q2P1/p2P4/P6p/5PP1/1B4K1 w - - 2 45',
     fenAfter: '3Q1k2/8/8/6P1/p2P4/P6p/5PP1/1B4K1 b - - 3 45',
@@ -114,6 +140,14 @@ export const questions: Question[] = [
         '記号なしの"Qd8"は不完全 - 特殊な手は必ず記号が必要',
         'チェックメイトには必ず"#"、チェックには"+"を使用',
         '"QxD8#"は間違い - 駒取りはなく、マスは小文字で記述',
+      ],
+      es: [
+        'Esta jugada da jaque mate: el Rey negro no tiene escapatoria',
+        'El jaque mate se indica con el símbolo "#", no con "+"',
+        '"Qd8+" indicaría jaque, pero esto es jaque mate',
+        '"Qd8" sin ningún símbolo está incompleto: las jugadas especiales deben marcarse',
+        'Usa siempre "#" para jaque mate y "+" para jaque',
+        '"QxD8#" es incorrecto: no hay captura y las casillas se escriben en minúscula',
       ],
     },
   },

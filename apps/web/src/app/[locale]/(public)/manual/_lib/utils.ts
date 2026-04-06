@@ -12,16 +12,20 @@ const metadataRegistry: Record<
   [MANUAL_ARTICLE_SLUGS.ABOUT_THIS_WEBSITE]: {
     en: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.en'),
     ja: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.ja'),
+    es: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.es'),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () =>
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.en'),
     ja: () =>
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.ja'),
+    es: () =>
+      import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.es'),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.en'),
     ja: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.ja'),
+    es: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.es'),
   },
 };
 
@@ -36,6 +40,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       import('@/app/[locale]/(public)/manual/_content/about-this-website/ja').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
+    es: () =>
+      import('@/app/[locale]/(public)/manual/_content/about-this-website/es').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () =>
@@ -46,6 +54,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/ja').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
+    es: () =>
+      import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/es').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () =>
@@ -54,6 +66,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       ),
     ja: () =>
       import('@/app/[locale]/(public)/manual/_content/data-handling-caution/ja').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
+    es: () =>
+      import('@/app/[locale]/(public)/manual/_content/data-handling-caution/es').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
   },

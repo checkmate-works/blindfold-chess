@@ -1,0 +1,3303 @@
+{
+  "metadata": {
+    "siteName": "Shingan Chess",
+    "seoSiteName": "Ajedrez a Ciegas",
+    "siteDescription": "Una plataforma gratuita en línea para practicar ajedrez a ciegas. Mejora tus habilidades de visualización y cálculo ajedrecístico.",
+    "home": {
+      "title": "Entrenamiento de Ajedrez a Ciegas - Práctica Gratuita de Visualización en Línea",
+      "description": "Juega ajedrez a ciegas contra la IA, sigue un programa de entrenamiento estructurado y comparte conocimientos a través de funciones sociales."
+    },
+    "play": {
+      "title": "Jugar",
+      "description": "Juega ajedrez a ciegas contra la IA. Desafíate a ti mismo jugando sin ver las piezas."
+    },
+    "preferences": {
+      "title": "Configuración",
+      "description": "Personaliza tu experiencia de ajedrez a ciegas con ajustes y preferencias personalizadas."
+    },
+    "company": {
+      "title": "Información de la Empresa",
+      "description": "Información sobre el operador de Ajedrez a Ciegas"
+    },
+    "contact": {
+      "title": "Contáctenos",
+      "description": "Formulario de contacto para consultas sobre Ajedrez a Ciegas"
+    },
+    "affiliateDisclosure": {
+      "title": "Divulgación de Afiliados",
+      "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas"
+    },
+    "signIn": {
+      "title": "Iniciar Sesión",
+      "description": "Inicia sesión en tu cuenta de Ajedrez a Ciegas"
+    },
+    "signUp": {
+      "title": "Registrarse",
+      "description": "Regístrate en Ajedrez a Ciegas"
+    },
+    "onboarding": {
+      "title": "Configuración Inicial",
+      "description": "Configura tus preferencias antes de comenzar tu primera partida"
+    },
+    "mypage": {
+      "title": "Mi Página",
+      "description": "Consulta la información de tu cuenta y tu actividad"
+    },
+    "setupUsername": {
+      "title": "Crea tu Cuenta",
+      "description": "Crea tu cuenta de Ajedrez a Ciegas"
+    },
+    "profile": {
+      "title": "Editar Perfil",
+      "description": "Edita tu perfil de Ajedrez a Ciegas"
+    },
+    "deleteAccount": {
+      "title": "Eliminar Cuenta",
+      "description": "Elimina tu cuenta de Ajedrez a Ciegas"
+    },
+    "mypageLikes": {
+      "title": "Publicaciones que te Gustan",
+      "description": "Consulta las publicaciones que te han gustado"
+    },
+    "mypagePosts": {
+      "title": "Mis Publicaciones",
+      "description": "Consulta tus publicaciones"
+    },
+    "mypageFollowing": {
+      "title": "Siguiendo",
+      "description": "Usuarios que sigues"
+    },
+    "mypageChallenges": {
+      "title": "Historial de Desafíos",
+      "description": "Consulta tu historial de sesiones de desafío y puntuaciones"
+    },
+    "interview": {
+      "title": "Entrevista",
+      "description": "Explora preguntas y respuestas de entrevistas de jugadores de ajedrez"
+    },
+    "interviewQuestion": {
+      "title": "{label} - Entrevista",
+      "description": "Responde a la pregunta de la entrevista: {label}"
+    },
+    "mypageChallengeResults": {
+      "title": "Todos los Resultados de Desafíos",
+      "description": "Explora todos tus resultados de desafíos con filtros"
+    },
+    "mypageNotifications": {
+      "title": "Notificaciones",
+      "description": "Consulta tus notificaciones"
+    },
+    "topics": {
+      "title": "Temas",
+      "description": "Discute y comparte ideas sobre casillas, posiciones y estrategias de ajedrez"
+    },
+    "topicsSquares": {
+      "title": "Temas de Casillas",
+      "description": "Explora discusiones sobre casillas individuales del tablero de ajedrez"
+    },
+    "topicsOpenings": {
+      "title": "Aperturas de Ajedrez",
+      "description": "Explora y aprende sobre aperturas de ajedrez y sus posiciones clave"
+    },
+    "topicsOpeningDetail": {
+      "title": "{name} - Apertura de Ajedrez",
+      "description": "Discusiones y valoraciones sobre la apertura de ajedrez {name}"
+    },
+    "topicsOpeningNewPost": {
+      "title": "Nueva Publicación - {name}",
+      "description": "Comparte tu opinión sobre la apertura de ajedrez {name}"
+    },
+    "topicsOpeningPost": {
+      "title": "Publicación sobre {name}",
+      "description": "Una publicación de discusión sobre la apertura de ajedrez {name}"
+    },
+    "topicsSquare": {
+      "title": "Casilla {square}",
+      "description": "Discusiones e ideas sobre la casilla {square} en ajedrez"
+    },
+    "topicsSquareNewPost": {
+      "title": "Nueva Publicación - {square}",
+      "description": "Crea una nueva publicación sobre la casilla {square}"
+    },
+    "topicsSquarePost": {
+      "title": "Publicación sobre {square}",
+      "description": "Una publicación de discusión sobre la casilla {square} en ajedrez"
+    },
+    "games": {
+      "title": "Tus Partidas",
+      "description": "Consulta y gestiona tus partidas de ajedrez a ciegas"
+    },
+    "leaderboard": {
+      "title": "Clasificación",
+      "description": "Consulta a los mejores jugadores en todos los módulos de práctica"
+    },
+    "practice": {
+      "title": "Ejercicios de Práctica de Ajedrez a Ciegas",
+      "description": "Ejercicios interactivos gratuitos de ajedrez a ciegas: reconocimiento de coordenadas, ejercicios de color de casillas, cuestionarios de movimientos legales y más. Mejora tu visualización."
+    },
+    "gettingStarted": {
+      "title": "Primeros Pasos con el Ajedrez a Ciegas",
+      "description": "Comienza con el ajedrez a ciegas. Guía paso a paso sobre tu primera partida contra la IA, ejercicios de práctica y cómo unirte a la comunidad."
+    },
+    "newGame": {
+      "title": "Juega Ajedrez a Ciegas contra la IA",
+      "description": "Juega ajedrez a ciegas contra Stockfish, uno de los motores de ajedrez más fuertes. Comienza desde una posición estándar, una configuración personalizada o importa PGN. Hay disponibles pistas visuales y otras funciones de asistencia."
+    },
+    "articles": {
+      "title": "Artículos y Guías de Ajedrez a Ciegas",
+      "description": "Lee artículos detallados sobre técnicas de ajedrez a ciegas, métodos de entrenamiento y estrategias. Mantente al día con las últimas guías e ideas para mejorar tus habilidades de visualización y cálculo."
+    },
+    "learn": {
+      "title": "Conocimiento y Teoría del Ajedrez a Ciegas",
+      "description": "Explora técnicas y teorías del ajedrez a ciegas a través de artículos organizados por categoría. Los temas incluyen movimiento de piezas, coordenadas, notación, métodos de visualización y técnicas de memoria — aprende a tu propio ritmo."
+    },
+    "ranks": {
+      "title": "Sistema de Cinturones",
+      "description": "Un programa único diseñado para desarrollar las habilidades necesarias para vencer a la IA en ajedrez a ciegas. Aspira al cinturón negro."
+    },
+    "glossary": {
+      "title": "Glosario de Ajedrez - Términos y Definiciones",
+      "description": "Consulta la terminología ajedrecística en nuestro glosario completo. Navega alfabéticamente o por categoría para aprender definiciones de términos, tácticas, estrategias y conceptos posicionales utilizados en el ajedrez a ciegas.",
+      "category": {
+        "title": "Categoría: {category}",
+        "description": "Explora términos de ajedrez en la categoría {category}. Aprende terminología ajedrecística y mejora tu comprensión."
+      },
+      "letter": {
+        "title": "Términos que empiezan con {letter}",
+        "description": "Términos y definiciones de ajedrez que empiezan con la letra {letter}."
+      }
+    },
+    "rankDetail": {
+      "title": "{rankName} - Rangos",
+      "description": "Requisitos y criterios para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
+    },
+    "rankGuide": {
+      "title": "Guía de {rankName} - Rangos",
+      "description": "Guía detallada y consejos para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
+    }
+  },
+  "Header": {
+    "title": "Shingan Chess",
+    "dashboard": "Panel",
+    "home": "Inicio",
+    "gettingStarted": "Primeros Pasos",
+    "learn": "Aprender",
+    "practice": "Práctica",
+    "topics": "Temas",
+    "articles": "Artículos",
+    "manual": "Manual",
+    "announcements": "Anuncios",
+    "faq": "FAQ",
+    "glossary": "Glosario",
+    "leaderboard": "Clasificación",
+    "contact": "Contacto",
+    "settings": "Configuración",
+    "ranks": "Sistema de Cinturones"
+  },
+  "Preferences": {
+    "title": "Configuración",
+    "cancel": "Cancelar",
+    "tabs": {
+      "board": "Partida",
+      "controls": "Controles",
+      "appearance": "Apariencia"
+    },
+    "game": {
+      "title": "Configuración del Tablero",
+      "description": "Configura las preferencias de tu tablero de ajedrez a ciegas",
+      "boardAppearance": "Apariencia del Tablero",
+      "boardTheme": "Tema del Tablero",
+      "boardThemes": {
+        "monotone": "Monocromático",
+        "lichess": "Estilo Lichess",
+        "chesscom": "Estilo Chess.com"
+      },
+      "displayOptions": "Opciones de Visualización",
+      "showCoordinates": "Mostrar coordenadas",
+      "highlightLastMove": "Resaltar último movimiento",
+      "pieceVisibility": "Visibilidad de Piezas",
+      "showOwnPieces": "Mostrar piezas propias",
+      "showOpponentPieces": "Mostrar piezas del rival",
+      "pieceAppearance": "Apariencia de las Piezas",
+      "pieceShape": "Forma de las Piezas",
+      "pieceShapes": {
+        "normal": "Piezas normales",
+        "circles-all": "Mostrar todas las piezas como piedras",
+        "circles-own": "Mostrar piezas propias como piedras",
+        "circles-opponent": "Mostrar piezas del rival como piedras"
+      },
+      "pieceColor": "Color de las Piezas",
+      "pieceColors": {
+        "normal": "Colores normales (Blancas y Negras)",
+        "white-only": "Mostrar todas las piezas como blancas",
+        "black-only": "Mostrar todas las piezas como negras"
+      },
+      "preview": {
+        "title": "Vista Previa",
+        "whiteView": "Perspectiva de Blancas",
+        "blackView": "Perspectiva de Negras"
+      },
+      "showBoardButtonInGame": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
+      "resetDefaults": "Restablecer valores predeterminados",
+      "resetDefaultsConfirm": {
+        "title": "¿Restablecer configuración del tablero?",
+        "message": "Esto restablecerá todos los ajustes del tablero y las preferencias de apariencia a sus valores predeterminados. Esta acción no se puede deshacer."
+      }
+    },
+    "appearance": {
+      "theme": "Tema del Sistema",
+      "themes": {
+        "system": "Sistema",
+        "systemDescription": "Seguir tema del sistema",
+        "light": "Claro",
+        "lightDescription": "Usar siempre el tema claro",
+        "dark": "Oscuro",
+        "darkDescription": "Usar siempre el tema oscuro"
+      }
+    },
+    "controls": {
+      "title": "Configuración de Controles",
+      "description": "Personaliza cómo interactúas con el tablero de ajedrez",
+      "moveInput": "Método de Entrada de Movimientos",
+      "textInput": "Entrada de Texto",
+      "textInputDescription": "Escribe movimientos usando notación algebraica",
+      "selectInput": "Seleccionar de Lista",
+      "selectInputDescription": "Elige entre los movimientos legales disponibles",
+      "buttonInput": "Entrada por Botones",
+      "buttonInputDescription": "Introduce movimientos tocando botones",
+      "buttonLabelStyle": "Estilo de Etiqueta de Botones",
+      "text": "Texto",
+      "icon": "Icono",
+      "enableAutoComplete": "Activar autocompletado",
+      "peekMode": "Modo de Vista del Tablero",
+      "peekModeDescription": "Cómo se muestra el tablero al echar un vistazo durante una partida",
+      "peekModes": {
+        "modal": "Modal",
+        "inline": "En línea"
+      }
+    }
+  },
+  "Common": {
+    "sponsoredLink": "Enlace Patrocinado",
+    "testAd": "Anuncio de Prueba",
+    "adLabel": "Publicidad",
+    "sponsor": "Patrocinador"
+  },
+  "openingSearch": {
+    "selectOpening": "Selecciona una apertura",
+    "searchPlaceholder": "Buscar aperturas..."
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "description": "Encuentra respuestas a las preguntas más comunes sobre Ajedrez a Ciegas",
+    "items": {
+      "invalidMove": {
+        "question": "Introduje un movimiento correcto pero obtuve el error \"Movimiento inválido\".",
+        "answer": "Cuando dos piezas del mismo tipo (como caballos o torres) pueden moverse a la misma casilla, necesitas especificar cuál pieza mover explícitamente, como Cgf3 o Tad8. Puedes activar la visualización de movimientos legales en la <settingsLink>configuración</settingsLink> para ayudarte con esto."
+      },
+      "ads": {
+        "question": "¿Por qué hay anuncios en este sitio?",
+        "answer": "Este servicio se proporciona de forma gratuita, pero mantener servidores y dominios tiene costos. Los ingresos publicitarios ayudan a cubrir estos gastos. Además, los ingresos de programas de afiliados como Amazon Associates también se utilizan para cubrir los costos operativos. Para más información, consulta nuestra <affiliateLink>Divulgación de Afiliados</affiliateLink>."
+      },
+      "chessEngine": {
+        "question": "¿Qué motor de ajedrez usa la IA?",
+        "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+      }
+    }
+  },
+  "glossary": {
+    "title": "Glosario de Ajedrez",
+    "description": "Diccionario completo de términos y conceptos ajedrecísticos",
+    "index": {
+      "alphabetical": "Índice Alfabético",
+      "byCategory": "Por Categoría"
+    },
+    "categories": {
+      "tactics": "Táctica",
+      "strategy": "Estrategia",
+      "endgame": "Final",
+      "opening": "Apertura",
+      "structure": "Estructura de Peones",
+      "general": "General"
+    },
+    "terms": "términos",
+    "letterPage": {
+      "title": "Términos que Empiezan con {letter}",
+      "description": "Términos de ajedrez que empiezan con la letra {letter}",
+      "count": "{count} términos encontrados",
+      "termsTitle": "Términos"
+    },
+    "categoryPage": {
+      "description": "Términos de ajedrez relacionados con {category}",
+      "count": "{count} términos encontrados",
+      "termsTitle": "Términos",
+      "categoriesTitle": "Categorías"
+    },
+    "aliases": "También conocido como",
+    "relatedTerms": "Términos relacionados",
+    "alphabeticalIndexTitle": "Alfabético",
+    "noTerms": "Aún no se han registrado términos."
+  },
+  "pgnInput": {
+    "placeholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "completeSuggestion": "✨ Completar \"{suggestion}\"",
+    "tabToComplete": "💡 Presiona Tab para completar \"{suggestion}\"",
+    "validWithMoves": "✓ PGN válido con {count} movimientos",
+    "invalidPgn": "Formato PGN inválido",
+    "invalidMove": "\"{move}\" es un movimiento inválido"
+  },
+  "ButtonInput": {
+    "disambiguationButton": "Desambiguación...",
+    "sourceLabel": "Desde (Origen)"
+  },
+  "error": {
+    "title": "¡Algo salió mal!",
+    "description": "Pedimos disculpas por las molestias. Ocurrió un error al procesar tu solicitud.",
+    "tryAgain": "Intentar de nuevo",
+    "goHome": "Ir al inicio"
+  },
+  "manual": {
+    "title": "Manual",
+    "description": "Guías de usuario y documentación para Ajedrez a Ciegas",
+    "articlesTitle": "Guías",
+    "articleNotFound": "Artículo No Encontrado"
+  },
+  "navigation": {
+    "practice": "Práctica",
+    "learn": "Aprender",
+    "gettingStarted": "Primeros Pasos"
+  },
+  "gettingStarted": {
+    "title": "¡Comencemos!",
+    "headline": "Probemos el ajedrez a ciegas",
+    "cards": {
+      "train": {
+        "title": "Desarrolla tus Habilidades",
+        "description": "Si empezar directamente con el ajedrez a ciegas te parece demasiado difícil, comienza con ejercicios sencillos para construir una base sólida.",
+        "previewQuestion": "¿Puede moverse de d5 a e7?",
+        "cta": "Probar",
+        "viewOtherMenus": "Ver otros menús"
+      },
+      "try": {
+        "title": "Pruébalo Ahora",
+        "cta": "Jugar Esta Posición",
+        "startFromInitial": "Empezar desde la posición inicial"
+      },
+      "community": {
+        "title": "Comunidad",
+        "description": "Intercambia ideas con otros jugadores y mejora juntos",
+        "cta": "Explorar Temas",
+        "signUp": "Registro gratuito"
+      }
+    },
+    "ranks": {
+      "title": "Entrena tu Camino al Cinturón Negro",
+      "viewAll": "Ver Todos los Rangos"
+    }
+  },
+  "learn": {
+    "title": "Aprende Ajedrez",
+    "description": "Artículos educativos y guías para mejorar tu comprensión del ajedrez",
+    "practiceYourSkills": "Práctica Relacionada",
+    "relatedLearning": "Aprende Más",
+    "articlesTitle": "Artículos",
+    "relatedArticles": "Artículos Relacionados",
+    "browseByCategory": "Explorar por Categoría",
+    "allCategories": "Todas",
+    "articleCount": "{count, plural, one {# artículo} other {# artículos}}",
+    "categories": {
+      "piece-movement": "Movimiento de Piezas",
+      "coordinates": "Coordenadas",
+      "notation": "Notación",
+      "memory": "Memoria",
+      "practice": "Práctica",
+      "moves": "Movimiento de Piezas",
+      "visualization": "Visualización"
+    },
+    "categoryTitle": "Artículos de {category}",
+    "articleNotFound": "Artículo No Encontrado"
+  },
+  "practice": {
+    "title": "Práctica",
+    "modulesTitle": "Módulos de Práctica",
+    "levelBeginner": "Principiante",
+    "levelIntermediate": "Intermedio",
+    "levelAdvanced": "Avanzado",
+    "levelIntroduction": "Introducción",
+    "tryAgain": "Intentar de Nuevo",
+    "changeSettings": "Cambiar Configuración",
+    "doOtherPractice": "Hacer otra práctica",
+    "morePractice": "Más Práctica",
+    "practiceComplete": "¡Práctica Completada!",
+    "score": "Puntuación",
+    "correctAnswers": "Respuestas Correctas",
+    "relatedLearning": "Aprendizaje Relacionado",
+    "relatedArticles": {
+      "bishopMovement": {
+        "title": "Movimiento del Alfil",
+        "description": "Aprende cómo el alfil se mueve en diagonal por el tablero"
+      }
+    },
+    "problemDetails": "Detalles del Problema",
+    "session": "Sesión",
+    "problem": "Problema",
+    "result": "Resultado",
+    "secondsFormat": "{seconds}s",
+    "minutesFormat": "{minutes}m",
+    "quit": "Salir",
+    "correct": "Correcto",
+    "incorrect": "Incorrecto",
+    "accuracy": "Precisión",
+    "averageTime": "Tiempo Promedio",
+    "undo": "Deshacer",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "modeTimed": "Desafío",
+    "modeTraining": "Entrenamiento",
+    "trainingDescription": "Las preguntas seguirán apareciendo hasta que te detengas. Presiona el botón Finalizar para terminar.",
+    "challengeDescription": "Límite de tiempo de 1 minuto. 3 respuestas incorrectas y se acaba. Tu puntuación será registrada.",
+    "startTraining": "Iniciar Entrenamiento",
+    "startChallenge": "Iniciar Desafío",
+    "switchToTraining": "📖 Practicar en modo entrenamiento",
+    "challengeSetup": {
+      "title": "Reglas del Desafío",
+      "timeLimit": "Responde tantas preguntas como puedas en {seconds} segundos.",
+      "mistakeLimit": "El juego termina después de {count} respuestas incorrectas.",
+      "noMistakeLimit": "No hay límite de respuestas incorrectas.",
+      "leaderboard": "Tu puntuación será registrada en la clasificación."
+    },
+    "skip": "Saltar",
+    "endTraining": "Finalizar",
+    "trainingEnded": "Entrenamiento finalizado",
+    "trainingModeActive": "📖 Practicando en modo entrenamiento",
+    "readyForChallenge": "¿Estás listo?",
+    "goToChallenge": "⚔️ Aceptar el Desafío",
+    "quitConfirmModal": {
+      "title": "¿Abandonar la Práctica?",
+      "message": "Tu progreso se perderá. ¿Estás seguro de que quieres salir?",
+      "confirmButton": "Salir",
+      "cancelButton": "Continuar"
+    },
+    "signUpBanner": {
+      "message": "¡Regístrate gratis para guardar tus puntuaciones!",
+      "description": "Guarda tus puntuaciones y sigue tu progreso",
+      "cta": "Registro Gratuito"
+    },
+    "settings": {
+      "title": "Configuración de Práctica",
+      "timeLimit": "Límite de Tiempo",
+      "problemCount": "Número de Problemas",
+      "problems": "problemas",
+      "seconds": "segundos",
+      "start": "Iniciar",
+      "cancel": "Cancelar"
+    },
+    "boardSymmetry": {
+      "title": "Simetría del Tablero",
+      "description": "Practica identificando casillas simétricas en el tablero",
+      "session": "En Progreso",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Encuentra la casilla simétrica en el tablero para el tipo de simetría indicado.",
+      "question": "¿{type} de {square}?",
+      "types": {
+        "horizontal": "Simetría de columna",
+        "vertical": "Simetría de fila",
+        "point": "Simetría central"
+      },
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "incorrectWithSolution": "{solution} es la respuesta correcta",
+      "next": "Siguiente Problema",
+      "streak": "Racha Actual: {count}",
+      "viewTutorial": "Ver Tutorial",
+      "viewArticle": "Aprende sobre Simetría del Tablero",
+      "articleDescription": "Comprende cómo identificar casillas simétricas en el tablero de ajedrez",
+      "resetSettings": "Restablecer configuración",
+      "resetSettingsConfirm": {
+        "title": "¿Restablecer configuración?",
+        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
+      },
+      "cancel": "Cancelar",
+      "requiredKnowledge": "Conocimiento Necesario",
+      "correctAnswers": "Respuestas Correctas",
+      "accuracy": "Precisión",
+      "timeTaken": "Tiempo Empleado",
+      "averageTime": "Tiempo Promedio",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
+        "skip": "Saltar",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "start": "Iniciar",
+        "startChallenge": "Iniciar Desafío",
+        "switchToTraining": "📖 Practicar en modo entrenamiento",
+        "steps": {
+          "intro": {
+            "title": "¿Qué es la Simetría del Tablero?",
+            "description": "Entrenar la simetría del tablero te ayuda a encontrar instantáneamente casillas correspondientes. Hay tres tipos principales de simetría en el tablero de ajedrez."
+          },
+          "horizontal": {
+            "title": "Simetría Vertical (Columna)",
+            "description": "Casillas simétricas respecto a la línea vertical central (entre las columnas d y e). Ejemplo: a1 ↔ h1, c3 ↔ f3."
+          },
+          "vertical": {
+            "title": "Simetría Horizontal (Fila)",
+            "description": "Casillas simétricas respecto a la línea horizontal central (entre las filas 4 y 5). Ejemplo: a1 ↔ a8, h2 ↔ h7."
+          },
+          "point": {
+            "title": "Simetría Central (Punto)",
+            "description": "Casillas simétricas respecto al centro del tablero (rotadas 180 grados). Ejemplo: a1 ↔ h8, c3 ↔ f6."
+          },
+          "start": {
+            "title": "¿Listo para Empezar?",
+            "description": "Intentemos resolver algunos problemas."
+          }
+        }
+      }
+    },
+    "difficulty": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "algebraicNotation": {
+      "title": "Notación Algebraica",
+      "description": "Domina el sistema de notación ajedrecística con ejercicios interactivos",
+      "pageTitle": "Práctica de Notación Algebraica",
+      "session": "En Progreso",
+      "start": "Iniciar",
+      "viewArticle": "Aprende sobre notación algebraica",
+      "articleDescription": "Aprende el sistema estándar para registrar movimientos de ajedrez usado mundialmente",
+      "requiredKnowledge": "Conocimiento Necesario",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "correctAnswerIs": "La respuesta correcta es",
+      "explanation": "Explicación",
+      "nextExercise": "Siguiente Ejercicio",
+      "next": "Siguiente",
+      "complete": "Completado"
+    },
+    "squareColors": {
+      "title": "Color de Casillas",
+      "description": "Entrena tu capacidad para identificar rápidamente si una casilla es clara u oscura",
+      "session": "En Progreso",
+      "question": "¿De qué color es la casilla {square}?",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Se harán preguntas como la siguiente repetidamente. Identifica si la casilla dada es clara u oscura.",
+      "white": "Clara",
+      "black": "Oscura",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "settings": "Configuración del Juego",
+      "timeLimit": "Límite de Tiempo",
+      "seconds": "segundos",
+      "start": "Iniciar",
+      "timeRemaining": "Tiempo",
+      "finished": "¡Práctica Completada!",
+      "correctAnswers": "Respuestas Correctas",
+      "accuracy": "Precisión",
+      "timeTaken": "Tiempo Empleado",
+      "averageTime": "Tiempo Promedio",
+      "requiredKnowledge": "Conocimiento Necesario",
+      "viewArticle": "Aprende sobre el color de las casillas",
+      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura"
+    },
+    "legalMoves": {
+      "title": "Movimientos Legales",
+      "description": "Practica encontrando todos los movimientos legales en una posición",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Se muestran una pieza y dos casillas. Determina si el movimiento es legal o no.",
+      "session": "En Progreso",
+      "settings": "Configuración del Juego",
+      "timeLimit": "Límite de Tiempo",
+      "seconds": "segundos",
+      "pieceSelection": "Seleccionar una Pieza",
+      "selectedCount": "{count} seleccionadas",
+      "pieces": {
+        "b": "Alfil",
+        "n": "Caballo",
+        "r": "Torre",
+        "q": "Dama",
+        "k": "Rey",
+        "random": "Aleatorio"
+      },
+      "start": "Iniciar",
+      "question": "¿Puede la pieza moverse de {from} a {to}?",
+      "questionFormat": "¿Puede la pieza moverse de {from} a {to}?",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "legal": "Sí",
+      "illegal": "No",
+      "timeRemaining": "Tiempo",
+      "finished": "¡Práctica Completada!",
+      "correctAnswers": "Respuestas Correctas",
+      "accuracy": "Precisión",
+      "timeTaken": "Tiempo Empleado",
+      "averageTime": "Tiempo Promedio",
+      "relatedArticles": "Artículos Relacionados",
+      "articles": {
+        "king": {
+          "title": "El Movimiento del Rey",
+          "description": "Aprende cómo se mueve el rey en el tablero de ajedrez"
+        },
+        "knight": {
+          "title": "El Movimiento del Caballo",
+          "description": "Domina el movimiento único en forma de L del caballo"
+        },
+        "rook": {
+          "title": "El Movimiento de la Torre",
+          "description": "Comprende el movimiento horizontal y vertical"
+        },
+        "bishop": {
+          "title": "El Movimiento del Alfil",
+          "description": "Aprende los patrones de movimiento diagonal"
+        }
+      }
+    },
+    "coordinateQuiz": {
+      "title": "Cuestionario de Coordenadas",
+      "description": "Ejercicios rápidos para dominar las coordenadas del tablero",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Se muestra el nombre de una casilla en el tablero. Haz clic en la casilla correcta lo más rápido posible.",
+      "settings": "Configuración del Juego",
+      "timeLimit": "Límite de Tiempo",
+      "boardOrientation": "Orientación del Tablero",
+      "white": "Blancas",
+      "black": "Negras",
+      "random": "Aleatorio",
+      "feedbackSpeed": "Velocidad de Respuesta",
+      "feedbackSpeeds": {
+        "fast": "Rápida",
+        "normal": "Normal",
+        "slow": "Lenta"
+      },
+      "start": "Iniciar",
+      "clickSquare": "Haz clic en esta casilla",
+      "whiteToMove": "Mueven las blancas",
+      "blackToMove": "Mueven las negras",
+      "correct": "Correcto",
+      "wrong": "Incorrecto",
+      "timeRemaining": "Tiempo",
+      "finished": "¡Cuestionario Completado!",
+      "points": "puntos",
+      "correctAnswers": "Respuestas Correctas",
+      "accuracy": "Precisión",
+      "timeTaken": "Tiempo Empleado",
+      "averageTime": "Tiempo Promedio",
+      "session": "En Progreso",
+      "relatedArticles": "Artículos Relacionados",
+      "articles": {
+        "coordinateConfusion": {
+          "title": "Confusión de Coordenadas",
+          "description": "Supera los desafíos comunes de reconocimiento de coordenadas"
+        },
+        "anchorSquares": {
+          "title": "Casillas Ancla",
+          "description": "Aprende puntos de referencia clave para la visualización del tablero"
+        },
+        "algebraicNotation": {
+          "title": "Notación Algebraica",
+          "description": "Domina el lenguaje de las coordenadas de ajedrez"
+        }
+      }
+    },
+    "positionMemory": {
+      "title": "Memoria de Posiciones",
+      "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "session": "En Progreso",
+      "settings": "Configuración del Problema",
+      "problemSource": "Origen del Problema",
+      "presetProblems": "Problemas Predefinidos",
+      "enterFen": "Introducir FEN",
+      "presetDescription": "Se presentarán problemas como estos",
+      "customFenDescription": "Puedes practicar con posiciones de tus propias partidas o partidas famosas",
+      "timeLimit": "Tiempo de Memorización",
+      "seconds": "segundos",
+      "problemCount": "Número de Problemas",
+      "problems": "problemas",
+      "shuffle": "Mezclar Problemas",
+      "start": "Iniciar",
+      "memorize": "Memorizar",
+      "recreate": "Recrear",
+      "result": "Resultado",
+      "memorizing": "Memoriza la Posición",
+      "timeRemaining": "Tiempo Restante",
+      "memorized": "Ya la Memoricé",
+      "recreatePosition": "Recrea la Posición",
+      "submit": "Enviar",
+      "viewAgain": "Ver de Nuevo",
+      "skip": "Saltar Este Problema",
+      "quit": "Abandonar Práctica",
+      "quitConfirmTitle": "¿Abandonar la Práctica?",
+      "quitConfirmMessage": "Tu progreso se guardará y verás tus resultados hasta el momento.",
+      "quitConfirmYes": "Abandonar",
+      "quitConfirmNo": "Continuar",
+      "accuracy": "Precisión",
+      "correct": "Correcto",
+      "extra": "Extra",
+      "incorrect": "Incorrecto",
+      "missing": "Faltante",
+      "score": "Puntuación",
+      "recreationProgress": "Progreso de Recreación",
+      "extraDescription": "Piezas extra colocadas en casillas vacías",
+      "nextProblem": "Siguiente Problema",
+      "viewResults": "Ver Resultados",
+      "analyzeOnLichess": "Analizar en Lichess",
+      "original": "Original",
+      "yourRecreation": "Tu Recreación",
+      "pieceNames": {
+        "K": "Rey Blanco",
+        "Q": "Dama Blanca",
+        "R": "Torre Blanca",
+        "B": "Alfil Blanco",
+        "N": "Caballo Blanco",
+        "P": "Peón Blanco",
+        "k": "Rey Negro",
+        "q": "Dama Negra",
+        "r": "Torre Negra",
+        "b": "Alfil Negro",
+        "n": "Caballo Negro",
+        "p": "Peón Negro"
+      },
+      "scoreDescriptions": {
+        "correct": "{piece} en {square} es correcto",
+        "wrongPiece": "{square} tiene {actual} en lugar de {expected}",
+        "missing": "{piece} falta en {square}",
+        "extra": "{piece} extra en {square}"
+      },
+      "blackPieces": "Piezas Negras",
+      "whitePieces": "Piezas Blancas",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando",
+      "useCustomFen": "Usar FEN Personalizado",
+      "customFenPlaceholder": "Introduce cadenas FEN (una por línea, máx. 10)\nEjemplo: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "customFenError": "FEN inválido",
+      "invalidFenOnLine": "FEN inválido en la línea {lines}",
+      "invalidFenOnLines": "FEN inválido en las líneas {lines}",
+      "tooManyFens": "Máximo {max} posiciones permitidas",
+      "fiveSeconds": "5s",
+      "oneMinute": "60s",
+      "copyShareLink": "Copiar Enlace para Compartir",
+      "shareLinkHelp": "Introduce la URL copiada en la barra de direcciones de tu navegador para recrear los problemas. Útil para compartir con amigos o como respaldo.",
+      "linkCopied": "Enlace copiado al portapapeles",
+      "copyFailed": "Error al copiar el enlace",
+      "urlTooLong": "La URL es demasiado larga (debe tener menos de 1000 caracteres)",
+      "url_too_long": "La URL para compartir es demasiado larga. Reduce el número de problemas.",
+      "invalid_base64": "URL para compartir inválida",
+      "invalid_fen": "Contiene formato FEN inválido",
+      "problemDetails": "Detalles del Problema",
+      "problem": "Problema",
+      "deleteFenTitle": "Eliminar Problema",
+      "deleteFenMessage": "¿Estás seguro de que deseas eliminar este problema de tu lista de FEN personalizados?",
+      "deleteFenConfirm": "Eliminar",
+      "deleteFenCancel": "Cancelar",
+      "skipped": "Saltado",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Memoriza una posición dentro del límite de tiempo, luego recréala en un tablero vacío.\nProbemos con la siguiente posición.",
+        "selectPreset": "Selecciona una Posición Predefinida",
+        "orEnterFen": "O Introduce tu Propio FEN",
+        "fenPlaceholder": "Introduce notación FEN...",
+        "preview": "Vista Previa de la Posición",
+        "selectToPreview": "Selecciona una posición para previsualizar",
+        "settings": "Configuración del Tutorial",
+        "settingsDescription": "{timeLimit} segundos para memorizar, {problemCount} problema",
+        "start": "¡Ya la memoricé!",
+        "skip": "Saltar"
+      },
+      "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otros problemas o desafíate con posiciones de tus propias partidas.",
+      "finishTutorial": "Finalizar Tutorial",
+      "resetSettings": "Restablecer configuración",
+      "resetSettingsConfirm": {
+        "title": "¿Restablecer configuración?",
+        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
+      },
+      "cancel": "Cancelar",
+      "requiredKnowledge": "Conocimiento Necesario",
+      "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
+      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+    },
+    "knightTour": {
+      "title": "Recorrido del Caballo",
+      "description": "Visita las 64 casillas con un caballo, pasando por cada casilla exactamente una vez",
+      "session": "En Progreso",
+      "settings": "Configuración",
+      "startingSquare": "Casilla Inicial",
+      "randomSquare": "Aleatorio",
+      "blindfoldMode": "Modo a Ciegas",
+      "blindfoldModeHint": "Practica usando solo coordenadas sin ver el tablero",
+      "setupHint": "El caballo debe visitar las 64 casillas exactamente una vez usando solo movimientos legales de caballo.",
+      "start": "Iniciar",
+      "progress": "Progreso",
+      "undo": "Deshacer",
+      "stuck": "¡No hay más movimientos disponibles!",
+      "stuckHint": "Usa Deshacer para volver atrás e intentar un camino diferente.",
+      "success": "¡Recorrido Completado!",
+      "incomplete": "Recorrido Incompleto",
+      "closedTourMessage": "¡Increíble! Completaste un recorrido cerrado — ¡el caballo puede volver a su casilla inicial!",
+      "openTourMessage": "¡Felicitaciones! ¡Visitaste las 64 casillas!",
+      "incompleteMessage": "Visitaste {count} casillas antes de quedarte sin movimientos.",
+      "squaresVisited": "Casillas Visitadas",
+      "startedFrom": "Comenzó Desde",
+      "finalBoard": "Posición Final",
+      "currentPosition": "Posición Actual",
+      "availableMoves": "Movimientos Disponibles",
+      "confirmMove": "Mover a {square}",
+      "moveHistory": "Historial de Movimientos",
+      "inputSquare": "ej., Ce4, Cf6",
+      "selectSquare": "Selecciona una casilla...",
+      "noMovesAvailable": "No hay movimientos disponibles",
+      "submitMove": "Enviar",
+      "inputSettings": "Configuración de Entrada",
+      "switchToSelect": "Cambiar a selección por lista",
+      "switchToText": "Cambiar a entrada de texto",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "invalidSquareFormat": "Casilla inválida. Introduce una casilla válida (ej., e4, f6).",
+      "alreadyVisited": "Esta casilla ya ha sido visitada.",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "El Recorrido del Caballo es un rompecabezas clásico de ajedrez.\n\nUsando un caballo, intenta visitar las 64 casillas del tablero exactamente una vez.",
+        "exampleTitle": "Aquí hay un ejemplo de solución",
+        "startHint": "Para el entrenamiento de ajedrez a ciegas, es efectivo responder usando solo coordenadas mientras visualizas el tablero en tu mente, pero empecemos jugando con el tablero visible.",
+        "start": "Intentar",
+        "skip": "Saltar"
+      },
+      "tutorialComplete": "¡Esos son los fundamentos!\nCuando te sientas cómodo, intenta aleatorizar la casilla inicial o desafíate con el modo a ciegas.",
+      "finishTutorial": "Finalizar Tutorial",
+      "viewTutorial": "Ver Tutorial",
+      "relatedArticles": "Artículos Relacionados",
+      "articles": {
+        "knightTour": {
+          "title": "El Rompecabezas del Recorrido del Caballo",
+          "description": "Aprende estrategias e historia de este desafío clásico de ajedrez"
+        },
+        "knightMovement": {
+          "title": "El Movimiento del Caballo",
+          "description": "Domina el movimiento único en forma de L del caballo"
+        }
+      }
+    },
+    "fen": {
+      "title": "Reconstrucción FEN",
+      "description": "Practica la lectura de notación FEN recreando posiciones",
+      "pageTitle": "Práctica de Reconstrucción FEN",
+      "session": "En Progreso",
+      "start": "Iniciar",
+      "requiredKnowledge": "Conocimiento Necesario",
+      "viewArticle": "Aprende sobre la notación FEN",
+      "articleDescription": "Aprende la notación estándar para describir posiciones de ajedrez",
+      "fenString": "Cadena FEN",
+      "recreateFromFen": "Recrea la Posición desde el FEN",
+      "flipBoard": "Voltear Tablero",
+      "submit": "Enviar",
+      "skip": "Saltar Este Problema",
+      "quit": "Abandonar Práctica",
+      "quitConfirmTitle": "¿Abandonar la Práctica?",
+      "quitConfirmMessage": "Tu progreso se guardará y verás tus resultados hasta el momento.",
+      "quitConfirmYes": "Abandonar",
+      "quitConfirmNo": "Continuar",
+      "accuracy": "Precisión",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "missing": "Faltante",
+      "extra": "Extra",
+      "recreationProgress": "Progreso de Recreación",
+      "extraDescription": "Piezas extra colocadas en casillas vacías",
+      "nextProblem": "Siguiente Problema",
+      "viewResults": "Ver Resultados",
+      "analyzeOnLichess": "Analizar en Lichess",
+      "original": "Original",
+      "yourRecreation": "Tu Recreación",
+      "problemDetails": "Detalles del Problema",
+      "problem": "Problema",
+      "skipped": "Saltado",
+      "pieceNames": {
+        "K": "Rey Blanco",
+        "Q": "Dama Blanca",
+        "R": "Torre Blanca",
+        "B": "Alfil Blanco",
+        "N": "Caballo Blanco",
+        "P": "Peón Blanco",
+        "k": "Rey Negro",
+        "q": "Dama Negra",
+        "r": "Torre Negra",
+        "b": "Alfil Negro",
+        "n": "Caballo Negro",
+        "p": "Peón Negro"
+      },
+      "scoreDescriptions": {
+        "correct": "{piece} en {square} es correcto",
+        "wrongPiece": "{square} tiene {actual} en lugar de {expected}",
+        "missing": "{piece} falta en {square}",
+        "extra": "{piece} extra en {square}"
+      },
+      "blackPieces": "Piezas Negras",
+      "whitePieces": "Piezas Blancas",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando",
+      "settings": "Configuración",
+      "problemCount": "Número de Problemas",
+      "problems": "problemas",
+      "shuffle": "Mezclar Problemas",
+      "problemSource": "Origen del Problema",
+      "presetProblems": "Problemas Predefinidos",
+      "enterFen": "Introducir FEN",
+      "presetDescription": "Selecciona un problema para previsualizar",
+      "customFenDescription": "Introduce cadenas FEN, una por línea (máx. 10)",
+      "customFenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "tooManyFens": "Máximo {max} posiciones FEN permitidas",
+      "invalidFenOnLine": "FEN inválido en la línea {lines}",
+      "invalidFenOnLines": "FEN inválido en las líneas {lines}",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Practica la lectura de notación FEN y la recreación de posiciones en el tablero.",
+        "start": "Colocar Piezas",
+        "skip": "Saltar"
+      },
+      "tutorialComplete": "¡Esos son los fundamentos!\nPractica la lectura de notación FEN con diversas posiciones.",
+      "finishTutorial": "Finalizar Tutorial",
+      "resetSettings": "Restablecer Configuración",
+      "resetSettingsConfirm": {
+        "title": "¿Restablecer Configuración?",
+        "message": "Todos los ajustes se restablecerán y serás redirigido al tutorial."
+      },
+      "cancel": "Cancelar"
+    },
+    "routePlanner": {
+      "title": "Planificador de Rutas",
+      "session": "En Progreso",
+      "description": "Calcula el camino más corto para que una pieza alcance una casilla objetivo",
+      "betaNotice": "El guardado de puntuaciones y la clasificación están actualmente en desarrollo.",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Calcula el camino más corto para que una pieza alcance una casilla objetivo.",
+      "settings": "Configuración",
+      "start": "Iniciar",
+      "piece": "Pieza a Mover",
+      "startSquare": "Casilla Inicial",
+      "targetSquare": "Casilla Objetivo",
+      "findPath": "Encuentra el camino para {piece} de {start} a {target}",
+      "yourPath": "Tu Camino",
+      "shortestPath": "Camino Más Corto",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "badEnd": "El camino no llega al objetivo",
+      "badMove": "Incorrecto",
+      "finalTarget": "(Auto-completado)",
+      "distance": "Distancia: {count}",
+      "inputPlaceholder": "Introduce la siguiente casilla...",
+      "pieceSelection": "Seleccionar Piezas",
+      "selectedCount": "{count} seleccionadas",
+      "pieces": {
+        "n": "Caballo",
+        "b": "Alfil"
+      },
+      "moves": "Movimientos",
+      "currentPosition": "Posición Actual",
+      "addMove": "Añadir Movimiento",
+      "submit": "Enviar Respuesta",
+      "playAgain": "Jugar de Nuevo",
+      "showAnswer": "Mostrar Respuesta",
+      "giveUp": "Rendirse",
+      "nextProblem": "Siguiente Problema",
+      "finish": "Finalizar",
+      "tryAgain": "Intentar de Nuevo",
+      "skip": "Saltar Este Problema",
+      "quit": "Abandonar Práctica",
+      "skipped": "Saltado",
+      "resetSettings": "Restablecer configuración",
+      "resetSettingsConfirm": {
+        "title": "¿Restablecer configuración?",
+        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
+      },
+      "tutorial": {
+        "title": "Tutorial",
+        "steps": {
+          "intro": {
+            "title": "El Objetivo",
+            "description": "Encuentra el camino más corto para que el Caballo se mueva de Inicio (e4) a Objetivo (h5)."
+          },
+          "visualization": {
+            "title": "Visualiza la Ruta",
+            "description": "No hay vista previa del tablero durante la práctica. Visualiza el camino en tu mente e introduce las coordenadas.\nEjemplo: e4 -> f6 -> h5"
+          },
+          "start": {
+            "title": "Practiquemos",
+            "description": "Ahora inténtalo tú mismo. Presiona Iniciar para comenzar."
+          }
+        },
+        "description": "Practica la visualización de rutas sin ver el tablero.",
+        "viewTutorial": "Ver Tutorial",
+        "intro": "Probemos con este problema.",
+        "start": "Intentar",
+        "next": "Siguiente",
+        "previous": "Atrás",
+        "skip": "Saltar",
+        "complete": "¡Esos son los fundamentos!\nPrueba entrenar con diferentes piezas y distancias.",
+        "restart": "Reiniciar",
+        "startChallenge": "Iniciar Desafío",
+        "switchToTraining": "📖 Practicar en modo entrenamiento"
+      }
+    },
+    "moveSequence": {
+      "title": "Yakusoku Kumite",
+      "description": "Memoriza y visualiza una secuencia de movimientos en el tablero",
+      "betaNotice": "Esta función está en beta y puede contener errores inesperados.",
+      "articles": {
+        "algebraicNotation": {
+          "title": "Notación Algebraica",
+          "description": "Aprende a leer y escribir movimientos de ajedrez en notación estándar"
+        }
+      },
+      "showBoard": "Mostrar Tablero",
+      "hideBoard": "Ocultar Tablero",
+      "fenRequired": "El FEN es obligatorio",
+      "pgnRequired": "Los movimientos PGN son obligatorios",
+      "invalidFen": "Formato FEN inválido",
+      "invalidPgn": "Formato PGN inválido. No se pudieron analizar los movimientos.",
+      "invalidMoves": "Algunos movimientos son inválidos en esta posición",
+      "invalidMove": "Movimiento inválido",
+      "noMovesFound": "No se encontraron movimientos en el PGN",
+      "invalidMoveAt": "El movimiento {index} \"{move}\" es inválido",
+      "fenLabel": "Posición Inicial (FEN)",
+      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "fenHint": "Introduce la cadena FEN para la posición inicial",
+      "pgnLabel": "Movimientos (PGN)",
+      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5 (máx. 50 movimientos)",
+      "pgnHint": "Introduce los movimientos en formato PGN",
+      "pgnTooLong": "El PGN es demasiado largo. Máximo {max} movimientos permitidos.",
+      "start": "Iniciar",
+      "problemSource": "Origen del Problema",
+      "presetProblems": "Problemas Predefinidos",
+      "enterCustom": "Introducir FEN/PGN",
+      "presetDescription": "Selecciona una apertura para practicar",
+      "preview": "Vista Previa",
+      "memorizeInstructions": "Observa la secuencia y memoriza los movimientos",
+      "play": "Reproducir",
+      "moves": "movimientos",
+      "pressPlayToStart": "Presiona reproducir para iniciar la secuencia",
+      "playingMove": "Movimiento {current} de {total}",
+      "startRecall": "Iniciar Recuerdo",
+      "progress": "Progreso",
+      "moveProgress": "Movimiento {current} de {total}",
+      "yourMove": "Tu Movimiento",
+      "opponentTurn": "Esperando el movimiento del rival...",
+      "switchToSelect": "Cambiar a selección por lista",
+      "switchToText": "Cambiar a entrada de texto",
+      "switchInputMode": "Cambiar modo de entrada",
+      "wrongMove": "{move} es incorrecto",
+      "perfect": "¡Perfecto!",
+      "completed": "Completado",
+      "perfectMessage": "¡Reprodujiste todos los movimientos correctamente!",
+      "completedMessage": "Sesión de práctica completada",
+      "accuracy": "Precisión",
+      "correctMoves": "Movimientos Correctos",
+      "moveDetails": "Detalles del Movimiento",
+      "correct": "Correcto",
+      "attempts": "{count} intentos",
+      "backToSetup": "Volver a Configuración",
+      "includeOpponentMoves": "Incluir movimientos del rival",
+      "moveHistory": "Historial de Movimientos",
+      "whiteTurn": "Turno de Blancas",
+      "blackTurn": "Turno de Negras",
+      "copyShareLink": "Copiar Enlace para Compartir",
+      "shareLinkHelp": "Introduce la URL copiada en la barra de direcciones de tu navegador para recrear la práctica. Útil para compartir con amigos o como respaldo.",
+      "linkCopied": "Enlace copiado al portapapeles",
+      "copyFailed": "Error al copiar el enlace",
+      "urlTooLong": "La URL es demasiado larga (debe tener menos de 1000 caracteres)",
+      "url_too_long": "La URL para compartir es demasiado larga. Reduce la longitud del PGN.",
+      "invalid_data": "URL para compartir inválida",
+      "invalid_fen": "Contiene formato FEN inválido",
+      "session": "Sesión",
+      "endPractice": "Finalizar Práctica",
+      "replay": "Repetir",
+      "clickMoveToJump": "Haz clic en un movimiento para saltar a esa posición",
+      "wrongAttempts": "Intentos incorrectos",
+      "tutorial": {
+        "title": "Tutorial",
+        "description": "Observa una secuencia de movimientos desarrollarse, luego reprodúcelos de memoria.\nProbemos con una apertura sencilla.",
+        "start": "Iniciar Práctica",
+        "skip": "Saltar",
+        "watchFirst": "Observa los movimientos primero presionando reproducir"
+      },
+      "aboutFeature": {
+        "title": "Acerca de Esta Función",
+        "description1": "Yakusoku Kumite es una forma de combate prearreglado practicado en artes marciales como Karate y Taekwondo, donde la secuencia de ataques y defensas está predeterminada.",
+        "description2": "En esta práctica, asumimos los movimientos del rival como en Yakusoku Kumite, y entrenamos para responder con la secuencia correcta de movimientos.",
+        "description3": "Este entrenamiento te ayudará a mejorar tu capacidad para memorizar aperturas de ajedrez."
+      },
+      "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otras aperturas o desafíate con secuencias de tus propias partidas.",
+      "finishTutorial": "Finalizar Tutorial",
+      "resetSettings": "Restablecer configuración",
+      "resetSettingsConfirm": {
+        "title": "¿Restablecer configuración?",
+        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
+      },
+      "cancel": "Cancelar",
+      "relatedArticles": "Artículos Relacionados"
+    },
+    "quadrantAnchors": {
+      "title": "Anclas de Cuadrante",
+      "description": "Practica identificando a qué cuadrante pertenece una casilla",
+      "betaNotice": "Esta función está en beta y puede contener errores inesperados.",
+      "session": "En Progreso",
+      "question": "¿En qué cuadrante está {square}?",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "next": "Siguiente Problema",
+      "start": "Iniciar",
+      "settings": "Configuración",
+      "quadrants": {
+        "q1": "C1 (Flanco de Rey / Rival)",
+        "q2": "C2 (Flanco de Dama / Rival)",
+        "q3": "C3 (Flanco de Dama / Tú)",
+        "q4": "C4 (Flanco de Rey / Tú)"
+      },
+      "streak": "Racha: {count}",
+      "score": "Puntuación: {score}",
+      "relatedArticles": "Artículos Relacionados",
+      "articles": {
+        "anchorSquares": {
+          "title": "Casillas Ancla",
+          "description": "Aprende puntos de referencia clave para la visualización del tablero"
+        }
+      }
+    },
+    "diagonalQuiz": {
+      "title": "Cuestionario de Diagonales",
+      "description": "Identifica las dos diagonales que pasan por una casilla dada",
+      "betaNotice": "Esta función está en beta y puede contener errores inesperados.",
+      "session": "En Progreso",
+      "question": "¿Cuáles son las diagonales de {square}?",
+      "diagonalLabel": "Diagonal (dirección a1-h8)",
+      "antiDiagonalLabel": "Anti-diagonal (dirección h1-a8)",
+      "inputPlaceholder": "ej., b1-h7",
+      "squarePlaceholder": "??",
+      "singleSquarePlaceholder": "ej., a1",
+      "singleSquare": "casilla única",
+      "selectFile": "Selecciona una columna (a-h)",
+      "selectRank": "Selecciona una fila (1-8)",
+      "backspace": "Retroceso",
+      "clear": "Borrar",
+      "submit": "Enviar",
+      "correct": "¡Correcto!",
+      "incorrect": "Incorrecto",
+      "correctAnswer": "{diagonal}, {antiDiagonal}",
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Identifica las dos diagonales que pasan por la casilla dada.",
+      "settings": "Configuración del Juego",
+      "timeLimit": "Límite de Tiempo",
+      "seconds": "segundos",
+      "start": "Iniciar",
+      "correctAnswers": "Respuestas Correctas",
+      "accuracy": "Precisión",
+      "timeTaken": "Tiempo Empleado",
+      "averageTime": "Tiempo Promedio",
+      "lastQuestion": "Última pregunta: {square}",
+      "problemDetails": "Detalles del Problema",
+      "problem": "Problema",
+      "yourAnswer": "Tu respuesta",
+      "correctAnswerLabel": "Respuesta correcta",
+      "nextProblem": "Siguiente Problema",
+      "tutorial": {
+        "title": "Tutorial",
+        "skip": "Saltar",
+        "steps": {
+          "diagonal": {
+            "title": "¿Qué es una Diagonal?",
+            "description": "Una diagonal va en la dirección a1-h8.\nTodas las casillas donde (columna - fila) es constante pertenecen a la misma diagonal.\nLas casillas verdes muestran la diagonal que pasa por d4."
+          },
+          "antiDiagonal": {
+            "title": "¿Qué es una Anti-diagonal?",
+            "description": "Una anti-diagonal va en la dirección h1-a8.\nTodas las casillas donde (columna + fila) es constante pertenecen a la misma anti-diagonal.\nLas casillas azules muestran la anti-diagonal que pasa por d4."
+          },
+          "trial": {
+            "title": "Inténtalo Tú Mismo",
+            "description": "Ahora intenta responder una pregunta del cuestionario de diagonales.\nIdentifica ambas diagonales que pasan por la casilla dada."
+          }
+        },
+        "viewTutorial": "Ver Tutorial",
+        "next": "Siguiente",
+        "previous": "Atrás",
+        "startChallenge": "Iniciar Desafío",
+        "switchToTraining": "📖 Practicar en modo entrenamiento",
+        "diagonalLegend": "Diagonal (a1-h8)",
+        "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
+        "trialCorrectAnswer": "Respuesta: {diagonal}, {antiDiagonal}"
+      }
+    }
+  },
+  "home": {
+    "pageTitle": "Actividad Reciente",
+    "gameList": {
+      "title": "Tus Partidas",
+      "noGames": "Aún no hay partidas",
+      "moves": "movimientos",
+      "level": "Nv",
+      "win": "Victoria",
+      "loss": "Derrota",
+      "draw": "Tablas",
+      "inProgress": "En Progreso",
+      "bulkDelete": "Eliminación Masiva",
+      "ranksLink": "🥋 Programa para vencer a la IA",
+      "startGuidance": "Puedes iniciar una partida de ajedrez a ciegas contra la IA desde <link>aquí</link>.",
+      "sortBy": "Ordenar por",
+      "lastPlayedDesc": "Último jugado ↓",
+      "lastPlayedAsc": "Último jugado ↑",
+      "createdDesc": "Creado ↓",
+      "createdAsc": "Creado ↑",
+      "newGame": "Iniciar Nueva Partida",
+      "deleteGameTitle": "Eliminar Partida",
+      "deleteGameMessage": "¿Estás seguro de que deseas eliminar esta partida? Esta acción no se puede deshacer.",
+      "deleteConfirm": "Eliminar",
+      "cancel": "Cancelar",
+      "gameDeletedToast": "Partida eliminada correctamente",
+      "gamesDeletedToast": "{count} partidas eliminadas correctamente",
+      "deleteFailedToast": "Error al eliminar la partida",
+      "moreGames": "Todas las partidas"
+    },
+    "yourRankings": {
+      "title": "Tus Clasificaciones",
+      "noRanks": "Aún no estás en ninguna clasificación. ¡Prueba algunos módulos de práctica!",
+      "viewAll": "Ver todas las clasificaciones"
+    },
+    "feed": {
+      "title": "Cronología",
+      "loading": "Cargando...",
+      "rankUpdate": {
+        "newEntry": "Entró en la clasificación",
+        "improved": "¡Mejoró su posición!",
+        "rank": "Posición",
+        "score": "Puntuación"
+      }
+    },
+    "vsAi": {
+      "title": "VS IA",
+      "startGame": "Iniciar VS IA",
+      "resume": "Reanudar",
+      "newGame": "Nueva Partida",
+      "allGames": "Todas las partidas →",
+      "level": "Nv",
+      "moves": "movimientos",
+      "recent": "Recientes"
+    }
+  },
+  "gamesPage": {
+    "pageTitle": "Partidas"
+  },
+  "bulkDelete": {
+    "title": "Eliminación Masiva de Partidas",
+    "explanation": "Selecciona y elimina partidas no deseadas en masa.",
+    "noGames": "No hay partidas para eliminar",
+    "selectedCount": "{count} partidas seleccionadas",
+    "selectAll": "Seleccionar Todas",
+    "unselectAll": "Deseleccionar Todas",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "processing": "Procesando...",
+    "errorDeleting": "Error al eliminar. Por favor, inténtalo de nuevo.",
+    "confirmTitle": "¿Eliminar Partidas Seleccionadas?",
+    "confirmMessage": "¿Estás seguro de que deseas eliminar {count} partidas? Esta acción no se puede deshacer.",
+    "deletedToast": "{count} partidas eliminadas correctamente",
+    "deleteFailedToast": "Error al eliminar las partidas"
+  },
+  "play": {
+    "title": "Jugar Ajedrez",
+    "yourMove": "Tu movimiento",
+    "aiThinking": "La IA está pensando...",
+    "gameOver": "Fin de la Partida",
+    "checkmate": "¡Jaque mate!",
+    "stalemate": "Ahogado",
+    "draw": "Tablas",
+    "youWin": "¡Has Ganado!",
+    "youLose": "Has Perdido",
+    "check": "Jaque",
+    "inputMove": "Introduce un movimiento (ej., e4, Cf3)",
+    "selectMove": "Selecciona un movimiento",
+    "switchToSelect": "Cambiar a selección por lista",
+    "switchToText": "Cambiar a entrada de texto",
+    "switchInputMode": "Cambiar modo de entrada",
+    "submitMove": "Enviar",
+    "invalidMove": "Movimiento inválido",
+    "newGame": "Nueva Partida",
+    "resign": "Rendirse",
+    "undo": "Deshacer",
+    "moves": "Movimientos",
+    "confirmResignTitle": "Confirmar Rendición",
+    "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",
+    "cancel": "Cancelar",
+    "confirmResign": "Rendirse",
+    "confirmUndoTitle": "Confirmar Deshacer",
+    "confirmUndoMessage": "¿Estás seguro de que quieres deshacer los dos últimos movimientos?",
+    "confirmUndo": "Deshacer",
+    "configureBoardAppearance": "Configurar apariencia del tablero",
+    "configureInputMethod": "Configurar método de entrada",
+    "configureSkillLevel": "Configurar nivel de habilidad",
+    "saveAndExit": "Guardar y salir",
+    "skillLevel": "Nivel de Habilidad",
+    "levelWithNumber": "Nivel {level}",
+    "skillLevelDescription": "Cambiar la fuerza de la IA",
+    "save": "Guardar",
+    "showBoard": "Mostrar Tablero",
+    "hideBoard": "Ocultar Tablero",
+    "flipBoard": "Voltear Tablero",
+    "copyPgn": "Copiar PGN",
+    "copyFen": "Copiar FEN",
+    "copied": "¡Copiado!",
+    "analyzeOnLichess": "Analizar en Lichess",
+    "aiPlayed": "La IA jugó {move}",
+    "restartFromHere": "Reiniciar desde aquí",
+    "confirmRestartTitle": "¿Reiniciar desde esta posición?",
+    "confirmRestartMessage": "Todos los movimientos después del movimiento seleccionado serán eliminados. Esta acción no se puede deshacer.",
+    "confirmRestart": "Reiniciar",
+    "newGameFromHere": "Nueva partida desde aquí",
+    "saving": "Guardando...",
+    "saved": "Guardado",
+    "postmortem": "Revisión de Partida",
+    "resultTitle": "Resultado de la Partida"
+  },
+  "postmortem": {
+    "title": "Revisión de Partida",
+    "infoModalTitle": "Acerca de la Revisión de Partida",
+    "description": "Intenta recordar y reproducir los movimientos de tu partida terminada. También puedes ejecutar la evaluación del motor aquí.",
+    "autoOpponentMoves": "Auto-rellenar movimientos del rival",
+    "autoOpponentMovesDescription": "Solo introduce tus propios movimientos; los movimientos del rival se rellenarán automáticamente",
+    "showEvaluation": "Mostrar evaluación",
+    "evaluating": "Evaluando",
+    "evalInfoTitle": "Acerca de la Evaluación de Movimientos",
+    "evalInfoDescription": "La función de evaluación de movimientos analiza cada movimiento usando el motor de ajedrez Stockfish.",
+    "evalInfoPoint1": "El análisis se ejecuta localmente en tu navegador (descarga de 6-8MB)",
+    "evalInfoPoint2": "Puede ser más lento en dispositivos menos potentes",
+    "evalInfoPoint3": "Cada evaluación tarda unos segundos en completarse",
+    "evalScoreMeaning": "Qué Significa la Puntuación",
+    "evalScoreDescription": "La puntuación mostrada indica la evaluación de la posición después de que se realiza el movimiento (desde la perspectiva de las Blancas). Los valores positivos favorecen a las Blancas, los valores negativos favorecen a las Negras.",
+    "evalCriteriaTitle": "Criterios de Calidad del Movimiento",
+    "evalBestCriteria": "Pérdida de 0.2 peones o menos",
+    "evalGoodCriteria": "Pérdida de 0.2 a 0.5 peones",
+    "evalInaccuracyCriteria": "Pérdida de 0.5 a 1.0 peones",
+    "evalMistakeCriteria": "Pérdida de 1.0 a 3.0 peones",
+    "evalBlunderCriteria": "Pérdida de más de 3.0 peones",
+    "inputMove": "Introduce un movimiento",
+    "selectMove": "Selecciona un movimiento",
+    "switchToSelect": "Cambiar a selección por lista",
+    "switchToText": "Cambiar a entrada de texto",
+    "switchInputMode": "Cambiar modo de entrada",
+    "dontKnow": "No lo sé",
+    "analyzeAll": "Analizar Todo",
+    "autoFillAll": "Auto-rellenar Todo",
+    "confirmAnalyzeAllTitle": "¿Analizar todos los movimientos?",
+    "confirmAnalyzeAllMessage": "Esto auto-rellenará todos los movimientos restantes y mostrará la evaluación de cada movimiento.",
+    "confirmAutoFillAllTitle": "¿Auto-rellenar todos los movimientos?",
+    "confirmAutoFillAllMessage": "Esto auto-rellenará todos los movimientos restantes.",
+    "analyzing": "Analizando",
+    "correctMove": "¡Correcto!",
+    "incorrectMove": "Movimiento incorrecto. Inténtalo de nuevo.",
+    "logIncorrect": "es incorrecto",
+    "evalBest": "Mejor movimiento",
+    "evalGood": "Buen movimiento",
+    "evalInaccuracy": "Imprecisión",
+    "evalMistake": "Error",
+    "evalBlunder": "Pifia",
+    "bestMove": "Mejor movimiento",
+    "evalMateIn": "Mate",
+    "evalMated": "Recibiendo mate",
+    "moveNumber": "Movimiento {number}",
+    "yourTurn": "Tu turno",
+    "opponentTurn": "Turno del rival",
+    "completed": "¡Revisión de Partida Completada!",
+    "completedMessage": "¡Reprodujiste correctamente todos los movimientos de la partida!",
+    "backToGame": "Volver a la Partida",
+    "progress": "Progreso: {current} / {total} movimientos",
+    "showBoard": "Mostrar Tablero",
+    "hideBoard": "Ocultar Tablero",
+    "moves": "Movimientos",
+    "noMovesYet": "Aún no hay movimientos",
+    "copyPgn": "Copiar PGN",
+    "copyFen": "Copiar FEN",
+    "copied": "¡Copiado!",
+    "analyzeOnLichess": "Analizar en Lichess",
+    "moveLog": "Registro de Movimientos",
+    "filterMoves": "Filtrar Movimientos",
+    "filterPlayer": "Jugador",
+    "filterOwnMoves": "Mis Movimientos",
+    "filterOpponentMoves": "Movimientos del Rival",
+    "filterStatus": "Estado",
+    "filterCorrect": "Correcto",
+    "filterIncorrect": "Incorrecto",
+    "filterAuto": "Auto-rellenado",
+    "filterEvaluation": "Evaluación",
+    "resetFilters": "Restablecer",
+    "applyFilters": "Aplicar",
+    "backToCurrentPosition": "Volver a la posición actual",
+    "configureBoardAppearance": "Configurar apariencia del tablero",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  },
+  "playError": {
+    "title": "Recuperación de Partida",
+    "corruptedGame": "Partida Dañada Detectada",
+    "description": "La notación de la partida contiene movimientos inválidos y no se puede reproducir. Elige cómo recuperarte de este error.",
+    "invalidMove": "Movimiento Inválido",
+    "validMoves": "Movimientos Válidos",
+    "noValidMoves": "Sin movimientos válidos",
+    "discardedMoves": "Movimientos Descartados",
+    "recoveryOptions": "Opciones de Recuperación",
+    "recoverGame": "Recuperar y Continuar",
+    "recoverDescription": "Continuar jugando desde el movimiento {count}. Todos los movimientos inválidos serán descartados.",
+    "deleteGame": "Eliminar Partida",
+    "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo."
+  },
+  "newGame": {
+    "title": "Nueva Partida",
+    "selectTitle": "Elige Cómo Empezar",
+    "standardTitle": "Partida Estándar",
+    "standardDescription": "Inicia una partida nueva desde la posición de apertura estándar",
+    "pgnPageTitle": "Importar PGN",
+    "pgnPageDescription": "Continúa desde una posición específica usando notación PGN",
+    "positionPageTitle": "Posición Personalizada",
+    "positionPageDescription": "Configura una posición personalizada del tablero y comienza a jugar desde ahí",
+    "openingPageTitle": "Desde una Apertura",
+    "openingPageDescription": "Elige una apertura específica y comienza a jugar desde esa posición",
+    "opening": {
+      "startGame": "Iniciar Partida"
+    },
+    "startMethod": "¿Cómo te gustaría empezar?",
+    "newGame": "Nueva Partida",
+    "newGameDescription": "Inicia una partida nueva desde el principio",
+    "fromPgn": "Importar PGN",
+    "fromPgnDescription": "Continúa desde una posición específica",
+    "pgnTitle": "Importar PGN",
+    "pgnPlaceholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
+    "validWithMoves": "PGN válido con",
+    "validWithMovesCount": "movimientos",
+    "invalidPgn": "Formato PGN inválido",
+    "derivedFromPgn": "Color seleccionado automáticamente según el PGN",
+    "customPosition": "Posición Personalizada",
+    "customPositionDescription": "Configura una posición personalizada del tablero",
+    "positionEmpty": "Coloca al menos una pieza en el tablero",
+    "positionInvalid": "Posición inválida (ej., cada bando debe tener exactamente un rey)",
+    "positionAlreadyCheckmate": "Esta posición ya es jaque mate — la partida terminaría inmediatamente",
+    "positionAlreadyStalemate": "Esta posición ya es ahogado — la partida terminaría inmediatamente",
+    "positionInsufficientMaterial": "Material insuficiente para continuar — la partida sería tablas inmediatamente",
+    "positionCheckCorrected": "El bando en jaque debe mover primero — por favor selecciona el otro color",
+    "positionValid": "Posición válida",
+    "flipBoard": "Voltear Tablero",
+    "positionSettings": {
+      "title": "Configuración Avanzada",
+      "castling": "Derechos de Enroque",
+      "whiteKingside": "Blancas O-O (Flanco de Rey)",
+      "whiteQueenside": "Blancas O-O-O (Flanco de Dama)",
+      "blackKingside": "Negras O-O (Flanco de Rey)",
+      "blackQueenside": "Negras O-O-O (Flanco de Dama)",
+      "enPassant": "Casilla Objetivo de Captura al Paso",
+      "none": "Ninguna",
+      "whitePieces": "Piezas Blancas",
+      "blackPieces": "Piezas Negras",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando"
+    },
+    "selectColor": "Selecciona Tu Color",
+    "playAsWhite": "Jugar con Blancas",
+    "playAsBlack": "Jugar con Negras",
+    "selectLevel": "Selecciona el Nivel de Habilidad de la IA",
+    "levelWithNumber": "Nivel {level}",
+    "skillLevelDescription": "Nivel 1 (800 ELO, más fácil) a Nivel 20 (3200+ ELO, más fuerte). Los niveles más altos tardan más en pensar.",
+    "previewBoard": "Vista Previa del Tablero",
+    "gameSettings": "Configuración Avanzada",
+    "showBoardButtonInGame": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
+    "startGame": "Iniciar Partida",
+    "cancel": "Cancelar",
+    "whiteDescription": "Tú juegas primero",
+    "blackDescription": "La IA juega primero",
+    "gameLimitReached": "Límite de Partidas Alcanzado",
+    "gameLimitMessage": "Puedes guardar hasta {limit} partidas.\nPor favor, elimina partidas existentes para iniciar una nueva.",
+    "backToGameList": "Volver a la Lista de Partidas",
+    "completeSuggestion": "Completar \"{suggestion}\"",
+    "tabToComplete": "Presiona Tab para completar \"{suggestion}\"",
+    "skillLevelInfo": {
+      "title": "Acerca de los Niveles de Habilidad",
+      "overview": "Nivel 1 (800 ELO, más fácil) a Nivel 20 (3200+ ELO, más fuerte). Los niveles más altos tardan más en pensar.",
+      "eloCalculationTitle": "Cómo se Calculan las Calificaciones ELO",
+      "eloCalculationDescription": "Las calificaciones ELO mostradas son valores aproximados basados en la configuración del motor Stockfish:",
+      "eloLevels1to14": "Niveles 1-14",
+      "eloFormula1to14": "máx(800, 700 + nivel × 100)",
+      "eloLevels15to20": "Niveles 15-20",
+      "eloFormula15to20": "2000 + nivel × 100",
+      "examplesTitle": "Calificaciones de Ejemplo",
+      "note": "Estas calificaciones ELO son aproximaciones basadas en los parámetros UCI_Elo y Skill Level del motor Stockfish. La fuerza real de juego puede variar según la posición."
+    }
+  },
+  "privacy": {
+    "title": "Política de Privacidad",
+    "description": "Nuestra política de privacidad y cómo tratamos tu información personal",
+    "lastUpdated": "Última Actualización: 13 de marzo de 2026",
+    "introduction": "Ajedrez a Ciegas (\"el Sitio\") respeta la privacidad de los usuarios y se compromete a proteger la información personal. Esta Política de Privacidad explica cómo el Sitio recopila, usa y protege la información.",
+    "cookiesTitle": "Uso de Cookies",
+    "cookiesDescription": "El Sitio utiliza cookies para mejorar la calidad del servicio y mostrar anuncios. Las cookies son pequeños archivos de texto almacenados en tu dispositivo por los sitios web. Aunque puedes desactivar las cookies, algunas funciones podrían no funcionar correctamente.",
+    "analyticsTitle": "Uso de Google Analytics",
+    "analyticsDescription": "El Sitio utiliza Google Analytics para comprender el uso del sitio y mejorar los servicios. Google Analytics usa cookies para recopilar la siguiente información:",
+    "analyticsItem1": "Estadísticas de acceso como el número de visitantes y páginas vistas",
+    "analyticsItem2": "Patrones de comportamiento y tiempo de permanencia en el sitio",
+    "analyticsItem3": "Información del dispositivo y navegador",
+    "analyticsPrivacyPolicy": "Los datos recopilados por Google Analytics se gestionan según la Política de Privacidad de Google. Para más detalles, consulta:",
+    "googlePrivacyPolicyLink": "Política de Privacidad de Google",
+    "adsenseTitle": "Publicidad mediante Google AdSense",
+    "adsenseDescription": "El Sitio utiliza Google AdSense como servicio publicitario. Google AdSense usa cookies para mostrar anuncios personalizados según los intereses del usuario. Se puede utilizar la siguiente información:",
+    "adsenseItem1": "Información de acceso pasada a este sitio y otros sitios",
+    "adsenseItem2": "Dirección IP (no contiene información de identificación personal)",
+    "adsenseItem3": "Información del dispositivo y tipo de navegador",
+    "adsenseOptOut": "Si no deseas recibir anuncios personalizados, puedes cambiar tu configuración en:",
+    "adsSettingsLink": "Configuración de Anuncios",
+    "adsenseLearnMore": "Para más información sobre cómo Google utiliza la información para publicidad en sitios asociados, consulta:",
+    "partnerSitesLink": "Cómo utiliza Google la información de sitios o aplicaciones que usan nuestros servicios",
+    "localStorageTitle": "Uso del Almacenamiento Local",
+    "localStorageDescription": "El Sitio utiliza el almacenamiento local del navegador para los siguientes propósitos:",
+    "localStorageItem1": "Guardar el progreso del juego y la configuración del usuario",
+    "localStorageItem2": "Recordar la configuración del tema (modo oscuro/modo claro)",
+    "localStorageItem3": "Gestionar el progreso del modo de práctica",
+    "localStorageNote": "Esta información se almacena solo en tu dispositivo y no se transmite a servidores externos. Puedes eliminar esta información en cualquier momento borrando la caché de tu navegador.",
+    "personalDataTitle": "Recopilación de Información Personal",
+    "personalDataDescription": "El Sitio recopila direcciones de correo electrónico y datos de autenticación cuando te registras para una cuenta. La información enviada a través del formulario de contacto se utiliza únicamente para responder a las consultas y no se usa para ningún otro propósito. El Sitio no recopila directamente otra información de identificación personal como nombres o números de teléfono.",
+    "thirdPartyLinksTitle": "Enlaces a Sitios de Terceros",
+    "thirdPartyLinksDescription": "El Sitio puede contener enlaces a sitios externos. El Sitio no es responsable de las políticas de privacidad de estos sitios externos. Al visitar sitios externos, por favor revisa sus respectivas políticas de privacidad.",
+    "childrenPrivacyTitle": "Privacidad de los Menores",
+    "childrenPrivacyDescription": "El Sitio no recopila intencionalmente información personal de menores de 13 años. Los padres deben supervisar adecuadamente el uso de internet de sus hijos.",
+    "yourRightsTitle": "Tus Derechos",
+    "yourRightsDescription": "Tienes los siguientes derechos respecto a tus datos:",
+    "yourRightsItem1": "Derecho de acceso — Tienes derecho a saber qué datos se están recopilando sobre ti",
+    "yourRightsItem2": "Derecho de eliminación — Tienes derecho a solicitar la eliminación de tus datos",
+    "yourRightsItem3": "Derecho de exclusión — Tienes derecho a rechazar la publicidad personalizada",
+    "yourRightsItem4": "Para ejercer estos derechos, por favor contáctanos a través del formulario de contacto",
+    "cookieDetailsTitle": "Detalles de las Cookies",
+    "cookieDetailsDescription": "Los siguientes tipos de cookies se utilizan en el Sitio:",
+    "cookieDetailsItem1": "Cookies esenciales — Utilizadas para registrar el consentimiento de cookies (CookieYes)",
+    "cookieDetailsItem2": "Cookies analíticas — Utilizadas para análisis de acceso (Google Analytics)",
+    "cookieDetailsItem3": "Cookies publicitarias — Utilizadas para mostrar anuncios personalizados (Google AdSense)",
+    "cookieDetailsNote": "Puedes consentir o rechazar cada tipo de cookie a través del banner de CookieYes.",
+    "dataRetentionTitle": "Retención de Datos",
+    "dataRetentionDescription": "Los períodos de retención de datos varían según el tipo:",
+    "dataRetentionItem1": "Los datos de Google Analytics se conservan durante 14 meses",
+    "dataRetentionItem2": "Los datos del juego almacenados en el localStorage de tu navegador se conservan en tu dispositivo hasta que borres los datos del navegador",
+    "dataRetentionItem3": "La información de la cuenta y los datos del juego asociados se conservan en nuestros servidores hasta que elimines tu cuenta",
+    "changesTitle": "Cambios en la Política de Privacidad",
+    "changesDescription": "El Sitio puede actualizar esta Política de Privacidad según sea necesario. La Política de Privacidad actualizada entrará en vigor desde el momento en que se publique en esta página. Por favor, revisa esta página periódicamente."
+  },
+  "affiliateDisclosure": {
+    "title": "Divulgación de Afiliados",
+    "description": "Información sobre enlaces de afiliados en Ajedrez a Ciegas",
+    "lastUpdated": "Última Actualización: 11 de marzo de 2025",
+    "amazonDisclosureTitle": "Divulgación del Programa de Asociados de Amazon",
+    "amazonDisclosureDescription": "Como Asociado de Amazon, obtengo ingresos por compras que califican. blindfold-chess.online participa en el Programa de Asociados de Amazon Services LLC, un programa de publicidad de afiliados diseñado para proporcionar un medio para que los sitios ganen tarifas de publicidad mediante publicidad y enlaces a Amazon.com.",
+    "footerText": "Como Asociado de Amazon, obtengo ingresos por compras que califican."
+  },
+  "terms": {
+    "title": "Términos de Servicio",
+    "description": "Términos de Servicio de Ajedrez a Ciegas",
+    "lastUpdated": "Última Actualización: 13 de marzo de 2026",
+    "acceptanceTitle": "Aceptación de los Términos",
+    "acceptanceDescription": "Al usar este Servicio, aceptas estar sujeto a estos Términos de Servicio. Si no estás de acuerdo con estos Términos, por favor no uses el Servicio.",
+    "serviceDescriptionTitle": "Descripción del Servicio",
+    "serviceDescriptionContent": "Ajedrez a Ciegas (\"el Servicio\") es una aplicación web gratuita diseñada para asistir en la práctica del ajedrez a ciegas. El Servicio tiene como objetivo mejorar las habilidades de visualización y las capacidades de cálculo en ajedrez.",
+    "accountRegistrationTitle": "Registro y Gestión de Cuentas",
+    "accountRegistrationDescription": "Los usuarios pueden crear una cuenta para guardar sus registros de práctica y configuración de forma segura en nuestros servidores. Al registrar una cuenta, debes gestionar tus credenciales de autenticación de manera responsable.",
+    "accountRegistrationItem1": "Eres estrictamente responsable de mantener la confidencialidad de las credenciales de tu cuenta.",
+    "accountRegistrationItem2": "El operador no es responsable de ningún daño causado por el uso no autorizado de tu cuenta por terceros.",
+    "dataHandlingTitle": "Manejo de Datos (Importante)",
+    "dataHandlingWarning": "El almacenamiento de datos depende del estado de tu cuenta.",
+    "dataHandlingDescription": "Para usuarios invitados (sin cuenta), el Servicio almacena datos del juego y configuración en el almacenamiento local de tu navegador. Estos datos no se persisten en una base de datos del servidor, sino que existen solo en el navegador de tu dispositivo. Por lo tanto, los datos de invitado pueden perderse en las siguientes situaciones:",
+    "dataHandlingItem1": "Cuando borras el historial de navegación o los datos del sitio de tu navegador",
+    "dataHandlingItem2": "Cuando desinstalas o reinstalas tu navegador",
+    "dataHandlingItem3": "Cuando se exceden los límites de capacidad de almacenamiento",
+    "dataHandlingItem4": "Durante actualizaciones del navegador o debido a problemas del navegador",
+    "dataHandlingItem5": "Cuando el Servicio cambia los métodos de almacenamiento de datos o las especificaciones",
+    "dataHandlingNote": "Para usuarios registrados, los registros de práctica y la configuración se guardan de forma segura en nuestros servidores y se sincronizan entre dispositivos. Recomendamos crear una cuenta si deseas conservar tus datos. Los usuarios invitados deben usar el Servicio como un entorno de práctica temporal.",
+    "userResponsibilitiesTitle": "Responsabilidades del Usuario",
+    "userResponsibilitiesDescription": "Al usar el Servicio, por favor ten en cuenta lo siguiente:",
+    "userResponsibilitiesItem1": "El uso del Servicio es bajo tu propio riesgo",
+    "userResponsibilitiesItem2": "Los equipos, software y costos de comunicación necesarios para la conexión a internet son tu responsabilidad",
+    "userResponsibilitiesItem3": "Eres responsable de gestionar adecuadamente la configuración del navegador y la gestión del dispositivo",
+    "prohibitedActivitiesTitle": "Actividades Prohibidas",
+    "prohibitedActivitiesDescription": "Las siguientes actividades están prohibidas al usar el Servicio:",
+    "prohibitedActivitiesItem1": "Actividades que interfieran con la operación del Servicio",
+    "prohibitedActivitiesItem2": "Actividades que impongan una carga excesiva en el Servicio",
+    "prohibitedActivitiesItem3": "Explorar o explotar vulnerabilidades en el Servicio",
+    "prohibitedActivitiesItem4": "Otras actividades que violen las leyes o el orden público y la moral",
+    "intellectualPropertyTitle": "Propiedad Intelectual",
+    "intellectualPropertyDescription": "Los derechos de propiedad intelectual sobre contenido, diseños, logotipos, software, etc. incluidos en el Servicio pertenecen al operador o sus licenciantes. Los usuarios no pueden reproducir, reimprimir o modificar estos sin permiso.",
+    "disclaimerTitle": "Exención de Responsabilidad",
+    "disclaimerDescription": "El operador no asume responsabilidad por:",
+    "disclaimerItem1": "Daños derivados del uso del Servicio",
+    "disclaimerItem2": "Daños derivados de la interrupción, suspensión, terminación o cambios en el Servicio",
+    "disclaimerItem3": "Daños derivados de la pérdida de datos del usuario",
+    "limitationOfLiabilityTitle": "Limitación de Responsabilidad",
+    "limitationOfLiabilityDescription": "El Servicio se proporciona \"tal cual\". El operador no ofrece garantías respecto a la integridad, precisión, utilidad, seguridad, etc. del Servicio.",
+    "serviceChangesTitle": "Cambios y Terminación del Servicio",
+    "serviceChangesDescription": "El operador puede cambiar el contenido del Servicio o terminar la prestación del Servicio sin previo aviso a los usuarios.",
+    "terminationTitle": "Suspensión del Uso",
+    "terminationDescription": "El operador puede suspender el uso del Servicio por parte de un usuario sin previo aviso si el usuario viola estos Términos.",
+    "governingLawTitle": "Ley Aplicable",
+    "governingLawDescription": "Estos Términos se regirán e interpretarán de acuerdo con las leyes japonesas.",
+    "changesTitle": "Cambios en los Términos",
+    "changesDescription": "El operador puede cambiar estos Términos de Servicio según sea necesario. Los Términos modificados entrarán en vigor desde el momento en que se publiquen en esta página."
+  },
+  "company": {
+    "title": "Información de la Empresa",
+    "companyInfo": "Información del Operador",
+    "companyName": "Nombre de la Empresa",
+    "companyNameValue": "Fuji Enterprise",
+    "location": "Ubicación",
+    "postalCode": "〒107-0061",
+    "address": "Mitsuhashi Building 3F, 1-3-3 Kita-Aoyama, Minato-ku, Tokio, Japón",
+    "business": "Actividades Comerciales",
+    "businessItem1": "Negocio de contratación de desarrollo de sistemas",
+    "businessItem2": "Negocio de desarrollo y operación de aplicaciones",
+    "businessItem3": "Negocio de contenido web",
+    "businessItem4": "Negocio de consultoría TI (desarrollo de nuevos sistemas, marketing en motores de búsqueda, etc.)",
+    "moreInfo": "Para más detalles, visita nuestro",
+    "corporateWebsite": "sitio web corporativo"
+  },
+  "contact": {
+    "title": "Contáctenos",
+    "description": "Si tienes alguna pregunta o comentario, no dudes en contactarnos.",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "Juan Pérez",
+      "nameRequired": "Por favor, introduce tu nombre",
+      "email": "Correo Electrónico",
+      "emailPlaceholder": "ejemplo@email.com",
+      "emailRequired": "Por favor, introduce tu correo electrónico",
+      "emailInvalid": "Por favor, introduce un correo electrónico válido",
+      "subject": "Asunto",
+      "subjectPlaceholder": "Asunto de tu consulta",
+      "subjectRequired": "Por favor, introduce un asunto",
+      "message": "Mensaje",
+      "messagePlaceholder": "Describe tu consulta en detalle",
+      "messageRequired": "Por favor, introduce tu mensaje",
+      "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
+      "submit": "Ir a Confirmación",
+      "submitting": "Enviando...",
+      "backToForm": "Volver al Formulario",
+      "sendEmail": "Enviar"
+    },
+    "confirm": {
+      "title": "Confirma tu Envío",
+      "description": "Revisa la información a continuación y haz clic en 'Enviar' para enviar tu consulta."
+    },
+    "success": {
+      "title": "Enviado Correctamente",
+      "message": "Gracias por contactarnos. Revisaremos tu consulta y te responderemos a la brevedad.",
+      "backToHome": "Volver al Inicio"
+    },
+    "error": {
+      "title": "Error de Envío",
+      "message": "Lo sentimos, ocurrió un error durante el envío. Por favor, inténtalo más tarde."
+    }
+  },
+  "landing": {
+    "tagline": "Comunidad de Ajedrez a Ciegas",
+    "getStarted": "Empezar",
+    "goToTop": "Ir a la Página Principal",
+    "aiBattle": {
+      "title": "Juega contra la IA",
+      "description": "Juega ajedrez a ciegas contra el motor de ajedrez estándar, Stockfish.",
+      "cta": "Jugar Ahora"
+    },
+    "training": {
+      "title": "Amplios Modos de Entrenamiento",
+      "description": "Si empezar directamente con el ajedrez a ciegas te parece demasiado difícil, comienza con ejercicios sencillos para construir una base sólida.",
+      "viewAll": "Ver Todos los Entrenamientos",
+      "squareColors": {
+        "title": "Color de Casillas",
+        "description": "Entrena tu capacidad para identificar rápidamente si una casilla es clara u oscura — una habilidad fundamental para la visualización del tablero.",
+        "cta": "Probar Práctica"
+      },
+      "routePlanner": {
+        "title": "Planificador de Rutas",
+        "description": "Calcula el camino más corto para que una pieza alcance una casilla objetivo. Fortalece tu capacidad de visualizar el movimiento de las piezas.",
+        "cta": "Probar Práctica"
+      }
+    },
+    "ranks": {
+      "title": "Obtén tu Cinturón Negro",
+      "description": "Nuestro sistema de cinturones está diseñado para desarrollar las habilidades que necesitas para vencer a la IA en ajedrez a ciegas.",
+      "cta": "Ver Rangos"
+    },
+    "dashboard": {
+      "title": "Panel",
+      "comingSoon": "Próximamente...",
+      "vsAi": "🤖 VS IA",
+      "myGames": "Mis Partidas",
+      "newGame": "Nueva Partida",
+      "gameCount": "{count, plural, =0 {Sin partidas aún} one {# partida} other {# partidas}}",
+      "challenge": "🏆 Desafío",
+      "squareColors": "Color de Casillas",
+      "coordinateQuiz": "Cuestionario de Coordenadas",
+      "legalMoves": "Movimientos Legales",
+      "diagonalQuiz": "Cuestionario de Diagonales",
+      "boardSymmetry": "Simetría del Tablero",
+      "viewLeaderboard": "Ver Clasificación →",
+      "topics": "💬 Temas",
+      "topicSquares": "Casillas",
+      "topicOpenings": "Aperturas",
+      "welcomeGreeting": "¡Hola, {name}!",
+      "welcomeDefaultName": "Jugador",
+      "viewMypage": "Mi Página",
+      "viewHome": "Inicio"
+    }
+  },
+  "AuthStatusDisplay": {
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "account": "Cuenta",
+    "mypage": "Mi Página",
+    "settings": "Configuración",
+    "signOut": "Cerrar Sesión"
+  },
+  "signIn": {
+    "title": "Iniciar Sesión",
+    "description": "Inicia sesión en tu cuenta de Ajedrez a Ciegas",
+    "googleOAuth": "Iniciar sesión con Google",
+    "googleOAuthLoading": "Iniciando sesión...",
+    "authError": "Error de inicio de sesión. Por favor, inténtalo de nuevo.",
+    "noAccount": "¿No tienes una cuenta?",
+    "signUp": "Registrarse",
+    "orDivider": "o",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Introduce tu contraseña",
+    "emailSignIn": "Iniciar sesión con correo electrónico",
+    "emailSignInLoading": "Iniciando sesión...",
+    "emailSignInError": "Correo electrónico o contraseña inválidos. Por favor, inténtalo de nuevo.",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "rateLimited": "Demasiados intentos de inicio de sesión. Por favor, inténtalo más tarde."
+  },
+  "signUp": {
+    "title": "Registrarse",
+    "description": "Regístrate en Ajedrez a Ciegas",
+    "googleOAuth": "Registrarse con Google",
+    "googleOAuthLoading": "Registrando...",
+    "authError": "Error de registro. Por favor, inténtalo de nuevo.",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "signIn": "Iniciar sesión",
+    "orDivider": "o",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Al menos 8 caracteres",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Vuelve a introducir tu contraseña",
+    "emailSignUp": "Registrarse con correo electrónico",
+    "emailSignUpLoading": "Registrando...",
+    "emailSignUpError": "Error de registro. Por favor, inténtalo de nuevo.",
+    "rateLimited": "Demasiados intentos de registro. Por favor, inténtalo más tarde.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "freeBadge": "GRATIS",
+    "freeAssurance": "Completamente gratis · Sin tarjeta de crédito",
+    "features": {
+      "sectionTitle": "Desbloquea la Experiencia Completa",
+      "sectionSubtitle": "Crea una cuenta gratuita para acceder a estas funciones",
+      "social": {
+        "title": "Comunidad",
+        "description": "Discute aperturas, comparte ideas y conéctate con jugadores de todo el mundo."
+      },
+      "leaderboard": {
+        "title": "Clasificación",
+        "description": "Compite por el primer puesto y compara tu posición con otros jugadores."
+      },
+      "tracking": {
+        "title": "Seguimiento de Puntuaciones",
+        "description": "Guarda tus resultados de práctica y sigue tu progreso a lo largo del tiempo."
+      },
+      "profile": {
+        "title": "Tu Perfil",
+        "description": "Construye tu identidad ajedrecística con un perfil personalizado e historial."
+      }
+    }
+  },
+  "verifyEmail": {
+    "title": "Revisa tu Correo Electrónico",
+    "description": "Hemos enviado un enlace de confirmación a tu dirección de correo electrónico.",
+    "checkInbox": "Revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.",
+    "resendButton": "Reenviar correo de confirmación",
+    "resendLoading": "Enviando...",
+    "resendSuccess": "Correo de confirmación reenviado. Revisa tu bandeja de entrada.",
+    "resendError": "Error al reenviar el correo. Por favor, inténtalo más tarde.",
+    "rateLimited": "Demasiadas solicitudes de reenvío. Por favor, inténtalo más tarde.",
+    "resendCooldown": "Reenvío disponible en {seconds}s",
+    "breadcrumbSignUp": "Registrarse"
+  },
+  "forgotPassword": {
+    "title": "Olvidé mi Contraseña",
+    "description": "Introduce tu dirección de correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "submit": "Enviar enlace de restablecimiento",
+    "submitLoading": "Enviando...",
+    "error": "Error al enviar el correo de restablecimiento. Por favor, inténtalo de nuevo.",
+    "rateLimited": "Demasiadas solicitudes de restablecimiento de contraseña. Por favor, inténtalo más tarde.",
+    "sentDescription": "Hemos enviado un enlace de restablecimiento de contraseña a tu dirección de correo electrónico.",
+    "checkInbox": "Revisa tu bandeja de entrada y haz clic en el enlace para restablecer tu contraseña.",
+    "backToSignIn": "Volver a Iniciar Sesión"
+  },
+  "resetPassword": {
+    "title": "Restablecer Contraseña",
+    "description": "Introduce tu nueva contraseña a continuación.",
+    "passwordLabel": "Nueva contraseña",
+    "passwordPlaceholder": "Al menos 8 caracteres",
+    "confirmPasswordLabel": "Confirmar nueva contraseña",
+    "confirmPasswordPlaceholder": "Vuelve a introducir tu nueva contraseña",
+    "submit": "Restablecer contraseña",
+    "submitLoading": "Restableciendo...",
+    "error": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
+  },
+  "articles": {
+    "pageTitle": "Artículos",
+    "noArticles": "Aún no hay artículos.",
+    "articlesListTitle": "Todos los Artículos",
+    "moreArticles": "Más artículos",
+    "articleNotFound": "Artículo No Encontrado"
+  },
+  "announcements": {
+    "pageTitle": "Anuncios",
+    "pageDescription": "Anuncios de Ajedrez a Ciegas",
+    "noAnnouncements": "Aún no hay anuncios.",
+    "announcementsListTitle": "Todos los Anuncios",
+    "membersOnly": "Este anuncio está disponible solo para miembros.",
+    "membersOnlyBadge": "Solo miembros",
+    "signInToView": "Inicia sesión para ver",
+    "announcementNotFound": "Anuncio No Encontrado"
+  },
+  "onboarding": {
+    "title": "Configuración Inicial",
+    "pageTitle": "Paso de Incorporación {step}",
+    "skip": "Saltar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "step1": {
+      "shortLabel": "Entrada",
+      "title": "Método de Entrada de Movimientos",
+      "description": "Elige cómo quieres introducir tus movimientos durante una partida.",
+      "modes": {
+        "text": {
+          "label": "Entrada de Texto",
+          "description": "Escribe movimientos usando notación algebraica (ej., e4, Cf3). Mejor para jugadores experimentados."
+        },
+        "select": {
+          "label": "Seleccionar de Lista",
+          "description": "Elige de una lista de movimientos legales disponibles. Fácil de usar, sin necesidad de conocer la notación."
+        },
+        "button": {
+          "label": "Entrada por Botones",
+          "description": "Introduce movimientos tocando botones de piezas y casillas. Una opción equilibrada para todos los niveles."
+        }
+      },
+      "preview": {
+        "label": "Vista Previa",
+        "textPlaceholder": "ej., e4, Cf3, O-O",
+        "selectPlaceholder": "Selecciona un movimiento..."
+      },
+      "hint": {
+        "multiSelect": "Si seleccionas varios métodos, podrás cambiar entre ellos durante el juego.",
+        "changeLater": "Puedes cambiar esto más tarde en la configuración."
+      }
+    },
+    "step2": {
+      "shortLabel": "Vista",
+      "title": "Modo de Vista del Tablero",
+      "description": "Puedes activar una función de vistazo para echar un vistazo al tablero como ayuda visual.",
+      "showBoardButton": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
+      "modes": {
+        "modal": {
+          "label": "Modal",
+          "description": "El tablero aparece como un diálogo emergente. Toca un botón para mostrar/ocultar."
+        },
+        "inline": {
+          "label": "En línea",
+          "description": "El tablero se incrusta encima del área de entrada como una sección plegable."
+        }
+      },
+      "preview": {
+        "label": "Vista Previa"
+      }
+    },
+    "step3": {
+      "shortLabel": "Piezas",
+      "title": "Configuración de Piezas",
+      "description": "Personaliza cómo se muestran las piezas en el tablero.",
+      "visibility": {
+        "title": "Visibilidad de las Piezas",
+        "showOwnPieces": "Mostrar piezas propias",
+        "showOpponentPieces": "Mostrar piezas del rival"
+      },
+      "appearance": {
+        "title": "Apariencia de las Piezas"
+      },
+      "shape": {
+        "title": "Forma de las Piezas",
+        "normal": "Piezas normales",
+        "circles-all": "Mostrar todas las piezas como piedras",
+        "circles-own": "Mostrar piezas propias como piedras",
+        "circles-opponent": "Mostrar piezas del rival como piedras"
+      },
+      "color": {
+        "title": "Color de las Piezas",
+        "normal": "Colores normales (Blancas y Negras)",
+        "white-only": "Mostrar todas las piezas como blancas",
+        "black-only": "Mostrar todas las piezas como negras"
+      }
+    },
+    "step4": {
+      "shortLabel": "Inicio",
+      "title": "¡Todo listo!",
+      "description": "Elige un modo de juego para empezar a jugar.",
+      "gameModes": {
+        "standard": "Partida Estándar",
+        "standardDescription": "Inicia una partida nueva desde la posición de apertura estándar",
+        "pgn": "Importar PGN",
+        "pgnDescription": "Continúa desde una posición específica usando notación PGN",
+        "position": "Posición Personalizada",
+        "positionDescription": "Configura una posición personalizada del tablero y comienza a jugar desde ahí"
+      }
+    }
+  },
+  "Mypage": {
+    "title": "Mi Página",
+    "challengeLink": "Historial de Desafíos",
+    "dashboard": {
+      "viewProfile": "Perfil público",
+      "challengeTitle": "Historial de Desafíos",
+      "likesTitle": "Publicaciones que te Gustan",
+      "postsTitle": "Mis Publicaciones",
+      "editProfile": "Editar",
+      "interviewTitle": "Entrevista",
+      "beltSystem": "Sistema de Cinturones",
+      "myRecords": "Mis Registros",
+      "socialTitle": "Social",
+      "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti"
+    },
+    "records": "Registros",
+    "bestScore": "Mejor Puntuación",
+    "avgScore": "Puntuación Prom.",
+    "avgScoreTooltip": "Puntuación promedio de las sesiones que duraron los 60 segundos completos.",
+    "scoreUnit": "Puntuación Prom.",
+    "scoreTrend": "Tendencia de Puntuación",
+    "sessionHistory": "Historial de Sesiones",
+    "viewAllResults": "Más resultados",
+    "noData": "Aún no hay registros.",
+    "tableDate": "Fecha",
+    "tableCorrectAnswers": "Correctas",
+    "tableIncorrectAnswers": "Errores",
+    "periods": {
+      "thisWeek": "Esta Semana",
+      "lastWeek": "Semana Pasada",
+      "thisMonth": "Este Mes",
+      "lastMonth": "Mes Pasado",
+      "twoWeeksAgo": "Hace 2 Semanas",
+      "twoMonthsAgo": "Hace 2 Meses"
+    },
+    "vsLastWeek": "vs semana pasada",
+    "vs2WeeksAgo": "vs hace 2 semanas",
+    "vsLastMonth": "vs mes pasado",
+    "vs2MonthsAgo": "vs hace 2 meses",
+    "filters": {
+      "boardOrientation": "Orientación del Tablero",
+      "white": "Blancas",
+      "black": "Negras",
+      "random": "Aleatorio",
+      "selectedPiece": "Pieza",
+      "pieces": {
+        "k": "Rey",
+        "q": "Dama",
+        "r": "Torre",
+        "b": "Alfil",
+        "n": "Caballo",
+        "random": "Aleatorio"
+      }
+    },
+    "menuTypes": {
+      "coordinate_quiz": "Cuestionario de Coordenadas",
+      "legal_moves": "Movimientos Legales",
+      "square_colors": "Color de Casillas",
+      "board_symmetry": "Simetría del Tablero",
+      "route_planner": "Planificador de Rutas",
+      "diagonal_quiz": "Cuestionario de Diagonales",
+      "position_memory": "Memoria de Posiciones",
+      "knight_tour": "Recorrido del Caballo",
+      "move_sequence": "Yakusoku Kumite",
+      "algebraic_notation": "Notación Algebraica",
+      "fen": "Reconstrucción FEN",
+      "quadrant_anchors": "Anclas de Cuadrante"
+    },
+    "practiceThisChallenge": "Practicar Este Desafío"
+  },
+  "MypageLikes": {
+    "title": "Publicaciones que te Gustan",
+    "breadcrumbMypage": "Mi Página",
+    "empty": "Aún no hay publicaciones que te gusten.",
+    "sectionTitle": "Temas"
+  },
+  "MypagePosts": {
+    "title": "Mis Publicaciones",
+    "breadcrumbMypage": "Mi Página",
+    "empty": "Aún no hay publicaciones.",
+    "sectionTitle": "Temas"
+  },
+  "MypageFollowing": {
+    "title": "Siguiendo",
+    "empty": "Aún no sigues a nadie.",
+    "breadcrumbMypage": "Mi Página",
+    "unfollow": "Dejar de Seguir",
+    "unfollowConfirmTitle": "Dejar de Seguir Usuario",
+    "unfollowConfirmMessage": "¿Estás seguro de que quieres dejar de seguir a {name}?",
+    "cancel": "Cancelar"
+  },
+  "MypageChallenges": {
+    "title": "Historial de Desafíos",
+    "breadcrumbMypage": "Mi Página"
+  },
+  "MypageChallengeResults": {
+    "title": "Historial de Desafíos",
+    "sectionTitle": "Resultados",
+    "description": "Explora todos tus resultados de desafíos",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbChallenges": "Historial de Desafíos",
+    "empty": "No se encontraron resultados.",
+    "tableDate": "Fecha",
+    "tableMenu": "Menú",
+    "tableCorrectAnswers": "Correctas",
+    "tableIncorrectAnswers": "Errores",
+    "allMenuTypes": "Todos los Tipos de Menú"
+  },
+  "MypageNotifications": {
+    "title": "Notificaciones",
+    "breadcrumbMypage": "Mi Página",
+    "empty": "Aún no hay notificaciones.",
+    "markAllAsRead": "Marcar todas como leídas",
+    "followMessage": "{actor} comenzó a seguirte",
+    "likeMessage": "{actor} le gustó tu publicación",
+    "replyMessage": "{actor} respondió a tu publicación",
+    "unknownNotification": "Tienes una nueva notificación",
+    "announcementMessage": "Nuevo anuncio: {title}",
+    "newPostMessage": "{actor} compartió una nueva publicación",
+    "achievementSingleMessage": "🏆 Obtuviste {name}",
+    "achievementMultipleMessage": "🏆 Obtuviste {count} logros"
+  },
+  "deleteAccount": {
+    "title": "Eliminar Cuenta",
+    "warning": "Esta acción es permanente y no se puede deshacer. Todos tus datos personales (nombre de usuario, biografía, país, cuentas de ajedrez, etc.) serán eliminados. Tu nombre de usuario se conservará para evitar su reutilización.",
+    "confirmButton": "Eliminar Mi Cuenta",
+    "confirmTitle": "¿Estás completamente seguro?",
+    "confirmMessage": "Esto eliminará permanentemente tu cuenta y borrará todos los datos personales. Esta acción no se puede deshacer.",
+    "confirmOk": "Sí, eliminar mi cuenta",
+    "confirmCancel": "Cancelar",
+    "deleting": "Eliminando cuenta...",
+    "error": "Ocurrió un error al eliminar tu cuenta. Por favor, inténtalo de nuevo.",
+    "breadcrumbMypage": "Mi Página"
+  },
+  "toast": {
+    "loginSuccess": "Sesión iniciada",
+    "alreadyLoggedIn": "Ya tienes sesión iniciada",
+    "logoutSuccess": "Sesión cerrada",
+    "signInRequired": "Por favor, inicia sesión para continuar",
+    "profileUpdated": "Perfil actualizado",
+    "postCreated": "Publicado correctamente",
+    "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
+    "gameSaved": "Partida guardada correctamente",
+    "gamesDeleted": "{count} partidas eliminadas correctamente",
+    "accountDeleted": "Tu cuenta ha sido eliminada",
+    "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo."
+  },
+  "setupUsername": {
+    "title": "Crea tu Cuenta",
+    "description": "Elige un nombre de usuario para tu cuenta.",
+    "usernameLabel": "Nombre de usuario",
+    "usernameDescription": "Un ID único usado en la URL de tu perfil y menciones.",
+    "usernamePlaceholder": "ej., jugador_ajedrez1",
+    "usernameHint": "2-20 caracteres. Solo letras minúsculas, números y guiones bajos. Debe empezar con una letra.",
+    "displayNameLabel": "Nombre para mostrar",
+    "displayNameDescription": "Se muestra en las clasificaciones y tu perfil.",
+    "displayNameCanChange": "Puedes cambiarlo más tarde.",
+    "displayNameMaxLength": "Máximo 50 caracteres.",
+    "displayNamePlaceholder": "ej., Juan Ajedrez",
+    "cannotChange": "Tu nombre de usuario no se puede cambiar una vez establecido.",
+    "inappropriateWarning": "Por favor, mantén tu nombre de usuario apropiado. Las cuentas con nombres de usuario inapropiados pueden ser cerradas.",
+    "agreeToTermsPrefix": "Acepto los ",
+    "termsLink": "Términos de Servicio",
+    "agreeToTermsSuffix": "",
+    "submit": "Registrarse",
+    "submitting": "Registrando...",
+    "validation": {
+      "tooShort": "El nombre de usuario debe tener al menos 2 caracteres.",
+      "tooLong": "El nombre de usuario debe tener como máximo 20 caracteres.",
+      "invalidFormat": "El nombre de usuario debe empezar con una letra minúscula, terminar con una letra o número, y contener solo letras minúsculas, números y guiones bajos no consecutivos.",
+      "taken": "Este nombre de usuario no está disponible.",
+      "alreadySet": "El nombre de usuario ya ha sido establecido.",
+      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+      "usernameInappropriate": "Este nombre de usuario no está permitido.",
+      "displayNameInappropriate": "Este nombre para mostrar no está permitido.",
+      "reserved": "Este nombre de usuario no está disponible."
+    }
+  },
+  "profile": {
+    "title": "Editar Perfil",
+    "identity": "Identidad",
+    "about": "Acerca de",
+    "chessAccounts": "Cuentas de Ajedrez",
+    "usernameLabel": "Nombre de usuario",
+    "usernameReadOnly": "El nombre de usuario no se puede cambiar.",
+    "displayNameLabel": "Nombre para Mostrar",
+    "displayNameRequired": "El nombre para mostrar es obligatorio.",
+    "displayNameMaxLength": "Máximo 50 caracteres.",
+    "bioLabel": "Biografía",
+    "bioPlaceholder": "Cuéntanos sobre ti...",
+    "bioMaxLength": "La biografía debe tener 500 caracteres o menos.",
+    "countryLabel": "País",
+    "countryPlaceholder": "Selecciona un país",
+    "countrySearch": "Buscar países...",
+    "countryClear": "Borrar país",
+    "noCountryResults": "No se encontraron países",
+    "countryInvalid": "El país debe ser un código de 2 letras (ISO 3166-1 alpha-2).",
+    "flairLabel": "Distintivo",
+    "flairPlaceholder": "Elige un emoji",
+    "flairClear": "Borrar distintivo",
+    "fideIdLabel": "ID FIDE",
+    "fideIdPlaceholder": "ej., 12345678",
+    "chesscomUsernameLabel": "Usuario de Chess.com",
+    "chesscomUsernamePlaceholder": "Tu usuario de Chess.com",
+    "lichessUsernameLabel": "Usuario de Lichess",
+    "lichessUsernamePlaceholder": "Tu usuario de Lichess",
+    "fideIdInvalidFormat": "El ID FIDE debe contener solo dígitos.",
+    "chesscomUsernameInvalidFormat": "El usuario de Chess.com solo puede contener letras, dígitos, guiones y guiones bajos.",
+    "lichessUsernameInvalidFormat": "El usuario de Lichess solo puede contener letras, dígitos, guiones y guiones bajos.",
+    "socialAccounts": "Redes Sociales",
+    "xUsernameLabel": "X",
+    "xUsernamePlaceholder": "Tu usuario de X",
+    "xUsernameInvalidFormat": "El usuario de X solo puede contener letras, dígitos y guiones bajos.",
+    "instagramUsernameLabel": "Instagram",
+    "instagramUsernamePlaceholder": "Tu usuario de Instagram",
+    "instagramUsernameInvalidFormat": "El usuario de Instagram solo puede contener letras, dígitos, puntos y guiones bajos.",
+    "youtubeHandleLabel": "YouTube",
+    "youtubeHandlePlaceholder": "Tu handle de YouTube",
+    "youtubeHandleInvalidFormat": "El handle de YouTube solo puede contener letras, dígitos, puntos, guiones y guiones bajos.",
+    "displayNameInappropriate": "Este nombre para mostrar no está permitido.",
+    "avatarAlt": "Foto de perfil",
+    "avatarUploadLabel": "Subir foto de perfil",
+    "avatarHint": "JPEG, PNG o WebP (máx. 2MB)",
+    "avatarInvalidType": "Selecciona una imagen JPEG, PNG o WebP.",
+    "avatarTooLarge": "La imagen debe ser de 2MB o menos.",
+    "avatarUploadFailed": "Error al subir la imagen. Por favor, inténtalo de nuevo.",
+    "avatarUploaded": "Foto de perfil actualizada",
+    "submit": "Guardar",
+    "submitting": "Guardando...",
+    "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    "breadcrumbMypage": "Mi Página",
+    "viewPublicProfile": "Perfil de @{username}",
+    "profileUpdated": "Perfil actualizado",
+    "deleteAccountLink": "Eliminar Cuenta",
+    "changePassword": {
+      "title": "Cambiar Contraseña",
+      "currentPasswordLabel": "Contraseña Actual",
+      "newPasswordLabel": "Nueva Contraseña",
+      "confirmPasswordLabel": "Confirmar Nueva Contraseña",
+      "submit": "Cambiar Contraseña",
+      "submitLoading": "Cambiando...",
+      "passwordMismatch": "Las nuevas contraseñas no coinciden.",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "passwordSameAsCurrent": "La nueva contraseña debe ser diferente de la actual.",
+      "currentPasswordIncorrect": "La contraseña actual es incorrecta.",
+      "rateLimited": "Demasiados intentos. Por favor, inténtalo más tarde.",
+      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+      "success": "Contraseña cambiada correctamente."
+    }
+  },
+  "Admin": {
+    "title": "Admin",
+    "dashboard": "Panel",
+    "users": "Usuarios",
+    "auditLog": "Registro de Auditoría",
+    "totalUsers": "Total de Usuarios",
+    "roleAssignments": "Asignaciones de Roles",
+    "dashboardKpi": {
+      "from": "Desde",
+      "to": "Hasta",
+      "past7days": "Últimos 7 días",
+      "past28days": "Últimos 28 días",
+      "past90days": "Últimos 90 días",
+      "newUsersPeriodTotal": "Nuevos Usuarios (Total del Período)",
+      "postsPeriodTotal": "Publicaciones (Total del Período)",
+      "dailyTrends": "Tendencias Diarias",
+      "newUsers": "Nuevos Usuarios",
+      "posts": "Publicaciones",
+      "noData": "Sin datos para el período seleccionado."
+    },
+    "usersTable": {
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones",
+      "noUsersFound": "No se encontraron usuarios",
+      "defaultRole": "usuario",
+      "banned": "Suspendido",
+      "active": "Activo",
+      "anonymous": "Anónimo",
+      "viewPosts": "Publicaciones",
+      "viewActivity": "Actividad",
+      "username": "Nombre de usuario",
+      "filterByStatus": "Estado",
+      "allStatuses": "Todos",
+      "plan": "Plan",
+      "premium": "Premium",
+      "free": "Gratuito",
+      "viewSubscriptions": "Suscripciones",
+      "deleted": "Eliminado"
+    },
+    "tabs": {
+      "users": "Usuarios",
+      "statistics": "Estadísticas"
+    },
+    "stats": {
+      "usersByCountry": "Usuarios por País",
+      "noData": "Sin datos disponibles",
+      "users": "usuarios"
+    },
+    "subscriptions": "Suscripciones",
+    "subscriptionsTable": {
+      "title": "Suscripciones",
+      "user": "Usuario",
+      "username": "Nombre de usuario",
+      "subscriptionId": "ID de Suscripción",
+      "priceId": "ID de Precio",
+      "status": "Estado",
+      "cancelAtPeriodEnd": "Cancelar al Final del Período",
+      "periodStart": "Inicio del Período",
+      "periodEnd": "Fin del Período",
+      "createdAt": "Fecha de Creación",
+      "noSubscriptionsFound": "No se encontraron suscripciones.",
+      "filterByStatus": "Estado",
+      "allStatuses": "Todos",
+      "active": "Activo",
+      "trialing": "Prueba",
+      "pastDue": "Vencido",
+      "canceled": "Cancelado",
+      "unpaid": "Sin pagar",
+      "yes": "Sí",
+      "no": "No",
+      "searchUser": "Buscar por nombre de usuario",
+      "noResults": "No se encontraron usuarios",
+      "clearFilter": "Limpiar"
+    },
+    "userPosts": {
+      "title": "Publicaciones de {username}",
+      "email": "Correo",
+      "username": "Nombre de usuario",
+      "backToUsers": "Volver a Usuarios",
+      "topic": "Tema",
+      "content": "Contenido",
+      "createdAt": "Fecha de Creación",
+      "status": "Estado",
+      "actions": "Acciones",
+      "active": "Activo",
+      "deleted": "Eliminado",
+      "noPostsFound": "No se encontraron publicaciones para este usuario.",
+      "deleteButton": "Eliminar",
+      "deleteModalTitle": "Eliminar Publicación",
+      "deleteModalReasonLabel": "Motivo de eliminación",
+      "deleteModalReasonPlaceholder": "Introduce el motivo para eliminar esta publicación...",
+      "deleteModalCancel": "Cancelar",
+      "deleteModalConfirm": "Confirmar Eliminación",
+      "deleteModalDeleting": "Eliminando...",
+      "deleteModalReasonRequired": "El motivo es obligatorio",
+      "previousPage": "Anterior",
+      "nextPage": "Siguiente",
+      "userNotFound": "Usuario no encontrado"
+    },
+    "auditLogTable": {
+      "action": "Acción",
+      "target": "Objetivo",
+      "actor": "Actor",
+      "reason": "Motivo",
+      "ipAddress": "Dirección IP",
+      "timestamp": "Fecha",
+      "noLogsFound": "No se encontraron registros de auditoría",
+      "filterByAction": "Filtrar por acción",
+      "filterByUser": "Filtrar por usuario",
+      "allActions": "Todas las Acciones",
+      "previousPage": "Anterior",
+      "nextPage": "Siguiente"
+    },
+    "activityLog": "Registro de Actividad",
+    "activityLogTable": {
+      "action": "Acción",
+      "username": "Nombre de Usuario",
+      "target": "Objetivo",
+      "metadata": "Metadatos",
+      "timestamp": "Fecha",
+      "noLogsFound": "No se encontraron registros de actividad",
+      "filterByAction": "Filtrar por acción",
+      "filterByUser": "Filtrar por usuario",
+      "allActions": "Todas las Acciones",
+      "previousPage": "Anterior",
+      "nextPage": "Siguiente"
+    },
+    "topicPosts": {
+      "navLabel": "Publicaciones de Temas",
+      "title": "Publicaciones de Temas",
+      "filterByUser": "Filtrar por usuario",
+      "filterByTopicType": "Filtrar por tipo de tema",
+      "filterByStatus": "Filtrar por estado",
+      "allTopicTypes": "Todos los Tipos",
+      "allStatuses": "Todos los Estados",
+      "filterButton": "Filtrar",
+      "content": "Contenido",
+      "topicType": "Tipo de Tema",
+      "topicKey": "Clave del Tema",
+      "author": "Autor",
+      "status": "Estado",
+      "createdAt": "Fecha de Creación",
+      "actions": "Acciones",
+      "active": "Activo",
+      "deleted": "Eliminado",
+      "noPostsFound": "No se encontraron publicaciones.",
+      "deleteButton": "Eliminar",
+      "deleteModalTitle": "Eliminar Publicación",
+      "deleteModalReasonLabel": "Motivo de eliminación",
+      "deleteModalReasonPlaceholder": "Introduce el motivo para eliminar esta publicación...",
+      "deleteModalCancel": "Cancelar",
+      "deleteModalConfirm": "Confirmar Eliminación",
+      "deleteModalDeleting": "Eliminando...",
+      "deleteModalReasonRequired": "El motivo es obligatorio",
+      "previousPage": "Anterior",
+      "nextPage": "Siguiente"
+    },
+    "announcements": "Anuncios",
+    "announcementsTable": {
+      "title": "Anuncios",
+      "newAnnouncement": "Nuevo Anuncio",
+      "titleColumn": "Título",
+      "slug": "Slug",
+      "locale": "Idioma",
+      "status": "Estado",
+      "visibility": "Visibilidad",
+      "pinned": "Fijado",
+      "publishedAt": "Publicado el",
+      "createdAt": "Creado el",
+      "actions": "Acciones",
+      "noAnnouncementsFound": "No se encontraron anuncios.",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteModalTitle": "Eliminar Anuncio",
+      "deleteModalMessage": "¿Estás seguro de que deseas eliminar este anuncio? Esta acción no se puede deshacer.",
+      "deleteModalCancel": "Cancelar",
+      "deleteModalConfirm": "Eliminar",
+      "deleteModalDeleting": "Eliminando...",
+      "draft": "Borrador",
+      "published": "Publicado",
+      "public": "Público",
+      "members": "Miembros",
+      "yes": "Sí",
+      "no": "No",
+      "form": {
+        "createTitle": "Crear Anuncio",
+        "editTitle": "Editar Anuncio",
+        "slug": "Slug",
+        "slugPlaceholder": "ej. nueva-funcion-lanzamiento",
+        "title": "Título",
+        "titlePlaceholder": "Título del anuncio",
+        "content": "Contenido",
+        "contentPlaceholder": "Contenido del anuncio...",
+        "locale": "Idioma",
+        "status": "Estado",
+        "visibility": "Visibilidad",
+        "pinnedAt": "Fijado el",
+        "publishedAt": "Publicado el",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "backToList": "Volver a Anuncios",
+        "saveDraft": "Guardar Borrador",
+        "savingDraft": "Guardando...",
+        "preview": "Vista Previa",
+        "previewTitle": "Vista Previa del Anuncio",
+        "backToEdit": "Volver a Editar",
+        "contentPreview": "Vista Previa del Contenido",
+        "sendNotification": "Enviar notificación a los usuarios",
+        "notificationAlreadySent": "Notificación ya enviada"
+      }
+    },
+    "articles": "Artículos",
+    "articlesTable": {
+      "title": "Artículos",
+      "newArticle": "Nuevo Artículo",
+      "titleColumn": "Título",
+      "slug": "Slug",
+      "locale": "Idioma",
+      "status": "Estado",
+      "pinned": "Fijado",
+      "publishedAt": "Publicado el",
+      "createdAt": "Creado el",
+      "actions": "Acciones",
+      "noArticlesFound": "No se encontraron artículos.",
+      "variants": "Variantes",
+      "slugDetail": {
+        "title": "Variantes de Idioma del Artículo",
+        "noArticlesFound": "No se encontraron artículos para este slug.",
+        "missingLocales": "Añadir variantes de idioma faltantes",
+        "createForLocale": "Crear variante en {locale}",
+        "viewPublished": "Ver"
+      },
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteModalTitle": "Eliminar Artículo",
+      "deleteModalMessage": "¿Estás seguro de que deseas eliminar este artículo? Esta acción no se puede deshacer.",
+      "deleteModalCancel": "Cancelar",
+      "deleteModalConfirm": "Eliminar",
+      "deleteModalDeleting": "Eliminando...",
+      "draft": "Borrador",
+      "published": "Publicado",
+      "yes": "Sí",
+      "no": "No",
+      "form": {
+        "createTitle": "Crear Artículo",
+        "editTitle": "Editar Artículo",
+        "slug": "Slug",
+        "slugPlaceholder": "ej. empezando-con-ajedrez",
+        "title": "Título",
+        "titlePlaceholder": "Título del artículo",
+        "content": "Contenido",
+        "contentPlaceholder": "Contenido del artículo...",
+        "locale": "Idioma",
+        "status": "Estado",
+        "pinnedAt": "Fijado el",
+        "publishedAt": "Publicado el",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "backToList": "Volver a Artículos",
+        "saveDraft": "Guardar Borrador",
+        "savingDraft": "Guardando...",
+        "draftSaved": "Borrador guardado",
+        "preview": "Configuración de Publicación",
+        "previewTitle": "Vista Previa del Artículo",
+        "publishTitle": "Publicar Artículo",
+        "publish": "Publicar",
+        "publishing": "Publicando...",
+        "published": "Artículo publicado",
+        "backToEdit": "Volver a Editar",
+        "contentPreview": "Vista Previa del Contenido",
+        "excerpt": "Extracto",
+        "excerptPlaceholder": "Breve resumen del artículo...",
+        "description": "Descripción (SEO)",
+        "descriptionPlaceholder": "Meta descripción para motores de búsqueda...",
+        "category": "Categoría",
+        "categoryNone": "Ninguna",
+        "icon": "Icono",
+        "iconPlaceholder": "ej. ♟️",
+        "metadata": "Metadatos",
+        "tabEdit": "Editar",
+        "tabPreview": "Vista Previa",
+        "unsavedChangesTitle": "Cambios Sin Guardar",
+        "unsavedChangesMessage": "Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?",
+        "unsavedChangesConfirm": "Salir",
+        "unsavedChangesCancel": "Quedarse",
+        "savePublished": "Guardar",
+        "savingPublished": "Guardando...",
+        "publishedSaved": "Artículo guardado",
+        "publishedConfirmTitle": "Confirmar Guardado",
+        "publishedConfirmMessage": "Este artículo está publicado. Tus cambios se reflejarán inmediatamente. ¿Estás seguro?",
+        "publishedConfirmConfirm": "Guardar",
+        "publishedConfirmCancel": "Cancelar"
+      }
+    },
+    "ads": "Anuncios",
+    "adsManagement": {
+      "title": "Gestión de Anuncios",
+      "globalToggle": "Anuncios Activados",
+      "globalToggleDescription": "Activar o desactivar todos los anuncios en todo el sitio",
+      "enabled": "Activado",
+      "disabled": "Desactivado",
+      "banners": "Banners Publicitarios",
+      "slot": "Espacio",
+      "href": "URL del Enlace",
+      "imagePath": "Ruta de Imagen",
+      "imagePreview": "Vista Previa",
+      "alt": "Texto Alternativo",
+      "isActive": "Activo",
+      "actions": "Acciones",
+      "edit": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "noBanners": "No se encontraron banners publicitarios.",
+      "newBanner": "Nuevo Banner",
+      "createTitle": "Crear Banner Publicitario",
+      "slotPlaceholder": "ej. native-ad",
+      "hrefPlaceholder": "https://ejemplo.com",
+      "imagePathPlaceholder": "/images/ads/banner.png",
+      "altPlaceholder": "Publicidad",
+      "width": "Ancho",
+      "height": "Alto",
+      "sortOrder": "Orden",
+      "startAt": "Inicio",
+      "endAt": "Fin",
+      "create": "Crear",
+      "creating": "Creando..."
+    }
+  },
+  "publicProfile": {
+    "title": "Perfil de {displayName}",
+    "defaultDescription": "Perfil de {displayName} en Ajedrez a Ciegas",
+    "chessAccounts": "Cuentas de Ajedrez",
+    "bio": "Acerca de",
+    "emptyProfile": "Este usuario aún no ha añadido información a su perfil.",
+    "followers": "Seguidores",
+    "followingCount": "Siguiendo",
+    "follow": "Seguir",
+    "following": "Siguiendo",
+    "unfollow": "Dejar de Seguir",
+    "followersPageTitle": "Seguidores",
+    "noFollowers": "Aún no hay seguidores.",
+    "followsYou": "Te sigue",
+    "editProfile": "Editar perfil",
+    "topicsTab": "Temas",
+    "noTopicPosts": "Aún no hay publicaciones.",
+    "achievementsSection": "Logros",
+    "noAchievements": "Aún no hay logros.",
+    "viewAllAchievements": "Ver todos",
+    "achievementsPageTitle": "Todos los Logros",
+    "achievementCategory": {
+      "monthly_leaderboard": "Clasificación Mensual",
+      "cumulative": "Acumulativo",
+      "streak": "Racha",
+      "one_shot": "Única vez",
+      "social": "Social",
+      "ai_defeat": "Derrota a la IA"
+    }
+  },
+  "interview": {
+    "title": "Entrevista",
+    "noAnswer": "Aún no contestada",
+    "answered": "Contestada",
+    "questions": {
+      "favorite_opening": {
+        "label": "Apertura Favorita",
+        "description": "¿Qué apertura disfrutas más jugando?"
+      }
+    },
+    "detail": {
+      "selectOpening": "Selecciona una apertura",
+      "searchPlaceholder": "Buscar aperturas...",
+      "save": "Guardar",
+      "delete": "Eliminar Respuesta",
+      "confirmDelete": "¿Estás seguro de que deseas eliminar tu respuesta?",
+      "currentAnswer": "Tu Respuesta",
+      "signInRequired": "Por favor, inicia sesión para responder esta pregunta.",
+      "signIn": "Iniciar Sesión",
+      "signUp": "Registrarse",
+      "saving": "Guardando...",
+      "deleting": "Eliminando...",
+      "cancel": "Cancelar",
+      "sharePrompt": "💬 ¡Comparte tu opinión sobre {name}!",
+      "shareLink": "✏️ Publicar",
+      "deleteAnswer": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Respuesta",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar tu respuesta? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      },
+      "errors": {
+        "unauthorized": "Debes iniciar sesión para realizar esta acción.",
+        "banned": "Tu cuenta ha sido suspendida.",
+        "invalidQuestionKey": "Pregunta inválida.",
+        "invalidAnswerValue": "Selecciona una opción válida.",
+        "alreadyAnswered": "Ya has respondido esta pregunta.",
+        "notFound": "Respuesta no encontrada.",
+        "rateLimited": "Demasiadas solicitudes. Por favor, inténtalo más tarde.",
+        "unknown": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+      }
+    }
+  },
+  "banned": {
+    "title": "Cuenta Suspendida",
+    "message": "Tu cuenta ha sido suspendida y no puedes usar este servicio.",
+    "reason": "Motivo: {reason}",
+    "contact": "Si crees que esto es un error, por favor contacta a soporte."
+  },
+  "topics": {
+    "title": "Temas",
+    "description": "Discute y comparte ideas sobre casillas, posiciones y estrategias de ajedrez",
+    "recentTopicPosts": "Temas Recientes",
+    "recentPosts": "Publicaciones Recientes",
+    "noRecentPosts": "Aún no hay publicaciones.",
+    "moreTopicPosts": "Más temas",
+    "showMore": "Mostrar más",
+    "showLess": "Mostrar menos",
+    "categories": {
+      "squares": {
+        "title": "Casillas",
+        "description": "Discusión sobre casillas individuales del tablero de ajedrez"
+      },
+      "openings": {
+        "title": "Aperturas",
+        "description": "Explora y aprende sobre aperturas de ajedrez"
+      }
+    },
+    "openings": {
+      "title": "Aperturas",
+      "description": "Explora y aprende sobre aperturas de ajedrez y sus posiciones clave.",
+      "recentPosts": "Publicaciones Recientes",
+      "noRecentPosts": "Aún no hay publicaciones.",
+      "sectionTitle": "Aperturas {move}",
+      "firstMoveFilter": {
+        "title": "Aperturas que empiezan con {square}"
+      },
+      "categoryFilter": {
+        "label": "Categoría",
+        "open": "Juego Abierto",
+        "semi-open": "Juego Semiabierto",
+        "closed": "Juego Cerrado",
+        "indian": "Sistemas Indios",
+        "flank": "Aperturas de Flanco",
+        "other": "Otros"
+      },
+      "names": {
+        "ruy-lopez": "Apertura Española",
+        "italian-game": "Apertura Italiana",
+        "scotch-game": "Apertura Escocesa",
+        "petrovs-defense": "Defensa Petrov",
+        "kings-gambit": "Gambito de Rey",
+        "vienna-game": "Apertura Vienesa",
+        "four-knights-game": "Cuatro Caballos",
+        "bishops-opening": "Apertura del Alfil",
+        "philidor-defense": "Defensa Philidor",
+        "evans-gambit": "Gambito Evans",
+        "center-game": "Partida del Centro",
+        "giuoco-piano": "Giuoco Piano",
+        "two-knights-defense": "Defensa de los Dos Caballos",
+        "sicilian-defense": "Defensa Siciliana",
+        "french-defense": "Defensa Francesa",
+        "caro-kann-defense": "Defensa Caro-Kann",
+        "pirc-defense": "Defensa Pirc",
+        "alekhines-defense": "Defensa Alekhine",
+        "scandinavian-defense": "Defensa Escandinava",
+        "modern-defense": "Defensa Moderna",
+        "nimzowitsch-defense": "Defensa Nimzowitsch",
+        "owens-defense": "Defensa Owen",
+        "st-george-defense": "Defensa St. George",
+        "queens-gambit": "Gambito de Dama",
+        "queens-gambit-declined": "Gambito de Dama Rehusado",
+        "queens-gambit-accepted": "Gambito de Dama Aceptado",
+        "slav-defense": "Defensa Eslava",
+        "semi-slav-defense": "Defensa Semieslava",
+        "london-system": "Sistema Londres",
+        "colle-system": "Sistema Colle",
+        "torre-attack": "Ataque Torre",
+        "blackmar-diemer-gambit": "Gambito Blackmar-Diemer",
+        "stonewall-attack": "Ataque Stonewall",
+        "chigorin-defense": "Defensa Chigorin",
+        "albin-countergambit": "Contragambito Albin",
+        "tarrasch-defense": "Defensa Tarrasch",
+        "kings-indian-defense": "Defensa India de Rey",
+        "nimzo-indian-defense": "Defensa Nimzoindia",
+        "queens-indian-defense": "Defensa India de Dama",
+        "grunfeld-defense": "Defensa Grünfeld",
+        "catalan-opening": "Apertura Catalana",
+        "benoni-defense": "Defensa Benoni",
+        "bogo-indian-defense": "Defensa Bogoindia",
+        "old-indian-defense": "Defensa India Antigua",
+        "budapest-gambit": "Gambito Budapest",
+        "benko-gambit": "Gambito Benko",
+        "dutch-defense": "Defensa Holandesa",
+        "trompowsky-attack": "Ataque Trompowsky",
+        "veresov-opening": "Apertura Veresov",
+        "richter-veresov-attack": "Ataque Richter-Veresov",
+        "english-opening": "Apertura Inglesa",
+        "english-opening-symmetrical": "Apertura Inglesa: Variante Simétrica",
+        "english-opening-reversed-sicilian": "Apertura Inglesa: Siciliana Invertida",
+        "reti-opening": "Apertura Réti",
+        "kings-indian-attack": "Ataque Indio de Rey",
+        "birds-opening": "Apertura Bird",
+        "birds-opening-dutch-variation": "Apertura Bird: Variante Holandesa",
+        "larsens-opening": "Apertura Larsen",
+        "kings-fianchetto-opening": "Apertura Fianchetto de Rey",
+        "sokolsky-opening": "Apertura Sokolsky",
+        "grob-opening": "Apertura Grob",
+        "sicilian-najdorf": "Defensa Siciliana: Variante Najdorf",
+        "sicilian-dragon": "Defensa Siciliana: Variante del Dragón",
+        "sicilian-scheveningen": "Defensa Siciliana: Variante Scheveningen",
+        "sicilian-sveshnikov": "Defensa Siciliana: Variante Sveshnikov",
+        "french-winawer": "Defensa Francesa: Variante Winawer",
+        "french-tarrasch": "Defensa Francesa: Variante Tarrasch",
+        "french-advance": "Defensa Francesa: Variante del Avance",
+        "caro-kann-advance": "Defensa Caro-Kann: Variante del Avance",
+        "caro-kann-classical": "Defensa Caro-Kann: Variante Clásica",
+        "kings-indian-classical": "Defensa India de Rey: Variante Clásica",
+        "kings-indian-samisch": "Defensa India de Rey: Variante Sämisch",
+        "grunfeld-exchange": "Defensa Grünfeld: Variante del Cambio",
+        "ruy-lopez-berlin": "Apertura Española: Defensa Berlín",
+        "ruy-lopez-morphy": "Apertura Española: Defensa Morphy",
+        "ruy-lopez-exchange": "Apertura Española: Variante del Cambio",
+        "ruy-lopez-closed": "Apertura Española: Variante Cerrada",
+        "scotch-classical": "Apertura Escocesa: Variante Clásica",
+        "scotch-gambit": "Apertura Escocesa: Gambito Escocés",
+        "petrovs-classical": "Defensa Petrov: Ataque Clásico",
+        "petrovs-steinitz": "Defensa Petrov: Ataque Steinitz",
+        "kings-gambit-accepted": "Gambito de Rey Aceptado",
+        "kings-gambit-declined": "Gambito de Rey Rehusado",
+        "pirc-classical": "Defensa Pirc: Variante Clásica",
+        "pirc-austrian-attack": "Defensa Pirc: Ataque Austríaco",
+        "alekhines-modern": "Defensa Alekhine: Variante Moderna",
+        "alekhines-exchange": "Defensa Alekhine: Variante del Cambio",
+        "scandinavian-modern": "Defensa Escandinava: Variante Moderna",
+        "qgd-orthodox": "Gambito de Dama Rehusado: Defensa Ortodoxa",
+        "qgd-lasker": "Gambito de Dama Rehusado: Defensa Lasker",
+        "qgd-ragozin": "Gambito de Dama Rehusado: Defensa Ragozin",
+        "qgd-cambridge-springs": "Gambito de Dama Rehusado: Cambridge Springs",
+        "slav-exchange": "Defensa Eslava: Variante del Cambio",
+        "slav-chebanenko": "Defensa Eslava: Variante Chebanenko",
+        "nimzo-indian-classical": "Defensa Nimzoindia: Variante Clásica",
+        "nimzo-indian-samisch": "Defensa Nimzoindia: Variante Sämisch",
+        "nimzo-indian-rubinstein": "Defensa Nimzoindia: Variante Rubinstein",
+        "queens-indian-petrosian": "Defensa India de Dama: Sistema Petrosian",
+        "queens-indian-classical": "Defensa India de Dama: Variante Clásica",
+        "benoni-modern": "Defensa Benoni: Variante Moderna",
+        "benoni-czech": "Defensa Benoni: Variante Checa",
+        "dutch-leningrad": "Defensa Holandesa: Variante Leningrado",
+        "dutch-stonewall": "Defensa Holandesa: Variante Stonewall",
+        "dutch-classical": "Defensa Holandesa: Variante Clásica"
+      },
+      "detail": {
+        "pageTitle": "Apertura",
+        "postCount": "{count, plural, one {# publicación} other {# publicaciones}}",
+        "noPosts": "Aún no hay publicaciones.",
+        "newPost": "Comparte tu opinión",
+        "ecoCode": "Código ECO",
+        "moves": "Movimientos"
+      },
+      "newPostForm": {
+        "title": "Nueva Publicación sobre {name}",
+        "contentLabel": "Contenido",
+        "contentPlaceholder": "Comparte tu opinión sobre esta apertura...",
+        "preferenceLabel": "¿Cuánto te gusta esta apertura?",
+        "proficiencyLabel": "¿Qué tan bien conoces esta apertura?",
+        "preferenceLabels": {
+          "1": "No me gusta",
+          "2": "No mucho",
+          "3": "Neutral",
+          "4": "Me gusta",
+          "5": "Me encanta"
+        },
+        "proficiencyLabels": {
+          "1": "Principiante",
+          "2": "Novato",
+          "3": "Intermedio",
+          "4": "Avanzado",
+          "5": "Experto"
+        },
+        "replyPermissionLabel": "Quién puede responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Solo seguidores",
+        "replyPermission_nobody": "Nadie",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "submit": "Publicar",
+        "submitting": "Publicando...",
+        "contentOrRatingRequired": "Introduce algún contenido o proporciona al menos una valoración",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "invalidOpening": "Apertura inválida",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para crear una publicación",
+        "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde."
+      },
+      "ratings": {
+        "preference": "Preferencia",
+        "proficiency": "Dominio"
+      },
+      "postDetail": {
+        "authorView": "Opinión de {author} sobre {name}",
+        "backToOpening": "Volver a {name}",
+        "like": "Me gusta",
+        "unlike": "Ya no me gusta"
+      },
+      "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevo",
+        "popular": "Popular",
+        "active": "Activo"
+      },
+      "like": "Me gusta",
+      "unlike": "Ya no me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tu opinión...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas en esta publicación.",
+        "followRequired": "Solo los seguidores del autor pueden responder a esta publicación.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Publicación",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      },
+      "newGameFromHere": "Nueva partida desde aquí"
+    },
+    "squares": {
+      "title": "Casillas",
+      "description": "Selecciona una casilla para ver y compartir discusiones",
+      "pageTitle": "Casillas",
+      "postCount": "{count, plural, one {# publicación} other {# publicaciones}}",
+      "noPosts": "Aún no hay publicaciones.",
+      "newPost": "Comparte tu opinión",
+      "openingsLink": "Aperturas que empiezan con {square}",
+      "moreOpenings": "Más aperturas",
+      "backToSquares": "Volver a Casillas",
+      "backToTopics": "Volver a Temas",
+      "postedBy": "por {author}",
+      "postedAt": "Publicado {date}",
+      "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevo",
+        "popular": "Popular",
+        "active": "Activo"
+      },
+      "postDetail": {
+        "backToSquare": "Volver a {square}",
+        "authorView": "Opinión de {author} sobre {square}"
+      },
+      "newPostForm": {
+        "title": "Nueva Publicación sobre {square}",
+        "contentLabel": "Contenido",
+        "contentPlaceholder": "Comparte tu opinión sobre esta casilla...",
+        "replyPermissionLabel": "Quién puede responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Solo seguidores",
+        "replyPermission_nobody": "Nadie",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "submit": "Publicar",
+        "submitting": "Publicando...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para crear una publicación",
+        "rateLimited": "Demasiadas publicaciones. Por favor, inténtalo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Ya no me gusta",
+      "likeCount": "{count, plural, one {# me gusta} other {# me gusta}}",
+      "recentPosts": "Publicaciones Recientes",
+      "noRecentPosts": "Aún no hay publicaciones.",
+      "replyCount": "{count, plural, one {# respuesta} other {# respuestas}}",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tu opinión...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas en esta publicación.",
+        "followRequired": "Solo los seguidores del autor pueden responder a esta publicación.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Publicación",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    }
+  },
+  "unsavedChanges": {
+    "title": "Cambios Sin Guardar",
+    "message": "Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?",
+    "confirm": "Salir",
+    "cancel": "Quedarse"
+  },
+  "redirect": {
+    "title": "Enlace Externo",
+    "warning": "Estás a punto de visitar un sitio web externo. Este enlace fue compartido por un usuario y no ha sido verificado.",
+    "destination": "Serás redirigido a:",
+    "continue": "Continuar",
+    "goBack": "Volver",
+    "invalidUrl": "La URL proporcionada es inválida."
+  },
+  "authPrompt": {
+    "title": "Inicia sesión para continuar",
+    "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",
+    "signUpButton": "Crear Cuenta Gratuita",
+    "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
+  },
+  "leaderboard": {
+    "title": "Clasificación",
+    "description": "Consulta a los mejores jugadores en todos los módulos de práctica.",
+    "periodLabel": "Período de tiempo",
+    "moduleLabel": "Módulo de práctica",
+    "settingLabel": "Configuración",
+    "period": {
+      "all-time": "Todos los Tiempos",
+      "weekly": "Semanal",
+      "monthly": "Mensual"
+    },
+    "module": {
+      "coordinate_quiz": "Cuestionario de Coordenadas",
+      "legal_moves": "Movimientos Legales",
+      "square_colors": "Color de Casillas",
+      "diagonal_quiz": "Cuestionario de Diagonales",
+      "board_symmetry": "Simetría del Tablero",
+      "route_planner": "Planificador de Rutas"
+    },
+    "setting": {
+      "coordinate_quiz": {
+        "white": "Blancas",
+        "black": "Negras",
+        "random": "Aleatorio"
+      },
+      "legal_moves": {
+        "king": "Rey",
+        "queen": "Dama",
+        "rook": "Torre",
+        "bishop": "Alfil",
+        "knight": "Caballo",
+        "random": "Aleatorio"
+      },
+      "square_colors": {
+        "default": "Predeterminado"
+      },
+      "board_symmetry": {
+        "default": "Predeterminado"
+      },
+      "route_planner": {
+        "knight": "Caballo",
+        "bishop": "Alfil"
+      }
+    },
+    "table": {
+      "rank": "Posición",
+      "player": "Jugador",
+      "score": "Puntuación",
+      "miss": "Errores"
+    },
+    "emptyState": "Aún no hay puntuaciones registradas. ¡Sé el primero en establecer un récord!",
+    "yourRank": "Tú",
+    "pagination": {
+      "label": "Paginación de la clasificación",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "total": "{count, plural, one {# jugador} other {# jugadores}} en total"
+    },
+    "moduleFilterLabel": "Filtro de módulo",
+    "moduleFilter": {
+      "all": "Todos",
+      "coordinate_quiz": "Cuestionario de Coordenadas",
+      "legal_moves": "Movimientos Legales",
+      "square_colors": "Color de Casillas",
+      "diagonal_quiz": "Cuestionario de Diagonales",
+      "board_symmetry": "Simetría del Tablero",
+      "route_planner": "Planificador de Rutas"
+    },
+    "allLeaderboardsSection": "Todas las Clasificaciones",
+    "rankLabel": "Tu Posición: #{rank}",
+    "notRanked": "Sin posición",
+    "cardTitle": {
+      "coordinate_quiz": {
+        "white": "Cuestionario de Coordenadas — Blancas",
+        "black": "Cuestionario de Coordenadas — Negras",
+        "random": "Cuestionario de Coordenadas — Aleatorio"
+      },
+      "legal_moves": {
+        "king": "Movimientos Legales — Rey",
+        "queen": "Movimientos Legales — Dama",
+        "rook": "Movimientos Legales — Torre",
+        "bishop": "Movimientos Legales — Alfil",
+        "knight": "Movimientos Legales — Caballo",
+        "random": "Movimientos Legales — Aleatorio"
+      },
+      "square_colors": {
+        "default": "Color de Casillas"
+      },
+      "diagonal_quiz": {
+        "default": "Cuestionario de Diagonales"
+      },
+      "board_symmetry": {
+        "default": "Simetría del Tablero"
+      },
+      "route_planner": {
+        "knight": "Planificador de Rutas — Caballo",
+        "bishop": "Planificador de Rutas — Alfil"
+      }
+    },
+    "tryChallenge": "Probar Este Desafío",
+    "backToList": "Volver a la Clasificación",
+    "viewMore": "Ver Clasificación Completa",
+    "weeklyRanking": "Clasificación Semanal",
+    "signUpBanner": {
+      "message": "¡Únete a la clasificación!",
+      "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
+      "cta": "Registro Gratuito"
+    }
+  },
+  "validation": {
+    "password": {
+      "tooShort": "La contraseña debe tener al menos {minLength} caracteres.",
+      "missingLetter": "La contraseña debe contener al menos una letra.",
+      "missingDigit": "La contraseña debe contener al menos un dígito.",
+      "weak": "La contraseña es demasiado débil. Por favor, elige una contraseña más segura."
+    }
+  },
+  "pricing": {
+    "title": "Precios",
+    "description": "Elige el plan adecuado para ti",
+    "subtitle": "Apoya Ajedrez a Ciegas y disfruta de una experiencia sin anuncios",
+    "freePlan": {
+      "name": "Gratuito",
+      "price": "$0",
+      "feature1": "Todas las funciones"
+    },
+    "adFreePlan": {
+      "name": "Sin Anuncios",
+      "price": "$1",
+      "priceUnit": "/ mes",
+      "feature1": "Todas las funciones",
+      "feature2": "Ocultar todos los anuncios"
+    },
+    "currentPlan": "Plan actual",
+    "subscribe": "Suscribirse",
+    "managePlan": "Gestionar plan"
+  },
+  "subscription": {
+    "title": "Suscripción",
+    "successMessage": "¡Tu suscripción está activa! Los anuncios han sido eliminados.",
+    "noSubscription": "Sin suscripción activa",
+    "noSubscriptionDescription": "Suscríbete para eliminar los anuncios y apoyar Ajedrez a Ciegas.",
+    "viewPlans": "Ver planes",
+    "adFreePlan": "Plan Sin Anuncios",
+    "statusActive": "Activo",
+    "statusCanceling": "Cancelando",
+    "statusInactive": "Inactivo",
+    "cancelingNote": "Tu suscripción terminará al final del período de facturación.",
+    "accessUntil": "Acceso sin anuncios hasta {date}",
+    "nextBilling": "Próxima fecha de facturación",
+    "noBilling": "Sin facturación futura",
+    "manageSubscription": "Gestionar suscripción"
+  },
+  "ranks": {
+    "pageTitle": "Rangos",
+    "pageSubtitle": "🥋 Un programa de entrenamiento paso a paso para dominar el ajedrez a ciegas contra la IA",
+    "requirements": "Requisitos",
+    "comingSoon": "Próximamente",
+    "challengeScore": "Puntuación {minScore}+ en {challengeName}",
+    "challengeNames": {
+      "square_colors": "Color de Casillas",
+      "coordinate_quiz_white": "Cuestionario de Coordenadas (Blancas)",
+      "coordinate_quiz_black": "Cuestionario de Coordenadas (Negras)",
+      "coordinate_quiz_random": "Cuestionario de Coordenadas (Aleatorio)",
+      "legal_moves": "Movimientos Legales",
+      "legal_moves_bishop": "Movimientos Legales (Alfil)",
+      "legal_moves_king": "Movimientos Legales (Rey)",
+      "legal_moves_knight": "Movimientos Legales (Caballo)"
+    },
+    "rankNames": {
+      "mukyu": "Sin Rango",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.er Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.er Kyū",
+      "1dan": "1.er Dan"
+    },
+    "detail": {
+      "criteria": "Criterios",
+      "requirements": "Requisitos de Puntuación",
+      "criteriaDescriptions": {
+        "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
+        "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
+        "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales."
+      },
+      "tips": "Consejos",
+      "guide": "Guía",
+      "tryChallenge": "Probar el Desafío",
+      "showMore": "Mostrar más",
+      "prevPage": "Anterior",
+      "nextPage": "Siguiente",
+      "pageOf": "Página {current} de {total}",
+      "guidePages": {
+        "mukyu": [
+          {
+            "paragraphs": [
+              "Si no entiendes lo que significan notaciones como e4 o Cf3, necesitas empezar aprendiendo la notación algebraica.",
+              "La notación algebraica es el lenguaje común de facto para el ajedrez a ciegas.",
+              "En resumen, la notación algebraica asigna una coordenada única a cada casilla del tablero de ajedrez. Esas coordenadas son cosas como e4 o f3.",
+              "Este sistema identifica las casillas usando estos símbolos."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Incluso después de entender la notación algebraica, se necesita práctica para reconocer instantáneamente la posición exacta de coordenadas como c7 o g4.",
+              "Se recomienda el siguiente entrenamiento.",
+              "Es buena idea empezar desde la perspectiva de las Blancas.",
+              "En el ajedrez a ciegas, algunos jugadores mantienen un tablero fijo desde la perspectiva de las Blancas en su mente incluso cuando juegan con Negras. Esto se llama el modelo de perspectiva fija. Si te interesa, lee el siguiente artículo."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Si no obtienes buenos resultados en el cuestionario de coordenadas, intenta entrenar para identificar en qué área del tablero se encuentra una coordenada dividiendo el tablero de ajedrez en cuatro cuadrantes.",
+              "Una vez que puedas hacer esto rápidamente, podrás usar puntos de anclaje para identificar coordenadas eficientemente.",
+              "Esta técnica se enseña en el 5.º Kyū."
+            ]
+          }
+        ],
+        "5kyu": [
+          {
+            "paragraphs": [
+              "Si tienes problemas para resolver los ejercicios, intenta usar puntos de anclaje.",
+              "Por ejemplo, las cuatro casillas de las esquinas — a8, h8, a1, h1 — son fáciles de memorizar. También puedes saber instantáneamente el color de estas casillas.",
+              "Casillas como estas, que son fáciles de recordar y pueden servir como puntos de referencia, se llaman puntos de anclaje.",
+              "Además, puedes dividir el tablero de ajedrez en cuatro cuadrantes.",
+              "Empecemos centrándonos solo en el área superior izquierda.",
+              "Cada una de las cuatro secciones siempre contiene una de las cuatro casillas de esquina del tablero completo. En el área superior izquierda que estamos viendo, esa es a8.",
+              "La casilla diagonal opuesta a a8 dentro de esta sección es d5. Los dos puntos restantes se pueden derivar mediante simetría horizontal y vertical: a5 y d8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Como las cuatro secciones son autosimilares — comparten la misma estructura — podemos aplicar la misma lógica para crear puntos de anclaje para todo el tablero.",
+              "Observa también el patrón: cada casilla de esquina del tablero completo se empareja con una de las casillas centrales. Por ejemplo, en la sección superior izquierda, a8 se empareja con d5.",
+              "Una vez que hayas establecido estos puntos de anclaje, estás listo para ponerlos en práctica.",
+              "La mayor ventaja de este método es que cada casilla del tablero es un punto de anclaje en sí misma, o está adyacente a uno.",
+              "Por ejemplo, supongamos que tu oponente juega 1...Cf6. Así es como podrías reconocer f6:",
+              "Paso 1: Identificar el área.\nIncluso si no puedes localizar f6 inmediatamente, puedes determinar rápidamente que cae dentro del área superior derecha (e5–h8).",
+              "Paso 2: Determinar el punto de anclaje.\nLos puntos de anclaje en esta área son e5, h5, e8 y h8. Busca el punto de anclaje más cercano por columna y fila — en este caso, e5 funciona bien.",
+              "Paso 3: Verificar la posición relativa.\nf6 está una casilla a la derecha y una casilla arriba de e5 — es decir, diagonalmente arriba a la derecha.",
+              "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente."
+            ]
+          }
+        ],
+        "4kyu": [
+          {
+            "paragraphs": [
+              "Con un tablero de ajedrez físico frente a ti, los jugadores experimentados pueden determinar los movimientos legales de todas las piezas casi inconscientemente.",
+              "Sin embargo, en el ajedrez a ciegas, debes determinar los movimientos legales basándote únicamente en información textual como 'un caballo está colocado en c3'. Esto es sorprendentemente difícil si no estás acostumbrado.",
+              "Empecemos considerando el caso relativamente simple de determinar los movimientos legales del Rey. El Rey puede moverse en todas las direcciones, pero solo una casilla a la vez.",
+              "Para cualquier pieza, el concepto de cambio (delta) es importante.",
+              "Por ejemplo, pensemos en el cambio de fila. Al moverse de g1 a h2, la diferencia de fila es 1. De a8 a a6, la diferencia es 2. Esto es lo que los matemáticos llaman valor absoluto, pero usaremos el término más amigable 'cambio' aquí.",
+              "El cambio de columna funciona de la misma manera — asigna números a las columnas (a=1, b=2, ... h=8) y calcula la diferencia.",
+              "El Rey puede moverse cuando el máximo del cambio de fila y cambio de columna es 1, y ambos no son 0. Expresado como fórmula:"
+            ]
+          },
+          {
+            "paragraphs": [
+              "A continuación, consideremos cómo determinar los movimientos legales del Caballo. El Caballo se mueve en forma de L.",
+              "Un Caballo puede moverse de una casilla a otra solo cuando la combinación de cambio de columna y cambio de fila es (1,2) o (2,1).",
+              "Esto significa que el Caballo debe moverse dos casillas verticalmente y una horizontalmente, o dos casillas horizontalmente y una verticalmente. Expresado como fórmula:",
+              "A menos que esté restringido por el borde del tablero, un Caballo puede moverse a 8 casillas diferentes desde cualquier casilla dada. Las 8 direcciones de movimiento son (+2,+1), (+2,-1), (-2,+1), (-2,-1), (+1,+2), (+1,-2), (-1,+2), (-1,-2).",
+              "El Caballo tiene propiedades especiales que otras piezas no tienen. Los Caballos pueden saltar sobre otras piezas, y siempre aterrizan en una casilla del color opuesto a su casilla de partida."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Finalmente, consideremos cómo determinar los movimientos legales del Alfil. El Alfil se mueve en diagonal.",
+              "Un Alfil puede moverse de una casilla a otra solo cuando el cambio de columna es igual al cambio de fila. Expresado como fórmula:",
+              "En otras palabras, un movimiento es legal solo cuando la diferencia absoluta de columna y fila es igual.",
+              "El Alfil tiene una característica importante. Un Alfil siempre permanece en casillas del mismo color. Un Alfil de casillas claras solo puede moverse a casillas claras, y un Alfil de casillas oscuras solo puede moverse a casillas oscuras."
+            ]
+          },
+          {
+            "paragraphs": [
+              "En cuanto a la Torre, es bastante sencillo — puede moverse a cualquier casilla que comparta la misma columna o fila.",
+              "La Dama se puede considerar como una combinación de la Torre y el Alfil.",
+              "La forma en que usamos el término 'movimientos legales' aquí es en realidad un poco imprecisa. En una partida real, no puedes moverte a una casilla ocupada por una pieza aliada, y el Rey no puede moverse a una casilla que esté bajo ataque. Los movimientos legales deberían determinarse propiamente basándose en condiciones más complejas.",
+              "Dicho esto, empecemos practicando cómo mover las piezas correctamente en un escenario simplificado donde no hay otras piezas en el tablero."
+            ]
+          }
+        ]
+      },
+      "mukyuRequirements": ["Comprensión de la notación algebraica"],
+      "4kyuGuideLinks": {
+        "kingMovementLabel": "Movimiento del Rey (guía detallada)",
+        "knightMovementLabel": "Movimiento del Caballo (guía detallada)",
+        "bishopMovementLabel": "Movimiento del Alfil (guía detallada)",
+        "rookMovementLabel": "Movimiento de la Torre (guía detallada)"
+      },
+      "mukyuGuideLinks": {
+        "learnArticle": "Para más detalles, consulta el siguiente artículo.",
+        "practiceLink": "También puedes practicar con un ejercicio sencillo.",
+        "learnArticleLabel": "Aprende sobre notación algebraica",
+        "practiceLabel": "Practica notación algebraica",
+        "coordinateQuizLabel": "Cuestionario de Coordenadas",
+        "coordinateConfusionLabel": "Sobre la confusión de coordenadas",
+        "quadrantsLabel": "Entrenamiento de Cuadrantes",
+        "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
+      }
+    },
+    "signUpBanner": {
+      "message": "¡Obtén tu cinturón negro!",
+      "description": "Regístrate para seguir tu progreso de rango.",
+      "cta": "Registro Gratuito"
+    },
+    "lockedModal": {
+      "title": "Rango Bloqueado",
+      "message": "Supera {rankName} para desbloquear este rango",
+      "linkLabel": "Ver detalles de {rankName}",
+      "ariaLabel": "Bloqueado"
+    }
+  },
+  "rankAchievement": {
+    "title": "¡Rango Alcanzado!",
+    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
+    "viewRanks": "Ver Rangos",
+    "close": "Cerrar",
+    "rankNames": {
+      "mukyu": "Sin Rango",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.er Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.er Kyū",
+      "1dan": "1.er Dan"
+    }
+  },
+  "MobileTabBar": {
+    "games": "Partidas",
+    "practice": "Práctica",
+    "topics": "Temas",
+    "mypage": "Mi Página"
+  }
+}
