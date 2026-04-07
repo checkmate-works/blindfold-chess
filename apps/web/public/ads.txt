@@ -1,1 +1,2 @@
+# NOTE: The publisher ID below must match NEXT_PUBLIC_ADSENSE_PUBLISHER_ID in .env
 google.com, pub-9942467620932190, DIRECT, f08c47fec0942fa0

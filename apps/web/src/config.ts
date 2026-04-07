@@ -6,6 +6,14 @@ export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export const COOKIEYES_ID = process.env.NEXT_PUBLIC_COOKIEYES_ID;
 
+export const ADSENSE_PUBLISHER_ID = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
+export const ADSENSE_SLOT_BANNER_WIDE = process.env.NEXT_PUBLIC_ADSENSE_SLOT_BANNER_WIDE;
+export const ADSENSE_SLOT_BANNER_STANDARD = process.env.NEXT_PUBLIC_ADSENSE_SLOT_BANNER_STANDARD;
+export const ADSENSE_SLOT_INFEED = process.env.NEXT_PUBLIC_ADSENSE_SLOT_INFEED;
+export const ADSENSE_INFEED_LAYOUT_KEY = process.env.NEXT_PUBLIC_ADSENSE_INFEED_LAYOUT_KEY;
+export const IS_LOCAL_DEV =
+  process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost');
+
 export const SUPPORTED_LOCALES = ['en', 'es', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';

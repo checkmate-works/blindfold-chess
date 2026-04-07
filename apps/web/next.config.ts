@@ -5,11 +5,12 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io",
+  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io pagead2.googlesyndication.com adservice.google.com adservice.google.co.jp *.doubleclick.net",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: *.supabase.co",
+  "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
   "font-src 'self'",
-  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co",
+  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
+  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com',
   "frame-ancestors 'none'",
 ];
 

@@ -2,8 +2,15 @@ import type { Metadata } from 'next';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
+import Script from 'next/script';
 
-import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import {
+  ADSENSE_PUBLISHER_ID,
+  AUTHOR_NAME,
+  COOKIEYES_ID,
+  GA_MEASUREMENT_ID,
+  SITE_URL,
+} from '@/config';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -170,6 +177,13 @@ export default async function Layout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
+        {ADSENSE_PUBLISHER_ID && (
+          <Script
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-${ADSENSE_PUBLISHER_ID}`}
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        )}
         <Providers locale={locale} messages={messages}>
           <div className="flex flex-col min-h-screen">
             <Header locale={locale} />
