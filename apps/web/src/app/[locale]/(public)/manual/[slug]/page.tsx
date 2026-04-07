@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -74,8 +74,8 @@ export default async function ManualArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, SITE_URL } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/jsonld';
 
@@ -73,8 +73,8 @@ export default async function GlossaryIndexPage({ params }: Props) {
           <CategoryIndex locale={locale} />
         </div>
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

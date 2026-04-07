@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getPaginationParams } from '@/lib/pagination';
@@ -74,8 +74,8 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PagePanel>
         {currentPage === 1 && <SquareBoard locale={locale} />}
 
-        {ADSENSE_SLOT_CONTENT_MIDDLE && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
         )}
 
         <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
@@ -96,8 +96,8 @@ export default async function SquaresPage({ params, searchParams }: Props) {
           </div>
         )}
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />

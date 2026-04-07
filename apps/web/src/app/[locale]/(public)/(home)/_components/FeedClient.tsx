@@ -7,6 +7,7 @@ import {
   ADSENSE_INFEED_LAYOUT_KEY_MOBILE,
   ADSENSE_SLOT_INFEED_DESKTOP,
   ADSENSE_SLOT_INFEED_MOBILE,
+  IS_LOCAL_DEV,
 } from '@/config';
 
 import { AdSenseInFeed } from '@/app/[locale]/_components/AdSense';
@@ -58,19 +59,21 @@ export function FeedClient({
         return (
           <div key={`ad-${index}`} className="border-b border-border">
             <>
-              {ADSENSE_SLOT_INFEED_DESKTOP && ADSENSE_INFEED_LAYOUT_KEY_DESKTOP && (
+              {(IS_LOCAL_DEV ||
+                (ADSENSE_SLOT_INFEED_DESKTOP && ADSENSE_INFEED_LAYOUT_KEY_DESKTOP)) && (
                 <div className="hidden md:block">
                   <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_DESKTOP}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_DESKTOP}
+                    slotId={ADSENSE_SLOT_INFEED_DESKTOP ?? ''}
+                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_DESKTOP ?? ''}
                   />
                 </div>
               )}
-              {ADSENSE_SLOT_INFEED_MOBILE && ADSENSE_INFEED_LAYOUT_KEY_MOBILE && (
+              {(IS_LOCAL_DEV ||
+                (ADSENSE_SLOT_INFEED_MOBILE && ADSENSE_INFEED_LAYOUT_KEY_MOBILE)) && (
                 <div className="block md:hidden">
                   <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_MOBILE}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_MOBILE}
+                    slotId={ADSENSE_SLOT_INFEED_MOBILE ?? ''}
+                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_MOBILE ?? ''}
                   />
                 </div>
               )}

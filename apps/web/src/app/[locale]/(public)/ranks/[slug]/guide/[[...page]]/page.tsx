@@ -20,7 +20,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, SUPPORTED_LOCALES } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -267,8 +267,8 @@ export default async function RankGuidePage({ params }: Props) {
             </>
           )}
 
-          {ADSENSE_SLOT_CONTENT_BOTTOM && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
           )}
 
           <Divider />
@@ -371,8 +371,8 @@ export default async function RankGuidePage({ params }: Props) {
           </>
         )}
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

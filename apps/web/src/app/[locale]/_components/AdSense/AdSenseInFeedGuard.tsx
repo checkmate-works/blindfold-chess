@@ -3,13 +3,19 @@ import {
   ADSENSE_INFEED_LAYOUT_KEY_MOBILE,
   ADSENSE_SLOT_INFEED_DESKTOP,
   ADSENSE_SLOT_INFEED_MOBILE,
+  IS_LOCAL_DEV,
 } from '@/config';
 
 import { shouldShowAds } from '@/lib/ad';
 
+import { AdPlaceholder } from './AdPlaceholder';
 import { AdSenseInFeed } from './AdSenseInFeed';
 
 export async function AdSenseInFeedGuard() {
+  if (IS_LOCAL_DEV) {
+    return <AdPlaceholder slot="native-ad" />;
+  }
+
   const showAds = await shouldShowAds();
   if (!showAds) return null;
 

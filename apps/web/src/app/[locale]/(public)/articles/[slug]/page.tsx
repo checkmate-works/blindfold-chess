@@ -5,7 +5,7 @@ import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
-import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
@@ -100,8 +100,8 @@ export default async function ArticlePage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

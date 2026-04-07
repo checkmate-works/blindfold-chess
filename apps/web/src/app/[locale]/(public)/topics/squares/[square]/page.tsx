@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -132,13 +132,13 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       sectionTitle={square}
       topicHeader={topicHeader}
       adMiddle={
-        ADSENSE_SLOT_CONTENT_MIDDLE && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
         )
       }
       adBottom={
-        ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )
       }
       postCountText={t('squares.postCount', { count: totalCount })}

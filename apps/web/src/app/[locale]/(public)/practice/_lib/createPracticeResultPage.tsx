@@ -3,7 +3,7 @@ import { type ComponentType, type ReactNode, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import type {
@@ -57,14 +57,14 @@ export function createSimplePracticeResultPage(
           <ResultClient
             locale={locale}
             adBanner={
-              ADSENSE_SLOT_CONTENT_MIDDLE ? (
-                <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+              IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE ? (
+                <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
               ) : undefined
             }
           />
         </Suspense>
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
       </>
     );

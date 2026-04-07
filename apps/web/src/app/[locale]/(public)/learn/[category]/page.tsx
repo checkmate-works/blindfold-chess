@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import {
   Divider,
@@ -94,8 +94,8 @@ export default async function LearnCategoryPage({ params }: Props) {
           </ListLinkContainer>
         )}
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

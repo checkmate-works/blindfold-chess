@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import { createClient } from '@/lib/supabase/server';
 
@@ -102,8 +102,8 @@ export default async function LeaderboardDetailPage({ params, searchParams }: Pr
 
       <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
 
-      {ADSENSE_SLOT_CONTENT_BOTTOM && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
 
       <Divider />

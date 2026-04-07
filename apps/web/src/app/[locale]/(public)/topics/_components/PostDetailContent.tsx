@@ -1,4 +1,4 @@
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
@@ -132,8 +132,8 @@ export function PostDetailContent({
         </div>
       </div>
 
-      {ADSENSE_SLOT_CONTENT_MIDDLE && (
-        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
       )}
 
       <SectionTitle>
@@ -202,8 +202,8 @@ export function PostDetailContent({
         </>
       )}
 
-      {ADSENSE_SLOT_CONTENT_BOTTOM && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
 
       <HashScrollTarget />

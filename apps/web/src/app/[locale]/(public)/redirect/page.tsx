@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import { isInternalUrl } from '@/lib/linkify-urls';
 
@@ -47,8 +47,8 @@ export default async function RedirectPage({ params, searchParams }: Props) {
           <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
           <p className="text-muted-foreground">{t('invalidUrl')}</p>
         </div>
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
       </PagePanel>
     );
@@ -67,8 +67,8 @@ export default async function RedirectPage({ params, searchParams }: Props) {
         </div>
         <RedirectActions url={url} locale={locale} />
       </div>
-      {ADSENSE_SLOT_CONTENT_BOTTOM && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
     </PagePanel>
   );

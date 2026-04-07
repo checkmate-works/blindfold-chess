@@ -5,7 +5,7 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
@@ -117,8 +117,8 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        {ADSENSE_SLOT_CONTENT_MIDDLE && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
         )}
 
         {relatedPracticeModules && (
@@ -186,8 +186,8 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />

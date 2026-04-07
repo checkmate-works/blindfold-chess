@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -75,16 +75,16 @@ export default async function GlossaryCategoryPage({ params }: Props) {
 
         <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-        {ADSENSE_SLOT_CONTENT_MIDDLE && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
         )}
 
         <SectionTitle>{t('categoryPage.categoriesTitle')}</SectionTitle>
 
         <CategoryIndex locale={locale} currentCategory={category} />
 
-        {ADSENSE_SLOT_CONTENT_BOTTOM && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />
