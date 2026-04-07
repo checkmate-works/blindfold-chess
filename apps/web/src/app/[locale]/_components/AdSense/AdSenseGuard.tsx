@@ -3,7 +3,7 @@ import { shouldShowAds } from '@/lib/ad';
 import { AdSenseDisplay } from './AdSenseDisplay';
 
 type Props = {
-  slot: 'banner-wide' | 'banner-standard';
+  slot: 'content-middle' | 'content-bottom';
   slotId: string;
   className?: string;
 };

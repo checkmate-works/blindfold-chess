@@ -9,7 +9,7 @@ import './types';
 
 type AdSenseDisplayProps = {
   slotId: string;
-  slot: 'banner-wide' | 'banner-standard';
+  slot: 'content-middle' | 'content-bottom';
   className?: string;
 };
 

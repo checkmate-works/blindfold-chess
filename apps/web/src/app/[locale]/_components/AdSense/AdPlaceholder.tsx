@@ -1,10 +1,10 @@
 type AdPlaceholderProps = {
-  slot: 'banner-wide' | 'banner-standard' | 'native-ad';
+  slot: 'content-middle' | 'content-bottom' | 'native-ad';
 };
 
 const slotStyles: Record<AdPlaceholderProps['slot'], string> = {
-  'banner-wide': 'max-w-[960px] h-[208px]',
-  'banner-standard': 'max-w-[400px] h-[400px]',
+  'content-middle': 'max-w-[960px] h-[208px]',
+  'content-bottom': 'max-w-[400px] h-[400px]',
   'native-ad': 'w-full h-24',
 };
 
