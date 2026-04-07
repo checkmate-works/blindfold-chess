@@ -35,7 +35,7 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
     <ins
       className="adsbygoogle"
       style={{ display: 'block' }}
-      data-ad-client={`ca-${ADSENSE_PUBLISHER_ID}`}
+      data-ad-client={ADSENSE_PUBLISHER_ID}
       data-ad-slot={slotId}
       data-ad-format="fluid"
       data-ad-layout-key={layoutKey}

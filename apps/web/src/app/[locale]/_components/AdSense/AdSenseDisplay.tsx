@@ -37,7 +37,7 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client={`ca-${ADSENSE_PUBLISHER_ID}`}
+        data-ad-client={ADSENSE_PUBLISHER_ID}
         data-ad-slot={slotId}
         data-ad-format="auto"
         data-full-width-responsive="true"
