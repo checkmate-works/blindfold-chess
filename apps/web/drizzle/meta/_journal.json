@@ -120,6 +120,13 @@
       "when": 1775017172362,
       "tag": "20260401041932_create_achievements_and_user_achievements",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1775553201499,
+      "tag": "20260407091321_create_exp_events_and_user_exp",
+      "breakpoints": true
     }
   ]
 }

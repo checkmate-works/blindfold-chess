@@ -331,3 +331,21 @@ ALTER TABLE "user_achievements" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "user_achievements_select_policy" ON "user_achievements";
 CREATE POLICY "user_achievements_select_policy" ON "user_achievements"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- exp_events (append-only Exp log — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+ALTER TABLE "exp_events" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "exp_events_select_policy" ON "exp_events";
+CREATE POLICY "exp_events_select_policy" ON "exp_events"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- user_exp (cumulative Exp cache — public read, service role only write)
+-- =============================================================================
+ALTER TABLE "user_exp" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_exp_select_policy" ON "user_exp";
+CREATE POLICY "user_exp_select_policy" ON "user_exp"
+  FOR SELECT USING (true);
