@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
+
 import { isInternalUrl } from '@/lib/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -45,7 +47,9 @@ export default async function RedirectPage({ params, searchParams }: Props) {
           <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
           <p className="text-muted-foreground">{t('invalidUrl')}</p>
         </div>
-        <AdBannerGuard slot="banner-standard" />
+        {ADSENSE_SLOT_CONTENT_BOTTOM && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        )}
       </PagePanel>
     );
   }
@@ -63,7 +67,9 @@ export default async function RedirectPage({ params, searchParams }: Props) {
         </div>
         <RedirectActions url={url} locale={locale} />
       </div>
-      <AdBannerGuard slot="banner-standard" />
+      {ADSENSE_SLOT_CONTENT_BOTTOM && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+      )}
     </PagePanel>
   );
 }

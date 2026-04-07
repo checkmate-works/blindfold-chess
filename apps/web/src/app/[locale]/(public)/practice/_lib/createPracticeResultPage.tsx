@@ -3,13 +3,15 @@ import { type ComponentType, type ReactNode, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import type {
   LeaderboardModule,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -52,9 +54,18 @@ export function createSimplePracticeResultPage(
     return (
       <>
         <Suspense>
-          <ResultClient locale={locale} adBanner={<AdBannerGuard slot="banner-wide" />} />
+          <ResultClient
+            locale={locale}
+            adBanner={
+              ADSENSE_SLOT_CONTENT_MIDDLE ? (
+                <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+              ) : undefined
+            }
+          />
         </Suspense>
-        <AdBannerGuard slot="banner-standard" />
+        {ADSENSE_SLOT_CONTENT_BOTTOM && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        )}
       </>
     );
   };
@@ -109,8 +120,16 @@ export function createLeaderboardPracticeResultPage(
       <Suspense>
         <ResultClient
           locale={locale}
-          adBannerWide={wide ? <AdBannerGuard slot="banner-wide" /> : undefined}
-          adBannerStandard={standard ? <AdBannerGuard slot="banner-standard" /> : undefined}
+          adBannerWide={
+            wide && ADSENSE_SLOT_CONTENT_MIDDLE ? (
+              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+            ) : undefined
+          }
+          adBannerStandard={
+            standard && ADSENSE_SLOT_CONTENT_BOTTOM ? (
+              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+            ) : undefined
+          }
           leaderboardRows={leaderboardRows}
           leaderboardDetailPath={leaderboardDetailPath}
         />

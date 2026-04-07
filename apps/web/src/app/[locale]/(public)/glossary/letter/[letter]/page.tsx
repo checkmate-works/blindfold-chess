@@ -2,8 +2,10 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -59,13 +61,17 @@ export default async function GlossaryLetterPage({ params }: Props) {
 
         <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-        <AdBannerGuard slot="banner-wide" />
+        {ADSENSE_SLOT_CONTENT_MIDDLE && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        )}
 
         <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
 
         <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
 
-        <AdBannerGuard slot="banner-standard" />
+        {ADSENSE_SLOT_CONTENT_BOTTOM && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        )}
 
         <Divider />
 

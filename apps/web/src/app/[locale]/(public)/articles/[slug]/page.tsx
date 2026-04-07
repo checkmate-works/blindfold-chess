@@ -5,11 +5,12 @@ import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
+import { ADSENSE_SLOT_CONTENT_BOTTOM } from '@/config';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -99,7 +100,9 @@ export default async function ArticlePage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        <AdBannerGuard slot="banner-standard" />
+        {ADSENSE_SLOT_CONTENT_BOTTOM && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        )}
 
         <Divider />
 

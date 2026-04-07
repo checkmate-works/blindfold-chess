@@ -5,10 +5,12 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE } from '@/config';
+
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
@@ -115,7 +117,9 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        <AdBannerGuard slot="banner-wide" />
+        {ADSENSE_SLOT_CONTENT_MIDDLE && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+        )}
 
         {relatedPracticeModules && (
           <div className="space-y-4">
@@ -182,7 +186,9 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
 
-        <AdBannerGuard slot="banner-standard" />
+        {ADSENSE_SLOT_CONTENT_BOTTOM && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+        )}
 
         <Divider />
 
