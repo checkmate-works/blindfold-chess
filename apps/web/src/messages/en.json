@@ -1994,7 +1994,10 @@
       "beltSystem": "Belt System",
       "myRecords": "My Records",
       "socialTitle": "Social",
-      "interviewBanner": "Answer interview questions and tell us about yourself"
+      "interviewBanner": "Answer interview questions and tell us about yourself",
+      "activityTitle": "Activity",
+      "heatmapLess": "Less",
+      "heatmapMore": "More"
     },
     "records": "Records",
     "bestScore": "Best Score",

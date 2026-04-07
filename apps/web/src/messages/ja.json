@@ -1995,7 +1995,10 @@
       "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
-      "interviewBanner": "インタビューに答えてあなたのことを教えてください"
+      "interviewBanner": "インタビューに答えてあなたのことを教えてください",
+      "activityTitle": "アクティビティ",
+      "heatmapLess": "少",
+      "heatmapMore": "多"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
