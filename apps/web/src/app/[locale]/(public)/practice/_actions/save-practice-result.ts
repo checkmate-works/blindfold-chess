@@ -1,15 +1,22 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { authenticateAndGuard } from '@/lib/auth';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
+import type { ExpInfo } from '@/lib/db/save-challenge-result';
 import { saveChallengeResult } from '@/lib/db/save-challenge-result';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 export type SaveResultResponse =
-  | { success: true; grantedRanks?: { slug: string; level: number; color: string | null }[] }
+  | {
+      success: true;
+      grantedRanks?: { slug: string; level: number; color: string | null }[];
+      exp?: ExpInfo;
+    }
   | { success: false; error: string };
 
 export type ChallengeFields = {
@@ -53,7 +60,7 @@ export async function savePracticeResult(
     }
 
     // Round to integers — DB columns are integer type, but timers may produce floats
-    const { grantedRanks } = await saveChallengeResult({
+    const { grantedRanks, exp } = await saveChallengeResult({
       userId: user.id,
       menuType,
       leaderboardKey,
@@ -62,7 +69,9 @@ export async function savePracticeResult(
       timeTaken: Math.round(challengeFields.timeTaken),
     });
 
-    return { success: true, grantedRanks };
+    revalidateTag('exp-leaderboard', { expire: 60 });
+
+    return { success: true, grantedRanks, exp };
   } catch (error) {
     return handleServerActionError(error, `[savePracticeResult] ${menuType}`);
   }

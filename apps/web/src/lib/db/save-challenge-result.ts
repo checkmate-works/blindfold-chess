@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache';
 
+import { calculateExp, getLevel } from '@blindfold-chess/features/exp';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
@@ -7,6 +8,7 @@ import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
 import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
+import { getDailyChallengeCount, grantExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
 /** Only insert feed items for ranks at or above this threshold. */
@@ -32,14 +34,24 @@ export type ChallengeResultInput = {
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
  */
+export type ExpInfo = {
+  earnedExp: number;
+  totalExp: number;
+  level: number;
+  levelUp: boolean;
+};
+
 export async function saveChallengeResult(
   input: ChallengeResultInput
-): Promise<{ grantedRanks: GrantedRank[] }> {
+): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
   // Track whether rankings changed so we can invalidate the cache after commit
   let rankingsChanged = false;
+
+  // Exp info populated inside the transaction
+  let expInfo: ExpInfo = { earnedExp: 0, totalExp: 0, level: 0, levelUp: false };
 
   await db.transaction(async (tx) => {
     // 1. Append to challenge_results (all results, for period-based rankings)
@@ -179,15 +191,51 @@ export async function saveChallengeResult(
         });
       }
     }
+
+    // 5. Exp grant — calculate and persist Exp for this challenge completion
+    const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
+    const totalQuestions = score + incorrectAnswers;
+    const expResult = calculateExp({
+      score,
+      totalQuestions,
+      menuType,
+      dailyChallengeCount,
+    });
+
+    const { totalExp } = await grantExp(tx, {
+      userId,
+      source: 'challenge_result',
+      sourceId: challengeResult.id,
+      menuType,
+      amount: expResult.totalExp,
+      metadata: {
+        score,
+        incorrectAnswers,
+        timeTaken,
+        leaderboardKey,
+        baseExp: expResult.baseExp,
+        accuracyMultiplier: expResult.accuracyMultiplier,
+        streakMultiplier: expResult.streakMultiplier,
+      },
+    });
+
+    const levelAfter = getLevel(totalExp);
+    const levelBefore = getLevel(totalExp - expResult.totalExp);
+    expInfo = {
+      earnedExp: expResult.totalExp,
+      totalExp,
+      level: levelAfter,
+      levelUp: levelAfter > levelBefore,
+    };
   });
 
-  // 5. Invalidate leaderboard cache after transaction commits so the next
+  // 6. Invalidate leaderboard cache after transaction commits so the next
   //    page visit fetches fresh ranking data.
   if (rankingsChanged) {
     revalidateTag('leaderboard', { expire: 60 });
   }
 
-  // 6. Check and grant any newly achievable belt ranks.
+  // 7. Check and grant any newly achievable belt ranks.
   // Called outside the transaction so challenge_best_scores reflects the latest data.
   // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
   // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
@@ -200,5 +248,5 @@ export async function saveChallengeResult(
     Sentry.captureException(error);
   }
 
-  return { grantedRanks };
+  return { grantedRanks, exp: expInfo };
 }
