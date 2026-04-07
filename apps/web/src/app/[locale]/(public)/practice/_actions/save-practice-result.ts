@@ -6,8 +6,8 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
-import type { ExpInfo } from '@/lib/db/save-challenge-result';
 import { saveChallengeResult } from '@/lib/db/save-challenge-result';
+import type { ExpInfo } from '@/lib/exp-types';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 

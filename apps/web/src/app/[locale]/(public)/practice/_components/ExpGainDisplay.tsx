@@ -4,14 +4,9 @@ import { useEffect, useState } from 'react';
 
 import { getLevelProgress } from '@blindfold-chess/features/exp';
 
-type ExpInfo = {
-  earnedExp: number;
-  totalExp: number;
-  level: number;
-  levelUp: boolean;
-};
+import type { ExpInfo } from '@/lib/exp-types';
 
-const SESSION_STORAGE_KEY = 'blindfold_chess_exp_result';
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 
 /**
  * Displays earned EXP, current level, and level progress bar on the practice result screen.
@@ -22,9 +17,9 @@ export function ExpGainDisplay() {
   const [expInfo, setExpInfo] = useState<ExpInfo | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const stored = sessionStorage.getItem(SESSION_STORAGE_KEYS.EXP_RESULT);
     if (stored) {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.EXP_RESULT);
       try {
         const parsed = JSON.parse(stored) as ExpInfo;
         if (parsed && typeof parsed.earnedExp === 'number') {

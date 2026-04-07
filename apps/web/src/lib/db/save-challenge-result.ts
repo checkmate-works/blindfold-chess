@@ -1,14 +1,15 @@
 import { revalidateTag } from 'next/cache';
 
-import { calculateExp, getLevel } from '@blindfold-chess/features/exp';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
+
+import type { ExpInfo } from '@/lib/exp-types';
 
 import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
 import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
-import { getDailyChallengeCount, grantExp } from './save-exp';
+import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
 /** Only insert feed items for ranks at or above this threshold. */
@@ -34,13 +35,6 @@ export type ChallengeResultInput = {
  * The UPSERT only updates the existing row when the new result is strictly
  * better, using tuple comparison: (score DESC, incorrect_answers ASC, time_taken ASC).
  */
-export type ExpInfo = {
-  earnedExp: number;
-  totalExp: number;
-  level: number;
-  levelUp: boolean;
-};
-
 export async function saveChallengeResult(
   input: ChallengeResultInput
 ): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo }> {
@@ -193,40 +187,15 @@ export async function saveChallengeResult(
     }
 
     // 5. Exp grant — calculate and persist Exp for this challenge completion
-    const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
-    const totalQuestions = score + incorrectAnswers;
-    const expResult = calculateExp({
-      score,
-      totalQuestions,
-      menuType,
-      dailyChallengeCount,
-    });
-
-    const { totalExp } = await grantExp(tx, {
+    expInfo = await grantChallengeExp(tx, {
       userId,
-      source: 'challenge_result',
-      sourceId: challengeResult.id,
+      challengeResultId: challengeResult.id,
       menuType,
-      amount: expResult.totalExp,
-      metadata: {
-        score,
-        incorrectAnswers,
-        timeTaken,
-        leaderboardKey,
-        baseExp: expResult.baseExp,
-        accuracyMultiplier: expResult.accuracyMultiplier,
-        streakMultiplier: expResult.streakMultiplier,
-      },
+      score,
+      incorrectAnswers,
+      timeTaken,
+      leaderboardKey,
     });
-
-    const levelAfter = getLevel(totalExp);
-    const levelBefore = getLevel(totalExp - expResult.totalExp);
-    expInfo = {
-      earnedExp: expResult.totalExp,
-      totalExp,
-      level: levelAfter,
-      levelUp: levelAfter > levelBefore,
-    };
   });
 
   // 6. Invalidate leaderboard cache after transaction commits so the next

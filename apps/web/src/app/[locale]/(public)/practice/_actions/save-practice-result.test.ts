@@ -15,6 +15,10 @@ const mockDeriveLeaderboardKey = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
+vi.mock('next/cache', () => ({
+  revalidateTag: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -66,7 +70,10 @@ describe('savePracticeResult', () => {
     mockIsUserBanned.mockResolvedValue(false);
     mockCheckRateLimit.mockResolvedValue({ success: true });
     mockDeriveLeaderboardKey.mockReturnValue('white');
-    mockSaveChallengeResult.mockResolvedValue({ grantedRanks: [] });
+    mockSaveChallengeResult.mockResolvedValue({
+      grantedRanks: [],
+      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -80,7 +87,11 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: true, grantedRanks: [] });
+    expect(result).toEqual({
+      success: true,
+      grantedRanks: [],
+      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+    });
   });
 
   it('should call saveChallengeResult with rounded values', async () => {
@@ -250,7 +261,11 @@ describe('savePracticeResult', () => {
       validChallengeFields
     );
 
-    expect(result).toEqual({ success: true, grantedRanks: [] });
+    expect(result).toEqual({
+      success: true,
+      grantedRanks: [],
+      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+    });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({
         menuType: 'legal_moves',
@@ -264,7 +279,11 @@ describe('savePracticeResult', () => {
 
     const result = await savePracticeResult('square_colors', {}, validChallengeFields);
 
-    expect(result).toEqual({ success: true, grantedRanks: [] });
+    expect(result).toEqual({
+      success: true,
+      grantedRanks: [],
+      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+    });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({
         menuType: 'square_colors',

@@ -1,4 +1,7 @@
+import { calculateExp, getLevel } from '@blindfold-chess/features/exp';
 import { and, eq, gte, sql } from 'drizzle-orm';
+
+import type { ExpInfo } from '@/lib/exp-types';
 
 import { db } from './index';
 import { expEvents, userExp } from './schema';
@@ -78,4 +81,69 @@ export async function getDailyChallengeCount(
     );
 
   return result?.count ?? 0;
+}
+
+/**
+ * Calculates and grants Exp for a completed challenge within a transaction.
+ *
+ * Orchestrates: dailyChallengeCount lookup → calculateExp → grantExp → level determination.
+ * Extracted from saveChallengeResult to keep that function focused on challenge record persistence.
+ */
+export async function grantChallengeExp(
+  tx: TransactionClient,
+  params: {
+    userId: string;
+    challengeResultId: string;
+    menuType: string;
+    score: number;
+    incorrectAnswers: number;
+    timeTaken: number;
+    leaderboardKey: string;
+  }
+): Promise<ExpInfo> {
+  const {
+    userId,
+    challengeResultId,
+    menuType,
+    score,
+    incorrectAnswers,
+    timeTaken,
+    leaderboardKey,
+  } = params;
+
+  const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
+  const totalQuestions = score + incorrectAnswers;
+  const expResult = calculateExp({
+    score,
+    totalQuestions,
+    menuType,
+    dailyChallengeCount,
+  });
+
+  const { totalExp } = await grantExp(tx, {
+    userId,
+    source: 'challenge_result',
+    sourceId: challengeResultId,
+    menuType,
+    amount: expResult.totalExp,
+    metadata: {
+      score,
+      incorrectAnswers,
+      timeTaken,
+      leaderboardKey,
+      baseExp: expResult.baseExp,
+      accuracyMultiplier: expResult.accuracyMultiplier,
+      streakMultiplier: expResult.streakMultiplier,
+    },
+  });
+
+  const levelAfter = getLevel(totalExp);
+  const levelBefore = getLevel(totalExp - expResult.totalExp);
+
+  return {
+    earnedExp: expResult.totalExp,
+    totalExp,
+    level: levelAfter,
+    levelUp: levelAfter > levelBefore,
+  };
 }
