@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { getLevelProgress } from '@blindfold-chess/features/exp';
-
 import type { ExpInfo } from '@/lib/exp-types';
 
 import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
@@ -33,9 +31,7 @@ export function ExpGainDisplay() {
 
   if (!expInfo) return null;
 
-  const { earnedExp, totalExp, level, levelUp } = expInfo;
-  const progress = getLevelProgress(totalExp);
-  const progressPercent = Math.round(progress.progress * 100);
+  const { earnedExp, level, levelUp, progressPercent } = expInfo;
 
   return (
     <div className="mt-4 rounded-lg border border-border bg-card p-4">

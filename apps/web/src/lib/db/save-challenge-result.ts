@@ -45,7 +45,13 @@ export async function saveChallengeResult(
   let rankingsChanged = false;
 
   // Exp info populated inside the transaction
-  let expInfo: ExpInfo = { earnedExp: 0, totalExp: 0, level: 0, levelUp: false };
+  let expInfo: ExpInfo = {
+    earnedExp: 0,
+    totalExp: 0,
+    level: 0,
+    levelUp: false,
+    progressPercent: 0,
+  };
 
   await db.transaction(async (tx) => {
     // 1. Append to challenge_results (all results, for period-based rankings)

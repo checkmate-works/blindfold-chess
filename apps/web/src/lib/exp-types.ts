@@ -7,4 +7,5 @@ export type ExpInfo = {
   totalExp: number;
   level: number;
   levelUp: boolean;
+  progressPercent: number;
 };

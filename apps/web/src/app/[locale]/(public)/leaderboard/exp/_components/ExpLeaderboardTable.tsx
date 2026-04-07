@@ -1,7 +1,6 @@
 'use client';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getLevel } from '@blindfold-chess/features/exp';
 
 import { PlayerCell, RankBadge } from '../../_components';
 import type { ExpLeaderboardRow } from '../_actions/getExpLeaderboard';
@@ -52,7 +51,7 @@ export function ExpLeaderboardTable({ rows, locale }: Props) {
             {rows.map((row) => {
               const topBorder = TOP3_BORDER[row.rank] ?? '';
               const isTop3 = row.rank >= 1 && row.rank <= 3;
-              const level = getLevel(row.totalExp);
+              const level = row.level;
 
               return (
                 <tr

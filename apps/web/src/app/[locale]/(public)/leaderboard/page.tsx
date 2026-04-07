@@ -70,7 +70,7 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
         <SignUpBanner locale={locale} />
       </Suspense>
 
-      <LeaderboardTabs activeTab="score" />
+      <LeaderboardTabs activeTab="score" locale={locale} />
 
       <PeriodSelector currentPeriod={period} />
       <ModuleFilter currentModule={moduleFilter} />

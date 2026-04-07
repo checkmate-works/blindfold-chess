@@ -49,7 +49,7 @@ export default async function ExpLeaderboardPage({ params }: Props) {
 
   return (
     <PagePanel>
-      <LeaderboardTabs activeTab="exp" />
+      <LeaderboardTabs activeTab="exp" locale={locale} />
 
       <ExpLeaderboardTable rows={rows} locale={locale} />
     </PagePanel>

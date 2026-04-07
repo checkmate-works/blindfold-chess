@@ -1,4 +1,4 @@
-import { calculateExp, getLevel } from '@blindfold-chess/features/exp';
+import { calculateExp, getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
 import { and, eq, gte, sql } from 'drizzle-orm';
 
 import type { ExpInfo } from '@/lib/exp-types';
@@ -139,11 +139,13 @@ export async function grantChallengeExp(
 
   const levelAfter = getLevel(totalExp);
   const levelBefore = getLevel(totalExp - expResult.totalExp);
+  const levelProgress = getLevelProgress(totalExp);
 
   return {
     earnedExp: expResult.totalExp,
     totalExp,
     level: levelAfter,
     levelUp: levelAfter > levelBefore,
+    progressPercent: Math.round(levelProgress.progress * 100),
   };
 }

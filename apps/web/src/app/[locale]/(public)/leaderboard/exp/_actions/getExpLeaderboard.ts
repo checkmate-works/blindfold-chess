@@ -2,6 +2,7 @@
 
 import { unstable_cache } from 'next/cache';
 
+import { getLevel } from '@blindfold-chess/features/exp';
 import { desc, eq } from 'drizzle-orm';
 
 import { db, profiles, userExp } from '@/lib/db';
@@ -13,6 +14,7 @@ export type ExpLeaderboardRow = {
   displayName: string | null;
   avatarUrl: string | null;
   totalExp: number;
+  level: number;
   rank: number;
 };
 
@@ -46,6 +48,7 @@ const getCachedExpRanking = unstable_cache(
       displayName: r.displayName,
       avatarUrl: r.avatarUrl,
       totalExp: r.totalExp,
+      level: getLevel(r.totalExp),
       rank: i + 1,
     }));
   },

@@ -6,12 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCalculateExp = vi.fn();
 const mockGetLevel = vi.fn();
+const mockGetLevelProgress = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
 vi.mock('@blindfold-chess/features/exp', () => ({
   calculateExp: (...args: unknown[]) => mockCalculateExp(...args),
   getLevel: (...args: unknown[]) => mockGetLevel(...args),
+  getLevelProgress: (...args: unknown[]) => mockGetLevelProgress(...args),
 }));
 
 vi.mock('drizzle-orm', () => ({
@@ -105,6 +107,12 @@ describe('grantChallengeExp', () => {
     });
 
     mockGetLevel.mockImplementation((exp: number) => Math.floor(exp / 100));
+    mockGetLevelProgress.mockImplementation((exp: number) => ({
+      currentLevel: Math.floor(exp / 100),
+      currentExp: exp % 100,
+      requiredExp: 100,
+      progress: (exp % 100) / 100,
+    }));
   });
 
   it('should call calculateExp with correct parameters derived from inputs', async () => {
@@ -142,6 +150,7 @@ describe('grantChallengeExp', () => {
       totalExp: 200,
       level: 2, // getLevel(200) = floor(200/100) = 2
       levelUp: true, // getLevel(200)=2 > getLevel(200-53=147)=1
+      progressPercent: 0, // Math.round((200 % 100) / 100 * 100) = 0
     });
   });
 

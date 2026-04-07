@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -9,6 +8,7 @@ type TabValue = 'score' | 'exp';
 
 type Props = {
   activeTab: TabValue;
+  locale: string;
 };
 
 const TABS: { value: TabValue; href: (locale: string) => string }[] = [
@@ -16,10 +16,8 @@ const TABS: { value: TabValue; href: (locale: string) => string }[] = [
   { value: 'exp', href: (locale) => `/${locale}/leaderboard/exp` },
 ];
 
-export function LeaderboardTabs({ activeTab }: Props) {
+export function LeaderboardTabs({ activeTab, locale }: Props) {
   const t = useTranslations('leaderboard');
-  const params = useParams<{ locale: string }>();
-  const locale = params.locale;
 
   return (
     <nav className="flex rounded-lg bg-secondary p-1" role="tablist" aria-label={t('title')}>
