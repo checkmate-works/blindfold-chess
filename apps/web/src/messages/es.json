@@ -131,6 +131,10 @@
       "title": "Clasificación",
       "description": "Consulta a los mejores jugadores en todos los módulos de práctica"
     },
+    "expLeaderboard": {
+      "title": "Clasificación de Exp",
+      "description": "Los mejores jugadores clasificados por puntos de experiencia totales"
+    },
     "practice": {
       "title": "Ejercicios de Práctica de Ajedrez a Ciegas",
       "description": "Ejercicios interactivos gratuitos de ajedrez a ciegas: reconocimiento de coordenadas, ejercicios de color de casillas, cuestionarios de movimientos legales y más. Mejora tu visualización."
@@ -3084,7 +3088,23 @@
       "message": "¡Únete a la clasificación!",
       "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
       "cta": "Registro Gratuito"
+    },
+    "tabs": {
+      "score": "Puntuación",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Clasificación de Exp",
+    "description": "Los mejores jugadores clasificados por puntos de experiencia totales.",
+    "table": {
+      "rank": "Posición",
+      "player": "Jugador",
+      "exp": "Exp",
+      "level": "Nivel"
+    },
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
+    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
   },
   "validation": {
     "password": {

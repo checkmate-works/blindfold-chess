@@ -131,6 +131,10 @@
       "title": "Leaderboard",
       "description": "See the top players across all practice modules"
     },
+    "expLeaderboard": {
+      "title": "Exp Leaderboard",
+      "description": "See the top players ranked by total experience points"
+    },
     "practice": {
       "title": "Blindfold Chess Practice Exercises",
       "description": "Free interactive blindfold chess exercises — coordinate recognition, square-color drills, legal-move quizzes, and more. Boost your visualization."
@@ -3084,7 +3088,23 @@
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",
       "cta": "Sign Up Free"
+    },
+    "tabs": {
+      "score": "Score",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Exp Leaderboard",
+    "description": "See the top players ranked by total experience points.",
+    "table": {
+      "rank": "Rank",
+      "player": "Player",
+      "exp": "Exp",
+      "level": "Level"
+    },
+    "emptyState": "No Exp records yet. Start practicing to earn Exp!",
+    "backToScoreLeaderboard": "Back to Score Leaderboard"
   },
   "validation": {
     "password": {

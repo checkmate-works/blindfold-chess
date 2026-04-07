@@ -131,6 +131,10 @@
       "title": "ランキング",
       "description": "すべての練習モジュールのトッププレイヤーを確認"
     },
+    "expLeaderboard": {
+      "title": "Exp ランキング",
+      "description": "累計経験値によるプレイヤーランキング"
+    },
     "practice": {
       "title": "目隠しチェス練習問題",
       "description": "座標認識、マスの色判定、合法手判定など多彩な練習メニューで目隠しチェスの力を鍛えましょう。無料で使えるインタラクティブな練習問題で、あなたのビジュアライゼーション能力を向上させます。"
@@ -3040,7 +3044,23 @@
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
       "cta": "無料登録"
+    },
+    "tabs": {
+      "score": "スコア",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Exp ランキング",
+    "description": "累計経験値によるプレイヤーランキングです。",
+    "table": {
+      "rank": "順位",
+      "player": "プレイヤー",
+      "exp": "Exp",
+      "level": "レベル"
+    },
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
+    "backToScoreLeaderboard": "スコアランキングへ戻る"
   },
   "validation": {
     "password": {
