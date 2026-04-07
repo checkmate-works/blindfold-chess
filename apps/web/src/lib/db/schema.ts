@@ -1395,6 +1395,7 @@ export const expEvents = pgTable(
   (table) => [
     index('idx_exp_events_user_created').on(table.userId, table.createdAt),
     index('idx_exp_events_source').on(table.source, table.sourceId),
+    index('idx_exp_events_user_source_created').on(table.userId, table.source, table.createdAt),
   ]
 );
 

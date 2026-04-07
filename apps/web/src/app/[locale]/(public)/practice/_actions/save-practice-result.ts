@@ -69,6 +69,10 @@ export async function savePracticeResult(
       timeTaken: Math.round(challengeFields.timeTaken),
     });
 
+    // TODO: Optimise — only invalidate when the user is in (or enters) the Top 50.
+    // Currently fires on every challenge completion. Acceptable at current scale
+    // because the leaderboard query is already cached for 60 s via unstable_cache.
+    // If traffic grows, consider checking the user's rank before invalidating.
     revalidateTag('exp-leaderboard', { expire: 60 });
 
     return { success: true, grantedRanks, exp };
