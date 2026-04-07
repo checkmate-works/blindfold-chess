@@ -38,9 +38,9 @@ vi.mock('./FeedSkeleton', () => ({
   FeedSkeleton: () => <div data-testid="feed-skeleton">Loading...</div>,
 }));
 
-vi.mock('./NativeAdCard', () => ({
-  NativeAdCard: ({ adLabel }: { adLabel: string }) => (
-    <div data-testid="native-ad-card">{adLabel}</div>
+vi.mock('@/app/[locale]/_components/AdSense', () => ({
+  AdSenseInFeed: ({ slotId }: { slotId: string }) => (
+    <div data-testid="adsense-infeed">{slotId}</div>
   ),
 }));
 
@@ -51,6 +51,7 @@ const defaultProps = {
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
   newReplyTemplate: 'New reply {time}',
+  showAds: true,
 };
 
 // --- Tests ---
