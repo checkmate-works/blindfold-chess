@@ -32,13 +32,15 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
   }
 
   return (
-    <ins
-      className="adsbygoogle"
-      style={{ display: 'block' }}
-      data-ad-client={ADSENSE_PUBLISHER_ID}
-      data-ad-slot={slotId}
-      data-ad-format="fluid"
-      data-ad-layout-key={layoutKey}
-    />
+    <div className="max-w-full overflow-hidden">
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client={ADSENSE_PUBLISHER_ID}
+        data-ad-slot={slotId}
+        data-ad-format="fluid"
+        data-ad-layout-key={layoutKey}
+      />
+    </div>
   );
 }

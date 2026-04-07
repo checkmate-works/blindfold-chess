@@ -5,4 +5,4 @@
  * feed_items because ad display is presentation logic, not user activity.
  * When `showAds` is false, no ads appear.
  */
-export const AD_INTERVAL = 5;
+export const AD_INTERVAL = 10;

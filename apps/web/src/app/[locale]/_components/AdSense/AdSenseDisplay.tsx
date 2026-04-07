@@ -33,7 +33,7 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
   }
 
   return (
-    <div className={className}>
+    <div className={`mx-auto max-w-full overflow-hidden ${className ?? ''}`}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
