@@ -8,10 +8,18 @@ import * as Sentry from '@sentry/nextjs';
 
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
+type ExpInfoResponse = {
+  earnedExp: number;
+  totalExp: number;
+  level: number;
+  levelUp: boolean;
+};
+
 type SaveResultResponse = {
   success: boolean;
   error?: string;
   grantedRanks?: { slug: string }[];
+  exp?: ExpInfoResponse;
 };
 
 type UseChallengeResultSaveOptions = {
@@ -54,6 +62,9 @@ export function useChallengeResultSave({
               'blindfold_chess_granted_ranks',
               JSON.stringify(result.grantedRanks)
             );
+          }
+          if (result.exp) {
+            sessionStorage.setItem('blindfold_chess_exp_result', JSON.stringify(result.exp));
           }
         })
         .catch((error) => {

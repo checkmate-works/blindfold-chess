@@ -14,6 +14,7 @@ import type {
   ProblemResult,
   ScoreStats,
 } from '../_lib/practice-complete-types';
+import { ExpGainDisplay } from './ExpGainDisplay';
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
 import { ProblemResultList } from './ProblemResultList';
 import { RankAchievementModal } from './RankAchievementModal';
@@ -71,6 +72,8 @@ export function PracticeComplete({
         averageTimeText={averageTimeText}
         scoreStats={scoreStats}
       />
+
+      <ExpGainDisplay />
 
       {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 
