@@ -21,7 +21,8 @@
     "./username": "./src/username/index.ts",
     "./lame-name": "./src/lame-name/index.ts",
     "./linkify": "./src/linkify/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utils": "./src/utils/index.ts",
+    "./exp": "./src/exp/index.ts"
   },
   "scripts": {
     "lint": "eslint",
