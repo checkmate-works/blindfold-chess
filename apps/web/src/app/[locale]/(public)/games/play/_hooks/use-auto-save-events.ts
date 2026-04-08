@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { isGameFinished } from '../_lib/game-utils';
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 
 type UseAutoSaveEventsOptions = {
   saveGame: (showNotification?: boolean) => Promise<string | undefined> | undefined;
@@ -50,7 +51,7 @@ export function useAutoSaveEvents({
         }
 
         if (shouldShowToast()) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
+          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
         }
       }
     };
@@ -69,7 +70,7 @@ export function useAutoSaveEvents({
         }
 
         if (shouldShowToast()) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
+          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
         }
       }
     };
@@ -97,7 +98,7 @@ export function useAutoSaveEvents({
         (hasSavedInSession.current || hasPendingChanges.current) &&
         !gameFinished
       ) {
-        sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
+        sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
       }
     }
 

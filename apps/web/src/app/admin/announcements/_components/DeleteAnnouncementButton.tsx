@@ -1,23 +1,12 @@
 'use client';
 
+import { type ComponentProps } from 'react';
+
 import { AdminDeleteButton } from '../../_components/AdminDeleteButton';
 import { deleteAnnouncement } from '../_actions/deleteAnnouncement';
 
-type DeleteAnnouncementButtonProps = {
-  id: string;
-  title: string;
-  labels: {
-    deleteButton: string;
-    modalTitle: string;
-    modalMessage: string;
-    cancel: string;
-    confirm: string;
-    deleting: string;
-  };
-};
+type Props = Omit<ComponentProps<typeof AdminDeleteButton>, 'deleteAction'>;
 
-export function DeleteAnnouncementButton({ id, title, labels }: DeleteAnnouncementButtonProps) {
-  return (
-    <AdminDeleteButton id={id} title={title} deleteAction={deleteAnnouncement} labels={labels} />
-  );
+export function DeleteAnnouncementButton(props: Props) {
+  return <AdminDeleteButton {...props} deleteAction={deleteAnnouncement} />;
 }

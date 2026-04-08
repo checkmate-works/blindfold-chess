@@ -6,25 +6,14 @@ import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
 
-const DEFAULT_LOCALE = 'en';
+import { pickByLocale } from '@/app/[locale]/_lib/locale-utils';
+
 const BANNER_DISPLAY_DAYS = 3;
 
 const pinnedFirstOrdering = [
   sql`${announcements.pinnedAt} DESC NULLS LAST`,
   desc(announcements.publishedAt),
 ];
-
-/**
- * Pick the best locale variant from a group of announcements sharing the same slug.
- * Priority: requested locale > default locale (en) > first available.
- */
-function pickByLocale(rows: Announcement[], locale: string): Announcement {
-  return (
-    rows.find((a) => a.locale === locale) ??
-    rows.find((a) => a.locale === DEFAULT_LOCALE) ??
-    rows[0]
-  );
-}
 
 /**
  * Deduplicate announcements by slug, keeping the best locale variant for each.
