@@ -1,6 +1,6 @@
 export type ExpInput = {
   score: number;
-  totalQuestions: number;
+  incorrectAnswers: number;
   menuType: string;
   dailyChallengeCount: number; // 当日の完了済みチャレンジ数（このチャレンジを含まない）
 };

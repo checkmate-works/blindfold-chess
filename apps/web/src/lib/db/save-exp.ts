@@ -1,3 +1,13 @@
+/**
+ * Exp Persistence (経験値の永続化)
+ *
+ * @description
+ * Database operations for granting Exp and tracking daily challenge counts.
+ * Orchestrates the full flow: daily count lookup → calculation → persistence → level check.
+ *
+ * @see {@link @blindfold-chess/features/exp} for calculation logic (calculateExp, getLevel)
+ * @see {@link ./save-challenge-result.ts} for the caller that invokes grantChallengeExp
+ */
 import { calculateExp, getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
 import { and, eq, gte, sql } from 'drizzle-orm';
 
@@ -111,11 +121,12 @@ export async function grantChallengeExp(
     leaderboardKey,
   } = params;
 
-  const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
-  const totalQuestions = score + incorrectAnswers;
+  // TODO: Re-enable when Daily Streak Bonus is ready for public release.
+  // const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
+  const dailyChallengeCount = 0;
   const expResult = calculateExp({
     score,
-    totalQuestions,
+    incorrectAnswers,
     menuType,
     dailyChallengeCount,
   });

@@ -306,6 +306,39 @@
       "chessEngine": {
         "question": "What chess engine does the AI use?",
         "answer": "The AI uses Stockfish 17.1 (Lite Single-threaded version)."
+      },
+      "expSystem": {
+        "question": "How is experience (Exp) calculated?",
+        "answer": "You earn experience points (Exp) by completing challenges. The formula is: Exp = Correct Answers × Module Weight × Miss Bonus.",
+        "moduleWeightTitle": "Module Weights",
+        "accuracyBonusTitle": "Miss Bonus",
+        "streakBonusTitle": "Daily Streak Bonus",
+        "headerModule": "Module",
+        "headerWeight": "Weight",
+        "headerAccuracy": "Mistakes",
+        "headerMultiplier": "Multiplier",
+        "headerChallenges": "Daily Challenges",
+        "modules": {
+          "coordinate_quiz": "Coordinate Quiz",
+          "square_colors": "Square Colors",
+          "diagonal_quiz": "Diagonal Quiz",
+          "legal_moves": "Legal Moves",
+          "board_symmetry": "Board Symmetry",
+          "route_planner": "Route Planner"
+        },
+        "misses0": "0 (Perfect)",
+        "misses1": "1",
+        "misses2": "2",
+        "misses3": "3 (Burst)",
+        "streak5": "5+",
+        "streak3": "3–4",
+        "streak2": "2",
+        "streak1": "1",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -1999,7 +2032,8 @@
       "heatmapLess": "Less",
       "heatmapMore": "More",
       "heatmapTotal": "Total",
-      "heatmapNoActivity": "No activity on this day"
+      "heatmapNoActivity": "No activity on this day",
+      "heatmapLearnLink": "Learn how we count Exp"
     },
     "records": "Records",
     "bestScore": "Best Score",

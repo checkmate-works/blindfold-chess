@@ -121,11 +121,12 @@ describe('grantChallengeExp', () => {
 
     await grantChallengeExp(tx as never, baseParams);
 
+    // dailyChallengeCount is hardcoded to 0 while Daily Streak Bonus is disabled
     expect(mockCalculateExp).toHaveBeenCalledWith({
       score: 20,
-      totalQuestions: 25, // score + incorrectAnswers
+      incorrectAnswers: 5,
       menuType: 'coordinate_quiz',
-      dailyChallengeCount: 2,
+      dailyChallengeCount: 0,
     });
   });
 
@@ -171,7 +172,7 @@ describe('grantChallengeExp', () => {
     expect(result.level).toBe(2);
   });
 
-  it('should compute totalQuestions as score + incorrectAnswers', async () => {
+  it('should pass incorrectAnswers directly to calculateExp', async () => {
     const tx = createMockTx({ dailyChallengeCount: 0, totalExpAfterGrant: 100 });
     const { grantChallengeExp } = await import('./save-exp');
 
@@ -180,22 +181,22 @@ describe('grantChallengeExp', () => {
 
     expect(mockCalculateExp).toHaveBeenCalledWith(
       expect.objectContaining({
-        totalQuestions: 10,
+        incorrectAnswers: 0,
       })
     );
   });
 
-  it('should query daily challenge count before calculating exp', async () => {
+  it('should not query daily challenge count while streak bonus is disabled', async () => {
     const tx = createMockTx({ dailyChallengeCount: 5, totalExpAfterGrant: 300 });
     const { grantChallengeExp } = await import('./save-exp');
 
     await grantChallengeExp(tx as never, baseParams);
 
-    // getDailyChallengeCount calls tx.select
-    expect(tx.select).toHaveBeenCalled();
-    // calculateExp receives dailyChallengeCount=5
+    // getDailyChallengeCount is temporarily disabled — tx.select should not be called
+    expect(tx.select).not.toHaveBeenCalled();
+    // calculateExp receives dailyChallengeCount=0 (hardcoded)
     expect(mockCalculateExp).toHaveBeenCalledWith(
-      expect.objectContaining({ dailyChallengeCount: 5 })
+      expect.objectContaining({ dailyChallengeCount: 0 })
     );
   });
 });

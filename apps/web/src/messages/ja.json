@@ -307,6 +307,39 @@
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
         "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+      },
+      "expSystem": {
+        "question": "経験値（Exp）はどのように計算されますか？",
+        "answer": "チャレンジモードを完了すると経験値（Exp）を獲得できます。計算式: Exp = 正解数 × モジュール重み × ミスボーナス",
+        "moduleWeightTitle": "モジュール別重み",
+        "accuracyBonusTitle": "ミスボーナス",
+        "streakBonusTitle": "連続チャレンジボーナス",
+        "headerModule": "モジュール",
+        "headerWeight": "重み",
+        "headerAccuracy": "ミス回数",
+        "headerMultiplier": "倍率",
+        "headerChallenges": "同日チャレンジ数",
+        "modules": {
+          "coordinate_quiz": "座標クイズ",
+          "square_colors": "マスの色",
+          "diagonal_quiz": "ダイアゴナルクイズ",
+          "legal_moves": "合法手",
+          "board_symmetry": "盤面の対称性",
+          "route_planner": "ルートプランナー"
+        },
+        "misses0": "0（パーフェクト）",
+        "misses1": "1回",
+        "misses2": "2回",
+        "misses3": "3回（バースト）",
+        "streak5": "5回以上",
+        "streak3": "3〜4回",
+        "streak2": "2回",
+        "streak1": "1回",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -2000,7 +2033,8 @@
       "heatmapLess": "少",
       "heatmapMore": "多",
       "heatmapTotal": "合計",
-      "heatmapNoActivity": "この日のアクティビティはありません"
+      "heatmapNoActivity": "この日のアクティビティはありません",
+      "heatmapLearnLink": "経験値の計算方法"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
