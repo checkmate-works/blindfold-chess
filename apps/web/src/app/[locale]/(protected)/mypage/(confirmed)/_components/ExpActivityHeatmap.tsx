@@ -4,11 +4,16 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Link } from '@/i18n/routing';
+
 import type { ExpHeatmapData } from '../_lib/getExpHeatmapData';
 import {
+  DESKTOP_WEEKS,
+  buildWeeks,
   generateDateRange,
   getExpLevel,
   getHeatmapDateRangeForWeeks,
+  getMonthLabelsForWeeks,
   getRecentDays,
 } from '../_lib/heatmap-utils';
 
@@ -26,7 +31,6 @@ const LEVEL_CLASSES: Record<number, string> = {
   4: 'bg-primary',
 };
 
-const DESKTOP_WEEKS = 53;
 const BAR_CHART_DAYS = 7;
 const BAR_CHART_HEIGHT_PX = 140;
 const BAR_CHART_MIN_HEIGHT_PX = 4;
@@ -37,39 +41,34 @@ type Props = {
   legendMore: string;
 };
 
-/** Builds weeks (columns) from a flat date array — each week is up to 7 days. */
-function buildWeeks(allDates: string[]): (string | null)[][] {
-  const weeks: (string | null)[][] = [];
-  let currentWeek: (string | null)[] = [];
+/** Short month names for month labels. */
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
-  for (const dateStr of allDates) {
-    const date = new Date(dateStr + 'T00:00:00Z');
-    const dayOfWeek = date.getUTCDay(); // 0=Sunday
+/** Day-of-week labels — only Mon (1), Wed (3), Fri (5) are shown. */
+const DAY_LABELS: Record<number, string> = { 1: 'Mon', 3: 'Wed', 5: 'Fri' };
 
-    if (dayOfWeek === 0 && currentWeek.length > 0) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
-    currentWeek.push(dateStr);
-  }
-
-  if (currentWeek.length > 0) {
-    while (currentWeek.length < 7) {
-      currentWeek.push(null);
-    }
-    weeks.push(currentWeek);
-  }
-
-  return weeks;
-}
-
-/** Computes weeks and max amount for a given number of weeks. */
+/** Computes weeks, max amount, and month labels for a given number of weeks. */
 function useHeatmapWeeks(daily: Record<string, number>, totalWeeks: number) {
   return useMemo(() => {
     const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(), totalWeeks);
     const allDates = generateDateRange(startDate, endDate);
     const max = Math.max(0, ...Object.values(daily));
-    return { weeks: buildWeeks(allDates), maxAmount: max };
+    const weeks = buildWeeks(allDates);
+    const monthLabels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    return { weeks, maxAmount: max, monthLabels };
   }, [daily, totalWeeks]);
 }
 
@@ -88,32 +87,59 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
   const moduleBreakdown = selectedDate ? data.dailyByModule[selectedDate] : null;
   const selectedTotal = selectedDate ? (data.daily[selectedDate] ?? 0) : 0;
 
-  /** Renders the heatmap grid for a given configuration. */
-  function renderGrid(weeks: (string | null)[][], maxAmount: number, cellSize: string) {
+  /** Renders the GitHub-style heatmap grid with month/day labels. */
+  function renderDesktopGrid(
+    weeks: (string | null)[][],
+    maxAmount: number,
+    monthLabels: { weekIdx: number; label: string }[]
+  ) {
     return (
-      <div className="flex gap-[3px] overflow-x-auto">
-        {weeks.map((week, weekIdx) => (
-          <div key={weekIdx} className="flex flex-col gap-[3px]">
-            {week.map((dateStr, dayIdx) => {
-              if (dateStr === null) {
-                return <div key={`empty-${dayIdx}`} className={`${cellSize} rounded-sm`} />;
-              }
+      <div className="inline-grid" style={{ gridTemplateColumns: 'auto 1fr' }}>
+        {/* Top-left spacer (above day labels, left of month labels) */}
+        <div />
+        {/* Month labels row */}
+        <div className="flex gap-[3px]">
+          {weeks.map((_, weekIdx) => {
+            const monthLabel = monthLabels.find((m) => m.weekIdx === weekIdx);
+            return (
+              <div key={weekIdx} className="size-3 text-xs text-muted-foreground leading-none">
+                {monthLabel ? monthLabel.label : ''}
+              </div>
+            );
+          })}
+        </div>
 
-              const amount = data.daily[dateStr] ?? 0;
-              const level = getExpLevel(amount, maxAmount);
-              const levelClass = LEVEL_CLASSES[level] ?? LEVEL_CLASSES[0];
-              const isSelected = dateStr === selectedDate;
+        {/* Day labels + cells — one row per day of week (0=Sun .. 6=Sat) */}
+        {Array.from({ length: 7 }, (_, dayIdx) => (
+          <div key={dayIdx} className="contents">
+            {/* Day-of-week label */}
+            <div className="flex h-3 items-center pr-1.5 text-xs text-muted-foreground leading-none">
+              {DAY_LABELS[dayIdx] ?? ''}
+            </div>
+            {/* Cells for this day across all weeks */}
+            <div className="flex gap-[3px]">
+              {weeks.map((week, weekIdx) => {
+                const dateStr = week[dayIdx] ?? null;
+                if (dateStr === null) {
+                  return <div key={`empty-${weekIdx}`} className="size-3 rounded-sm" />;
+                }
 
-              return (
-                <button
-                  key={dateStr}
-                  type="button"
-                  className={`${cellSize} rounded-sm ${levelClass} ${isSelected ? 'ring-2 ring-foreground' : ''} cursor-pointer`}
-                  title={`${dateStr}: ${amount} Exp`}
-                  onClick={() => handleCellClick(dateStr)}
-                />
-              );
-            })}
+                const amount = data.daily[dateStr] ?? 0;
+                const level = getExpLevel(amount, maxAmount);
+                const levelClass = LEVEL_CLASSES[level] ?? LEVEL_CLASSES[0];
+                const isSelected = dateStr === selectedDate;
+
+                return (
+                  <button
+                    key={dateStr}
+                    type="button"
+                    className={`size-3 rounded-sm ${levelClass} ${isSelected ? 'ring-2 ring-foreground' : ''} cursor-pointer`}
+                    title={`${dateStr}: ${amount} Exp`}
+                    onClick={() => handleCellClick(dateStr)}
+                  />
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>
@@ -156,20 +182,25 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
 
   return (
     <div className="space-y-2">
-      {/* Desktop: 53 weeks, small cells */}
-      <div className="hidden md:block">
-        {renderGrid(desktop.weeks, desktop.maxAmount, 'size-3')}
+      {/* Desktop: 50 weeks, GitHub-style heatmap */}
+      <div className="hidden overflow-x-auto md:block">
+        {renderDesktopGrid(desktop.weeks, desktop.maxAmount, desktop.monthLabels)}
       </div>
       {/* Mobile: 7-day bar chart */}
       <div className="block md:hidden">{renderBarChart()}</div>
 
       {/* Legend — desktop only */}
-      <div className="hidden items-center justify-end gap-1.5 text-xs text-muted-foreground md:flex">
-        <span>{legendLess}</span>
-        {[0, 1, 2, 3, 4].map((level) => (
-          <div key={level} className={`size-3 rounded-sm ${LEVEL_CLASSES[level]}`} />
-        ))}
-        <span>{legendMore}</span>
+      <div className="hidden items-center justify-between text-xs text-muted-foreground md:flex">
+        <Link href="/faq#exp-system" className="text-xs text-muted-foreground hover:underline">
+          {t('dashboard.heatmapLearnLink')}
+        </Link>
+        <div className="flex items-center gap-1.5">
+          <span>{legendLess}</span>
+          {[0, 1, 2, 3, 4].map((level) => (
+            <div key={level} className={`size-3 rounded-sm ${LEVEL_CLASSES[level]}`} />
+          ))}
+          <span>{legendMore}</span>
+        </div>
       </div>
 
       {/* Detail panel */}

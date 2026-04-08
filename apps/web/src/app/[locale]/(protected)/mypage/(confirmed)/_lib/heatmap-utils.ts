@@ -5,6 +5,9 @@
  * used by the ExpActivityHeatmap component.
  */
 
+/** Number of weeks shown in the desktop heatmap grid. */
+export const DESKTOP_WEEKS = 50;
+
 /**
  * Returns a 0–4 intensity level for a given Exp amount.
  *
@@ -20,28 +23,6 @@ export function getExpLevel(amount: number, maxAmount: number): number {
   if (ratio <= 0.5) return 2;
   if (ratio <= 0.75) return 3;
   return 4;
-}
-
-/**
- * Builds a date range covering approximately the last year (53 weeks),
- * aligned to full weeks starting on Sunday.
- *
- * @returns An object with `startDate` (the Sunday 53 weeks before the
- *          current week) and `endDate` (today).
- */
-export function getHeatmapDateRange(today: Date): { startDate: Date; endDate: Date } {
-  const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  // Find the Sunday of the current week
-  const dayOfWeek = endDate.getDay(); // 0=Sunday
-  const currentSunday = new Date(endDate);
-  currentSunday.setDate(endDate.getDate() - dayOfWeek);
-
-  // Go back 52 more weeks (53 weeks total including current week)
-  const startDate = new Date(currentSunday);
-  startDate.setDate(currentSunday.getDate() - 52 * 7);
-
-  return { startDate, endDate };
 }
 
 /**
@@ -95,6 +76,67 @@ export function getRecentDays(today: Date, days: number): string[] {
     current.setDate(current.getDate() + 1);
   }
   return result;
+}
+
+/**
+ * Computes month label positions for a weekly heatmap grid.
+ *
+ * For each week, checks the first non-null date's month. When the month
+ * changes (or for the very first week), a label is placed at that column.
+ * Labels that would appear on consecutive columns are skipped to avoid overlap.
+ *
+ * @param weeks  The 2-D weeks array (columns of up to 7 date strings).
+ * @param monthNames  Array of 12 short month names (index 0 = January).
+ */
+export function getMonthLabelsForWeeks(
+  weeks: (string | null)[][],
+  monthNames: string[]
+): { weekIdx: number; label: string }[] {
+  const labels: { weekIdx: number; label: string }[] = [];
+  let prevMonth: number | null = null;
+
+  for (let i = 0; i < weeks.length; i++) {
+    const firstDate = weeks[i].find((d) => d !== null);
+    if (!firstDate) continue;
+
+    const month = new Date(firstDate + 'T00:00:00Z').getUTCMonth();
+    if (month !== prevMonth) {
+      // Skip if too close to the previous label (avoid overlap)
+      const lastLabel = labels[labels.length - 1];
+      if (!lastLabel || i - lastLabel.weekIdx >= 2) {
+        labels.push({ weekIdx: i, label: monthNames[month] });
+      }
+      prevMonth = month;
+    }
+  }
+
+  return labels;
+}
+
+/** Builds weeks (columns) from a flat date array — each week is up to 7 days. */
+export function buildWeeks(allDates: string[]): (string | null)[][] {
+  const weeks: (string | null)[][] = [];
+  let currentWeek: (string | null)[] = [];
+
+  for (const dateStr of allDates) {
+    const date = new Date(dateStr + 'T00:00:00Z');
+    const dayOfWeek = date.getUTCDay(); // 0=Sunday
+
+    if (dayOfWeek === 0 && currentWeek.length > 0) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+    currentWeek.push(dateStr);
+  }
+
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(null);
+    }
+    weeks.push(currentWeek);
+  }
+
+  return weeks;
 }
 
 /** Formats a Date as 'YYYY-MM-DD'. */

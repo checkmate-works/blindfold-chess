@@ -2,7 +2,7 @@ import { and, eq, gte, lte, sql, sum } from 'drizzle-orm';
 
 import { db, expEvents } from '@/lib/db';
 
-import { formatDate, getHeatmapDateRange } from './heatmap-utils';
+import { DESKTOP_WEEKS, formatDate, getHeatmapDateRangeForWeeks } from './heatmap-utils';
 
 export type ExpHeatmapData = {
   /** Daily totals keyed by 'YYYY-MM-DD'. */
@@ -18,7 +18,7 @@ export type ExpHeatmapData = {
  * for efficient range scanning.
  */
 export async function getExpHeatmapData(userId: string): Promise<ExpHeatmapData> {
-  const { startDate, endDate } = getHeatmapDateRange(new Date());
+  const { startDate, endDate } = getHeatmapDateRangeForWeeks(new Date(), DESKTOP_WEEKS);
 
   // endDate is midnight; extend to end of day for the query
   const endOfDay = new Date(endDate);

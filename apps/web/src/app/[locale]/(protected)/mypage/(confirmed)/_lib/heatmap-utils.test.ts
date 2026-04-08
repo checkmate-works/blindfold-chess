@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildWeeks,
   formatDate,
   generateDateRange,
   getExpLevel,
-  getHeatmapDateRange,
   getHeatmapDateRangeForWeeks,
+  getMonthLabelsForWeeks,
   getRecentDays,
 } from './heatmap-utils';
 
@@ -80,83 +81,6 @@ describe('getExpLevel', () => {
 
   it('returns correct level just above 75% boundary', () => {
     expect(getExpLevel(75.01, 100)).toBe(4);
-  });
-});
-
-describe('getHeatmapDateRange', () => {
-  it('returns a range ending on the given date', () => {
-    const today = new Date(2026, 3, 8); // 2026-04-08 (Wednesday)
-    const { endDate } = getHeatmapDateRange(today);
-    expect(formatDate(endDate)).toBe('2026-04-08');
-  });
-
-  it('starts on a Sunday', () => {
-    const today = new Date(2026, 3, 8);
-    const { startDate } = getHeatmapDateRange(today);
-    expect(startDate.getDay()).toBe(0); // Sunday
-  });
-
-  it('covers approximately 53 weeks', () => {
-    const today = new Date(2026, 3, 8);
-    const { startDate, endDate } = getHeatmapDateRange(today);
-    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    // 53 weeks = 371 days, but endDate may be mid-week
-    expect(diffDays).toBeGreaterThanOrEqual(364); // at least 52 weeks
-    expect(diffDays).toBeLessThanOrEqual(377); // at most ~54 weeks
-  });
-
-  it('when today is Sunday, start is 52 weeks before', () => {
-    const sunday = new Date(2026, 3, 5); // 2026-04-05 (Sunday)
-    const { startDate, endDate } = getHeatmapDateRange(sunday);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-04-05');
-    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    expect(diffDays).toBe(364); // exactly 52 weeks
-  });
-
-  it('when today is Saturday, start is Sunday of 53 weeks ago', () => {
-    const saturday = new Date(2026, 3, 4); // 2026-04-04 (Saturday)
-    const { startDate, endDate } = getHeatmapDateRange(saturday);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-04-04');
-    // Saturday is 6 days after Sunday of the same week
-    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    expect(diffDays).toBe(364 + 6); // 52 weeks + 6 days
-  });
-
-  it('handles year boundary (January date looking back to previous year)', () => {
-    const jan15 = new Date(2026, 0, 15); // 2026-01-15 (Thursday)
-    const { startDate, endDate } = getHeatmapDateRange(jan15);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-01-15');
-    // Start date should be in January 2025 (52 weeks back)
-    expect(startDate.getFullYear()).toBe(2025);
-    expect(startDate.getMonth()).toBe(0); // January
-  });
-
-  it('handles January 1st', () => {
-    const jan1 = new Date(2026, 0, 1); // 2026-01-01 (Thursday)
-    const { startDate, endDate } = getHeatmapDateRange(jan1);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-01-01');
-    // 52 weeks back from 2025-12-28 (Sunday of Jan 1's week) = 2024-12-29
-    expect(startDate.getFullYear()).toBe(2024);
-  });
-
-  it('handles December 31st', () => {
-    const dec31 = new Date(2025, 11, 31); // 2025-12-31 (Wednesday)
-    const { startDate, endDate } = getHeatmapDateRange(dec31);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2025-12-31');
-  });
-
-  it("when today is Monday, start is Sunday of previous day's week minus 52 weeks", () => {
-    const monday = new Date(2026, 3, 6); // 2026-04-06 (Monday)
-    const { startDate, endDate } = getHeatmapDateRange(monday);
-    expect(startDate.getDay()).toBe(0);
-    expect(formatDate(endDate)).toBe('2026-04-06');
-    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    expect(diffDays).toBe(364 + 1); // 52 weeks + 1 day (Monday)
   });
 });
 
@@ -261,14 +185,6 @@ describe('getHeatmapDateRangeForWeeks', () => {
     expect(formatDate(endDate)).toBe('2026-04-05');
     const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     expect(diffDays).toBe(175); // 25 weeks
-  });
-
-  it('produces same result as getHeatmapDateRange when totalWeeks is 53', () => {
-    const today = new Date(2026, 3, 8);
-    const fromOriginal = getHeatmapDateRange(today);
-    const fromNew = getHeatmapDateRangeForWeeks(today, 53);
-    expect(formatDate(fromNew.startDate)).toBe(formatDate(fromOriginal.startDate));
-    expect(formatDate(fromNew.endDate)).toBe(formatDate(fromOriginal.endDate));
   });
 
   it('returns a single week when totalWeeks is 1', () => {
@@ -418,5 +334,300 @@ describe('getRecentDays', () => {
     expect(result).toHaveLength(30);
     expect(result[0]).toBe('2026-04-01');
     expect(result[29]).toBe('2026-04-30');
+  });
+});
+
+describe('buildWeeks', () => {
+  it('builds weeks from a full-week-aligned date array', () => {
+    // Sun 2026-04-05 to Sat 2026-04-11 (one full week)
+    const dates = generateDateRange(new Date(2026, 3, 5), new Date(2026, 3, 11));
+    const weeks = buildWeeks(dates);
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0]).toEqual([
+      '2026-04-05',
+      '2026-04-06',
+      '2026-04-07',
+      '2026-04-08',
+      '2026-04-09',
+      '2026-04-10',
+      '2026-04-11',
+    ]);
+  });
+
+  it('pads the last week with null when it has fewer than 7 days', () => {
+    // Sun 2026-04-05 to Wed 2026-04-08 (4 days)
+    const dates = generateDateRange(new Date(2026, 3, 5), new Date(2026, 3, 8));
+    const weeks = buildWeeks(dates);
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0]).toEqual([
+      '2026-04-05',
+      '2026-04-06',
+      '2026-04-07',
+      '2026-04-08',
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it('handles a partial first week (starting mid-week)', () => {
+    // Wed 2026-04-01 to Sat 2026-04-11 (starts on Wednesday)
+    const dates = generateDateRange(new Date(2026, 3, 1), new Date(2026, 3, 11));
+    const weeks = buildWeeks(dates);
+    // First week: Wed-Sat (4 days, pushed without padding when Sunday triggers new week)
+    // Second week: Sun 2026-04-05 to Sat 2026-04-11 (7 days)
+    expect(weeks).toHaveLength(2);
+    // First week has 4 days only (no null padding for mid-stream weeks)
+    expect(weeks[0]).toEqual(['2026-04-01', '2026-04-02', '2026-04-03', '2026-04-04']);
+    // Second week is full
+    expect(weeks[1]).toEqual([
+      '2026-04-05',
+      '2026-04-06',
+      '2026-04-07',
+      '2026-04-08',
+      '2026-04-09',
+      '2026-04-10',
+      '2026-04-11',
+    ]);
+  });
+
+  it('returns an empty array for empty input', () => {
+    const weeks = buildWeeks([]);
+    expect(weeks).toEqual([]);
+  });
+
+  it('handles a single date (Sunday)', () => {
+    const weeks = buildWeeks(['2026-04-05']); // Sunday
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0]).toEqual(['2026-04-05', null, null, null, null, null, null]);
+  });
+
+  it('handles a single date (non-Sunday)', () => {
+    const weeks = buildWeeks(['2026-04-08']); // Wednesday
+    expect(weeks).toHaveLength(1);
+    expect(weeks[0]).toEqual(['2026-04-08', null, null, null, null, null, null]);
+  });
+
+  it('builds multiple weeks correctly', () => {
+    // 3 full weeks: Sun 2026-03-22 to Sat 2026-04-11
+    const dates = generateDateRange(new Date(2026, 2, 22), new Date(2026, 3, 11));
+    const weeks = buildWeeks(dates);
+    expect(weeks).toHaveLength(3);
+    expect(weeks.every((w) => w.length === 7)).toBe(true);
+    // No nulls in any week since all are complete
+    expect(weeks.every((w) => w.every((d) => d !== null))).toBe(true);
+  });
+
+  it('splits correctly at Sunday boundary', () => {
+    // Sat 2026-04-04 to Sun 2026-04-05
+    const dates = generateDateRange(new Date(2026, 3, 4), new Date(2026, 3, 5));
+    const weeks = buildWeeks(dates);
+    expect(weeks).toHaveLength(2);
+    // First week: just Saturday (no padding for mid-stream weeks)
+    expect(weeks[0]).toEqual(['2026-04-04']);
+    // Second week: just Sunday, padded to 7 (last week)
+    expect(weeks[1]).toEqual(['2026-04-05', null, null, null, null, null, null]);
+  });
+
+  it('handles dates spanning a month boundary', () => {
+    // Thu 2026-01-29 to Tue 2026-02-03
+    const dates = generateDateRange(new Date(2026, 0, 29), new Date(2026, 1, 3));
+    const weeks = buildWeeks(dates);
+    // Jan 29 (Thu), 30 (Fri), 31 (Sat) => week 1 (no padding, pushed when Sun arrives)
+    // Feb 1 (Sun), 2 (Mon), 3 (Tue) => week 2 (last week, padded to 7)
+    expect(weeks).toHaveLength(2);
+    expect(weeks[0]).toEqual(['2026-01-29', '2026-01-30', '2026-01-31']);
+    expect(weeks[1]).toEqual(['2026-02-01', '2026-02-02', '2026-02-03', null, null, null, null]);
+  });
+});
+
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+describe('getMonthLabelsForWeeks', () => {
+  it('places a label when the month changes across weeks', () => {
+    // Build weeks spanning Jan 18 – Feb 14, 2026 (4 full weeks, enough gap for labels)
+    const allDates = generateDateRange(new Date(2026, 0, 18), new Date(2026, 1, 14));
+    const weeks = buildWeeks(allDates);
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+
+    // First week should get a Jan label
+    expect(labels[0]).toEqual({ weekIdx: 0, label: 'Jan' });
+
+    // There should be a Feb label at a later week
+    const febLabel = labels.find((l) => l.label === 'Feb');
+    expect(febLabel).toBeDefined();
+    expect(febLabel!.weekIdx).toBeGreaterThan(0);
+  });
+
+  it('skips labels when consecutive month boundaries are closer than 2 weeks apart', () => {
+    // Manually build weeks where month changes on consecutive columns
+    // Week 0: last days of Jan, Week 1: first days of Feb, Week 2: first days of Mar (artificially close)
+    const weeks: (string | null)[][] = [
+      [
+        '2026-01-25',
+        '2026-01-26',
+        '2026-01-27',
+        '2026-01-28',
+        '2026-01-29',
+        '2026-01-30',
+        '2026-01-31',
+      ],
+      [
+        '2026-02-01',
+        '2026-02-02',
+        '2026-02-03',
+        '2026-02-04',
+        '2026-02-05',
+        '2026-02-06',
+        '2026-02-07',
+      ],
+      [
+        '2026-03-01',
+        '2026-03-02',
+        '2026-03-03',
+        '2026-03-04',
+        '2026-03-05',
+        '2026-03-06',
+        '2026-03-07',
+      ],
+    ];
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+
+    // Jan at index 0, Feb at index 1 (diff=1 < 2, so skipped), Mar at index 2 (diff from 0 = 2, placed)
+    expect(labels).toEqual([
+      { weekIdx: 0, label: 'Jan' },
+      { weekIdx: 2, label: 'Mar' },
+    ]);
+  });
+
+  it('places a label on the first week', () => {
+    const weeks: (string | null)[][] = [
+      [
+        '2026-04-05',
+        '2026-04-06',
+        '2026-04-07',
+        '2026-04-08',
+        '2026-04-09',
+        '2026-04-10',
+        '2026-04-11',
+      ],
+    ];
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    expect(labels).toEqual([{ weekIdx: 0, label: 'Apr' }]);
+  });
+
+  it('returns an empty array for an empty weeks array', () => {
+    const labels = getMonthLabelsForWeeks([], MONTH_NAMES);
+    expect(labels).toEqual([]);
+  });
+
+  it('skips weeks that contain only null values', () => {
+    const weeks: (string | null)[][] = [
+      [null, null, null, null, null, null, null],
+      [
+        '2026-03-08',
+        '2026-03-09',
+        '2026-03-10',
+        '2026-03-11',
+        '2026-03-12',
+        '2026-03-13',
+        '2026-03-14',
+      ],
+    ];
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    // The all-null week is skipped; label appears at weekIdx 1
+    expect(labels).toEqual([{ weekIdx: 1, label: 'Mar' }]);
+  });
+
+  it('handles weeks with mixed null and date values (partial weeks)', () => {
+    const weeks: (string | null)[][] = [
+      [null, null, null, null, null, '2026-06-05', '2026-06-06'],
+      [
+        '2026-06-07',
+        '2026-06-08',
+        '2026-06-09',
+        '2026-06-10',
+        '2026-06-11',
+        '2026-06-12',
+        '2026-06-13',
+      ],
+    ];
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    // Both weeks are in June, so only one label at weekIdx 0
+    expect(labels).toEqual([{ weekIdx: 0, label: 'Jun' }]);
+  });
+
+  it('generates labels across a full year of weeks', () => {
+    // Build 53 weeks of data starting from a Sunday
+    const allDates = generateDateRange(new Date(2025, 3, 6), new Date(2026, 3, 8));
+    const weeks = buildWeeks(allDates);
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    // Should have labels for multiple months (at least 10 given spacing constraints)
+    expect(labels.length).toBeGreaterThanOrEqual(10);
+    // All labels should reference valid month names
+    expect(labels.every((l) => MONTH_NAMES.includes(l.label))).toBe(true);
+    // weekIdx values should be strictly increasing
+    for (let i = 1; i < labels.length; i++) {
+      expect(labels[i].weekIdx).toBeGreaterThan(labels[i - 1].weekIdx);
+    }
+  });
+
+  it('handles all weeks in the same month (no month changes)', () => {
+    const weeks: (string | null)[][] = [
+      [
+        '2026-04-05',
+        '2026-04-06',
+        '2026-04-07',
+        '2026-04-08',
+        '2026-04-09',
+        '2026-04-10',
+        '2026-04-11',
+      ],
+      [
+        '2026-04-12',
+        '2026-04-13',
+        '2026-04-14',
+        '2026-04-15',
+        '2026-04-16',
+        '2026-04-17',
+        '2026-04-18',
+      ],
+      [
+        '2026-04-19',
+        '2026-04-20',
+        '2026-04-21',
+        '2026-04-22',
+        '2026-04-23',
+        '2026-04-24',
+        '2026-04-25',
+      ],
+    ];
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    // Only one label at the first week
+    expect(labels).toEqual([{ weekIdx: 0, label: 'Apr' }]);
+  });
+
+  it('handles year boundary (December to January)', () => {
+    const allDates = generateDateRange(new Date(2025, 11, 21), new Date(2026, 0, 17));
+    const weeks = buildWeeks(allDates);
+    const labels = getMonthLabelsForWeeks(weeks, MONTH_NAMES);
+    const decLabel = labels.find((l) => l.label === 'Dec');
+    const janLabel = labels.find((l) => l.label === 'Jan');
+    expect(decLabel).toBeDefined();
+    expect(janLabel).toBeDefined();
+    expect(janLabel!.weekIdx).toBeGreaterThan(decLabel!.weekIdx);
   });
 });
