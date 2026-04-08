@@ -126,8 +126,9 @@ export default async function MypagePage({ params }: Props) {
         )}
 
         {/* Exp activity heatmap */}
-        <section>
+        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-foreground mb-2">
+            <span className="mr-1">🔥</span>
             {t('dashboard.activityTitle')}
           </h3>
           <ExpActivityHeatmap
