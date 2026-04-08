@@ -29,6 +29,11 @@ vi.mock('./subscription', () => ({
   hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
 }));
 
+const mockHasActiveGrant = vi.fn();
+vi.mock('./user-grants', () => ({
+  hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
+}));
+
 const mockGetOptionalUser = vi.fn();
 vi.mock('./auth', () => ({
   getOptionalUser: () => mockGetOptionalUser(),
@@ -303,13 +308,25 @@ describe('shouldShowAdsForUser', () => {
     expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-123');
   });
 
-  it('should return true for user without active subscription', async () => {
+  it('should return true for user without active subscription and no grant', async () => {
     mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
     mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
 
     const result = await shouldShowAdsForUser('user-456');
     expect(result).toBe(true);
     expect(mockHasActiveSubscription).toHaveBeenCalledWith('user-456');
+    expect(mockHasActiveGrant).toHaveBeenCalledWith('user-456', 'ad_free');
+  });
+
+  it('should return false when user has active ad_free grant', async () => {
+    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
+    mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(true);
+
+    const result = await shouldShowAdsForUser('user-789');
+    expect(result).toBe(false);
+    expect(mockHasActiveGrant).toHaveBeenCalledWith('user-789', 'ad_free');
   });
 
   it('should return false for null userId when ads are disabled', async () => {
@@ -337,6 +354,7 @@ describe('shouldShowAds', () => {
     mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
     mockGetOptionalUser.mockResolvedValue({ id: 'session-user-1' });
     mockHasActiveSubscription.mockResolvedValue(false);
+    mockHasActiveGrant.mockResolvedValue(false);
 
     const result = await shouldShowAds();
     expect(result).toBe(true);
