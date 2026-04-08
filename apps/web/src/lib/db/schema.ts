@@ -1440,3 +1440,71 @@ export const userExp = pgTable(
 
 export type UserExpRecord = typeof userExp.$inferSelect;
 export type NewUserExpRecord = typeof userExp.$inferInsert;
+
+/**
+ * User Grants — time-limited benefit grants for users.
+ *
+ * @description
+ * Stores grants that provide users with time-limited benefits such as ad-free
+ * access or paywall content access. Grants can be issued manually by admins,
+ * automatically by system triggers (e.g., topic post), or via campaigns.
+ *
+ * @design Additive duration model
+ *
+ * When a new grant is created, its `startsAt` is set to the later of the current
+ * time and the latest existing `expiresAt` for the same user+benefitType. This
+ * "stacks" grants so that multiple grants extend the benefit period rather than
+ * overlapping or resetting it.
+ *
+ * @design benefitType + grantType are varchar, not pgEnum
+ *
+ * New benefit types ('ad_free', 'paywall_access', etc.) and grant types
+ * ('admin_manual', 'topic_post', 'campaign', etc.) will be added incrementally.
+ * Using varchar avoids requiring an ALTER TYPE migration for each new type.
+ * Consistent with the project's existing pattern (topicType, action, etc.).
+ *
+ * @design resourceType + resourceId for scoped grants
+ *
+ * Global benefits (e.g., ad_free) have NULL resourceType/resourceId.
+ * Scoped benefits (e.g., paywall access to a specific article) specify the
+ * resource. This avoids separate tables for global vs. scoped grants.
+ *
+ * @design revokedAt for logical deletion
+ *
+ * Grants are never physically deleted. Revocation sets revokedAt, preserving
+ * the full audit trail. The granted_by info is tracked via moderation_actions
+ * (the existing audit log), not duplicated here.
+ *
+ * @design No updatedAt — grants are effectively immutable
+ *
+ * Once created, grants are not modified (only revoked via revokedAt).
+ * This follows the same immutability pattern as user_ranks.
+ *
+ * @design FKs managed in custom SQL
+ *
+ * `userId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`.
+ */
+export const userGrants = pgTable(
+  'user_grants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    benefitType: varchar('benefit_type', { length: 50 }).notNull(), // 'ad_free', 'paywall_access', etc.
+    grantType: varchar('grant_type', { length: 50 }).notNull(), // 'admin_manual', 'topic_post', 'campaign', etc.
+    resourceType: varchar('resource_type', { length: 50 }), // NULL for global benefits, 'article' etc. for scoped
+    resourceId: varchar('resource_id', { length: 255 }), // NULL for global benefits, target resource ID for scoped
+    reason: text('reason'), // Human-readable justification (admin memo, campaign name, etc.)
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('idx_user_grants_benefit_lookup').on(table.userId, table.benefitType, table.expiresAt),
+    index('idx_user_grants_user').on(table.userId),
+  ]
+);
+
+export type UserGrant = typeof userGrants.$inferSelect;
+export type NewUserGrant = typeof userGrants.$inferInsert;

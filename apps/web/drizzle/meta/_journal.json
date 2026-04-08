@@ -134,6 +134,13 @@
       "when": 1775561378046,
       "tag": "20260407112938_add_idx_exp_events_user_source_created",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1775635239591,
+      "tag": "20260408080039_create_user_grants",
+      "breakpoints": true
     }
   ]
 }
