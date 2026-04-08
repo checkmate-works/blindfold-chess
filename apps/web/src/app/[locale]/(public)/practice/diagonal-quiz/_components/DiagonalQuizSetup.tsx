@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaPlay } from 'react-icons/fa';
 
+import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/_components/PracticeSetupActions';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -18,7 +16,6 @@ type Props = {
 
 export function DiagonalQuizSetup({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
-  const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleViewTutorial = () => {
@@ -47,19 +44,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
           </button>
         </div>
 
-        <Link href={`/${locale}/practice/diagonal-quiz/challenge/session`}>
-          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
-            {tp('startChallenge')}
-          </Button>
-        </Link>
-        <div className="mt-4 text-center">
-          <Link
-            href={`/${locale}/practice/diagonal-quiz/training#diagonal-quiz-training-session`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {tp('switchToTraining')}
-          </Link>
-        </div>
+        <PracticeSetupActions locale={locale} moduleSlug="diagonal-quiz" />
       </div>
     </div>
   );

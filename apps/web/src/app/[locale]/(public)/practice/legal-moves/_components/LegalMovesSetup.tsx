@@ -1,12 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaPlay } from 'react-icons/fa';
 
+import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/_components/PracticeSetupActions';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -22,7 +19,6 @@ type Props = {
 
 export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props) {
   const t = useTranslations('practice.legalMoves');
-  const tp = useTranslations('practice');
 
   const pieceName =
     pieceSelection === 'random' ? 'random' : (PIECE_TYPE_TO_NAME[pieceSelection] ?? 'random');
@@ -58,19 +54,12 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
 
       <LegalMovesSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
 
-      <Link href={`/${locale}/practice/legal-moves/challenge/session?piece=${pieceName}`}>
-        <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full mt-6">
-          {tp('startChallenge')}
-        </Button>
-      </Link>
-      <div className="mt-4 text-center">
-        <Link
-          href={`/${locale}/practice/legal-moves/training?piece=${pieceName}#legal-moves-training-session`}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('switchToTraining')}
-        </Link>
-      </div>
+      <PracticeSetupActions
+        locale={locale}
+        moduleSlug="legal-moves"
+        settingsQuery={`piece=${pieceName}`}
+        buttonClassName="w-full mt-6"
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use server';
 
-import { savePracticeResult } from '../../_actions/save-practice-result';
+import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
@@ -11,14 +11,13 @@ export type SaveRoutePlannerResultInput = {
   piece: string;
 };
 
+const saveAction = createSaveResultAction<SaveRoutePlannerResultInput>(
+  'route_planner',
+  (input) => ({
+    selectedPiece: input.piece,
+  })
+);
+
 export async function saveRoutePlannerResult(input: SaveRoutePlannerResultInput) {
-  return savePracticeResult(
-    'route_planner',
-    { selectedPiece: input.piece },
-    {
-      score: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    }
-  );
+  return saveAction(input);
 }

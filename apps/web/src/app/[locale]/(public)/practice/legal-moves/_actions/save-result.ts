@@ -1,6 +1,6 @@
 'use server';
 
-import { savePracticeResult } from '../../_actions/save-practice-result';
+import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
@@ -11,14 +11,10 @@ export type SaveLegalMovesResultInput = {
   selectedPiece: string;
 };
 
+const saveAction = createSaveResultAction<SaveLegalMovesResultInput>('legal_moves', (input) => ({
+  selectedPiece: input.selectedPiece,
+}));
+
 export async function saveLegalMovesResult(input: SaveLegalMovesResultInput) {
-  return savePracticeResult(
-    'legal_moves',
-    { selectedPiece: input.selectedPiece },
-    {
-      score: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    }
-  );
+  return saveAction(input);
 }

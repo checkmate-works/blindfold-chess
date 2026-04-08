@@ -1,11 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaPlay } from 'react-icons/fa';
 
+import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/_components/PracticeSetupActions';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,7 +28,6 @@ export function CoordinateQuizSetup({
   onFeedbackSpeedChange,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
-  const tp = useTranslations('practice');
 
   const settingsQuery = `orientation=${boardOrientation}&feedbackSpeed=${feedbackSpeed}`;
 
@@ -59,19 +55,12 @@ export function CoordinateQuizSetup({
         onFeedbackSpeedChange={onFeedbackSpeedChange}
       />
 
-      <Link href={`/${locale}/practice/coordinate-quiz/challenge/session?${settingsQuery}`}>
-        <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full mt-6">
-          {tp('startChallenge')}
-        </Button>
-      </Link>
-      <div className="mt-4 text-center">
-        <Link
-          href={`/${locale}/practice/coordinate-quiz/training?${settingsQuery}#coordinate-quiz-training-session`}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {tp('switchToTraining')}
-        </Link>
-      </div>
+      <PracticeSetupActions
+        locale={locale}
+        moduleSlug="coordinate-quiz"
+        settingsQuery={settingsQuery}
+        buttonClassName="w-full mt-6"
+      />
     </div>
   );
 }

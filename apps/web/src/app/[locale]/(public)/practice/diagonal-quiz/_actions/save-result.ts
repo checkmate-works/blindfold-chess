@@ -1,6 +1,6 @@
 'use server';
 
-import { savePracticeResult } from '../../_actions/save-practice-result';
+import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
@@ -10,14 +10,8 @@ export type SaveDiagonalQuizResultInput = {
   timeTaken: number;
 };
 
+const saveAction = createSaveResultAction<SaveDiagonalQuizResultInput>('diagonal_quiz');
+
 export async function saveDiagonalQuizResult(input: SaveDiagonalQuizResultInput) {
-  return savePracticeResult(
-    'diagonal_quiz',
-    {},
-    {
-      score: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    }
-  );
+  return saveAction(input);
 }

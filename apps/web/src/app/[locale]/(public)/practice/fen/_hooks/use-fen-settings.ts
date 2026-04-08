@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
 
+import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
 
@@ -13,7 +15,14 @@ const STORAGE_KEY = 'fenPracticeSettings';
 
 const presetCount = (presetPositions as PresetPosition[]).length;
 
-const defaultSettings = {
+type FenSettings = {
+  problemCount: number;
+  shuffleProblems: boolean;
+  useCustomFen: boolean;
+  customFenInput: string;
+};
+
+const DEFAULT_SETTINGS: FenSettings = {
   problemCount: presetCount,
   shuffleProblems: true,
   useCustomFen: false,
@@ -23,49 +32,17 @@ const defaultSettings = {
 export function useFenSettings() {
   const t = useTranslations('practice.fen');
 
-  const [problemCount, setProblemCount] = useState(defaultSettings.problemCount);
-  const [shuffleProblems, setShuffleProblems] = useState(defaultSettings.shuffleProblems);
-  const [useCustomFen, setUseCustomFen] = useState(defaultSettings.useCustomFen);
-  const [customFenInput, setCustomFenInput] = useState(defaultSettings.customFenInput);
+  const { settings, updateSettings } = usePersistentSettings<FenSettings>(
+    STORAGE_KEY,
+    DEFAULT_SETTINGS
+  );
+
   const [customFenError, setCustomFenError] = useState<string | null>(null);
-  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
-
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem(STORAGE_KEY);
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setProblemCount(settings.problemCount ?? defaultSettings.problemCount);
-        setShuffleProblems(settings.shuffleProblems ?? defaultSettings.shuffleProblems);
-        setUseCustomFen(settings.useCustomFen ?? defaultSettings.useCustomFen);
-        setCustomFenInput(settings.customFenInput ?? defaultSettings.customFenInput);
-      } catch (error) {
-        console.error('Failed to load FEN practice settings:', error);
-      }
-    }
-    setHasLoadedSettings(true);
-  }, []);
-
-  // Save settings to localStorage whenever they change
-  useEffect(() => {
-    if (!hasLoadedSettings) {
-      return;
-    }
-
-    const settings = {
-      problemCount,
-      shuffleProblems,
-      useCustomFen,
-      customFenInput,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }, [problemCount, shuffleProblems, useCustomFen, customFenInput, hasLoadedSettings]);
 
   // Validate custom FEN when input changes
   useEffect(() => {
-    if (useCustomFen && customFenInput.trim()) {
-      const lines = customFenInput
+    if (settings.useCustomFen && settings.customFenInput.trim()) {
+      const lines = settings.customFenInput
         .trim()
         .split('\n')
         .filter((line: string) => line.trim());
@@ -95,22 +72,22 @@ export function useFenSettings() {
     } else {
       setCustomFenError(null);
     }
-  }, [customFenInput, useCustomFen, t]);
+  }, [settings.customFenInput, settings.useCustomFen, t]);
 
-  const customFenCount = customFenInput
+  const customFenCount = settings.customFenInput
     .trim()
     .split('\n')
     .filter((line) => line.trim()).length;
 
   return {
-    problemCount,
-    setProblemCount,
-    shuffleProblems,
-    setShuffleProblems,
-    useCustomFen,
-    setUseCustomFen,
-    customFenInput,
-    setCustomFenInput,
+    problemCount: settings.problemCount,
+    setProblemCount: (v: number) => updateSettings({ problemCount: v }),
+    shuffleProblems: settings.shuffleProblems,
+    setShuffleProblems: (v: boolean) => updateSettings({ shuffleProblems: v }),
+    useCustomFen: settings.useCustomFen,
+    setUseCustomFen: (v: boolean) => updateSettings({ useCustomFen: v }),
+    customFenInput: settings.customFenInput,
+    setCustomFenInput: (v: string) => updateSettings({ customFenInput: v }),
     customFenError,
     customFenCount,
     presetCount,

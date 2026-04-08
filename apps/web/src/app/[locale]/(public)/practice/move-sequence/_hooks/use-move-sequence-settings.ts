@@ -2,7 +2,17 @@ import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { clearSettings, loadSettings, saveSettings } from '../_lib/storage';
+import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+
+import type { MoveSequenceSettings } from '../_lib/types';
+
+const STORAGE_KEY = 'moveSequenceSettings';
+
+const DEFAULT_SETTINGS: MoveSequenceSettings = {
+  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+  pgn: '',
+  includeOpponentMoves: false,
+};
 
 type UrlParams = {
   urlFen: string | null;
@@ -15,32 +25,39 @@ export function useMoveSequenceSettings(
   setError: (error: string | null) => void
 ) {
   const t = useTranslations('practice.moveSequence');
+  const hasUrlOverride = urlFen !== null && urlPgn !== null;
 
-  const [fen, setFen] = useState('');
-  const [pgn, setPgn] = useState('');
-  const [includeOpponentMoves, setIncludeOpponentMoves] = useState(false);
+  const {
+    settings: persistedSettings,
+    updateSettings: updatePersistedSettings,
+    isLoaded: isPersistedLoaded,
+  } = usePersistentSettings<MoveSequenceSettings>(STORAGE_KEY, DEFAULT_SETTINGS);
+
+  // URL-derived state (used when URL params are present)
+  const [urlSettings, setUrlSettings] = useState<MoveSequenceSettings>(() =>
+    hasUrlOverride
+      ? { fen: urlFen, pgn: urlPgn, includeOpponentMoves: DEFAULT_SETTINGS.includeOpponentMoves }
+      : DEFAULT_SETTINGS
+  );
+
   const [usePreset, setUsePreset] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  // Load settings from localStorage on mount (URL params handled separately in page.tsx)
+  // Initialize preset state based on loaded settings or URL params
   useEffect(() => {
-    if (urlFen !== null && urlPgn !== null) {
-      setFen(urlFen);
-      setPgn(urlPgn);
+    if (hasUrlOverride) {
       setUsePreset(false);
       setHasLoaded(true);
       return;
     }
 
-    const settings = loadSettings();
-    setFen(settings.fen);
-    setPgn(settings.pgn);
-    setIncludeOpponentMoves(settings.includeOpponentMoves);
-    if (settings.pgn.trim()) {
-      setUsePreset(false);
+    if (isPersistedLoaded) {
+      if (persistedSettings.pgn.trim()) {
+        setUsePreset(false);
+      }
+      setHasLoaded(true);
     }
-    setHasLoaded(true);
-  }, [urlFen, urlPgn]);
+  }, [hasUrlOverride, isPersistedLoaded, persistedSettings.pgn]);
 
   // Show URL error if present
   useEffect(() => {
@@ -49,19 +66,23 @@ export function useMoveSequenceSettings(
     }
   }, [urlError, t, setError]);
 
-  // Save settings when they change
-  useEffect(() => {
-    if (!hasLoaded) return;
-    saveSettings({ fen, pgn, includeOpponentMoves });
-  }, [fen, pgn, includeOpponentMoves, hasLoaded]);
+  const settings = hasUrlOverride ? urlSettings : persistedSettings;
+  const updateSettings = hasUrlOverride
+    ? (partial: Partial<MoveSequenceSettings>) =>
+        setUrlSettings((prev) => ({ ...prev, ...partial }))
+    : updatePersistedSettings;
+
+  const clearSettings = () => {
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   return {
-    fen,
-    setFen,
-    pgn,
-    setPgn,
-    includeOpponentMoves,
-    setIncludeOpponentMoves,
+    fen: settings.fen,
+    setFen: (v: string) => updateSettings({ fen: v }),
+    pgn: settings.pgn,
+    setPgn: (v: string) => updateSettings({ pgn: v }),
+    includeOpponentMoves: settings.includeOpponentMoves,
+    setIncludeOpponentMoves: (v: boolean) => updateSettings({ includeOpponentMoves: v }),
     usePreset,
     setUsePreset,
     hasLoaded,

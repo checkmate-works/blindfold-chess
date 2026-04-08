@@ -1,6 +1,6 @@
 'use server';
 
-import { savePracticeResult } from '../../_actions/save-practice-result';
+import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
@@ -11,14 +11,13 @@ export type SaveCoordinateQuizResultInput = {
   boardOrientation: string;
 };
 
+const saveAction = createSaveResultAction<SaveCoordinateQuizResultInput>(
+  'coordinate_quiz',
+  (input) => ({
+    boardOrientation: input.boardOrientation,
+  })
+);
+
 export async function saveCoordinateQuizResult(input: SaveCoordinateQuizResultInput) {
-  return savePracticeResult(
-    'coordinate_quiz',
-    { boardOrientation: input.boardOrientation },
-    {
-      score: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    }
-  );
+  return saveAction(input);
 }

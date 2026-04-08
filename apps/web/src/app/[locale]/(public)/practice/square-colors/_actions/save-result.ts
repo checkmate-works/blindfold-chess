@@ -1,6 +1,6 @@
 'use server';
 
-import { savePracticeResult } from '../../_actions/save-practice-result';
+import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
 export type { SaveResultResponse } from '../../_actions/save-practice-result';
 
@@ -10,14 +10,8 @@ export type SaveSquareColorsResultInput = {
   timeTaken: number;
 };
 
+const saveAction = createSaveResultAction<SaveSquareColorsResultInput>('square_colors');
+
 export async function saveSquareColorsResult(input: SaveSquareColorsResultInput) {
-  return savePracticeResult(
-    'square_colors',
-    {},
-    {
-      score: input.correctAnswers,
-      incorrectAnswers: input.incorrectAnswers,
-      timeTaken: input.timeTaken,
-    }
-  );
+  return saveAction(input);
 }
