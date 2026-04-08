@@ -1,11 +1,24 @@
+import type { Square } from "@blindfold-chess/types";
+
 import {
+  type RandomSource,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
   fileRankToSquare,
+  generateRandomSquare as generateRandomSquareBase,
+  generateSquareSequence as generateSquareSequenceBase,
 } from "../common";
 
 import type { DiagonalPair } from "./types";
+
+/** Corner squares whose diagonal or anti-diagonal is a single point. */
+const CORNER_SQUARES: ReadonlySet<Square> = new Set<Square>([
+  "a1",
+  "a8",
+  "h1",
+  "h8",
+]);
 
 /**
  * Compute the start position and length of both diagonals for a square.
@@ -175,4 +188,21 @@ export function getCornerInfo(square: string): {
   };
 }
 
-export { generateRandomSquare, generateSquareSequence } from "../common";
+/**
+ * Generate a random square excluding the four corner squares.
+ * Corners are excluded because they have a single-square diagonal
+ * (start == end), which is incompatible with the quiz UI.
+ */
+export function generateRandomSquare(rng: RandomSource = Math.random): Square {
+  return generateRandomSquareBase(rng, CORNER_SQUARES);
+}
+
+/**
+ * Generate a sequence of unique random squares excluding corner squares.
+ */
+export function generateSquareSequence(
+  count: number,
+  rng: RandomSource = Math.random,
+): Square[] {
+  return generateSquareSequenceBase(count, rng, CORNER_SQUARES);
+}

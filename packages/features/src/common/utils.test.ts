@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { isLightSquare, computeSquareColor } from "./utils";
+import {
+  isLightSquare,
+  computeSquareColor,
+  generateRandomSquare,
+  generateSquareSequence,
+} from "./utils";
 import { DISPLAY_RANKS } from "./constants";
 import { RANKS } from "@blindfold-chess/types";
 
@@ -79,6 +84,89 @@ describe("isLightSquare consistency with computeSquareColor", () => {
 
         expect(isLight).toBe(colorFromCompute === "light");
       }
+    }
+  });
+});
+
+// ============================================================
+// generateRandomSquare
+// ============================================================
+describe("generateRandomSquare", () => {
+  it("returns a valid square without exclude", () => {
+    for (let i = 0; i < 100; i++) {
+      const square = generateRandomSquare();
+      expect(square).toMatch(/^[a-h][1-8]$/);
+    }
+  });
+
+  it("never returns an excluded square", () => {
+    const exclude = new Set(["a1", "a2", "a3"] as const) as ReadonlySet<
+      import("@blindfold-chess/types").Square
+    >;
+    for (let i = 0; i < 200; i++) {
+      const square = generateRandomSquare(Math.random, exclude);
+      expect(exclude.has(square)).toBe(false);
+    }
+  });
+
+  it("throws when all 64 squares are excluded", () => {
+    const allSquares = new Set<import("@blindfold-chess/types").Square>();
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+    for (const f of files) {
+      for (const r of ranks) {
+        allSquares.add(`${f}${r}` as import("@blindfold-chess/types").Square);
+      }
+    }
+    expect(() => generateRandomSquare(Math.random, allSquares)).toThrow(
+      "Cannot generate a random square: all squares are excluded",
+    );
+  });
+
+  it("skips excluded squares and returns the next valid one", () => {
+    const exclude = new Set(["a1"] as const) as ReadonlySet<
+      import("@blindfold-chess/types").Square
+    >;
+    let callIndex = 0;
+    // First call produces a1 (excluded), second produces b2
+    const rngValues = [0 / 8, 0 / 8, 1 / 8, 1 / 8];
+    const rng = () => rngValues[callIndex++];
+    const square = generateRandomSquare(rng, exclude);
+    expect(square).toBe("b2");
+  });
+});
+
+// ============================================================
+// generateSquareSequence
+// ============================================================
+describe("generateSquareSequence", () => {
+  it("returns the requested number of squares without exclude", () => {
+    expect(generateSquareSequence(0)).toHaveLength(0);
+    expect(generateSquareSequence(5)).toHaveLength(5);
+    expect(generateSquareSequence(32)).toHaveLength(32);
+  });
+
+  it("never includes excluded squares", () => {
+    const exclude = new Set(["a1", "h8"] as const) as ReadonlySet<
+      import("@blindfold-chess/types").Square
+    >;
+    const squares = generateSquareSequence(50, Math.random, exclude);
+    for (const square of squares) {
+      expect(exclude.has(square)).toBe(false);
+    }
+  });
+
+  it("computes resetThreshold based on exclude size", () => {
+    // With 4 excluded squares: threshold = floor((64-4)/2) = 30
+    // With 0 excluded: threshold = floor(64/2) = 32
+    // We just verify it works for large sequences
+    const exclude = new Set(["a1", "a8", "h1", "h8"] as const) as ReadonlySet<
+      import("@blindfold-chess/types").Square
+    >;
+    const squares = generateSquareSequence(100, Math.random, exclude);
+    expect(squares).toHaveLength(100);
+    for (const square of squares) {
+      expect(exclude.has(square)).toBe(false);
     }
   });
 });

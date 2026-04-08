@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  generateRandomSquare,
+  generateSquareSequence,
   getCornerInfo,
   getDiagonals,
   getDiagonalSquares,
@@ -481,5 +483,97 @@ describe("getCornerInfo", () => {
         }
       }
     });
+  });
+
+  describe("only corners have single-square diagonals", () => {
+    it("exactly a8, h8, a1, h1 have a single-square diagonal or anti-diagonal", () => {
+      const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+      const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      const squaresWithSingle: string[] = [];
+      for (const file of files) {
+        for (const rank of ranks) {
+          const square = `${file}${rank}`;
+          const info = getCornerInfo(square);
+          if (info.singleDiagonal || info.singleAntiDiagonal) {
+            squaresWithSingle.push(square);
+          }
+        }
+      }
+      expect(squaresWithSingle.sort()).toEqual(["a1", "a8", "h1", "h8"]);
+    });
+  });
+});
+
+// ============================================================
+// generateRandomSquare (diagonal-quiz)
+// ============================================================
+describe("generateRandomSquare (diagonal-quiz)", () => {
+  const cornerSquares = new Set(["a1", "a8", "h1", "h8"]);
+
+  it("never returns a corner square", () => {
+    // Use a deterministic sequence that would hit corners with the common version
+    let callIndex = 0;
+    // Craft rng to produce a1 (file=0, rank=0) then d4
+    const rngValues = [
+      0 / 8,
+      0 / 8, // a1 (should be skipped)
+      3 / 8,
+      3 / 8, // d4
+    ];
+    const rng = () => rngValues[callIndex++];
+    const square = generateRandomSquare(rng);
+    expect(square).toBe("d4");
+    expect(cornerSquares.has(square)).toBe(false);
+  });
+
+  it("returns valid non-corner squares over many calls", () => {
+    for (let i = 0; i < 200; i++) {
+      const square = generateRandomSquare();
+      expect(square).toMatch(/^[a-h][1-8]$/);
+      expect(cornerSquares.has(square)).toBe(false);
+    }
+  });
+
+  it("allows non-corner edge squares", () => {
+    // Force rng to produce a2 (file=0, rank=1/8)
+    let callIndex = 0;
+    const rngValues = [0 / 8, 1 / 8]; // a2
+    const rng = () => rngValues[callIndex++];
+    const square = generateRandomSquare(rng);
+    expect(square).toBe("a2");
+  });
+});
+
+// ============================================================
+// generateSquareSequence (diagonal-quiz)
+// ============================================================
+describe("generateSquareSequence (diagonal-quiz)", () => {
+  const cornerSquares = new Set(["a1", "a8", "h1", "h8"]);
+
+  it("never includes corner squares", () => {
+    const squares = generateSquareSequence(100);
+    for (const square of squares) {
+      expect(cornerSquares.has(square)).toBe(false);
+    }
+  });
+
+  it("returns the requested number of squares", () => {
+    expect(generateSquareSequence(0)).toHaveLength(0);
+    expect(generateSquareSequence(1)).toHaveLength(1);
+    expect(generateSquareSequence(10)).toHaveLength(10);
+    expect(generateSquareSequence(60)).toHaveLength(60);
+  });
+
+  it("returns all valid squares", () => {
+    const squares = generateSquareSequence(20);
+    for (const square of squares) {
+      expect(square).toMatch(/^[a-h][1-8]$/);
+    }
+  });
+
+  it("contains no consecutive duplicates within a batch", () => {
+    const squares = generateSquareSequence(20);
+    const unique = new Set(squares);
+    expect(unique.size).toBe(squares.length);
   });
 });
