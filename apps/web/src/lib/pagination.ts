@@ -9,6 +9,9 @@
 
 export { type PaginatedResult, paginateItems } from '@blindfold-chess/features/utils';
 
+/** Default page size for paginated queries. */
+export const DEFAULT_PAGE_SIZE = 20;
+
 /** Result of computing pagination parameters for a DB query. */
 export type PaginationParams = {
   currentPage: number;
@@ -25,7 +28,7 @@ export type PaginationParams = {
 export function getPaginationParams(
   requestedPage: number,
   totalCount: number,
-  pageSize: number
+  pageSize: number = DEFAULT_PAGE_SIZE
 ): PaginationParams {
   const currentPage = Math.max(1, requestedPage);
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));

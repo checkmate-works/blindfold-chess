@@ -5,11 +5,11 @@ import { sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { articles, db } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -59,7 +59,7 @@ export default async function AdminArticlesPage({
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.articlesTable' });
 
   const totalCount = await getSlugCount();
-  const { currentPage, totalPages, limit, offset } = getPaginationData(page, totalCount);
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(page, totalCount);
   const groups = await getArticleSlugGroups(limit, offset);
 
   const buildHref = (p: number) => `/admin/articles?page=${p}`;

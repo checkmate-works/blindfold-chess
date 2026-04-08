@@ -24,62 +24,17 @@
  * - Blindfold Mode: Play without seeing the board visualization
  * - Warnsdorff's Rule: Heuristic that prioritizes squares with fewer unvisited neighbors
  */
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
+import { createPracticeTopPage } from '../_lib/createPracticeTopPage';
 import { KnightTourPageContent } from './_components/KnightTourPageContent';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
+export const dynamic = 'force-dynamic';
 
-export const generateStaticParams = generateLocaleStaticParams;
+const { generateMetadata, Page } = createPracticeTopPage({
+  i18nKey: 'knightTour',
+  canonicalPath: 'practice/knight-tour',
+  renderSetup: (locale) => <KnightTourPageContent locale={locale} />,
+  renderArticles: () => null,
+});
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  const title = t('practice.knightTour.title');
-  const description = t('practice.knightTour.description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/knight-tour', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
-}
-
-export default async function KnightTourPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.knightTour.title')}</PageTitle>
-
-      <PagePanel>
-        <KnightTourPageContent locale={locale} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.knightTour.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
-  );
-}
+export { generateMetadata };
+export default Page;

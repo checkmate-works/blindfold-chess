@@ -43,13 +43,12 @@ import { desc, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, profiles, userGrants } from '@/lib/db';
-import { getPaginationParams } from '@/lib/pagination';
+import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { DEFAULT_PAGE_SIZE } from '../_lib/pagination';
 import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
 import { RevokeButton } from './_components/RevokeButton';

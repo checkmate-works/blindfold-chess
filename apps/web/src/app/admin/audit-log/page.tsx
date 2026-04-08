@@ -4,12 +4,12 @@ import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, moderationActions, profiles } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -76,7 +76,7 @@ export default async function AdminAuditLogPage({
     .select({ count: sql<number>`count(*)` })
     .from(moderationActions)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     Number(countResult.count)
   );

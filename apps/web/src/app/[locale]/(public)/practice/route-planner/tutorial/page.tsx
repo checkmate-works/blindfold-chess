@@ -1,11 +1,6 @@
-import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 import { RoutePlannerTutorialSkipLink } from '../_components/RoutePlannerTutorialSkipLink';
 
@@ -13,62 +8,16 @@ const RoutePlannerTutorial = dynamic(() =>
   import('../_components/RoutePlannerTutorial').then((mod) => mod.RoutePlannerTutorial)
 );
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
+const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialPage({
+  i18nKey: 'routePlanner',
+  canonicalPath: 'practice/route-planner/tutorial',
+  breadcrumbSegments: [
+    { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
+    { labelKey: 'routePlanner.tutorial.title' },
+  ],
+  renderSkipLink: (locale) => <RoutePlannerTutorialSkipLink locale={locale} />,
+  renderTutorial: (locale) => <RoutePlannerTutorial locale={locale} />,
+});
 
-export const generateStaticParams = generateLocaleStaticParams;
-
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-  const title = `${t('practice.routePlanner.title')} - ${t('practice.routePlanner.tutorial.title')}`;
-  const description = t('practice.routePlanner.description');
-
-  return {
-    ...generateCanonicalMetadata({
-      locale,
-      path: 'practice/route-planner/tutorial',
-      title: title,
-      description,
-    }),
-    title: resolveTitle(title, locale),
-    description,
-  };
-}
-
-export default async function RoutePlannerTutorialPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.routePlanner.title')}</PageTitle>
-
-      <PagePanel>
-        <SectionTitle>{t('practice.routePlanner.tutorial.title')}</SectionTitle>
-
-        <div className="text-right">
-          <RoutePlannerTutorialSkipLink locale={locale} />
-        </div>
-
-        <RoutePlannerTutorial locale={locale} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.routePlanner.title'), href: '/practice/route-planner' },
-            { label: t('practice.routePlanner.tutorial.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
-  );
-}
+export { generateMetadata, generateStaticParams };
+export default Page;

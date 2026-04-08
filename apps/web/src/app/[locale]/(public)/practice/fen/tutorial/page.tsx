@@ -1,11 +1,6 @@
-import { getTranslations, setRequestLocale } from 'next-intl/server';
 import dynamic from 'next/dynamic';
 
-import { Divider, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 import { TutorialSkipLink } from '../_components/TutorialSkipLink';
 
@@ -13,55 +8,18 @@ const FenTutorial = dynamic(() =>
   import('../_components/FenTutorial').then((mod) => mod.FenTutorial)
 );
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
+const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialPage({
+  i18nKey: 'fen',
+  canonicalPath: 'practice/fen/tutorial',
+  descriptionKey: 'tutorial.description',
+  usePagePanel: false,
+  breadcrumbSegments: [
+    { labelKey: 'fen.title', href: '/practice/fen' },
+    { labelKey: 'fen.tutorial.title' },
+  ],
+  renderSkipLink: (locale) => <TutorialSkipLink locale={locale} />,
+  renderTutorial: (locale) => <FenTutorial locale={locale} />,
+});
 
-export const generateStaticParams = generateLocaleStaticParams;
-
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-  const title = `${t('practice.fen.title')} - ${t('practice.fen.tutorial.title')}`;
-  const description = t('practice.fen.tutorial.description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/fen/tutorial', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
-}
-
-export default async function FenTutorialPage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.fen.title')}</PageTitle>
-
-      <SectionTitle>{t('practice.fen.tutorial.title')}</SectionTitle>
-
-      <div className="text-right">
-        <TutorialSkipLink locale={locale} />
-      </div>
-
-      <FenTutorial locale={locale} />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[
-          { label: t('navigation.practice'), href: '/practice' },
-          { label: t('practice.fen.title'), href: '/practice/fen' },
-          { label: t('practice.fen.tutorial.title') },
-        ]}
-        locale={locale}
-      />
-    </div>
-  );
-}
+export { generateMetadata, generateStaticParams };
+export default Page;

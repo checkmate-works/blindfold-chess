@@ -2,9 +2,8 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { db, moderationActions, profiles, subscriptions, userRoles } from '@/lib/db';
+import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
-
-import { DEFAULT_PAGE_SIZE, getPaginationData } from '../../_lib/pagination';
 
 const FETCH_ALL_PAGE_SIZE = 1000;
 const MAX_PAGES = 100;
@@ -101,7 +100,7 @@ export async function fetchUsersPageData(
     );
 
     totalCount = filteredUsers.length;
-    const pagination = getPaginationData(page, totalCount);
+    const pagination = getPaginationParams(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 
@@ -120,7 +119,7 @@ export async function fetchUsersPageData(
 
     users = usersData?.users ?? [];
     totalCount = usersData && 'total' in usersData ? (usersData.total as number) : 0;
-    const pagination = getPaginationData(page, totalCount);
+    const pagination = getPaginationParams(page, totalCount);
     currentPage = pagination.currentPage;
     totalPages = pagination.totalPages;
 

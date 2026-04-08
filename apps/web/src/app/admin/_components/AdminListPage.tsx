@@ -8,10 +8,10 @@ import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { getPaginationData } from '../_lib/pagination';
 import { AdminDataTable } from './AdminDataTable';
 
 const searchParamsCache = createSearchParamsCache({
@@ -39,7 +39,7 @@ export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
     const t = await getTranslations({ locale: 'en', namespace: config.translationNamespace });
 
     const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(config.table);
-    const { currentPage, totalPages, limit, offset } = getPaginationData(
+    const { currentPage, totalPages, limit, offset } = getPaginationParams(
       page,
       Number(countResult.count)
     );

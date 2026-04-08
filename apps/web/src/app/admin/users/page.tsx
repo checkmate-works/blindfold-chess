@@ -2,13 +2,13 @@ import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { DEFAULT_PAGE_SIZE } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { DEFAULT_PAGE_SIZE } from '../_lib/pagination';
 import { CountryBarChart } from './_components/CountryBarChart';
 import { StatusFilter } from './_components/StatusFilter';
 import { UserRow } from './_components/UserRow';
