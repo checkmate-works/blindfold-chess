@@ -1,0 +1,1 @@
+CREATE INDEX "idx_announcements_status_published" ON "announcements" USING btree ("status","published_at");

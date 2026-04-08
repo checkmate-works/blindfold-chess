@@ -157,7 +157,10 @@ export const announcements = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [unique('uq_announcements_slug_locale').on(table.slug, table.locale)]
+  (table) => [
+    unique('uq_announcements_slug_locale').on(table.slug, table.locale),
+    index('idx_announcements_status_published').on(table.status, table.publishedAt),
+  ]
 );
 
 export type Announcement = typeof announcements.$inferSelect;
