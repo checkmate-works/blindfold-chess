@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { CloseButton } from './CloseButton';
 import { Modal } from './Modal';
 
 type Props = {
@@ -28,21 +29,11 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
       aria-describedby={descriptionId}
     >
       <div className="relative space-y-4">
-        <button
-          type="button"
+        <CloseButton
           onClick={onClose}
+          size="w-5 h-5"
           className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Close"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+        />
         <h2 id={titleId} className="text-xl font-bold text-foreground pr-8">
           {t('title')}
         </h2>
