@@ -12,12 +12,12 @@ type Props = {
 };
 
 export async function AdSenseGuard({ slot, slotId, className }: Props) {
+  const showAds = await shouldShowAds();
+  if (!showAds) return null;
+
   if (IS_LOCAL_DEV) {
     return <AdPlaceholder slot={slot} />;
   }
-
-  const showAds = await shouldShowAds();
-  if (!showAds) return null;
 
   return <AdSenseDisplay slot={slot} slotId={slotId} className={className} />;
 }

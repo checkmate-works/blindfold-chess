@@ -12,12 +12,12 @@ import { AdPlaceholder } from './AdPlaceholder';
 import { AdSenseInFeed } from './AdSenseInFeed';
 
 export async function AdSenseInFeedGuard() {
+  const showAds = await shouldShowAds();
+  if (!showAds) return null;
+
   if (IS_LOCAL_DEV) {
     return <AdPlaceholder slot="native-ad" />;
   }
-
-  const showAds = await shouldShowAds();
-  if (!showAds) return null;
 
   return (
     <>
