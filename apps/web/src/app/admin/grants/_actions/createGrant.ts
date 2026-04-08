@@ -8,6 +8,8 @@ import { addDays } from 'date-fns';
 import { db, userGrants } from '@/lib/db';
 import { calcGrantStartsAt } from '@/lib/user-grants';
 
+import { validateDurationDays, validateUuid } from '../_lib/validation';
+
 type ActionResult = { success: true } | { error: string };
 
 export async function createGrant(formData: FormData): Promise<ActionResult> {
@@ -22,19 +24,17 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   if (!userId || !userId.trim()) {
     return { error: 'User ID is required' };
   }
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(userId.trim())) {
+  const uuidError = validateUuid(userId.trim());
+  if (uuidError) {
     return { error: 'Invalid User ID format (expected UUID)' };
   }
   if (!benefitType || !benefitType.trim()) {
     return { error: 'Benefit type is required' };
   }
   const durationDays = Number(durationDaysStr);
-  if (!durationDays || durationDays <= 0) {
-    return { error: 'Duration must be a positive number' };
-  }
-  if (durationDays > 3650) {
-    return { error: 'Duration must not exceed 3650 days (10 years)' };
+  const durationError = validateDurationDays(durationDays);
+  if (durationError) {
+    return { error: durationError };
   }
 
   // NOTE: calcGrantStartsAt read + insert are not wrapped in a transaction.

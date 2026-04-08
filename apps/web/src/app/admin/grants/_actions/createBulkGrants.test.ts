@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockRequireAdmin = vi.fn();
 const mockInsertValues = vi.fn();
 const mockRevalidateTag = vi.fn();
-const mockSelectWhere = vi.fn();
+const mockCalcGrantStartsAt = vi.fn();
 
 vi.mock('@/app/admin/_lib/auth', () => ({
   requireAdmin: () => mockRequireAdmin(),
@@ -16,11 +16,6 @@ vi.mock('@/lib/db', () => ({
         insert: () => ({
           values: (data: unknown) => mockInsertValues(data),
         }),
-        select: () => ({
-          from: () => ({
-            where: (...args: unknown[]) => mockSelectWhere(...args),
-          }),
-        }),
       };
       return fn(tx);
     },
@@ -28,11 +23,8 @@ vi.mock('@/lib/db', () => ({
   userGrants: {},
 }));
 
-vi.mock('drizzle-orm', () => ({
-  and: (...args: unknown[]) => args,
-  eq: (...args: unknown[]) => ({ op: 'eq', args }),
-  isNull: (...args: unknown[]) => ({ op: 'isNull', args }),
-  max: (...args: unknown[]) => ({ op: 'max', args }),
+vi.mock('@/lib/user-grants', () => ({
+  calcGrantStartsAt: (...args: unknown[]) => mockCalcGrantStartsAt(...args),
 }));
 
 vi.mock('next/cache', () => ({
@@ -129,7 +121,7 @@ describe('createBulkGrants', () => {
   it('should create grants for all users and return success', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
     const existingExpires = new Date('2026-05-01T00:00:00Z');
-    mockSelectWhere.mockResolvedValue([{ maxExpires: existingExpires }]);
+    mockCalcGrantStartsAt.mockResolvedValue(existingExpires);
     mockInsertValues.mockResolvedValue(undefined);
 
     const result = await createBulkGrants({
@@ -140,7 +132,7 @@ describe('createBulkGrants', () => {
 
     expect(result).toEqual({ success: true, grantedCount: 2 });
     expect(mockInsertValues).toHaveBeenCalledTimes(2);
-    expect(mockSelectWhere).toHaveBeenCalledTimes(2);
+    expect(mockCalcGrantStartsAt).toHaveBeenCalledTimes(2);
 
     // Verify first call — startsAt should be existingExpires (future date)
     expect(mockInsertValues).toHaveBeenNthCalledWith(
@@ -169,7 +161,7 @@ describe('createBulkGrants', () => {
 
   it('should call revalidateTag on success', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockResolvedValue(undefined);
 
     await createBulkGrants({
@@ -183,7 +175,7 @@ describe('createBulkGrants', () => {
 
   it('should return error when db insert fails', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockRejectedValue(new Error('DB error'));
 
     const result = await createBulkGrants({
@@ -197,7 +189,7 @@ describe('createBulkGrants', () => {
 
   it('should process duplicate userIds (grants created for each occurrence)', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockResolvedValue(undefined);
 
     const result = await createBulkGrants({
@@ -221,7 +213,7 @@ describe('createBulkGrants', () => {
 
   it('should accept durationDays at exact upper bound (3650)', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockResolvedValue(undefined);
 
     const result = await createBulkGrants({
@@ -245,54 +237,26 @@ describe('createBulkGrants', () => {
     expect(result).toEqual({ error: 'Duration must be a positive number' });
   });
 
-  it('should use current time as startsAt when no existing grant (maxExpires is null)', async () => {
+  it('should pass the transaction client to calcGrantStartsAt', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    const startsAt = new Date('2026-04-08T12:00:00Z');
+    mockCalcGrantStartsAt.mockResolvedValue(startsAt);
     mockInsertValues.mockResolvedValue(undefined);
 
-    const before = new Date();
     const result = await createBulkGrants({
       userIds: [validUserId1],
       durationDays: 30,
-      reason: 'no existing grant',
+      reason: 'tx test',
     });
-    const after = new Date();
 
     expect(result).toEqual({ success: true, grantedCount: 1 });
-    const insertedData = mockInsertValues.mock.calls[0]?.[0] as {
-      startsAt: Date;
-    };
-    // startsAt should be approximately now (between before and after)
-    expect(insertedData.startsAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
-    expect(insertedData.startsAt.getTime()).toBeLessThanOrEqual(after.getTime());
-  });
-
-  it('should use current time as startsAt when existing grant has already expired', async () => {
-    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    const pastDate = new Date('2020-01-01T00:00:00Z');
-    mockSelectWhere.mockResolvedValue([{ maxExpires: pastDate }]);
-    mockInsertValues.mockResolvedValue(undefined);
-
-    const before = new Date();
-    const result = await createBulkGrants({
-      userIds: [validUserId1],
-      durationDays: 30,
-      reason: 'expired grant',
-    });
-    const after = new Date();
-
-    expect(result).toEqual({ success: true, grantedCount: 1 });
-    const insertedData = mockInsertValues.mock.calls[0]?.[0] as {
-      startsAt: Date;
-    };
-    // startsAt should be now (not the past expiry date)
-    expect(insertedData.startsAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
-    expect(insertedData.startsAt.getTime()).toBeLessThanOrEqual(after.getTime());
+    // calcGrantStartsAt should be called with userId, benefitType, and the tx object
+    expect(mockCalcGrantStartsAt).toHaveBeenCalledWith(validUserId1, 'ad_free', expect.anything());
   });
 
   it('should trim reason whitespace in inserted grant', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockResolvedValue(undefined);
 
     await createBulkGrants({
@@ -318,12 +282,12 @@ describe('createBulkGrants', () => {
     expect(result).toEqual({ error: 'Invalid User ID format: invalid-uuid' });
     // No DB operations should have occurred
     expect(mockInsertValues).not.toHaveBeenCalled();
-    expect(mockSelectWhere).not.toHaveBeenCalled();
+    expect(mockCalcGrantStartsAt).not.toHaveBeenCalled();
   });
 
   it('should not call revalidateTag when transaction fails', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     mockInsertValues.mockRejectedValue(new Error('DB error'));
 
     await createBulkGrants({
@@ -337,7 +301,7 @@ describe('createBulkGrants', () => {
 
   it('should rollback all inserts when error occurs mid-transaction', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
-    mockSelectWhere.mockResolvedValue([{ maxExpires: null }]);
+    mockCalcGrantStartsAt.mockResolvedValue(new Date());
     // First insert succeeds, second fails
     mockInsertValues.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('DB error'));
 
