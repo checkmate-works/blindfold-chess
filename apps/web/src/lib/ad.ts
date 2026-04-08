@@ -69,11 +69,12 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
 
   if (!userId) return true; // Unauthenticated -> show ads
 
-  // 1. Stripe paid subscription (existing)
-  if (await hasActiveSubscription(userId)) return false;
+  const [hasSub, hasGrant] = await Promise.all([
+    hasActiveSubscription(userId),
+    hasActiveGrant(userId, 'ad_free'),
+  ]);
 
-  // 2. Ad-free grant (manual, campaign, topic post, etc.)
-  if (await hasActiveGrant(userId, 'ad_free')) return false;
+  if (hasSub || hasGrant) return false;
 
   return true;
 }
