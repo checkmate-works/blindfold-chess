@@ -82,6 +82,21 @@ export function getHeatmapDateRangeForWeeks(
   return { startDate, endDate };
 }
 
+/**
+ * Returns an array of the most recent `days` date strings (YYYY-MM-DD),
+ * ending on `today`, in ascending chronological order.
+ */
+export function getRecentDays(today: Date, days: number): string[] {
+  const result: string[] = [];
+  const current = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  current.setDate(current.getDate() - (days - 1));
+  for (let i = 0; i < days; i++) {
+    result.push(formatDate(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return result;
+}
+
 /** Formats a Date as 'YYYY-MM-DD'. */
 export function formatDate(date: Date): string {
   const y = date.getFullYear();

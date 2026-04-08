@@ -6,6 +6,7 @@ import {
   getExpLevel,
   getHeatmapDateRange,
   getHeatmapDateRangeForWeeks,
+  getRecentDays,
 } from './heatmap-utils';
 
 describe('getExpLevel', () => {
@@ -304,5 +305,118 @@ describe('getHeatmapDateRangeForWeeks', () => {
     const originalTime = today.getTime();
     getHeatmapDateRangeForWeeks(today, 26);
     expect(today.getTime()).toBe(originalTime);
+  });
+});
+
+describe('getRecentDays', () => {
+  it('returns 7 dates ending on today', () => {
+    const today = new Date(2026, 3, 8); // 2026-04-08
+    const result = getRecentDays(today, 7);
+    expect(result).toHaveLength(7);
+    expect(result[6]).toBe('2026-04-08');
+    expect(result[0]).toBe('2026-04-02');
+  });
+
+  it('returns dates in ascending order', () => {
+    const today = new Date(2026, 3, 8);
+    const result = getRecentDays(today, 7);
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i] > result[i - 1]).toBe(true);
+    }
+  });
+
+  it('returns a single date when days is 1', () => {
+    const today = new Date(2026, 3, 8);
+    const result = getRecentDays(today, 1);
+    expect(result).toEqual(['2026-04-08']);
+  });
+
+  it('handles month boundary', () => {
+    const today = new Date(2026, 3, 2); // 2026-04-02
+    const result = getRecentDays(today, 7);
+    expect(result).toEqual([
+      '2026-03-27',
+      '2026-03-28',
+      '2026-03-29',
+      '2026-03-30',
+      '2026-03-31',
+      '2026-04-01',
+      '2026-04-02',
+    ]);
+  });
+
+  it('handles year boundary', () => {
+    const today = new Date(2026, 0, 3); // 2026-01-03
+    const result = getRecentDays(today, 7);
+    expect(result[0]).toBe('2025-12-28');
+    expect(result[6]).toBe('2026-01-03');
+  });
+
+  it('does not mutate the input date', () => {
+    const today = new Date(2026, 3, 8);
+    const originalTime = today.getTime();
+    getRecentDays(today, 7);
+    expect(today.getTime()).toBe(originalTime);
+  });
+
+  it('returns empty array when days is 0', () => {
+    const today = new Date(2026, 3, 8);
+    const result = getRecentDays(today, 0);
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array when days is negative', () => {
+    const today = new Date(2026, 3, 8);
+    const result = getRecentDays(today, -5);
+    expect(result).toEqual([]);
+  });
+
+  it('handles large number of days (365)', () => {
+    const today = new Date(2026, 3, 8); // 2026-04-08
+    const result = getRecentDays(today, 365);
+    expect(result).toHaveLength(365);
+    expect(result[364]).toBe('2026-04-08');
+    expect(result[0]).toBe('2025-04-09');
+    // verify ascending order
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i] > result[i - 1]).toBe(true);
+    }
+  });
+
+  it('includes Feb 29 when spanning a leap year', () => {
+    // 2024 is a leap year
+    const today = new Date(2024, 2, 1); // 2024-03-01
+    const result = getRecentDays(today, 3);
+    expect(result).toEqual(['2024-02-28', '2024-02-29', '2024-03-01']);
+  });
+
+  it('skips Feb 29 in a non-leap year', () => {
+    // 2025 is not a leap year
+    const today = new Date(2025, 2, 1); // 2025-03-01
+    const result = getRecentDays(today, 3);
+    expect(result).toEqual(['2025-02-27', '2025-02-28', '2025-03-01']);
+  });
+
+  it('handles Feb 29 as today in a leap year', () => {
+    const today = new Date(2024, 1, 29); // 2024-02-29
+    const result = getRecentDays(today, 1);
+    expect(result).toEqual(['2024-02-29']);
+  });
+
+  it('handles very large number of days (1000)', () => {
+    const today = new Date(2026, 3, 8);
+    const result = getRecentDays(today, 1000);
+    expect(result).toHaveLength(1000);
+    expect(result[999]).toBe('2026-04-08');
+    // 999 days before 2026-04-08 = 2023-07-14
+    expect(result[0]).toBe('2023-07-14');
+  });
+
+  it('returns 30 dates for a full month span', () => {
+    const today = new Date(2026, 3, 30); // 2026-04-30
+    const result = getRecentDays(today, 30);
+    expect(result).toHaveLength(30);
+    expect(result[0]).toBe('2026-04-01');
+    expect(result[29]).toBe('2026-04-30');
   });
 });

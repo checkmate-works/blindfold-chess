@@ -5,7 +5,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import type { ExpHeatmapData } from '../_lib/getExpHeatmapData';
-import { generateDateRange, getExpLevel, getHeatmapDateRangeForWeeks } from '../_lib/heatmap-utils';
+import {
+  generateDateRange,
+  getExpLevel,
+  getHeatmapDateRangeForWeeks,
+  getRecentDays,
+} from '../_lib/heatmap-utils';
 
 /**
  * CSS classes for each intensity level (0–4).
@@ -22,7 +27,9 @@ const LEVEL_CLASSES: Record<number, string> = {
 };
 
 const DESKTOP_WEEKS = 53;
-const MOBILE_WEEKS = 26;
+const BAR_CHART_DAYS = 7;
+const BAR_CHART_HEIGHT_PX = 140;
+const BAR_CHART_MIN_HEIGHT_PX = 4;
 
 type Props = {
   data: ExpHeatmapData;
@@ -71,7 +78,8 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const desktop = useHeatmapWeeks(data.daily, DESKTOP_WEEKS);
-  const mobile = useHeatmapWeeks(data.daily, MOBILE_WEEKS);
+
+  const recentDays = useMemo(() => getRecentDays(new Date(), BAR_CHART_DAYS), []);
 
   const handleCellClick = useCallback((dateStr: string) => {
     setSelectedDate((prev) => (prev === dateStr ? null : dateStr));
@@ -112,17 +120,51 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
     );
   }
 
+  /** Renders the mobile bar chart for the recent 7 days. */
+  function renderBarChart() {
+    const maxAmount = Math.max(0, ...recentDays.map((d) => data.daily[d] ?? 0));
+
+    return (
+      <div className="flex items-end gap-2" style={{ height: `${BAR_CHART_HEIGHT_PX}px` }}>
+        {recentDays.map((dateStr) => {
+          const amount = data.daily[dateStr] ?? 0;
+          const ratio = maxAmount > 0 ? amount / maxAmount : 0;
+          const barHeight =
+            amount > 0
+              ? Math.max(BAR_CHART_MIN_HEIGHT_PX, Math.round(ratio * (BAR_CHART_HEIGHT_PX - 24)))
+              : BAR_CHART_MIN_HEIGHT_PX;
+          const isSelected = dateStr === selectedDate;
+          const dateLabel = formatBarLabel(dateStr);
+
+          return (
+            <div key={dateStr} className="flex flex-1 flex-col items-center gap-1">
+              <span className="text-xs text-muted-foreground">{amount}</span>
+              <button
+                type="button"
+                className={`w-full rounded-t bg-primary cursor-pointer ${isSelected ? 'ring-2 ring-foreground' : ''}`}
+                style={{ height: `${barHeight}px` }}
+                title={`${dateStr}: ${amount} Exp`}
+                onClick={() => handleCellClick(dateStr)}
+              />
+              <span className="text-xs text-muted-foreground">{dateLabel}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       {/* Desktop: 53 weeks, small cells */}
       <div className="hidden md:block">
         {renderGrid(desktop.weeks, desktop.maxAmount, 'size-3')}
       </div>
-      {/* Mobile: 26 weeks, larger cells */}
-      <div className="block md:hidden">{renderGrid(mobile.weeks, mobile.maxAmount, 'size-4')}</div>
+      {/* Mobile: 7-day bar chart */}
+      <div className="block md:hidden">{renderBarChart()}</div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
+      {/* Legend — desktop only */}
+      <div className="hidden items-center justify-end gap-1.5 text-xs text-muted-foreground md:flex">
         <span>{legendLess}</span>
         {[0, 1, 2, 3, 4].map((level) => (
           <div key={level} className={`size-3 rounded-sm ${LEVEL_CLASSES[level]}`} />
@@ -162,4 +204,13 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
       )}
     </div>
   );
+}
+
+/**
+ * Formats a YYYY-MM-DD string as a short date label (M/D).
+ * Uses numeric parsing to avoid locale-dependent formatting issues.
+ */
+function formatBarLabel(dateStr: string): string {
+  const [, m, d] = dateStr.split('-');
+  return `${Number(m)}/${Number(d)}`;
 }
