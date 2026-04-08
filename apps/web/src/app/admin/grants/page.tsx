@@ -1,3 +1,44 @@
+/**
+ * Admin Grants Page (権限付与管理)
+ *
+ * @description
+ * Manages time-limited benefit grants for users. Grants provide benefits
+ * such as ad-free access or paywall content access for a specified duration.
+ * Currently supports admin manual grants; designed to also support automated
+ * triggers (topic post, campaign) and scoped grants (per-article paywall).
+ *
+ * @design Data model — `user_grants` table
+ *
+ * A single generic table handles all benefit types and grant sources:
+ * - `benefitType`: what benefit is granted ('ad_free', 'paywall_access', ...)
+ * - `grantType`: how it was granted ('admin_manual', 'topic_post', 'campaign', ...)
+ * - `resourceType` + `resourceId`: NULL for global benefits (ad_free), or
+ *   scoped to a specific resource (e.g., article) for paywall access.
+ * - `startsAt` + `expiresAt`: time window. Uses additive stacking — new grants
+ *   start from the latest existing expiresAt (see `calcGrantStartsAt`).
+ * - `revokedAt`: logical deletion (never physically deleted).
+ *
+ * Ad-free determination in `shouldShowAdsForUser()` (ad.ts) checks both
+ * Stripe subscriptions (existing paid plan) and user_grants with
+ * benefitType='ad_free'. Either source hides ads.
+ *
+ * @design Future extensions
+ *
+ * - Automated grant on topic post: call `calcGrantStartsAt` + insert in the
+ *   post creation flow. The race condition note in createGrant.ts applies —
+ *   wrap in a transaction for automated (high-frequency) grant types.
+ * - Campaign grants: bulk insert for matching users via admin action.
+ * - Paywall access: same table, with resourceType='article' + resourceId.
+ *   Add a `hasActiveGrant(userId, 'paywall_access')` check or a scoped
+ *   variant that also filters by resourceType/resourceId.
+ *
+ * @flow
+ * 1. Admin opens /admin/grants — sees grant form and paginated grant list.
+ * 2. Admin pastes a user UUID, selects benefit type, sets duration and reason.
+ * 3. createGrant server action calculates additive startsAt and inserts.
+ * 4. Active grants can be revoked (sets revokedAt, preserving history).
+ * 5. Cache tag 'grant-status' is revalidated on create/revoke.
+ */
 import { desc, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 

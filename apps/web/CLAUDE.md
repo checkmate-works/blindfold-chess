@@ -394,6 +394,43 @@ If adding the ability to edit `markdown` format articles in the admin UI:
 5. **Image handling** — Markdown articles use inline image URLs (e.g., `![alt](/path)`). The current `useImageUpload` hook is Tiptap-specific. A Markdown editor would need its own image insertion mechanism (e.g., insert `![](url)` at cursor).
 6. **Preview rendering** — The existing `MarkdownRenderer` component can be reused for live preview.
 
+## User Grants System (権限付与)
+
+A generic system for granting time-limited benefits to users. Supports ad-free access, paywall content access, and future benefit types.
+
+### Architecture Overview
+
+| Layer              | File                                  | Responsibility                                                                                                                  |
+| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**         | `src/lib/db/schema.ts` (`userGrants`) | DB table. See TSDoc `@design` tags for full design rationale                                                                    |
+| **Core logic**     | `src/lib/user-grants.ts`              | `hasActiveGrant(userId, benefitType)` — cached lookup; `calcGrantStartsAt(userId, benefitType)` — additive stacking calculation |
+| **Ad integration** | `src/lib/ad.ts`                       | `shouldShowAdsForUser()` checks both Stripe subscriptions AND `hasActiveGrant(userId, 'ad_free')`                               |
+| **Admin page**     | `src/app/admin/grants/page.tsx`       | Grant creation form, paginated list, revoke. See TSDoc for full description                                                     |
+| **Server actions** | `src/app/admin/grants/_actions/`      | `createGrant` (with UUID + duration validation), `revokeGrant` (logical delete via `revokedAt`)                                 |
+
+### Key Design Decisions
+
+- **Single `user_grants` table** for all benefit types — `benefitType` discriminator ('ad_free', 'paywall_access', ...) avoids per-benefit tables. `grantType` tracks the source ('admin_manual', 'topic_post', 'campaign', ...). Both are varchar for extensibility.
+- **`resourceType` + `resourceId`** — NULL for global benefits (ad_free), populated for scoped benefits (e.g., paywall access to a specific article).
+- **Additive stacking** — New grants start from `max(expiresAt)` of existing non-revoked grants, so multiple grants extend the benefit period.
+- **No `grantedBy` column** — Admin audit trail is handled by the existing `moderation_actions` table.
+- **`revokedAt` logical deletion** — Grants are never physically deleted.
+- **Ad-free sources** — A user sees no ads if they have EITHER an active Stripe subscription (`subscriptions` table) OR an active ad_free grant (`user_grants` table). Both are checked in `shouldShowAdsForUser()`.
+
+### Adding a New Benefit Type
+
+1. Use the existing `user_grants` table with a new `benefitType` value (no schema change needed).
+2. Create a check function similar to `hasActiveGrant(userId, 'new_type')` or use the existing one.
+3. Integrate the check at the appropriate gate (e.g., content access middleware, component guard).
+4. For scoped benefits, also filter by `resourceType`/`resourceId`.
+
+### Adding a New Grant Trigger
+
+1. Call `calcGrantStartsAt(userId, benefitType)` to get the stacking start time.
+2. Insert into `user_grants` with the appropriate `grantType` (e.g., 'topic_post').
+3. For automated (high-frequency) triggers, wrap the read + insert in a `db.transaction()` to prevent race conditions. The current admin_manual flow intentionally omits the transaction as it is low-frequency.
+4. Call `revalidateTag('grant-status')` after insert.
+
 ## Important Notes
 
 - Prioritize performance and SEO in all decisions
