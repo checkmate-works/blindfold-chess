@@ -84,50 +84,67 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
   const isOwnProfile = user?.id === profile.id;
 
-  let initialFollowing = false;
-  let followedByProfile = false;
-  if (user && !isOwnProfile) {
-    const [existingFollow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, profile.id)))
-      .limit(1);
-    initialFollowing = !!existingFollow;
+  // Build all independent follow queries and run them in parallel
+  const followCheckPromise =
+    user && !isOwnProfile
+      ? db
+          .select({ id: userFollows.id })
+          .from(userFollows)
+          .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, profile.id)))
+          .limit(1)
+      : Promise.resolve([]);
 
-    const [reverseFollow] = await db
-      .select({ id: userFollows.id })
-      .from(userFollows)
-      .where(and(eq(userFollows.followerId, profile.id), eq(userFollows.followingId, user.id)))
-      .limit(1);
-    followedByProfile = !!reverseFollow;
-  }
+  const reverseFollowCheckPromise =
+    user && !isOwnProfile
+      ? db
+          .select({ id: userFollows.id })
+          .from(userFollows)
+          .where(and(eq(userFollows.followerId, profile.id), eq(userFollows.followingId, user.id)))
+          .limit(1)
+      : Promise.resolve([]);
 
-  const [followerResult] = await db
+  const followerCountPromise = db
     .select({ count: count() })
     .from(userFollows)
     .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
     .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)));
-  const followerCount = followerResult.count;
 
-  let followingCount = 0;
-  if (isOwnProfile) {
-    const [followingResult] = await db
-      .select({ count: count() })
-      .from(userFollows)
-      .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-      .where(and(eq(userFollows.followerId, profile.id), isNull(profiles.deletedAt)));
-    followingCount = followingResult.count;
-  }
+  const followingCountPromise = isOwnProfile
+    ? db
+        .select({ count: count() })
+        .from(userFollows)
+        .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
+        .where(and(eq(userFollows.followerId, profile.id), isNull(profiles.deletedAt)))
+    : Promise.resolve([{ count: 0 }]);
 
-  const t = await getTranslations({ locale, namespace: 'publicProfile' });
-  const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
-  const tOpenings = await getTranslations({ locale, namespace: 'topics.openings' });
-
-  const [allPosts, userAchievementRows] = await Promise.all([
+  const [
+    existingFollowRows,
+    reverseFollowRows,
+    [followerResult],
+    [followingResult],
+    t,
+    tTopics,
+    tSquares,
+    tOpenings,
+    allPosts,
+    userAchievementRows,
+  ] = await Promise.all([
+    followCheckPromise,
+    reverseFollowCheckPromise,
+    followerCountPromise,
+    followingCountPromise,
+    getTranslations({ locale, namespace: 'publicProfile' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'topics.openings' }),
     getPostsByUserId(profile.id, user?.id),
     getUserAchievements(profile.id),
   ]);
+
+  const initialFollowing = !!existingFollowRows[0];
+  const followedByProfile = !!reverseFollowRows[0];
+  const followerCount = followerResult.count;
+  const followingCount = followingResult.count;
 
   const { page } = await searchParamsCache.parse(searchParams);
   const totalCount = allPosts.length;

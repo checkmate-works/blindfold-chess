@@ -71,13 +71,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
-  const tHome = await getTranslations({ locale, namespace: 'home' });
-  const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
-  const tHeader = await getTranslations({ locale, namespace: 'Header' });
-
-  const supabase = await createClient();
+  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase] = await Promise.all([
+    getTranslations({ locale, namespace: 'metadata' }),
+    getTranslations({ locale, namespace: 'home' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'Header' }),
+    createClient(),
+  ]);
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -53,43 +53,44 @@ export async function getAllTimeRanking(
   offset: number,
   limit: number
 ): Promise<LeaderboardPage> {
-  const rows = await db
-    .select({
-      userId: challengeBestScores.userId,
-      username: profiles.username,
-      score: challengeBestScores.score,
-      incorrectAnswers: challengeBestScores.incorrectAnswers,
-      timeTaken: challengeBestScores.timeTaken,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
-      country: profiles.country,
-      flair: profiles.flair,
-    })
-    .from(challengeBestScores)
-    .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
-    .where(
-      and(
-        eq(challengeBestScores.menuType, menuType),
-        eq(challengeBestScores.leaderboardKey, leaderboardKey)
+  const [rows, [countRow]] = await Promise.all([
+    db
+      .select({
+        userId: challengeBestScores.userId,
+        username: profiles.username,
+        score: challengeBestScores.score,
+        incorrectAnswers: challengeBestScores.incorrectAnswers,
+        timeTaken: challengeBestScores.timeTaken,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        country: profiles.country,
+        flair: profiles.flair,
+      })
+      .from(challengeBestScores)
+      .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
+      .where(
+        and(
+          eq(challengeBestScores.menuType, menuType),
+          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+        )
       )
-    )
-    .orderBy(
-      desc(challengeBestScores.score),
-      asc(challengeBestScores.incorrectAnswers),
-      asc(challengeBestScores.timeTaken)
-    )
-    .offset(offset)
-    .limit(limit);
-
-  const [countRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(challengeBestScores)
-    .where(
-      and(
-        eq(challengeBestScores.menuType, menuType),
-        eq(challengeBestScores.leaderboardKey, leaderboardKey)
+      .orderBy(
+        desc(challengeBestScores.score),
+        asc(challengeBestScores.incorrectAnswers),
+        asc(challengeBestScores.timeTaken)
       )
-    );
+      .offset(offset)
+      .limit(limit),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(challengeBestScores)
+      .where(
+        and(
+          eq(challengeBestScores.menuType, menuType),
+          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+        )
+      ),
+  ]);
 
   return { rows, total: countRow?.count ?? 0 };
 }
