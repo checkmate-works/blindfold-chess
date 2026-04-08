@@ -2,21 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  ADSENSE_INFEED_LAYOUT_KEY_DESKTOP,
-  ADSENSE_INFEED_LAYOUT_KEY_MOBILE,
-  ADSENSE_SLOT_INFEED_DESKTOP,
-  ADSENSE_SLOT_INFEED_MOBILE,
-  IS_LOCAL_DEV,
-} from '@/config';
-
-import { AdSenseInFeed } from '@/app/[locale]/_components/AdSense';
-
 import { getFeed } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
 import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
+import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {
   initialCursor: string | null;
@@ -58,26 +49,7 @@ export function FeedClient({
       if (displayItem.type === 'ad') {
         return (
           <div key={`ad-${index}`} className="border-b border-border">
-            <>
-              {(IS_LOCAL_DEV ||
-                (ADSENSE_SLOT_INFEED_DESKTOP && ADSENSE_INFEED_LAYOUT_KEY_DESKTOP)) && (
-                <div className="hidden md:block">
-                  <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_DESKTOP ?? ''}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_DESKTOP ?? ''}
-                  />
-                </div>
-              )}
-              {(IS_LOCAL_DEV ||
-                (ADSENSE_SLOT_INFEED_MOBILE && ADSENSE_INFEED_LAYOUT_KEY_MOBILE)) && (
-                <div className="block md:hidden">
-                  <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_MOBILE ?? ''}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_MOBILE ?? ''}
-                  />
-                </div>
-              )}
-            </>
+            <ResponsiveAdSlot />
           </div>
         );
       }

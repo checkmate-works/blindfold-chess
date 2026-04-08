@@ -2,13 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import {
-  ADSENSE_INFEED_LAYOUT_KEY_DESKTOP,
-  ADSENSE_INFEED_LAYOUT_KEY_MOBILE,
-  ADSENSE_SLOT_INFEED_DESKTOP,
-  ADSENSE_SLOT_INFEED_MOBILE,
-  IS_LOCAL_DEV,
-} from '@/config';
+import { IS_LOCAL_DEV } from '@/config';
 import { FaTachometerAlt } from 'react-icons/fa';
 
 import { shouldShowAdsForUser } from '@/lib/ad';
@@ -16,12 +10,12 @@ import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
 import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
-import { AdSenseInFeed } from '@/app/[locale]/_components/AdSense';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FeedCard } from './_components/FeedCard';
 import { FeedClient } from './_components/FeedClient';
+import { ResponsiveAdSlot } from './_components/ResponsiveAdSlot';
 import { VsAiCard } from './_components/VsAiCard';
 import { buildDisplayItems } from './_lib/feed-display';
 import { getFeedData } from './_lib/queries';
@@ -170,24 +164,7 @@ function ServerFeedList({
         if (displayItem.type === 'ad') {
           return (
             <div key={`ad-${index}`} className="border-b border-border">
-              {(IS_LOCAL_DEV ||
-                (ADSENSE_SLOT_INFEED_DESKTOP && ADSENSE_INFEED_LAYOUT_KEY_DESKTOP)) && (
-                <div className="hidden md:block">
-                  <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_DESKTOP ?? ''}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_DESKTOP ?? ''}
-                  />
-                </div>
-              )}
-              {(IS_LOCAL_DEV ||
-                (ADSENSE_SLOT_INFEED_MOBILE && ADSENSE_INFEED_LAYOUT_KEY_MOBILE)) && (
-                <div className="block md:hidden">
-                  <AdSenseInFeed
-                    slotId={ADSENSE_SLOT_INFEED_MOBILE ?? ''}
-                    layoutKey={ADSENSE_INFEED_LAYOUT_KEY_MOBILE ?? ''}
-                  />
-                </div>
-              )}
+              <ResponsiveAdSlot />
             </div>
           );
         }
