@@ -1,9 +1,6 @@
-import { IS_LOCAL_DEV } from '@/config';
-
-import { shouldShowAds } from '@/lib/ad';
-
 import { AdPlaceholder } from './AdPlaceholder';
 import { AdSenseDisplay } from './AdSenseDisplay';
+import { resolveAdGuard } from './resolveAdGuard';
 
 type Props = {
   slot: 'content-middle' | 'content-bottom';
@@ -12,12 +9,9 @@ type Props = {
 };
 
 export async function AdSenseGuard({ slot, slotId, className }: Props) {
-  if (IS_LOCAL_DEV) {
-    return <AdPlaceholder slot={slot} />;
-  }
-
-  const showAds = await shouldShowAds();
-  if (!showAds) return null;
+  const guard = await resolveAdGuard();
+  if (guard === 'hidden') return null;
+  if (guard === 'placeholder') return <AdPlaceholder slot={slot} />;
 
   return <AdSenseDisplay slot={slot} slotId={slotId} className={className} />;
 }

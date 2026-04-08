@@ -6,6 +6,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { adBanners, db, siteSettings } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 import { hasActiveSubscription } from '@/lib/subscription';
+import { hasActiveGrant } from '@/lib/user-grants';
 
 export type AdBannerConfig = {
   href: string;
@@ -68,7 +69,14 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
 
   if (!userId) return true; // Unauthenticated -> show ads
 
-  return !(await hasActiveSubscription(userId));
+  const [hasSub, hasGrant] = await Promise.all([
+    hasActiveSubscription(userId),
+    hasActiveGrant(userId, 'ad_free'),
+  ]);
+
+  if (hasSub || hasGrant) return false;
+
+  return true;
 }
 
 /**
