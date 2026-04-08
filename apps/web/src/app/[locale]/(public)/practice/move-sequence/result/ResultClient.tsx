@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -15,13 +15,7 @@ import { MoveSequenceResult } from '../_components/MoveSequenceResult';
 import { encodeMoveSequenceToBase64 } from '../_lib/share';
 import type { MoveSequenceSessionResult } from '../_lib/types';
 
-type Props = {
-  locale: Locale;
-  adBanner?: React.ReactNode;
-};
-
-export function ResultClient({ locale, adBanner }: Props) {
-  const t = useTranslations('practice.moveSequence');
+function MoveSequenceContent({ locale, adBanner }: { locale: Locale; adBanner?: React.ReactNode }) {
   const tPractice = useTranslations('practice');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,7 +25,6 @@ export function ResultClient({ locale, adBanner }: Props) {
   const settingsParam = searchParams.get('settings');
   const isTutorial = modeParam === 'tutorial';
 
-  // Parse Results
   const result = useMemo<MoveSequenceSessionResult | null>(() => {
     if (!dataParam) return null;
     try {
@@ -41,7 +34,6 @@ export function ResultClient({ locale, adBanner }: Props) {
     }
   }, [dataParam]);
 
-  // Parse Settings for Restart
   const settings = useMemo(() => {
     if (!settingsParam) return null;
     try {
@@ -57,7 +49,6 @@ export function ResultClient({ locale, adBanner }: Props) {
     } else if (settings && settings.fen && settings.pgn) {
       const params = new URLSearchParams();
 
-      // Encode FEN and PGN into 'data' param
       const encodedData = encodeMoveSequenceToBase64(settings.fen, settings.pgn);
       params.set('data', encodedData);
 
@@ -87,19 +78,11 @@ export function ResultClient({ locale, adBanner }: Props) {
   }> = [];
 
   if (!result) {
-    return null; // Or some error state
+    return null;
   }
 
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/move-sequence' },
-        { label: tPractice('result') },
-      ]}
-    >
+    <>
       <MoveSequenceResult
         result={result}
         isTutorial={isTutorial}
@@ -115,7 +98,6 @@ export function ResultClient({ locale, adBanner }: Props) {
           <SectionTitle className="text-xl font-semibold mb-4">
             {tPractice('relatedLearning')}
           </SectionTitle>
-          {/* Placeholder for related learning if keys exist, otherwise hidden or generic */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {relatedLinks.map((link) => (
               <CardLink
@@ -130,6 +112,12 @@ export function ResultClient({ locale, adBanner }: Props) {
           </div>
         </PracticeLayout>
       )}
-    </PracticeResultPage>
+    </>
   );
 }
+
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'move-sequence',
+  i18nKey: 'moveSequence',
+  renderContent: (ctx, adBanner) => <MoveSequenceContent locale={ctx.locale} adBanner={adBanner} />,
+});

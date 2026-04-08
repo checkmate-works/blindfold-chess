@@ -1,99 +1,31 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-type Props = {
-  locale: Locale;
-  adBannerWide?: React.ReactNode;
-  adBannerStandard?: React.ReactNode;
-  leaderboardRows?: LeaderboardRow[];
-  leaderboardDetailPath?: string;
-};
-
-export function ResultClient({
-  locale,
-  adBannerWide,
-  adBannerStandard,
-  leaderboardRows,
-  leaderboardDetailPath,
-}: Props) {
-  const t = useTranslations('practice.coordinateQuiz');
-  const tPractice = useTranslations('practice');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const score = parseInt(searchParams.get('score') || '0', 10);
-  const total = parseInt(searchParams.get('total') || '0', 10);
-  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
-
-  const orientation = searchParams.get('orientation');
-  const speed = searchParams.get('speed');
-
-  // Try Again: 同じ設定でセッションを即座にやり直す
-  const sessionParams = new URLSearchParams();
-  if (orientation) sessionParams.set('orientation', orientation);
-  if (speed) sessionParams.set('feedbackSpeed', speed);
-  const tryAgainUrl = `/${locale}/practice/coordinate-quiz/challenge/session?${sessionParams.toString()}`;
-
-  // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
-  const settingsParams = new URLSearchParams();
-  if (orientation) settingsParams.set('orientation', orientation);
-  if (speed) settingsParams.set('feedbackSpeed', speed);
-  const changeSettingsUrl = `/${locale}/practice/coordinate-quiz/challenge?${settingsParams.toString()}`;
-
-  // Calculate average time if total > 0
-  const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
-
-  return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/coordinate-quiz' },
-        { label: tPractice('result') },
-      ]}
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => router.push(tryAgainUrl)}
-        onExit={() => router.push(changeSettingsUrl)}
-        locale={locale}
-        labels={{
-          ...getCommonPracticeCompleteLabels(tPractice),
-          averageTime: tPractice('averageTime'),
-          recreationProgress: tPractice('accuracy'),
-          correct: tPractice('correct'),
-          incorrect: tPractice('incorrect'),
-        }}
-        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
-        scoreStats={{ correct: score, incorrect: total - score, total }}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-        afterActions={<SignUpBanner locale={locale} />}
-        beforeRelatedContent={adBannerWide}
-      />
-      {leaderboardRows && leaderboardDetailPath && (
-        <LeaderboardPreview
-          rows={leaderboardRows}
-          detailPath={leaderboardDetailPath}
-          locale={locale}
-        />
-      )}
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-    </PracticeResultPage>
-  );
-}
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'coordinate-quiz',
+  i18nKey: 'coordinateQuiz',
+  extraParams: (sp) => ({
+    orientation: sp.get('orientation'),
+    feedbackSpeed: sp.get('speed'),
+  }),
+  buildTryAgainUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.orientation) params.set('orientation', extra.orientation);
+    if (extra.feedbackSpeed) params.set('feedbackSpeed', extra.feedbackSpeed);
+    return `/${ctx.locale}/practice/coordinate-quiz/challenge/session?${params.toString()}`;
+  },
+  buildSettingsUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.orientation) params.set('orientation', extra.orientation);
+    if (extra.feedbackSpeed) params.set('feedbackSpeed', extra.feedbackSpeed);
+    return `/${ctx.locale}/practice/coordinate-quiz/challenge?${params.toString()}`;
+  },
+  buildAverageTimeText: (ctx) => {
+    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
+    return ctx.tPractice('secondsFormat', { seconds: avg });
+  },
+  extraCompleteProps: (_ctx, { adBannerWide }) => ({
+    beforeRelatedContent: adBannerWide,
+  }),
+});

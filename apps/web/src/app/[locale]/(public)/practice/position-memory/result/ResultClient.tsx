@@ -6,40 +6,27 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
 import { ProblemResultList } from '@/app/[locale]/(public)/practice/_components/ProblemResultList';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import type { PracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/practice-complete-types';
 
-type Props = {
-  locale: Locale;
-};
-
-export function ResultClient({ locale }: Props) {
-  const t = useTranslations('practice.positionMemory');
-  const tPractice = useTranslations('practice');
-  const tNavigation = useTranslations('navigation'); // Added for breadcrumbs label
-  const router = useRouter();
+function PositionMemoryChildren() {
   const searchParams = useSearchParams();
+  const t = useTranslations('practice.positionMemory');
+  const tPractice = useTranslations('practice') as unknown as (key: string) => string;
+  const router = useRouter();
 
-  const score = parseInt(searchParams.get('score') || '0', 10);
-  const total = parseInt(searchParams.get('total') || '100', 10);
   const dataParam = searchParams.get('data');
-  const statsParam = searchParams.get('stats');
   const isCustomFen = searchParams.get('custom') === 'true';
 
   const problemResults = useMemo(() => {
     if (!dataParam) return [];
     try {
-      // Decode and parse minified JSON
-      // f=fen, r=recreatedFen, b=isBlackToMove, a=accuracy, c=correctPieces
-      // t=totalPieces, i=incorrectPieces, m=missingPieces, e=extraPieces
-      // o=originalIndex, s=skipped
       interface ResultItem {
         f: string;
         r: string;
-        b: number; // 0 or 1
+        b: number;
         a: number;
         c: number;
         t: number;
@@ -47,7 +34,7 @@ export function ResultClient({ locale }: Props) {
         m: number;
         e: number;
         o: number;
-        s: number; // 0 or 1
+        s: number;
       }
       const parsed = JSON.parse(decodeURIComponent(dataParam));
       return parsed.map((item: ResultItem) => ({
@@ -69,44 +56,8 @@ export function ResultClient({ locale }: Props) {
     }
   }, [dataParam]);
 
-  const detailedStats = useMemo(() => {
-    if (!statsParam) return undefined;
-    try {
-      const parsed = JSON.parse(decodeURIComponent(statsParam));
-      return {
-        correctPieces: parsed.c,
-        totalPieces: parsed.t,
-        incorrectPieces: parsed.i,
-        missingPieces: parsed.m,
-        extraPieces: parsed.e,
-      };
-    } catch (e) {
-      console.error('Failed to parse stats data', e);
-      return undefined;
-    }
-  }, [statsParam]);
-
-  const timeLimit = searchParams.get('timeLimit');
-  const shuffle = searchParams.get('shuffle');
-  const count = searchParams.get('count');
-  const problems = searchParams.get('problems');
-  const source = searchParams.get('source');
-  const mode = searchParams.get('mode');
-
-  // Construct retry URL
-  const retryParams = new URLSearchParams();
-  if (timeLimit) retryParams.set('timeLimit', timeLimit);
-  if (shuffle) retryParams.set('shuffle', shuffle);
-  if (count) retryParams.set('count', count);
-  if (problems) retryParams.set('problems', problems);
-  if (source) retryParams.set('source', source);
-  if (mode) retryParams.set('mode', mode);
-
-  const retryUrl = `/${locale}/practice/position-memory/session?${retryParams.toString()}#position-memory-session`;
-
-  const labels = {
+  const labels: PracticeCompleteLabels = {
     ...getCommonPracticeCompleteLabels(tPractice),
-    score: `${t('accuracy')}: ${score.toFixed(1)}% (${detailedStats?.correctPieces ?? 0}/${detailedStats?.totalPieces ?? 0})`,
     recreationProgress: t('recreationProgress'),
     correct: t('correct'),
     incorrect: t('incorrect'),
@@ -141,7 +92,7 @@ export function ResultClient({ locale }: Props) {
             );
             settings.customFenInput = updatedFens.join('\n');
             localStorage.setItem('positionMemorySettings', JSON.stringify(settings));
-            router.refresh(); // Refresh to reflect changes if needed (though result uses passed data)
+            router.refresh();
           }
         }
       } catch (error) {
@@ -152,38 +103,90 @@ export function ResultClient({ locale }: Props) {
   );
 
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tNavigation('practice'), href: '/practice' },
-        { label: t('title'), href: '/practice/position-memory' },
-        { label: tPractice('result') },
-      ]}
-      containerClassName="space-y-8"
-      dividerClassName="my-8"
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        // Full page reload to reset session state in PositionMemorySession (dynamically imported)
-        onTryAgain={() => (window.location.href = retryUrl)}
-        onExit={() => router.push(`/${locale}/practice/position-memory`)}
-        locale={locale}
-        labels={labels}
-        scoreStats={detailedStats}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-      >
-        <ProblemResultList
-          problemResults={problemResults}
-          labels={labels}
-          isCustomFen={isCustomFen}
-          onDeleteFen={handleDeleteFen}
-        />
-      </PracticeComplete>
-    </PracticeResultPage>
+    <ProblemResultList
+      problemResults={problemResults}
+      labels={labels}
+      isCustomFen={isCustomFen}
+      onDeleteFen={handleDeleteFen}
+    />
   );
 }
+
+function parseStats(searchParams: URLSearchParams) {
+  const statsParam = searchParams.get('stats');
+  if (!statsParam) return undefined;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(statsParam));
+    return {
+      correctPieces: parsed.c,
+      totalPieces: parsed.t,
+      incorrectPieces: parsed.i,
+      missingPieces: parsed.m,
+      extraPieces: parsed.e,
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'position-memory',
+  i18nKey: 'positionMemory',
+  containerClassName: 'space-y-8',
+  dividerClassName: 'my-8',
+  practiceBreadcrumbSource: 'navigation',
+  tryAgainNavigation: 'reload',
+  showSignUpBanner: false,
+  resolveScoreTotal: (sp) => ({
+    score: parseInt(sp.get('score') || '0', 10),
+    total: parseInt(sp.get('total') || '100', 10),
+  }),
+  extraParams: (sp) => ({
+    timeLimit: sp.get('timeLimit'),
+    shuffle: sp.get('shuffle'),
+    count: sp.get('count'),
+    problems: sp.get('problems'),
+    source: sp.get('source'),
+    mode: sp.get('mode'),
+  }),
+  buildTryAgainUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.timeLimit) params.set('timeLimit', extra.timeLimit);
+    if (extra.shuffle) params.set('shuffle', extra.shuffle);
+    if (extra.count) params.set('count', extra.count);
+    if (extra.problems) params.set('problems', extra.problems);
+    if (extra.source) params.set('source', extra.source);
+    if (extra.mode) params.set('mode', extra.mode);
+    return `/${ctx.locale}/practice/position-memory/session?${params.toString()}#position-memory-session`;
+  },
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/position-memory`,
+  buildAverageTimeText: () => undefined,
+  buildScoreStats: (ctx) => {
+    const stats = parseStats(ctx.searchParams);
+    return stats ?? { correct: ctx.score, incorrect: ctx.total - ctx.score, total: ctx.total };
+  },
+  labelOverrides: (ctx) => {
+    const stats = parseStats(ctx.searchParams);
+    return {
+      score: `${ctx.t('accuracy')}: ${ctx.score.toFixed(1)}% (${stats?.correctPieces ?? 0}/${stats?.totalPieces ?? 0})`,
+      recreationProgress: ctx.t('recreationProgress'),
+      correct: ctx.t('correct'),
+      incorrect: ctx.t('incorrect'),
+      missing: ctx.t('missing'),
+      extra: ctx.t('extra'),
+      extraDescription: ctx.t('extraDescription'),
+      problemDetails: ctx.t('problemDetails'),
+      problem: ctx.t('problem'),
+      original: ctx.t('original'),
+      yourRecreation: ctx.t('yourRecreation'),
+      deleteFenTitle: ctx.t('deleteFenTitle'),
+      deleteFenMessage: ctx.t('deleteFenMessage'),
+      deleteFenConfirm: ctx.t('deleteFenConfirm'),
+      deleteFenCancel: ctx.t('deleteFenCancel'),
+      skipped: ctx.t('skipped'),
+      analyzeOnLichess: ctx.t('analyzeOnLichess'),
+      averageTime: undefined,
+    };
+  },
+  renderChildren: () => <PositionMemoryChildren />,
+});

@@ -2,16 +2,11 @@
 
 import { useMemo } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -21,53 +16,48 @@ import {
   RoutePlannerResultList,
 } from '../_components/RoutePlannerResultList';
 
-type Props = {
-  locale: Locale;
-  adBannerStandard?: React.ReactNode;
-  leaderboardRows?: LeaderboardRow[];
-  leaderboardDetailPath?: string;
-};
-
-export function ResultClient({
-  locale,
-  adBannerStandard,
-  leaderboardRows,
-  leaderboardDetailPath,
-}: Props) {
-  const t = useTranslations('practice.routePlanner');
-  const tPractice = useTranslations('practice');
-  const router = useRouter();
+function RoutePlannerChildren() {
   const searchParams = useSearchParams();
   const { preferences, isLoaded } = useGamePreferences();
-
+  const t = useTranslations('practice.routePlanner');
+  const tPractice = useTranslations('practice');
   const dataParam = searchParams.get('data');
-  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
-  const piece = searchParams.get('piece');
 
-  const { score, total, results } = useMemo(() => {
-    if (!dataParam) {
-      return { score: 0, total: 0, results: [] };
-    }
+  const results = useMemo(() => {
+    if (!dataParam) return [];
     try {
       const parsed = JSON.parse(decodeURIComponent(dataParam));
-      const results = Array.isArray(parsed) ? (parsed as RoutePlannerResult[]) : [];
-      const score = results.filter((r) => r.success).length;
-      return { score, total: results.length, results };
+      return Array.isArray(parsed) ? (parsed as RoutePlannerResult[]) : [];
     } catch {
-      return { score: 0, total: 0, results: [] };
+      return [];
     }
   }, [dataParam]);
 
-  // Calculate average time per question
-  const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
+  if (results.length === 0 || !isLoaded) return null;
 
-  // Try Again: 同じ設定でセッションを即座にやり直す
-  const sessionParams = new URLSearchParams();
-  if (piece) sessionParams.set('piece', piece);
-  const tryAgainUrl = `/${locale}/practice/route-planner/challenge/session?${sessionParams.toString()}`;
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-muted-foreground mb-4">
+        {tPractice('problemDetails')}
+      </h3>
+      <RoutePlannerResultList
+        results={results}
+        boardTheme={preferences.boardTheme}
+        labels={{
+          correct: t('correct'),
+          badEnd: t('badEnd'),
+          badMove: t('incorrect'),
+          shortestPath: t('shortestPath'),
+          yourPath: t('yourPath'),
+          skipped: tPractice('skip'),
+        }}
+      />
+    </div>
+  );
+}
 
-  // Change Settings: セットアップ画面に遷移
-  const changeSettingsUrl = `/${locale}/practice/route-planner`;
+function RelatedLinks({ locale }: { locale: Locale }) {
+  const tPractice = useTranslations('practice');
 
   const relatedLinks = [
     {
@@ -85,83 +75,57 @@ export function ResultClient({
   ];
 
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/route-planner' },
-        { label: tPractice('result') },
-      ]}
-      containerClassName="space-y-8"
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => (window.location.href = tryAgainUrl)}
-        onExit={() => router.push(changeSettingsUrl)}
-        locale={locale}
-        labels={{
-          ...getCommonPracticeCompleteLabels(tPractice),
-          averageTime: tPractice('averageTime'),
-          recreationProgress: tPractice('accuracy'),
-          correct: tPractice('correct'),
-          incorrect: tPractice('incorrect'),
-        }}
-        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
-        scoreStats={{ correct: score, incorrect: total - score, total }}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-        afterActions={<SignUpBanner locale={locale} />}
-      >
-        {results.length > 0 && isLoaded && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-              {tPractice('problemDetails')}
-            </h3>
-            <RoutePlannerResultList
-              results={results}
-              boardTheme={preferences.boardTheme}
-              labels={{
-                correct: t('correct'),
-                badEnd: t('badEnd'),
-                badMove: t('incorrect'),
-                shortestPath: t('shortestPath'),
-                yourPath: t('yourPath'),
-                skipped: tPractice('skip'),
-              }}
-            />
-          </div>
-        )}
-      </PracticeComplete>
-
-      <div className="mt-8 space-y-3">
-        <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {relatedLinks.map((link) => (
-            <CardLink
-              key={link.href}
-              href={link.href}
-              icon={link.icon}
-              title={link.title}
-              description={link.description}
-              locale={locale}
-            />
-          ))}
-        </div>
+    <div className="mt-8 space-y-3">
+      <SectionTitle>{tPractice('relatedLearning')}</SectionTitle>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {relatedLinks.map((link) => (
+          <CardLink
+            key={link.href}
+            href={link.href}
+            icon={link.icon}
+            title={link.title}
+            description={link.description}
+            locale={locale}
+          />
+        ))}
       </div>
-
-      {leaderboardRows && leaderboardDetailPath && (
-        <LeaderboardPreview
-          rows={leaderboardRows}
-          detailPath={leaderboardDetailPath}
-          locale={locale}
-        />
-      )}
-
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-    </PracticeResultPage>
+    </div>
   );
 }
+
+/** Parse score/total from the data param (route-planner uses data-based scoring) */
+function parseDataScores(searchParams: URLSearchParams) {
+  const dataParam = searchParams.get('data');
+  if (!dataParam) return { score: 0, total: 0 };
+  try {
+    const parsed = JSON.parse(decodeURIComponent(dataParam));
+    const results = Array.isArray(parsed) ? parsed : [];
+    const score = results.filter((r: RoutePlannerResult) => r.success).length;
+    return { score, total: results.length };
+  } catch {
+    return { score: 0, total: 0 };
+  }
+}
+
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'route-planner',
+  i18nKey: 'routePlanner',
+  containerClassName: 'space-y-8',
+  tryAgainNavigation: 'reload',
+  resolveScoreTotal: (sp) => parseDataScores(sp),
+  extraParams: (sp) => ({
+    piece: sp.get('piece'),
+  }),
+  buildTryAgainUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.piece) params.set('piece', extra.piece);
+    return `/${ctx.locale}/practice/route-planner/challenge/session?${params.toString()}`;
+  },
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/route-planner`,
+  buildAverageTimeText: (ctx) => {
+    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
+    return ctx.tPractice('secondsFormat', { seconds: avg });
+  },
+  renderChildren: () => <RoutePlannerChildren />,
+  renderAfterComplete: (ctx) => <RelatedLinks locale={ctx.locale} />,
+});

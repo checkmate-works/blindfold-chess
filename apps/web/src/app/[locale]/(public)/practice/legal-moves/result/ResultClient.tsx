@@ -1,98 +1,34 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-type Props = {
-  locale: Locale;
-  adBannerStandard?: React.ReactNode;
-  leaderboardRows?: LeaderboardRow[];
-  leaderboardDetailPath?: string;
-};
-
-export function ResultClient({
-  locale,
-  adBannerStandard,
-  leaderboardRows,
-  leaderboardDetailPath,
-}: Props) {
-  const t = useTranslations('practice.legalMoves');
-  const tPractice = useTranslations('practice');
-  const tNavigation = useTranslations('navigation');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const score = parseInt(searchParams.get('score') || '0', 10);
-  const total = parseInt(searchParams.get('total') || '0', 10);
-  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
-
-  // Params for retry
-  const piece = searchParams.get('piece');
-
-  // Calculate average time if total > 0
-  const averageTime = total > 0 ? (timeElapsed / total).toFixed(1) : '0.0';
-
-  // Try Again: 同じ設定でセッションを即座にやり直す
-  const sessionParams = new URLSearchParams();
-  if (piece) sessionParams.set('piece', piece);
-  const tryAgainUrl = `/${locale}/practice/legal-moves/challenge/session?${sessionParams.toString()}`;
-
-  // Change Settings: チャレンジセットアップに遷移（設定を引き継ぐ）
-  const settingsParams = new URLSearchParams();
-  if (piece) settingsParams.set('piece', piece);
-  const changeSettingsUrl = `/${locale}/practice/legal-moves/challenge?${settingsParams.toString()}`;
-
-  return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tNavigation('practice'), href: '/practice' },
-        { label: t('title'), href: '/practice/legal-moves' },
-        { label: tPractice('result') },
-      ]}
-      containerClassName="space-y-8"
-      dividerClassName="my-8"
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        // Full page reload to reset useRef-based question generation state in LegalMovesSession
-        onTryAgain={() => (window.location.href = tryAgainUrl)}
-        onExit={() => router.push(changeSettingsUrl)}
-        locale={locale}
-        labels={{
-          ...getCommonPracticeCompleteLabels(tPractice),
-          averageTime: tPractice('averageTime'),
-          recreationProgress: t('accuracy'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-        }}
-        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
-        scoreStats={{ correct: score, incorrect: total - score, total }}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-        afterActions={<SignUpBanner locale={locale} />}
-      />
-      {leaderboardRows && leaderboardDetailPath && (
-        <LeaderboardPreview
-          rows={leaderboardRows}
-          detailPath={leaderboardDetailPath}
-          locale={locale}
-        />
-      )}
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-    </PracticeResultPage>
-  );
-}
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'legal-moves',
+  i18nKey: 'legalMoves',
+  containerClassName: 'space-y-8',
+  dividerClassName: 'my-8',
+  practiceBreadcrumbSource: 'navigation',
+  tryAgainNavigation: 'reload',
+  extraParams: (sp) => ({
+    piece: sp.get('piece'),
+  }),
+  buildTryAgainUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.piece) params.set('piece', extra.piece);
+    return `/${ctx.locale}/practice/legal-moves/challenge/session?${params.toString()}`;
+  },
+  buildSettingsUrl: (ctx, extra) => {
+    const params = new URLSearchParams();
+    if (extra.piece) params.set('piece', extra.piece);
+    return `/${ctx.locale}/practice/legal-moves/challenge?${params.toString()}`;
+  },
+  buildAverageTimeText: (ctx) => {
+    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
+    return ctx.tPractice('secondsFormat', { seconds: avg });
+  },
+  labelOverrides: (ctx) => ({
+    recreationProgress: ctx.t('accuracy'),
+    correct: ctx.t('correct'),
+    incorrect: ctx.t('incorrect'),
+  }),
+});

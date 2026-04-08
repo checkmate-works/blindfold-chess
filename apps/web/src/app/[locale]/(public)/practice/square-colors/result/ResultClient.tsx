@@ -1,102 +1,21 @@
 'use client';
 
-import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
-import { SUPPORTED_LOCALES } from '@/config';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-type Props = {
-  locale: Locale;
-  adBannerWide?: React.ReactNode;
-  adBannerStandard?: React.ReactNode;
-  leaderboardRows?: LeaderboardRow[];
-  leaderboardDetailPath?: string;
-};
-
-export function ResultClient({
-  locale,
-  adBannerWide,
-  adBannerStandard,
-  leaderboardRows,
-  leaderboardDetailPath,
-}: Props) {
-  const router = useRouter();
-  const t = useTranslations('practice.squareColors');
-  const tPractice = useTranslations('practice');
-
-  const searchParams = useSearchParams();
-
-  // Validate locale
-  if (!(SUPPORTED_LOCALES as readonly string[]).includes(locale)) {
-    notFound();
-  }
-
-  // Parse query params
-  const time = parseFloat(searchParams.get('time') || '0');
-  const score = parseInt(searchParams.get('score') || '0', 10);
-  const total = parseInt(searchParams.get('total') || '0', 10);
-
-  // Calculate average time per question
-  const timePerQuestion = total > 0 ? time / total : 0;
-
-  // Prepare labels
-  const labels = {
-    ...getCommonPracticeCompleteLabels(tPractice),
-    recreationProgress: t('accuracy'),
-    averageTime: t('averageTime'),
-    correct: t('correct'),
-    incorrect: t('incorrect'),
-  };
-
-  // Format average time text
-  const averageTimeText =
-    total > 0 ? tPractice('secondsFormat', { seconds: timePerQuestion.toFixed(1) }) : undefined;
-
-  return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/square-colors' },
-        { label: tPractice('result') },
-      ]}
-      containerClassName="space-y-8"
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => {
-          router.push(`/${locale}/practice/square-colors/challenge/session`);
-        }}
-        onExit={() => router.push(`/${locale}/practice/square-colors/challenge`)}
-        locale={locale}
-        labels={labels}
-        scoreStats={{ correct: score, incorrect: total - score, total }}
-        averageTimeText={averageTimeText}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-        afterActions={<SignUpBanner locale={locale} />}
-        beforeRelatedContent={adBannerWide}
-      />
-      {leaderboardRows && leaderboardDetailPath && (
-        <LeaderboardPreview
-          rows={leaderboardRows}
-          detailPath={leaderboardDetailPath}
-          locale={locale}
-        />
-      )}
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-    </PracticeResultPage>
-  );
-}
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'square-colors',
+  i18nKey: 'squareColors',
+  containerClassName: 'space-y-8',
+  validateLocale: true,
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/square-colors/challenge`,
+  buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/square-colors/challenge/session`,
+  labelOverrides: (ctx) => ({
+    recreationProgress: ctx.t('accuracy'),
+    averageTime: ctx.t('averageTime'),
+    correct: ctx.t('correct'),
+    incorrect: ctx.t('incorrect'),
+  }),
+  extraCompleteProps: (_ctx, { adBannerWide }) => ({
+    beforeRelatedContent: adBannerWide,
+  }),
+});

@@ -2,44 +2,15 @@
 
 import { useMemo } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
 import { DiagonalQuizProblemList } from '../_components/DiagonalQuizProblemList';
 import type { QuestionResult } from '../_components/DiagonalQuizProblemList';
 
-type Props = {
-  locale: Locale;
-  adBannerWide?: React.ReactNode;
-  adBannerStandard?: React.ReactNode;
-  leaderboardRows?: LeaderboardRow[];
-  leaderboardDetailPath?: string;
-};
-
-export function ResultClient({
-  locale,
-  adBannerWide,
-  adBannerStandard,
-  leaderboardRows,
-  leaderboardDetailPath,
-}: Props) {
-  const t = useTranslations('practice.diagonalQuiz');
-  const tPractice = useTranslations('practice');
-  const router = useRouter();
+function DiagonalQuizChildren() {
   const searchParams = useSearchParams();
-
-  const score = parseInt(searchParams.get('score') || '0', 10);
-  const total = parseInt(searchParams.get('total') || '0', 10);
-  const timeElapsed = parseInt(searchParams.get('time') || '0', 10);
   const dataParam = searchParams.get('data');
 
   const questionResults = useMemo(() => {
@@ -75,54 +46,35 @@ export function ResultClient({
     }
   }, [dataParam]);
 
-  const averageTime =
-    questionResults.length > 0 ? (timeElapsed / questionResults.length).toFixed(1) : '0.0';
-
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/diagonal-quiz' },
-        { label: tPractice('result') },
-      ]}
-      containerClassName="space-y-8"
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => router.push(`/${locale}/practice/diagonal-quiz/challenge/session`)}
-        onExit={() => router.push(`/${locale}/practice/diagonal-quiz`)}
-        locale={locale}
-        labels={{
-          ...getCommonPracticeCompleteLabels(tPractice),
-          recreationProgress: tPractice('accuracy'),
-          averageTime: tPractice('averageTime'),
-          correct: tPractice('correct'),
-          incorrect: tPractice('incorrect'),
-        }}
-        scoreStats={{ correct: score, incorrect: total - score, total }}
-        averageTimeText={tPractice('secondsFormat', { seconds: averageTime })}
-        beforeRelatedContent={adBannerWide}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-        afterActions={<SignUpBanner locale={locale} />}
-      >
-        <div className="mt-8">
-          <DiagonalQuizProblemList results={questionResults} />
-        </div>
-      </PracticeComplete>
-      {leaderboardRows && leaderboardDetailPath && (
-        <LeaderboardPreview
-          rows={leaderboardRows}
-          detailPath={leaderboardDetailPath}
-          locale={locale}
-        />
-      )}
-      {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-    </PracticeResultPage>
+    <div className="mt-8">
+      <DiagonalQuizProblemList results={questionResults} />
+    </div>
   );
 }
+
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'diagonal-quiz',
+  i18nKey: 'diagonalQuiz',
+  containerClassName: 'space-y-8',
+  buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/diagonal-quiz/challenge/session`,
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/diagonal-quiz`,
+  buildAverageTimeText: (ctx) => {
+    const dataParam = ctx.searchParams.get('data');
+    let count = 0;
+    if (dataParam) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(dataParam));
+        count = Array.isArray(parsed) ? parsed.length : 0;
+      } catch {
+        // ignore
+      }
+    }
+    const avg = count > 0 ? (ctx.timeElapsed / count).toFixed(1) : '0.0';
+    return ctx.tPractice('secondsFormat', { seconds: avg });
+  },
+  renderChildren: () => <DiagonalQuizChildren />,
+  extraCompleteProps: (_ctx, { adBannerWide }) => ({
+    beforeRelatedContent: adBannerWide,
+  }),
+});

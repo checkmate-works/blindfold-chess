@@ -8,18 +8,13 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { KnightTourResult } from '../_components/KnightTourResult';
 
-type Props = {
-  locale: Locale;
-  adBanner?: React.ReactNode;
-};
-
-export function ResultClient({ locale, adBanner }: Props) {
+function KnightTourContent({ locale, adBanner }: { locale: Locale; adBanner?: React.ReactNode }) {
   const t = useTranslations('practice.knightTour');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -30,7 +25,6 @@ export function ResultClient({ locale, adBanner }: Props) {
   const settingsParam = searchParams.get('settings');
   const isTutorial = modeParam === 'tutorial';
 
-  // Parse Results
   const { visitedSquares, lastSquare, success, isClosedTour } = useMemo(() => {
     if (!dataParam) {
       return { visitedSquares: new Map(), lastSquare: '', success: false, isClosedTour: false };
@@ -48,7 +42,6 @@ export function ResultClient({ locale, adBanner }: Props) {
     }
   }, [dataParam]);
 
-  // Parse Settings for Restart
   const settings = useMemo(() => {
     if (!settingsParam) return { startingSquare: 'a1', blindfoldMode: false };
     try {
@@ -67,7 +60,6 @@ export function ResultClient({ locale, adBanner }: Props) {
       if (settings.blindfoldMode) {
         params.set('blindfold', '1');
       }
-      // Force reload by navigating to the session page directly with params
       router.push(`/${locale}/practice/knight-tour/session?${params.toString()}`);
     }
   };
@@ -92,15 +84,7 @@ export function ResultClient({ locale, adBanner }: Props) {
   ];
 
   return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('title')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/knight-tour' },
-        { label: tPractice('result') },
-      ]}
-    >
+    <>
       <KnightTourResult
         success={success}
         moveCount={visitedSquares.size}
@@ -135,6 +119,12 @@ export function ResultClient({ locale, adBanner }: Props) {
           </PracticePanel>
         </PracticeLayout>
       )}
-    </PracticeResultPage>
+    </>
   );
 }
+
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'knight-tour',
+  i18nKey: 'knightTour',
+  renderContent: (ctx, adBanner) => <KnightTourContent locale={ctx.locale} adBanner={adBanner} />,
+});

@@ -1,87 +1,77 @@
 'use client';
 
-import { useMemo } from 'react';
+import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
-import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
-import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-type Props = {
-  locale: Locale;
-  adBanner?: React.ReactNode;
-};
-
-export function ResultClient({ locale, adBanner }: Props) {
-  const t = useTranslations('practice.fen');
-  const tPractice = useTranslations('practice');
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const dataParam = searchParams.get('data');
-
-  const { score, total, results, detailedStats } = useMemo(() => {
-    if (!dataParam) {
-      return { score: 0, total: 0, results: [], detailedStats: null };
-    }
+export const ResultClient = createPracticeResultClient({
+  moduleSlug: 'fen',
+  i18nKey: 'fen',
+  titleKey: 'pageTitle',
+  resolveScoreTotal: (sp) => {
+    const dataParam = sp.get('data');
+    if (!dataParam) return { score: 0, total: 0 };
     try {
       const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return parsed;
+      return { score: parsed.score ?? 0, total: parsed.total ?? 0 };
     } catch {
-      return { score: 0, total: 0, results: [], detailedStats: null };
+      return { score: 0, total: 0 };
     }
-  }, [dataParam]);
-
-  return (
-    <PracticeResultPage
-      locale={locale}
-      title={t('pageTitle')}
-      breadcrumbItems={[
-        { label: tPractice('title'), href: '/practice' },
-        { label: t('title'), href: '/practice/fen' },
-        { label: tPractice('result') },
-      ]}
-    >
-      <PracticeComplete
-        score={score}
-        total={total}
-        onTryAgain={() => router.push(`/${locale}/practice/fen`)}
-        onExit={() => router.push(`/${locale}/practice/fen`)}
-        locale={locale}
-        labels={{
-          ...getCommonPracticeCompleteLabels(tPractice),
-          score: searchParams.get('scoreText') || tPractice('score'),
-          morePractice: tPractice('morePractice'),
-          recreationProgress: t('recreationProgress'),
-          correct: t('correct'),
-          incorrect: t('incorrect'),
-          missing: t('missing'),
-          extra: t('extra'),
-          extraDescription: t('extraDescription'),
-          problemDetails: t('problemDetails'),
-          problem: t('problem'),
-          original: t('original'),
-          yourRecreation: t('yourRecreation'),
-          skipped: t('skipped'),
-        }}
-        scoreStats={detailedStats}
-        problemResults={results}
-        beforeRelatedContent={adBanner}
-        relatedModule={{
-          href: '/learn/notation/fen-notation',
-          icon: '📝',
-          title: t('viewArticle'),
-          description: t('articleDescription'),
-        }}
-        otherPracticeLink={{
-          href: `/${locale}/practice`,
-          label: tPractice('doOtherPractice'),
-        }}
-      />
-    </PracticeResultPage>
-  );
-}
+  },
+  buildTryAgainUrl: (ctx) => `/${ctx.locale}/practice/fen`,
+  buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/fen`,
+  buildAverageTimeText: () => undefined,
+  showSignUpBanner: false,
+  buildScoreStats: (ctx) => {
+    const dataParam = ctx.searchParams.get('data');
+    if (!dataParam) return { correct: 0, incorrect: 0, total: 0 };
+    try {
+      const parsed = JSON.parse(decodeURIComponent(dataParam));
+      return (
+        parsed.detailedStats ?? {
+          correct: ctx.score,
+          incorrect: ctx.total - ctx.score,
+          total: ctx.total,
+        }
+      );
+    } catch {
+      return { correct: ctx.score, incorrect: ctx.total - ctx.score, total: ctx.total };
+    }
+  },
+  labelOverrides: (ctx) => ({
+    score: ctx.searchParams.get('scoreText') || ctx.tPractice('score'),
+    morePractice: ctx.tPractice('morePractice'),
+    recreationProgress: ctx.t('recreationProgress'),
+    correct: ctx.t('correct'),
+    incorrect: ctx.t('incorrect'),
+    missing: ctx.t('missing'),
+    extra: ctx.t('extra'),
+    extraDescription: ctx.t('extraDescription'),
+    problemDetails: ctx.t('problemDetails'),
+    problem: ctx.t('problem'),
+    original: ctx.t('original'),
+    yourRecreation: ctx.t('yourRecreation'),
+    skipped: ctx.t('skipped'),
+    averageTime: undefined,
+  }),
+  extraCompleteProps: (ctx, { adBanner }) => {
+    const dataParam = ctx.searchParams.get('data');
+    let results: unknown[] = [];
+    if (dataParam) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(dataParam));
+        results = parsed.results ?? [];
+      } catch {
+        // ignore
+      }
+    }
+    return {
+      problemResults: results,
+      beforeRelatedContent: adBanner,
+      relatedModule: {
+        href: '/learn/notation/fen-notation',
+        icon: '📝',
+        title: ctx.t('viewArticle'),
+        description: ctx.t('articleDescription'),
+      },
+    };
+  },
+});
