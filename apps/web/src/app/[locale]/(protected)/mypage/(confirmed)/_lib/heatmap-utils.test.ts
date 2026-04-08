@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, generateDateRange, getExpLevel, getHeatmapDateRange } from './heatmap-utils';
+import {
+  formatDate,
+  generateDateRange,
+  getExpLevel,
+  getHeatmapDateRange,
+  getHeatmapDateRangeForWeeks,
+} from './heatmap-utils';
 
 describe('getExpLevel', () => {
   it('returns 0 when amount is 0', () => {
@@ -213,5 +219,90 @@ describe('formatDate', () => {
 
   it('formats February 29 in a leap year', () => {
     expect(formatDate(new Date(2024, 1, 29))).toBe('2024-02-29');
+  });
+});
+
+describe('getHeatmapDateRangeForWeeks', () => {
+  it('returns a range ending on the given date', () => {
+    const today = new Date(2026, 3, 8); // Wednesday
+    const { endDate } = getHeatmapDateRangeForWeeks(today, 53);
+    expect(formatDate(endDate)).toBe('2026-04-08');
+  });
+
+  it('starts on a Sunday', () => {
+    const today = new Date(2026, 3, 8);
+    const { startDate } = getHeatmapDateRangeForWeeks(today, 53);
+    expect(startDate.getDay()).toBe(0);
+  });
+
+  it('covers 53 weeks when totalWeeks is 53', () => {
+    const today = new Date(2026, 3, 8); // Wednesday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(today, 53);
+    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // 52 full weeks back from current Sunday + days into current week
+    expect(diffDays).toBeGreaterThanOrEqual(364);
+    expect(diffDays).toBeLessThanOrEqual(377);
+  });
+
+  it('covers 26 weeks when totalWeeks is 26 (mobile)', () => {
+    const today = new Date(2026, 3, 8); // Wednesday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(today, 26);
+    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // 25 full weeks back from current Sunday + days into current week
+    expect(diffDays).toBeGreaterThanOrEqual(175); // ~25 weeks
+    expect(diffDays).toBeLessThanOrEqual(181); // ~26 weeks
+  });
+
+  it('when today is Sunday and totalWeeks is 26, covers exactly 25 weeks', () => {
+    const sunday = new Date(2026, 3, 5); // Sunday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(sunday, 26);
+    expect(startDate.getDay()).toBe(0);
+    expect(formatDate(endDate)).toBe('2026-04-05');
+    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    expect(diffDays).toBe(175); // 25 weeks
+  });
+
+  it('produces same result as getHeatmapDateRange when totalWeeks is 53', () => {
+    const today = new Date(2026, 3, 8);
+    const fromOriginal = getHeatmapDateRange(today);
+    const fromNew = getHeatmapDateRangeForWeeks(today, 53);
+    expect(formatDate(fromNew.startDate)).toBe(formatDate(fromOriginal.startDate));
+    expect(formatDate(fromNew.endDate)).toBe(formatDate(fromOriginal.endDate));
+  });
+
+  it('returns a single week when totalWeeks is 1', () => {
+    const wednesday = new Date(2026, 3, 8); // Wednesday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(wednesday, 1);
+    expect(startDate.getDay()).toBe(0); // Sunday
+    expect(formatDate(endDate)).toBe('2026-04-08');
+    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // totalWeeks=1 means (1-1)*7=0 weeks back from current Sunday, so start is current Sunday
+    expect(diffDays).toBe(3); // Wednesday - Sunday = 3 days
+  });
+
+  it('when today is Saturday and totalWeeks is 26, covers 25 weeks + 6 days', () => {
+    const saturday = new Date(2026, 3, 4); // Saturday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(saturday, 26);
+    expect(startDate.getDay()).toBe(0);
+    expect(formatDate(endDate)).toBe('2026-04-04');
+    const diffDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    expect(diffDays).toBe(175 + 6); // 25 weeks + 6 days (Saturday)
+  });
+
+  it('handles year boundary with 26 weeks from January', () => {
+    const jan15 = new Date(2026, 0, 15); // Thursday
+    const { startDate, endDate } = getHeatmapDateRangeForWeeks(jan15, 26);
+    expect(startDate.getDay()).toBe(0);
+    expect(formatDate(endDate)).toBe('2026-01-15');
+    // 25 weeks back from Sunday 2026-01-11 = 2025-07-20
+    expect(startDate.getFullYear()).toBe(2025);
+    expect(startDate.getMonth()).toBe(6); // July
+  });
+
+  it('does not mutate the input date', () => {
+    const today = new Date(2026, 3, 8);
+    const originalTime = today.getTime();
+    getHeatmapDateRangeForWeeks(today, 26);
+    expect(today.getTime()).toBe(originalTime);
   });
 });

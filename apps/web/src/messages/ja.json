@@ -1998,7 +1998,9 @@
       "interviewBanner": "インタビューに答えてあなたのことを教えてください",
       "activityTitle": "アクティビティ",
       "heatmapLess": "少",
-      "heatmapMore": "多"
+      "heatmapMore": "多",
+      "heatmapTotal": "合計",
+      "heatmapNoActivity": "この日のアクティビティはありません"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2051,7 +2053,8 @@
       "move_sequence": "約束組手",
       "algebraic_notation": "代数記法",
       "fen": "FEN再構成",
-      "quadrant_anchors": "象限アンカー"
+      "quadrant_anchors": "象限アンカー",
+      "unknown": "その他"
     },
     "practiceThisChallenge": "このチャレンジを練習する"
   },

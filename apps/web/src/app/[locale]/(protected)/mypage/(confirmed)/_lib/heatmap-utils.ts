@@ -60,6 +60,28 @@ export function generateDateRange(startDate: Date, endDate: Date): string[] {
   return dates;
 }
 
+/**
+ * Builds a date range for a given number of weeks, aligned to full weeks
+ * starting on Sunday.
+ *
+ * Used by the responsive heatmap: 53 weeks on desktop, 26 weeks on mobile.
+ */
+export function getHeatmapDateRangeForWeeks(
+  today: Date,
+  totalWeeks: number
+): { startDate: Date; endDate: Date } {
+  const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  const dayOfWeek = endDate.getDay();
+  const currentSunday = new Date(endDate);
+  currentSunday.setDate(endDate.getDate() - dayOfWeek);
+
+  const startDate = new Date(currentSunday);
+  startDate.setDate(currentSunday.getDate() - (totalWeeks - 1) * 7);
+
+  return { startDate, endDate };
+}
+
 /** Formats a Date as 'YYYY-MM-DD'. */
 export function formatDate(date: Date): string {
   const y = date.getFullYear();
