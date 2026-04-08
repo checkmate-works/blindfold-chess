@@ -3,8 +3,10 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,7 +54,9 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
 
           {config.renderArticles(t, locale)}
 
-          <AdBannerGuard slot="banner-standard" />
+          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+          )}
 
           <Divider />
 
