@@ -6,7 +6,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV 
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { paginateItems } from '@/lib/pagination';
+import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
@@ -24,7 +24,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SortTabs } from '../_components';
-import { getPostsWithReplyMeta } from '../_lib/queries';
+import { getPostCountForSquare, getPostsWithReplyMetaPaginated } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
@@ -75,15 +75,18 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const allPosts = await getPostsWithReplyMeta(square, user?.id, sortBy);
-  const openingsForSquare = await getOpeningsByFirstMoveSquare(square);
+  const [totalCount, openingsForSquare] = await Promise.all([
+    getPostCountForSquare(square),
+    getOpeningsByFirstMoveSquare(square),
+  ]);
 
-  const {
+  const { totalPages, currentPage, limit, offset } = getPaginationParams(
+    page,
     totalCount,
-    totalPages,
-    currentPage,
-    paginatedItems: posts,
-  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
+    TOPIC_PAGE_SIZE
+  );
+
+  const posts = await getPostsWithReplyMetaPaginated(square, limit, offset, user?.id, sortBy);
 
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);

@@ -2,10 +2,12 @@ import {
   attachPostMeta,
   getLikeMetaForPost,
   getPostByIdAndTopicKey,
+  getPostCountByTopicKey,
   getPostCountByTopicType,
   getPostsByTopicTypePaginated,
   getPostsByUserId,
   getPostsWithReplyMetaByTopicKey,
+  getPostsWithReplyMetaPaginatedByTopicKey,
   getRecentPostsByTopicType,
   getRepliesByPostId,
   getTopLevelPostsByTopicKey,
@@ -52,6 +54,25 @@ export const getPostsWithReplyMeta = (
   sortBy: SortMode = 'new'
 ): Promise<PostWithReplyMeta[]> =>
   getPostsWithReplyMetaByTopicKey('square', square, currentUserId, sortBy);
+
+/**
+ * Get the count of top-level posts for a specific square.
+ */
+export const getPostCountForSquare = (square: string): Promise<number> =>
+  getPostCountByTopicKey('square', square);
+
+/**
+ * Get paginated top-level posts for a square with reply metadata, sorted.
+ * Uses SQL-level LIMIT/OFFSET when possible (for 'new' sort).
+ */
+export const getPostsWithReplyMetaPaginated = (
+  square: string,
+  limit: number,
+  offset: number,
+  currentUserId?: string,
+  sortBy: SortMode = 'new'
+): Promise<PostWithReplyMeta[]> =>
+  getPostsWithReplyMetaPaginatedByTopicKey('square', square, limit, offset, currentUserId, sortBy);
 
 /**
  * Get the most recent top-level posts across all squares with reply metadata.
