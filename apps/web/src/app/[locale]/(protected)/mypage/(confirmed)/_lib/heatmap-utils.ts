@@ -6,7 +6,7 @@
  */
 
 /** Number of weeks shown in the desktop heatmap grid. */
-export const DESKTOP_WEEKS = 50;
+export const DESKTOP_WEEKS = 46;
 
 /**
  * Returns a 0–4 intensity level for a given Exp amount.

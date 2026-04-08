@@ -182,8 +182,8 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
 
   return (
     <div className="space-y-2">
-      {/* Desktop: 50 weeks, GitHub-style heatmap */}
-      <div className="hidden overflow-x-auto md:block">
+      {/* Desktop: 46 weeks, GitHub-style heatmap */}
+      <div className="hidden overflow-x-auto md:flex md:justify-center">
         {renderDesktopGrid(desktop.weeks, desktop.maxAmount, desktop.monthLabels)}
       </div>
       {/* Mobile: 7-day bar chart */}
