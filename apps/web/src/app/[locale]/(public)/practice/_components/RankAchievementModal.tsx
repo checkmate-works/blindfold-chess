@@ -11,6 +11,8 @@ import type { GrantedRank } from '@/lib/db/data/ranks';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+
 type Props = {
   locale: string;
 };
@@ -23,9 +25,9 @@ export function RankAchievementModal({ locale }: Props) {
   const descId = useId();
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('blindfold_chess_granted_ranks');
+    const stored = sessionStorage.getItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
     if (stored) {
-      sessionStorage.removeItem('blindfold_chess_granted_ranks');
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.GRANTED_RANKS);
       try {
         const parsed = JSON.parse(stored) as GrantedRank[];
         if (Array.isArray(parsed) && parsed.length > 0) {

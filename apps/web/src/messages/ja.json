@@ -131,6 +131,10 @@
       "title": "ランキング",
       "description": "すべての練習モジュールのトッププレイヤーを確認"
     },
+    "expLeaderboard": {
+      "title": "Exp ランキング",
+      "description": "累計経験値によるプレイヤーランキング"
+    },
     "practice": {
       "title": "目隠しチェス練習問題",
       "description": "座標認識、マスの色判定、合法手判定など多彩な練習メニューで目隠しチェスの力を鍛えましょう。無料で使えるインタラクティブな練習問題で、あなたのビジュアライゼーション能力を向上させます。"
@@ -303,6 +307,39 @@
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
         "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+      },
+      "expSystem": {
+        "question": "経験値（Exp）はどのように計算されますか？",
+        "answer": "チャレンジモードを完了すると経験値（Exp）を獲得できます。計算式: Exp = 正解数 × モジュール重み × ミスボーナス",
+        "moduleWeightTitle": "モジュール別重み",
+        "accuracyBonusTitle": "ミスボーナス",
+        "streakBonusTitle": "連続チャレンジボーナス",
+        "headerModule": "モジュール",
+        "headerWeight": "重み",
+        "headerAccuracy": "ミス回数",
+        "headerMultiplier": "倍率",
+        "headerChallenges": "同日チャレンジ数",
+        "modules": {
+          "coordinate_quiz": "座標クイズ",
+          "square_colors": "マスの色",
+          "diagonal_quiz": "ダイアゴナルクイズ",
+          "legal_moves": "合法手",
+          "board_symmetry": "盤面の対称性",
+          "route_planner": "ルートプランナー"
+        },
+        "misses0": "0（パーフェクト）",
+        "misses1": "1回",
+        "misses2": "2回",
+        "misses3": "3回（バースト）",
+        "streak5": "5回以上",
+        "streak3": "3〜4回",
+        "streak2": "2回",
+        "streak1": "1回",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -1991,7 +2028,13 @@
       "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
-      "interviewBanner": "インタビューに答えてあなたのことを教えてください"
+      "interviewBanner": "インタビューに答えてあなたのことを教えてください",
+      "activityTitle": "アクティビティ",
+      "heatmapLess": "少",
+      "heatmapMore": "多",
+      "heatmapTotal": "合計",
+      "heatmapNoActivity": "この日のアクティビティはありません",
+      "heatmapLearnLink": "経験値の計算方法"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2044,7 +2087,8 @@
       "move_sequence": "約束組手",
       "algebraic_notation": "代数記法",
       "fen": "FEN再構成",
-      "quadrant_anchors": "象限アンカー"
+      "quadrant_anchors": "象限アンカー",
+      "unknown": "その他"
     },
     "practiceThisChallenge": "このチャレンジを練習する"
   },
@@ -3040,7 +3084,23 @@
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
       "cta": "無料登録"
+    },
+    "tabs": {
+      "score": "スコア",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Exp ランキング",
+    "description": "累計経験値によるプレイヤーランキングです。",
+    "table": {
+      "rank": "順位",
+      "player": "プレイヤー",
+      "exp": "Exp",
+      "level": "レベル"
+    },
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
+    "backToScoreLeaderboard": "スコアランキングへ戻る"
   },
   "validation": {
     "password": {

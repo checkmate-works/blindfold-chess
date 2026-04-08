@@ -53,6 +53,10 @@ export default async function FAQPage({ params }: Props) {
       question: t('items.chessEngine.question'),
       answer: t('items.chessEngine.answer'),
     },
+    {
+      question: t('items.expSystem.question'),
+      answer: stripTags(t.raw('items.expSystem.answer')),
+    },
   ];
 
   const faqItems: FAQItem[] = [
@@ -90,6 +94,77 @@ export default async function FAQPage({ params }: Props) {
       id: 'chess-engine',
       question: t('items.chessEngine.question'),
       answer: t('items.chessEngine.answer'),
+    },
+    {
+      id: 'exp-system',
+      question: t('items.expSystem.question'),
+      answer: (
+        <div className="space-y-4">
+          <p>{t('items.expSystem.answer')}</p>
+
+          {/* Module Weights */}
+          <h3 className="font-medium text-foreground">{t('items.expSystem.moduleWeightTitle')}</h3>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.expSystem.headerModule')}
+                </th>
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.expSystem.headerWeight')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                [
+                  ['coordinate_quiz', '1'],
+                  ['square_colors', '1'],
+                  ['legal_moves', '1.5'],
+                  ['board_symmetry', '2.5'],
+                  ['diagonal_quiz', '15'],
+                  ['route_planner', '15'],
+                ] as const
+              ).map(([key, weight]) => (
+                <tr key={key} className="border-b border-border">
+                  <td className="py-1.5 px-2">{t(`items.expSystem.modules.${key}`)}</td>
+                  <td className="py-1.5 px-2">{weight}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Accuracy Bonus */}
+          <h3 className="font-medium text-foreground">{t('items.expSystem.accuracyBonusTitle')}</h3>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.expSystem.headerAccuracy')}
+                </th>
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.expSystem.headerMultiplier')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(
+                [
+                  ['misses0', 'multiplier15'],
+                  ['misses1', 'multiplier12'],
+                  ['misses2', 'multiplier11'],
+                  ['misses3', 'multiplier10'],
+                ] as const
+              ).map(([missKey, mulKey]) => (
+                <tr key={missKey} className="border-b border-border">
+                  <td className="py-1.5 px-2">{t(`items.expSystem.${missKey}`)}</td>
+                  <td className="py-1.5 px-2">{t(`items.expSystem.${mulKey}`)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ),
     },
   ];
 

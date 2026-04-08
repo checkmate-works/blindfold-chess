@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FaChevronDown } from 'react-icons/fa';
 
@@ -12,6 +12,19 @@ type Props = {
 
 export function FAQClient({ items }: Props) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Auto-expand and scroll to the item matching the URL hash
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && items.some((item) => item.id === hash)) {
+      setExpandedItems(new Set([hash]));
+      // Defer scroll to allow the DOM to render the expanded content
+      requestAnimationFrame(() => {
+        const el = document.getElementById(hash);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [items]);
 
   const toggleItem = (id: string) => {
     setExpandedItems((prev) => {
@@ -31,7 +44,11 @@ export function FAQClient({ items }: Props) {
         const isExpanded = expandedItems.has(item.id);
 
         return (
-          <div key={item.id} className="bg-card rounded-md border border-border overflow-hidden">
+          <div
+            key={item.id}
+            id={item.id}
+            className="bg-card rounded-md border border-border overflow-hidden"
+          >
             <button
               onClick={() => toggleItem(item.id)}
               className="w-full px-6 py-4 text-left hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset"

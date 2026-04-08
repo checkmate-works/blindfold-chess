@@ -27,6 +27,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ModuleFilter, PeriodSelector } from './_components';
+import { LeaderboardTabs } from './_components/LeaderboardTabs';
 import { LeaderboardTopContent } from './_components/LeaderboardTopContent';
 import { SignUpBanner } from './_components/SignUpBanner';
 import type { LeaderboardPeriod, ModuleFilterValue } from './_lib/types';
@@ -70,6 +71,8 @@ export default async function LeaderboardIndexPage({ params, searchParams }: Pro
       <Suspense fallback={null}>
         <SignUpBanner locale={locale} />
       </Suspense>
+
+      <LeaderboardTabs activeTab="score" locale={locale} />
 
       <PeriodSelector currentPeriod={period} />
       <ModuleFilter currentModule={moduleFilter} />

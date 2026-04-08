@@ -131,6 +131,10 @@
       "title": "Clasificación",
       "description": "Consulta a los mejores jugadores en todos los módulos de práctica"
     },
+    "expLeaderboard": {
+      "title": "Clasificación de Exp",
+      "description": "Los mejores jugadores clasificados por puntos de experiencia totales"
+    },
     "practice": {
       "title": "Ejercicios de Práctica de Ajedrez a Ciegas",
       "description": "Ejercicios interactivos gratuitos de ajedrez a ciegas: reconocimiento de coordenadas, ejercicios de color de casillas, cuestionarios de movimientos legales y más. Mejora tu visualización."
@@ -302,6 +306,39 @@
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
         "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+      },
+      "expSystem": {
+        "question": "¿Cómo se calcula la experiencia (Exp)?",
+        "answer": "Ganas puntos de experiencia (Exp) al completar desafíos. La fórmula es: Exp = Respuestas Correctas × Peso del Módulo × Bonificación por Errores.",
+        "moduleWeightTitle": "Pesos por Módulo",
+        "accuracyBonusTitle": "Bonificación por Errores",
+        "streakBonusTitle": "Bonificación de Racha Diaria",
+        "headerModule": "Módulo",
+        "headerWeight": "Peso",
+        "headerAccuracy": "Errores",
+        "headerMultiplier": "Multiplicador",
+        "headerChallenges": "Desafíos Diarios",
+        "modules": {
+          "coordinate_quiz": "Quiz de Coordenadas",
+          "square_colors": "Colores de Casillas",
+          "diagonal_quiz": "Quiz de Diagonales",
+          "legal_moves": "Movimientos Legales",
+          "board_symmetry": "Simetría del Tablero",
+          "route_planner": "Planificador de Rutas"
+        },
+        "misses0": "0 (Perfecto)",
+        "misses1": "1",
+        "misses2": "2",
+        "misses3": "3 (Burst)",
+        "streak5": "5+",
+        "streak3": "3–4",
+        "streak2": "2",
+        "streak1": "1",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -1990,7 +2027,13 @@
       "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
-      "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti"
+      "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
+      "activityTitle": "Actividad",
+      "heatmapLess": "Menos",
+      "heatmapMore": "Más",
+      "heatmapTotal": "Total",
+      "heatmapNoActivity": "Sin actividad en este día",
+      "heatmapLearnLink": "Cómo calculamos la Exp"
     },
     "records": "Registros",
     "bestScore": "Mejor Puntuación",
@@ -3084,7 +3127,23 @@
       "message": "¡Únete a la clasificación!",
       "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
       "cta": "Registro Gratuito"
+    },
+    "tabs": {
+      "score": "Puntuación",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Clasificación de Exp",
+    "description": "Los mejores jugadores clasificados por puntos de experiencia totales.",
+    "table": {
+      "rank": "Posición",
+      "player": "Jugador",
+      "exp": "Exp",
+      "level": "Nivel"
+    },
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
+    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
   },
   "validation": {
     "password": {

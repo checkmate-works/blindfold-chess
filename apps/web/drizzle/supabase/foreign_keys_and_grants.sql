@@ -436,3 +436,43 @@ $$;
 GRANT SELECT ON TABLE public.user_ranks TO authenticated;
 GRANT SELECT ON TABLE public.user_ranks TO anon;
 
+-- =============================================================================
+-- exp_events
+-- =============================================================================
+
+-- FK constraint: exp_events.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'exp_events_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.exp_events
+      ADD CONSTRAINT exp_events_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (authenticated can SELECT own rows via RLS, service role only write)
+GRANT SELECT ON TABLE public.exp_events TO authenticated;
+
+-- =============================================================================
+-- user_exp
+-- =============================================================================
+
+-- FK constraint: user_exp.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_exp_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_exp
+      ADD CONSTRAINT user_exp_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (public read for leaderboard, service role only write)
+GRANT SELECT ON TABLE public.user_exp TO authenticated;
+GRANT SELECT ON TABLE public.user_exp TO anon;

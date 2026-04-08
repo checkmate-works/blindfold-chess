@@ -32,6 +32,8 @@ import {
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 
+import { ExpActivityHeatmap } from './_components/ExpActivityHeatmap';
+import { getExpHeatmapData } from './_lib/getExpHeatmapData';
 import { getMypageDashboardData } from './_lib/getMypageDashboardData';
 
 type Props = {
@@ -58,7 +60,10 @@ export default async function MypagePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'Mypage' });
 
   const user = await getAuthenticatedUser();
-  const data = await getMypageDashboardData(user.id);
+  const [data, expHeatmapData] = await Promise.all([
+    getMypageDashboardData(user.id),
+    getExpHeatmapData(user.id),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -119,6 +124,19 @@ export default async function MypagePage({ params }: Props) {
             </span>
           </Link>
         )}
+
+        {/* Exp activity heatmap */}
+        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            <span className="mr-1">🔥</span>
+            {t('dashboard.activityTitle')}
+          </h3>
+          <ExpActivityHeatmap
+            data={expHeatmapData}
+            legendLess={t('dashboard.heatmapLess')}
+            legendMore={t('dashboard.heatmapMore')}
+          />
+        </section>
 
         {/* Dashboard sections — same structure as home page VsAiCard */}
         <DashboardCard>

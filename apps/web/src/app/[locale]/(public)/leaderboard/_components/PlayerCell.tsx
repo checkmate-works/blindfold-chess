@@ -1,10 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import type { LeaderboardRow } from '../_lib/types';
+type PlayerInfo = {
+  username: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+};
 
 type Props = {
-  row: LeaderboardRow;
+  row: PlayerInfo;
   locale: string;
 };
 

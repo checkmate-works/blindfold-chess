@@ -3,10 +3,13 @@ import { revalidateTag } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';
 import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
+import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
 
 /** Only insert feed items for ranks at or above this threshold. */
@@ -34,12 +37,21 @@ export type ChallengeResultInput = {
  */
 export async function saveChallengeResult(
   input: ChallengeResultInput
-): Promise<{ grantedRanks: GrantedRank[] }> {
+): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
   // Track whether rankings changed so we can invalidate the cache after commit
   let rankingsChanged = false;
+
+  // Exp info populated inside the transaction
+  let expInfo: ExpInfo = {
+    earnedExp: 0,
+    totalExp: 0,
+    level: 0,
+    levelUp: false,
+    progressPercent: 0,
+  };
 
   await db.transaction(async (tx) => {
     // 1. Append to challenge_results (all results, for period-based rankings)
@@ -179,15 +191,26 @@ export async function saveChallengeResult(
         });
       }
     }
+
+    // 5. Exp grant — calculate and persist Exp for this challenge completion
+    expInfo = await grantChallengeExp(tx, {
+      userId,
+      challengeResultId: challengeResult.id,
+      menuType,
+      score,
+      incorrectAnswers,
+      timeTaken,
+      leaderboardKey,
+    });
   });
 
-  // 5. Invalidate leaderboard cache after transaction commits so the next
+  // 6. Invalidate leaderboard cache after transaction commits so the next
   //    page visit fetches fresh ranking data.
   if (rankingsChanged) {
     revalidateTag('leaderboard', { expire: 60 });
   }
 
-  // 6. Check and grant any newly achievable belt ranks.
+  // 7. Check and grant any newly achievable belt ranks.
   // Called outside the transaction so challenge_best_scores reflects the latest data.
   // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
   // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
@@ -200,5 +223,5 @@ export async function saveChallengeResult(
     Sentry.captureException(error);
   }
 
-  return { grantedRanks };
+  return { grantedRanks, exp: expInfo };
 }

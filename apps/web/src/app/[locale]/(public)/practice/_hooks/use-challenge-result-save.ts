@@ -6,12 +6,17 @@ import { useRouter } from 'next/navigation';
 
 import * as Sentry from '@sentry/nextjs';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
+
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 
 type SaveResultResponse = {
   success: boolean;
   error?: string;
   grantedRanks?: { slug: string }[];
+  exp?: ExpInfo;
 };
 
 type UseChallengeResultSaveOptions = {
@@ -48,18 +53,21 @@ export function useChallengeResultSave({
         .then((result) => {
           if (!result.success) {
             console.error(`Failed to save ${moduleName} result:`, result.error);
-            sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+            sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
           } else if (result.grantedRanks && result.grantedRanks.length > 0) {
             sessionStorage.setItem(
-              'blindfold_chess_granted_ranks',
+              SESSION_STORAGE_KEYS.GRANTED_RANKS,
               JSON.stringify(result.grantedRanks)
             );
+          }
+          if (result.exp) {
+            sessionStorage.setItem(SESSION_STORAGE_KEYS.EXP_RESULT, JSON.stringify(result.exp));
           }
         })
         .catch((error) => {
           console.error(`Failed to save ${moduleName} result:`, error);
           Sentry.captureException(error);
-          sessionStorage.setItem('blindfold_chess_show_practice_save_error_toast', 'true');
+          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
         })
         .finally(() => {
           router.push(resultUrl);
