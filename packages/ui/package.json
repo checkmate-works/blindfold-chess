@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.4",
     "typescript": "^5.9.3"
   }
 }
