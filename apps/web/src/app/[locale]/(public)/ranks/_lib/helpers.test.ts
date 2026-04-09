@@ -96,6 +96,22 @@ describe('buildRequirementItems', () => {
     expect(items[0].href).toBe('/en/practice/legal-moves/challenge?piece=king');
   });
 
+  it('should generate challenge URL with piece parameter for route_planner', () => {
+    const items = buildRequirementItems(
+      [
+        {
+          type: 'challenge_score',
+          menuType: 'route_planner',
+          leaderboardKey: 'knight',
+          minScore: 3,
+        },
+      ],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/route-planner/challenge?piece=knight');
+  });
+
   it('should generate standard practice URL for non-legal_moves', () => {
     const items = buildRequirementItems(
       [

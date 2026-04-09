@@ -3204,7 +3204,9 @@
       "legal_moves": "Legal Moves",
       "legal_moves_bishop": "Legal Moves (Bishop)",
       "legal_moves_king": "Legal Moves (King)",
-      "legal_moves_knight": "Legal Moves (Knight)"
+      "legal_moves_knight": "Legal Moves (Knight)",
+      "route_planner_knight": "Route Planner (Knight)",
+      "route_planner_bishop": "Route Planner (Bishop)"
     },
     "rankNames": {
       "mukyu": "Unranked",
@@ -3221,7 +3223,8 @@
       "criteriaDescriptions": {
         "mukyu": "Ready to begin simple blindfold chess training.",
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
-        "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids."
+        "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
+        "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids."
       },
       "tips": "Tips",
       "guide": "Guide",
@@ -3278,7 +3281,8 @@
               "Step 1: Identify the area.\nEven if you can't pinpoint f6 immediately, you can quickly determine that it falls within the top-right area (e5–h8).",
               "Step 2: Determine the anchor point.\nThe anchor points in this area are e5, h5, e8, and h8. Look for the nearest anchor point by file and rank — in this case, e5 works well.",
               "Step 3: Check the relative position.\nf6 is one square to the right and one square up from e5 — in other words, diagonally upper-right.",
-              "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization."
+              "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization.",
+              "The following article also explains this method."
             ]
           }
         ],
@@ -3322,6 +3326,9 @@
         ]
       },
       "mukyuRequirements": ["Understanding of algebraic notation"],
+      "5kyuGuideLinks": {
+        "quadrantMethodArticleLabel": "Building Anchor Points with the Quadrant Method"
+      },
       "4kyuGuideLinks": {
         "kingMovementLabel": "King's Movement (detailed guide)",
         "knightMovementLabel": "Knight's Movement (detailed guide)",

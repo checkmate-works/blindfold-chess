@@ -3203,7 +3203,9 @@
       "legal_moves": "Movimientos Legales",
       "legal_moves_bishop": "Movimientos Legales (Alfil)",
       "legal_moves_king": "Movimientos Legales (Rey)",
-      "legal_moves_knight": "Movimientos Legales (Caballo)"
+      "legal_moves_knight": "Movimientos Legales (Caballo)",
+      "route_planner_knight": "Planificador de Rutas (Caballo)",
+      "route_planner_bishop": "Planificador de Rutas (Alfil)"
     },
     "rankNames": {
       "mukyu": "Sin Rango",
@@ -3220,7 +3222,8 @@
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
-        "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales."
+        "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
+        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
       "guide": "Guía",
@@ -3277,7 +3280,8 @@
               "Paso 1: Identificar el área.\nIncluso si no puedes localizar f6 inmediatamente, puedes determinar rápidamente que cae dentro del área superior derecha (e5–h8).",
               "Paso 2: Determinar el punto de anclaje.\nLos puntos de anclaje en esta área son e5, h5, e8 y h8. Busca el punto de anclaje más cercano por columna y fila — en este caso, e5 funciona bien.",
               "Paso 3: Verificar la posición relativa.\nf6 está una casilla a la derecha y una casilla arriba de e5 — es decir, diagonalmente arriba a la derecha.",
-              "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente."
+              "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente.",
+              "El siguiente artículo también explica este método."
             ]
           }
         ],
@@ -3321,6 +3325,9 @@
         ]
       },
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
+      "5kyuGuideLinks": {
+        "quadrantMethodArticleLabel": "Construcción de Puntos de Anclaje con el Método de Cuadrantes"
+      },
       "4kyuGuideLinks": {
         "kingMovementLabel": "Movimiento del Rey (guía detallada)",
         "knightMovementLabel": "Movimiento del Caballo (guía detallada)",

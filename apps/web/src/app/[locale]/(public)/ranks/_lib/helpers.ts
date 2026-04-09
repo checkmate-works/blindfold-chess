@@ -37,9 +37,10 @@ export function buildRequirementItems(
     const challengeKey = buildChallengeNameKey(req);
     const practiceSlug = menuTypeToPracticeSlug(req.menuType);
 
-    // For legal_moves, link directly to challenge page with piece parameter
+    // For legal_moves and route_planner, link directly to challenge page with piece parameter
     const href =
-      req.menuType === 'legal_moves' && req.leaderboardKey !== 'default'
+      (req.menuType === 'legal_moves' || req.menuType === 'route_planner') &&
+      req.leaderboardKey !== 'default'
         ? `/${locale}/practice/${practiceSlug}/challenge?piece=${req.leaderboardKey}`
         : `/${locale}/practice/${practiceSlug}`;
 

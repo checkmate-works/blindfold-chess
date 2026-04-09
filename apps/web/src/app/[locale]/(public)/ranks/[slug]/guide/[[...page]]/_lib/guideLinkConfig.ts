@@ -15,6 +15,12 @@ type GuideLinkEntry = {
  * rendered after that paragraph.
  */
 const GUIDE_LINK_MAP: Record<GuideLinkKey, GuideLinkEntry> = {
+  // 5kyu guide - Quadrant method article (page 2, last paragraph index 9)
+  '5kyu:2:9': {
+    guideLinksKey: '5kyuGuideLinks',
+    labelKey: 'quadrantMethodArticleLabel',
+    href: 'articles/switched-to-quadrant-method',
+  },
   // 4kyu guide - King (page 1, last paragraph index 6)
   '4kyu:1:6': {
     guideLinksKey: '4kyuGuideLinks',
