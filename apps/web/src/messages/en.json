@@ -3287,6 +3287,15 @@
             ]
           }
         ],
+        "3kyu": [
+          {
+            "paragraphs": [
+              "Regarding bishop maneuvering, it's helpful to first consider which diagonal and anti-diagonal a bishop can control when placed on a specific square.",
+              "For an explanation of diagonals and anti-diagonals, please refer to the Diagonal Quiz tutorial.",
+              "Let's start by thinking about the diagonals that run from bottom-left to top-right."
+            ]
+          }
+        ],
         "4kyu": [
           {
             "paragraphs": [
@@ -3327,6 +3336,9 @@
         ]
       },
       "mukyuRequirements": ["Understanding of algebraic notation"],
+      "3kyuGuideLinks": {
+        "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial"
+      },
       "5kyuGuideLinks": {
         "quadrantMethodArticleLabel": "Switching My Board Awareness Method to the Quadrant Method"
       },

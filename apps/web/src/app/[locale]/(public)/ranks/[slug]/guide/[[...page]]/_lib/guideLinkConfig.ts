@@ -15,6 +15,12 @@ type GuideLinkEntry = {
  * rendered after that paragraph.
  */
 const GUIDE_LINK_MAP: Record<GuideLinkKey, GuideLinkEntry> = {
+  // 3kyu guide - Diagonal quiz tutorial (page 1, paragraph index 1)
+  '3kyu:1:1': {
+    guideLinksKey: '3kyuGuideLinks',
+    labelKey: 'diagonalQuizTutorialLabel',
+    href: 'practice/diagonal-quiz/tutorial',
+  },
   // 5kyu guide - Quadrant method article (page 2, last paragraph index 9)
   '5kyu:2:9': {
     guideLinksKey: '5kyuGuideLinks',

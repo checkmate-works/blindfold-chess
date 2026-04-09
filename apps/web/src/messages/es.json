@@ -3286,6 +3286,15 @@
             ]
           }
         ],
+        "3kyu": [
+          {
+            "paragraphs": [
+              "En cuanto a la maniobra del alfil, es útil considerar primero qué diagonal y anti-diagonal puede controlar un alfil cuando se coloca en una casilla específica.",
+              "Para una explicación de las diagonales y anti-diagonales, consulta el tutorial del Cuestionario de Diagonales.",
+              "Comencemos pensando en las diagonales que van de abajo a la izquierda hacia arriba a la derecha."
+            ]
+          }
+        ],
         "4kyu": [
           {
             "paragraphs": [
@@ -3326,6 +3335,9 @@
         ]
       },
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
+      "3kyuGuideLinks": {
+        "diagonalQuizTutorialLabel": "Tutorial del Cuestionario de Diagonales"
+      },
       "5kyuGuideLinks": {
         "quadrantMethodArticleLabel": "Construcción de Puntos de Anclaje con el Método de Cuadrantes"
       },
