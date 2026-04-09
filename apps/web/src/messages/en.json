@@ -3292,7 +3292,84 @@
             "paragraphs": [
               "Regarding bishop maneuvering, it's helpful to first consider which diagonal and anti-diagonal a bishop can control when placed on a specific square.",
               "For an explanation of diagonals and anti-diagonals, please refer to the Diagonal Quiz tutorial.",
-              "Let's start by thinking about the diagonals that run from bottom-left to top-right."
+              "Let's start by thinking about the diagonals that run from bottom-left to top-right.",
+              "The starting point of a diagonal is always a square on the a-file or the 1st rank.",
+              "This is because file and rank values change by 1 simultaneously along a diagonal, so tracing down-left (↙) will always reach one board edge before the other.",
+              "Let's think in terms of numeric file values (a=1, b=2, ..., h=8).",
+              "When the file value is less than the rank value, tracing down-left (↙) hits the a-file (left edge) first.",
+              "For example, consider a bishop on d7. The file value is 4 and the rank is 7.",
+              "The maximum steps down-left is \"file value - 1\" = 3. Subtracting 3 from the rank gives 7 - 3 = 4, so the starting point is a4."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Conversely, when the file value is greater than the rank value, tracing down-left (↙) hits the 1st rank (bottom edge) first.",
+              "For example, consider a bishop on f4. The file value is 6 and the rank is 4.",
+              "The maximum steps down-left is \"rank value - 1\" = 3. Subtracting 3 from the file gives 6 - 3 = 3, so the starting point is c1.",
+              "When the file and rank values are equal, tracing down-left (↙) reaches both board edges simultaneously, so the starting point is always a1.",
+              "This is the a1-h8 main diagonal."
+            ]
+          },
+          {
+            "paragraphs": [
+              "So far we've learned how to find the starting point.",
+              "The same approach can be used to find the endpoint.",
+              "The endpoint is always a square on the h-file or the 8th rank.",
+              "This time, consider tracing up-right (↗). By the same logic as before, whichever board edge is reached first determines the endpoint.",
+              "When the file value is less than the rank value, tracing up-right (↗) hits the 8th rank (top edge) first.",
+              "For example, with a bishop on d7, the maximum steps up-right is \"8 - rank value\" = 8 - 7 = 1. Adding 1 to the file gives 4 + 1 = 5, so the endpoint is e8.",
+              "Conversely, when the file value is greater than the rank value, the h-file (right edge) is reached first.",
+              "For example, with a bishop on f4, the maximum steps up-right is \"8 - file value\" = 8 - 6 = 2. Adding 2 to the rank gives 4 + 2 = 6, so the endpoint is h6.",
+              "When the file and rank values are equal, the endpoint is always h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Next, let's consider the anti-diagonals that run from top-left to bottom-right.",
+              "The starting point of an anti-diagonal is always a square on the a-file or the 8th rank.",
+              "Along an anti-diagonal, tracing up-left (↖) decreases the file and increases the rank, so it reaches either the a-file (left edge) or the 8th rank (top edge) first.",
+              "The steps to the a-file is \"file value - 1\", and the steps to the 8th rank is \"8 - rank value\". The smaller value determines which edge is reached first.",
+              "For example, consider a bishop on c3. Steps to the a-file: 3 - 1 = 2, steps to the 8th rank: 8 - 3 = 5.",
+              "The a-file is reached first, so adding 2 to the rank gives 3 + 2 = 5, and the starting point is a5.",
+              "Conversely, for a bishop on f7, steps to the a-file: 6 - 1 = 5, steps to the 8th rank: 8 - 7 = 1.",
+              "The 8th rank is reached first, so subtracting 1 from the file gives 6 - 1 = 5, and the starting point is e8.",
+              "When both step counts are equal, the starting point is always a8. This is the a8-h1 main anti-diagonal."
+            ]
+          },
+          {
+            "paragraphs": [
+              "The endpoint of an anti-diagonal is always a square on the h-file or the 1st rank.",
+              "Consider tracing down-right (↘). The steps to the h-file is \"8 - file value\", and the steps to the 1st rank is \"rank value - 1\".",
+              "For a bishop on c3, steps to the h-file: 8 - 3 = 5, steps to the 1st rank: 3 - 1 = 2.",
+              "The 1st rank is reached first, so adding 2 to the file gives 3 + 2 = 5, and the endpoint is e1.",
+              "For a bishop on f7, steps to the h-file: 8 - 6 = 2, steps to the 1st rank: 7 - 1 = 6.",
+              "The h-file is reached first, so subtracting 2 from the rank gives 7 - 2 = 5, and the endpoint is h5.",
+              "When both step counts are equal, the endpoint is always h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "To summarize, the starting and ending points of diagonals and anti-diagonals follow regular patterns.",
+              "First, here are the patterns for diagonals (↗ direction) starting from the a-file.",
+              "As the starting point moves up, the endpoint squeezes in from the right along the 8th rank.",
+              "Next, the patterns for diagonals starting from the 1st rank.",
+              "As the starting point moves right, the endpoint squeezes down from the top along the h-file."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Here are the patterns for anti-diagonals (↘ direction) starting from the a-file.",
+              "Similar to diagonals, as the starting point moves down, the endpoint squeezes in from the right along the 1st rank.",
+              "Next, the patterns for anti-diagonals starting from the 8th rank.",
+              "As the starting point moves right, the endpoint squeezes up from the bottom along the h-file."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Combinations like a2 → g8 or e8 → h5 will naturally be memorized through repeated blindfold chess practice. Eventually you'll be able to answer them unconsciously.",
+              "The Diagonal Quiz is effective for training this calculation.",
+              "If jumping straight into Route Planner is too difficult, warm up here first.",
+              "Once you can perform these diagonal and anti-diagonal calculations, maneuvering in blindfold chess becomes much faster — the theory behind this will be covered in a future guide."
             ]
           }
         ],
@@ -3337,7 +3414,8 @@
       },
       "mukyuRequirements": ["Understanding of algebraic notation"],
       "3kyuGuideLinks": {
-        "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial"
+        "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial",
+        "diagonalQuizLabel": "Diagonal Quiz"
       },
       "5kyuGuideLinks": {
         "quadrantMethodArticleLabel": "Switching My Board Awareness Method to the Quadrant Method"
