@@ -23,7 +23,7 @@ import { buildFenFromParts } from '@/app/[locale]/(public)/games/new/_lib/build-
 import { getCastlingAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-castling-availability';
 import { getEnPassantAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-en-passant-availability';
 import { validatePosition } from '@/app/[locale]/(public)/games/new/_lib/validate-position';
-import { EditableChessBoard } from '@/app/[locale]/(public)/practice/_components/EditableChessBoard';
+import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
