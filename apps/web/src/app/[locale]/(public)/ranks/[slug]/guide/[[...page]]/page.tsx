@@ -60,6 +60,10 @@ export function generateStaticParams() {
       { locale, slug, page: ['2'] },
       { locale, slug, page: ['3'] },
       { locale, slug, page: ['4'] },
+      { locale, slug, page: ['5'] },
+      { locale, slug, page: ['6'] },
+      { locale, slug, page: ['7'] },
+      { locale, slug, page: ['8'] },
     ])
   );
 }
