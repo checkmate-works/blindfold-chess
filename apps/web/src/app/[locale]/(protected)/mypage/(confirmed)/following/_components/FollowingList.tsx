@@ -4,7 +4,7 @@ import { useOptimistic, useState, useTransition } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { toggleFollow } from '@/app/[locale]/(public)/profile/[username]/_actions/toggleFollow';
+import { toggleFollow } from '@/app/[locale]/(public)/u/[username]/_actions/toggleFollow';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserCard } from '@/app/[locale]/_components/UserCard';
 

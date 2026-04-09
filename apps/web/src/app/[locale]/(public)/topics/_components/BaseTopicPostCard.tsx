@@ -61,7 +61,7 @@ export function BaseTopicPostCard({
 }: Props) {
   const tTopics = useTranslations('topics');
   const displayName = author?.displayName || author?.username || 'Anonymous';
-  const profileHref = author?.username ? `/@/${author.username}` : null;
+  const profileHref = author?.username ? `/u/${author.username}` : null;
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const isTruncated = contentPreview !== content;

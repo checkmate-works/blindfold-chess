@@ -390,7 +390,7 @@ describe('NotificationItem', () => {
 
       const link = screen.getByText('🏆 You earned Monthly Coordinate Quiz White 1st').closest('a');
       expect(link).not.toBeNull();
-      expect(link!.getAttribute('href')).toBe('/@/testuser/achievements');
+      expect(link!.getAttribute('href')).toBe('/u/testuser/achievements');
     });
 
     it('should render as button when currentUsername is not provided', () => {

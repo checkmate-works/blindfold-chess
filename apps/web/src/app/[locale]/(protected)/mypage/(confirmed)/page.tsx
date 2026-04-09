@@ -84,7 +84,7 @@ export default async function MypagePage({ params }: Props) {
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               {data.username && (
                 <Link
-                  href={`/@/${data.username}`}
+                  href={`/u/${data.username}`}
                   locale={locale}
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                 >

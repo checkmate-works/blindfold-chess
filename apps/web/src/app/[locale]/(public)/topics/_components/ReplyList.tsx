@@ -79,7 +79,7 @@ export function ReplyList({
     <div className="space-y-4">
       {replies.map((reply) => {
         const displayName = reply.author?.displayName || reply.author?.username || 'Anonymous';
-        const profileHref = reply.author?.username ? `/@/${reply.author.username}` : null;
+        const profileHref = reply.author?.username ? `/u/${reply.author.username}` : null;
         const mentionName = resolveParentAuthor(reply, replies);
 
         return (

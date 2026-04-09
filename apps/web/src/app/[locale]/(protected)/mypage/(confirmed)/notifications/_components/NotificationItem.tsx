@@ -73,7 +73,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
 
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
-      return `/@/${actor.username}`;
+      return `/u/${actor.username}`;
     }
     if (
       (notification.type === 'like' ||
@@ -92,7 +92,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       return `/announcements/${notification.metadata.slug}`;
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
-      return `/@/${currentUsername}/achievements`;
+      return `/u/${currentUsername}/achievements`;
     }
     return null;
   }

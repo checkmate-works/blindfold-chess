@@ -77,7 +77,7 @@ export function PostDetailContent({
   extraContent,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
+  const profileHref = post.author?.username ? `/u/${post.author.username}` : null;
 
   return (
     <>

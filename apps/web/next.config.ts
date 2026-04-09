@@ -87,18 +87,24 @@ const nextConfig: NextConfig = {
         destination: '/:locale/games/play/error',
         permanent: true,
       },
-    ];
-  },
-
-  // Rewrites: map /@/username to /profile/username (@ is reserved by Next.js for parallel routes)
-  async rewrites() {
-    return [
+      // Redirect old /@/username URLs to /u/username.
+      // Originally the URL scheme used /@/username, but @ is a reserved character
+      // in Next.js App Router (it denotes parallel routes), which caused client-side
+      // navigation to fail with route resolution errors (404). The scheme was migrated
+      // to /u/username, and this redirect ensures old links and search engine entries
+      // continue to work. (added 2026-04-09)
       {
         source: '/:locale/@/:username/:path*',
-        destination: '/:locale/profile/:username/:path*',
+        destination: '/:locale/u/:username/:path*',
+        permanent: true,
       },
     ];
   },
+
+  // NOTE: The rewrites() block that mapped /@/username to /profile/username has been removed.
+  // The URL scheme was changed from /@/username to /u/username because @ is a reserved
+  // character in Next.js App Router (used for parallel routes), which caused client-side
+  // navigation to fail with 404 errors. See the redirect rule above for the /@/ -> /u/ migration.
 
   // Security headers
   async headers() {

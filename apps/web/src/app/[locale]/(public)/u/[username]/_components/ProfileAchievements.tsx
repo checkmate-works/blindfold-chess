@@ -130,7 +130,7 @@ export function ProfileAchievements({
       {hasMore && labels.viewAll && (
         <div className="text-center">
           <Link
-            href={`/@/${username}/achievements`}
+            href={`/u/${username}/achievements`}
             locale={locale}
             className="text-sm text-primary hover:underline"
           >

@@ -8,6 +8,13 @@
  * 1. Fetch profile by `[username]` from URL (404 if not found)
  * 2. Determine relationship with logged-in user (follow state)
  * 3. Fetch posts and achievements in parallel, render with pagination
+ *
+ * NOTE: This route was originally located at `(public)/profile/[username]/` and served
+ * under the URL `/@/username` via a rewrite rule. However, `@` is a reserved character
+ * in Next.js App Router (used for parallel routes), which caused client-side navigation
+ * to fail with route resolution errors (404). The directory was renamed to `u/` so the
+ * URL is now `/u/username`. A 301 redirect from `/@/` to `/u/` is configured in
+ * next.config.ts for backwards compatibility.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -63,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       profile.bio || t('defaultDescription', { displayName: profile.displayName ?? username }),
     alternates: {
-      canonical: `/${locale}/@/${username}`,
+      canonical: `/${locale}/u/${username}`,
     },
   };
 }
@@ -154,7 +161,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/@/${username}${qs}`;
+    return `/${locale}/u/${username}${qs}`;
   };
 
   return (
@@ -217,7 +224,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
               <span className="mx-2" />
             </>
           )}
-          <Link href={`/@/${username}/followers`} locale={locale} className="hover:underline">
+          <Link href={`/u/${username}/followers`} locale={locale} className="hover:underline">
             <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
           </Link>
         </p>

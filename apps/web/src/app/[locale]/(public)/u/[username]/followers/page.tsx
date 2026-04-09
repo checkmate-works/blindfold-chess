@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: resolveTitle(`${t('followersPageTitle')} - ${displayName}`, locale),
     alternates: {
-      canonical: `/${locale}/@/${username}/followers`,
+      canonical: `/${locale}/u/${username}/followers`,
     },
   };
 }
@@ -94,7 +94,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/@/${username}/followers${qs}`;
+    return `/${locale}/u/${username}/followers${qs}`;
   };
 
   return (
@@ -124,7 +124,7 @@ export default async function FollowersPage({ params, searchParams }: Props) {
         <Breadcrumb
           locale={locale}
           items={[
-            { label: displayName, href: `/@/${username}` },
+            { label: displayName, href: `/u/${username}` },
             { label: t('followersPageTitle') },
           ]}
         />

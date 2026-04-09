@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: resolveTitle(`${t('achievementsPageTitle')} - ${displayName}`, locale),
     alternates: {
-      canonical: `/${locale}/@/${username}/achievements`,
+      canonical: `/${locale}/u/${username}/achievements`,
     },
   };
 }
@@ -77,7 +77,7 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/@/${username}/achievements${qs}`;
+    return `/${locale}/u/${username}/achievements${qs}`;
   };
 
   return (
@@ -102,7 +102,7 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
         <Breadcrumb
           locale={locale}
           items={[
-            { label: displayName, href: `/@/${username}` },
+            { label: displayName, href: `/u/${username}` },
             { label: t('achievementsPageTitle') },
           ]}
         />

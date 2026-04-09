@@ -16,7 +16,7 @@ export function PlayerCell({ row, locale }: Props) {
   const name = row.displayName ?? row.username;
 
   return (
-    <Link href={`/${locale}/@/${row.username}`} className="flex items-center gap-3 min-w-0 group">
+    <Link href={`/${locale}/u/${row.username}`} className="flex items-center gap-3 min-w-0 group">
       {row.avatarUrl ? (
         <Image
           src={row.avatarUrl}

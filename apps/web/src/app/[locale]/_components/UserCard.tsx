@@ -16,7 +16,7 @@ export function UserCard({ username, displayName, avatarUrl, locale, actions }: 
 
   return (
     <div className="flex items-center gap-4 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50">
-      <Link href={`/${locale}/@/${username}`} className="flex items-center gap-4 min-w-0 flex-1">
+      <Link href={`/${locale}/u/${username}`} className="flex items-center gap-4 min-w-0 flex-1">
         {avatarUrl ? (
           <Image
             src={avatarUrl}

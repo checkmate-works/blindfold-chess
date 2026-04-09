@@ -65,7 +65,7 @@ export async function toggleFollow(
     });
   }
 
-  revalidatePath(`/${locale}/@/${targetUsername}`);
+  revalidatePath(`/${locale}/u/${targetUsername}`);
   revalidatePath(`/${locale}/mypage/following`);
 
   return { following };
