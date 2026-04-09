@@ -21,6 +21,12 @@ const GUIDE_LINK_MAP: Record<GuideLinkKey, GuideLinkEntry> = {
     labelKey: 'diagonalQuizTutorialLabel',
     href: 'practice/diagonal-quiz/tutorial',
   },
+  // 3kyu guide - Diagonal quiz practice (page 8, paragraph index 1)
+  '3kyu:8:1': {
+    guideLinksKey: '3kyuGuideLinks',
+    labelKey: 'diagonalQuizLabel',
+    href: 'practice/diagonal-quiz',
+  },
   // 5kyu guide - Quadrant method article (page 2, last paragraph index 9)
   '5kyu:2:9': {
     guideLinksKey: '5kyuGuideLinks',

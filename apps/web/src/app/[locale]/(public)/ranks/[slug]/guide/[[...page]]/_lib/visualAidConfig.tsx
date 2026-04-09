@@ -4,12 +4,27 @@ import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { AllAnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AllAnchorPointsBoard';
 import { AnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/AnchorPointsBoard';
+import { AntiDiagAFileArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagAFileArrowsBoard';
+import { AntiDiagEndHFileBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagEndHFileBoard';
+import { AntiDiagEndRank1Board } from '@/app/[locale]/(public)/ranks/_components/AntiDiagEndRank1Board';
+import { AntiDiagRank8ArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagRank8ArrowsBoard';
+import { AntiDiagStartAFileBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagStartAFileBoard';
+import { AntiDiagStartRank8Board } from '@/app/[locale]/(public)/ranks/_components/AntiDiagStartRank8Board';
+import { AntiDiagonalBoard } from '@/app/[locale]/(public)/ranks/_components/AntiDiagonalBoard';
 import { BishopFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/BishopFormulaBlock';
 import { BishopMovementBoard } from '@/app/[locale]/(public)/ranks/_components/BishopMovementBoard';
 import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components/CoordinateBoard';
+import { DiagonalAFileArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalAFileArrowsBoard';
 import { DiagonalBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalBoard';
 import { DiagonalEndHFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndHFileBoard';
 import { DiagonalEndRank8Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndRank8Board';
+import {
+  AntiDiagAFileTable,
+  AntiDiagRank8Table,
+  DiagonalAFileTable,
+  DiagonalRank1Table,
+} from '@/app/[locale]/(public)/ranks/_components/DiagonalPatternTables';
+import { DiagonalRank1ArrowsBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalRank1ArrowsBoard';
 import { DiagonalStartAFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartAFileBoard';
 import { DiagonalStartRank1Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartRank1Board';
 import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
@@ -53,6 +68,23 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   // 3kyu guide - page 3
   '3kyu:3:5': <DiagonalEndRank8Board />,
   '3kyu:3:7': <DiagonalEndHFileBoard />,
+  // 3kyu guide - page 4 (anti-diagonal starting points)
+  '3kyu:4:0': <AntiDiagonalBoard />,
+  '3kyu:4:5': <AntiDiagStartAFileBoard />,
+  '3kyu:4:7': <AntiDiagStartRank8Board />,
+  // 3kyu guide - page 5 (anti-diagonal endpoints)
+  '3kyu:5:3': <AntiDiagEndRank1Board />,
+  '3kyu:5:5': <AntiDiagEndHFileBoard />,
+  // 3kyu guide - page 6 (diagonal pattern tables)
+  '3kyu:6:1': <DiagonalAFileTable />,
+  '3kyu:6:2': <DiagonalAFileArrowsBoard />,
+  '3kyu:6:3': <DiagonalRank1Table />,
+  '3kyu:6:4': <DiagonalRank1ArrowsBoard />,
+  // 3kyu guide - page 7 (anti-diagonal pattern tables)
+  '3kyu:7:0': <AntiDiagAFileTable />,
+  '3kyu:7:1': <AntiDiagAFileArrowsBoard />,
+  '3kyu:7:2': <AntiDiagRank8Table />,
+  '3kyu:7:3': <AntiDiagRank8ArrowsBoard />,
   // 4kyu guide - King (page 1)
   '4kyu:1:2': <KingMovementBoard />,
   '4kyu:1:6': <KingFormulaBlock />,

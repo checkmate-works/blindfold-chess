@@ -71,11 +71,15 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
     <nav aria-label="Pagination" className="flex items-center justify-center gap-1 mt-4">
       {/* Previous button */}
       {currentPage > 1 ? (
-        <Link href={buildHref(currentPage - 1)} className={linkClass}>
-          Previous
+        <Link href={buildHref(currentPage - 1)} className={linkClass} aria-label="Previous page">
+          <span className="sm:hidden">←</span>
+          <span className="hidden sm:inline">Previous</span>
         </Link>
       ) : (
-        <span className={disabledClass}>Previous</span>
+        <span className={disabledClass} aria-label="Previous page">
+          <span className="sm:hidden">←</span>
+          <span className="hidden sm:inline">Previous</span>
+        </span>
       )}
 
       {/* Page numbers */}
@@ -97,11 +101,15 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
 
       {/* Next button */}
       {currentPage < totalPages ? (
-        <Link href={buildHref(currentPage + 1)} className={linkClass}>
-          Next
+        <Link href={buildHref(currentPage + 1)} className={linkClass} aria-label="Next page">
+          <span className="sm:hidden">→</span>
+          <span className="hidden sm:inline">Next</span>
         </Link>
       ) : (
-        <span className={disabledClass}>Next</span>
+        <span className={disabledClass} aria-label="Next page">
+          <span className="sm:hidden">→</span>
+          <span className="hidden sm:inline">Next</span>
+        </span>
       )}
     </nav>
   );

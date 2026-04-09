@@ -51,36 +51,36 @@ describe('PaginationNav', () => {
   describe('Previous/Next buttons', () => {
     it('disables Previous on first page', () => {
       render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       expect(previous.tagName).toBe('SPAN');
       expect(previous.className).toContain('cursor-not-allowed');
     });
 
     it('enables Previous on non-first page', () => {
       render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       expect(previous.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
     });
 
     it('disables Next on last page', () => {
       render(<PaginationNav currentPage={3} totalPages={3} buildHref={buildHref} />);
-      const next = screen.getByText('Next');
+      const next = screen.getByLabelText('Next page');
       expect(next.tagName).toBe('SPAN');
       expect(next.className).toContain('cursor-not-allowed');
     });
 
     it('enables Next on non-last page', () => {
       render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
-      const next = screen.getByText('Next');
+      const next = screen.getByLabelText('Next page');
       expect(next.tagName).toBe('A');
       expect(next).toHaveAttribute('href', '/test?page=2');
     });
 
     it('enables both Previous and Next on middle page', () => {
       render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(next.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
@@ -226,8 +226,8 @@ describe('PaginationNav', () => {
   describe('edge cases', () => {
     it('renders with exactly 2 pages on first page', () => {
       render(<PaginationNav currentPage={1} totalPages={2} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('SPAN');
       expect(previous.className).toContain('cursor-not-allowed');
       expect(next.tagName).toBe('A');
@@ -240,8 +240,8 @@ describe('PaginationNav', () => {
 
     it('renders with exactly 2 pages on last page', () => {
       render(<PaginationNav currentPage={2} totalPages={2} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
       expect(next.tagName).toBe('SPAN');
@@ -250,8 +250,8 @@ describe('PaginationNav', () => {
 
     it('handles very large page numbers with truncation', () => {
       render(<PaginationNav currentPage={500000} totalPages={999999} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(next.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=499999');
@@ -273,8 +273,8 @@ describe('PaginationNav', () => {
         return `/ja/posts/tips${qs}`;
       };
       render(<PaginationNav currentPage={2} totalPages={5} buildHref={localeBuildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous).toHaveAttribute('href', '/ja/posts/tips');
       expect(next).toHaveAttribute('href', '/ja/posts/tips?page=3');
     });
@@ -288,8 +288,8 @@ describe('PaginationNav', () => {
         return `/en/topics/squares/e4?${qs}`;
       };
       render(<PaginationNav currentPage={3} totalPages={10} buildHref={sortBuildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous).toHaveAttribute('href', '/en/topics/squares/e4?sort=top&page=2');
       expect(next).toHaveAttribute('href', '/en/topics/squares/e4?sort=top&page=4');
     });
@@ -303,7 +303,7 @@ describe('PaginationNav', () => {
         return `/en/topics/squares/e4?${qs}`;
       };
       render(<PaginationNav currentPage={2} totalPages={5} buildHref={sortBuildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       // Going back to page 1: page param should be omitted, only sort remains
       expect(previous).toHaveAttribute('href', '/en/topics/squares/e4?sort=top');
     });
