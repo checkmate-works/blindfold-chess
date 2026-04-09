@@ -7,6 +7,11 @@ import { AnchorPointsBoard } from '@/app/[locale]/(public)/ranks/_components/Anc
 import { BishopFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/BishopFormulaBlock';
 import { BishopMovementBoard } from '@/app/[locale]/(public)/ranks/_components/BishopMovementBoard';
 import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components/CoordinateBoard';
+import { DiagonalBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalBoard';
+import { DiagonalEndHFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndHFileBoard';
+import { DiagonalEndRank8Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalEndRank8Board';
+import { DiagonalStartAFileBoard } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartAFileBoard';
+import { DiagonalStartRank1Board } from '@/app/[locale]/(public)/ranks/_components/DiagonalStartRank1Board';
 import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
 import { KingFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KingFormulaBlock';
 import { KingMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KingMovementBoard';
@@ -39,6 +44,15 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   '5kyu:2:5': <HighlightQuadrantBoard quadrant="top-right" />,
   '5kyu:2:6': <MiniBoard quadrant="top-right" highlightedSquares={['e5']} />,
   '5kyu:2:7': <Step3Board />,
+  // 3kyu guide - page 1
+  '3kyu:1:2': <DiagonalBoard />,
+  '3kyu:1:8': <DiagonalStartAFileBoard />,
+  // 3kyu guide - page 2
+  '3kyu:2:2': <DiagonalStartRank1Board />,
+  '3kyu:2:4': <DiagonalBoard />,
+  // 3kyu guide - page 3
+  '3kyu:3:5': <DiagonalEndRank8Board />,
+  '3kyu:3:7': <DiagonalEndHFileBoard />,
   // 4kyu guide - King (page 1)
   '4kyu:1:2': <KingMovementBoard />,
   '4kyu:1:6': <KingFormulaBlock />,

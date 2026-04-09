@@ -31,6 +31,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AnchorPointsBoard } from '../_components/AnchorPointsBoard';
 import { CoordinateBoard } from '../_components/CoordinateBoard';
+import { DiagonalBoard } from '../_components/DiagonalBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
 import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { RankHeader } from '../_components/RankHeader';
@@ -219,6 +220,8 @@ export default async function RankDetailPage({ params }: Props) {
             <Link href={`/${locale}/ranks/${rankSlug}/guide`} className="mt-3 block">
               {rankSlug === '4kyu' ? (
                 <KingMovementBoard className="mx-auto max-w-[10rem]" />
+              ) : rankSlug === '3kyu' ? (
+                <DiagonalBoard className="mx-auto max-w-[10rem]" />
               ) : (
                 <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
               )}

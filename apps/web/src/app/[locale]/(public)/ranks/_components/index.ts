@@ -1,6 +1,11 @@
 export { AllAnchorPointsBoard } from './AllAnchorPointsBoard';
 export { AnchorPointsBoard } from './AnchorPointsBoard';
 export { CoordinateBoard } from './CoordinateBoard';
+export { DiagonalBoard } from './DiagonalBoard';
+export { DiagonalEndHFileBoard } from './DiagonalEndHFileBoard';
+export { DiagonalEndRank8Board } from './DiagonalEndRank8Board';
+export { DiagonalStartAFileBoard } from './DiagonalStartAFileBoard';
+export { DiagonalStartRank1Board } from './DiagonalStartRank1Board';
 export { GuideLinkCard } from './GuideLinkCard';
 export { HighlightQuadrantBoard } from './HighlightQuadrantBoard';
 export { MiniBoard } from './MiniBoard';
