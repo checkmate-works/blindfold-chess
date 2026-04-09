@@ -1006,7 +1006,6 @@
       "title": "Planificador de Rutas",
       "session": "En Progreso",
       "description": "Calcula el camino más corto para que una pieza alcance una casilla objetivo",
-      "betaNotice": "El guardado de puntuaciones y la clasificación están actualmente en desarrollo.",
       "howToPlayTitle": "Cómo Jugar",
       "howToPlayDescription": "Calcula el camino más corto para que una pieza alcance una casilla objetivo.",
       "settings": "Configuración",

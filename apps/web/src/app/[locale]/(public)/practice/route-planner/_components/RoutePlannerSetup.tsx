@@ -7,9 +7,8 @@ import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight, FaPlay } from 'react-icons/fa';
-import { MdConstruction } from 'react-icons/md';
 
-import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
@@ -38,10 +37,6 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
   return (
     <div>
       <div className="mb-8">
-        <BetaNotice className="mb-6" icon={<MdConstruction className="shrink-0 mt-0.5" />}>
-          <p>{t('betaNotice')}</p>
-        </BetaNotice>
-
         <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
         <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>

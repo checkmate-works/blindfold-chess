@@ -1006,7 +1006,6 @@
       "title": "Route Planner",
       "session": "In Progress",
       "description": "Calculate the shortest path for a piece to reach a target square",
-      "betaNotice": "Score saving and leaderboard display are currently under development.",
       "howToPlayTitle": "How to Play",
       "howToPlayDescription": "Calculate the shortest path for a piece to reach a target square.",
       "settings": "Settings",

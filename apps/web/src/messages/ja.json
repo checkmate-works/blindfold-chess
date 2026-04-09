@@ -1007,7 +1007,6 @@
       "title": "ルートプランナー",
       "session": "練習中",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
-      "betaNotice": "スコアの保存とリーダーボードへの表示は現在開発中です。",
       "howToPlayTitle": "問題方式",
       "howToPlayDescription": "駒がターゲットのマスに到達するための最短経路を考えましょう。",
       "settings": "設定",
