@@ -73,6 +73,7 @@ describe('generateCanonicalMetadata', () => {
 
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/learn',
+        es: 'https://www.blindfold-chess.online/es/learn',
         ja: 'https://www.blindfold-chess.online/ja/learn',
         'x-default': 'https://www.blindfold-chess.online/en/learn',
       });
@@ -86,6 +87,7 @@ describe('generateCanonicalMetadata', () => {
 
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en',
+        es: 'https://www.blindfold-chess.online/es',
         ja: 'https://www.blindfold-chess.online/ja',
         'x-default': 'https://www.blindfold-chess.online/en',
       });
@@ -99,6 +101,7 @@ describe('generateCanonicalMetadata', () => {
 
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
+        es: 'https://www.blindfold-chess.online/es/practice/algebraic-notation',
         ja: 'https://www.blindfold-chess.online/ja/practice/algebraic-notation',
         'x-default': 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
       });
@@ -233,6 +236,65 @@ describe('generateCanonicalMetadata', () => {
 
       // Empty string is falsy, so openGraph title should not be set
       expect(result.openGraph?.title).toBeUndefined();
+    });
+  });
+
+  describe('availableLocales and canonicalLocale overrides', () => {
+    it('should restrict hreflang to provided availableLocales', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'es',
+        path: 'articles/test',
+        availableLocales: ['en', 'ja'],
+      });
+      // hreflang should only have en, ja, x-default (NOT es)
+      expect(result.alternates?.languages).toEqual({
+        en: 'https://www.blindfold-chess.online/en/articles/test',
+        ja: 'https://www.blindfold-chess.online/ja/articles/test',
+        'x-default': 'https://www.blindfold-chess.online/en/articles/test',
+      });
+    });
+
+    it('should override canonical URL locale when canonicalLocale is provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'es',
+        path: 'articles/test',
+        canonicalLocale: 'en',
+      });
+      expect(result.alternates?.canonical).toBe(
+        'https://www.blindfold-chess.online/en/articles/test'
+      );
+    });
+
+    it('should use canonicalLocale for openGraph URL', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'es',
+        path: 'articles/test',
+        canonicalLocale: 'en',
+        title: 'Test Article',
+      });
+      expect(result.openGraph?.url).toBe('https://www.blindfold-chess.online/en/articles/test');
+    });
+
+    it('should include all SUPPORTED_LOCALES when availableLocales is not provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: 'articles/test',
+      });
+      expect(result.alternates?.languages).toHaveProperty('en');
+      expect(result.alternates?.languages).toHaveProperty('es');
+      expect(result.alternates?.languages).toHaveProperty('ja');
+      expect(result.alternates?.languages).toHaveProperty('x-default');
+    });
+
+    it('should use effectiveLocale for openGraph title suffix', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'es',
+        path: 'articles/test',
+        canonicalLocale: 'ja',
+        title: '目隠しチェスの練習',
+      });
+      // Should use ja locale for buildPageTitle since canonicalLocale is ja
+      expect(result.openGraph?.title).toBe('目隠しチェスの練習 | 心眼チェス');
     });
   });
 });

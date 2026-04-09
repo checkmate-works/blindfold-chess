@@ -262,8 +262,9 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('test-slug', 'en');
 
       expect(result).not.toBeNull();
-      expect(result!.slug).toBe('test-slug');
-      expect(result!.locale).toBe('en');
+      expect(result!.article.slug).toBe('test-slug');
+      expect(result!.article.locale).toBe('en');
+      expect(result!.availableLocales).toEqual(['en']);
     });
 
     it('should fall back to default locale (en) when requested locale is not available', async () => {
@@ -274,8 +275,8 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.slug).toBe('test-slug');
-      expect(result!.locale).toBe('en');
+      expect(result!.article.slug).toBe('test-slug');
+      expect(result!.article.locale).toBe('en');
     });
 
     it('should fall back to any locale when neither requested nor default is available', async () => {
@@ -286,7 +287,7 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.article.locale).toBe('fr');
     });
 
     it('should prefer the requested locale when multiple locale variants exist', async () => {
@@ -298,7 +299,8 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('ja');
+      expect(result!.article.locale).toBe('ja');
+      expect(result!.availableLocales).toEqual(['en', 'ja']);
     });
 
     it('should prefer default locale (en) over other locales when requested is unavailable', async () => {
@@ -310,7 +312,7 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('en');
+      expect(result!.article.locale).toBe('en');
     });
 
     it('should return null when article does not exist', async () => {
@@ -343,7 +345,8 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('multi', 'fr');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.article.locale).toBe('fr');
+      expect(result!.availableLocales).toEqual(['en', 'ja', 'fr', 'de']);
     });
 
     it('should fall back to en when requested locale is missing among 3+ variants', async () => {
@@ -357,7 +360,7 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('multi', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('en');
+      expect(result!.article.locale).toBe('en');
     });
 
     it('should fall back to first available when neither requested nor en exists among 3+ variants', async () => {
@@ -371,7 +374,7 @@ describe('articles queries', () => {
       const result = await getPublishedArticle('multi', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.article.locale).toBe('fr');
     });
   });
 

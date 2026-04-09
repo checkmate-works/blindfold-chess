@@ -135,7 +135,10 @@ export async function getPublishedArticlesPaginated(
  *   2. Default locale (en)
  *   3. Any available locale
  */
-export async function getPublishedArticle(slug: string, locale: string): Promise<Article | null> {
+export async function getPublishedArticle(
+  slug: string,
+  locale: string
+): Promise<{ article: Article; availableLocales: string[] } | null> {
   const results = await db
     .select()
     .from(articles)
@@ -149,7 +152,8 @@ export async function getPublishedArticle(slug: string, locale: string): Promise
 
   if (results.length === 0) return null;
 
-  return pickByLocale(results, locale);
+  const availableLocales = results.map((r) => r.locale);
+  return { article: pickByLocale(results, locale), availableLocales };
 }
 
 /**

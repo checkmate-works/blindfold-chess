@@ -1909,7 +1909,8 @@
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
     "moreArticles": "More articles",
-    "articleNotFound": "Article Not Found"
+    "articleNotFound": "Article Not Found",
+    "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
   },
   "announcements": {
     "pageTitle": "Announcements",

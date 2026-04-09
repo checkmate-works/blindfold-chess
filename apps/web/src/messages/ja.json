@@ -1910,7 +1910,8 @@
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
     "moreArticles": "その他の記事",
-    "articleNotFound": "記事が見つかりません"
+    "articleNotFound": "記事が見つかりません",
+    "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
   "announcements": {
     "pageTitle": "お知らせ",
