@@ -1511,3 +1511,70 @@ export const userGrants = pgTable(
 
 export type UserGrant = typeof userGrants.$inferSelect;
 export type NewUserGrant = typeof userGrants.$inferInsert;
+
+/**
+ * Positions — user-submitted chess positions for various practice modules.
+ *
+ * @description
+ * A generic table that holds user-submitted chess positions.
+ * Used across multiple practice modules: position-memory, puzzles,
+ * move-sequence, and future modules that need a stored FEN with metadata.
+ *
+ * @design FEN の一意性制約なし
+ * The same FEN may appear in multiple rows with different titles and
+ * descriptions — each is treated as a distinct problem.
+ *
+ * @design `updated_at` なし
+ * Positions are immutable after creation — editing is not supported.
+ * The column is intentionally omitted.
+ *
+ * @design `type` は varchar（pgEnum ではない）
+ * Follows the existing `topicType` pattern. New type values (e.g. 'puzzle',
+ * 'sequence') can be added without ALTER TYPE migrations.
+ *
+ * @design FKs managed in custom SQL
+ * `userId` → `auth.users` is defined in Supabase-side SQL, not Drizzle
+ * references, following the same pattern as `profiles.id` and
+ * `topicPosts.userId`.
+ *
+ * @design 論理削除
+ * `deletedAt` enables soft-delete. Rows with a non-null `deletedAt` are
+ * treated as 404 by the application layer.
+ */
+export const positions = pgTable(
+  'positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    type: varchar('type', { length: 50 }).notNull(), // 'memory', 'puzzle', 'sequence', etc.
+    fen: varchar('fen', { length: 100 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_positions_user').on(table.userId),
+    index('idx_positions_type').on(table.type),
+  ]
+);
+
+export type Position = typeof positions.$inferSelect;
+export type NewPosition = typeof positions.$inferInsert;
+
+// Position Tags (junction table)
+export const positionTags = pgTable(
+  'position_tags',
+  {
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [unique('uq_position_tag').on(table.positionId, table.tagId)]
+);
+
+export type PositionTag = typeof positionTags.$inferSelect;
+export type NewPositionTag = typeof positionTags.$inferInsert;
