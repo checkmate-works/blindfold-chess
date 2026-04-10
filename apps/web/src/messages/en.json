@@ -1330,6 +1330,9 @@
         "improved": "Improved rank!",
         "rank": "Rank",
         "score": "Score"
+      },
+      "position": {
+        "action": "Posted a new problem"
       }
     },
     "vsAi": {

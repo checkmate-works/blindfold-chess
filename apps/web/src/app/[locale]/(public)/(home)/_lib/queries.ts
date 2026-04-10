@@ -1,12 +1,21 @@
 import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm';
 
-import { chessOpenings, db, feedItems, profiles, topicPostRatings, topicPosts } from '@/lib/db';
+import {
+  chessOpenings,
+  db,
+  feedItems,
+  positions,
+  profiles,
+  topicPostRatings,
+  topicPosts,
+} from '@/lib/db';
 
+import { getPositionLikeMetaMap } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/like-queries';
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
 
-import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
+import type { ChallengeRankUpdateData, FeedItem, FeedResponse, PositionFeedData } from './types';
 
 /** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
 const FEED_RANK_THRESHOLD = 10;
@@ -44,8 +53,9 @@ export async function getFeedData(
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
   const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
   const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
+  const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
 
-  const [topicPostMap, rankUpdateActorMap] = await Promise.all([
+  const [topicPostMap, rankUpdateActorMap, positionMap] = await Promise.all([
     (async () => {
       const map = new Map<string, ProfilePostWithReplyMeta>();
 
@@ -110,6 +120,52 @@ export async function getFeedData(
 
       return map;
     })(),
+    (async () => {
+      const map = new Map<string, PositionFeedData>();
+
+      if (positionIds.length === 0) return map;
+
+      const rows = await db
+        .select({
+          id: positions.id,
+          fen: positions.fen,
+          createdAt: positions.createdAt,
+          author: {
+            username: profiles.username,
+            displayName: profiles.displayName,
+            avatarUrl: profiles.avatarUrl,
+            country: profiles.country,
+            flair: profiles.flair,
+          },
+        })
+        .from(positions)
+        .leftJoin(profiles, eq(positions.userId, profiles.id))
+        .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
+
+      const foundIds = rows.map((r) => r.id);
+      const likeMetaMap = await getPositionLikeMetaMap(foundIds, currentUserId);
+
+      for (const row of rows) {
+        const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
+        map.set(row.id, {
+          id: row.id,
+          fen: row.fen,
+          createdAt: row.createdAt.toISOString(),
+          author: row.author
+            ? {
+                username: row.author.username,
+                displayName: row.author.displayName,
+                avatarUrl: row.author.avatarUrl,
+                country: row.author.country,
+                flair: row.author.flair,
+              }
+            : null,
+          likeMeta,
+        });
+      }
+
+      return map;
+    })(),
   ]);
 
   // Build FeedItem array, filtering out items whose entity data was not found
@@ -121,6 +177,18 @@ export async function getFeedData(
         items.push({
           id: row.id,
           entityType: 'topic_post',
+          entityId: row.entityId,
+          actorId: row.actorId,
+          createdAt: row.createdAt.toISOString(),
+          data,
+        });
+      }
+    } else if (row.entityType === 'position') {
+      const data = positionMap.get(row.entityId);
+      if (data) {
+        items.push({
+          id: row.id,
+          entityType: 'position',
           entityId: row.entityId,
           actorId: row.actorId,
           createdAt: row.createdAt.toISOString(),

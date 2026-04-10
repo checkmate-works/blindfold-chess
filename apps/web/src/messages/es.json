@@ -1330,6 +1330,9 @@
         "improved": "¡Mejoró su posición!",
         "rank": "Posición",
         "score": "Puntuación"
+      },
+      "position": {
+        "action": "Publicó un nuevo problema"
       }
     },
     "vsAi": {

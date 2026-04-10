@@ -1331,6 +1331,9 @@
         "improved": "ランクアップ！",
         "rank": "順位",
         "score": "スコア"
+      },
+      "position": {
+        "action": "問題を投稿しました"
       }
     },
     "vsAi": {

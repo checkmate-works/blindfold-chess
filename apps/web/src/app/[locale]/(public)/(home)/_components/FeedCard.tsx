@@ -4,6 +4,7 @@ import { memo } from 'react';
 
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
+import { PositionFeedCard } from './PositionFeedCard';
 import { TopicPostCard } from './TopicPostCard';
 
 type Props = {
@@ -32,6 +33,8 @@ export const FeedCard = memo(function FeedCard({
           newReplyTemplate={newReplyTemplate}
         />
       );
+    case 'position':
+      return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
     case 'challenge_rank_update':
       return (
         <ChallengeRankUpdateCard
