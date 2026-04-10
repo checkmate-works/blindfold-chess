@@ -1,0 +1,1 @@
+DROP INDEX "idx_exp_events_user_source_created";
