@@ -9,6 +9,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
+import { resolveDisplayName } from '@/lib/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
@@ -89,7 +90,7 @@ export default async function PositionDetailPage({ params }: Props) {
   }
 
   const { position, profile } = row;
-  const displayName = profile?.displayName || profile?.username || 'Anonymous';
+  const displayName = resolveDisplayName(profile);
   const isBlackToMove = position.fen.split(' ')[1] === 'b';
 
   const currentUser = await getOptionalUser();

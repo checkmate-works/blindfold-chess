@@ -4,6 +4,8 @@ import { memo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { resolveDisplayName } from '@/lib/display-name';
+
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { BoardThumbnail } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/BoardThumbnail';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -25,7 +27,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   justNowLabel,
 }: Props) {
   const tFeed = useTranslations('home.feed.position');
-  const displayName = data.author?.displayName || data.author?.username || 'Anonymous';
+  const displayName = resolveDisplayName(data.author);
   const href = `/practice/position-memory/${data.id}`;
 
   return (

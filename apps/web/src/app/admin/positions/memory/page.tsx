@@ -6,10 +6,11 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, positions } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { truncate } from '@/lib/text';
 
+import { BoardThumbnail } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/BoardThumbnail';
 import { PaginationNav } from '@/app/[locale]/_components';
 
-import { BoardThumbnail } from './_components/BoardThumbnail';
 import { DeletePositionButton } from './_components/DeletePositionButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -83,14 +84,10 @@ export default async function AdminPositionMemoryPage({
               </Link>
             </td>
             <td className="px-4 py-3">
-              <BoardThumbnail fen={position.fen} />
+              <BoardThumbnail fen={position.fen} className="w-20 h-20" />
             </td>
             <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">
-              {position.description
-                ? position.description.length > 80
-                  ? `${position.description.slice(0, 80)}...`
-                  : position.description
-                : '-'}
+              {position.description ? truncate(position.description) : '-'}
             </td>
             <td className="px-4 py-3 text-muted-foreground text-sm">
               {new Date(position.createdAt).toLocaleString()}

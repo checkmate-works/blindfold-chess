@@ -20,7 +20,9 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
+import { resolveDisplayName } from '@/lib/display-name';
 import { getPaginationParams } from '@/lib/pagination';
+import { truncate } from '@/lib/text';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {
@@ -129,12 +131,8 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
         ) : (
           <div className="space-y-3">
             {rows.map(({ position, profile }) => {
-              const displayName = profile?.displayName || profile?.username || 'Anonymous';
-              const descriptionExcerpt = position.description
-                ? position.description.length > 80
-                  ? position.description.slice(0, 80) + '...'
-                  : position.description
-                : '';
+              const displayName = resolveDisplayName(profile);
+              const descriptionExcerpt = truncate(position.description);
               const likeMeta = likeMetaMap.get(position.id) ?? {
                 likeCount: 0,
                 likedByMe: false,
