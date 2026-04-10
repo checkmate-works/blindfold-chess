@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+import { enumerateGuideRoutes, guideRouteToSegments } from '@/lib/guides';
 
 import { getPublishedAnnouncements } from './[locale]/(public)/announcements/_lib/queries';
 import { getPublishedArticlesForSitemap } from './[locale]/(public)/articles/_lib/queries';
@@ -230,59 +231,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Dynamic pages - Rank guide pages (hub at /guides is in staticPages above)
-  type FlatGuideEntry = { format: 'flat'; pages: unknown[] };
-  type ChapteredGuideEntry = {
-    format: 'chaptered';
-    chapters: { slug: string; pages: unknown[] }[];
-  };
-  type GuideEntry = FlatGuideEntry | ChapteredGuideEntry;
-  const guides = enMessages.guides.pages as Record<string, GuideEntry>;
-  for (const [slug, guide] of Object.entries(guides)) {
-    // Rank root
-    const rootPath = `/guides/ranks/${slug}`;
+  // Dynamic pages - Rank guide pages (hub at /guides is in staticPages above).
+  // Uses the shared `enumerateGuideRoutes` helper so the sitemap, route
+  // `generateStaticParams`, and any future enumerators all walk the same tree.
+  const guideRoutes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
+  for (const route of guideRoutes) {
+    const path = `/guides/ranks/${guideRouteToSegments(route).join('/')}`;
     for (const locale of SUPPORTED_LOCALES) {
       sitemap.push({
-        url: `${BASE_URL}/${locale}${rootPath}`,
+        url: `${BASE_URL}/${locale}${path}`,
         lastModified: now,
-        alternates: generateAlternates(rootPath),
+        alternates: generateAlternates(path),
       });
-    }
-
-    if (guide.format === 'flat') {
-      // Flat body pages 2..N
-      for (let page = 2; page <= guide.pages.length; page++) {
-        const path = `/guides/ranks/${slug}/${page}`;
-        for (const locale of SUPPORTED_LOCALES) {
-          sitemap.push({
-            url: `${BASE_URL}/${locale}${path}`,
-            lastModified: now,
-            alternates: generateAlternates(path),
-          });
-        }
-      }
-    } else {
-      // Chapter tops + chapter pages 2..N
-      for (const chapter of guide.chapters) {
-        const chapterRoot = `/guides/ranks/${slug}/${chapter.slug}`;
-        for (const locale of SUPPORTED_LOCALES) {
-          sitemap.push({
-            url: `${BASE_URL}/${locale}${chapterRoot}`,
-            lastModified: now,
-            alternates: generateAlternates(chapterRoot),
-          });
-        }
-        for (let page = 2; page <= chapter.pages.length; page++) {
-          const path = `/guides/ranks/${slug}/${chapter.slug}/${page}`;
-          for (const locale of SUPPORTED_LOCALES) {
-            sitemap.push({
-              url: `${BASE_URL}/${locale}${path}`,
-              lastModified: now,
-              alternates: generateAlternates(path),
-            });
-          }
-        }
-      }
     }
   }
 

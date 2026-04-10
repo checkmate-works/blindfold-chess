@@ -19,12 +19,18 @@ import enMessages from '@/messages/en.json';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import {
+  buildGuidePath,
+  enumerateGuideRoutes,
+  findChapter,
+  getRankGuide,
+  guideRouteToSegments,
+  parseGuideSegments,
+} from '@/lib/guides';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { findChapter, getRankGuide } from '../../../_lib/guideData';
-import { parseGuideSegments } from '../../../_lib/parseGuideSegments';
 import { renderGuideBody } from '../_lib/renderGuideBody';
 
 type Props = {
@@ -37,36 +43,17 @@ type Props = {
 
 export function generateStaticParams() {
   // Build params from the English messages as the canonical source of truth.
-  // This avoids a DB hit during build and matches the pattern used elsewhere
-  // in the app (see sitemap.ts).
-  const guidesPages = enMessages.guides.pages as Record<string, unknown>;
+  // The enumeration already excludes rank roots (those are handled by the
+  // sibling `[rank]/page.tsx`), so we filter to the deep layers only.
+  const routes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
+  const deepRoutes = routes.filter((r) => r.kind !== 'root');
 
-  const params: { locale: string; rank: string; rest: string[] }[] = [];
-
-  for (const locale of SUPPORTED_LOCALES) {
-    for (const rank of ALL_RANK_SLUGS) {
-      const guide = getRankGuide(guidesPages, rank);
-      if (!guide) continue;
-
-      if (guide.format === 'flat') {
-        // Pages 2..N
-        for (let page = 2; page <= guide.pages.length; page++) {
-          params.push({ locale, rank, rest: [String(page)] });
-        }
-      } else {
-        for (const chapter of guide.chapters) {
-          // Chapter root
-          params.push({ locale, rank, rest: [chapter.slug] });
-          // Chapter pages 2..N
-          for (let page = 2; page <= chapter.pages.length; page++) {
-            params.push({ locale, rank, rest: [chapter.slug, String(page)] });
-          }
-        }
-      }
-    }
-  }
-
-  return params;
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    deepRoutes.map((route) => {
+      const [, ...rest] = guideRouteToSegments(route);
+      return { locale, rank: route.slug, rest };
+    })
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -161,10 +148,15 @@ export default async function RankGuideDeepPage({ params }: Props) {
 
   // Canonical-URL redirects for page 1
   if (parsed.kind === 'flat-page' && parsed.page === 1) {
-    redirect(`/${locale}/guides/ranks/${rankSlug}`);
+    redirect(buildGuidePath(locale, rankSlug, { kind: 'root' }));
   }
   if (parsed.kind === 'chapter-page' && parsed.page === 1) {
-    redirect(`/${locale}/guides/ranks/${rankSlug}/${parsed.chapterSlug}`);
+    redirect(
+      buildGuidePath(locale, rankSlug, {
+        kind: 'chapter-root',
+        chapterSlug: parsed.chapterSlug,
+      })
+    );
   }
 
   if (parsed.kind === 'flat-page') {

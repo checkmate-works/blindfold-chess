@@ -14,14 +14,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
+import { SUPPORTED_LOCALES } from '@/config';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
+import { GuidePageFooter } from './_components/GuidePageFooter';
 import { RankGuidesSection } from './_components/RankGuidesSection';
 
 export function generateStaticParams() {
@@ -59,13 +58,7 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
           ))}
         </div>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('breadcrumb.guides') }]} locale={locale} />
+        <GuidePageFooter items={[{ label: t('breadcrumb.guides') }]} locale={locale} />
       </PagePanel>
     </div>
   );

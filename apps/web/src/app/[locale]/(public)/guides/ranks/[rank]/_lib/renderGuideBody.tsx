@@ -3,11 +3,12 @@ import React from 'react';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import { buildChapterHref, buildFlatHref, findChapter, getRankGuide } from '@/lib/guides';
+import type { ChapteredGuide, GuideChapter, GuidePage } from '@/lib/guides';
 
+import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
@@ -20,12 +21,8 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { findChapter, getRankGuide } from '../../../_lib/guideData';
-import type { ChapteredGuide, GuideChapter, GuidePage } from '../../../_lib/guideData';
 import { getGuideInlineLink } from './guideLinkConfig';
 import { getVisualAid } from './visualAidConfig';
 
@@ -50,16 +47,6 @@ type ChapterBodyProps = BaseProps & {
 };
 
 export type GuideBodyProps = FlatBodyProps | ChapterListProps | ChapterBodyProps;
-
-function buildFlatHref(locale: string, slug: string, page: number): string {
-  return page === 1 ? `/${locale}/guides/ranks/${slug}` : `/${locale}/guides/ranks/${slug}/${page}`;
-}
-
-function buildChapterHref(locale: string, slug: string, chapterSlug: string, page: number): string {
-  return page === 1
-    ? `/${locale}/guides/ranks/${slug}/${chapterSlug}`
-    : `/${locale}/guides/ranks/${slug}/${chapterSlug}/${page}`;
-}
 
 /**
  * Render a single page of paragraphs with visual aids and inline links.
@@ -169,15 +156,9 @@ export async function renderGuideBody(props: GuideBodyProps) {
             ))}
           </ul>
 
-          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-          )}
-
-          <Divider />
-
-          <Breadcrumb
-            items={[{ label: tGuides('breadcrumb.guides'), href: '/guides' }, { label: rankName }]}
+          <GuidePageFooter
             locale={locale}
+            items={[{ label: tGuides('breadcrumb.guides'), href: '/guides' }, { label: rankName }]}
           />
         </PagePanel>
       </div>
@@ -229,13 +210,8 @@ export async function renderGuideBody(props: GuideBodyProps) {
             </>
           )}
 
-          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-          )}
-
-          <Divider />
-
-          <Breadcrumb
+          <GuidePageFooter
+            locale={locale}
             items={[
               { label: tGuides('breadcrumb.guides'), href: '/guides' },
               { label: rankName, href: `/guides/ranks/${rankSlug}` },
@@ -243,7 +219,6 @@ export async function renderGuideBody(props: GuideBodyProps) {
                 ? [{ label: tRanks('detail.pageOf', { current: pageNumber, total: pages.length }) }]
                 : []),
             ]}
-            locale={locale}
           />
         </PagePanel>
       </div>
@@ -283,13 +258,8 @@ export async function renderGuideBody(props: GuideBodyProps) {
           </>
         )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
+        <GuidePageFooter
+          locale={locale}
           items={[
             { label: tGuides('breadcrumb.guides'), href: '/guides' },
             { label: rankName, href: `/guides/ranks/${rankSlug}` },
@@ -305,7 +275,6 @@ export async function renderGuideBody(props: GuideBodyProps) {
                 ]
               : []),
           ]}
-          locale={locale}
         />
       </PagePanel>
     </div>

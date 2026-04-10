@@ -22,8 +22,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { buildGuidePath, getRankGuide } from '@/lib/guides';
 
-import { getRankGuide } from '@/app/[locale]/(public)/guides/_lib/guideData';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -129,7 +129,7 @@ export default async function RankDetailPage({ params }: Props) {
                   ? `${firstFlatParagraph.slice(0, 100)}…`
                   : firstFlatParagraph}
               </p>
-              <Link href={`/${locale}/guides/ranks/${slug}`} className="mt-3 block">
+              <Link href={buildGuidePath(locale, slug, { kind: 'root' })} className="mt-3 block">
                 <CoordinateBoard className="mx-auto max-w-[10rem]" />
                 <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
                   {t('detail.showMore')}
@@ -228,7 +228,7 @@ export default async function RankDetailPage({ params }: Props) {
                 ? `${firstDbGuideParagraph.slice(0, 100)}…`
                 : firstDbGuideParagraph}
             </p>
-            <Link href={`/${locale}/guides/ranks/${rankSlug}`} className="mt-3 block">
+            <Link href={buildGuidePath(locale, rankSlug, { kind: 'root' })} className="mt-3 block">
               {rankSlug === '4kyu' ? (
                 <KingMovementBoard className="mx-auto max-w-[10rem]" />
               ) : rankSlug === '3kyu' ? (

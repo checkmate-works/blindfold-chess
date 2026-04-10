@@ -18,11 +18,11 @@ import enMessages from '@/messages/en.json';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { enumerateGuideRoutes, getRankGuide } from '@/lib/guides';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getRankGuide } from '../../_lib/guideData';
 import { renderGuideBody } from './_lib/renderGuideBody';
 
 type Props = {
@@ -33,16 +33,11 @@ type Props = {
 };
 
 export function generateStaticParams() {
-  // Only emit params for ranks that actually have guide content.
-  // Ranks with no entry in `guides.pages` (e.g. 2kyu / 1kyu / 1dan today)
-  // are skipped so we don't pre-render pages that would just 404 at runtime.
-  const guidesPages = enMessages.guides.pages as Record<string, unknown>;
-  return SUPPORTED_LOCALES.flatMap((locale) =>
-    ALL_RANK_SLUGS.filter((rank) => getRankGuide(guidesPages, rank) !== null).map((rank) => ({
-      locale,
-      rank,
-    }))
-  );
+  // Only emit params for ranks that actually have guide content. Ranks with
+  // no entry in `guides.pages` (e.g. 2kyu / 1kyu / 1dan today) are skipped.
+  const routes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
+  const rankSlugs = routes.filter((r) => r.kind === 'root').map((r) => r.slug);
+  return SUPPORTED_LOCALES.flatMap((locale) => rankSlugs.map((rank) => ({ locale, rank })));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

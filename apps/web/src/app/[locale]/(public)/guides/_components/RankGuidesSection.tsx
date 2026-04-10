@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+import { buildGuidePath, getRankGuide } from '@/lib/guides';
 
 import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getRankGuide } from '../_lib/guideData';
 import { RankGuideCard } from './RankGuideCard';
 
 type RankGuidesSectionProps = {
@@ -38,7 +38,7 @@ export async function RankGuidesSection({ locale }: RankGuidesSectionProps) {
           return (
             <RankGuideCard
               key={slug}
-              href={`/${locale}/guides/ranks/${slug}`}
+              href={buildGuidePath(locale, slug, { kind: 'root' })}
               rankName={rankName}
               beltColor={getBeltColorHex(slug)}
             />
