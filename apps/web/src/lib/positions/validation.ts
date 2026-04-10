@@ -1,15 +1,20 @@
 import { validateFen } from '@blindfold-chess/features/chess-core';
 
-import type { PositionMutationData } from './types';
+import { UUID_RE } from '@/lib/validations/uuid';
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export type PositionMutationData = {
+  fen: string;
+  title: string;
+  description?: string | null;
+  userId: string;
+};
 
 /**
  * Validate position mutation data before persisting.
  *
  * @returns An error message string if validation fails, or `null` if valid.
  */
-export function validatePositionData(data: PositionMutationData): string | null {
+export function validatePositionMutationData(data: PositionMutationData): string | null {
   if (!data.fen || !data.fen.trim()) {
     return 'FEN is required';
   }
@@ -26,7 +31,7 @@ export function validatePositionData(data: PositionMutationData): string | null 
     return 'User ID is required';
   }
 
-  if (!UUID_REGEX.test(data.userId.trim())) {
+  if (!UUID_RE.test(data.userId.trim())) {
     return 'User ID must be a valid UUID';
   }
 
