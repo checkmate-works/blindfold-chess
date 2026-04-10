@@ -2,6 +2,7 @@ import { cache } from 'react';
 
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { and, eq, isNull } from 'drizzle-orm';
@@ -10,7 +11,6 @@ import { db, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -86,7 +86,6 @@ export default async function PositionDetailPage({ params }: Props) {
 
   const { position, profile } = row;
   const displayName = profile?.displayName || profile?.username || 'Anonymous';
-  const profileHref = profile?.username ? `/${locale}/u/${profile.username}` : null;
   const isBlackToMove = position.fen.split(' ')[1] === 'b';
 
   return (
@@ -109,15 +108,25 @@ export default async function PositionDetailPage({ params }: Props) {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
-            <UserAvatar
-              profileHref={profileHref}
-              avatarUrl={profile?.avatarUrl}
-              displayName={displayName}
-              locale={locale}
-              size="sm"
-            />
+            {profile?.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt={displayName}
+                width={24}
+                height={24}
+                className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                unoptimized
+              />
+            ) : (
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                <span className="text-xs text-muted-foreground">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <span className="font-medium text-foreground">{displayName}</span>
           </div>
 
           <div className="text-xs text-muted-foreground text-right">

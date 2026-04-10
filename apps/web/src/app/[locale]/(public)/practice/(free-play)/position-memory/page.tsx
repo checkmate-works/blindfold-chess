@@ -12,6 +12,7 @@
  * 3. On the detail page, configure time limit and start a session
  */
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
@@ -20,7 +21,6 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { db, positions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import {
   Divider,
   PagePanel,
@@ -120,7 +120,6 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           <div className="space-y-3">
             {rows.map(({ position, profile }) => {
               const displayName = profile?.displayName || profile?.username || 'Anonymous';
-              const profileHref = profile?.username ? `/${locale}/u/${profile.username}` : null;
               const descriptionExcerpt = position.description
                 ? position.description.length > 80
                   ? position.description.slice(0, 80) + '...'
@@ -138,15 +137,24 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                     <BoardThumbnail fen={position.fen} className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <UserAvatar
-                        profileHref={profileHref}
-                        avatarUrl={profile?.avatarUrl}
-                        displayName={displayName}
-                        locale={locale}
-                        size="sm"
-                        asLink={false}
-                      />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {profile?.avatarUrl ? (
+                        <Image
+                          src={profile.avatarUrl}
+                          alt={displayName}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs text-muted-foreground">
+                            {displayName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <span className="font-medium text-foreground">{displayName}</span>
                       <span className="whitespace-nowrap">{t('list.submittedBy')}</span>
                     </div>
                     <h3 className="font-medium text-foreground truncate">{position.title}</h3>
