@@ -2308,11 +2308,36 @@
       "past28days": "Últimos 28 días",
       "past90days": "Últimos 90 días",
       "newUsersPeriodTotal": "Nuevos Usuarios (Total del Período)",
-      "postsPeriodTotal": "Publicaciones (Total del Período)",
+      "ugcPostsPeriodTotal": "Publicaciones UGC (Total del Período)",
       "dailyTrends": "Tendencias Diarias",
       "newUsers": "Nuevos Usuarios",
-      "posts": "Publicaciones",
-      "noData": "Sin datos para el período seleccionado."
+      "ugcPosts": "Publicaciones UGC",
+      "noData": "Sin datos para el período seleccionado.",
+      "summaryTable": {
+        "title": "Resumen de KPI",
+        "category": "Categoría",
+        "metric": "Métrica",
+        "value": "Valor",
+        "users": "Usuarios",
+        "ugcPosts": "Publicaciones UGC",
+        "likes": "Me gusta",
+        "avgPerDay": "Promedio por día",
+        "avgPerActivePoster": "Promedio por autor activo",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "apertura",
+            "square": "casilla"
+          },
+          "positions": {
+            "memory": "memoria"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Correo",
