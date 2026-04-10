@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 import { eq } from 'drizzle-orm';
 
 import { db, positions } from '@/lib/db';
@@ -36,7 +37,7 @@ export default async function PositionDetailPage({ params }: { params: Promise<{
           <AnimatedChessBoard
             initialFen={position.fen}
             showCoordinates={false}
-            flipped={position.fen.split(' ')[1] === 'b'}
+            flipped={isBlackToMoveFromFen(position.fen)}
           />
         </div>
 

@@ -1,16 +1,12 @@
-import { cache } from 'react';
-
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { db, positions, profiles } from '@/lib/db';
 import { resolveDisplayName } from '@/lib/display-name';
-import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -22,6 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionStartForm } from '../_components/PositionStartForm';
 import { getPositionLikeMeta } from '../_lib/like-queries';
+import { getMemoryPositionWithProfileById } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,36 +29,11 @@ type Props = {
   }>;
 };
 
-/**
- * Fetch a memory position with its author profile.
- * Wrapped with `React.cache` for per-request deduplication —
- * shared between `generateMetadata` and the page component.
- */
-const getPositionWithProfile = cache(async (id: string) => {
-  if (!UUID_RE.test(id)) return null;
-
-  const [row] = await db
-    .select({
-      position: positions,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
-    })
-    .from(positions)
-    .leftJoin(profiles, eq(positions.userId, profiles.id))
-    .where(and(eq(positions.id, id), eq(positions.type, 'memory'), isNull(positions.deletedAt)))
-    .limit(1);
-
-  return row ?? null;
-});
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
 
-  const row = await getPositionWithProfile(id);
+  const row = await getMemoryPositionWithProfileById(id);
 
   if (!row) {
     return { title: t('detail.title') };
@@ -83,7 +55,7 @@ export default async function PositionDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const row = await getPositionWithProfile(id);
+  const row = await getMemoryPositionWithProfileById(id);
 
   if (!row) {
     notFound();
@@ -91,7 +63,7 @@ export default async function PositionDetailPage({ params }: Props) {
 
   const { position, profile } = row;
   const displayName = resolveDisplayName(profile);
-  const isBlackToMove = position.fen.split(' ')[1] === 'b';
+  const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
   const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { validateFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen, validateFen } from '@blindfold-chess/features/chess-core';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 
@@ -69,7 +69,7 @@ export function PositionForm() {
           <AnimatedChessBoard
             initialFen={fen.trim()}
             showCoordinates={false}
-            flipped={fen.trim().split(' ')[1] === 'b'}
+            flipped={isBlackToMoveFromFen(fen.trim())}
           />
         </div>
       )}

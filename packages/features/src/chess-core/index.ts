@@ -19,6 +19,7 @@ export {
   fenToBoard,
   fenToBoardFlat,
   getTurnFromFen,
+  isBlackToMoveFromFen,
   getFenAfterMoves,
   getStartingFen,
   fenToLichessUrl,
