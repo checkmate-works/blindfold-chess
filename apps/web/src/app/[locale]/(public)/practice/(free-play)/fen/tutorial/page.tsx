@@ -12,7 +12,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
   i18nKey: 'fen',
   canonicalPath: 'practice/fen/tutorial',
   descriptionKey: 'tutorial.description',
-  usePagePanel: false,
   breadcrumbSegments: [
     { labelKey: 'fen.title', href: '/practice/fen' },
     { labelKey: 'fen.tutorial.title' },

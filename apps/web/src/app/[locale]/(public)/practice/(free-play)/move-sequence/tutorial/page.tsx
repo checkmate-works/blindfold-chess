@@ -13,7 +13,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
   i18nKey: 'moveSequence',
   canonicalPath: 'practice/move-sequence/tutorial',
   descriptionKey: 'tutorial.description',
-  usePagePanel: false,
   breadcrumbSegments: [
     { labelKey: 'moveSequence.title', href: '/practice/move-sequence' },
     { labelKey: 'moveSequence.tutorial.title' },
