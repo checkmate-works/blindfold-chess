@@ -870,7 +870,9 @@
         "timeLimit": "制限時間",
         "seconds": "{count} 秒",
         "createdBy": "作成者",
-        "tutorialLink": "チュートリアルを見る"
+        "tutorialLink": "チュートリアルを見る",
+        "tryAgain": "もう一度挑戦",
+        "backToList": "一覧に戻る"
       }
     },
     "knightTour": {

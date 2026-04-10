@@ -869,7 +869,9 @@
         "timeLimit": "Límite de Tiempo",
         "seconds": "{count} segundos",
         "createdBy": "Creado por",
-        "tutorialLink": "Ver Tutorial"
+        "tutorialLink": "Ver Tutorial",
+        "tryAgain": "Intentar de nuevo",
+        "backToList": "Volver a la lista"
       }
     },
     "knightTour": {
