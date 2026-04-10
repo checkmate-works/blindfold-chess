@@ -1,6 +1,7 @@
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, likes, profiles, topicPostRatings, topicPosts } from '@/lib/db';
+import { getLikeMeta } from '@/lib/db/like-queries';
 
 import { attachProfilePostMeta } from './post-meta';
 import { authorSelect, ratingSelect } from './shared';
@@ -9,36 +10,12 @@ import type { LikeMeta, ProfilePostWithReplyMeta } from './shared';
 /**
  * Get like metadata for a single post.
  * Topic-generic: works on any postId regardless of topicType.
+ *
+ * Thin wrapper around the generic {@link getLikeMeta} helper that fixes
+ * `targetType` to `'topic_post'`.
  */
-export async function getLikeMetaForPost(
-  postId: string,
-  currentUserId?: string
-): Promise<LikeMeta> {
-  const [result] = await db
-    .select({ count: count() })
-    .from(likes)
-    .where(and(eq(likes.targetType, 'topic_post'), eq(likes.targetId, postId)));
-
-  let likedByMe = false;
-  if (currentUserId) {
-    const userLike = await db
-      .select({ id: likes.id })
-      .from(likes)
-      .where(
-        and(
-          eq(likes.userId, currentUserId),
-          eq(likes.targetType, 'topic_post'),
-          eq(likes.targetId, postId)
-        )
-      )
-      .limit(1);
-    likedByMe = userLike.length > 0;
-  }
-
-  return {
-    likeCount: result.count,
-    likedByMe,
-  };
+export function getLikeMetaForPost(postId: string, currentUserId?: string): Promise<LikeMeta> {
+  return getLikeMeta('topic_post', postId, currentUserId);
 }
 
 /**

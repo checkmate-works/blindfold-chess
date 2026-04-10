@@ -36,8 +36,8 @@ vi.mock('@/lib/db', () => {
   // Track which "shape" each select was. The implementation uses two shapes:
   //   1) { count: count() }                    -> count aggregate (single or grouped)
   //   2) { id: likes.id }                      -> getPositionLikeMeta user-liked lookup
-  //   3) { positionId: likes.targetId }        -> getPositionLikeMetaMap user-liked lookup
-  //   4) { positionId, likeCount }             -> getPositionLikeMetaMap counts (groupBy)
+  //   3) { targetId: likes.targetId }        -> getPositionLikeMetaMap user-liked lookup
+  //   4) { targetId, likeCount }               -> getPositionLikeMetaMap counts (groupBy)
   const db = {
     select: (shape?: Record<string, unknown>) => {
       const kind =
@@ -47,7 +47,7 @@ vi.mock('@/lib/db', () => {
             ? 'countSingle'
             : shape && 'id' in shape
               ? 'userLikeSingle'
-              : shape && 'positionId' in shape
+              : shape && 'targetId' in shape
                 ? 'userLikeMany'
                 : 'unknown';
 
@@ -118,11 +118,11 @@ describe('getPositionLikeMetaMap', () => {
 
   it('builds a count + likedByMe map for multiple positions', async () => {
     countResultsQueue.push([
-      { positionId: positionA, likeCount: 3 },
-      { positionId: positionB, likeCount: 1 },
+      { targetId: positionA, likeCount: 3 },
+      { targetId: positionB, likeCount: 1 },
       // positionC has no rows in the counts query
     ]);
-    userLikesResultsQueue.push([{ positionId: positionA }, { positionId: positionC }]);
+    userLikesResultsQueue.push([{ targetId: positionA }, { targetId: positionC }]);
 
     const result = await getPositionLikeMetaMap([positionA, positionB, positionC], testUserId);
 
@@ -134,7 +134,7 @@ describe('getPositionLikeMetaMap', () => {
   });
 
   it('returns likedByMe=false for every position when currentUserId is undefined', async () => {
-    countResultsQueue.push([{ positionId: positionA, likeCount: 2 }]);
+    countResultsQueue.push([{ targetId: positionA, likeCount: 2 }]);
 
     const result = await getPositionLikeMetaMap([positionA, positionB]);
 
@@ -161,8 +161,8 @@ describe('getPositionLikeMetaMap', () => {
     // The implementation passes targetType='position' into the WHERE clause,
     // so the DB would never return rows for other target types. Simulate the
     // filtered result set and verify counts aren't inflated.
-    countResultsQueue.push([{ positionId: positionA, likeCount: 5 }]);
-    userLikesResultsQueue.push([{ positionId: positionA }]);
+    countResultsQueue.push([{ targetId: positionA, likeCount: 5 }]);
+    userLikesResultsQueue.push([{ targetId: positionA }]);
 
     const result = await getPositionLikeMetaMap([positionA], testUserId);
 

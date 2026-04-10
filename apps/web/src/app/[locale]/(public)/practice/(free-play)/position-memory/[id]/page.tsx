@@ -12,13 +12,13 @@ import { db, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
-import { PositionLikeButton } from '../_components/PositionLikeButton';
 import { PositionStartForm } from '../_components/PositionStartForm';
 import { getPositionLikeMeta } from '../_lib/like-queries';
 
@@ -137,12 +137,14 @@ export default async function PositionDetailPage({ params }: Props) {
           </div>
 
           <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
-            <PositionLikeButton
-              positionId={position.id}
+            <LikeButton
+              postId={position.id}
               locale={locale}
+              topicKey=""
               initialLikeCount={likeMeta.likeCount}
               initialLikedByMe={likeMeta.likedByMe}
               toggleLikeAction={toggleLike}
+              i18nNamespace="practice.positionMemory"
             />
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {

@@ -6,7 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { BoardThumbnail } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/BoardThumbnail';
-import { PositionLikeButton } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/PositionLikeButton';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 
@@ -51,12 +51,14 @@ export const PositionFeedCard = memo(function PositionFeedCard({
       <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
 
       <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">
-        <PositionLikeButton
-          positionId={data.id}
+        <LikeButton
+          postId={data.id}
           locale={locale}
+          topicKey=""
           initialLikeCount={data.likeMeta.likeCount}
           initialLikedByMe={data.likeMeta.likedByMe}
           toggleLikeAction={toggleLike}
+          i18nNamespace="practice.positionMemory"
         />
       </div>
     </FeedItemCard>

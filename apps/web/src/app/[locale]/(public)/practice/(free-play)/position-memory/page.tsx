@@ -22,6 +22,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {
   Divider,
   PagePanel,
@@ -35,7 +36,6 @@ import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from './_actions/toggleLike';
 import { BoardThumbnail } from './_components/BoardThumbnail';
-import { PositionLikeButton } from './_components/PositionLikeButton';
 import { getPositionLikeMetaMap } from './_lib/like-queries';
 
 export const dynamic = 'force-dynamic';
@@ -181,12 +181,14 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                     </div>
                   </div>
                   <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                    <PositionLikeButton
-                      positionId={position.id}
+                    <LikeButton
+                      postId={position.id}
                       locale={locale}
+                      topicKey=""
                       initialLikeCount={likeMeta.likeCount}
                       initialLikedByMe={likeMeta.likedByMe}
                       toggleLikeAction={toggleLike}
+                      i18nNamespace="practice.positionMemory"
                     />
                   </div>
                 </Link>
