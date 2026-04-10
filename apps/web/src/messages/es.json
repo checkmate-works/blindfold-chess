@@ -854,8 +854,16 @@
       },
       "cancel": "Cancelar",
       "requiredKnowledge": "Conocimiento Necesario",
-      "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
-      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez",
+      "articles": {
+        "positionMemory": {
+          "title": "Aprende sobre el entrenamiento de memoria de posiciones",
+          "description": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+        },
+        "deGrootExperiment": {
+          "title": "El experimento de De Groot",
+          "description": "Cómo los grandes maestros memorizan posiciones: el estudio clásico sobre chunking"
+        }
+      },
       "list": {
         "title": "Memoria de Posiciones",
         "sectionTitle": "Lista de Problemas",

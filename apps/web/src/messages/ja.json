@@ -855,8 +855,16 @@
       },
       "cancel": "キャンセル",
       "requiredKnowledge": "関連記事",
-      "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
-      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ",
+      "articles": {
+        "positionMemory": {
+          "title": "ポジション記憶のトレーニングについて学ぶ",
+          "description": "チェスの局面を記憶し再現するテクニックを学ぶ"
+        },
+        "deGrootExperiment": {
+          "title": "デ・フロートの実験",
+          "description": "グランドマスターはどのように局面を記憶するか：チャンキングに関する古典的研究"
+        }
+      },
       "list": {
         "title": "ポジション記憶",
         "sectionTitle": "問題一覧",

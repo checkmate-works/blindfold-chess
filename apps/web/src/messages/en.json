@@ -854,8 +854,16 @@
       },
       "cancel": "Cancel",
       "requiredKnowledge": "Required Knowledge",
-      "viewArticle": "Learn about position memory training",
-      "articleDescription": "Learn techniques for memorizing and recreating chess positions",
+      "articles": {
+        "positionMemory": {
+          "title": "Learn about position memory training",
+          "description": "Learn techniques for memorizing and recreating chess positions"
+        },
+        "deGrootExperiment": {
+          "title": "The De Groot Experiment",
+          "description": "How grandmasters memorize positions: the classic study on chunking"
+        }
+      },
       "list": {
         "title": "Position Memory",
         "sectionTitle": "Problem List",

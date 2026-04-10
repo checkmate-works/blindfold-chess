@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -11,7 +11,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
-import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -22,9 +22,10 @@ import type { PositionAccuracy } from '../../_lib/types';
 type Props = {
   locale: Locale;
   positionId: string;
+  adBannerStandard?: ReactNode;
 };
 
-export function SinglePositionResult({ locale, positionId }: Props) {
+export function SinglePositionResult({ locale, positionId, adBannerStandard }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
   const { preferences } = useGamePreferences();
@@ -158,6 +159,29 @@ export function SinglePositionResult({ locale, positionId }: Props) {
               </Button>
             </Link>
           </div>
+
+          {/* Required Knowledge */}
+          <div className="mt-8 space-y-4">
+            <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CardLink
+                href="/learn/memory/position-memory"
+                icon="🧠"
+                title={t('articles.positionMemory.title')}
+                description={t('articles.positionMemory.description')}
+                locale={locale}
+              />
+              <CardLink
+                href="/learn/memory/de-groot-experiment"
+                icon="🧪"
+                title={t('articles.deGrootExperiment.title')}
+                description={t('articles.deGrootExperiment.description')}
+                locale={locale}
+              />
+            </div>
+          </div>
+
+          {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
         </div>
       </PagePanel>
     </div>
