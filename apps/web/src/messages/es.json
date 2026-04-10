@@ -182,13 +182,15 @@
       },
       "rank": {
         "title": "Guía de {rankName}",
-        "description": "Guía detallada y consejos para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas.",
-        "pageTitle": "Guía de {rankName} - Página {page}"
+        "description": "Guía completa de ajedrez a ciegas de {rankName}. Aprende coordenadas, diagonales y maniobras paso a paso con ayudas visuales y el sistema de cinturones como meta.",
+        "pageTitle": "Guía de {rankName} - Página {page}",
+        "descriptionWithPage": "Guía de ajedrez a ciegas de {rankName}, página {page} de {total}. Recorre esta parte del curso con ayudas visuales y ejercicios progresivos del sistema de cinturones."
       },
       "chapter": {
-        "title": "{rankName} - {chapterName}",
-        "description": "Capítulo {chapterName} de la guía de ajedrez a ciegas de {rankName}.",
-        "pageTitle": "{rankName} - {chapterName} - Página {page}"
+        "title": "Guía de {rankName} - {chapterName}",
+        "description": "Capítulo {chapterName} de la guía de ajedrez a ciegas de {rankName}. Un recorrido visual y progresivo centrado en las habilidades de {chapterName} para este cinturón.",
+        "pageTitle": "Guía de {rankName} - {chapterName} - Página {page}",
+        "descriptionWithPage": "Capítulo {chapterName} de la guía de {rankName}, página {page} de {total}. Ayudas visuales y enlaces para dominar paso a paso {chapterName} en ajedrez a ciegas."
       }
     }
   },
@@ -3275,7 +3277,8 @@
         "practiceLink": "También puedes practicar con un ejercicio sencillo.",
         "learnArticleLabel": "Aprende sobre notación algebraica",
         "practiceLabel": "Practica notación algebraica"
-      }
+      },
+      "readFullGuide": "Leer la guía de {rankName}"
     },
     "signUpBanner": {
       "message": "¡Obtén tu cinturón negro!",

@@ -87,7 +87,11 @@ async function buildFlatPageMetadata(
 
   const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.rank' });
   const title = tMeta('pageTitle', { rankName, page: parsed.page });
-  const description = tMeta('description', { rankName });
+  const description = tMeta('descriptionWithPage', {
+    rankName,
+    page: parsed.page,
+    total: guide.pages.length,
+  });
   return {
     ...generateCanonicalMetadata({
       locale,
@@ -140,7 +144,12 @@ async function buildChapterPageMetadata(
     chapterName: chapter.title,
     page: parsed.page,
   });
-  const description = tMeta('description', { rankName, chapterName: chapter.title });
+  const description = tMeta('descriptionWithPage', {
+    rankName,
+    chapterName: chapter.title,
+    page: parsed.page,
+    total: chapter.pages.length,
+  });
   return {
     ...generateCanonicalMetadata({
       locale,

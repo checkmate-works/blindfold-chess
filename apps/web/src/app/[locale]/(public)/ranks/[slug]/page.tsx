@@ -129,10 +129,14 @@ export default async function RankDetailPage({ params }: Props) {
                   ? `${firstFlatParagraph.slice(0, 100)}…`
                   : firstFlatParagraph}
               </p>
-              <Link href={buildGuidePath(locale, slug, { kind: 'root' })} className="mt-3 block">
+              <Link
+                href={buildGuidePath(locale, slug, { kind: 'root' })}
+                className="mt-3 block"
+                aria-label={t('detail.readFullGuide', { rankName })}
+              >
                 <CoordinateBoard className="mx-auto max-w-[10rem]" />
                 <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                  {t('detail.showMore')}
+                  {t('detail.readFullGuide', { rankName })}
                 </span>
               </Link>
             </div>
@@ -228,7 +232,11 @@ export default async function RankDetailPage({ params }: Props) {
                 ? `${firstDbGuideParagraph.slice(0, 100)}…`
                 : firstDbGuideParagraph}
             </p>
-            <Link href={buildGuidePath(locale, rankSlug, { kind: 'root' })} className="mt-3 block">
+            <Link
+              href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
+              className="mt-3 block"
+              aria-label={t('detail.readFullGuide', { rankName })}
+            >
               {rankSlug === '4kyu' ? (
                 <KingMovementBoard className="mx-auto max-w-[10rem]" />
               ) : rankSlug === '3kyu' ? (
@@ -237,7 +245,7 @@ export default async function RankDetailPage({ params }: Props) {
                 <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
               )}
               <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                {t('detail.showMore')}
+                {t('detail.readFullGuide', { rankName })}
               </span>
             </Link>
           </div>

@@ -182,13 +182,15 @@
       },
       "rank": {
         "title": "{rankName} ガイド",
-        "description": "{rankName}の合格に向けた詳細なガイドと解説。",
-        "pageTitle": "{rankName} ガイド - {page}ページ目"
+        "description": "{rankName} の目隠しチェス教本(ガイド)。盤上の座標認識、ダイアゴナル計算、駒の合法手、駒運び(マヌーバリング)を、視覚教材とインラインリンクつきで段階的に解説し、帯システムで到達度を確認しながら学べる学習ガイドです。",
+        "pageTitle": "{rankName} ガイド - {page}ページ目",
+        "descriptionWithPage": "{rankName} の目隠しチェス教本(ガイド)、{page}/{total}ページ。視覚教材やインラインリンクを使いながら、{rankName} 取得に必要な盤上認識・座標感覚・駒運びを段階的に身につけていくページです。"
       },
       "chapter": {
-        "title": "{rankName} - {chapterName}",
-        "description": "{rankName}ガイドの{chapterName}章。",
-        "pageTitle": "{rankName} - {chapterName} - {page}ページ目"
+        "title": "{rankName} ガイド - {chapterName}",
+        "description": "{rankName} ガイドの {chapterName} 章。視覚教材を使った段階的な解説で、目隠しチェスで {chapterName} を扱うのに必要な感覚と計算を、{rankName} 取得に向けて体系的に身につけられる学習コンテンツです。",
+        "pageTitle": "{rankName} ガイド - {chapterName} - {page}ページ目",
+        "descriptionWithPage": "{rankName} ガイドの {chapterName} 章、{page}/{total}ページ。視覚教材やインラインリンクで、{chapterName} を少しずつ身につける手順と、目隠しチェスに必要な感覚・計算を具体的に解説します。"
       }
     }
   },
@@ -3232,7 +3234,8 @@
         "practiceLink": "簡単な演習を以下で行うこともできます。",
         "learnArticleLabel": "代数記法について学ぶ",
         "practiceLabel": "代数記法の練習"
-      }
+      },
+      "readFullGuide": "{rankName} ガイドを読む"
     },
     "signUpBanner": {
       "message": "黒帯を取得しよう！",

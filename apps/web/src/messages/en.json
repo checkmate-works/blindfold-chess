@@ -182,13 +182,15 @@
       },
       "rank": {
         "title": "{rankName} Guide",
-        "description": "Detailed guide and tips for achieving {rankName} rank in blindfold chess training.",
-        "pageTitle": "{rankName} Guide - Page {page}"
+        "description": "The complete {rankName} blindfold chess guide. Learn coordinates, diagonals, and piece maneuvering step by step with visual aids and belt-progression goals.",
+        "pageTitle": "{rankName} Guide - Page {page}",
+        "descriptionWithPage": "{rankName} blindfold chess guide, page {page} of {total}. Work through this part of the course with visual board aids and progressive exercises built for the belt system."
       },
       "chapter": {
-        "title": "{rankName} - {chapterName}",
-        "description": "{chapterName} chapter of the {rankName} blindfold chess guide.",
-        "pageTitle": "{rankName} - {chapterName} - Page {page}"
+        "title": "{rankName} Guide - {chapterName}",
+        "description": "The {chapterName} chapter of the {rankName} blindfold chess guide. A focused, visually guided walkthrough of {chapterName} skills needed to earn this belt rank.",
+        "pageTitle": "{rankName} Guide - {chapterName} - Page {page}",
+        "descriptionWithPage": "{chapterName} chapter of the {rankName} blindfold chess guide, page {page} of {total}. Step-by-step visual aids and inline links to help you master {chapterName}."
       }
     }
   },
@@ -3276,7 +3278,8 @@
         "practiceLink": "You can also practice with a simple exercise.",
         "learnArticleLabel": "Learn about algebraic notation",
         "practiceLabel": "Practice algebraic notation"
-      }
+      },
+      "readFullGuide": "Read the {rankName} guide"
     },
     "signUpBanner": {
       "message": "Earn your black belt!",
