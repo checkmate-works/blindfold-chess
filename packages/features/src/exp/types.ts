@@ -2,13 +2,11 @@ export type ExpInput = {
   score: number;
   incorrectAnswers: number;
   menuType: string;
-  dailyChallengeCount: number; // 当日の完了済みチャレンジ数（このチャレンジを含まない）
 };
 
 export type ExpResult = {
   baseExp: number;
   accuracyMultiplier: number;
-  streakMultiplier: number;
   totalExp: number;
 };
 

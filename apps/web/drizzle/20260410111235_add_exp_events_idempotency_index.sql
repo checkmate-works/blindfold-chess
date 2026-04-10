@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "uq_exp_events_source_pair" ON "exp_events" USING btree ("source","source_id") WHERE source_id IS NOT NULL;

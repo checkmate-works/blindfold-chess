@@ -2,14 +2,14 @@
  * Exp Persistence (経験値の永続化)
  *
  * @description
- * Database operations for granting Exp and tracking daily challenge counts.
- * Orchestrates the full flow: daily count lookup → calculation → persistence → level check.
+ * Database operations for granting Exp from challenge completions.
+ * Orchestrates the full flow: calculation → persistence → level check.
  *
  * @see {@link @blindfold-chess/features/exp} for calculation logic (calculateExp, getLevel)
  * @see {@link ./save-challenge-result.ts} for the caller that invokes grantChallengeExp
  */
 import { calculateExp, getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import type { ExpInfo } from '@/lib/exp-types';
 
@@ -20,9 +20,31 @@ import { expEvents, userExp } from './schema';
 type TransactionClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
+ * Result of a {@link grantExp} call.
+ *
+ * When `alreadyGranted` is `true`, the grant was a no-op because an
+ * `exp_events` row for `(source, source_id)` already existed. In that case,
+ * `existingAmount` / `existingMetadata` describe the row from the first
+ * (successful) grant, and `totalExp` is the current `user_exp.total_exp`
+ * value — unchanged by this call.
+ */
+type GrantExpResult =
+  | { totalExp: number; alreadyGranted: false }
+  | {
+      totalExp: number;
+      alreadyGranted: true;
+      existingAmount: number;
+      existingMetadata: Record<string, unknown>;
+    };
+
+/**
  * Inserts an exp_event and upserts user_exp within the given transaction.
  *
- * @returns The user's new cumulative totalExp after the grant.
+ * Idempotent with respect to `(source, source_id)`: a partial unique index
+ * `uq_exp_events_source_pair` prevents duplicate inserts when `source_id`
+ * is non-null. On conflict, this function returns the existing event's
+ * amount/metadata and the user's current totalExp WITHOUT incrementing
+ * `user_exp` a second time.
  */
 export async function grantExp(
   tx: TransactionClient,
@@ -34,20 +56,55 @@ export async function grantExp(
     amount: number;
     metadata: Record<string, unknown>;
   }
-): Promise<{ totalExp: number }> {
+): Promise<GrantExpResult> {
   const { userId, source, sourceId, menuType, amount, metadata } = params;
 
-  // 1. Append to exp_events (immutable log)
-  await tx.insert(expEvents).values({
-    userId,
-    source,
-    sourceId,
-    menuType,
-    amount,
-    metadata,
-  });
+  // 1. Append to exp_events (immutable log) with idempotency guard.
+  //    The partial unique index `uq_exp_events_source_pair` matches when
+  //    source_id IS NOT NULL. Postgres requires the partial predicate to be
+  //    repeated in `targetWhere` so it can infer the partial index as the
+  //    conflict target — without it, Postgres raises "no unique or exclusion
+  //    constraint matching the ON CONFLICT specification".
+  const inserted = await tx
+    .insert(expEvents)
+    .values({
+      userId,
+      source,
+      sourceId,
+      menuType,
+      amount,
+      metadata,
+    })
+    .onConflictDoNothing({
+      target: [expEvents.source, expEvents.sourceId],
+      where: sql`source_id IS NOT NULL`,
+    })
+    .returning({ id: expEvents.id });
 
-  // 2. Upsert user_exp — increment if exists, insert otherwise
+  if (inserted.length === 0) {
+    // Idempotent path: a row already existed for (source, source_id).
+    // Recover the original grant's amount/metadata and the current totalExp.
+    const [existing] = await tx
+      .select({ amount: expEvents.amount, metadata: expEvents.metadata })
+      .from(expEvents)
+      .where(and(eq(expEvents.source, source), eq(expEvents.sourceId, sourceId)))
+      .limit(1);
+
+    const [userExpRow] = await tx
+      .select({ totalExp: userExp.totalExp })
+      .from(userExp)
+      .where(eq(userExp.userId, userId))
+      .limit(1);
+
+    return {
+      totalExp: userExpRow?.totalExp ?? 0,
+      alreadyGranted: true,
+      existingAmount: existing?.amount ?? amount,
+      existingMetadata: (existing?.metadata as Record<string, unknown> | null) ?? metadata,
+    };
+  }
+
+  // 2. Fresh insert: upsert user_exp — increment if exists, insert otherwise
   const [row] = await tx
     .insert(userExp)
     .values({
@@ -63,41 +120,18 @@ export async function grantExp(
     })
     .returning({ totalExp: userExp.totalExp });
 
-  return { totalExp: row.totalExp };
-}
-
-/**
- * Returns the number of challenge completions recorded today (UTC) for the user.
- * Used to calculate the streak multiplier for Exp grants.
- *
- * The count does NOT include the current (not-yet-inserted) challenge.
- */
-export async function getDailyChallengeCount(
-  tx: TransactionClient,
-  userId: string
-): Promise<number> {
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
-
-  const [result] = await tx
-    .select({ count: sql<number>`count(*)::int` })
-    .from(expEvents)
-    .where(
-      and(
-        eq(expEvents.userId, userId),
-        eq(expEvents.source, 'challenge_result'),
-        gte(expEvents.createdAt, todayStart)
-      )
-    );
-
-  return result?.count ?? 0;
+  return { totalExp: row.totalExp, alreadyGranted: false };
 }
 
 /**
  * Calculates and grants Exp for a completed challenge within a transaction.
  *
- * Orchestrates: dailyChallengeCount lookup → calculateExp → grantExp → level determination.
+ * Orchestrates: calculateExp → grantExp → level determination.
  * Extracted from saveChallengeResult to keep that function focused on challenge record persistence.
+ *
+ * Idempotent: if the same `challengeResultId` has already received an Exp grant,
+ * the previously-granted amount is returned and `levelUp` is forced to `false`
+ * (no state transition is happening on this call).
  */
 export async function grantChallengeExp(
   tx: TransactionClient,
@@ -121,17 +155,13 @@ export async function grantChallengeExp(
     leaderboardKey,
   } = params;
 
-  // TODO: Re-enable when Daily Streak Bonus is ready for public release.
-  // const dailyChallengeCount = await getDailyChallengeCount(tx, userId);
-  const dailyChallengeCount = 0;
   const expResult = calculateExp({
     score,
     incorrectAnswers,
     menuType,
-    dailyChallengeCount,
   });
 
-  const { totalExp } = await grantExp(tx, {
+  const grantResult = await grantExp(tx, {
     userId,
     source: 'challenge_result',
     sourceId: challengeResultId,
@@ -144,19 +174,33 @@ export async function grantChallengeExp(
       leaderboardKey,
       baseExp: expResult.baseExp,
       accuracyMultiplier: expResult.accuracyMultiplier,
-      streakMultiplier: expResult.streakMultiplier,
     },
   });
 
+  const { totalExp } = grantResult;
   const levelAfter = getLevel(totalExp);
-  const levelBefore = getLevel(totalExp - expResult.totalExp);
   const levelProgress = getLevelProgress(totalExp);
+  const progressPercent = Math.round(levelProgress.progress * 100);
+
+  if (grantResult.alreadyGranted) {
+    // Idempotent branch: use the originally-granted amount and do not
+    // signal a level-up (the transition, if any, happened on the first call).
+    return {
+      earnedExp: grantResult.existingAmount,
+      totalExp,
+      level: levelAfter,
+      levelUp: false,
+      progressPercent,
+    };
+  }
+
+  const levelBefore = getLevel(totalExp - expResult.totalExp);
 
   return {
     earnedExp: expResult.totalExp,
     totalExp,
     level: levelAfter,
     levelUp: levelAfter > levelBefore,
-    progressPercent: Math.round(levelProgress.progress * 100),
+    progressPercent,
   };
 }

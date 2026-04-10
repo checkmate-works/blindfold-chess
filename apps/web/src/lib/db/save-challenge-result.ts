@@ -37,12 +37,16 @@ export type ChallengeResultInput = {
  */
 export async function saveChallengeResult(
   input: ChallengeResultInput
-): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo }> {
+): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo; challengeResultId: string }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
 
   // Track whether rankings changed so we can invalidate the cache after commit
   let rankingsChanged = false;
+
+  // Captured inside the transaction so the caller can return it (used by
+  // result pages to refetch EXP via ?grant=<id>).
+  let challengeResultId = '';
 
   // Exp info populated inside the transaction
   let expInfo: ExpInfo = {
@@ -66,6 +70,8 @@ export async function saveChallengeResult(
         timeTaken,
       })
       .returning({ id: challengeResults.id });
+
+    challengeResultId = challengeResult.id;
 
     // 2. Check the current best score before the UPSERT
     const [currentBest] = await tx
@@ -223,5 +229,5 @@ export async function saveChallengeResult(
     Sentry.captureException(error);
   }
 
-  return { grantedRanks, exp: expInfo };
+  return { grantedRanks, exp: expInfo, challengeResultId };
 }

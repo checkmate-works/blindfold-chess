@@ -12,6 +12,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -1418,7 +1419,12 @@ export const expEvents = pgTable(
   (table) => [
     index('idx_exp_events_user_created').on(table.userId, table.createdAt),
     index('idx_exp_events_source').on(table.source, table.sourceId),
-    index('idx_exp_events_user_source_created').on(table.userId, table.source, table.createdAt),
+    // Idempotency guard: prevents double-granting EXP for the same (source, source_id)
+    // on retries. Partial index allows multiple rows with NULL source_id (e.g., future
+    // grants not tied to a specific record).
+    uniqueIndex('uq_exp_events_source_pair')
+      .on(table.source, table.sourceId)
+      .where(sql`source_id IS NOT NULL`),
   ]
 );
 

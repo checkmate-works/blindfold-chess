@@ -1,34 +1,19 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import type { ExpInfo } from '@/lib/exp-types';
 
-import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+type Props = {
+  expInfo: ExpInfo | null;
+};
 
 /**
- * Displays earned EXP, current level, and level progress bar on the practice result screen.
- * Reads exp data from sessionStorage (stored by useChallengeResultSave hook).
- * Renders nothing if no exp data is available (e.g., unauthenticated users).
+ * Displays earned EXP, current level, and level progress bar on the practice
+ * result screen. Rendered as a Server Component — the `expInfo` is fetched by
+ * the result page Server Component via `getExpInfoBySource` (keyed off the
+ * `?grant=<challenge_result_id>` query param) and passed in as a prop.
+ *
+ * Renders `null` when `expInfo` is null (e.g., unauthenticated users, direct
+ * access without a `grant` param, or when the event is not found).
  */
-export function ExpGainDisplay() {
-  const [expInfo, setExpInfo] = useState<ExpInfo | null>(null);
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_STORAGE_KEYS.EXP_RESULT);
-    if (stored) {
-      sessionStorage.removeItem(SESSION_STORAGE_KEYS.EXP_RESULT);
-      try {
-        const parsed = JSON.parse(stored) as ExpInfo;
-        if (parsed && typeof parsed.earnedExp === 'number') {
-          setExpInfo(parsed);
-        }
-      } catch {
-        // Invalid JSON — ignore
-      }
-    }
-  }, []);
-
+export function ExpGainDisplay({ expInfo }: Props) {
   if (!expInfo) return null;
 
   const { earnedExp, level, levelUp, progressPercent } = expInfo;

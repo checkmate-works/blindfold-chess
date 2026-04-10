@@ -169,6 +169,20 @@
       "when": 1775807670074,
       "tag": "20260410075430_add_performance_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1775818985308,
+      "tag": "20260410110305_drop_idx_exp_events_user_source_created",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1775819555588,
+      "tag": "20260410111235_add_exp_events_idempotency_index",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,6 @@ import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import { saveChallengeResult } from '@/lib/db/save-challenge-result';
-import type { ExpInfo } from '@/lib/exp-types';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -15,7 +14,12 @@ export type SaveResultResponse =
   | {
       success: true;
       grantedRanks?: { slug: string; level: number; color: string | null }[];
-      exp?: ExpInfo;
+      /**
+       * ID of the challenge_results row just inserted. Passed to the result
+       * page as `?grant=<id>` so the page can refetch the granted EXP event
+       * server-side (see `getExpInfoBySource`).
+       */
+      challengeResultId?: string;
     }
   | { success: false; error: string };
 
@@ -60,7 +64,7 @@ export async function savePracticeResult(
     }
 
     // Round to integers — DB columns are integer type, but timers may produce floats
-    const { grantedRanks, exp } = await saveChallengeResult({
+    const { grantedRanks, challengeResultId } = await saveChallengeResult({
       userId: user.id,
       menuType,
       leaderboardKey,
@@ -75,7 +79,7 @@ export async function savePracticeResult(
     // If traffic grows, consider checking the user's rank before invalidating.
     revalidateTag('exp-leaderboard', { expire: 60 });
 
-    return { success: true, grantedRanks, exp };
+    return { success: true, grantedRanks, challengeResultId };
   } catch (error) {
     return handleServerActionError(error, `[savePracticeResult] ${menuType}`);
   }

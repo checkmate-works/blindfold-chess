@@ -22,13 +22,6 @@ export const MISS_BONUS: { misses: number; multiplier: number }[] = [
   // 3 misses (burst) = no bonus (1.0)
 ];
 
-// ストリーク（同日チャレンジ連続回数）ボーナス
-export const STREAK_THRESHOLDS = [
-  { min: 5, multiplier: 1.3 },
-  { min: 3, multiplier: 1.2 },
-  { min: 2, multiplier: 1.1 },
-] as const;
-
 // レベルカーブ: requiredExp(level) = floor(BASE * level^EXPONENT)
 export const EXP_CURVE = { base: 100, exponent: 1.5 } as const;
 
