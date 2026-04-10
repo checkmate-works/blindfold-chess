@@ -853,7 +853,21 @@
       "cancel": "Cancel",
       "requiredKnowledge": "Required Knowledge",
       "viewArticle": "Learn about position memory training",
-      "articleDescription": "Learn techniques for memorizing and recreating chess positions"
+      "articleDescription": "Learn techniques for memorizing and recreating chess positions",
+      "list": {
+        "title": "Position Memory",
+        "sectionTitle": "Problem List",
+        "empty": "No positions available yet",
+        "tutorialLink": "View Tutorial",
+        "submittedBy": "submitted"
+      },
+      "detail": {
+        "title": "Position Detail",
+        "start": "Start",
+        "timeLimit": "Time Limit",
+        "seconds": "{count} seconds",
+        "createdBy": "Created by"
+      }
     },
     "knightTour": {
       "title": "Knight's Tour",

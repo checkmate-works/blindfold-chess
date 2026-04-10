@@ -853,7 +853,21 @@
       "cancel": "Cancelar",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
-      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez",
+      "list": {
+        "title": "Memoria de Posiciones",
+        "sectionTitle": "Lista de Problemas",
+        "empty": "Aún no hay posiciones disponibles",
+        "tutorialLink": "Ver Tutorial",
+        "submittedBy": "enviado"
+      },
+      "detail": {
+        "title": "Detalle de Posición",
+        "start": "Iniciar",
+        "timeLimit": "Límite de Tiempo",
+        "seconds": "{count} segundos",
+        "createdBy": "Creado por"
+      }
     },
     "knightTour": {
       "title": "Recorrido del Caballo",

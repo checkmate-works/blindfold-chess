@@ -854,7 +854,21 @@
       "cancel": "キャンセル",
       "requiredKnowledge": "関連記事",
       "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
-      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ"
+      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ",
+      "list": {
+        "title": "ポジション記憶",
+        "sectionTitle": "問題一覧",
+        "empty": "まだポジションがありません",
+        "tutorialLink": "チュートリアルを見る",
+        "submittedBy": "による出題"
+      },
+      "detail": {
+        "title": "ポジション詳細",
+        "start": "開始",
+        "timeLimit": "制限時間",
+        "seconds": "{count} 秒",
+        "createdBy": "作成者"
+      }
     },
     "knightTour": {
       "title": "ナイトツアー",
