@@ -73,6 +73,7 @@ describe('savePracticeResult', () => {
     mockSaveChallengeResult.mockResolvedValue({
       grantedRanks: [],
       exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+      challengeResultId: 'cr-00000000-0000-0000-0000-000000000001',
     });
   });
 
@@ -90,7 +91,7 @@ describe('savePracticeResult', () => {
     expect(result).toEqual({
       success: true,
       grantedRanks: [],
-      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+      challengeResultId: 'cr-00000000-0000-0000-0000-000000000001',
     });
   });
 
@@ -264,7 +265,7 @@ describe('savePracticeResult', () => {
     expect(result).toEqual({
       success: true,
       grantedRanks: [],
-      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+      challengeResultId: 'cr-00000000-0000-0000-0000-000000000001',
     });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -282,7 +283,7 @@ describe('savePracticeResult', () => {
     expect(result).toEqual({
       success: true,
       grantedRanks: [],
-      exp: { earnedExp: 10, totalExp: 100, level: 2, levelUp: false },
+      challengeResultId: 'cr-00000000-0000-0000-0000-000000000001',
     });
     expect(mockSaveChallengeResult).toHaveBeenCalledWith(
       expect.objectContaining({

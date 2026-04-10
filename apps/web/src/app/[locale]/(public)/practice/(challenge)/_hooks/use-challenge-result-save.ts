@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 
 import * as Sentry from '@sentry/nextjs';
 
-import type { ExpInfo } from '@/lib/exp-types';
-
 import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
 
@@ -15,7 +13,7 @@ type SaveResultResponse = {
   success: boolean;
   error?: string;
   grantedRanks?: { slug: string }[];
-  exp?: ExpInfo;
+  challengeResultId?: string;
 };
 
 type UseChallengeResultSaveOptions = {
@@ -27,10 +25,24 @@ type UseChallengeResultSaveOptions = {
 };
 
 /**
+ * Appends `?grant=<id>` (or `&grant=<id>` if the URL already has a query) to
+ * the given URL so the result page can refetch the granted EXP server-side.
+ */
+function appendGrantParam(url: string, challengeResultId: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}grant=${encodeURIComponent(challengeResultId)}`;
+}
+
+/**
  * Shared hook for challenge completion: saves result, stores granted ranks
  * in sessionStorage, and redirects to the result page.
  * Prevents double-saving via a ref guard.
  * Skips save for unauthenticated users (redirects directly to result page).
+ *
+ * On successful save, appends `?grant=<challengeResultId>` to the redirect
+ * URL so the result page Server Component can refetch the granted EXP and
+ * render it via `ExpGainDisplay` — this replaces the previous sessionStorage
+ * handoff and works correctly on reload / direct access.
  */
 export function useChallengeResultSave({
   isFinished,
@@ -48,19 +60,22 @@ export function useChallengeResultSave({
     savedRef.current = true;
 
     if (totalAnswers > 0 && user) {
+      let redirectUrl = resultUrl;
       saveResult()
         .then((result) => {
           if (!result.success) {
             console.error(`Failed to save ${moduleName} result:`, result.error);
             sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
-          } else if (result.grantedRanks && result.grantedRanks.length > 0) {
+            return;
+          }
+          if (result.grantedRanks && result.grantedRanks.length > 0) {
             sessionStorage.setItem(
               SESSION_STORAGE_KEYS.GRANTED_RANKS,
               JSON.stringify(result.grantedRanks)
             );
           }
-          if (result.exp) {
-            sessionStorage.setItem(SESSION_STORAGE_KEYS.EXP_RESULT, JSON.stringify(result.exp));
+          if (result.challengeResultId) {
+            redirectUrl = appendGrantParam(resultUrl, result.challengeResultId);
           }
         })
         .catch((error) => {
@@ -69,7 +84,7 @@ export function useChallengeResultSave({
           sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST, 'true');
         })
         .finally(() => {
-          router.push(resultUrl);
+          router.push(redirectUrl);
         });
     } else {
       router.push(resultUrl);

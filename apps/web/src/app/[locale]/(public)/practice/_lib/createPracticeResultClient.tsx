@@ -7,6 +7,8 @@ import { notFound, useRouter, useSearchParams } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
@@ -30,6 +32,12 @@ export type ResultClientProps = {
   adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
+  /**
+   * EXP info fetched server-side via `getExpInfoBySource` from the
+   * `?grant=<challenge_result_id>` query param. `null` when unauthenticated,
+   * the param is missing, or the event could not be found.
+   */
+  expInfo?: ExpInfo | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -216,6 +224,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     adBannerStandard,
     leaderboardRows,
     leaderboardDetailPath,
+    expInfo = null,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
     const tPractice = useTranslations('practice');
@@ -345,6 +354,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
           labels={labels}
           scoreStats={scoreStats}
           averageTimeText={averageTimeText}
+          expInfo={expInfo}
           otherPracticeLink={{
             href: `/${locale}/practice`,
             label: tPractice('doOtherPractice'),

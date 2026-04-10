@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { FaRedo } from 'react-icons/fa';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -43,6 +45,8 @@ type Props = {
   };
   afterActions?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;
+  /** EXP gained info for the current result, fetched server-side and passed down. */
+  expInfo?: ExpInfo | null;
 };
 
 export function PracticeComplete({
@@ -60,6 +64,7 @@ export function PracticeComplete({
   otherPracticeLink,
   afterActions,
   beforeRelatedContent,
+  expInfo = null,
 }: Props) {
   const router = useRouter();
 
@@ -73,7 +78,7 @@ export function PracticeComplete({
         scoreStats={scoreStats}
       />
 
-      <ExpGainDisplay />
+      <ExpGainDisplay expInfo={expInfo} />
 
       {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 
