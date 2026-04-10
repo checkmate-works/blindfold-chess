@@ -98,6 +98,21 @@ const nextConfig: NextConfig = {
         destination: '/:locale/u/:username/:path*',
         permanent: true,
       },
+      // Rank guide URL migration (added 2026-04-11).
+      // Moved textbook-like guide content from /ranks/:slug/guide to the
+      // independent /guides/ranks/:rank hub for namespace isolation and
+      // future expansion (columns, tactics, etc.).
+      // Safe to remove after 6 months if Search Console shows no traffic.
+      {
+        source: '/:locale/ranks/:slug/guide',
+        destination: '/:locale/guides/ranks/:slug',
+        permanent: true,
+      },
+      {
+        source: '/:locale/ranks/:slug/guide/:page(\\d+)',
+        destination: '/:locale/guides/ranks/:slug/:page',
+        permanent: true,
+      },
     ];
   },
 

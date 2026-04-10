@@ -175,9 +175,21 @@
       "title": "{rankName} - Rangos",
       "description": "Requisitos y criterios para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
     },
-    "rankGuide": {
-      "title": "Guía de {rankName} - Rangos",
-      "description": "Guía detallada y consejos para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
+    "guides": {
+      "top": {
+        "title": "Guías",
+        "description": "Guías tipo libro de texto para el entrenamiento de ajedrez a ciegas, organizadas por rango."
+      },
+      "rank": {
+        "title": "Guía de {rankName}",
+        "description": "Guía detallada y consejos para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas.",
+        "pageTitle": "Guía de {rankName} - Página {page}"
+      },
+      "chapter": {
+        "title": "{rankName} - {chapterName}",
+        "description": "Capítulo {chapterName} de la guía de ajedrez a ciegas de {rankName}.",
+        "pageTitle": "{rankName} - {chapterName} - Página {page}"
+      }
     }
   },
   "Header": {
@@ -3257,8 +3269,69 @@
       "prevPage": "Anterior",
       "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["Comprensión de la notación algebraica"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "Para más detalles, consulta el siguiente artículo.",
+        "practiceLink": "También puedes practicar con un ejercicio sencillo.",
+        "learnArticleLabel": "Aprende sobre notación algebraica",
+        "practiceLabel": "Practica notación algebraica"
+      }
+    },
+    "signUpBanner": {
+      "message": "¡Obtén tu cinturón negro!",
+      "description": "Regístrate para seguir tu progreso de rango.",
+      "cta": "Registro Gratuito"
+    },
+    "lockedModal": {
+      "title": "Rango Bloqueado",
+      "message": "Supera {rankName} para desbloquear este rango",
+      "linkLabel": "Ver detalles de {rankName}",
+      "ariaLabel": "Bloqueado"
+    }
+  },
+  "rankAchievement": {
+    "title": "¡Rango Alcanzado!",
+    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
+    "viewRanks": "Ver Rangos",
+    "close": "Cerrar",
+    "rankNames": {
+      "mukyu": "Sin Rango",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.er Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.er Kyū",
+      "1dan": "1.er Dan"
+    }
+  },
+  "MobileTabBar": {
+    "games": "Partidas",
+    "practice": "Práctica",
+    "topics": "Temas",
+    "mypage": "Mi Página"
+  },
+  "guides": {
+    "top": {
+      "title": "Guías",
+      "sections": {
+        "rankGuides": {
+          "title": "Guías por Rango",
+          "description": "Guías tipo libro de texto para el entrenamiento de ajedrez a ciegas, organizadas por rango."
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "Guía",
+      "chapterListHeading": "Capítulos"
+    },
+    "breadcrumb": {
+      "home": "Inicio",
+      "guides": "Guías"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Si no entiendes lo que significan notaciones como e4 o Cf3, necesitas empezar aprendiendo la notación algebraica.",
@@ -3282,8 +3355,11 @@
               "Esta técnica se enseña en el 5.º Kyū."
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Si tienes problemas para resolver los ejercicios, intenta usar puntos de anclaje.",
@@ -3309,8 +3385,11 @@
               "El siguiente artículo también explica este método."
             ]
           }
-        ],
-        "3kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "En cuanto a la maniobra del alfil, es útil considerar primero qué diagonal y anti-diagonal puede controlar un alfil cuando se coloca en una casilla específica.",
@@ -3395,8 +3474,11 @@
               "Una vez que puedas realizar estos cálculos de diagonales y anti-diagonales, la maniobra en el ajedrez a ciegas se vuelve mucho más rápida — la teoría detrás de esto se cubrirá en una guía futura."
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Con un tablero de ajedrez físico frente a ti, los jugadores experimentados pueden determinar los movimientos legales de todas las piezas casi inconscientemente.",
@@ -3434,63 +3516,30 @@
             ]
           }
         ]
-      },
-      "mukyuRequirements": ["Comprensión de la notación algebraica"],
-      "3kyuGuideLinks": {
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
         "diagonalQuizTutorialLabel": "Tutorial del Cuestionario de Diagonales",
         "diagonalQuizLabel": "Cuestionario de Diagonales"
       },
-      "5kyuGuideLinks": {
+      "5kyu": {
         "quadrantMethodArticleLabel": "Construcción de Puntos de Anclaje con el Método de Cuadrantes"
       },
-      "4kyuGuideLinks": {
+      "4kyu": {
         "kingMovementLabel": "Movimiento del Rey (guía detallada)",
         "knightMovementLabel": "Movimiento del Caballo (guía detallada)",
         "bishopMovementLabel": "Movimiento del Alfil (guía detallada)",
         "rookMovementLabel": "Movimiento de la Torre (guía detallada)"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "Para más detalles, consulta el siguiente artículo.",
-        "practiceLink": "También puedes practicar con un ejercicio sencillo.",
         "learnArticleLabel": "Aprende sobre notación algebraica",
-        "practiceLabel": "Practica notación algebraica",
         "coordinateQuizLabel": "Cuestionario de Coordenadas",
         "coordinateConfusionLabel": "Sobre la confusión de coordenadas",
         "quadrantsLabel": "Entrenamiento de Cuadrantes",
         "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
       }
-    },
-    "signUpBanner": {
-      "message": "¡Obtén tu cinturón negro!",
-      "description": "Regístrate para seguir tu progreso de rango.",
-      "cta": "Registro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Rango Bloqueado",
-      "message": "Supera {rankName} para desbloquear este rango",
-      "linkLabel": "Ver detalles de {rankName}",
-      "ariaLabel": "Bloqueado"
     }
-  },
-  "rankAchievement": {
-    "title": "¡Rango Alcanzado!",
-    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
-    "viewRanks": "Ver Rangos",
-    "close": "Cerrar",
-    "rankNames": {
-      "mukyu": "Sin Rango",
-      "5kyu": "5.º Kyū",
-      "4kyu": "4.º Kyū",
-      "3kyu": "3.er Kyū",
-      "2kyu": "2.º Kyū",
-      "1kyu": "1.er Kyū",
-      "1dan": "1.er Dan"
-    }
-  },
-  "MobileTabBar": {
-    "games": "Partidas",
-    "practice": "Práctica",
-    "topics": "Temas",
-    "mypage": "Mi Página"
   }
 }

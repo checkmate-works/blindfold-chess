@@ -175,9 +175,21 @@
       "title": "{rankName} - Ranks",
       "description": "Requirements and criteria for achieving {rankName} rank in blindfold chess training."
     },
-    "rankGuide": {
-      "title": "{rankName} Guide - Ranks",
-      "description": "Detailed guide and tips for achieving {rankName} rank in blindfold chess training."
+    "guides": {
+      "top": {
+        "title": "Guides",
+        "description": "Textbook-style guides for blindfold chess training, organized by rank."
+      },
+      "rank": {
+        "title": "{rankName} Guide",
+        "description": "Detailed guide and tips for achieving {rankName} rank in blindfold chess training.",
+        "pageTitle": "{rankName} Guide - Page {page}"
+      },
+      "chapter": {
+        "title": "{rankName} - {chapterName}",
+        "description": "{chapterName} chapter of the {rankName} blindfold chess guide.",
+        "pageTitle": "{rankName} - {chapterName} - Page {page}"
+      }
     }
   },
   "Header": {
@@ -3258,8 +3270,69 @@
       "prevPage": "Previous",
       "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["Understanding of algebraic notation"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "For more details, refer to the following article.",
+        "practiceLink": "You can also practice with a simple exercise.",
+        "learnArticleLabel": "Learn about algebraic notation",
+        "practiceLabel": "Practice algebraic notation"
+      }
+    },
+    "signUpBanner": {
+      "message": "Earn your black belt!",
+      "description": "Sign up to track your rank progress.",
+      "cta": "Sign Up Free"
+    },
+    "lockedModal": {
+      "title": "Locked Rank",
+      "message": "Pass {rankName} to unlock this rank",
+      "linkLabel": "View {rankName} details",
+      "ariaLabel": "Locked"
+    }
+  },
+  "rankAchievement": {
+    "title": "Rank Achieved!",
+    "description": "Congratulations! You've earned a new belt rank.",
+    "viewRanks": "View Ranks",
+    "close": "Close",
+    "rankNames": {
+      "mukyu": "Unranked",
+      "5kyu": "5th Kyū",
+      "4kyu": "4th Kyū",
+      "3kyu": "3rd Kyū",
+      "2kyu": "2nd Kyū",
+      "1kyu": "1st Kyū",
+      "1dan": "1st Dan"
+    }
+  },
+  "MobileTabBar": {
+    "games": "Games",
+    "practice": "Practice",
+    "topics": "Topics",
+    "mypage": "My Page"
+  },
+  "guides": {
+    "top": {
+      "title": "Guides",
+      "sections": {
+        "rankGuides": {
+          "title": "Rank Guides",
+          "description": "Textbook-style guides for blindfold chess training, organized by rank."
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "Guide",
+      "chapterListHeading": "Chapters"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "guides": "Guides"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "If you don't understand what notations like e4 or Nf3 mean, you need to start by learning algebraic notation.",
@@ -3283,8 +3356,11 @@
               "This technique is taught at 5th Kyū."
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "If you're having trouble solving the problems, try using anchor points.",
@@ -3310,8 +3386,11 @@
               "The following article also explains this method."
             ]
           }
-        ],
-        "3kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Regarding bishop maneuvering, it's helpful to first consider which diagonal and anti-diagonal a bishop can control when placed on a specific square.",
@@ -3396,8 +3475,11 @@
               "Once you can perform these diagonal and anti-diagonal calculations, maneuvering in blindfold chess becomes much faster — the theory behind this will be covered in a future guide."
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "With a physical chess board in front of you, experienced chess players can determine legal moves for all pieces almost unconsciously.",
@@ -3435,63 +3517,30 @@
             ]
           }
         ]
-      },
-      "mukyuRequirements": ["Understanding of algebraic notation"],
-      "3kyuGuideLinks": {
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
         "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial",
         "diagonalQuizLabel": "Diagonal Quiz"
       },
-      "5kyuGuideLinks": {
+      "5kyu": {
         "quadrantMethodArticleLabel": "Switching My Board Awareness Method to the Quadrant Method"
       },
-      "4kyuGuideLinks": {
+      "4kyu": {
         "kingMovementLabel": "King's Movement (detailed guide)",
         "knightMovementLabel": "Knight's Movement (detailed guide)",
         "bishopMovementLabel": "Bishop's Movement (detailed guide)",
         "rookMovementLabel": "Rook Movement (Detailed Guide)"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "For more details, refer to the following article.",
-        "practiceLink": "You can also practice with a simple exercise.",
         "learnArticleLabel": "Learn about algebraic notation",
-        "practiceLabel": "Practice algebraic notation",
         "coordinateQuizLabel": "Coordinate Quiz",
         "coordinateConfusionLabel": "About coordinate confusion",
         "quadrantsLabel": "Quadrant Training",
         "5kyuGuideLabel": "View the 5th Kyū guide"
       }
-    },
-    "signUpBanner": {
-      "message": "Earn your black belt!",
-      "description": "Sign up to track your rank progress.",
-      "cta": "Sign Up Free"
-    },
-    "lockedModal": {
-      "title": "Locked Rank",
-      "message": "Pass {rankName} to unlock this rank",
-      "linkLabel": "View {rankName} details",
-      "ariaLabel": "Locked"
     }
-  },
-  "rankAchievement": {
-    "title": "Rank Achieved!",
-    "description": "Congratulations! You've earned a new belt rank.",
-    "viewRanks": "View Ranks",
-    "close": "Close",
-    "rankNames": {
-      "mukyu": "Unranked",
-      "5kyu": "5th Kyū",
-      "4kyu": "4th Kyū",
-      "3kyu": "3rd Kyū",
-      "2kyu": "2nd Kyū",
-      "1kyu": "1st Kyū",
-      "1dan": "1st Dan"
-    }
-  },
-  "MobileTabBar": {
-    "games": "Games",
-    "practice": "Practice",
-    "topics": "Topics",
-    "mypage": "My Page"
   }
 }
