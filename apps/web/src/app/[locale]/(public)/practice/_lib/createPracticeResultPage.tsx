@@ -74,6 +74,7 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
 type SimpleResultClientProps = {
   locale: Locale;
   adBanner?: ReactNode;
+  adBannerStandard?: ReactNode;
   expInfo?: ExpInfo | null;
 };
 
@@ -86,22 +87,22 @@ export function createSimplePracticeResultPage(
     const searchParams = await props.searchParams;
     const expInfo = await resolveExpInfoFromGrantParam(searchParams);
     return (
-      <>
-        <Suspense>
-          <ResultClient
-            locale={locale}
-            expInfo={expInfo}
-            adBanner={
-              IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE ? (
-                <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-              ) : undefined
-            }
-          />
-        </Suspense>
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-      </>
+      <Suspense>
+        <ResultClient
+          locale={locale}
+          expInfo={expInfo}
+          adBanner={
+            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE ? (
+              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+            ) : undefined
+          }
+          adBannerStandard={
+            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
+              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+            ) : undefined
+          }
+        />
+      </Suspense>
     );
   };
 }
