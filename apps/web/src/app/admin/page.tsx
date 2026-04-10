@@ -98,6 +98,11 @@ export default async function AdminDashboardPage({
             likes: t('dashboardKpi.summaryTable.likes'),
             avgPerDay: t('dashboardKpi.summaryTable.avgPerDay'),
             avgPerActivePoster: t('dashboardKpi.summaryTable.avgPerActivePoster'),
+            avgPerActivePosterHelp: {
+              title: t('dashboardKpi.summaryTable.help.avgPerActivePoster.title'),
+              description: t('dashboardKpi.summaryTable.help.avgPerActivePoster.description'),
+              ariaLabel: t('dashboardKpi.summaryTable.help.avgPerActivePoster.ariaLabel'),
+            },
             total: t('dashboardKpi.summaryTable.total'),
             sourceLabels: {
               topic_posts: t('dashboardKpi.summaryTable.sources.topic_posts'),

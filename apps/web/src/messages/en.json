@@ -2337,6 +2337,13 @@
           "positions": {
             "memory": "memory"
           }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Avg per active poster",
+            "ariaLabel": "Show explanation for Avg per active poster",
+            "description": "Total UGC posts in the selected period divided by the number of distinct users who posted at least one UGC item in that period.\n\nA user who contributed multiple kinds of UGC (for example, both a topic post and a saved position) is counted as one active poster, not two.\n\nSoft-deleted posts are excluded from both the numerator and the active-poster count."
+          }
         }
       }
     },

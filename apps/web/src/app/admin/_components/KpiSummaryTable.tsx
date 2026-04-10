@@ -1,4 +1,5 @@
 import type { KpiSummary, UgcBreakdownRow } from '../_lib/queries';
+import { MetricHelpButton } from './MetricHelpButton';
 
 type Labels = {
   category: string;
@@ -10,6 +11,12 @@ type Labels = {
   avgPerDay: string;
   avgPerActivePoster: string;
   total: string;
+  /** Help text for the "Avg per active poster" metric, shown in a modal on icon click. */
+  avgPerActivePosterHelp: {
+    title: string;
+    description: string;
+    ariaLabel: string;
+  };
   /** Map of UGC source identifier → human-readable prefix (e.g. "topic_posts" → "Topic Posts"). */
   sourceLabels: Record<string, string>;
   /** Map of "<source>.<key>" → human-readable label. Falls back to the raw key. */
@@ -94,7 +101,16 @@ export function KpiSummaryTable({ data, labels, locale = 'en' }: Props) {
             </td>
           </tr>
           <tr className="border-t border-border">
-            <td className="px-4 py-3 text-muted-foreground">{labels.avgPerActivePoster}</td>
+            <td className="px-4 py-3 text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                {labels.avgPerActivePoster}
+                <MetricHelpButton
+                  title={labels.avgPerActivePosterHelp.title}
+                  description={labels.avgPerActivePosterHelp.description}
+                  ariaLabel={labels.avgPerActivePosterHelp.ariaLabel}
+                />
+              </span>
+            </td>
             <td className="px-4 py-3 text-right tabular-nums">
               {formatDecimal(ugcPosts.avgPerActivePoster, locale)}
             </td>
