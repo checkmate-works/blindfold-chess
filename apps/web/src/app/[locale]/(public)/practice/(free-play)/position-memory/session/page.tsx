@@ -5,6 +5,7 @@ import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_component
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { clampTimeLimit } from '../_lib/session-config';
 import { decodeFensFromBase64, validateFEN } from '../_lib/share-url';
 
 const MultiProblemSession = dynamic(() =>
@@ -58,14 +59,8 @@ export default async function PositionMemorySessionPage({ params, searchParams }
     }
   }
 
-  // Parse time limit (default: 10 seconds)
-  let timeLimit = 10;
-  if (timeLimitParam && typeof timeLimitParam === 'string') {
-    const parsed = parseInt(timeLimitParam);
-    if (!isNaN(parsed) && parsed >= 5 && parsed <= 60) {
-      timeLimit = parsed;
-    }
-  }
+  // Parse time limit (default: 10 seconds for the multi-problem flow).
+  const timeLimit = clampTimeLimit(timeLimitParam, { fallback: 10 });
 
   // Parse shuffle (default: true)
   let shuffle = true;

@@ -32,4 +32,17 @@ describe('clampTimeLimit', () => {
     expect(clampTimeLimit('abc')).toBe(DEFAULT_TIME_LIMIT);
     expect(clampTimeLimit(30)).toBe(DEFAULT_TIME_LIMIT);
   });
+
+  it('honors an explicit fallback override for invalid input', () => {
+    expect(clampTimeLimit(undefined, { fallback: 10 })).toBe(10);
+    expect(clampTimeLimit(null, { fallback: 10 })).toBe(10);
+    expect(clampTimeLimit('abc', { fallback: 10 })).toBe(10);
+    expect(clampTimeLimit(30, { fallback: 10 })).toBe(10);
+  });
+
+  it('still clamps valid numeric input even when a fallback is provided', () => {
+    expect(clampTimeLimit('30', { fallback: 10 })).toBe(30);
+    expect(clampTimeLimit('1', { fallback: 10 })).toBe(MIN_TIME_LIMIT);
+    expect(clampTimeLimit('9999', { fallback: 10 })).toBe(MAX_TIME_LIMIT);
+  });
 });

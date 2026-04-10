@@ -21,10 +21,13 @@ export const TUTORIAL_SKIPPED_KEY = 'positionMemoryTutorialSkipped';
  * Clamp an arbitrary value into the valid time-limit range.
  *
  * Accepts unknown input (as comes from URL search params) and falls back to
- * {@link DEFAULT_TIME_LIMIT} when the value is not a finite number.
+ * {@link DEFAULT_TIME_LIMIT} by default, or to `opts.fallback` when provided.
+ * The fallback override exists because the multi-problem session page uses a
+ * different default (10 seconds) than the single-position start form (30).
  */
-export function clampTimeLimit(value: unknown): number {
+export function clampTimeLimit(value: unknown, opts?: { fallback?: number }): number {
+  const fallback = opts?.fallback ?? DEFAULT_TIME_LIMIT;
   const num = typeof value === 'string' ? parseInt(value, 10) : NaN;
-  if (Number.isNaN(num)) return DEFAULT_TIME_LIMIT;
+  if (Number.isNaN(num)) return fallback;
   return Math.max(MIN_TIME_LIMIT, Math.min(MAX_TIME_LIMIT, num));
 }
