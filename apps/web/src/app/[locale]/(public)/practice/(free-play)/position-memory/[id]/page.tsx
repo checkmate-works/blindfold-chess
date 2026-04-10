@@ -95,6 +95,12 @@ export default async function PositionDetailPage({ params }: Props) {
 
       <PagePanel>
         <div className="space-y-6">
+          <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
+
+          {position.description && (
+            <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
+          )}
+
           <div className="max-w-md mx-auto">
             <AnimatedChessBoard
               initialFen={position.fen}
@@ -102,12 +108,6 @@ export default async function PositionDetailPage({ params }: Props) {
               flipped={isBlackToMove}
             />
           </div>
-
-          <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
-
-          {position.description && (
-            <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
-          )}
 
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
