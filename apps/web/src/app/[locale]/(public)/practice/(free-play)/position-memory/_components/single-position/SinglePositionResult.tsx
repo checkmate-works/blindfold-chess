@@ -15,9 +15,9 @@ import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { calculateSquareDifferences } from '../_lib/preset-problems';
-import { parseResults, parseStats } from '../_lib/result-serde';
-import type { PositionAccuracy } from '../_lib/types';
+import { calculateSquareDifferences } from '../../_lib/preset-problems';
+import { parseResults, parseStats } from '../../_lib/result-serde';
+import type { PositionAccuracy } from '../../_lib/types';
 
 type Props = {
   locale: Locale;

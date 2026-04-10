@@ -18,7 +18,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
-import { PositionStartForm } from '../_components/PositionStartForm';
+import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 
 export const dynamic = 'force-dynamic';
 

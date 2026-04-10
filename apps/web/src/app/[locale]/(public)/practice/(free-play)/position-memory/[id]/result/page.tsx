@@ -9,7 +9,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SinglePositionResult } from '../../_components/SinglePositionResult';
+import { SinglePositionResult } from '../../_components/single-position/SinglePositionResult';
 
 export const dynamic = 'force-dynamic';
 

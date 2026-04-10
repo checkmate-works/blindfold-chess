@@ -42,12 +42,6 @@ export const getPositionById = cache(
   }
 );
 
-/**
- * Fetch a position along with its author profile.
- *
- * Wrapped with `React.cache` so `generateMetadata` and the page component
- * can each call it without hitting the DB twice.
- */
 type ListPositionsOptions = {
   type?: PositionType;
   includeDeleted?: boolean;
@@ -119,6 +113,12 @@ export async function countPositions({
   return row?.value ?? 0;
 }
 
+/**
+ * Fetch a position along with its author profile.
+ *
+ * Wrapped with `React.cache` so `generateMetadata` and the page component
+ * can each call it without hitting the DB twice.
+ */
 export const getPositionWithProfileById = cache(
   async ({ id, type, includeDeleted }: GetPositionByIdOptions) => {
     if (!UUID_RE.test(id)) return null;

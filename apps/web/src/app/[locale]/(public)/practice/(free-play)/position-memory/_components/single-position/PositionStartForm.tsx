@@ -8,7 +8,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
 
-import { DEFAULT_TIME_LIMIT, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../_lib/session-config';
+import { DEFAULT_TIME_LIMIT, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../../_lib/session-config';
 
 type Props = {
   positionId: string;
