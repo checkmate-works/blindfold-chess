@@ -11,7 +11,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
-import { PagePanel } from '@/app/[locale]/_components';
+import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PositionAccuracy } from '../_lib/types';
@@ -68,6 +69,7 @@ function parseStats(statsParam: string | null) {
 export function SinglePositionResult({ locale, positionId }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
+  const { preferences } = useGamePreferences();
 
   const score = parseFloat(searchParams.get('score') || '0');
   const timeLimit = searchParams.get('timeLimit') || '30';
@@ -100,6 +102,8 @@ export function SinglePositionResult({ locale, positionId }: Props) {
     <div className="space-y-8">
       <PagePanel>
         <div className="space-y-6">
+          <SectionTitle>{t('result')}</SectionTitle>
+
           {/* Accuracy Title */}
           <h2 className="text-2xl font-bold text-center">
             {t('accuracy')}: {score.toFixed(1)}%
@@ -157,6 +161,7 @@ export function SinglePositionResult({ locale, positionId }: Props) {
                     initialFen={resultItem.f}
                     showCoordinates={false}
                     flipped={isBlackToMove}
+                    boardTheme={preferences.boardTheme}
                   />
                 </div>
               </div>
@@ -169,6 +174,7 @@ export function SinglePositionResult({ locale, positionId }: Props) {
                     fen={resultItem.r || '8/8/8/8/8/8/8/8 w - - 0 1'}
                     flipped={isBlackToMove}
                     squareDifferences={squareDifferences}
+                    boardTheme={preferences.boardTheme}
                   />
                 </div>
               </div>
