@@ -18,6 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
+import type { SerializedResultItem, SerializedStats } from '../_lib/result-serde';
 import type { PositionData } from '../_lib/types';
 import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
@@ -25,11 +26,20 @@ import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
+type BuildResultUrlArgs = {
+  locale: Locale;
+  results: SerializedResultItem[];
+  stats: SerializedStats;
+  totalAccuracy: number;
+};
+
 type Props = {
   locale: Locale;
-  fens?: string[];
   timeLimit: number;
   shuffle: boolean;
+  /** Pre-built positions — when provided, `fens`/`problemCount` are ignored. */
+  presetPositions?: PositionData[];
+  fens?: string[];
   problemCount?: number;
   mode?: SessionMode;
   skipMemorize?: boolean;
@@ -37,13 +47,24 @@ type Props = {
   rawProblemsParam?: string;
   sourceParam?: string;
   modeParam?: string;
+  /** Enable pause/resume UI. Default: false. */
+  enablePause?: boolean;
+  /** When set, pressing skip acts like quit (single-position mode). */
+  skipBehavesAsQuit?: boolean;
+  /** Hide the skip button in the memorize phase. Default: true (shown). */
+  showSkipButton?: boolean;
+  /** If true, skip the inter-problem result phase and go straight to the session result. */
+  skipProblemResult?: boolean;
+  /** Custom result-page URL builder. Defaults to the multi-problem result page. */
+  buildResultUrl?: (args: BuildResultUrlArgs) => string;
 };
 
 export function PositionMemorySession({
   locale,
-  fens,
   timeLimit,
   shuffle,
+  presetPositions,
+  fens,
   problemCount = 1,
   mode = 'custom',
   skipMemorize = false,
@@ -51,6 +72,11 @@ export function PositionMemorySession({
   rawProblemsParam,
   sourceParam,
   modeParam,
+  enablePause = false,
+  skipBehavesAsQuit = false,
+  showSkipButton = true,
+  skipProblemResult = false,
+  buildResultUrl,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
   const router = useRouter();
@@ -64,14 +90,15 @@ export function PositionMemorySession({
 
   // Track if component has mounted (to avoid SSR/hydration mismatch)
   const [hasMounted, setHasMounted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Initialize positions only on client side to avoid hydration mismatch with Math.random()
-  const [positions, setPositions] = useState<PositionData[]>([]);
+  const [positions, setPositions] = useState<PositionData[]>(() => presetPositions ?? []);
 
   // Create machine (will receive positions via SET_POSITIONS event)
   const [state, send] = useMachine(positionMemoryMachine, {
     input: {
-      positions: [],
+      positions: presetPositions ?? [],
       timeLimit,
       mode,
     },
@@ -81,6 +108,14 @@ export function PositionMemorySession({
   useEffect(() => {
     if (!hasMounted) {
       setHasMounted(true);
+      if (presetPositions && presetPositions.length > 0) {
+        // Positions were supplied by the caller; machine already received
+        // them via input, but send SET_POSITIONS so subsequent renders stay
+        // in sync with component state.
+        setPositions(presetPositions);
+        send({ type: 'SET_POSITIONS', positions: presetPositions });
+        return;
+      }
       const initialPositions =
         fens && fens.length > 0
           ? getCustomPositions(fens, problemCount, shuffle)
@@ -89,7 +124,7 @@ export function PositionMemorySession({
       // Update machine context with loaded positions
       send({ type: 'SET_POSITIONS', positions: initialPositions });
     }
-  }, [hasMounted, fens, shuffle, problemCount, send]);
+  }, [hasMounted, presetPositions, fens, shuffle, problemCount, send]);
 
   // Skip memorize phase if requested (for tutorial)
   useEffect(() => {
@@ -103,9 +138,14 @@ export function PositionMemorySession({
 
   useScrollToElement('position-memory-session', hasMounted);
 
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
+
   // Countdown effect
   useEffect(() => {
     if (countdown === null) return;
+    if (isPaused) return;
 
     if (countdown === 0) {
       const timer = setTimeout(() => {
@@ -119,11 +159,12 @@ export function PositionMemorySession({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown]);
+  }, [countdown, isPaused]);
 
   // Timer effect for memorize phase
   useEffect(() => {
     if (countdown !== null) return; // Don't start timer during countdown
+    if (isPaused) return;
 
     if (state.value === 'memorize' && state.context.memorizeTimeLeft >= 0) {
       const timer = setTimeout(() => {
@@ -131,7 +172,7 @@ export function PositionMemorySession({
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [state.value, state.context.memorizeTimeLeft, send, countdown]);
+  }, [state.value, state.context.memorizeTimeLeft, send, countdown, isPaused]);
 
   // Derive values from state context
   const {
@@ -145,63 +186,72 @@ export function PositionMemorySession({
     showQuitModal,
   } = state.context;
 
+  // When `skipProblemResult` is true, transition straight from problemResult to sessionResult.
+  useEffect(() => {
+    if (skipProblemResult && state.value === 'problemResult') {
+      send({ type: 'VIEW_RESULTS' });
+    }
+  }, [skipProblemResult, state.value, send]);
+
   // Final result phase - Redirect to result page
   useEffect(() => {
-    if (state.value === 'sessionResult') {
-      // Convert Map to array for calculations
-      const resultsArray = Array.from(problemResults.values());
+    if (state.value !== 'sessionResult') return;
 
-      // Calculate stats
-      const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
-        aggregateResults(resultsArray);
+    // Convert Map to array for calculations
+    const resultsArray = Array.from(problemResults.values());
 
-      // Serialize data
-      // f=fen, r=recreatedFen, b=isBlackToMove, a=accuracy, c=correctPieces
-      // t=totalPieces, i=incorrectPieces, m=missingPieces, e=extraPieces
-      // o=originalIndex, s=skipped
-      const serializedResults = positions.map((position, index) => {
-        const result = problemResults.get(index);
-        const isSkipped = skippedProblems.has(index) || !result;
-        return {
-          f: position.fen,
-          r: recreatedPositions.get(index) || '',
-          b: position.isBlackToMove ? 1 : 0,
-          a: result?.accuracy ?? 0,
-          c: result?.correctPieces ?? 0,
-          t: result?.totalPieces ?? 0,
-          i: result?.incorrectPieces ?? 0,
-          m: result?.missingPieces ?? 0,
-          e: result?.extraPieces ?? 0,
-          o: index,
-          s: isSkipped ? 1 : 0,
-        };
-      });
+    // Calculate stats
+    const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
+      aggregateResults(resultsArray);
 
-      const serializedStats = {
-        c: totalCorrect,
-        t: totalPieces,
-        i: totalIncorrect,
-        m: totalMissing,
-        e: totalExtra,
+    const serializedResults: SerializedResultItem[] = positions.map((position, index) => {
+      const result = problemResults.get(index);
+      const isSkipped = skippedProblems.has(index) || !result;
+      return {
+        f: position.fen,
+        r: recreatedPositions.get(index) || '',
+        b: position.isBlackToMove ? 1 : 0,
+        a: result?.accuracy ?? 0,
+        c: result?.correctPieces ?? 0,
+        t: result?.totalPieces ?? 0,
+        i: result?.incorrectPieces ?? 0,
+        m: result?.missingPieces ?? 0,
+        e: result?.extraPieces ?? 0,
+        o: index,
+        s: isSkipped ? 1 : 0,
       };
+    });
 
-      const params = new URLSearchParams();
-      params.set('score', Math.round(totalAccuracy).toString());
-      params.set('total', '100');
-      params.set('custom', isCustomFen ? 'true' : 'false');
-      params.set('data', encodeURIComponent(JSON.stringify(serializedResults)));
-      params.set('stats', encodeURIComponent(JSON.stringify(serializedStats)));
+    const serializedStats: SerializedStats = {
+      c: totalCorrect,
+      t: totalPieces,
+      i: totalIncorrect,
+      m: totalMissing,
+      e: totalExtra,
+    };
 
-      // Pass through session configuration for retry
-      params.set('timeLimit', timeLimit.toString());
-      params.set('shuffle', shuffle ? '1' : '0');
-      params.set('count', problemCount.toString());
-      if (rawProblemsParam) params.set('problems', rawProblemsParam);
-      if (sourceParam) params.set('source', sourceParam);
-      if (modeParam) params.set('mode', modeParam);
+    const url = buildResultUrl
+      ? buildResultUrl({
+          locale,
+          results: serializedResults,
+          stats: serializedStats,
+          totalAccuracy,
+        })
+      : buildDefaultResultUrl({
+          locale,
+          results: serializedResults,
+          stats: serializedStats,
+          totalAccuracy,
+          isCustomFen,
+          timeLimit,
+          shuffle,
+          problemCount,
+          rawProblemsParam,
+          sourceParam,
+          modeParam,
+        });
 
-      router.push(`/${locale}/practice/position-memory/result?${params.toString()}`);
-    }
+    router.push(url);
   }, [
     state.value,
     problemResults,
@@ -217,6 +267,7 @@ export function PositionMemorySession({
     rawProblemsParam,
     sourceParam,
     modeParam,
+    buildResultUrl,
   ]);
 
   const originalPosition = useMemo<PositionData | null>(() => {
@@ -241,8 +292,12 @@ export function PositionMemorySession({
   }, [originalPosition, recreatedPosition, pieceNames, accuracyDescriptions, send]);
 
   const handleSkip = useCallback(() => {
-    send({ type: 'SKIP' });
-  }, [send]);
+    if (skipBehavesAsQuit) {
+      send({ type: 'OPEN_QUIT_MODAL' });
+    } else {
+      send({ type: 'SKIP' });
+    }
+  }, [send, skipBehavesAsQuit]);
 
   const handleNextProblem = useCallback(() => {
     send({ type: 'NEXT_PROBLEM' });
@@ -300,6 +355,9 @@ export function PositionMemorySession({
           onQuit={handleQuitClick}
           countdown={countdown}
           timeLimit={timeLimit}
+          isPaused={enablePause ? isPaused : undefined}
+          onTogglePause={enablePause ? togglePause : undefined}
+          showSkip={showSkipButton}
         />
         <QuitConfirmModal
           isOpen={showQuitModal}
@@ -339,7 +397,12 @@ export function PositionMemorySession({
   }
 
   // Problem result phase
-  if (state.value === 'problemResult' && currentAccuracy && originalPosition) {
+  if (
+    !skipProblemResult &&
+    state.value === 'problemResult' &&
+    currentAccuracy &&
+    originalPosition
+  ) {
     return (
       <PositionMemoryProblemResult
         accuracy={currentAccuracy}
@@ -361,4 +424,49 @@ export function PositionMemorySession({
   }
 
   return <PracticeResultSkeleton />;
+}
+
+function buildDefaultResultUrl(args: {
+  locale: Locale;
+  results: SerializedResultItem[];
+  stats: SerializedStats;
+  totalAccuracy: number;
+  isCustomFen: boolean;
+  timeLimit: number;
+  shuffle: boolean;
+  problemCount: number;
+  rawProblemsParam?: string;
+  sourceParam?: string;
+  modeParam?: string;
+}): string {
+  const {
+    locale,
+    results,
+    stats,
+    totalAccuracy,
+    isCustomFen,
+    timeLimit,
+    shuffle,
+    problemCount,
+    rawProblemsParam,
+    sourceParam,
+    modeParam,
+  } = args;
+
+  const params = new URLSearchParams();
+  params.set('score', Math.round(totalAccuracy).toString());
+  params.set('total', '100');
+  params.set('custom', isCustomFen ? 'true' : 'false');
+  params.set('data', encodeURIComponent(JSON.stringify(results)));
+  params.set('stats', encodeURIComponent(JSON.stringify(stats)));
+
+  // Pass through session configuration for retry
+  params.set('timeLimit', timeLimit.toString());
+  params.set('shuffle', shuffle ? '1' : '0');
+  params.set('count', problemCount.toString());
+  if (rawProblemsParam) params.set('problems', rawProblemsParam);
+  if (sourceParam) params.set('source', sourceParam);
+  if (modeParam) params.set('mode', modeParam);
+
+  return `/${locale}/practice/position-memory/result?${params.toString()}`;
 }

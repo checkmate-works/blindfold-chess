@@ -15,6 +15,7 @@ import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { parseResults, parseStats } from '../_lib/result-serde';
 import type { PositionAccuracy } from '../_lib/types';
 import { calculateSquareDifferences } from '../_lib/utils';
 
@@ -22,49 +23,6 @@ type Props = {
   locale: Locale;
   positionId: string;
 };
-
-interface ResultItem {
-  f: string;
-  r: string;
-  b: number;
-  a: number;
-  c: number;
-  t: number;
-  i: number;
-  m: number;
-  e: number;
-  o: number;
-  s: number;
-}
-
-function parseResultData(dataParam: string | null): ResultItem | null {
-  if (!dataParam) return null;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(dataParam));
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed[0] as ResultItem;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function parseStats(statsParam: string | null) {
-  if (!statsParam) return null;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(statsParam));
-    return {
-      correctPieces: parsed.c as number,
-      totalPieces: parsed.t as number,
-      incorrectPieces: parsed.i as number,
-      missingPieces: parsed.m as number,
-      extraPieces: parsed.e as number,
-    };
-  } catch {
-    return null;
-  }
-}
 
 export function SinglePositionResult({ locale, positionId }: Props) {
   const searchParams = useSearchParams();
@@ -74,16 +32,19 @@ export function SinglePositionResult({ locale, positionId }: Props) {
   const score = parseFloat(searchParams.get('score') || '0');
   const timeLimit = searchParams.get('timeLimit') || '30';
 
-  const resultItem = useMemo(() => parseResultData(searchParams.get('data')), [searchParams]);
+  const resultItem = useMemo(() => {
+    const parsed = parseResults(searchParams.get('data'));
+    return parsed.length > 0 ? parsed[0] : null;
+  }, [searchParams]);
   const stats = useMemo(() => parseStats(searchParams.get('stats')), [searchParams]);
 
   const squareDifferences = useMemo(() => {
     if (!resultItem) return [];
-    return calculateSquareDifferences(resultItem.f, resultItem.r);
+    return calculateSquareDifferences(resultItem.fen, resultItem.recreatedFen);
   }, [resultItem]);
 
-  const isBlackToMove = resultItem ? resultItem.b === 1 : false;
-  const isSkipped = resultItem ? resultItem.s === 1 : false;
+  const isBlackToMove = resultItem ? resultItem.isBlackToMove : false;
+  const isSkipped = resultItem ? resultItem.skipped : false;
 
   const accuracy: PositionAccuracy | null = stats
     ? {
@@ -158,7 +119,7 @@ export function SinglePositionResult({ locale, positionId }: Props) {
                 <p className="text-sm font-medium text-muted-foreground mb-2">{t('original')}</p>
                 <div className="w-full max-w-xs mx-auto">
                   <AnimatedChessBoard
-                    initialFen={resultItem.f}
+                    initialFen={resultItem.fen}
                     showCoordinates={false}
                     flipped={isBlackToMove}
                     boardTheme={preferences.boardTheme}
@@ -171,7 +132,7 @@ export function SinglePositionResult({ locale, positionId }: Props) {
                 </p>
                 <div className="w-full max-w-xs mx-auto">
                   <ChessBoardWithOverlay
-                    fen={resultItem.r || '8/8/8/8/8/8/8/8 w - - 0 1'}
+                    fen={resultItem.recreatedFen || '8/8/8/8/8/8/8/8 w - - 0 1'}
                     flipped={isBlackToMove}
                     squareDifferences={squareDifferences}
                     boardTheme={preferences.boardTheme}

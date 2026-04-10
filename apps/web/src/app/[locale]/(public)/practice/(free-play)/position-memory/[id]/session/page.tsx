@@ -10,7 +10,13 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SinglePositionSession } from '../../_components/SinglePositionSession';
+import { PositionMemorySession } from '../../_components/PositionMemorySession';
+import {
+  type SerializedResultItem,
+  type SerializedStats,
+  serializeResults,
+  serializeStats,
+} from '../../_lib/result-serde';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +61,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function buildSingleResultUrl(
+  locale: Locale,
+  positionId: string,
+  timeLimit: number,
+  results: SerializedResultItem[],
+  stats: SerializedStats
+): string {
+  const first = results[0];
+  const params = new URLSearchParams();
+  // Preserve the original single-position result page behavior (`toFixed(1)` for score).
+  params.set('score', (first?.a ?? 0).toFixed(1));
+  params.set('total', '100');
+  params.set('data', serializeResults(results));
+  params.set('stats', serializeStats(stats));
+  params.set('timeLimit', timeLimit.toString());
+
+  return `/${locale}/practice/position-memory/${positionId}/result?${params.toString()}`;
+}
+
 export default async function PositionSessionPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -68,12 +93,21 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
     notFound();
   }
 
+  const isBlackToMove = position.fen.split(' ')[1] === 'b';
+
   return (
-    <SinglePositionSession
+    <PositionMemorySession
       locale={locale}
-      positionId={position.id}
-      fen={position.fen}
       timeLimit={timeLimit}
+      shuffle={false}
+      presetPositions={[{ fen: position.fen, isBlackToMove }]}
+      enablePause
+      skipBehavesAsQuit
+      showSkipButton={false}
+      skipProblemResult
+      buildResultUrl={({ results, stats }) =>
+        buildSingleResultUrl(locale, position.id, timeLimit, results, stats)
+      }
     />
   );
 }
