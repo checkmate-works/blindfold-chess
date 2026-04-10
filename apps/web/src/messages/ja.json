@@ -2310,10 +2310,10 @@
       "past28days": "過去28日",
       "past90days": "過去90日",
       "newUsersPeriodTotal": "新規ユーザー数（期間合計）",
-      "postsPeriodTotal": "投稿数（期間合計）",
+      "ugcPostsPeriodTotal": "UGC投稿数（期間合計）",
       "dailyTrends": "日別推移",
       "newUsers": "新規ユーザー",
-      "posts": "投稿",
+      "ugcPosts": "UGC投稿",
       "noData": "選択期間のデータがありません。"
     },
     "usersTable": {

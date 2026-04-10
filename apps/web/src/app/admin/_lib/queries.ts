@@ -1,7 +1,38 @@
-import { and, count, gte, lte, sql } from 'drizzle-orm';
+import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
+import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
-import { db, topicPosts } from '@/lib/db';
+import { db, positions, topicPosts } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
+
+/**
+ * UGC source descriptor for dashboard aggregation.
+ *
+ * Each descriptor points at a table that stores user-generated content and
+ * declares the columns needed to (a) bucket records by day and (b) exclude
+ * logically-deleted rows. The KPI card and the time-series chart both iterate
+ * over `UGC_SOURCES` so that adding a new UGC entity is a one-line change here.
+ *
+ * If a future UGC table does not use soft-delete, set `deletedAtColumn` to
+ * `null` and the aggregation will skip the `IS NULL` filter for that source.
+ */
+type UgcSource = {
+  table: PgTable;
+  createdAtColumn: PgColumn;
+  deletedAtColumn: PgColumn | null;
+};
+
+export const UGC_SOURCES: readonly UgcSource[] = [
+  {
+    table: topicPosts,
+    createdAtColumn: topicPosts.createdAt,
+    deletedAtColumn: topicPosts.deletedAt,
+  },
+  {
+    table: positions,
+    createdAtColumn: positions.createdAt,
+    deletedAtColumn: positions.deletedAt,
+  },
+];
 
 export type DailyCount = {
   date: string; // YYYY-MM-DD
@@ -59,7 +90,50 @@ export async function getNewUsersPerDay(
 }
 
 /**
- * Aggregate topic_posts per day using Drizzle ORM.
+ * Aggregate a single UGC source per day using Drizzle ORM.
+ *
+ * Excludes soft-deleted rows when the source declares a `deletedAtColumn`.
+ * The per-day bucketing uses `DATE(... AT TIME ZONE 'UTC')`, matching the
+ * existing convention used elsewhere on the dashboard.
+ */
+async function getUgcSourceCountsByDate(
+  source: UgcSource,
+  start: Date,
+  end: Date
+): Promise<Map<string, number>> {
+  const { table, createdAtColumn, deletedAtColumn } = source;
+
+  const dateExpr = sql<string>`DATE(${createdAtColumn} AT TIME ZONE 'UTC')`;
+
+  const conditions = [gte(createdAtColumn, start), lte(createdAtColumn, end)];
+  if (deletedAtColumn) {
+    conditions.push(isNull(deletedAtColumn));
+  }
+
+  const rows = await db
+    .select({
+      date: dateExpr.as('date'),
+      count: count(),
+    })
+    .from(table)
+    .where(and(...conditions))
+    .groupBy(dateExpr)
+    .orderBy(dateExpr);
+
+  const countsByDate = new Map<string, number>();
+  for (const row of rows) {
+    countsByDate.set(row.date, row.count);
+  }
+  return countsByDate;
+}
+
+/**
+ * Aggregate UGC posts per day across all configured UGC sources.
+ *
+ * Sums contributions from every entry in `UGC_SOURCES` (currently
+ * `topic_posts` and `positions`) into a single combined series. Soft-deleted
+ * rows are excluded. To add a new UGC entity, append it to `UGC_SOURCES` —
+ * no changes are needed here.
  */
 export async function getPostsPerDay(
   startDate: string,
@@ -68,22 +142,18 @@ export async function getPostsPerDay(
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(`${endDate}T23:59:59.999Z`);
 
-  const rows = await db
-    .select({
-      date: sql<string>`DATE(${topicPosts.createdAt} AT TIME ZONE 'UTC')`.as('date'),
-      count: count(),
-    })
-    .from(topicPosts)
-    .where(and(gte(topicPosts.createdAt, start), lte(topicPosts.createdAt, end)))
-    .groupBy(sql`DATE(${topicPosts.createdAt} AT TIME ZONE 'UTC')`)
-    .orderBy(sql`DATE(${topicPosts.createdAt} AT TIME ZONE 'UTC')`);
+  const perSource = await Promise.all(
+    UGC_SOURCES.map((source) => getUgcSourceCountsByDate(source, start, end))
+  );
 
-  const countsByDate = new Map<string, number>();
-  for (const row of rows) {
-    countsByDate.set(row.date, row.count);
+  const combined = new Map<string, number>();
+  for (const countsByDate of perSource) {
+    for (const [date, c] of countsByDate) {
+      combined.set(date, (combined.get(date) ?? 0) + c);
+    }
   }
 
-  const daily = fillDateRange(startDate, endDate, countsByDate);
+  const daily = fillDateRange(startDate, endDate, combined);
   const total = daily.reduce((sum, d) => sum + d.count, 0);
 
   return { daily, total };

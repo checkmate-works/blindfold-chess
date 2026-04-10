@@ -16,30 +16,99 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-const mockOrderBy = vi.fn().mockReturnValue([]);
+/**
+ * Hoisted shared state between the `vi.mock` factory (hoisted to the top of
+ * the file) and the individual tests.
+ *
+ * - `dbResultsQueue`: per-call queue of result rows for the Drizzle chain
+ *   terminal (`orderBy`). `getPostsPerDay` now issues one query per entry in
+ *   `UGC_SOURCES` (topicPosts, positions, ...) via `Promise.all`. Each test
+ *   enqueues one result array per source, in `UGC_SOURCES` declaration order.
+ * - `whereCalls`: records the `where` predicates that each query passed in.
+ *   Used to assert that soft-delete (`isNull(deletedAt)`) filters are applied
+ *   to every UGC source.
+ * - `selectSpy`: tracks how many times `db.select()` was invoked.
+ */
+const { dbResultsQueue, whereCalls, selectSpy } = vi.hoisted(() => ({
+  dbResultsQueue: [] as Array<Array<{ date: string; count: number }>>,
+  whereCalls: [] as unknown[][],
+  selectSpy: vi.fn(),
+}));
+
+vi.mock('drizzle-orm', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('drizzle-orm')>();
+  return {
+    ...actual,
+    // Tag the return values so tests can inspect what was passed to `.where()`
+    // without relying on Drizzle's internal SQL AST.
+    isNull: (col: unknown) => ({ __kind: 'isNull', col }),
+    gte: (col: unknown, val: unknown) => ({ __kind: 'gte', col, val }),
+    lte: (col: unknown, val: unknown) => ({ __kind: 'lte', col, val }),
+    and: (...conds: unknown[]) => ({ __kind: 'and', conds }),
+    count: () => ({ __kind: 'count' }),
+    sql: Object.assign(
+      (strings: TemplateStringsArray, ...values: unknown[]) => ({
+        __kind: 'sql',
+        strings,
+        values,
+        as: (alias: string) => ({ __kind: 'sql-as', alias, strings, values }),
+      }),
+      {
+        raw: (s: string) => ({ __kind: 'sql-raw', s }),
+      }
+    ),
+  };
+});
 
 vi.mock('@/lib/db', () => {
-  const chain = {
-    from: vi.fn(),
-    where: vi.fn(),
-    groupBy: vi.fn(),
-    get orderBy() {
-      return mockOrderBy;
-    },
+  const makeChain = () => {
+    const chain: Record<string, ReturnType<typeof vi.fn>> = {
+      from: vi.fn(),
+      where: vi.fn(),
+      groupBy: vi.fn(),
+      orderBy: vi.fn(),
+    };
+    chain.from.mockReturnValue(chain);
+    chain.where.mockImplementation((predicate: unknown) => {
+      whereCalls.push([predicate]);
+      return chain;
+    });
+    chain.groupBy.mockReturnValue(chain);
+    chain.orderBy.mockImplementation(() => {
+      // Dequeue the next result set. If the queue is empty, default to [].
+      const next = dbResultsQueue.shift() ?? [];
+      return Promise.resolve(next);
+    });
+    return chain;
   };
-  chain.from.mockReturnValue(chain);
-  chain.where.mockReturnValue(chain);
-  chain.groupBy.mockReturnValue(chain);
+
+  selectSpy.mockImplementation(() => makeChain());
 
   return {
     db: {
-      select: () => chain,
+      select: selectSpy,
     },
     topicPosts: {
-      createdAt: 'created_at',
+      createdAt: { __col: 'topic_posts.created_at' },
+      deletedAt: { __col: 'topic_posts.deleted_at' },
+    },
+    positions: {
+      createdAt: { __col: 'positions.created_at' },
+      deletedAt: { __col: 'positions.deleted_at' },
     },
   };
 });
+
+/** Helper: inspect the predicate recorded for a given `db.select()` invocation. */
+function getWherePredicateAt(index: number): {
+  __kind: 'and';
+  conds: Array<{ __kind: string; col?: unknown }>;
+} {
+  return whereCalls[index][0] as {
+    __kind: 'and';
+    conds: Array<{ __kind: string; col?: unknown }>;
+  };
+}
 
 // --- Tests ---
 
@@ -373,13 +442,23 @@ describe('getNewUsersPerDay', () => {
 describe('getPostsPerDay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    dbResultsQueue.length = 0;
+    whereCalls.length = 0;
   });
 
-  it('should return daily counts and total from DB results', async () => {
-    mockOrderBy.mockReturnValueOnce([
-      { date: '2026-03-14', count: 5 },
-      { date: '2026-03-16', count: 3 },
-    ]);
+  /** Enqueue per-source results in `UGC_SOURCES` order (topicPosts, positions). */
+  function enqueueSourceResults(...perSource: Array<Array<{ date: string; count: number }>>): void {
+    for (const rows of perSource) dbResultsQueue.push(rows);
+  }
+
+  it('should return daily counts and total from a single source (topicPosts only)', async () => {
+    enqueueSourceResults(
+      [
+        { date: '2026-03-14', count: 5 },
+        { date: '2026-03-16', count: 3 },
+      ],
+      [] // positions: no rows
+    );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
@@ -391,8 +470,8 @@ describe('getPostsPerDay', () => {
     ]);
   });
 
-  it('should return all zeros when no posts exist in range', async () => {
-    mockOrderBy.mockReturnValueOnce([]);
+  it('should return all zeros when no posts exist in any source', async () => {
+    enqueueSourceResults([], []);
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
@@ -404,37 +483,63 @@ describe('getPostsPerDay', () => {
     ]);
   });
 
-  it('should handle single-day range', async () => {
-    mockOrderBy.mockReturnValueOnce([{ date: '2026-03-14', count: 7 }]);
+  it('should handle single-day range summing across sources', async () => {
+    enqueueSourceResults([{ date: '2026-03-14', count: 7 }], [{ date: '2026-03-14', count: 2 }]);
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-14');
 
-    expect(result.total).toBe(7);
-    expect(result.daily).toEqual([{ date: '2026-03-14', count: 7 }]);
+    expect(result.total).toBe(9);
+    expect(result.daily).toEqual([{ date: '2026-03-14', count: 9 }]);
   });
 
-  it('should sum total correctly across multiple days', async () => {
-    mockOrderBy.mockReturnValueOnce([
-      { date: '2026-03-14', count: 10 },
-      { date: '2026-03-15', count: 20 },
-      { date: '2026-03-16', count: 30 },
-    ]);
+  it('should sum counts per day across topicPosts and positions', async () => {
+    enqueueSourceResults(
+      [
+        { date: '2026-03-14', count: 10 },
+        { date: '2026-03-15', count: 20 },
+        { date: '2026-03-16', count: 30 },
+      ],
+      [
+        { date: '2026-03-14', count: 1 },
+        { date: '2026-03-15', count: 2 },
+        { date: '2026-03-16', count: 3 },
+      ]
+    );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    expect(result.total).toBe(60);
+    expect(result.total).toBe(66);
     expect(result.daily).toEqual([
-      { date: '2026-03-14', count: 10 },
-      { date: '2026-03-15', count: 20 },
-      { date: '2026-03-16', count: 30 },
+      { date: '2026-03-14', count: 11 },
+      { date: '2026-03-15', count: 22 },
+      { date: '2026-03-16', count: 33 },
     ]);
   });
 
-  it('should fill gaps between non-consecutive DB results', async () => {
-    mockOrderBy.mockReturnValueOnce([
-      { date: '2026-03-10', count: 1 },
-      { date: '2026-03-14', count: 2 },
+  it('should merge distinct dates from each source without collisions', async () => {
+    enqueueSourceResults(
+      [{ date: '2026-03-14', count: 4 }], // topicPosts
+      [{ date: '2026-03-16', count: 6 }] // positions
+    );
+
+    const result = await getPostsPerDay('2026-03-14', '2026-03-16');
+
+    expect(result.total).toBe(10);
+    expect(result.daily).toEqual([
+      { date: '2026-03-14', count: 4 },
+      { date: '2026-03-15', count: 0 },
+      { date: '2026-03-16', count: 6 },
     ]);
+  });
+
+  it('should fill gaps between non-consecutive combined results', async () => {
+    enqueueSourceResults(
+      [
+        { date: '2026-03-10', count: 1 },
+        { date: '2026-03-14', count: 2 },
+      ],
+      [] // positions empty
+    );
 
     const result = await getPostsPerDay('2026-03-10', '2026-03-14');
 
@@ -447,17 +552,20 @@ describe('getPostsPerDay', () => {
     expect(result.daily[4]).toEqual({ date: '2026-03-14', count: 2 });
   });
 
-  it('should handle large count values in DB results', async () => {
-    mockOrderBy.mockReturnValueOnce([{ date: '2026-03-14', count: 100000 }]);
+  it('should handle large count values summed across sources', async () => {
+    enqueueSourceResults(
+      [{ date: '2026-03-14', count: 100000 }],
+      [{ date: '2026-03-14', count: 50000 }]
+    );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-14');
 
-    expect(result.total).toBe(100000);
-    expect(result.daily).toEqual([{ date: '2026-03-14', count: 100000 }]);
+    expect(result.total).toBe(150000);
+    expect(result.daily).toEqual([{ date: '2026-03-14', count: 150000 }]);
   });
 
   it('should return correct daily length for long range with sparse data', async () => {
-    mockOrderBy.mockReturnValueOnce([{ date: '2026-01-15', count: 3 }]);
+    enqueueSourceResults([{ date: '2026-01-15', count: 3 }], []);
 
     const result = await getPostsPerDay('2026-01-01', '2026-03-31');
 
@@ -466,5 +574,49 @@ describe('getPostsPerDay', () => {
     const jan15 = result.daily.find((d) => d.date === '2026-01-15');
     expect(jan15?.count).toBe(3);
     expect(result.daily.filter((d) => d.count === 0)).toHaveLength(89);
+  });
+
+  it('should issue one db.select() per UGC source in parallel', async () => {
+    enqueueSourceResults([], []);
+
+    await getPostsPerDay('2026-03-14', '2026-03-16');
+
+    // One query for topicPosts, one for positions.
+    expect(selectSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('should apply an isNull(deletedAt) filter to every UGC source', async () => {
+    enqueueSourceResults([], []);
+
+    await getPostsPerDay('2026-03-14', '2026-03-16');
+
+    // Two `where` calls — one per source — each with an `and(...)` predicate
+    // that must include an `isNull` conjunct.
+    expect(whereCalls).toHaveLength(2);
+
+    for (let i = 0; i < 2; i++) {
+      const predicate = getWherePredicateAt(i);
+      expect(predicate.__kind).toBe('and');
+      const hasIsNull = predicate.conds.some((c) => c.__kind === 'isNull');
+      expect(hasIsNull).toBe(true);
+    }
+  });
+
+  it('should have total equal to the sum of daily counts', async () => {
+    enqueueSourceResults(
+      [
+        { date: '2026-03-14', count: 2 },
+        { date: '2026-03-15', count: 4 },
+      ],
+      [
+        { date: '2026-03-14', count: 1 },
+        { date: '2026-03-16', count: 7 },
+      ]
+    );
+
+    const result = await getPostsPerDay('2026-03-14', '2026-03-16');
+    const sum = result.daily.reduce((acc, d) => acc + d.count, 0);
+    expect(result.total).toBe(sum);
+    expect(result.total).toBe(14);
   });
 });

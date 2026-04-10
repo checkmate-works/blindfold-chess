@@ -54,7 +54,7 @@ export default async function AdminDashboardPage({
           </p>
         </div>
         <div className="rounded-lg border border-border bg-secondary p-6">
-          <p className="text-sm text-muted-foreground">{t('dashboardKpi.postsPeriodTotal')}</p>
+          <p className="text-sm text-muted-foreground">{t('dashboardKpi.ugcPostsPeriodTotal')}</p>
           <p className="text-3xl font-semibold mt-1">{postsData.total}</p>
           <p className="text-xs text-muted-foreground mt-1">
             {startDate} ~ {endDate} (UTC)
@@ -70,7 +70,7 @@ export default async function AdminDashboardPage({
           postsData={postsData.daily}
           labels={{
             newUsers: t('dashboardKpi.newUsers'),
-            posts: t('dashboardKpi.posts'),
+            posts: t('dashboardKpi.ugcPosts'),
             noData: t('dashboardKpi.noData'),
           }}
         />
