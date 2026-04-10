@@ -9,8 +9,8 @@ import type { BoardTheme } from '@/lib/boardThemes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
+import type { PresetPosition } from '../../_data/positions';
+import presetPositions from '../../_data/presetPositions.json';
 
 const PRESET_COUNT = (presetPositions as PresetPosition[]).length;
 

@@ -9,7 +9,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 
-import type { PositionData } from '../_lib/types';
+import type { PositionData } from '../../_lib/types';
 
 type Props = {
   position: PositionData;

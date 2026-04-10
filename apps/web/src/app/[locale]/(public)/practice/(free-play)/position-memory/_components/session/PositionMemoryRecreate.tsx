@@ -11,7 +11,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 
-import type { PositionData } from '../_lib/types';
+import type { PositionData } from '../../_lib/types';
 
 type Props = {
   originalPosition: PositionData;

@@ -16,16 +16,22 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
-import type { SessionMode } from '../_lib/machines/types';
-import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/preset-problems';
-import type { SerializedResultItem, SerializedStats } from '../_lib/result-serde';
-import { buildMultiResultUrl } from '../_lib/result-url';
-import type { PositionData } from '../_lib/types';
+import { useCountdown } from '../../_hooks/use-countdown';
+import { useMemorizeTimer } from '../../_hooks/use-memorize-timer';
+import { positionMemoryMachine } from '../../_lib/machines/positionMemoryMachine';
+import type { SessionMode } from '../../_lib/machines/types';
+import {
+  calculateAccuracy,
+  getCustomPositions,
+  getRandomPositions,
+} from '../../_lib/preset-problems';
+import type { SerializedResultItem, SerializedStats } from '../../_lib/result-serde';
+import { buildMultiResultUrl } from '../../_lib/result-url';
+import type { PositionData } from '../../_lib/types';
+import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type BuildResultUrlArgs = {
   locale: Locale;
@@ -60,7 +66,16 @@ type Props = {
   buildResultUrl?: (args: BuildResultUrlArgs) => string;
 };
 
-export function PositionMemorySession({
+/**
+ * Pure phase renderer for the position-memory session.
+ *
+ * Holds the XState machine, orchestrates hooks for countdown/memorize timers,
+ * and dispatches to the per-phase presentational components. Flag-based
+ * behavior (enablePause, skipBehavesAsQuit, skipProblemResult, ...) is
+ * configured by the two session wrappers (`MultiProblemSession`,
+ * `SinglePositionSession`) that instantiate this view.
+ */
+export function PositionMemorySessionView({
   locale,
   timeLimit,
   shuffle,
@@ -134,46 +149,22 @@ export function PositionMemorySession({
     }
   }, [skipMemorize, state.value, positions.length, send]);
 
-  // Countdown state
-  const [countdown, setCountdown] = useState<number | null>(3);
-
   useScrollToElement('position-memory-session', hasMounted);
 
   const togglePause = useCallback(() => {
     setIsPaused((prev) => !prev);
   }, []);
 
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-    if (isPaused) return;
+  // Pre-session countdown (3, 2, 1, START!)
+  const countdown = useCountdown({ initial: 3, paused: isPaused });
 
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500); // Show "START!" for 0.5s
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown, isPaused]);
-
-  // Timer effect for memorize phase
-  useEffect(() => {
-    if (countdown !== null) return; // Don't start timer during countdown
-    if (isPaused) return;
-
-    if (state.value === 'memorize' && state.context.memorizeTimeLeft >= 0) {
-      const timer = setTimeout(() => {
-        send({ type: 'TICK' });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [state.value, state.context.memorizeTimeLeft, send, countdown, isPaused]);
+  // Memorize-phase ticker — suspended during countdown and while paused
+  useMemorizeTimer({
+    active: state.value === 'memorize',
+    timeLeft: state.context.memorizeTimeLeft,
+    paused: countdown !== null || isPaused,
+    onTick: useCallback(() => send({ type: 'TICK' }), [send]),
+  });
 
   // Derive values from state context
   const {

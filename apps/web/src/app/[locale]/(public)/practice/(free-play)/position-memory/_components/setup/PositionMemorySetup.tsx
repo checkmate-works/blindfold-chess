@@ -14,12 +14,12 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
-import { usePositionMemorySettings } from '../_hooks/use-position-memory-settings';
-import { encodeFensToBase64, generateShareUrl, validateFEN } from '../_lib/share-url';
+import type { PresetPosition } from '../../_data/positions';
+import presetPositions from '../../_data/presetPositions.json';
+import { usePositionMemorySettings } from '../../_hooks/use-position-memory-settings';
+import { encodeFensToBase64, generateShareUrl, validateFEN } from '../../_lib/share-url';
+import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
 import { PositionMemorySettings } from './PositionMemorySettings';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 const MAX_FEN_COUNT = 10;
 

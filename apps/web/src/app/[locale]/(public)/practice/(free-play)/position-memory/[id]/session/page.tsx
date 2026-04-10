@@ -9,8 +9,7 @@ import { getPositionById } from '@/lib/positions/queries';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PositionMemorySession } from '../../_components/PositionMemorySession';
-import { buildSingleResultUrl } from '../../_lib/result-url';
+import { SinglePositionSession } from '../../_components/session/SinglePositionSession';
 import { clampTimeLimit } from '../../_lib/session-config';
 
 export const dynamic = 'force-dynamic';
@@ -50,24 +49,11 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   return (
-    <PositionMemorySession
+    <SinglePositionSession
       locale={locale}
+      positionId={position.id}
       timeLimit={timeLimit}
-      shuffle={false}
-      presetPositions={[{ fen: position.fen, isBlackToMove }]}
-      enablePause
-      skipBehavesAsQuit
-      showSkipButton={false}
-      skipProblemResult
-      buildResultUrl={({ results, stats }) =>
-        buildSingleResultUrl({
-          locale,
-          positionId: position.id,
-          timeLimit,
-          results,
-          stats,
-        })
-      }
+      position={{ fen: position.fen, isBlackToMove }}
     />
   );
 }

@@ -7,8 +7,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { decodeFensFromBase64, validateFEN } from '../_lib/share-url';
 
-const PositionMemorySession = dynamic(() =>
-  import('../_components/PositionMemorySession').then((mod) => mod.PositionMemorySession)
+const MultiProblemSession = dynamic(() =>
+  import('../_components/session/MultiProblemSession').then((mod) => mod.MultiProblemSession)
 );
 
 type Props = {
@@ -102,7 +102,7 @@ export default async function PositionMemorySessionPage({ params, searchParams }
         { label: t('practice.positionMemory.session') },
       ]}
     >
-      <PositionMemorySession
+      <MultiProblemSession
         locale={locale}
         fens={fens}
         timeLimit={timeLimit}

@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
 import { PositionMemorySetup } from './PositionMemorySetup';
 import { PositionMemorySetupSkeleton } from './PositionMemorySetupSkeleton';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
