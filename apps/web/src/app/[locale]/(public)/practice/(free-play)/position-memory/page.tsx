@@ -18,6 +18,7 @@ import { Link } from '@/i18n/routing';
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
@@ -32,7 +33,10 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { toggleLike } from './_actions/toggleLike';
 import { BoardThumbnail } from './_components/BoardThumbnail';
+import { PositionLikeButton } from './_components/PositionLikeButton';
+import { getPositionLikeMetaMap } from './_lib/like-queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,6 +94,12 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     .limit(limit)
     .offset(offset);
 
+  const currentUser = await getOptionalUser();
+  const likeMetaMap = await getPositionLikeMetaMap(
+    rows.map((r) => r.position.id),
+    currentUser?.id
+  );
+
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     if (p > 1) params.set('page', String(p));
@@ -125,44 +135,59 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                   ? position.description.slice(0, 80) + '...'
                   : position.description
                 : '';
+              const likeMeta = likeMetaMap.get(position.id) ?? {
+                likeCount: 0,
+                likedByMe: false,
+              };
 
               return (
                 <Link
                   key={position.id}
                   href={`/practice/position-memory/${position.id}`}
                   locale={locale}
-                  className="flex gap-4 p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
+                  className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                    <BoardThumbnail fen={position.fen} className="w-full h-full" />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {profile?.avatarUrl ? (
-                        <Image
-                          src={profile.avatarUrl}
-                          alt={displayName}
-                          width={24}
-                          height={24}
-                          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs text-muted-foreground">
-                            {displayName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                      <span className="font-medium text-foreground">{displayName}</span>
-                      <span className="whitespace-nowrap">{t('list.submittedBy')}</span>
+                  <div className="flex gap-4">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                      <BoardThumbnail fen={position.fen} className="w-full h-full" />
                     </div>
-                    <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                    {descriptionExcerpt && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {descriptionExcerpt}
-                      </p>
-                    )}
+                    <div className="flex-1 min-w-0 flex flex-col gap-1">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        {profile?.avatarUrl ? (
+                          <Image
+                            src={profile.avatarUrl}
+                            alt={displayName}
+                            width={24}
+                            height={24}
+                            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs text-muted-foreground">
+                              {displayName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="font-medium text-foreground">{displayName}</span>
+                        <span className="whitespace-nowrap">{t('list.submittedBy')}</span>
+                      </div>
+                      <h3 className="font-medium text-foreground truncate">{position.title}</h3>
+                      {descriptionExcerpt && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {descriptionExcerpt}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+                    <PositionLikeButton
+                      positionId={position.id}
+                      locale={locale}
+                      initialLikeCount={likeMeta.likeCount}
+                      initialLikedByMe={likeMeta.likedByMe}
+                      toggleLikeAction={toggleLike}
+                    />
                   </div>
                 </Link>
               );

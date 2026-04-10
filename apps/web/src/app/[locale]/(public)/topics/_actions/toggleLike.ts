@@ -2,12 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { and, count, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, likes, topicPosts } from '@/lib/db';
-import { toggleByInsert } from '@/lib/db/toggle-by-insert';
+import { db, topicPosts } from '@/lib/db';
+import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -38,23 +37,8 @@ export async function toggleLikeBase(params: {
   }
   const { user } = guardResult;
 
-  const liked = await toggleByInsert(
-    () => db.insert(likes).values({ userId: user.id, targetType: 'topic_post', targetId: postId }),
-    () =>
-      db
-        .delete(likes)
-        .where(
-          and(
-            eq(likes.userId, user.id),
-            eq(likes.targetType, 'topic_post'),
-            eq(likes.targetId, postId)
-          )
-        )
-  );
-
-  logActivityEvent({
+  const { liked, likeCount } = await toggleLikeForTarget({
     userId: user.id,
-    action: liked ? 'like' : 'unlike',
     targetType: 'topic_post',
     targetId: postId,
   });
@@ -78,16 +62,11 @@ export async function toggleLikeBase(params: {
     }
   }
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(likes)
-    .where(and(eq(likes.targetType, 'topic_post'), eq(likes.targetId, postId)));
-
   revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}`);
   revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
 
   return {
     liked,
-    likeCount: result.count,
+    likeCount,
   };
 }

@@ -743,6 +743,8 @@
     "positionMemory": {
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
+      "like": "いいね",
+      "unlike": "いいね解除",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",

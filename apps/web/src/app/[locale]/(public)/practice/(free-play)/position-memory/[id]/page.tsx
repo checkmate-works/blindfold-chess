@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -16,7 +17,10 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { toggleLike } from '../_actions/toggleLike';
+import { PositionLikeButton } from '../_components/PositionLikeButton';
 import { PositionStartForm } from '../_components/PositionStartForm';
+import { getPositionLikeMeta } from '../_lib/like-queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +92,9 @@ export default async function PositionDetailPage({ params }: Props) {
   const displayName = profile?.displayName || profile?.username || 'Anonymous';
   const isBlackToMove = position.fen.split(' ')[1] === 'b';
 
+  const currentUser = await getOptionalUser();
+  const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);
+
   return (
     <div className="space-y-8">
       <PageTitle>{position.title}</PageTitle>
@@ -129,7 +136,14 @@ export default async function PositionDetailPage({ params }: Props) {
             <span className="font-medium text-foreground">{displayName}</span>
           </div>
 
-          <div className="text-xs text-muted-foreground text-right">
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <PositionLikeButton
+              positionId={position.id}
+              locale={locale}
+              initialLikeCount={likeMeta.likeCount}
+              initialLikedByMe={likeMeta.likedByMe}
+              toggleLikeAction={toggleLike}
+            />
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {
                 year: 'numeric',

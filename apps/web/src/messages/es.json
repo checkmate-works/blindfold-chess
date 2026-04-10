@@ -742,6 +742,8 @@
     "positionMemory": {
       "title": "Memoria de Posiciones",
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
