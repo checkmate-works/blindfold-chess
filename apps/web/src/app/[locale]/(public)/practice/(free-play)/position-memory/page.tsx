@@ -22,6 +22,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { db, positions, profiles } from '@/lib/db';
 import { resolveDisplayName } from '@/lib/display-name';
 import { getPaginationParams } from '@/lib/pagination';
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -37,7 +38,6 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from './_actions/toggleLike';
-import { BoardThumbnail } from './_components/BoardThumbnail';
 import { getPositionLikeMetaMap } from './_lib/like-queries';
 
 export const dynamic = 'force-dynamic';

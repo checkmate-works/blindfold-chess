@@ -5,9 +5,9 @@ import { memo } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { resolveDisplayName } from '@/lib/display-name';
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
-import { BoardThumbnail } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/BoardThumbnail';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';

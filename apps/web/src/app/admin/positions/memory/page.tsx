@@ -6,9 +6,9 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, positions } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
 
-import { BoardThumbnail } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_components/BoardThumbnail';
 import { PaginationNav } from '@/app/[locale]/_components';
 
 import { DeletePositionButton } from './_components/DeletePositionButton';
