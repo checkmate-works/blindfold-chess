@@ -71,6 +71,7 @@ function createMockTx(opts: {
   const insertedRows = opts.insertedRows ?? [{ id: 'new-event-id' }];
   const capturedValues: unknown[] = [];
   const capturedSelects: unknown[] = [];
+  const capturedOnConflictDoNothing: unknown[] = [];
   const userExpUpsert = vi.fn();
 
   let insertCallCount = 0;
@@ -87,8 +88,11 @@ function createMockTx(opts: {
           if (callNum === 1) {
             // First insert: expEvents with onConflictDoNothing().returning()
             return {
-              onConflictDoNothing: vi.fn().mockReturnValue({
-                returning: vi.fn().mockResolvedValue(insertedRows),
+              onConflictDoNothing: vi.fn().mockImplementation((config: unknown) => {
+                capturedOnConflictDoNothing.push(config);
+                return {
+                  returning: vi.fn().mockResolvedValue(insertedRows),
+                };
               }),
             };
           }
@@ -123,6 +127,7 @@ function createMockTx(opts: {
     }),
     capturedValues,
     capturedSelects,
+    capturedOnConflictDoNothing,
     userExpUpsert,
     getInsertCallCount: () => insertCallCount,
   };
@@ -287,6 +292,38 @@ describe('grantChallengeExp idempotency', () => {
     expect(tx.userExpUpsert).toHaveBeenCalledTimes(1);
     expect(result.earnedExp).toBe(48);
     expect(result.totalExp).toBe(48);
+  });
+
+  it('onConflictDoNothing is invoked with the partial index predicate (regression guard)', async () => {
+    // Postgres cannot infer a partial unique index as the ON CONFLICT target
+    // unless the partial predicate is repeated in the ON CONFLICT clause.
+    // In drizzle-orm 0.45.x, `onConflictDoNothing({ target, where })` emits
+    // `ON CONFLICT (target...) WHERE <where> DO NOTHING`, which is exactly
+    // the index_predicate form Postgres needs for partial index inference.
+    //
+    // Dropping the `where` option raises
+    //   "there is no unique or exclusion constraint matching the
+    //    ON CONFLICT specification"
+    // at runtime against a real DB — a failure that slipped past the
+    // original mock-only tests in this file. Locking the API call shape
+    // here guards against future regressions of the same class without
+    // needing a real Postgres connection.
+    const tx = createMockTx({ totalExpAfterGrant: 48 });
+    const { grantChallengeExp } = await import('./save-exp');
+
+    await grantChallengeExp(tx as never, baseParams);
+
+    expect(tx.capturedOnConflictDoNothing).toHaveLength(1);
+    const config = tx.capturedOnConflictDoNothing[0] as {
+      target: unknown[];
+      where?: unknown;
+    };
+    expect(config).toBeDefined();
+    expect(config.target).toBeDefined();
+    expect(config.where).toBeDefined();
+    // The mocked `sql` tag from the drizzle-orm mock concatenates template
+    // strings into a plain string, so we can assert the predicate text.
+    expect(String(config.where)).toContain('source_id IS NOT NULL');
   });
 
   it('second call with same sourceId returns first grant amount and does NOT re-upsert user_exp', async () => {

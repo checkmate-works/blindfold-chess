@@ -61,8 +61,10 @@ export async function grantExp(
 
   // 1. Append to exp_events (immutable log) with idempotency guard.
   //    The partial unique index `uq_exp_events_source_pair` matches when
-  //    source_id IS NOT NULL. `onConflictDoNothing` with the target columns
-  //    will use that index.
+  //    source_id IS NOT NULL. Postgres requires the partial predicate to be
+  //    repeated in `targetWhere` so it can infer the partial index as the
+  //    conflict target — without it, Postgres raises "no unique or exclusion
+  //    constraint matching the ON CONFLICT specification".
   const inserted = await tx
     .insert(expEvents)
     .values({
@@ -73,7 +75,10 @@ export async function grantExp(
       amount,
       metadata,
     })
-    .onConflictDoNothing({ target: [expEvents.source, expEvents.sourceId] })
+    .onConflictDoNothing({
+      target: [expEvents.source, expEvents.sourceId],
+      where: sql`source_id IS NOT NULL`,
+    })
     .returning({ id: expEvents.id });
 
   if (inserted.length === 0) {
