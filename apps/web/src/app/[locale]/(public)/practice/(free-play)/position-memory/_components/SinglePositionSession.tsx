@@ -19,7 +19,6 @@ import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { PositionData } from '../_lib/types';
 import { calculateAccuracy } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
-import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
 
 type Props = {
@@ -41,6 +40,7 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
   const [hasMounted, setHasMounted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const position = useMemo<PositionData>(
     () => ({
@@ -71,7 +71,7 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
 
   // Countdown effect
   useEffect(() => {
-    if (countdown === null) return;
+    if (countdown === null || isPaused) return;
 
     if (countdown === 0) {
       const timer = setTimeout(() => {
@@ -85,11 +85,11 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown]);
+  }, [countdown, isPaused]);
 
   // Timer effect for memorize phase
   useEffect(() => {
-    if (countdown !== null) return;
+    if (countdown !== null || isPaused) return;
 
     if (state.value === 'memorize' && state.context.memorizeTimeLeft >= 0) {
       const timer = setTimeout(() => {
@@ -97,14 +97,17 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [state.value, state.context.memorizeTimeLeft, send, countdown]);
+  }, [state.value, state.context.memorizeTimeLeft, send, countdown, isPaused]);
 
-  const { recreatedPosition, memorizeTimeLeft, currentAccuracy, problemResults, showQuitModal } =
-    state.context;
+  const { recreatedPosition, memorizeTimeLeft, problemResults, showQuitModal } = state.context;
 
-  // Navigate to result page when session ends
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
+
+  // Navigate to result page when submit completes (skip problemResult phase)
   useEffect(() => {
-    if (state.value !== 'sessionResult') return;
+    if (state.value !== 'problemResult' && state.value !== 'sessionResult') return;
 
     const result = problemResults.get(0);
     const isSkipped = state.context.skippedProblems.has(0) || !result;
@@ -157,11 +160,6 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
     send({ type: 'SUBMIT', accuracy });
   }, [position.fen, recreatedPosition, pieceNames, accuracyDescriptions, send]);
 
-  const handleSkip = useCallback(() => {
-    // 1-problem mode: skip goes directly to session result
-    send({ type: 'SKIP' });
-  }, [send]);
-
   const handleViewAgain = useCallback(() => {
     send({ type: 'VIEW_AGAIN' });
   }, [send]);
@@ -185,10 +183,6 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
     [send]
   );
 
-  const handleViewResults = useCallback(() => {
-    send({ type: 'VIEW_RESULTS' });
-  }, [send]);
-
   // Wait for mount and preferences to load
   if (!hasMounted || !isLoaded) {
     return null;
@@ -205,10 +199,13 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
           problemCount={1}
           boardTheme={preferences.boardTheme}
           onMemorized={handleMemorized}
-          onSkip={handleSkip}
+          onSkip={handleQuitClick}
           onQuit={handleQuitClick}
           countdown={countdown}
           timeLimit={timeLimit}
+          isPaused={isPaused}
+          onTogglePause={togglePause}
+          showSkip={false}
         />
         <QuitConfirmModal
           isOpen={showQuitModal}
@@ -233,7 +230,7 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
           onPositionChange={handlePositionChange}
           onSubmit={handleSubmit}
           onViewAgain={handleViewAgain}
-          onSkip={handleSkip}
+          onSkip={handleQuitClick}
           onQuit={handleQuitClick}
         />
         <QuitConfirmModal
@@ -243,22 +240,6 @@ export function SinglePositionSession({ locale, positionId, fen, timeLimit }: Pr
           labels={quitModalLabels}
         />
       </>
-    );
-  }
-
-  // Problem result phase
-  if (state.value === 'problemResult' && currentAccuracy) {
-    return (
-      <PositionMemoryProblemResult
-        accuracy={currentAccuracy}
-        originalPosition={position}
-        recreatedPosition={recreatedPosition}
-        currentProblemIndex={0}
-        totalProblems={1}
-        boardTheme={preferences.boardTheme}
-        onNextProblem={handleViewResults}
-        onViewResults={handleViewResults}
-      />
     );
   }
 

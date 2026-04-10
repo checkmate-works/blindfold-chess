@@ -138,7 +138,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                     <BoardThumbnail fen={position.fen} className="w-full h-full" />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <UserAvatar
                         profileHref={profileHref}
                         avatarUrl={profile?.avatarUrl}
@@ -147,7 +147,9 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                         size="sm"
                         asLink={false}
                       />
-                      <span className="text-xs text-muted-foreground">{t('list.submittedBy')}</span>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {t('list.submittedBy')}
+                      </span>
                     </div>
                     <h3 className="font-medium text-foreground truncate">{position.title}</h3>
                     {descriptionExcerpt && (

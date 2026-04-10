@@ -11,7 +11,7 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -109,7 +109,7 @@ export default async function PositionDetailPage({ params }: Props) {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center justify-end gap-1 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
             <UserAvatar
               profileHref={profileHref}
@@ -120,7 +120,7 @@ export default async function PositionDetailPage({ params }: Props) {
             />
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground text-right">
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {
                 year: 'numeric',
@@ -134,6 +134,8 @@ export default async function PositionDetailPage({ params }: Props) {
 
           <PositionStartForm positionId={position.id} locale={locale} />
         </div>
+
+        <Divider />
 
         <Breadcrumb
           items={[
