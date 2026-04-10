@@ -17,8 +17,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import type { PresetPosition } from '../../_data/positions';
 import presetPositions from '../../_data/presetPositions.json';
 import { usePositionMemorySettings } from '../../_hooks/use-position-memory-settings';
+import { TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
 import { encodeFensToBase64, generateShareUrl, validateFEN } from '../../_lib/share-url';
-import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
 import { PositionMemorySettings } from './PositionMemorySettings';
 
 const MAX_FEN_COUNT = 10;

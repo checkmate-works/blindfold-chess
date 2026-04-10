@@ -11,6 +11,13 @@ export const MAX_TIME_LIMIT = 60;
 export const DEFAULT_TIME_LIMIT = 30;
 
 /**
+ * localStorage key used to remember that the user skipped the position-memory
+ * tutorial. Lives here (not in a component file) so both the setup flow and
+ * the session view can import it without creating cross-component coupling.
+ */
+export const TUTORIAL_SKIPPED_KEY = 'positionMemoryTutorialSkipped';
+
+/**
  * Clamp an arbitrary value into the valid time-limit range.
  *
  * Accepts unknown input (as comes from URL search params) and falls back to

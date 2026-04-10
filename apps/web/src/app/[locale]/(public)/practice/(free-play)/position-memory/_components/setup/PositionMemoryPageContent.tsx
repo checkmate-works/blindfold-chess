@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
+import { TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
 import { PositionMemorySetup } from './PositionMemorySetup';
 import { PositionMemorySetupSkeleton } from './PositionMemorySetupSkeleton';
 

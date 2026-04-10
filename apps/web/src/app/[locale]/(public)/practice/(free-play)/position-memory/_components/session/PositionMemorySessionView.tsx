@@ -27,8 +27,8 @@ import {
 } from '../../_lib/preset-problems';
 import type { SerializedResultItem, SerializedStats } from '../../_lib/result-serde';
 import { buildMultiResultUrl } from '../../_lib/result-url';
+import { TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
 import type { PositionData } from '../../_lib/types';
-import { TUTORIAL_SKIPPED_KEY } from '../TutorialSkipLink';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';
