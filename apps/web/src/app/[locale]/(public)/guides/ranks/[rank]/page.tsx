@@ -18,7 +18,7 @@ import enMessages from '@/messages/en.json';
 
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
-import { enumerateGuideRoutes, getRankGuide } from '@/lib/guides';
+import { buildGuideCanonicalPath, enumerateGuideRoutes, getRankGuide } from '@/lib/guides';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     ...generateCanonicalMetadata({
       locale,
-      path: `guides/ranks/${rankSlug}`,
+      path: buildGuideCanonicalPath(rankSlug, { kind: 'root' }),
       title,
       description,
     }),
@@ -68,6 +68,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RankGuideRootPage({ params }: Props) {
   const { locale, rank } = await params;
 
+  // Route layer is the single gate for slug validation. After this check,
+  // downstream code (including `renderGuideBody`) trusts `rankSlug`.
   if (!(ALL_RANK_SLUGS as readonly string[]).includes(rank)) notFound();
   const rankSlug = rank as RankSlug;
 

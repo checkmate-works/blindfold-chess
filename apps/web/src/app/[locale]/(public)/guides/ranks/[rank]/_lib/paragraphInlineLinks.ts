@@ -1,3 +1,16 @@
+/**
+ * Paragraph-level inline link registry for rank guide pages.
+ *
+ * Keyed on `(rankSlug, pageNumber, paragraphIndex)` — the same coordinate
+ * space used by {@link getVisualAid} in `./paragraphVisualAids.tsx`. The two
+ * files are deliberately kept separate (one owns link cards, the other owns
+ * board/visual components) but the parallel naming signals that they are
+ * both indexed by the same identifier tuple.
+ *
+ * Adding a new inline link: pick the `(rank, page, paragraph)` coordinates,
+ * add an entry to `GUIDE_LINK_MAP`, and make sure the label and (optional)
+ * `leadIn` text exist under `guides.inlineLinks.<rank>.*` in every locale.
+ */
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 type GuideLinkKey = `${RankSlug}:${number}:${number}`;

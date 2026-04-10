@@ -20,12 +20,20 @@ import enMessages from '@/messages/en.json';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import {
+  buildGuideCanonicalPath,
   buildGuidePath,
   enumerateGuideRoutes,
   findChapter,
   getRankGuide,
   guideRouteToSegments,
   parseGuideSegments,
+} from '@/lib/guides';
+import type {
+  ChapteredGuide,
+  FlatGuide,
+  GuideChapter,
+  ParsedGuideSegments,
+  RankGuide,
 } from '@/lib/guides';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -56,6 +64,99 @@ export function generateStaticParams() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// generateMetadata — split into per-kind helpers for readability.
+// ---------------------------------------------------------------------------
+
+type FlatPageParsed = Extract<ParsedGuideSegments, { kind: 'flat-page' }>;
+type ChapterPageParsed = Extract<ParsedGuideSegments, { kind: 'chapter-page' }>;
+
+async function buildFlatPageMetadata(
+  locale: Locale,
+  rankSlug: RankSlug,
+  guide: FlatGuide,
+  parsed: FlatPageParsed,
+  rankName: string
+): Promise<Metadata> {
+  if (parsed.page === 1) {
+    // Page 1 is redirected to the rank root by the page component; the
+    // redirect target owns canonical metadata, so emit nothing here.
+    return {};
+  }
+  if (parsed.page > guide.pages.length) return {};
+
+  const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.rank' });
+  const title = tMeta('pageTitle', { rankName, page: parsed.page });
+  const description = tMeta('description', { rankName });
+  return {
+    ...generateCanonicalMetadata({
+      locale,
+      path: buildGuideCanonicalPath(rankSlug, { kind: 'flat-page', page: parsed.page }),
+      title,
+      description,
+    }),
+    title: resolveTitle(title, locale),
+    description,
+  };
+}
+
+async function buildChapterRootMetadata(
+  locale: Locale,
+  rankSlug: RankSlug,
+  chapter: GuideChapter,
+  rankName: string
+): Promise<Metadata> {
+  const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.chapter' });
+  const title = tMeta('title', { rankName, chapterName: chapter.title });
+  const description = tMeta('description', { rankName, chapterName: chapter.title });
+  return {
+    ...generateCanonicalMetadata({
+      locale,
+      path: buildGuideCanonicalPath(rankSlug, {
+        kind: 'chapter-root',
+        chapterSlug: chapter.slug,
+      }),
+      title,
+      description,
+    }),
+    title: resolveTitle(title, locale),
+    description,
+  };
+}
+
+async function buildChapterPageMetadata(
+  locale: Locale,
+  rankSlug: RankSlug,
+  chapter: GuideChapter,
+  parsed: ChapterPageParsed,
+  rankName: string
+): Promise<Metadata> {
+  if (parsed.page === 1) return {};
+  if (parsed.page > chapter.pages.length) return {};
+
+  const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.chapter' });
+  const title = tMeta('pageTitle', {
+    rankName,
+    chapterName: chapter.title,
+    page: parsed.page,
+  });
+  const description = tMeta('description', { rankName, chapterName: chapter.title });
+  return {
+    ...generateCanonicalMetadata({
+      locale,
+      path: buildGuideCanonicalPath(rankSlug, {
+        kind: 'chapter-page',
+        chapterSlug: chapter.slug,
+        page: parsed.page,
+      }),
+      title,
+      description,
+    }),
+    title: resolveTitle(title, locale),
+    description,
+  };
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, rank, rest } = await params;
 
@@ -68,78 +169,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tGuides = await getTranslations({ locale, namespace: 'guides' });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
-  const guide = getRankGuide(guidesPages, rankSlug);
+  const guide: RankGuide | null = getRankGuide(guidesPages, rankSlug);
   if (!guide) return {};
 
   const rankName = tRanks(`rankNames.${rankSlug}`);
 
   if (parsed.kind === 'flat-page') {
     if (guide.format !== 'flat') return {};
-    if (parsed.page === 1) {
-      // Will be redirected by the page component; still emit reasonable metadata.
-      return {};
-    }
-    if (parsed.page > guide.pages.length) return {};
-    const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.rank' });
-    const title = tMeta('pageTitle', { rankName, page: parsed.page });
-    const description = tMeta('description', { rankName });
-    return {
-      ...generateCanonicalMetadata({
-        locale,
-        path: `guides/ranks/${rankSlug}/${parsed.page}`,
-        title,
-        description,
-      }),
-      title: resolveTitle(title, locale),
-      description,
-    };
+    return buildFlatPageMetadata(locale, rankSlug, guide, parsed, rankName);
   }
 
   if (guide.format !== 'chaptered') return {};
-  const chapter = findChapter(guide, parsed.chapterSlug);
+  const chaptered: ChapteredGuide = guide;
+  const chapter = findChapter(chaptered, parsed.chapterSlug);
   if (!chapter) return {};
 
-  const tMeta = await getTranslations({ locale, namespace: 'metadata.guides.chapter' });
-
   if (parsed.kind === 'chapter-root') {
-    const title = tMeta('title', { rankName, chapterName: chapter.title });
-    const description = tMeta('description', { rankName, chapterName: chapter.title });
-    return {
-      ...generateCanonicalMetadata({
-        locale,
-        path: `guides/ranks/${rankSlug}/${chapter.slug}`,
-        title,
-        description,
-      }),
-      title: resolveTitle(title, locale),
-      description,
-    };
+    return buildChapterRootMetadata(locale, rankSlug, chapter, rankName);
   }
 
-  // chapter-page
-  if (parsed.page === 1) return {};
-  if (parsed.page > chapter.pages.length) return {};
-  const title = tMeta('pageTitle', {
-    rankName,
-    chapterName: chapter.title,
-    page: parsed.page,
-  });
-  const description = tMeta('description', { rankName, chapterName: chapter.title });
-  return {
-    ...generateCanonicalMetadata({
-      locale,
-      path: `guides/ranks/${rankSlug}/${chapter.slug}/${parsed.page}`,
-      title,
-      description,
-    }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return buildChapterPageMetadata(locale, rankSlug, chapter, parsed, rankName);
 }
+
+// ---------------------------------------------------------------------------
+// Page component
+// ---------------------------------------------------------------------------
 
 export default async function RankGuideDeepPage({ params }: Props) {
   const { locale, rank, rest } = await params;
 
+  // Route layer validates the rank slug once; `renderGuideBody` trusts it.
   if (!(ALL_RANK_SLUGS as readonly string[]).includes(rank)) notFound();
   const rankSlug = rank as RankSlug;
 
