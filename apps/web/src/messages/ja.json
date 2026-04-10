@@ -2314,7 +2314,32 @@
       "dailyTrends": "日別推移",
       "newUsers": "新規ユーザー",
       "ugcPosts": "UGC投稿",
-      "noData": "選択期間のデータがありません。"
+      "noData": "選択期間のデータがありません。",
+      "summaryTable": {
+        "title": "KPIサマリー",
+        "category": "カテゴリ",
+        "metric": "指標",
+        "value": "値",
+        "users": "ユーザー",
+        "ugcPosts": "UGC投稿",
+        "likes": "いいね",
+        "avgPerDay": "1日あたりの平均",
+        "avgPerActivePoster": "アクティブ投稿者あたりの平均",
+        "total": "合計",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "オープニング",
+            "square": "マス目"
+          },
+          "positions": {
+            "memory": "メモリー"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",

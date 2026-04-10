@@ -2313,7 +2313,32 @@
       "dailyTrends": "Daily Trends",
       "newUsers": "New Users",
       "ugcPosts": "UGC Posts",
-      "noData": "No data for the selected period."
+      "noData": "No data for the selected period.",
+      "summaryTable": {
+        "title": "KPI Summary",
+        "category": "Category",
+        "metric": "Metric",
+        "value": "Value",
+        "users": "Users",
+        "ugcPosts": "UGC Posts",
+        "likes": "Likes",
+        "avgPerDay": "Avg per day",
+        "avgPerActivePoster": "Avg per active poster",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "opening",
+            "square": "square"
+          },
+          "positions": {
+            "memory": "memory"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",
