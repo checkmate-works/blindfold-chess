@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import type { SUPPORTED_LOCALES } from '@/config';
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 

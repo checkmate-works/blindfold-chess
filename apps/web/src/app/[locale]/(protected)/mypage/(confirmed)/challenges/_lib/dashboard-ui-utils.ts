@@ -1,4 +1,4 @@
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { DatePeriod } from './period-utils';
 

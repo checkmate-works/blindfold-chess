@@ -3,8 +3,6 @@
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 
-export type { ToggleLikeResult } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
-
 export async function toggleLike(postId: string, locale: string, slug: string) {
   return toggleLikeBase({
     postId,

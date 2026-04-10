@@ -8,8 +8,8 @@ import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
 
-import type { DatePeriod } from '../_actions/get-challenge-sessions';
 import { ORIENTATION_FILTER_MENUS, PIECE_FILTER_MENUS } from '../_hooks/use-dashboard-data';
+import type { DatePeriod } from '../_lib/period-utils';
 import { selectClassName } from '../_lib/ui-constants';
 
 type BoardOrientation = 'white' | 'black' | 'random';

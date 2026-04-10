@@ -1,4 +1,4 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';

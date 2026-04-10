@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { replayMoves } from '@blindfold-chess/features/chess-core';
+import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 

@@ -1,4 +1,5 @@
-import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Color } from '@blindfold-chess/features/chess-core';
 import type { PieceType } from '@blindfold-chess/types';

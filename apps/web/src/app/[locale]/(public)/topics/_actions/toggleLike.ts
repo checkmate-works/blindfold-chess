@@ -11,7 +11,7 @@ import { createNotification } from '@/lib/notification';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
+type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
 export async function toggleLikeBase(params: {
   postId: string;

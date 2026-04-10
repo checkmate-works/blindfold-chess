@@ -94,17 +94,43 @@ Route segment names use **singular or plural form depending on the nature of the
 ### Server Actions (`"use server"` files) Convention
 
 - **Only async function declarations may be exported** — Next.js requires that every export in a `"use server"` file is an async function. Re-exports (`export { fn } from '...'`) are **forbidden** because they are not async function declarations. This causes a build error: _"Only async functions are allowed to be exported in a 'use server' file."_
-- **`export type` is safe** — Type-only exports (`export type { T } from '...'`) are allowed because types are erased at build time and are not Server Actions.
-- **DRY pattern for shared actions** — When multiple routes share the same Server Action logic, extract the core logic into a base function (e.g., `toggleLikeBase`) and define a thin async wrapper in each route's `_actions/` file. Do NOT re-export the shared function directly.
+- **`export type { ... }` brace re-exports are FORBIDDEN** — The following forms are **not safe** in `"use server"` files under Next.js 16 + Turbopack:
+  ```ts
+  export type { T }; // re-export of a locally imported type
+  export type { T } from '...'; // direct re-export from another module
+  ```
+  The Server Action transform does NOT reliably erase these statements: they survive into the bundled server chunk as value references and produce a runtime `ReferenceError: <Type> is not defined` on first POST (Server Action invocation). This contradicts what TypeScript alone would do, and it is **not caught by GET smoke tests** — only by actually invoking a Server Action.
+  - **Reproduced on 2026-04-10** as `ReferenceError: ToggleLikeResult is not defined` thrown from the home feed's Like action. The three affected files (`position-memory`, `topics/openings/.../toggleLike`, `topics/squares/.../toggleLike`) all had an `export type { ToggleLikeResult }` line; removing those lines eliminated the error.
+  - **Rule**: Never write `export type { ... }` re-exports inside a `"use server"` file. If a type needs to be shared, define it in a separate non-`"use server"` module (e.g., `_lib/types.ts` or `@/lib/<feature>/types.ts`) and have consumers `import type { ... }` from there. The `"use server"` action file may then `import type` (not re-export) that type internally for its own function signatures.
+  - **`export type Foo = ...` (local alias declarations) are still allowed** — empirically these do not reproduce the runtime error. A static regression test (`src/lib/use-server-type-imports.test.ts`) enforces only the brace re-export ban. If a future repro shows local aliases also break, tighten the test.
+  - **Inline `type` specifiers in value imports are also unsafe** — `import { type X, y } from '...'` inside `"use server"` files must be split into `import type { X } from '...'` + `import { y } from '...'` for the same reason.
+- **DRY pattern for shared actions** — When multiple routes share the same Server Action logic, extract the core logic into a base function (e.g., `toggleLikeBase`) and define a thin async wrapper in each route's `_actions/` file. Do NOT re-export the shared function directly, and do NOT re-export its return type as `export type` either — put the type in a plain module.
 
 ```typescript
 // ✗ Bad — re-export in "use server" file (build error)
 'use server';
+import type { ToggleLikeResult } from '@/lib/positions/like-actions';
+import { togglePositionLike } from '@/lib/positions/like-actions';
+
 import { deletePostBase } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-// ✓ Also good — import the shared action directly in the consumer (page.tsx)
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 
 export { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+
+// ✗ Bad — export type in "use server" file (runtime ReferenceError under Next.js 16 + Turbopack)
+('use server');
+export type { ToggleLikeResult } from '@/lib/positions/like-actions';
+export async function toggleLike(id: string) {
+  /* ... */
+}
+
+// ✓ Good — put the type in a plain module and only `import type` it inside the action
+// @/lib/positions/like-actions.ts (no "use server" directive):
+//   export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
+('use server');
+
+export async function toggleLike(id: string, locale: string): Promise<ToggleLikeResult> {
+  return togglePositionLike(id, locale);
+}
 
 // ✓ Good — async wrapper delegates to shared base function
 ('use server');

@@ -1,7 +1,8 @@
 'use server';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { type SQL, and, gte, isNotNull, isNull, lt } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
+import { and, gte, isNotNull, isNull, lt } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';

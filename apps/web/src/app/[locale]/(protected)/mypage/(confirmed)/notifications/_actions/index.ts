@@ -7,8 +7,6 @@ import { db, notifications } from '@/lib/db';
 
 import { getUnreadCount as getUnreadCountQuery } from '../_lib/queries';
 
-export type { NotificationWithActor } from '../_lib/queries';
-
 export async function getUnreadCount(): Promise<number> {
   const user = await getOptionalUser();
   if (!user) return 0;

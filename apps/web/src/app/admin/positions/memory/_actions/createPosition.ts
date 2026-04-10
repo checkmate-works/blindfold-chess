@@ -4,10 +4,8 @@ import { adminMutationGuard, mutationSuccess } from '@/app/admin/_lib/action-fac
 import type { MutationResult } from '@/app/admin/_lib/action-factories';
 
 import { db, feedItems, positions } from '@/lib/db';
-import {
-  type PositionMutationData,
-  validatePositionMutationData,
-} from '@/lib/positions/validation';
+import type { PositionMutationData } from '@/lib/positions/validation';
+import { validatePositionMutationData } from '@/lib/positions/validation';
 
 export async function createPosition(data: PositionMutationData): Promise<MutationResult> {
   const guard = await adminMutationGuard(data, validatePositionMutationData);
