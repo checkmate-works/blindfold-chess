@@ -162,6 +162,13 @@
       "when": 1775779200000,
       "tag": "20260410000000_rename_topic_post_likes_to_likes",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1775807670074,
+      "tag": "20260410075430_add_performance_indexes",
+      "breakpoints": true
     }
   ]
 }

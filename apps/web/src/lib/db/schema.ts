@@ -418,6 +418,13 @@ export const likes = pgTable(
     unique('uq_like').on(table.userId, table.targetType, table.targetId),
     index('idx_likes_target').on(table.targetType, table.targetId),
     index('idx_likes_user').on(table.userId),
+    // Composite index for "a user's likes of a given target type, newest first"
+    // queries (e.g., "articles I liked"). Order matches the query predicate.
+    index('idx_likes_user_type_created_at').on(
+      table.userId,
+      table.targetType,
+      table.createdAt.desc()
+    ),
   ]
 );
 
@@ -1568,7 +1575,13 @@ export const positions = pgTable(
   },
   (table) => [
     index('idx_positions_user').on(table.userId),
-    index('idx_positions_type').on(table.type),
+    // Composite partial index for the public positions list, which filters by
+    // `type` and orders by `created_at DESC` while excluding soft-deleted rows.
+    // Replaces the former single-column `idx_positions_type` (dropped in the
+    // same migration) because Postgres could not use it for the ORDER BY.
+    index('idx_positions_type_created_at')
+      .on(table.type, table.createdAt.desc())
+      .where(sql`deleted_at IS NULL`),
   ]
 );
 
@@ -1586,7 +1599,13 @@ export const positionTags = pgTable(
       .notNull()
       .references(() => tags.id, { onDelete: 'cascade' }),
   },
-  (table) => [unique('uq_position_tag').on(table.positionId, table.tagId)]
+  (table) => [
+    unique('uq_position_tag').on(table.positionId, table.tagId),
+    // Secondary index on `tag_id` for reverse lookups ("positions with tag X").
+    // The uq_position_tag UNIQUE already covers position_id → tag_id, so no
+    // dedicated index on position_id is needed.
+    index('idx_position_tags_tag').on(table.tagId),
+  ]
 );
 
 export type PositionTag = typeof positionTags.$inferSelect;
