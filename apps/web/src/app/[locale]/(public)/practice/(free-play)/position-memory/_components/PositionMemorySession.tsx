@@ -18,10 +18,10 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
+import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/preset-problems';
 import type { SerializedResultItem, SerializedStats } from '../_lib/result-serde';
 import { buildMultiResultUrl } from '../_lib/result-url';
 import type { PositionData } from '../_lib/types';
-import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
 import { PositionMemoryRecreate } from './PositionMemoryRecreate';

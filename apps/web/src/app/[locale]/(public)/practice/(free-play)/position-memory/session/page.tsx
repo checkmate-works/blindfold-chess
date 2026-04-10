@@ -5,7 +5,7 @@ import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_component
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { decodeFensFromBase64, validateFEN } from '../_lib/utils';
+import { decodeFensFromBase64, validateFEN } from '../_lib/share-url';
 
 const PositionMemorySession = dynamic(() =>
   import('../_components/PositionMemorySession').then((mod) => mod.PositionMemorySession)

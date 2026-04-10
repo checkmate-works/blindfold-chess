@@ -10,7 +10,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { encodeFensToBase64 } from '../_lib/utils';
+import { encodeFensToBase64 } from '../_lib/share-url';
 
 type Props = {
   locale: Locale;
