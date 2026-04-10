@@ -15,14 +15,13 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
 import { Link } from '@/i18n/routing';
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
-import { db, positions, profiles } from '@/lib/db';
 import { resolveDisplayName } from '@/lib/display-name';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
+import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
 
@@ -69,10 +68,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
 
   // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
   // if this query becomes slow with large data volumes.
-  const whereConditions = and(eq(positions.type, 'memory'), isNull(positions.deletedAt));
-
-  const [totalResult] = await db.select({ value: count() }).from(positions).where(whereConditions);
-  const totalCount = totalResult.value;
+  const totalCount = await countPositions({ type: 'memory' });
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
@@ -80,21 +76,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     PAGE_SIZE
   );
 
-  const rows = await db
-    .select({
-      position: positions,
-      profile: {
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      },
-    })
-    .from(positions)
-    .leftJoin(profiles, eq(positions.userId, profiles.id))
-    .where(whereConditions)
-    .orderBy(desc(positions.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const rows = await listPositionsWithProfile({ type: 'memory', limit, offset });
 
   const currentUser = await getOptionalUser();
   const likeMetaMap = await getPositionLikeMetaMap(

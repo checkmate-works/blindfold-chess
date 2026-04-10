@@ -4,11 +4,12 @@ import { notFound } from 'next/navigation';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 
+import { getPositionById } from '@/lib/positions/queries';
+
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionMemorySession } from '../../_components/PositionMemorySession';
-import { getMemoryPositionById } from '../../_lib/queries';
 import {
   type SerializedResultItem,
   type SerializedStats,
@@ -73,7 +74,7 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
   const sp = await searchParams;
   const timeLimit = clampTimeLimit(sp.timeLimit);
 
-  const position = await getMemoryPositionById(id);
+  const position = await getPositionById({ id, type: 'memory' });
 
   if (!position) {
     notFound();

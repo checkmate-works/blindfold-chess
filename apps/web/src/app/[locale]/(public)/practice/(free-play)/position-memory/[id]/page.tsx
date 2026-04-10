@@ -8,6 +8,7 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 import { getOptionalUser } from '@/lib/auth';
 import { resolveDisplayName } from '@/lib/display-name';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
+import { getPositionWithProfileById } from '@/lib/positions/queries';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -18,7 +19,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionStartForm } from '../_components/PositionStartForm';
-import { getMemoryPositionWithProfileById } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
 
-  const row = await getMemoryPositionWithProfileById(id);
+  const row = await getPositionWithProfileById({ id, type: 'memory' });
 
   if (!row) {
     return { title: t('detail.title') };
@@ -55,7 +55,7 @@ export default async function PositionDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const row = await getMemoryPositionWithProfileById(id);
+  const row = await getPositionWithProfileById({ id, type: 'memory' });
 
   if (!row) {
     notFound();

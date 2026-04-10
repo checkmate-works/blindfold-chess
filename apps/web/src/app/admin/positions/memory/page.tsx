@@ -1,11 +1,10 @@
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { db, positions } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { countPositions, listPositions } from '@/lib/positions/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
 
@@ -24,28 +23,15 @@ export default async function AdminPositionMemoryPage({
 }) {
   const { page } = await searchParamsCache.parse(searchParams);
 
-  const whereMemoryActive = and(isNull(positions.deletedAt), eq(positions.type, 'memory'));
-
-  // Count only non-deleted memory positions
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(positions)
-    .where(whereMemoryActive);
+  const totalCount = await countPositions({ type: 'memory' });
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
-    countResult?.count ?? 0,
+    totalCount,
     DEFAULT_PAGE_SIZE
   );
 
-  // Fetch paginated positions
-  const rows = await db
-    .select()
-    .from(positions)
-    .where(whereMemoryActive)
-    .orderBy(desc(positions.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const rows = await listPositions({ type: 'memory', limit, offset });
 
   const buildHref = (p: number) => `/admin/positions/memory?page=${p}`;
 
@@ -64,8 +50,7 @@ export default async function AdminPositionMemoryPage({
       {rows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length} of {countResult?.count ?? 0}{' '}
-          positions
+          {(currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length} of {totalCount} positions
         </p>
       )}
 

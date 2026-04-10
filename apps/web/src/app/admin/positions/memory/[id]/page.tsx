@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
-import { eq } from 'drizzle-orm';
 
-import { db, positions } from '@/lib/db';
+import { getPositionById } from '@/lib/positions/queries';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 
@@ -13,9 +12,9 @@ import { DeletePositionButton } from '../_components/DeletePositionButton';
 export default async function PositionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [position] = await db.select().from(positions).where(eq(positions.id, id)).limit(1);
+  const position = await getPositionById({ id, includeDeleted: true });
 
-  if (!position || position.deletedAt) {
+  if (!position) {
     notFound();
   }
 
