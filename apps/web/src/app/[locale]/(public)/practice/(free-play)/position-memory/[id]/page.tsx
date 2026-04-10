@@ -7,6 +7,7 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
 import { resolveDisplayName } from '@/lib/display-name';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -17,7 +18,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionStartForm } from '../_components/PositionStartForm';
-import { getPositionLikeMeta } from '../_lib/like-queries';
 import { getMemoryPositionWithProfileById } from '../_lib/queries';
 
 export const dynamic = 'force-dynamic';

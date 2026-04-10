@@ -9,8 +9,8 @@ import {
   topicPostRatings,
   topicPosts,
 } from '@/lib/db';
+import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 
-import { getPositionLikeMetaMap } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/like-queries';
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
