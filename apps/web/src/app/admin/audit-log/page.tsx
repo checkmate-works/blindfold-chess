@@ -148,6 +148,7 @@ export default async function AdminAuditLogPage({
             <option value="ban">ban</option>
             <option value="unban">unban</option>
             <option value="delete_post">delete_post</option>
+            <option value="delete_position">delete_position</option>
           </select>
         </div>
         <div>
@@ -197,7 +198,7 @@ export default async function AdminAuditLogPage({
                       ? 'bg-destructive-soft text-destructive-soft-foreground'
                       : log.action === 'unban'
                         ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post'
+                        : log.action === 'delete_post' || log.action === 'delete_position'
                           ? 'bg-caution-soft text-caution-soft-foreground'
                           : 'bg-secondary text-secondary-foreground'
                   }`}
