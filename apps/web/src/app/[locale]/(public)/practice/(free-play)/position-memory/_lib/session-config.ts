@@ -1,0 +1,23 @@
+/**
+ * Shared session configuration constants for the position-memory feature.
+ *
+ * The time limit range and default are referenced by both the single-position
+ * start form (`[id]/page.tsx` → `PositionStartForm`) and the single-position
+ * session entry (`[id]/session/page.tsx`), so they live in one place.
+ */
+
+export const MIN_TIME_LIMIT = 5;
+export const MAX_TIME_LIMIT = 60;
+export const DEFAULT_TIME_LIMIT = 30;
+
+/**
+ * Clamp an arbitrary value into the valid time-limit range.
+ *
+ * Accepts unknown input (as comes from URL search params) and falls back to
+ * {@link DEFAULT_TIME_LIMIT} when the value is not a finite number.
+ */
+export function clampTimeLimit(value: unknown): number {
+  const num = typeof value === 'string' ? parseInt(value, 10) : NaN;
+  if (Number.isNaN(num)) return DEFAULT_TIME_LIMIT;
+  return Math.max(MIN_TIME_LIMIT, Math.min(MAX_TIME_LIMIT, num));
+}

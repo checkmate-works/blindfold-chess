@@ -16,6 +16,7 @@ import {
   serializeResults,
   serializeStats,
 } from '../../_lib/result-serde';
+import { clampTimeLimit } from '../../_lib/session-config';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,16 +27,6 @@ type Props = {
   }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-const MIN_TIME = 5;
-const MAX_TIME = 60;
-const DEFAULT_TIME_LIMIT = 30;
-
-function clampTimeLimit(value: unknown): number {
-  const num = typeof value === 'string' ? parseInt(value, 10) : NaN;
-  if (isNaN(num)) return DEFAULT_TIME_LIMIT;
-  return Math.max(MIN_TIME, Math.min(MAX_TIME, num));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

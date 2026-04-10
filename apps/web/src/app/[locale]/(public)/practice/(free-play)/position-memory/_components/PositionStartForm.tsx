@@ -8,9 +8,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
 
-const MIN_TIME = 5;
-const MAX_TIME = 60;
-const DEFAULT_TIME_LIMIT = 30;
+import { DEFAULT_TIME_LIMIT, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../_lib/session-config';
 
 type Props = {
   positionId: string;
@@ -34,16 +32,16 @@ export function PositionStartForm({ positionId, locale }: Props) {
         </label>
         <input
           type="range"
-          min={MIN_TIME}
-          max={MAX_TIME}
+          min={MIN_TIME_LIMIT}
+          max={MAX_TIME_LIMIT}
           step="5"
           value={timeLimit}
           onChange={(e) => setTimeLimit(Number(e.target.value))}
           className="w-full h-2 bg-secondary rounded-md appearance-none cursor-pointer accent-foreground"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>{MIN_TIME}</span>
-          <span>{MAX_TIME}</span>
+          <span>{MIN_TIME_LIMIT}</span>
+          <span>{MAX_TIME_LIMIT}</span>
         </div>
       </div>
 
