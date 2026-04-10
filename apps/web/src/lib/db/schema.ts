@@ -390,26 +390,39 @@ export const topicPosts = pgTable(
 export type TopicPost = typeof topicPosts.$inferSelect;
 export type NewTopicPost = typeof topicPosts.$inferInsert;
 
-// Topic Post Likes
-export const topicPostLikes = pgTable(
-  'topic_post_likes',
+/**
+ * Polymorphic likes table.
+ *
+ * @design
+ * Generic like table keyed by (target_type, target_id) so any entity can be liked
+ * without adding per-entity tables (e.g., position_likes, puzzle_likes). Follows the
+ * same polymorphic pattern used by `topicPosts` (topicType + topicKey), `moderationActions`
+ * (targetType + targetId), and `feedItems` (entityType + entityId).
+ *
+ * - No FK on target_id: PostgreSQL cannot express polymorphic FKs. Orphan cleanup is
+ *   handled at the application layer (e.g., when deleting a topic post).
+ * - FK on user_id → auth.users: defined in `drizzle/supabase/foreign_keys_and_grants.sql`
+ *   following the established Supabase pattern.
+ * - Existing data from `topic_post_likes` is migrated with `target_type = 'topic_post'`.
+ */
+export const likes = pgTable(
+  'likes',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
-    postId: uuid('post_id')
-      .notNull()
-      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    targetType: varchar('target_type', { length: 50 }).notNull(),
+    targetId: uuid('target_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_topic_post_like').on(table.userId, table.postId),
-    index('idx_topic_post_likes_post').on(table.postId),
-    index('idx_topic_post_likes_user').on(table.userId),
+    unique('uq_like').on(table.userId, table.targetType, table.targetId),
+    index('idx_likes_target').on(table.targetType, table.targetId),
+    index('idx_likes_user').on(table.userId),
   ]
 );
 
-export type TopicPostLike = typeof topicPostLikes.$inferSelect;
-export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
 
 /**
  * Topic Post Ratings — 1:1 extension of topic_posts for structured ratings.

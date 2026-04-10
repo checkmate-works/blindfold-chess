@@ -263,25 +263,38 @@ GRANT SELECT ON TABLE public.chess_openings TO authenticated;
 GRANT SELECT ON TABLE public.chess_openings TO anon;
 
 -- =============================================================================
--- topic_post_likes
+-- likes (polymorphic, renamed from topic_post_likes)
 -- =============================================================================
 
--- FK constraint: topic_post_likes.user_id → auth.users(id) ON DELETE CASCADE
+-- Drop the legacy FK constraint name if it survived the table rename. The
+-- rename + recreate migration drops this in SQL, but we defensively drop here
+-- as well so re-runs against older snapshots stay idempotent.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'topic_post_likes_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.likes DROP CONSTRAINT topic_post_likes_user_id_fkey;
+  END IF;
+END;
+$$;
+
+-- FK constraint: likes.user_id → auth.users(id) ON DELETE CASCADE
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'topic_post_likes_user_id_fkey'
+    SELECT 1 FROM pg_constraint WHERE conname = 'likes_user_id_fkey'
   ) THEN
-    ALTER TABLE public.topic_post_likes
-      ADD CONSTRAINT topic_post_likes_user_id_fkey
+    ALTER TABLE public.likes
+      ADD CONSTRAINT likes_user_id_fkey
       FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
   END IF;
 END;
 $$;
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT, DELETE ON TABLE public.topic_post_likes TO authenticated;
-GRANT SELECT ON TABLE public.topic_post_likes TO anon;
+GRANT SELECT, INSERT, DELETE ON TABLE public.likes TO authenticated;
+GRANT SELECT ON TABLE public.likes TO anon;
 
 -- =============================================================================
 -- challenge_results

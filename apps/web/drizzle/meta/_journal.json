@@ -155,6 +155,13 @@
       "when": 1775772883674,
       "tag": "20260409221443_create_positions_table",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1775779200000,
+      "tag": "20260410000000_rename_topic_post_likes_to_likes",
+      "breakpoints": true
     }
   ]
 }

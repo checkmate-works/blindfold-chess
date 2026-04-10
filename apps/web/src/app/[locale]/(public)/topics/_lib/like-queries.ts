@@ -1,13 +1,6 @@
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
 
-import {
-  chessOpenings,
-  db,
-  profiles,
-  topicPostLikes,
-  topicPostRatings,
-  topicPosts,
-} from '@/lib/db';
+import { chessOpenings, db, likes, profiles, topicPostRatings, topicPosts } from '@/lib/db';
 
 import { attachProfilePostMeta } from './post-meta';
 import { authorSelect, ratingSelect } from './shared';
@@ -23,15 +16,21 @@ export async function getLikeMetaForPost(
 ): Promise<LikeMeta> {
   const [result] = await db
     .select({ count: count() })
-    .from(topicPostLikes)
-    .where(eq(topicPostLikes.postId, postId));
+    .from(likes)
+    .where(and(eq(likes.targetType, 'topic_post'), eq(likes.targetId, postId)));
 
   let likedByMe = false;
   if (currentUserId) {
     const userLike = await db
-      .select({ id: topicPostLikes.id })
-      .from(topicPostLikes)
-      .where(and(eq(topicPostLikes.userId, currentUserId), eq(topicPostLikes.postId, postId)))
+      .select({ id: likes.id })
+      .from(likes)
+      .where(
+        and(
+          eq(likes.userId, currentUserId),
+          eq(likes.targetType, 'topic_post'),
+          eq(likes.targetId, postId)
+        )
+      )
       .limit(1);
     likedByMe = userLike.length > 0;
   }
@@ -48,9 +47,15 @@ export async function getLikeMetaForPost(
 export async function getLikedPostCountByUser(userId: string): Promise<number> {
   const [result] = await db
     .select({ count: count() })
-    .from(topicPostLikes)
-    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
-    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)));
+    .from(likes)
+    .innerJoin(topicPosts, eq(likes.targetId, topicPosts.id))
+    .where(
+      and(
+        eq(likes.userId, userId),
+        eq(likes.targetType, 'topic_post'),
+        isNull(topicPosts.deletedAt)
+      )
+    );
   return result.count;
 }
 
@@ -71,15 +76,21 @@ export async function getLikedPostsByUser(
       rating: ratingSelect,
       openingName: chessOpenings.name,
       openingFen: chessOpenings.fen,
-      likedAt: topicPostLikes.createdAt,
+      likedAt: likes.createdAt,
     })
-    .from(topicPostLikes)
-    .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
+    .from(likes)
+    .innerJoin(topicPosts, eq(likes.targetId, topicPosts.id))
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
     .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
     .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
-    .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt)))
-    .orderBy(desc(topicPostLikes.createdAt))
+    .where(
+      and(
+        eq(likes.userId, userId),
+        eq(likes.targetType, 'topic_post'),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(likes.createdAt))
     .$dynamic();
 
   if (limit !== undefined) {
