@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logActivityEvent } from '@/lib/activity-log';
 import { createNotification } from '@/lib/notification';
 
-import { toggleLike } from './toggleLike';
+import { togglePositionLike as toggleLike } from './like-actions';
 
 // Spy on drizzle-orm's `eq`/`and` so tests can assert that SELECT/DELETE filter
 // by `likes.targetType = 'position'`. This is the positions-side safety net
