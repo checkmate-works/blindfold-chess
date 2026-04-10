@@ -1,47 +1,43 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { useRouter } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { useMachine } from '@xstate/react';
 
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-piece-accuracy';
-import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_lib/aggregate-results';
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useCountdown } from '../../_hooks/use-countdown';
 import { useMemorizeTimer } from '../../_hooks/use-memorize-timer';
-import { positionMemoryMachine } from '../../_lib/machines/positionMemoryMachine';
+import { usePositionMemorySession } from '../../_hooks/use-position-memory-session';
 import type { SessionMode } from '../../_lib/machines/types';
-import {
-  calculateAccuracy,
-  getCustomPositions,
-  getRandomPositions,
-} from '../../_lib/preset-problems';
-import type { SerializedResultItem, SerializedStats } from '../../_lib/result-serde';
-import { buildMultiResultUrl } from '../../_lib/result-url';
-import { TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
+import { calculateAccuracy } from '../../_lib/preset-problems';
+import type { SessionCompletePayload } from '../../_lib/result-serde';
 import type { PositionData } from '../../_lib/types';
-import { PositionMemoryMemorize } from './PositionMemoryMemorize';
-import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
-import { PositionMemoryRecreate } from './PositionMemoryRecreate';
+import { PositionMemorySessionPhase } from './PositionMemorySessionPhase';
 
-type BuildResultUrlArgs = {
-  locale: Locale;
-  results: SerializedResultItem[];
-  stats: SerializedStats;
-  totalAccuracy: number;
+export type { SessionCompletePayload };
+
+/**
+ * Behavior flags that differ between the multi-problem and single-position
+ * flavors of the session view. Grouped together so wrappers only pass one
+ * object and the view's top-level prop list stays manageable.
+ */
+export type SessionBehavior = {
+  /** Enable pause/resume UI. Default: false. */
+  enablePause?: boolean;
+  /** When true, pressing skip acts like quit (single-position mode). */
+  skipBehavesAsQuit?: boolean;
+  /** Show the skip button in the memorize phase. Default: true. */
+  showSkipButton?: boolean;
+  /** If true, skip the inter-problem result phase and go straight to the session result. */
+  skipProblemResult?: boolean;
 };
 
 type Props = {
-  locale: Locale;
   timeLimit: number;
   shuffle: boolean;
   /** Pre-built positions — when provided, `fens`/`problemCount` are ignored. */
@@ -50,33 +46,23 @@ type Props = {
   problemCount?: number;
   mode?: SessionMode;
   skipMemorize?: boolean;
-  isCustomFen?: boolean;
-  rawProblemsParam?: string;
-  sourceParam?: string;
-  modeParam?: string;
-  /** Enable pause/resume UI. Default: false. */
-  enablePause?: boolean;
-  /** When set, pressing skip acts like quit (single-position mode). */
-  skipBehavesAsQuit?: boolean;
-  /** Hide the skip button in the memorize phase. Default: true (shown). */
-  showSkipButton?: boolean;
-  /** If true, skip the inter-problem result phase and go straight to the session result. */
-  skipProblemResult?: boolean;
-  /** Custom result-page URL builder. Defaults to the multi-problem result page. */
-  buildResultUrl?: (args: BuildResultUrlArgs) => string;
+  behavior?: SessionBehavior;
+  /** Called once when the machine enters `sessionResult`. */
+  onSessionComplete: (payload: SessionCompletePayload) => void;
+  /** Called when the user confirms finishing the tutorial on the problem-result screen. */
+  onFinishTutorial?: () => void;
 };
 
 /**
  * Pure phase renderer for the position-memory session.
  *
- * Holds the XState machine, orchestrates hooks for countdown/memorize timers,
- * and dispatches to the per-phase presentational components. Flag-based
- * behavior (enablePause, skipBehavesAsQuit, skipProblemResult, ...) is
- * configured by the two session wrappers (`MultiProblemSession`,
- * `SinglePositionSession`) that instantiate this view.
+ * Delegates XState initialization and session-complete side effects to
+ * `usePositionMemorySession`, hands the current phase to
+ * `PositionMemorySessionPhase`, and forwards the quit modal. Flavor-specific
+ * side effects (result-URL building, tutorial completion) are delegated to
+ * the two session wrappers via callbacks.
  */
 export function PositionMemorySessionView({
-  locale,
   timeLimit,
   shuffle,
   presetPositions,
@@ -84,18 +70,18 @@ export function PositionMemorySessionView({
   problemCount = 1,
   mode = 'custom',
   skipMemorize = false,
-  isCustomFen = false,
-  rawProblemsParam,
-  sourceParam,
-  modeParam,
-  enablePause = false,
-  skipBehavesAsQuit = false,
-  showSkipButton = true,
-  skipProblemResult = false,
-  buildResultUrl,
+  behavior,
+  onSessionComplete,
+  onFinishTutorial,
 }: Props) {
+  const {
+    enablePause = false,
+    skipBehavesAsQuit = false,
+    showSkipButton = true,
+    skipProblemResult = false,
+  } = behavior ?? {};
+
   const t = useTranslations('practice.positionMemory');
-  const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
   const quitModalLabels = useQuitConfirmLabels({
     message: t('quitConfirmMessage'),
@@ -104,56 +90,21 @@ export function PositionMemorySessionView({
   });
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
-  // Track if component has mounted (to avoid SSR/hydration mismatch)
-  const [hasMounted, setHasMounted] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Initialize positions only on client side to avoid hydration mismatch with Math.random()
-  const [positions, setPositions] = useState<PositionData[]>(() => presetPositions ?? []);
-
-  // Create machine (will receive positions via SET_POSITIONS event)
-  const [state, send] = useMachine(positionMemoryMachine, {
-    input: {
-      positions: presetPositions ?? [],
-      timeLimit,
-      mode,
-    },
+  const { state, send, positions, hasMounted } = usePositionMemorySession({
+    timeLimit,
+    shuffle,
+    mode,
+    presetPositions,
+    fens,
+    problemCount,
+    skipMemorize,
+    skipProblemResult,
+    onSessionComplete,
   });
 
-  // Initialize positions after mount and send to machine
-  useEffect(() => {
-    if (!hasMounted) {
-      setHasMounted(true);
-      if (presetPositions && presetPositions.length > 0) {
-        // Positions were supplied by the caller; machine already received
-        // them via input, but send SET_POSITIONS so subsequent renders stay
-        // in sync with component state.
-        setPositions(presetPositions);
-        send({ type: 'SET_POSITIONS', positions: presetPositions });
-        return;
-      }
-      const initialPositions =
-        fens && fens.length > 0
-          ? getCustomPositions(fens, problemCount, shuffle)
-          : getRandomPositions(problemCount, shuffle);
-      setPositions(initialPositions);
-      // Update machine context with loaded positions
-      send({ type: 'SET_POSITIONS', positions: initialPositions });
-    }
-  }, [hasMounted, presetPositions, fens, shuffle, problemCount, send]);
-
-  // Skip memorize phase if requested (for tutorial)
-  useEffect(() => {
-    if (skipMemorize && state.value === 'memorize' && positions.length > 0) {
-      send({ type: 'MEMORIZED' });
-    }
-  }, [skipMemorize, state.value, positions.length, send]);
-
+  const [isPaused, setIsPaused] = useState(false);
+  const togglePause = useCallback(() => setIsPaused((prev) => !prev), []);
   useScrollToElement('position-memory-session', hasMounted);
-
-  const togglePause = useCallback(() => {
-    setIsPaused((prev) => !prev);
-  }, []);
 
   // Pre-session countdown (3, 2, 1, START!)
   const countdown = useCountdown({ initial: 3, paused: isPaused });
@@ -166,254 +117,73 @@ export function PositionMemorySessionView({
     onTick: useCallback(() => send({ type: 'TICK' }), [send]),
   });
 
-  // Derive values from state context
   const {
     currentProblemIndex,
     recreatedPosition,
     memorizeTimeLeft,
     currentAccuracy,
-    problemResults,
-    recreatedPositions,
-    skippedProblems,
     showQuitModal,
   } = state.context;
 
-  // When `skipProblemResult` is true, transition straight from problemResult to sessionResult.
-  useEffect(() => {
-    if (skipProblemResult && state.value === 'problemResult') {
-      send({ type: 'VIEW_RESULTS' });
-    }
-  }, [skipProblemResult, state.value, send]);
-
-  // Final result phase - Redirect to result page
-  useEffect(() => {
-    if (state.value !== 'sessionResult') return;
-
-    // Convert Map to array for calculations
-    const resultsArray = Array.from(problemResults.values());
-
-    // Calculate stats
-    const { totalAccuracy, totalCorrect, totalPieces, totalIncorrect, totalMissing, totalExtra } =
-      aggregateResults(resultsArray);
-
-    const serializedResults: SerializedResultItem[] = positions.map((position, index) => {
-      const result = problemResults.get(index);
-      const isSkipped = skippedProblems.has(index) || !result;
-      return {
-        f: position.fen,
-        r: recreatedPositions.get(index) || '',
-        b: position.isBlackToMove ? 1 : 0,
-        a: result?.accuracy ?? 0,
-        c: result?.correctPieces ?? 0,
-        t: result?.totalPieces ?? 0,
-        i: result?.incorrectPieces ?? 0,
-        m: result?.missingPieces ?? 0,
-        e: result?.extraPieces ?? 0,
-        o: index,
-        s: isSkipped ? 1 : 0,
-      };
-    });
-
-    const serializedStats: SerializedStats = {
-      c: totalCorrect,
-      t: totalPieces,
-      i: totalIncorrect,
-      m: totalMissing,
-      e: totalExtra,
-    };
-
-    const url = buildResultUrl
-      ? buildResultUrl({
-          locale,
-          results: serializedResults,
-          stats: serializedStats,
-          totalAccuracy,
-        })
-      : buildMultiResultUrl({
-          locale,
-          results: serializedResults,
-          stats: serializedStats,
-          totalAccuracy,
-          isCustomFen,
-          timeLimit,
-          shuffle,
-          problemCount,
-          rawProblemsParam,
-          sourceParam,
-          modeParam,
-        });
-
-    router.push(url);
-  }, [
-    state.value,
-    problemResults,
-    skippedProblems,
-    positions,
-    recreatedPositions,
-    isCustomFen,
-    locale,
-    router,
-    timeLimit,
-    shuffle,
-    problemCount,
-    rawProblemsParam,
-    sourceParam,
-    modeParam,
-    buildResultUrl,
-  ]);
-
-  const originalPosition = useMemo<PositionData | null>(() => {
-    return positions[currentProblemIndex] || null;
-  }, [positions, currentProblemIndex]);
-
-  const handleMemorized = useCallback(() => {
-    send({ type: 'MEMORIZED' });
-  }, [send]);
+  const originalPosition = useMemo<PositionData | null>(
+    () => positions[currentProblemIndex] || null,
+    [positions, currentProblemIndex]
+  );
 
   const handleSubmit = useCallback(() => {
     if (!originalPosition) return;
-
     const accuracy = calculateAccuracy(
       originalPosition.fen,
       recreatedPosition,
       pieceNames,
       accuracyDescriptions
     );
-
     send({ type: 'SUBMIT', accuracy });
   }, [originalPosition, recreatedPosition, pieceNames, accuracyDescriptions, send]);
 
-  const handleSkip = useCallback(() => {
-    if (skipBehavesAsQuit) {
-      send({ type: 'OPEN_QUIT_MODAL' });
-    } else {
-      send({ type: 'SKIP' });
-    }
-  }, [send, skipBehavesAsQuit]);
-
-  const handleNextProblem = useCallback(() => {
-    send({ type: 'NEXT_PROBLEM' });
-  }, [send]);
-
-  const handleViewAgain = useCallback(() => {
-    send({ type: 'VIEW_AGAIN' });
-  }, [send]);
-
-  const handleQuitClick = useCallback(() => {
-    send({ type: 'OPEN_QUIT_MODAL' });
-  }, [send]);
-
-  const handleQuitConfirm = useCallback(() => {
-    send({ type: 'CONFIRM_QUIT' });
-  }, [send]);
-
-  const handleQuitCancel = useCallback(() => {
-    send({ type: 'CANCEL_QUIT' });
-  }, [send]);
-
-  const handlePositionChange = useCallback(
-    (fen: string) => {
-      send({ type: 'UPDATE_POSITION', fen });
-    },
-    [send]
-  );
-
-  // Check if tutorial mode
-  const isTutorial = mode === 'tutorial';
-
-  // Handle finish tutorial
-  const handleFinishTutorial = useCallback(() => {
-    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
-    window.location.href = `/${locale}/practice/position-memory`;
-  }, [locale]);
+  const handleSkip = () => send({ type: skipBehavesAsQuit ? 'OPEN_QUIT_MODAL' : 'SKIP' });
+  const handleQuitClick = () => send({ type: 'OPEN_QUIT_MODAL' });
 
   // Wait for positions to be initialized and preferences to be loaded (avoid SSR/hydration mismatch)
   if (!hasMounted || !isLoaded || positions.length === 0) {
     return null;
   }
 
-  // Memorize phase
-  if (state.value === 'memorize' && originalPosition) {
-    return (
-      <div id="position-memory-session" className="min-h-screen">
-        <PositionMemoryMemorize
-          position={originalPosition}
-          memorizeTimeLeft={memorizeTimeLeft}
-          currentProblemIndex={currentProblemIndex}
-          problemCount={positions.length}
-          boardTheme={preferences.boardTheme}
-          onMemorized={handleMemorized}
-          onSkip={handleSkip}
-          onQuit={handleQuitClick}
-          countdown={countdown}
-          timeLimit={timeLimit}
-          isPaused={enablePause ? isPaused : undefined}
-          onTogglePause={enablePause ? togglePause : undefined}
-          showSkip={showSkipButton}
-        />
-        <QuitConfirmModal
-          isOpen={showQuitModal}
-          onConfirm={handleQuitConfirm}
-          onCancel={handleQuitCancel}
-          labels={quitModalLabels}
-        />
-      </div>
-    );
-  }
-
-  // Recreate phase
-  if (state.value === 'recreate' && originalPosition) {
-    return (
-      <>
-        <PositionMemoryRecreate
-          originalPosition={originalPosition}
-          recreatedPosition={recreatedPosition}
-          currentProblemIndex={currentProblemIndex}
-          problemCount={positions.length}
-          boardTheme={preferences.boardTheme}
-          isTutorial={isTutorial}
-          onPositionChange={handlePositionChange}
-          onSubmit={handleSubmit}
-          onViewAgain={handleViewAgain}
-          onSkip={handleSkip}
-          onQuit={handleQuitClick}
-        />
-        <QuitConfirmModal
-          isOpen={showQuitModal}
-          onConfirm={handleQuitConfirm}
-          onCancel={handleQuitCancel}
-          labels={quitModalLabels}
-        />
-      </>
-    );
-  }
-
-  // Problem result phase
-  if (
-    !skipProblemResult &&
-    state.value === 'problemResult' &&
-    currentAccuracy &&
-    originalPosition
-  ) {
-    return (
-      <PositionMemoryProblemResult
-        accuracy={currentAccuracy}
+  return (
+    <>
+      <PositionMemorySessionPhase
+        phase={state.value as 'memorize' | 'recreate' | 'problemResult' | 'sessionResult' | 'other'}
         originalPosition={originalPosition}
         recreatedPosition={recreatedPosition}
         currentProblemIndex={currentProblemIndex}
-        totalProblems={positions.length}
+        problemCount={positions.length}
+        memorizeTimeLeft={memorizeTimeLeft}
+        timeLimit={timeLimit}
+        currentAccuracy={currentAccuracy}
+        countdown={countdown}
         boardTheme={preferences.boardTheme}
-        isTutorial={isTutorial}
-        onNextProblem={handleNextProblem}
+        isTutorial={mode === 'tutorial'}
+        enablePause={enablePause}
+        isPaused={isPaused}
+        showSkipButton={showSkipButton}
+        skipProblemResult={skipProblemResult}
+        onMemorized={() => send({ type: 'MEMORIZED' })}
+        onTogglePause={togglePause}
+        onSkip={handleSkip}
+        onQuit={handleQuitClick}
+        onPositionChange={(fen) => send({ type: 'UPDATE_POSITION', fen })}
+        onSubmit={handleSubmit}
+        onViewAgain={() => send({ type: 'VIEW_AGAIN' })}
+        onNextProblem={() => send({ type: 'NEXT_PROBLEM' })}
         onViewResults={() => send({ type: 'VIEW_RESULTS' })}
-        onFinishTutorial={handleFinishTutorial}
+        onFinishTutorial={onFinishTutorial}
       />
-    );
-  }
-
-  if (state.value === 'sessionResult') {
-    return <PracticeResultSkeleton />;
-  }
-
-  return <PracticeResultSkeleton />;
+      <QuitConfirmModal
+        isOpen={showQuitModal}
+        onConfirm={() => send({ type: 'CONFIRM_QUIT' })}
+        onCancel={() => send({ type: 'CANCEL_QUIT' })}
+        labels={quitModalLabels}
+      />
+    </>
+  );
 }

@@ -34,6 +34,17 @@ export interface SerializedStats {
   e: number;
 }
 
+/**
+ * Payload handed from the session view/hook to a wrapper when the XState
+ * machine enters `sessionResult`. Wrappers use it to build the result-page
+ * URL and redirect.
+ */
+export type SessionCompletePayload = {
+  results: SerializedResultItem[];
+  stats: SerializedStats;
+  totalAccuracy: number;
+};
+
 export interface ParsedResultItem {
   fen: string;
   recreatedFen: string;
@@ -54,6 +65,48 @@ export interface ParsedStats {
   incorrectPieces: number;
   missingPieces: number;
   extraPieces: number;
+}
+
+export type ProblemResultContext = {
+  accuracy: number;
+  correctPieces: number;
+  totalPieces: number;
+  incorrectPieces: number;
+  missingPieces: number;
+  extraPieces: number;
+};
+
+/**
+ * Build the per-problem serialized result list from the XState machine's
+ * per-problem results map and the session's ordered positions.
+ *
+ * Problems missing from `problemResults` (either skipped or never reached)
+ * are emitted with zeroed counts and `s: 1`.
+ */
+export function buildSerializedResults(args: {
+  positions: { fen: string; isBlackToMove: boolean }[];
+  problemResults: Map<number, ProblemResultContext>;
+  recreatedPositions: Map<number, string>;
+  skippedProblems: Set<number>;
+}): SerializedResultItem[] {
+  const { positions, problemResults, recreatedPositions, skippedProblems } = args;
+  return positions.map((position, index) => {
+    const result = problemResults.get(index);
+    const isSkipped = skippedProblems.has(index) || !result;
+    return {
+      f: position.fen,
+      r: recreatedPositions.get(index) || '',
+      b: position.isBlackToMove ? 1 : 0,
+      a: result?.accuracy ?? 0,
+      c: result?.correctPieces ?? 0,
+      t: result?.totalPieces ?? 0,
+      i: result?.incorrectPieces ?? 0,
+      m: result?.missingPieces ?? 0,
+      e: result?.extraPieces ?? 0,
+      o: index,
+      s: isSkipped ? 1 : 0,
+    };
+  });
 }
 
 export function serializeResults(items: SerializedResultItem[]): string {
