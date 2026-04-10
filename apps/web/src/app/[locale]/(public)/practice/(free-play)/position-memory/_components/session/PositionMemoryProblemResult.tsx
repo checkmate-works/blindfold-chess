@@ -14,8 +14,8 @@ import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-pl
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 
-import type { PositionAccuracy, PositionData } from '../_lib/types';
-import { calculateSquareDifferences } from '../_lib/utils';
+import { calculateSquareDifferences } from '../../_lib/preset-problems';
+import type { PositionAccuracy, PositionData } from '../../_lib/types';
 
 type Props = {
   accuracy: PositionAccuracy;

@@ -742,6 +742,8 @@
     "positionMemory": {
       "title": "Memoria de Posiciones",
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
@@ -853,7 +855,26 @@
       "cancel": "Cancelar",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
-      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez",
+      "list": {
+        "title": "Memoria de Posiciones",
+        "sectionTitle": "Lista de Problemas",
+        "empty": "Aún no hay posiciones disponibles",
+        "tutorialLink": "Ver Tutorial",
+        "submittedBy": "enviado"
+      },
+      "detail": {
+        "title": "Detalle de Posición",
+        "descriptionSection": "Descripción de la Posición",
+        "solveSection": "Resolver el Problema",
+        "start": "Iniciar",
+        "timeLimit": "Límite de Tiempo",
+        "seconds": "{count} segundos",
+        "createdBy": "Creado por",
+        "tutorialLink": "Ver Tutorial",
+        "tryAgain": "Intentar de nuevo",
+        "backToList": "Volver a la lista"
+      }
     },
     "knightTour": {
       "title": "Recorrido del Caballo",
@@ -1309,6 +1330,9 @@
         "improved": "¡Mejoró su posición!",
         "rank": "Posición",
         "score": "Puntuación"
+      },
+      "position": {
+        "action": "Publicó un nuevo problema"
       }
     },
     "vsAi": {
@@ -2400,6 +2424,7 @@
       "previousPage": "Anterior",
       "nextPage": "Siguiente"
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "Publicaciones de Temas",
       "title": "Publicaciones de Temas",

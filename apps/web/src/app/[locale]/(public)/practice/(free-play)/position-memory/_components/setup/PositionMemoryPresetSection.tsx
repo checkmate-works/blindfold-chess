@@ -3,13 +3,14 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 
-import type { PresetPosition } from '../_data/positions';
-import presetPositions from '../_data/presetPositions.json';
+import type { PresetPosition } from '../../_data/positions';
+import presetPositions from '../../_data/presetPositions.json';
 
 const PRESET_COUNT = (presetPositions as PresetPosition[]).length;
 
@@ -66,7 +67,7 @@ export function PositionMemoryPresetSection({
               <AnimatedChessBoard
                 initialFen={previewPreset.fen}
                 showCoordinates={true}
-                flipped={previewPreset.fen.split(' ')[1] === 'b'}
+                flipped={isBlackToMoveFromFen(previewPreset.fen)}
                 boardTheme={boardTheme}
               />
             </div>

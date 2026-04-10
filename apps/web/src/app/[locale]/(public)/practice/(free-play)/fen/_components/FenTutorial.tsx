@@ -29,25 +29,21 @@ export function FenTutorial({ locale }: Props) {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-        <p className="text-muted-foreground mb-6 whitespace-pre-line">
-          {t('tutorial.description')}
-        </p>
+      <p className="text-muted-foreground mb-6 whitespace-pre-line">{t('tutorial.description')}</p>
 
-        {/* FEN display */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-muted-foreground mb-2">
-            {t('fenString')}
-          </label>
-          <div className="px-3 py-2 bg-muted border border-border rounded-md font-mono text-sm break-all">
-            {TUTORIAL_FEN}
-          </div>
+      {/* FEN display */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-muted-foreground mb-2">
+          {t('fenString')}
+        </label>
+        <div className="px-3 py-2 bg-muted border border-border rounded-md font-mono text-sm break-all">
+          {TUTORIAL_FEN}
         </div>
-
-        <Button onClick={handleStart} variant="primary" size="lg" className="w-full">
-          {t('tutorial.start')}
-        </Button>
       </div>
+
+      <Button onClick={handleStart} variant="primary" size="lg" className="w-full">
+        {t('tutorial.start')}
+      </Button>
     </div>
   );
 }

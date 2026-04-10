@@ -11,11 +11,8 @@ import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { RATE_LIMITS } from '@/lib/rate-limit';
 
-import {
-  INTERVIEW_QUESTION_KEYS,
-  type InterviewQuestionKey,
-  QUESTION_CONFIG,
-} from '@/app/[locale]/_lib/interview';
+import type { InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
+import { INTERVIEW_QUESTION_KEYS, QUESTION_CONFIG } from '@/app/[locale]/_lib/interview';
 
 export type SaveAnswerResult = ActionResult;
 

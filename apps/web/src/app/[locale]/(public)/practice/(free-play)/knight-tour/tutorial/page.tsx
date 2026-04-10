@@ -12,7 +12,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
   i18nKey: 'knightTour',
   canonicalPath: 'practice/knight-tour/tutorial',
   descriptionKey: 'tutorial.description',
-  usePagePanel: false,
   breadcrumbSegments: [
     { labelKey: 'knightTour.title', href: '/practice/knight-tour' },
     { labelKey: 'knightTour.tutorial.title' },

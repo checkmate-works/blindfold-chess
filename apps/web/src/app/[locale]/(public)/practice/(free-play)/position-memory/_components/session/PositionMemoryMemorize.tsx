@@ -1,5 +1,6 @@
 import { BoardOverlay, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { LuPause, LuPlay } from 'react-icons/lu';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
@@ -8,7 +9,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 
-import type { PositionData } from '../_lib/types';
+import type { PositionData } from '../../_lib/types';
 
 type Props = {
   position: PositionData;
@@ -21,6 +22,9 @@ type Props = {
   onQuit: () => void;
   countdown: number | null;
   timeLimit: number;
+  isPaused?: boolean;
+  onTogglePause?: () => void;
+  showSkip?: boolean;
 };
 
 export function PositionMemoryMemorize({
@@ -34,33 +38,12 @@ export function PositionMemoryMemorize({
   onQuit,
   countdown,
   timeLimit,
+  isPaused = false,
+  onTogglePause,
+  showSkip = true,
 }: Props) {
   const t = useTranslations('practice.positionMemory');
-
-  // Calculate progress for QuizTimer (assuming 30s max for circle visual, or based on initial time if we had it)
-  // Since memorization time is variable per user difficulty/setting, but usually short,
-  // maybe we should pass initialTimeLimit?
-  // For now, let's assume 30s as a baseline for the circle or just show full circle decreasing.
-  // Actually, PositionMemorySession doesn't pass initial time limit to this component.
-  // Let's use 30 as default max for visual progress if we don't have it, or just 100% since it's just a number.
-  // But QuizTimer expects progress 0-1.
-  // If we don't know the max, the circle animation is less useful.
-  // However, the user request specifically asked to use QuizTimer.
-  // Let's assume a default max of 30 or 15 seconds for the visual "full" circle, or just keep it 100% if unknown.
-  // Wait, `memorizeTimeLeft` is what we have.
-  // In `PositionMemorySession`, `timeLimit` is passed to the machine.
-  // The machine initializes `memorizeTimeLeft` with `timeLimit`.
-  // So we assume `memorizeTimeLeft` starts at `timeLimit`.
-  // But we don't receive `timeLimit` prop here.
-  // We should add `initialTimeLimit` to props if we want accurate progress.
-  // For now, let's just use `memorizeTimeLeft` for the text, and maybe a static progress or estimate.
-  // actually, if we want the circle to shrink, we need the total.
-  // Let's check `PositionMemorySession` again. It has `timeLimit`.
-  // I should pass `totalTime` to `PositionMemoryMemorize`.
-
-  // For now, fixing the prop type error first and adding standard UI.
-  // I will assume progress = 1 for now or handle it in next step if I need to change Session again.
-  // RE-CHECK: `PositionMemorySession` has `timeLimit`. I can pass it.
+  const tPractice = useTranslations('practice');
 
   return (
     <div className="space-y-4">
@@ -76,7 +59,21 @@ export function PositionMemoryMemorize({
             <div className="text-center">
               <p className="text-lg font-medium text-muted-foreground">{t('memorizing')}</p>
             </div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {onTogglePause && (
+                <button
+                  onClick={onTogglePause}
+                  disabled={countdown !== null}
+                  className="p-1 rounded-full hover:bg-muted transition-colors disabled:opacity-50"
+                  aria-label={isPaused ? tPractice('resume') : tPractice('pause')}
+                >
+                  {isPaused ? (
+                    <LuPlay size={18} className="fill-current" />
+                  ) : (
+                    <LuPause size={18} className="fill-current" />
+                  )}
+                </button>
+              )}
               <QuizTimer
                 timeRemaining={memorizeTimeLeft}
                 progress={timeLimit > 0 ? (timeLimit - memorizeTimeLeft) / timeLimit : 0}
@@ -104,6 +101,19 @@ export function PositionMemoryMemorize({
                     {countdown !== null && (countdown > 0 ? countdown : 'START!')}
                   </span>
                 </BoardOverlay>
+
+                {/* Pause Overlay */}
+                <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
+                  {onTogglePause && (
+                    <button
+                      onClick={onTogglePause}
+                      className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                      aria-label={tPractice('resume')}
+                    >
+                      <LuPlay size={48} className="fill-current ml-1" />
+                    </button>
+                  )}
+                </BoardOverlay>
               </AnimatedChessBoard>
             </div>
           </div>
@@ -114,7 +124,7 @@ export function PositionMemoryMemorize({
             variant="primary"
             size="lg"
             fullWidth
-            disabled={countdown !== null}
+            disabled={countdown !== null || isPaused}
           >
             {t('memorized')}
           </Button>
@@ -123,12 +133,14 @@ export function PositionMemoryMemorize({
 
       {/* Action Links */}
       <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
-          {t('skip')}
-        </button>
+        {showSkip && (
+          <button
+            onClick={onSkip}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+          >
+            {t('skip')}
+          </button>
+        )}
         <button
           onClick={onQuit}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"

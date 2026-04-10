@@ -12,7 +12,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
   i18nKey: 'positionMemory',
   canonicalPath: 'practice/position-memory/tutorial',
   descriptionKey: 'tutorial.description',
-  usePagePanel: false,
   breadcrumbSegments: [
     { labelKey: 'positionMemory.title', href: '/practice/position-memory' },
     { labelKey: 'positionMemory.tutorial.title' },

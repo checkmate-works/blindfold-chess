@@ -742,6 +742,8 @@
     "positionMemory": {
       "title": "Position Memory",
       "description": "Train your ability to remember and recreate chess positions",
+      "like": "Like",
+      "unlike": "Unlike",
       "session": "In Progress",
       "settings": "Problem Settings",
       "problemSource": "Problem Source",
@@ -853,7 +855,26 @@
       "cancel": "Cancel",
       "requiredKnowledge": "Required Knowledge",
       "viewArticle": "Learn about position memory training",
-      "articleDescription": "Learn techniques for memorizing and recreating chess positions"
+      "articleDescription": "Learn techniques for memorizing and recreating chess positions",
+      "list": {
+        "title": "Position Memory",
+        "sectionTitle": "Problem List",
+        "empty": "No positions available yet",
+        "tutorialLink": "View Tutorial",
+        "submittedBy": "submitted"
+      },
+      "detail": {
+        "title": "Position Detail",
+        "descriptionSection": "Position Description",
+        "solveSection": "Solve the Problem",
+        "start": "Start",
+        "timeLimit": "Time Limit",
+        "seconds": "{count} seconds",
+        "createdBy": "Created by",
+        "tutorialLink": "View Tutorial",
+        "tryAgain": "Try Again",
+        "backToList": "Back to List"
+      }
     },
     "knightTour": {
       "title": "Knight's Tour",
@@ -1309,6 +1330,9 @@
         "improved": "Improved rank!",
         "rank": "Rank",
         "score": "Score"
+      },
+      "position": {
+        "action": "Posted a new problem"
       }
     },
     "vsAi": {
@@ -2401,6 +2425,7 @@
       "previousPage": "Previous",
       "nextPage": "Next"
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "Topic Posts",
       "title": "Topic Posts",

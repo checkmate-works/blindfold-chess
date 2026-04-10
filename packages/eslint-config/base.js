@@ -27,6 +27,18 @@ export const config = [
         "error",
         { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
       ],
+      // Enforce `import type` for type-only imports. This is critical in
+      // Next.js `"use server"` files, where mixed `import { type X, y }`
+      // statements can leave value references for types after the Server
+      // Actions transform, causing runtime `ReferenceError`s.
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        {
+          prefer: "type-imports",
+          fixStyle: "separate-type-imports",
+          disallowTypeAnnotations: false,
+        },
+      ],
     },
   },
   {

@@ -5,13 +5,16 @@ import nextPlugin from "@next/eslint-plugin-next";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 
+import { config as baseConfig } from "./base.js";
+
 export const nextJsConfig = [
+  ...baseConfig,
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
     plugins: {
       "@next/next": nextPlugin,
-      "react": reactPlugin,
+      react: reactPlugin,
       "react-hooks": reactHooksPlugin,
     },
     rules: {

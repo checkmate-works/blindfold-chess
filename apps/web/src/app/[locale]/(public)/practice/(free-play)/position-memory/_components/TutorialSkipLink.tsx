@@ -3,7 +3,7 @@
 import { TutorialSkipLink as SharedTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const TUTORIAL_SKIPPED_KEY = 'positionMemoryTutorialSkipped';
+import { TUTORIAL_SKIPPED_KEY } from '../_lib/session-config';
 
 type Props = {
   locale: Locale;

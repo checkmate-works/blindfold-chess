@@ -2,7 +2,7 @@ import { NOTIFICATIONS_READ_EVENT } from '@/config';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { NotificationWithActor } from '../_actions';
+import type { NotificationWithActor } from '../_lib/queries';
 import { NotificationItem } from './NotificationItem';
 
 afterEach(() => {

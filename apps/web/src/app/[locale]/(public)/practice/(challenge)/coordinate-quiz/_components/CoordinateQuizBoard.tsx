@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { BoardSkeleton } from '@/app/_components';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';

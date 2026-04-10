@@ -390,26 +390,46 @@ export const topicPosts = pgTable(
 export type TopicPost = typeof topicPosts.$inferSelect;
 export type NewTopicPost = typeof topicPosts.$inferInsert;
 
-// Topic Post Likes
-export const topicPostLikes = pgTable(
-  'topic_post_likes',
+/**
+ * Polymorphic likes table.
+ *
+ * @design
+ * Generic like table keyed by (target_type, target_id) so any entity can be liked
+ * without adding per-entity tables (e.g., position_likes, puzzle_likes). Follows the
+ * same polymorphic pattern used by `topicPosts` (topicType + topicKey), `moderationActions`
+ * (targetType + targetId), and `feedItems` (entityType + entityId).
+ *
+ * - No FK on target_id: PostgreSQL cannot express polymorphic FKs. Orphan cleanup is
+ *   handled at the application layer (e.g., when deleting a topic post).
+ * - FK on user_id → auth.users: defined in `drizzle/supabase/foreign_keys_and_grants.sql`
+ *   following the established Supabase pattern.
+ * - Existing data from `topic_post_likes` is migrated with `target_type = 'topic_post'`.
+ */
+export const likes = pgTable(
+  'likes',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
-    postId: uuid('post_id')
-      .notNull()
-      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    targetType: varchar('target_type', { length: 50 }).notNull(),
+    targetId: uuid('target_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_topic_post_like').on(table.userId, table.postId),
-    index('idx_topic_post_likes_post').on(table.postId),
-    index('idx_topic_post_likes_user').on(table.userId),
+    unique('uq_like').on(table.userId, table.targetType, table.targetId),
+    index('idx_likes_target').on(table.targetType, table.targetId),
+    index('idx_likes_user').on(table.userId),
+    // Composite index for "a user's likes of a given target type, newest first"
+    // queries (e.g., "articles I liked"). Order matches the query predicate.
+    index('idx_likes_user_type_created_at').on(
+      table.userId,
+      table.targetType,
+      table.createdAt.desc()
+    ),
   ]
 );
 
-export type TopicPostLike = typeof topicPostLikes.$inferSelect;
-export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
 
 /**
  * Topic Post Ratings — 1:1 extension of topic_posts for structured ratings.
@@ -1511,3 +1531,82 @@ export const userGrants = pgTable(
 
 export type UserGrant = typeof userGrants.$inferSelect;
 export type NewUserGrant = typeof userGrants.$inferInsert;
+
+/**
+ * Positions — user-submitted chess positions for various practice modules.
+ *
+ * @description
+ * A generic table that holds user-submitted chess positions.
+ * Used across multiple practice modules: position-memory, puzzles,
+ * move-sequence, and future modules that need a stored FEN with metadata.
+ *
+ * @design FEN の一意性制約なし
+ * The same FEN may appear in multiple rows with different titles and
+ * descriptions — each is treated as a distinct problem.
+ *
+ * @design `updated_at` なし
+ * Positions are immutable after creation — editing is not supported.
+ * The column is intentionally omitted.
+ *
+ * @design `type` は varchar（pgEnum ではない）
+ * Follows the existing `topicType` pattern. New type values (e.g. 'puzzle',
+ * 'sequence') can be added without ALTER TYPE migrations.
+ *
+ * @design FKs managed in custom SQL
+ * `userId` → `auth.users` is defined in Supabase-side SQL, not Drizzle
+ * references, following the same pattern as `profiles.id` and
+ * `topicPosts.userId`.
+ *
+ * @design 論理削除
+ * `deletedAt` enables soft-delete. Rows with a non-null `deletedAt` are
+ * treated as 404 by the application layer.
+ */
+export const positions = pgTable(
+  'positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    type: varchar('type', { length: 50 }).notNull(), // 'memory', 'puzzle', 'sequence', etc.
+    fen: varchar('fen', { length: 100 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_positions_user').on(table.userId),
+    // Composite partial index for the public positions list, which filters by
+    // `type` and orders by `created_at DESC` while excluding soft-deleted rows.
+    // Replaces the former single-column `idx_positions_type` (dropped in the
+    // same migration) because Postgres could not use it for the ORDER BY.
+    index('idx_positions_type_created_at')
+      .on(table.type, table.createdAt.desc())
+      .where(sql`deleted_at IS NULL`),
+  ]
+);
+
+export type Position = typeof positions.$inferSelect;
+export type NewPosition = typeof positions.$inferInsert;
+
+// Position Tags (junction table)
+export const positionTags = pgTable(
+  'position_tags',
+  {
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    unique('uq_position_tag').on(table.positionId, table.tagId),
+    // Secondary index on `tag_id` for reverse lookups ("positions with tag X").
+    // The uq_position_tag UNIQUE already covers position_id → tag_id, so no
+    // dedicated index on position_id is needed.
+    index('idx_position_tags_tag').on(table.tagId),
+  ]
+);
+
+export type PositionTag = typeof positionTags.$inferSelect;
+export type NewPositionTag = typeof positionTags.$inferInsert;

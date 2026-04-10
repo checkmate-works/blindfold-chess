@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';

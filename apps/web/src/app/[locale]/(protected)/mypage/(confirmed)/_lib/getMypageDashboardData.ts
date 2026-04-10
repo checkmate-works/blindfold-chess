@@ -1,6 +1,6 @@
 import { and, count, eq, inArray, isNull } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts, userInterviewAnswers } from '@/lib/db';
+import { db, likes, profiles, topicPosts, userInterviewAnswers } from '@/lib/db';
 
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 
@@ -25,9 +25,15 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .limit(1),
     db
       .select({ value: count() })
-      .from(topicPostLikes)
-      .innerJoin(topicPosts, eq(topicPostLikes.postId, topicPosts.id))
-      .where(and(eq(topicPostLikes.userId, userId), isNull(topicPosts.deletedAt))),
+      .from(likes)
+      .innerJoin(topicPosts, eq(likes.targetId, topicPosts.id))
+      .where(
+        and(
+          eq(likes.userId, userId),
+          eq(likes.targetType, 'topic_post'),
+          isNull(topicPosts.deletedAt)
+        )
+      ),
     db
       .select({ value: count() })
       .from(userInterviewAnswers)

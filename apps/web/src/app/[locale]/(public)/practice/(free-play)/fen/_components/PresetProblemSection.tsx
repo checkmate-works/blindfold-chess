@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 
@@ -62,7 +63,7 @@ export function PresetProblemSection({
               <AnimatedChessBoard
                 initialFen={previewPreset.fen}
                 showCoordinates={true}
-                flipped={previewPreset.fen.split(' ')[1] === 'b'}
+                flipped={isBlackToMoveFromFen(previewPreset.fen)}
                 boardTheme={boardTheme}
               />
             </div>

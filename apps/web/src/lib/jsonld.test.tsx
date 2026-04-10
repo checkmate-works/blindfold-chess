@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
+import type {
   ArticleData,
   BlogPostData,
   BreadcrumbItem,
   FAQItemData,
   ItemListItemData,
+} from './jsonld';
+import {
   generateArticleSchema,
   generateBlogPostingSchema,
   generateBreadcrumbListSchema,

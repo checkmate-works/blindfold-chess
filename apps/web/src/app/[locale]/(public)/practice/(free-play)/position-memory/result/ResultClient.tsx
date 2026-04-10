@@ -11,6 +11,8 @@ import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_li
 import { getCommonPracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/get-common-practice-labels';
 import type { PracticeCompleteLabels } from '@/app/[locale]/(public)/practice/_lib/practice-complete-types';
 
+import { parseResults, parseStats as parseStatsShared } from '../_lib/result-serde';
+
 function PositionMemoryChildren() {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
@@ -20,41 +22,7 @@ function PositionMemoryChildren() {
   const dataParam = searchParams.get('data');
   const isCustomFen = searchParams.get('custom') === 'true';
 
-  const problemResults = useMemo(() => {
-    if (!dataParam) return [];
-    try {
-      interface ResultItem {
-        f: string;
-        r: string;
-        b: number;
-        a: number;
-        c: number;
-        t: number;
-        i: number;
-        m: number;
-        e: number;
-        o: number;
-        s: number;
-      }
-      const parsed = JSON.parse(decodeURIComponent(dataParam));
-      return parsed.map((item: ResultItem) => ({
-        fen: item.f,
-        recreatedFen: item.r,
-        isBlackToMove: item.b === 1,
-        accuracy: item.a,
-        correctPieces: item.c,
-        totalPieces: item.t,
-        incorrectPieces: item.i,
-        missingPieces: item.m,
-        extraPieces: item.e,
-        originalIndex: item.o,
-        skipped: item.s === 1,
-      }));
-    } catch (e) {
-      console.error('Failed to parse result data', e);
-      return [];
-    }
-  }, [dataParam]);
+  const problemResults = useMemo(() => parseResults(dataParam), [dataParam]);
 
   const labels: PracticeCompleteLabels = {
     ...getCommonPracticeCompleteLabels(tPractice),
@@ -113,20 +81,7 @@ function PositionMemoryChildren() {
 }
 
 function parseStats(searchParams: URLSearchParams) {
-  const statsParam = searchParams.get('stats');
-  if (!statsParam) return undefined;
-  try {
-    const parsed = JSON.parse(decodeURIComponent(statsParam));
-    return {
-      correctPieces: parsed.c,
-      totalPieces: parsed.t,
-      incorrectPieces: parsed.i,
-      missingPieces: parsed.m,
-      extraPieces: parsed.e,
-    };
-  } catch {
-    return undefined;
-  }
+  return parseStatsShared(searchParams.get('stats')) ?? undefined;
 }
 
 export const ResultClient = createPracticeResultClient({

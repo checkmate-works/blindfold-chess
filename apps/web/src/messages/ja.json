@@ -743,6 +743,8 @@
     "positionMemory": {
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
+      "like": "いいね",
+      "unlike": "いいね解除",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",
@@ -854,7 +856,26 @@
       "cancel": "キャンセル",
       "requiredKnowledge": "関連記事",
       "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
-      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ"
+      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ",
+      "list": {
+        "title": "ポジション記憶",
+        "sectionTitle": "問題一覧",
+        "empty": "まだポジションがありません",
+        "tutorialLink": "チュートリアルを見る",
+        "submittedBy": "による出題"
+      },
+      "detail": {
+        "title": "ポジション詳細",
+        "descriptionSection": "ポジションの説明",
+        "solveSection": "問題を解く",
+        "start": "開始",
+        "timeLimit": "制限時間",
+        "seconds": "{count} 秒",
+        "createdBy": "作成者",
+        "tutorialLink": "チュートリアルを見る",
+        "tryAgain": "もう一度挑戦",
+        "backToList": "一覧に戻る"
+      }
     },
     "knightTour": {
       "title": "ナイトツアー",
@@ -1310,6 +1331,9 @@
         "improved": "ランクアップ！",
         "rank": "順位",
         "score": "スコア"
+      },
+      "position": {
+        "action": "問題を投稿しました"
       }
     },
     "vsAi": {
@@ -2532,6 +2556,7 @@
         "publishedConfirmCancel": "キャンセル"
       }
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "トピック投稿",
       "title": "トピック投稿",

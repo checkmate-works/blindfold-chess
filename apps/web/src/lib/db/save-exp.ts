@@ -13,7 +13,7 @@ import { and, eq, gte, sql } from 'drizzle-orm';
 
 import type { ExpInfo } from '@/lib/exp-types';
 
-import { db } from './index';
+import type { db } from './index';
 import { expEvents, userExp } from './schema';
 
 /** Transaction client type — matches the callback parameter of `db.transaction()`. */

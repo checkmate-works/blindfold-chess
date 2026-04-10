@@ -30,11 +30,12 @@ vi.mock('@/lib/db', () => {
       flair: 'profiles.flair',
       country: 'profiles.country',
     },
-    topicPostLikes: {
-      id: 'topic_post_likes.id',
-      userId: 'topic_post_likes.user_id',
-      postId: 'topic_post_likes.post_id',
-      createdAt: 'topic_post_likes.created_at',
+    likes: {
+      id: 'likes.id',
+      userId: 'likes.user_id',
+      targetType: 'likes.target_type',
+      targetId: 'likes.target_id',
+      createdAt: 'likes.created_at',
     },
     topicPostRatings: {
       preferenceRating: 'topic_post_ratings.preference_rating',

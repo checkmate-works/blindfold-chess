@@ -14,8 +14,8 @@ import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 import { slugToDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/truncate-content';
 
-import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
+import type { NotificationWithActor } from '../_lib/queries';
 import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,

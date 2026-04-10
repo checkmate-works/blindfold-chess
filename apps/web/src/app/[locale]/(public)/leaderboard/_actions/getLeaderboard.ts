@@ -6,13 +6,13 @@ import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
 import { getQueriesForPeriod } from '../_lib/period-queries';
-import {
-  type LeaderboardModule,
-  type LeaderboardPeriod,
-  type LeaderboardResult,
-  type LeaderboardRow,
-  PAGE_SIZE,
+import type {
+  LeaderboardModule,
+  LeaderboardPeriod,
+  LeaderboardResult,
+  LeaderboardRow,
 } from '../_lib/types';
+import { PAGE_SIZE } from '../_lib/types';
 import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../_lib/validators';
 
 // ---------------------------------------------------------------------------

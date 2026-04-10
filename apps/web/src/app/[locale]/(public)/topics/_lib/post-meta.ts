@@ -1,6 +1,6 @@
 import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
-import { db, profiles, topicPostLikes, topicPosts } from '@/lib/db';
+import { db, likes, profiles, topicPosts } from '@/lib/db';
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 import type {
@@ -56,19 +56,23 @@ export async function attachPostMeta(
     // Batch query 3: like counts per post
     db
       .select({
-        postId: topicPostLikes.postId,
+        postId: likes.targetId,
         likeCount: count(),
       })
-      .from(topicPostLikes)
-      .where(inArray(topicPostLikes.postId, postIds))
-      .groupBy(topicPostLikes.postId),
+      .from(likes)
+      .where(and(eq(likes.targetType, 'topic_post'), inArray(likes.targetId, postIds)))
+      .groupBy(likes.targetId),
     // Batch query 4: which posts the current user has liked
     currentUserId
       ? db
-          .select({ postId: topicPostLikes.postId })
-          .from(topicPostLikes)
+          .select({ postId: likes.targetId })
+          .from(likes)
           .where(
-            and(eq(topicPostLikes.userId, currentUserId), inArray(topicPostLikes.postId, postIds))
+            and(
+              eq(likes.userId, currentUserId),
+              eq(likes.targetType, 'topic_post'),
+              inArray(likes.targetId, postIds)
+            )
           )
       : Promise.resolve([]),
   ]);

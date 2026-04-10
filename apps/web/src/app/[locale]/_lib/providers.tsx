@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, Suspense } from 'react';
+import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import { NextIntlClientProvider } from 'next-intl';
 import { NavigationGuardProvider } from 'next-navigation-guard';

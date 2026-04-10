@@ -10,7 +10,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { encodeFensToBase64 } from '../_lib/utils';
+import { encodeFensToBase64 } from '../_lib/share-url';
 
 type Props = {
   locale: Locale;
@@ -38,32 +38,30 @@ export function PositionMemoryTutorial({ locale }: Props) {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-        <p className="text-muted-foreground mb-6">{t('tutorial.description')}</p>
+      <p className="text-muted-foreground mb-6">{t('tutorial.description')}</p>
 
-        <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6">
-          {!isLoaded ? (
-            <BoardSkeleton rounded={false} />
-          ) : (
-            <AnimatedChessBoard
-              initialFen={LUCENA_FEN}
-              showCoordinates={true}
-              flipped={false}
-              boardTheme={preferences.boardTheme}
-            />
-          )}
-        </div>
-
-        <Button
-          onClick={handleStart}
-          variant="primary"
-          size="lg"
-          className="w-full"
-          icon={<FaPlay />}
-        >
-          {t('tutorial.start')}
-        </Button>
+      <div className="aspect-square bg-secondary/30 rounded-lg overflow-hidden mb-6">
+        {!isLoaded ? (
+          <BoardSkeleton rounded={false} />
+        ) : (
+          <AnimatedChessBoard
+            initialFen={LUCENA_FEN}
+            showCoordinates={true}
+            flipped={false}
+            boardTheme={preferences.boardTheme}
+          />
+        )}
       </div>
+
+      <Button
+        onClick={handleStart}
+        variant="primary"
+        size="lg"
+        className="w-full"
+        icon={<FaPlay />}
+      >
+        {t('tutorial.start')}
+      </Button>
     </div>
   );
 }

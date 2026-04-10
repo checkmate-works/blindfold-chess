@@ -1,9 +1,26 @@
+import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/activity-log';
 import { createNotification } from '@/lib/notification';
 
 import { toggleLikeBase } from './toggleLike';
+
+// Spy on drizzle-orm's `eq` so tests can assert that DELETE/SELECT filter
+// by `likes.targetType = 'topic_post'`. This guards against future regressions
+// where omitting the targetType filter would cross-delete other polymorphic
+// like rows (e.g. 'position') once Phase B lands.
+// Note: vi.mock is hoisted to the top of the file by Vitest, so it applies
+// before the `eq` import above is resolved — the imported `eq` is the spied
+// version returned from this mock factory.
+vi.mock('drizzle-orm', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('drizzle-orm')>();
+  return {
+    ...actual,
+    eq: vi.fn(actual.eq),
+    and: vi.fn(actual.and),
+  };
+});
 
 const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
@@ -42,7 +59,7 @@ vi.mock('@/lib/rate-limit', () => ({
 
 vi.mock('@/lib/db', () => {
   const topicPostsTable = { id: 'id', userId: 'user_id' };
-  const topicPostLikesTable = { userId: 'user_id', postId: 'post_id' };
+  const likesTable = { userId: 'user_id', targetType: 'target_type', targetId: 'target_id' };
 
   return {
     db: {
@@ -64,7 +81,7 @@ vi.mock('@/lib/db', () => {
       }),
     },
     topicPosts: topicPostsTable,
-    topicPostLikes: topicPostLikesTable,
+    likes: likesTable,
   };
 });
 
@@ -153,7 +170,8 @@ describe('toggleLikeBase', () => {
       expect(result).toEqual({ liked: true, likeCount: 1 });
       expect(mockInsertValues).toHaveBeenCalledWith({
         userId: testUserId,
-        postId: testPostId,
+        targetType: 'topic_post',
+        targetId: testPostId,
       });
     });
 
@@ -247,6 +265,68 @@ describe('toggleLikeBase', () => {
       const result = await toggleLikeBase(validParams);
       expect(result).toEqual({ error: 'signInRequired' });
       expect(mockIsUserBanned).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('polymorphic targetType filtering (Phase A safety net)', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+    });
+
+    it('should INSERT likes with targetType="topic_post"', async () => {
+      mockInsertValues.mockResolvedValue(undefined);
+      mockSelectCount.mockResolvedValue([{ count: 1 }]);
+
+      await toggleLikeBase(validParams);
+
+      expect(mockInsertValues).toHaveBeenCalledWith(
+        expect.objectContaining({ targetType: 'topic_post' })
+      );
+    });
+
+    it('should filter DELETE by targetType="topic_post" to avoid cross-deleting other polymorphic likes', async () => {
+      // Simulate unique-violation so the code path enters DELETE.
+      const uniqueError = new Error('Failed query');
+      const pgError = new Error('duplicate key');
+      (pgError as unknown as Record<string, string>).code = '23505';
+      uniqueError.cause = pgError;
+      mockInsertValues.mockRejectedValue(uniqueError);
+      mockDeleteWhere.mockResolvedValue(undefined);
+      mockSelectCount.mockResolvedValue([{ count: 0 }]);
+
+      vi.mocked(eq).mockClear();
+      await toggleLikeBase(validParams);
+
+      // `likes.targetType` is mocked as the string 'target_type' in the db mock above.
+      // Verify the implementation invoked eq(likes.targetType, 'topic_post') at least once
+      // during the toggle flow (covering INSERT's subsequent SELECT or the DELETE WHERE).
+      const eqCalls = vi.mocked(eq).mock.calls;
+      expect(
+        eqCalls.some(
+          (args) => (args[0] as unknown) === 'target_type' && (args[1] as unknown) === 'topic_post'
+        )
+      ).toBe(true);
+      // DELETE branch must have been reached.
+      expect(mockDeleteWhere).toHaveBeenCalledTimes(1);
+    });
+
+    it('should filter the post like-count SELECT by targetType="topic_post"', async () => {
+      mockInsertValues.mockResolvedValue(undefined);
+      mockSelectCount.mockResolvedValue([{ count: 3 }]);
+
+      vi.mocked(eq).mockClear();
+      const result = await toggleLikeBase(validParams);
+
+      expect(result).toEqual({ liked: true, likeCount: 3 });
+      const eqCalls = vi.mocked(eq).mock.calls;
+      // The final like-count SELECT must constrain target_type to 'topic_post'
+      // so likes from other polymorphic targets never inflate the count.
+      expect(
+        eqCalls.some(
+          (args) => (args[0] as unknown) === 'target_type' && (args[1] as unknown) === 'topic_post'
+        )
+      ).toBe(true);
     });
   });
 

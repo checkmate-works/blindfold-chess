@@ -2,8 +2,6 @@
 
 import { createSaveResultAction } from '../../_lib/create-save-result-action';
 
-export type { SaveResultResponse } from '../../_actions/save-practice-result';
-
 export type SaveBoardSymmetryResultInput = {
   correctAnswers: number;
   incorrectAnswers: number;

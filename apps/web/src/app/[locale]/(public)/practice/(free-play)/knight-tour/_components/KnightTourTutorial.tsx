@@ -161,67 +161,63 @@ export function KnightTourTutorial({ locale }: Props) {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-        <p className="text-muted-foreground mb-6 whitespace-pre-line">
-          {t('tutorial.description')}
-        </p>
+      <p className="text-muted-foreground mb-6 whitespace-pre-line">{t('tutorial.description')}</p>
 
-        <p className="text-muted-foreground mb-2">{t('tutorial.exampleTitle')}</p>
+      <p className="text-muted-foreground mb-2">{t('tutorial.exampleTitle')}</p>
 
-        <div className="mb-4">
-          <div className="relative">
-            {!isLoaded ? (
-              <BoardSkeleton />
-            ) : (
-              <KnightTourBoard
-                currentSquare={currentSquare}
-                visitedSquares={visitedSquares}
-                availableMoves={[]}
-                showCoordinates={true}
-                showMoveNumbers={true}
-                boardTheme={preferences.boardTheme}
-              />
-            )}
+      <div className="mb-4">
+        <div className="relative">
+          {!isLoaded ? (
+            <BoardSkeleton />
+          ) : (
+            <KnightTourBoard
+              currentSquare={currentSquare}
+              visitedSquares={visitedSquares}
+              availableMoves={[]}
+              showCoordinates={true}
+              showMoveNumbers={true}
+              boardTheme={preferences.boardTheme}
+            />
+          )}
 
-            {isLoaded && !isPlaying && !hasPlayed && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
-                <button
-                  onClick={handlePlay}
-                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110"
-                  aria-label="Play"
-                >
-                  <FaPlay className="w-8 h-8 ml-1" />
-                </button>
-              </div>
-            )}
+          {isLoaded && !isPlaying && !hasPlayed && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
+              <button
+                onClick={handlePlay}
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110"
+                aria-label="Play"
+              >
+                <FaPlay className="w-8 h-8 ml-1" />
+              </button>
+            </div>
+          )}
 
-            {hasPlayed && !isPlaying && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
-                <button
-                  onClick={handlePlay}
-                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-4 shadow-lg transition-all hover:scale-110"
-                  aria-label="Replay"
-                >
-                  <FaPlay className="w-6 h-6 ml-0.5" />
-                </button>
-              </div>
-            )}
-          </div>
+          {hasPlayed && !isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
+              <button
+                onClick={handlePlay}
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-4 shadow-lg transition-all hover:scale-110"
+                aria-label="Replay"
+              >
+                <FaPlay className="w-6 h-6 ml-0.5" />
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Move counter */}
-        <div className="bg-secondary/30 rounded-lg p-3 mb-6">
-          <p className="text-sm text-muted-foreground">
-            {t('squaresVisited')}: {visitedSquares.size} / 64
-          </p>
-        </div>
-
-        <p className="text-muted-foreground mb-4">{t('tutorial.startHint')}</p>
-
-        <Button onClick={handleStart} variant="primary" size="lg" className="w-full">
-          {t('tutorial.start')}
-        </Button>
       </div>
+
+      {/* Move counter */}
+      <div className="bg-secondary/30 rounded-lg p-3 mb-6">
+        <p className="text-sm text-muted-foreground">
+          {t('squaresVisited')}: {visitedSquares.size} / 64
+        </p>
+      </div>
+
+      <p className="text-muted-foreground mb-4">{t('tutorial.startHint')}</p>
+
+      <Button onClick={handleStart} variant="primary" size="lg" className="w-full">
+        {t('tutorial.start')}
+      </Button>
     </div>
   );
 }

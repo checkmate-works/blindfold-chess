@@ -10,8 +10,6 @@ import { challengeResults } from '@/lib/db/schema';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
-export type { DatePeriod } from '../_lib/period-utils';
-
 export type ChallengeResultRow = {
   id: string;
   menuType: string;

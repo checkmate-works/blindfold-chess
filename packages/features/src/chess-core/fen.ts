@@ -43,6 +43,16 @@ export function fenToBoardFlat(fen: string): string[] {
   return board;
 }
 
+/**
+ * Shallow helper: returns `true` when the side-to-move field of a FEN is
+ * black. Unlike {@link getTurnFromFen}, this does not throw on malformed
+ * FENs — it simply falls back to `false` so UI code can use it safely in
+ * places that tolerate invalid input (e.g. board thumbnails).
+ */
+export function isBlackToMoveFromFen(fen: string): boolean {
+  return fen.split(" ")[1] === "b";
+}
+
 export function getTurnFromFen(fen: string): "w" | "b" {
   const parts = fen.split(" ");
   if (parts.length < 6) {

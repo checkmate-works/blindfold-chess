@@ -4,8 +4,6 @@ import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLi
 
 import { isValidSquare } from '../../../../_lib/squares';
 
-export type { ToggleLikeResult } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
-
 export async function toggleLike(postId: string, locale: string, square: string) {
   return toggleLikeBase({
     postId,
