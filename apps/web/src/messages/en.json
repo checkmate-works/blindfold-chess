@@ -863,10 +863,13 @@
       },
       "detail": {
         "title": "Position Detail",
+        "descriptionSection": "Position Description",
+        "solveSection": "Solve the Problem",
         "start": "Start",
         "timeLimit": "Time Limit",
         "seconds": "{count} seconds",
-        "createdBy": "Created by"
+        "createdBy": "Created by",
+        "tutorialLink": "View Tutorial"
       }
     },
     "knightTour": {

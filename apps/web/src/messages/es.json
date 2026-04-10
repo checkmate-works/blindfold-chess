@@ -863,10 +863,13 @@
       },
       "detail": {
         "title": "Detalle de Posición",
+        "descriptionSection": "Descripción de la Posición",
+        "solveSection": "Resolver el Problema",
         "start": "Iniciar",
         "timeLimit": "Límite de Tiempo",
         "seconds": "{count} segundos",
-        "createdBy": "Creado por"
+        "createdBy": "Creado por",
+        "tutorialLink": "Ver Tutorial"
       }
     },
     "knightTour": {

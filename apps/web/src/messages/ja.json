@@ -864,10 +864,13 @@
       },
       "detail": {
         "title": "ポジション詳細",
+        "descriptionSection": "ポジションの説明",
+        "solveSection": "問題を解く",
         "start": "開始",
         "timeLimit": "制限時間",
         "seconds": "{count} 秒",
-        "createdBy": "作成者"
+        "createdBy": "作成者",
+        "tutorialLink": "チュートリアルを見る"
       }
     },
     "knightTour": {

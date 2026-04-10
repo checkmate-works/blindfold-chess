@@ -120,9 +120,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           <div className="space-y-3">
             {rows.map(({ position, profile }) => {
               const displayName = profile?.displayName || profile?.username || 'Anonymous';
-              const profileHref = profile?.username
-                ? `/${locale}/mypage/${profile.username}`
-                : null;
+              const profileHref = profile?.username ? `/${locale}/u/${profile.username}` : null;
               const descriptionExcerpt = position.description
                 ? position.description.length > 80
                   ? position.description.slice(0, 80) + '...'
