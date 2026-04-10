@@ -10,12 +10,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PositionMemorySession } from '../../_components/PositionMemorySession';
-import {
-  type SerializedResultItem,
-  type SerializedStats,
-  serializeResults,
-  serializeStats,
-} from '../../_lib/result-serde';
+import { buildSingleResultUrl } from '../../_lib/result-url';
 import { clampTimeLimit } from '../../_lib/session-config';
 
 export const dynamic = 'force-dynamic';
@@ -37,25 +32,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...generateCanonicalMetadata({ locale, path: 'practice/position-memory' }),
     title: resolveTitle(`${t('title')} - ${t('session')}`, locale),
   };
-}
-
-function buildSingleResultUrl(
-  locale: Locale,
-  positionId: string,
-  timeLimit: number,
-  results: SerializedResultItem[],
-  stats: SerializedStats
-): string {
-  const first = results[0];
-  const params = new URLSearchParams();
-  // Preserve the original single-position result page behavior (`toFixed(1)` for score).
-  params.set('score', (first?.a ?? 0).toFixed(1));
-  params.set('total', '100');
-  params.set('data', serializeResults(results));
-  params.set('stats', serializeStats(stats));
-  params.set('timeLimit', timeLimit.toString());
-
-  return `/${locale}/practice/position-memory/${positionId}/result?${params.toString()}`;
 }
 
 export default async function PositionSessionPage({ params, searchParams }: Props) {
@@ -84,7 +60,13 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
       showSkipButton={false}
       skipProblemResult
       buildResultUrl={({ results, stats }) =>
-        buildSingleResultUrl(locale, position.id, timeLimit, results, stats)
+        buildSingleResultUrl({
+          locale,
+          positionId: position.id,
+          timeLimit,
+          results,
+          stats,
+        })
       }
     />
   );

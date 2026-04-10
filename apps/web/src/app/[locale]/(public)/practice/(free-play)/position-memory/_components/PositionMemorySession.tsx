@@ -19,6 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { positionMemoryMachine } from '../_lib/machines/positionMemoryMachine';
 import type { SessionMode } from '../_lib/machines/types';
 import type { SerializedResultItem, SerializedStats } from '../_lib/result-serde';
+import { buildMultiResultUrl } from '../_lib/result-url';
 import type { PositionData } from '../_lib/types';
 import { calculateAccuracy, getCustomPositions, getRandomPositions } from '../_lib/utils';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
@@ -237,7 +238,7 @@ export function PositionMemorySession({
           stats: serializedStats,
           totalAccuracy,
         })
-      : buildDefaultResultUrl({
+      : buildMultiResultUrl({
           locale,
           results: serializedResults,
           stats: serializedStats,
@@ -424,49 +425,4 @@ export function PositionMemorySession({
   }
 
   return <PracticeResultSkeleton />;
-}
-
-function buildDefaultResultUrl(args: {
-  locale: Locale;
-  results: SerializedResultItem[];
-  stats: SerializedStats;
-  totalAccuracy: number;
-  isCustomFen: boolean;
-  timeLimit: number;
-  shuffle: boolean;
-  problemCount: number;
-  rawProblemsParam?: string;
-  sourceParam?: string;
-  modeParam?: string;
-}): string {
-  const {
-    locale,
-    results,
-    stats,
-    totalAccuracy,
-    isCustomFen,
-    timeLimit,
-    shuffle,
-    problemCount,
-    rawProblemsParam,
-    sourceParam,
-    modeParam,
-  } = args;
-
-  const params = new URLSearchParams();
-  params.set('score', Math.round(totalAccuracy).toString());
-  params.set('total', '100');
-  params.set('custom', isCustomFen ? 'true' : 'false');
-  params.set('data', encodeURIComponent(JSON.stringify(results)));
-  params.set('stats', encodeURIComponent(JSON.stringify(stats)));
-
-  // Pass through session configuration for retry
-  params.set('timeLimit', timeLimit.toString());
-  params.set('shuffle', shuffle ? '1' : '0');
-  params.set('count', problemCount.toString());
-  if (rawProblemsParam) params.set('problems', rawProblemsParam);
-  if (sourceParam) params.set('source', sourceParam);
-  if (modeParam) params.set('mode', modeParam);
-
-  return `/${locale}/practice/position-memory/result?${params.toString()}`;
 }
