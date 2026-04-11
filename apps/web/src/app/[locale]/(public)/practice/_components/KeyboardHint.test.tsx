@@ -1,7 +1,12 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { KeyboardHintText } from './KeyboardHint';
+import { AlgebraicKeyboardHint, KeyboardHintText } from './KeyboardHint';
+
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
+}));
 
 afterEach(() => {
   cleanup();
@@ -30,5 +35,26 @@ describe('KeyboardHintText', () => {
   it('renders nothing when text is empty', () => {
     render(<KeyboardHintText text="" />);
     expect(screen.queryByTestId('keyboard-hint-text')).toBeNull();
+  });
+});
+
+describe('AlgebraicKeyboardHint', () => {
+  it('renders text from the practice.keyboard.algebraicKeyboardHint i18n key', () => {
+    render(<AlgebraicKeyboardHint />);
+    const hint = screen.getByTestId('keyboard-hint-text');
+    // Mock echoes `${namespace}.${key}`.
+    expect(hint).toHaveTextContent('practice.keyboard.algebraicKeyboardHint');
+  });
+
+  it('forwards the disabled prop to the inner hint (dims when disabled)', () => {
+    render(<AlgebraicKeyboardHint disabled />);
+    const hint = screen.getByTestId('keyboard-hint-text');
+    expect(hint.className).toContain('opacity-40');
+  });
+
+  it('is not dimmed when disabled is false (default)', () => {
+    render(<AlgebraicKeyboardHint />);
+    const hint = screen.getByTestId('keyboard-hint-text');
+    expect(hint.className).toContain('opacity-100');
   });
 });

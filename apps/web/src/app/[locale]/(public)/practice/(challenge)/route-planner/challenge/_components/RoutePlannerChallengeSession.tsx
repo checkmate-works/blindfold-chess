@@ -16,7 +16,7 @@ import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_comp
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
@@ -52,7 +52,6 @@ export default function RoutePlannerChallengeSession({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
   const router = useRouter();
   const quitConfirmLabels = useQuitConfirmLabels();
 
@@ -428,7 +427,7 @@ export default function RoutePlannerChallengeSession({
                   </Button>
                 </div>
               </PieceCoordinateInput>
-              <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
+              <AlgebraicKeyboardHint disabled={isDisabled} />
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -61,7 +61,6 @@ export function DiagonalQuizTrainingPlaying({
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tp = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
   const isDisabled = showResult || countdown !== null;
 
   const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
@@ -246,7 +245,7 @@ export function DiagonalQuizTrainingPlaying({
             onClear={handleClear}
           />
 
-          <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
+          <AlgebraicKeyboardHint disabled={isDisabled} />
         </div>
       </div>
 

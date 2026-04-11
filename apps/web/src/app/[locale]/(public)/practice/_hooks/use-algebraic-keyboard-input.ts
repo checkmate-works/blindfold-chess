@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
+import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyboard-guards';
+
 /**
  * Hook that binds keyboard input to a coordinate-entry practice feature using
  * standard chess algebraic notation.
@@ -45,19 +47,6 @@ type UseAlgebraicKeyboardInputOptions = {
 const FILE_KEYS = new Set(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
 const RANK_KEYS = new Set(['1', '2', '3', '4', '5', '6', '7', '8']);
 
-function isEditableElement(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  const tag = target.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-  if (target.isContentEditable) return true;
-  return false;
-}
-
-function isModalOpen(): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.querySelector('[aria-modal="true"]') !== null;
-}
-
 export function useAlgebraicKeyboardInput({
   onFile,
   onRank,
@@ -73,10 +62,7 @@ export function useAlgebraicKeyboardInput({
     if (!enabled) return;
 
     const handler = (event: KeyboardEvent) => {
-      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-      if (event.repeat) return;
-      if (isEditableElement(event.target)) return;
-      if (isModalOpen()) return;
+      if (shouldIgnoreKeyEvent(event)) return;
 
       const { key } = event;
       if (FILE_KEYS.has(key)) {

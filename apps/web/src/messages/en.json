@@ -475,7 +475,7 @@
     "articleNotFound": "Article Not Found"
   },
   "practice": {
-    "common": {
+    "keyboard": {
       "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete."
     },
     "title": "Practice",

@@ -10,7 +10,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
@@ -34,7 +34,6 @@ export function RoutePlannerSession({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
 
   // Forward refs for game-hook callbacks — coordinate input needs to call
   // `addMove` / `handleUndo` / check moves length, but the game hook itself
@@ -184,7 +183,7 @@ export function RoutePlannerSession({
                   </Button>
                 </div>
               </PieceCoordinateInput>
-              <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={!isInputActive} />
+              <AlgebraicKeyboardHint disabled={!isInputActive} />
             </>
           )}
         </div>

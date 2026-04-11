@@ -7,7 +7,7 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
@@ -66,7 +66,6 @@ export function BoardSymmetryPlaying({
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tPractice = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
   const quitConfirmLabels = useQuitConfirmLabels();
   const timeElapsed = timeLimit - timeRemaining;
   const isDisabled = isProcessing || countdown !== null || isPaused;
@@ -182,7 +181,7 @@ export function BoardSymmetryPlaying({
                 isProcessing || isPaused ? 'pointer-events-none opacity-50' : ''
               }`}
             />
-            <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
+            <AlgebraicKeyboardHint disabled={isDisabled} />
           </div>
         </div>
       </div>

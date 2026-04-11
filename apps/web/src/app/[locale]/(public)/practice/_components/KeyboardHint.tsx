@@ -1,5 +1,7 @@
 'use client';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
 import type { ArrowKey, ArrowKeyBinding } from './ArrowKeyAnswer';
 
 const ARROW_GLYPH: Record<ArrowKey, string> = {
@@ -69,4 +71,20 @@ export function KeyboardHintText({ text, disabled = false }: TextProps) {
       <span>{text}</span>
     </div>
   );
+}
+
+type AlgebraicKeyboardHintProps = {
+  /** When true, the hint is dimmed to match the inactive state of its target UI. */
+  disabled?: boolean;
+};
+
+/**
+ * Convenience wrapper that renders the shared algebraic-notation keyboard
+ * hint. Internally reads the hint text from the
+ * `practice.keyboard.algebraicKeyboardHint` i18n key so call sites don't
+ * repeat the `useTranslations` lookup.
+ */
+export function AlgebraicKeyboardHint({ disabled = false }: AlgebraicKeyboardHintProps) {
+  const t = useTranslations('practice.keyboard');
+  return <KeyboardHintText text={t('algebraicKeyboardHint')} disabled={disabled} />;
 }

@@ -6,7 +6,7 @@ import { LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
@@ -64,7 +64,6 @@ export function DiagonalQuizPlaying({
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
   const quitConfirmLabels = useQuitConfirmLabels();
   const isDisabled = showResult || countdown !== null || isPaused;
 
@@ -212,7 +211,7 @@ export function DiagonalQuizPlaying({
             onClear={handleClear}
           />
 
-          <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
+          <AlgebraicKeyboardHint disabled={isDisabled} />
         </div>
       </div>
 

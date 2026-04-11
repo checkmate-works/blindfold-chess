@@ -476,7 +476,7 @@
     "articleNotFound": "記事が見つかりません"
   },
   "practice": {
-    "common": {
+    "keyboard": {
       "algebraicKeyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。"
     },
     "title": "練習",

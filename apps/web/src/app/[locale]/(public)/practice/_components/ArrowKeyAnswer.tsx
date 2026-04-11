@@ -2,6 +2,8 @@
 
 import { type ReactNode, useEffect, useMemo } from 'react';
 
+import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyboard-guards';
+
 import { KeyboardHint } from './KeyboardHint';
 
 /**
@@ -53,20 +55,6 @@ const ARROW_KEYS: ReadonlySet<string> = new Set([
   'ArrowDown',
 ]);
 
-function isEditableElement(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  const tag = target.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-  if (target.isContentEditable) return true;
-  return false;
-}
-
-function isModalOpen(): boolean {
-  if (typeof document === 'undefined') return false;
-  // Intentionally broad: any element with aria-modal="true" (QuitConfirmModal, RankAchievementModal, future dialogs) should block arrow-key answers.
-  return document.querySelector('[aria-modal="true"]') !== null;
-}
-
 /** Canonical hint render order: left → up → down → right. */
 const HINT_ORDER: readonly ArrowKey[] = ['ArrowLeft', 'ArrowUp', 'ArrowDown', 'ArrowRight'];
 
@@ -89,10 +77,7 @@ export function ArrowKeyAnswer({
 
     const handler = (event: KeyboardEvent) => {
       if (!ARROW_KEYS.has(event.key)) return;
-      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-      if (event.repeat) return;
-      if (isEditableElement(event.target)) return;
-      if (isModalOpen()) return;
+      if (shouldIgnoreKeyEvent(event)) return;
 
       const binding = bindings[event.key as ArrowKey];
       if (!binding) return;

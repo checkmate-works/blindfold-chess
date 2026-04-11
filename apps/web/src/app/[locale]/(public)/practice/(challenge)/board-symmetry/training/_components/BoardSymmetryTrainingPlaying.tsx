@@ -7,7 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
-import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
@@ -46,7 +46,6 @@ export function BoardSymmetryTrainingPlaying({
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tp = useTranslations('practice');
-  const tCommon = useTranslations('practice.common');
   const isDisabled = isProcessing || countdown !== null;
 
   useAlgebraicKeyboardInput({
@@ -98,7 +97,7 @@ export function BoardSymmetryTrainingPlaying({
               onRankToggle={onRankToggle}
               className={`max-w-md mx-auto ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
             />
-            <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
+            <AlgebraicKeyboardHint disabled={isDisabled} />
           </div>
         </div>
       </div>
