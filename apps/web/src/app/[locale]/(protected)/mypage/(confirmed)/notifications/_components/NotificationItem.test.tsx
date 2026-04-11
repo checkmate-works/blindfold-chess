@@ -313,6 +313,126 @@ describe('NotificationItem', () => {
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/squares/d5/posts/post-99');
     });
+
+    it('should link to /practice/position-memory/{id} for like on a position (from metadata.positionId)', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-abc',
+        metadata: { positionId: 'pos-abc' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-abc');
+    });
+
+    it('should fall back to targetId when metadata is missing for a position like', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-xyz',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-xyz');
+    });
+
+    it('should render as button when both metadata and targetId are missing for a position like', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: null,
+        metadata: {},
+        isRead: false,
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      // No link should be rendered — should fall back to a button that only marks as read
+      const button = screen.getByRole('button');
+      expect(button).toBeDefined();
+      expect(screen.queryByRole('link')).toBeNull();
+    });
+
+    it('should still mark as read (no navigation) when position like has no metadata/targetId', async () => {
+      const notification = createNotification({
+        id: 'notif-pl-1',
+        type: 'like',
+        targetType: 'position',
+        targetId: null,
+        metadata: {},
+        isRead: false,
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const button = screen.getByRole('button');
+      fireEvent.click(button);
+
+      await waitFor(() => {
+        expect(mockMarkAsRead).toHaveBeenCalledWith('notif-pl-1');
+      });
+    });
+
+    it('should render as button for a like with an unknown targetType and non-post metadata', () => {
+      const notification = createNotification({
+        type: 'like',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        targetType: 'unknown_target' as any,
+        targetId: 'some-id',
+        metadata: { foo: 'bar' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      // Unknown targetType + non-post metadata → no link
+      const button = screen.getByRole('button');
+      expect(button).toBeDefined();
+      expect(screen.queryByRole('link')).toBeNull();
+    });
+
+    it('should still render link but not mark as read when a position like is already read', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-read',
+        metadata: { positionId: 'pos-read' },
+        isRead: true,
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-read');
+
+      fireEvent.click(link!);
+      expect(mockMarkAsRead).not.toHaveBeenCalled();
+      expect(mockRefresh).not.toHaveBeenCalled();
+    });
+
+    it('should not render the unread indicator dot when a position like is already read', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-read-2',
+        metadata: { positionId: 'pos-read-2' },
+        isRead: true,
+      });
+
+      const { container } = render(<NotificationItem notification={notification} />);
+
+      // The unread dot uses bg-link-primary; when read, it must not exist
+      const dot = container.querySelector('.bg-link-primary');
+      expect(dot).toBeNull();
+    });
   });
 
   describe('achievement_granted notification', () => {
