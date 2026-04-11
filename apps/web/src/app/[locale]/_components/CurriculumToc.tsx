@@ -3,13 +3,29 @@ import Link from 'next/link';
 import { HiCheck } from 'react-icons/hi2';
 
 import { CURRICULUM } from '@/lib/db/data/curriculum';
+import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 
 type CurriculumTocProps = {
-  achievedSlugs: ReadonlySet<RankSlug>;
-  nextSlug: RankSlug | null;
+  /**
+   * Set of rank slugs the user has already achieved. When omitted, the
+   * component renders in plain mode and does not show any achievement
+   * markers.
+   */
+  achievedSlugs?: ReadonlySet<RankSlug>;
+  /**
+   * Slug of the rank the user is currently pursuing. When omitted, no row
+   * is highlighted as "next" and no data-next attribute is set.
+   */
+  nextSlug?: RankSlug | null;
+  /**
+   * Optional truncation cutoff. When provided, ranks with a level greater
+   * than this slug's level (based on `ALL_RANK_SLUGS` ordering) are hidden.
+   * When omitted, every rank is rendered.
+   */
+  maxVisibleSlug?: RankSlug | null;
   rankName: (slug: RankSlug) => string;
   sectionTitle: (titleKey: string) => string;
   emptyLabel: string;
@@ -23,7 +39,7 @@ type CurriculumTocProps = {
 };
 
 /**
- * Zenn-chapter-style curriculum list for the Dojo page.
+ * Zenn-chapter-style curriculum list.
  *
  * Plain vertical list (no outer card, no row dividers). Each row is a
  * two-line entry: a small muted rank-name label on top, and the curriculum
@@ -38,13 +54,19 @@ type CurriculumTocProps = {
  * clamped to start at the first bullet's vertical center and end at the
  * last bullet's vertical center, sitting behind the dots.
  *
- * Achieved ranks show a check mark on the right. The currently pursued
- * (`nextSlug`) rank is subtly highlighted via a left accent border on the
- * row — card-less but still visible.
+ * The component has two usage modes:
+ *
+ * - **User-aware (Dojo):** pass `achievedSlugs`, `nextSlug`, and optionally
+ *   `maxVisibleSlug` to show achievement marks, highlight the next rank,
+ *   and truncate the list to the current progression.
+ * - **Plain (Guides):** omit `achievedSlugs` and `nextSlug` to render the
+ *   full curriculum as a content index, with no check marks and no
+ *   highlight.
  */
 export function CurriculumToc({
   achievedSlugs,
   nextSlug,
+  maxVisibleSlug,
   rankName,
   sectionTitle,
   emptyLabel,
@@ -67,11 +89,23 @@ export function CurriculumToc({
         isNext: boolean;
       };
 
+  // Resolve the maximum visible rank level (inclusive). Undefined means no
+  // truncation. We look up positions via ALL_RANK_SLUGS so the component is
+  // agnostic to the numeric `level` field on rank seed data.
+  const maxVisibleIndex = maxVisibleSlug != null ? ALL_RANK_SLUGS.indexOf(maxVisibleSlug) : -1;
+
   const rows: Row[] = [];
   for (const { slug, sections } of CURRICULUM) {
+    if (maxVisibleSlug != null) {
+      const slugIndex = ALL_RANK_SLUGS.indexOf(slug);
+      if (slugIndex === -1 || slugIndex > maxVisibleIndex) {
+        continue;
+      }
+    }
+
     // Mukyu is treated as always achieved — starting state every user holds.
-    const isAchieved = slug === 'mukyu' || achievedSlugs.has(slug);
-    const isNext = slug === nextSlug;
+    const isAchieved = achievedSlugs != null ? slug === 'mukyu' || achievedSlugs.has(slug) : false;
+    const isNext = nextSlug != null && slug === nextSlug;
     const href = guideHrefBySlug[slug] ?? null;
 
     if (sections.length === 0) {

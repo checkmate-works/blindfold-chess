@@ -33,14 +33,19 @@ import {
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import {
+  CurriculumToc,
+  Divider,
+  PagePanel,
+  PageTitle,
+  SectionTitle,
+} from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { BeltStrip } from './_components/BeltStrip';
-import { CurriculumToc } from './_components/CurriculumToc';
 import { NextRankRequirements } from './_components/NextRankRequirements';
 
 export const dynamic = 'force-dynamic';
@@ -209,12 +214,18 @@ export default async function DojoPage({ params }: LocalePageProps) {
           <CurriculumToc
             achievedSlugs={achievedSlugs}
             nextSlug={next?.slug ?? null}
+            maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
             rankName={(slug) => tRanks(`rankNames.${slug}`)}
             sectionTitle={(key) => t(`curriculum.sections.${key}`)}
             emptyLabel={t('curriculum.empty')}
             achievedLabel={t('curriculum.achieved')}
             guideHrefBySlug={guideHrefBySlug}
           />
+          <div className="flex justify-center">
+            <Link href={`/${locale}/guides`} className="text-sm text-primary hover:underline">
+              {t('viewAllGuides')}
+            </Link>
+          </div>
         </section>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (

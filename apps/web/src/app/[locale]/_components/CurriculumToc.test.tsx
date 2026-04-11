@@ -31,19 +31,31 @@ function buildGuideHrefs(
   return { ...map, ...overrides };
 }
 
-function renderToc({
-  achieved = new Set<RankSlug>(),
-  nextSlug = null as RankSlug | null,
-  guideHrefBySlug = buildGuideHrefs(),
-}: {
+type RenderOpts = {
   achieved?: ReadonlySet<RankSlug>;
   nextSlug?: RankSlug | null;
+  maxVisibleSlug?: RankSlug | null;
   guideHrefBySlug?: Partial<Record<RankSlug, string | null>>;
-} = {}) {
+  userAware?: boolean;
+};
+
+function renderToc({
+  achieved,
+  nextSlug,
+  maxVisibleSlug,
+  guideHrefBySlug = buildGuideHrefs(),
+  userAware = true,
+}: RenderOpts = {}) {
+  const userProps = userAware
+    ? {
+        achievedSlugs: achieved ?? new Set<RankSlug>(),
+        nextSlug: nextSlug ?? null,
+      }
+    : {};
   return render(
     <CurriculumToc
-      achievedSlugs={achieved}
-      nextSlug={nextSlug}
+      {...userProps}
+      maxVisibleSlug={maxVisibleSlug}
       rankName={rankName}
       sectionTitle={sectionTitle}
       emptyLabel="Coming soon"
@@ -188,5 +200,55 @@ describe('CurriculumToc', () => {
     expect(screen.getByText('section:anchorPoints')).toBeInTheDocument();
     expect(screen.getByText('section:blindfoldLegalMoves')).toBeInTheDocument();
     expect(screen.getByText('section:diagonals')).toBeInTheDocument();
+  });
+
+  describe('plain mode (achievedSlugs and nextSlug omitted)', () => {
+    it('renders no achievement check marks', () => {
+      const { container } = renderToc({ userAware: false });
+      expect(container.querySelectorAll('[data-testid="curriculum-achieved-mark"]').length).toBe(0);
+    });
+
+    it('renders no data-next attribute on any row', () => {
+      const { container } = renderToc({ userAware: false });
+      expect(container.querySelectorAll('[data-next="true"]').length).toBe(0);
+    });
+
+    it('renders every rank (no truncation)', () => {
+      const { container } = renderToc({ userAware: false });
+      for (const { slug } of CURRICULUM) {
+        const rows = container.querySelectorAll(`[data-rank="${slug}"]`);
+        expect(rows.length).toBeGreaterThanOrEqual(1);
+      }
+    });
+  });
+
+  describe('truncation via maxVisibleSlug', () => {
+    it('hides ranks with a level beyond maxVisibleSlug', () => {
+      const { container } = renderToc({
+        userAware: true,
+        achieved: new Set<RankSlug>(['5kyu']),
+        nextSlug: '4kyu',
+        maxVisibleSlug: '4kyu',
+      });
+      // Visible: mukyu, 5kyu, 4kyu
+      for (const slug of ['mukyu', '5kyu', '4kyu'] as const) {
+        expect(container.querySelectorAll(`[data-rank="${slug}"]`).length).toBeGreaterThan(0);
+      }
+      // Hidden: 3kyu, 2kyu, 1kyu, 1dan
+      for (const slug of ['3kyu', '2kyu', '1kyu', '1dan'] as const) {
+        expect(container.querySelectorAll(`[data-rank="${slug}"]`).length).toBe(0);
+      }
+    });
+
+    it('shows all ranks when maxVisibleSlug is omitted', () => {
+      const { container } = renderToc({
+        userAware: true,
+        achieved: new Set<RankSlug>(),
+        nextSlug: '5kyu',
+      });
+      for (const { slug } of CURRICULUM) {
+        expect(container.querySelectorAll(`[data-rank="${slug}"]`).length).toBeGreaterThan(0);
+      }
+    });
   });
 });
