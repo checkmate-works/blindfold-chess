@@ -64,6 +64,7 @@ export function DiagonalQuizPlaying({
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tPractice = useTranslations('practice');
+  const tCommon = useTranslations('practice.common');
   const quitConfirmLabels = useQuitConfirmLabels();
   const isDisabled = showResult || countdown !== null || isPaused;
 
@@ -211,7 +212,7 @@ export function DiagonalQuizPlaying({
             onClear={handleClear}
           />
 
-          <KeyboardHintText text={t('keyboardHint')} disabled={isDisabled} />
+          <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
         </div>
       </div>
 

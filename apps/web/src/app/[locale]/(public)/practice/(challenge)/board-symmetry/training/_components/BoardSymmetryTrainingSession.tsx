@@ -14,6 +14,7 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { applyBoardSymmetryBackspace } from '../../_lib/backspace';
 import { BoardSymmetryTrainingPlaying } from './BoardSymmetryTrainingPlaying';
 
 type Props = {
@@ -84,6 +85,14 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
 
+  // Rank-first deletion: clear the rank if present, otherwise clear the file.
+  const handleBackspace = useCallback(() => {
+    if (isProcessing || countdown !== null) return;
+    const next = applyBoardSymmetryBackspace({ selectedFile, selectedRank });
+    setSelectedFile(next.selectedFile);
+    setSelectedRank(next.selectedRank);
+  }, [isProcessing, countdown, selectedFile, selectedRank]);
+
   // Auto-submit when both file and rank are selected
   useEffect(() => {
     if (selectedFile && selectedRank && !isProcessing && isCorrect === null && countdown === null) {
@@ -111,6 +120,7 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
         incorrectCount={incorrectCount}
         onFileToggle={handleFileToggle}
         onRankToggle={handleRankToggle}
+        onBackspace={handleBackspace}
         isProcessing={isProcessing}
         countdown={countdown}
         onEndTraining={handleEndTraining}
