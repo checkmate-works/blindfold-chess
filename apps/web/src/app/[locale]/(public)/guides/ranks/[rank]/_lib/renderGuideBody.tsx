@@ -4,16 +4,20 @@ import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { SITE_URL } from '@/config';
+
 import { isMukyuSlug } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
 import {
   buildChapterHref,
   buildFlatHref,
+  buildGuidePath,
   buildGuidePathRelative,
   findChapter,
   getRankGuide,
 } from '@/lib/guides';
 import type { ChapteredGuide, FlatGuide, GuidePage, RankGuide } from '@/lib/guides';
+import { JsonLd, generateItemListSchema, generateLearningResourceSchema } from '@/lib/jsonld';
 
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
@@ -184,8 +188,20 @@ function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): ReactNode 
     { label: rankName },
   ];
 
+  // Chapter list = an ordered index of the child chapter pages. An ItemList
+  // gives search engines a crawlable hint about the section hierarchy.
+  const itemListItems = guide.chapters.map((chapter) => ({
+    name: chapter.title,
+    url: `${SITE_URL}${buildGuidePath(locale, rankSlug, {
+      kind: 'chapter-root',
+      chapterSlug: chapter.slug,
+    })}`,
+  }));
+
   return (
     <div className="space-y-8">
+      <JsonLd data={generateItemListSchema(itemListItems)} />
+
       <PageTitle>{rankName}</PageTitle>
 
       <PagePanel>
@@ -214,12 +230,12 @@ function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): ReactNode 
   );
 }
 
-function renderFlatBody(
+async function renderFlatBody(
   ctx: GuideContext,
   guide: FlatGuide,
   props: FlatBodyProps,
   requirements: ChallengeScoreRequirement[]
-): ReactNode {
+): Promise<ReactNode> {
   const { locale, rankSlug, rankName, beltColor, tRanks, tGuides } = ctx;
   const { pageNumber } = props;
 
@@ -239,8 +255,37 @@ function renderFlatBody(
       : []),
   ];
 
+  // LearningResource JSON-LD keeps SERP metadata and structured data in sync
+  // by pulling from the same `metadata.guides.rank` translation keys used by
+  // `generateMetadata` in the route file.
+  const tMetaRank = await getTranslations({ locale, namespace: 'metadata.guides.rank' });
+  const lrName =
+    pageNumber === 1
+      ? tMetaRank('title', { rankName })
+      : tMetaRank('pageTitle', { rankName, page: pageNumber });
+  const lrDescription =
+    pageNumber === 1
+      ? tMetaRank('description', { rankName })
+      : tMetaRank('descriptionWithPage', { rankName, page: pageNumber, total: pages.length });
+  const lrPath =
+    pageNumber === 1
+      ? buildGuidePath(locale, rankSlug, { kind: 'root' })
+      : buildGuidePath(locale, rankSlug, { kind: 'flat-page', page: pageNumber });
+  const lrUrl = `${SITE_URL}${lrPath}`;
+
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={generateLearningResourceSchema({
+          name: lrName,
+          description: lrDescription,
+          url: lrUrl,
+          inLanguage: locale,
+          educationalLevel: rankName,
+          learningResourceType: 'Guide',
+        })}
+      />
+
       <PageTitle>{rankName}</PageTitle>
 
       <PagePanel>
@@ -278,12 +323,12 @@ function renderFlatBody(
   );
 }
 
-function renderChapterBody(
+async function renderChapterBody(
   ctx: GuideContext,
   guide: ChapteredGuide,
   props: ChapterBodyProps,
   _requirements: ChallengeScoreRequirement[]
-): ReactNode {
+): Promise<ReactNode> {
   // `_requirements` is accepted for symmetry with `renderFlatBody` and to
   // leave the door open for a chapter-last-page CTA later. Currently unused.
   void _requirements;
@@ -317,8 +362,45 @@ function renderChapterBody(
       : []),
   ];
 
+  // LearningResource JSON-LD for chapter pages — mirrors `metadata.guides.chapter`.
+  const tMetaChapter = await getTranslations({ locale, namespace: 'metadata.guides.chapter' });
+  const lrName =
+    pageNumber === 1
+      ? tMetaChapter('title', { rankName, chapterName: chapter.title })
+      : tMetaChapter('pageTitle', { rankName, chapterName: chapter.title, page: pageNumber });
+  const lrDescription =
+    pageNumber === 1
+      ? tMetaChapter('description', { rankName, chapterName: chapter.title })
+      : tMetaChapter('descriptionWithPage', {
+          rankName,
+          chapterName: chapter.title,
+          page: pageNumber,
+          total: chapter.pages.length,
+        });
+  const lrPath =
+    pageNumber === 1
+      ? buildGuidePath(locale, rankSlug, { kind: 'chapter-root', chapterSlug })
+      : buildGuidePath(locale, rankSlug, {
+          kind: 'chapter-page',
+          chapterSlug,
+          page: pageNumber,
+        });
+  const lrUrl = `${SITE_URL}${lrPath}`;
+
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={generateLearningResourceSchema({
+          name: lrName,
+          description: lrDescription,
+          url: lrUrl,
+          inLanguage: locale,
+          educationalLevel: rankName,
+          learningResourceType: 'Guide',
+          teaches: chapter.title,
+        })}
+      />
+
       <PageTitle>{rankName}</PageTitle>
 
       <PagePanel>

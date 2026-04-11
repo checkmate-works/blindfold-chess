@@ -14,7 +14,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import enMessages from '@/messages/en.json';
+
+import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
+import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -46,9 +50,23 @@ const sections = [{ id: 'rankGuides', Component: RankGuidesSection }] as const;
 export default async function GuidesTopPage({ params }: LocalePageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'guides' });
+  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
+
+  // Build an ItemList of rank roots from the canonical i18n source so the
+  // JSON-LD stays in sync with whatever the `RankGuidesSection` grid renders.
+  const rankRoots = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>).filter(
+    (r) => r.kind === 'root'
+  );
+
+  const itemListItems = rankRoots.map((route) => ({
+    name: tRanks(`rankNames.${route.slug}`),
+    url: `${SITE_URL}${buildGuidePath(locale, route.slug, { kind: 'root' })}`,
+  }));
 
   return (
     <div className="space-y-8">
+      <JsonLd data={generateItemListSchema(itemListItems)} />
+
       <PageTitle>{t('top.title')}</PageTitle>
 
       <PagePanel>
