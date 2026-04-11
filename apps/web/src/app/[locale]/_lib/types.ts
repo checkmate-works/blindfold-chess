@@ -27,7 +27,8 @@ export type NavigationIconName =
   | 'contact'
   | 'settings'
   | 'ranks'
-  | 'guides';
+  | 'guides'
+  | 'dojo';
 
 export interface NavigationItem {
   id: string;

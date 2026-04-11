@@ -17,6 +17,13 @@ type RankCardProps = {
   comingSoonLabel: string;
   previousRankName?: string;
   previousSlug?: string;
+  /**
+   * When `true`, the requirements list section is omitted from the card.
+   * Used by the Dojo page where requirement items are rendered as standalone
+   * links beneath the card instead of inside it. Defaults to `false` so that
+   * existing callers (e.g. `/ranks`) continue rendering requirements.
+   */
+  hideRequirements?: boolean;
 };
 
 export function RankCard({
@@ -30,6 +37,7 @@ export function RankCard({
   comingSoonLabel,
   previousRankName,
   previousSlug,
+  hideRequirements = false,
 }: RankCardProps) {
   const isClickable = state === 'achieved' || state === 'next' || state === 'locked';
 
@@ -89,7 +97,7 @@ export function RankCard({
         </div>
 
         {/* Requirements (only for ranks with defined requirements) */}
-        {requirementLabels.length > 0 && (
+        {!hideRequirements && requirementLabels.length > 0 && (
           <div>
             <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
               {requirementsHeading}

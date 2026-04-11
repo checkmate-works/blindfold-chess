@@ -159,6 +159,10 @@
       "title": "Sistema de Cinturones",
       "description": "Un programa único diseñado para desarrollar las habilidades necesarias para vencer a la IA en ajedrez a ciegas. Aspira al cinturón negro."
     },
+    "dojo": {
+      "title": "Dojo",
+      "description": "Consulta tu rango actual y los requisitos del siguiente, todo en un solo lugar."
+    },
     "glossary": {
       "title": "Glosario de Ajedrez - Términos y Definiciones",
       "description": "Consulta la terminología ajedrecística en nuestro glosario completo. Navega alfabéticamente o por categoría para aprender definiciones de términos, tácticas, estrategias y conceptos posicionales utilizados en el ajedrez a ciegas.",
@@ -3344,9 +3348,29 @@
   },
   "MobileTabBar": {
     "games": "Partidas",
-    "practice": "Práctica",
+    "dojo": "Dojo",
     "topics": "Temas",
     "mypage": "Mi Página"
+  },
+  "dojo": {
+    "pageTitle": "Dojo",
+    "currentRankTitle": "Rango actual",
+    "nextRankTitle": "Siguiente rango",
+    "nextRankRequirementsComingSoon": "Requisitos próximamente",
+    "allAchieved": "¡Has conseguido todos los rangos! 🎉",
+    "viewAllRanks": "Ver todos los rangos",
+    "viewAllPractices": "Ver todas las prácticas",
+    "curriculum": {
+      "title": "Temario",
+      "empty": "Próximamente",
+      "achieved": "Conseguido",
+      "sections": {
+        "algebraicNotation": "Notación algebraica",
+        "anchorPoints": "Percepción del tablero con puntos de anclaje",
+        "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
+        "diagonals": "Cálculo de diagonales y antidiagonales"
+      }
+    }
   },
   "guides": {
     "top": {

@@ -159,6 +159,10 @@
       "title": "Belt Ranking System",
       "description": "A unique curriculum designed to build the skills needed to defeat AI at blindfold chess. Aim for the black belt."
     },
+    "dojo": {
+      "title": "Dojo",
+      "description": "See your current rank and the requirements for the next one, all in one place."
+    },
     "glossary": {
       "title": "Chess Glossary - Terms & Definitions",
       "description": "Look up chess terminology in our comprehensive glossary. Browse alphabetically or by category to learn definitions of chess terms, tactics, strategies, and positional concepts used in blindfold chess.",
@@ -3352,9 +3356,29 @@
   },
   "MobileTabBar": {
     "games": "Games",
-    "practice": "Practice",
+    "dojo": "Dojo",
     "topics": "Topics",
     "mypage": "My Page"
+  },
+  "dojo": {
+    "pageTitle": "Dojo",
+    "currentRankTitle": "Current Rank",
+    "nextRankTitle": "Next Rank",
+    "nextRankRequirementsComingSoon": "Requirements coming soon",
+    "allAchieved": "You have achieved every rank 🎉",
+    "viewAllRanks": "View all ranks",
+    "viewAllPractices": "View all practices",
+    "curriculum": {
+      "title": "Curriculum",
+      "empty": "Coming soon",
+      "achieved": "Achieved",
+      "sections": {
+        "algebraicNotation": "Algebraic notation",
+        "anchorPoints": "Board awareness with anchor points",
+        "blindfoldLegalMoves": "Legal move detection in blindfold chess",
+        "diagonals": "Computing diagonals and anti-diagonals"
+      }
+    }
   },
   "guides": {
     "top": {

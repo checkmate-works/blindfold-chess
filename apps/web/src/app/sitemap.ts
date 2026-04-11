@@ -76,6 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/announcements',
     '/leaderboard',
     '/ranks',
+    '/dojo',
     '/guides',
     '/pricing',
     '/affiliate-disclosure',

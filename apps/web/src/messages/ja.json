@@ -159,6 +159,10 @@
       "title": "段級位制度",
       "description": "目隠しチェスでAIを打ち負かす実力がつけられるように独自のカリキュラムを公開。黒帯取得を目指そう。"
     },
+    "dojo": {
+      "title": "道場",
+      "description": "現在の段級位と、次の昇級に必要な条件をひとつのページで確認できます。"
+    },
     "glossary": {
       "title": "チェス用語集 - 用語と定義一覧",
       "description": "チェスの専門用語を網羅的に解説する用語集。アルファベット順やカテゴリー別に検索して、戦術・戦略・ポジショナルコンセプトなど目隠しチェスに役立つ用語の意味を学びましょう。",
@@ -3301,9 +3305,29 @@
   },
   "MobileTabBar": {
     "games": "ゲーム一覧",
-    "practice": "練習",
+    "dojo": "道場",
     "topics": "トピック",
     "mypage": "マイページ"
+  },
+  "dojo": {
+    "pageTitle": "道場",
+    "currentRankTitle": "現在のランク",
+    "nextRankTitle": "次のランク",
+    "nextRankRequirementsComingSoon": "条件は近日公開",
+    "allAchieved": "すべてのランクを達成しました 🎉",
+    "viewAllRanks": "段級位一覧を見る",
+    "viewAllPractices": "練習一覧を見る",
+    "curriculum": {
+      "title": "教本",
+      "empty": "近日公開",
+      "achieved": "達成済み",
+      "sections": {
+        "algebraicNotation": "代数記法の理解",
+        "anchorPoints": "アンカーポイントによる盤面の把握",
+        "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
+        "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
+      }
+    }
   },
   "guides": {
     "top": {

@@ -1,3 +1,5 @@
+import { isWhiteBelt } from '../_lib/helpers';
+
 type RankHeaderProps = {
   beltColor: string;
   children: React.ReactNode;
@@ -5,7 +7,7 @@ type RankHeaderProps = {
 
 export function RankHeader({ beltColor, children }: RankHeaderProps) {
   // White belt needs a visible border since #ffffff is invisible on light backgrounds
-  const isWhiteBelt = beltColor === '#ffffff';
+  const whiteBelt = isWhiteBelt(beltColor);
 
   return (
     <>
@@ -14,7 +16,7 @@ export function RankHeader({ beltColor, children }: RankHeaderProps) {
         className="-mx-4 -mt-4 mb-6 h-2 sm:-mx-6 sm:-mt-6"
         style={{
           backgroundColor: beltColor,
-          ...(isWhiteBelt ? { borderBottom: '1px solid #d4d4d4' } : {}),
+          ...(whiteBelt ? { borderBottom: '1px solid #d4d4d4' } : {}),
         }}
       />
 
@@ -23,7 +25,7 @@ export function RankHeader({ beltColor, children }: RankHeaderProps) {
           className="inline-block size-5 shrink-0 rounded-full"
           style={{
             backgroundColor: beltColor,
-            ...(isWhiteBelt ? { border: '1px solid #d4d4d4' } : {}),
+            ...(whiteBelt ? { border: '1px solid #d4d4d4' } : {}),
           }}
         />
         <h2 className="text-2xl font-bold text-foreground">{children}</h2>
