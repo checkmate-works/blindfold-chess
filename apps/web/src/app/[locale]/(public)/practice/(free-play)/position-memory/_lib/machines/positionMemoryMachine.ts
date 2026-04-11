@@ -45,6 +45,20 @@ export const positionMemoryMachine = setup({
         newPositions.set(context.currentProblemIndex, context.recreatedPosition);
         return newPositions;
       },
+      // Accumulate piece-level mistakes from this submission. The guard
+      // against `params.accuracy === null` mirrors the problemResults branch
+      // — a SUBMIT without an accuracy payload contributes zero.
+      totalMistakes: (
+        { context },
+        params: { accuracy: PositionMemoryContext['currentAccuracy'] }
+      ) => {
+        if (!params.accuracy) return context.totalMistakes;
+        const delta =
+          params.accuracy.incorrectPieces +
+          params.accuracy.missingPieces +
+          params.accuracy.extraPieces;
+        return context.totalMistakes + delta;
+      },
     }),
     markAsSkipped: assign({
       skippedProblems: ({ context }) => {
@@ -85,6 +99,7 @@ export const positionMemoryMachine = setup({
     recreatedPositions: new Map(),
     skippedProblems: new Set(),
     showQuitModal: false,
+    totalMistakes: 0,
   }),
   on: {
     SET_POSITIONS: {

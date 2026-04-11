@@ -325,7 +325,8 @@
           "diagonal_quiz": "ダイアゴナルクイズ",
           "legal_moves": "合法手",
           "board_symmetry": "盤面の対称性",
-          "route_planner": "ルートプランナー"
+          "route_planner": "ルートプランナー",
+          "position_memory": "ポジションの記憶"
         },
         "misses0": "0（パーフェクト）",
         "misses1": "1回",

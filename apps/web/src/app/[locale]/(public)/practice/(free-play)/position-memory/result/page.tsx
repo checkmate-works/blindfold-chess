@@ -12,4 +12,6 @@ export const generateMetadata = createPracticeResultMetadata({
   canonicalPath: 'practice/position-memory/result',
 });
 
-export default createSimplePracticeResultPage(ResultClient);
+export default createSimplePracticeResultPage(ResultClient, {
+  expSource: 'practice_result',
+});

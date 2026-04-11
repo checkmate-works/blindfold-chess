@@ -22,6 +22,35 @@ const createMockAccuracy = (accuracy: number): PositionAccuracy => ({
   details: [],
 });
 
+/**
+ * Builder for mock accuracy payloads with explicit mistake shape. The
+ * `totalMistakes` counter aggregates `incorrectPieces + missingPieces +
+ * extraPieces`, so tests can dial in the exact per-submission increment.
+ */
+const createMockAccuracyWithErrors = ({
+  correctPieces,
+  incorrectPieces,
+  missingPieces,
+  extraPieces,
+}: {
+  correctPieces: number;
+  incorrectPieces: number;
+  missingPieces: number;
+  extraPieces: number;
+}): PositionAccuracy => {
+  const totalPieces = correctPieces + incorrectPieces + missingPieces;
+  return {
+    correctPieces,
+    totalPieces,
+    incorrectPieces,
+    missingPieces,
+    extraPieces,
+    netScore: correctPieces - (incorrectPieces + extraPieces) * 0.5,
+    accuracy: totalPieces === 0 ? 0 : (correctPieces / totalPieces) * 100,
+    details: [],
+  };
+};
+
 const createTestInput = (overrides?: Partial<PositionMemoryInput>): PositionMemoryInput => ({
   positions: createMockPositions(3),
   timeLimit: 10,
@@ -261,6 +290,150 @@ describe('positionMemoryMachine', () => {
 
       expect(actor.getSnapshot().value).toBe('sessionResult');
       expect(actor.getSnapshot().status).toBe('done');
+    });
+  });
+
+  describe('totalMistakes accumulation', () => {
+    it('initializes totalMistakes to 0', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput(),
+      });
+      actor.start();
+
+      expect(actor.getSnapshot().context.totalMistakes).toBe(0);
+    });
+
+    it('adds (incorrectPieces + missingPieces + extraPieces) on SUBMIT', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput({ positions: createMockPositions(1) }),
+      });
+      actor.start();
+      actor.send({ type: 'MEMORIZED' });
+
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 10,
+          incorrectPieces: 2,
+          missingPieces: 1,
+          extraPieces: 0,
+        }),
+      });
+
+      expect(actor.getSnapshot().context.totalMistakes).toBe(3);
+    });
+
+    it('stays at 0 on a perfect submission', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput({ positions: createMockPositions(1) }),
+      });
+      actor.start();
+      actor.send({ type: 'MEMORIZED' });
+
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 12,
+          incorrectPieces: 0,
+          missingPieces: 0,
+          extraPieces: 0,
+        }),
+      });
+
+      expect(actor.getSnapshot().context.totalMistakes).toBe(0);
+    });
+
+    it('counts extra pieces against the mistakes total', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput({ positions: createMockPositions(1) }),
+      });
+      actor.start();
+      actor.send({ type: 'MEMORIZED' });
+
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 12,
+          incorrectPieces: 0,
+          missingPieces: 0,
+          extraPieces: 2,
+        }),
+      });
+
+      expect(actor.getSnapshot().context.totalMistakes).toBe(2);
+    });
+
+    it('accumulates across multiple problems', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput({ positions: createMockPositions(3), timeLimit: 5 }),
+      });
+      actor.start();
+
+      // Problem 1: 1 + 1 + 0 = 2 mistakes
+      actor.send({ type: 'MEMORIZED' });
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 10,
+          incorrectPieces: 1,
+          missingPieces: 1,
+          extraPieces: 0,
+        }),
+      });
+      expect(actor.getSnapshot().context.totalMistakes).toBe(2);
+      actor.send({ type: 'NEXT_PROBLEM' });
+
+      // Problem 2: 0 + 0 + 1 = 1 mistake → total 3
+      actor.send({ type: 'MEMORIZED' });
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 12,
+          incorrectPieces: 0,
+          missingPieces: 0,
+          extraPieces: 1,
+        }),
+      });
+      expect(actor.getSnapshot().context.totalMistakes).toBe(3);
+      actor.send({ type: 'NEXT_PROBLEM' });
+
+      // Problem 3: 2 + 1 + 0 = 3 mistakes → total 6
+      actor.send({ type: 'MEMORIZED' });
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 9,
+          incorrectPieces: 2,
+          missingPieces: 1,
+          extraPieces: 0,
+        }),
+      });
+      expect(actor.getSnapshot().context.totalMistakes).toBe(6);
+    });
+
+    it('does not mutate totalMistakes on SKIP (skipped problems contribute 0)', () => {
+      const actor = createActor(positionMemoryMachine, {
+        input: createTestInput({ positions: createMockPositions(2) }),
+      });
+      actor.start();
+      // Submit a problem with errors first.
+      actor.send({ type: 'MEMORIZED' });
+      actor.send({
+        type: 'SUBMIT',
+        accuracy: createMockAccuracyWithErrors({
+          correctPieces: 10,
+          incorrectPieces: 1,
+          missingPieces: 0,
+          extraPieces: 0,
+        }),
+      });
+      expect(actor.getSnapshot().context.totalMistakes).toBe(1);
+
+      // Skip the second problem — totalMistakes must not change.
+      actor.send({ type: 'NEXT_PROBLEM' });
+      actor.send({ type: 'SKIP' });
+
+      expect(actor.getSnapshot().context.totalMistakes).toBe(1);
     });
   });
 

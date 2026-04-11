@@ -6,7 +6,9 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
+import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { getPositionById } from '@/lib/positions/queries';
+import { createClient } from '@/lib/supabase/server';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -23,6 +25,7 @@ type Props = {
     locale: Locale;
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -36,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PositionResultPage({ params }: Props) {
+export default async function PositionResultPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
 
@@ -46,6 +49,24 @@ export default async function PositionResultPage({ params }: Props) {
 
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+
+  const sp = await searchParams;
+  const grantRaw = sp.grant;
+  const grant = typeof grantRaw === 'string' ? grantRaw : undefined;
+
+  // Resolve EXP info server-side via ?grant=<exp_event_id> so the display
+  // survives reloads and direct URL access. Mirrors the challenge flow's
+  // `resolveExpInfoFromGrantParam` helper in createPracticeResultPage.
+  let expInfo = null;
+  if (grant) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      expInfo = await getExpInfoBySource(user.id, 'practice_result', grant);
+    }
+  }
 
   const position = await getPositionById({ id, type: 'memory' });
 
@@ -73,6 +94,7 @@ export default async function PositionResultPage({ params }: Props) {
         positionId={id}
         adBannerStandard={adBannerStandard}
         breadcrumb={breadcrumb}
+        expInfo={expInfo}
       />
     </Suspense>
   );

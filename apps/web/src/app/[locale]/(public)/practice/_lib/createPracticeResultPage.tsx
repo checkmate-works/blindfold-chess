@@ -23,15 +23,19 @@ import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[loca
 // Shared: resolve ExpInfo from ?grant=<challenge_result_id>
 // ---------------------------------------------------------------------------
 
+/** Identifier written to `exp_events.source` for a given result flow. */
+export type ExpSource = 'challenge_result' | 'practice_result';
+
 /**
  * Read the `grant` query param and refetch the corresponding EXP event for
  * the authenticated user. Returns `null` when unauthenticated, when the
  * param is missing, or when no matching event is found. The lookup is
- * scoped to the current user, so passing another user's `challengeResultId`
- * yields `null` (authorization guard enforced at the query level).
+ * scoped to the current user, so passing another user's `sourceId` yields
+ * `null` (authorization guard enforced at the query level).
  */
 async function resolveExpInfoFromGrantParam(
-  searchParams: Record<string, string | string[] | undefined>
+  searchParams: Record<string, string | string[] | undefined>,
+  expSource: ExpSource
 ): Promise<ExpInfo | null> {
   const grantRaw = searchParams.grant;
   const grant = typeof grantRaw === 'string' ? grantRaw : undefined;
@@ -43,7 +47,7 @@ async function resolveExpInfoFromGrantParam(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  return getExpInfoBySource(user.id, 'challenge_result', grant);
+  return getExpInfoBySource(user.id, expSource, grant);
 }
 
 // ---------------------------------------------------------------------------
@@ -78,14 +82,27 @@ type SimpleResultClientProps = {
   expInfo?: ExpInfo | null;
 };
 
+type SimpleResultPageOptions = {
+  /**
+   * Source identifier used when looking up EXP events via `?grant=<id>`.
+   * Defaults to `'challenge_result'` (matching the historical behavior).
+   * Free-play flows that grant EXP via `grantPracticeExp` should pass
+   * `'practice_result'`.
+   */
+  expSource?: ExpSource;
+};
+
 export function createSimplePracticeResultPage(
-  ResultClient: ComponentType<SimpleResultClientProps>
+  ResultClient: ComponentType<SimpleResultClientProps>,
+  options: SimpleResultPageOptions = {}
 ) {
+  const expSource: ExpSource = options.expSource ?? 'challenge_result';
+
   return async function Page(props: LocaleSearchPageProps) {
     const { locale } = await props.params;
     setRequestLocale(locale);
     const searchParams = await props.searchParams;
-    const expInfo = await resolveExpInfoFromGrantParam(searchParams);
+    const expInfo = await resolveExpInfoFromGrantParam(searchParams, expSource);
     return (
       <Suspense>
         <ResultClient
@@ -151,7 +168,7 @@ export function createLeaderboardPracticeResultPage(
 
     const [leaderboardResult, expInfo] = await Promise.all([
       getLeaderboard(leaderboard.module, key, 'weekly', 1),
-      resolveExpInfoFromGrantParam(searchParams),
+      resolveExpInfoFromGrantParam(searchParams, 'challenge_result'),
     ]);
     const leaderboardRows = leaderboardResult.rows.slice(0, 3);
     const leaderboardDetailPath = buildDetailPath('weekly', leaderboard.module, key);

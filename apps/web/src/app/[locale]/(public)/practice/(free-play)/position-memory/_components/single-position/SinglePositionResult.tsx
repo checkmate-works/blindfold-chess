@@ -8,8 +8,11 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
 import { CardLink, Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -24,9 +27,16 @@ type Props = {
   positionId: string;
   adBannerStandard?: ReactNode;
   breadcrumb?: ReactNode;
+  expInfo?: ExpInfo | null;
 };
 
-export function SinglePositionResult({ locale, positionId, adBannerStandard, breadcrumb }: Props) {
+export function SinglePositionResult({
+  locale,
+  positionId,
+  adBannerStandard,
+  breadcrumb,
+  expInfo,
+}: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
   const { preferences } = useGamePreferences();
@@ -143,6 +153,11 @@ export function SinglePositionResult({ locale, positionId, adBannerStandard, bre
               </div>
             </div>
           )}
+
+          {/* EXP gained — placed after the board comparison (all result
+              content) and immediately before the action buttons, per user
+              preference for the position-memory single-position layout. */}
+          {expInfo && <ExpGainDisplay expInfo={expInfo} />}
 
           {/* Action Buttons */}
           <div className="space-y-3">

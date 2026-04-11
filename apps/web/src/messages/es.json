@@ -324,7 +324,8 @@
           "diagonal_quiz": "Quiz de Diagonales",
           "legal_moves": "Movimientos Legales",
           "board_symmetry": "Simetría del Tablero",
-          "route_planner": "Planificador de Rutas"
+          "route_planner": "Planificador de Rutas",
+          "position_memory": "Memoria de Posiciones"
         },
         "misses0": "0 (Perfecto)",
         "misses1": "1",
