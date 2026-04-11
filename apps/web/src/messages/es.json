@@ -339,7 +339,8 @@
           "diagonal_quiz": "Quiz de Diagonales",
           "legal_moves": "Movimientos Legales",
           "board_symmetry": "Simetría del Tablero",
-          "route_planner": "Planificador de Rutas"
+          "route_planner": "Planificador de Rutas",
+          "position_memory": "Memoria de Posiciones"
         },
         "misses0": "0 (Perfecto)",
         "misses1": "1",
@@ -869,8 +870,16 @@
       },
       "cancel": "Cancelar",
       "requiredKnowledge": "Conocimiento Necesario",
-      "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
-      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez",
+      "articles": {
+        "positionMemory": {
+          "title": "Aprende sobre el entrenamiento de memoria de posiciones",
+          "description": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+        },
+        "deGrootExperiment": {
+          "title": "El experimento de De Groot",
+          "description": "Cómo los grandes maestros memorizan posiciones: el estudio clásico sobre chunking"
+        }
+      },
       "list": {
         "title": "Memoria de Posiciones",
         "sectionTitle": "Lista de Problemas",
@@ -2323,11 +2332,36 @@
       "past28days": "Últimos 28 días",
       "past90days": "Últimos 90 días",
       "newUsersPeriodTotal": "Nuevos Usuarios (Total del Período)",
-      "postsPeriodTotal": "Publicaciones (Total del Período)",
+      "ugcPostsPeriodTotal": "Publicaciones UGC (Total del Período)",
       "dailyTrends": "Tendencias Diarias",
       "newUsers": "Nuevos Usuarios",
-      "posts": "Publicaciones",
-      "noData": "Sin datos para el período seleccionado."
+      "ugcPosts": "Publicaciones UGC",
+      "noData": "Sin datos para el período seleccionado.",
+      "summaryTable": {
+        "title": "Resumen de KPI",
+        "category": "Categoría",
+        "metric": "Métrica",
+        "value": "Valor",
+        "users": "Usuarios",
+        "ugcPosts": "Publicaciones UGC",
+        "likes": "Me gusta",
+        "avgPerDay": "Promedio por día",
+        "avgPerActivePoster": "Promedio por autor activo",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "apertura",
+            "square": "casilla"
+          },
+          "positions": {
+            "memory": "memoria"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Correo",

@@ -203,8 +203,8 @@ export function PositionMemorySetup({
         <CardLink
           href="/learn/memory/position-memory"
           icon="🧠"
-          title={t('viewArticle')}
-          description={t('articleDescription')}
+          title={t('articles.positionMemory.title')}
+          description={t('articles.positionMemory.description')}
           locale={locale}
         />
       </div>

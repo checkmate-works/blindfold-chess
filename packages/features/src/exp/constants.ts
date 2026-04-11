@@ -6,10 +6,19 @@ export const MODULE_WEIGHT: Record<string, number> = {
   legal_moves: 1.5,
   board_symmetry: 2.5,
   route_planner: 15,
+  position_memory: 5,
 };
 
 // Default weight (applied for unknown menuType)
 export const DEFAULT_MODULE_WEIGHT = 1;
+
+/**
+ * Returns the Exp weight for the given practice menu type.
+ * Falls back to {@link DEFAULT_MODULE_WEIGHT} for unknown menu types.
+ */
+export function getModuleWeight(menuType: string): number {
+  return MODULE_WEIGHT[menuType] ?? DEFAULT_MODULE_WEIGHT;
+}
 
 /**
  * Accuracy bonus based on number of incorrect answers.

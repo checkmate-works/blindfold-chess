@@ -22,6 +22,20 @@ export type PositionMemoryContext = {
   recreatedPositions: Map<number, string>;
   skippedProblems: Set<number>;
   showQuitModal: boolean;
+  /**
+   * Running total of piece-level mistakes committed across the session.
+   *
+   * For each SUBMIT, we add `incorrectPieces + missingPieces + extraPieces`
+   * from the submitted accuracy. This is the "final-submission error count"
+   * — Position Memory has no mid-problem undo events, so the only signal
+   * the gameplay naturally produces is how many pieces in the recreated
+   * position end up wrong. Skipped problems contribute 0 (no play, no
+   * penalty).
+   *
+   * Consumed by the EXP grant flow to select the accuracy bonus tier
+   * (0 mistakes → ×1.5, ≤3 → ×1.2, ≤5 → ×1.1, else → ×1.0).
+   */
+  totalMistakes: number;
 };
 
 /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -8,10 +8,13 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { ExpInfo } from '@/lib/exp-types';
+
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
-import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -22,9 +25,18 @@ import type { PositionAccuracy } from '../../_lib/types';
 type Props = {
   locale: Locale;
   positionId: string;
+  adBannerStandard?: ReactNode;
+  breadcrumb?: ReactNode;
+  expInfo?: ExpInfo | null;
 };
 
-export function SinglePositionResult({ locale, positionId }: Props) {
+export function SinglePositionResult({
+  locale,
+  positionId,
+  adBannerStandard,
+  breadcrumb,
+  expInfo,
+}: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
   const { preferences } = useGamePreferences();
@@ -142,6 +154,11 @@ export function SinglePositionResult({ locale, positionId }: Props) {
             </div>
           )}
 
+          {/* EXP gained — placed after the board comparison (all result
+              content) and immediately before the action buttons, per user
+              preference for the position-memory single-position layout. */}
+          {expInfo && <ExpGainDisplay expInfo={expInfo} />}
+
           {/* Action Buttons */}
           <div className="space-y-3">
             <Link
@@ -158,7 +175,37 @@ export function SinglePositionResult({ locale, positionId }: Props) {
               </Button>
             </Link>
           </div>
+
+          {/* Required Knowledge */}
+          <div className="mt-8 space-y-4">
+            <SectionTitle>{t('requiredKnowledge')}</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CardLink
+                href="/learn/memory/position-memory"
+                icon="🧠"
+                title={t('articles.positionMemory.title')}
+                description={t('articles.positionMemory.description')}
+                locale={locale}
+              />
+              <CardLink
+                href="/learn/memory/de-groot-experiment"
+                icon="🧪"
+                title={t('articles.deGrootExperiment.title')}
+                description={t('articles.deGrootExperiment.description')}
+                locale={locale}
+              />
+            </div>
+          </div>
+
+          {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
         </div>
+
+        {breadcrumb && (
+          <>
+            <Divider />
+            {breadcrumb}
+          </>
+        )}
       </PagePanel>
     </div>
   );

@@ -1,17 +1,29 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import * as Sentry from '@sentry/nextjs';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { savePositionMemoryResult } from '../../_actions/save-result';
 import { buildSingleResultUrl } from '../../_lib/result-url';
 import type { PositionData } from '../../_lib/types';
 import {
   PositionMemorySessionView,
   type SessionCompletePayload,
 } from './PositionMemorySessionView';
+
+/**
+ * Append `?grant=<id>` (or `&grant=<id>` if the URL already has a query) so
+ * the result page can refetch the granted EXP server-side.
+ */
+function appendGrantParam(url: string, expEventId: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}grant=${encodeURIComponent(expEventId)}`;
+}
 
 type Props = {
   locale: Locale;
@@ -30,17 +42,48 @@ type Props = {
  */
 export function SinglePositionSession({ locale, positionId, timeLimit, position }: Props) {
   const router = useRouter();
+  const savedRef = useRef(false);
 
   const handleSessionComplete = useCallback(
     ({ results, stats }: SessionCompletePayload) => {
-      const url = buildSingleResultUrl({
+      // Guard against double-invocation (StrictMode re-mount, fast rerenders).
+      // Must NOT call router.push here — the first call's promise chain owns
+      // navigation. Matches the pattern in `useChallengeResultSave`.
+      if (savedRef.current) return;
+      savedRef.current = true;
+
+      // `correctCount` is the total correct pieces from the submitted accuracy,
+      // `mistakes` is the running tally of piece-level errors across the
+      // session (see PositionMemoryContext.totalMistakes in `_lib/machines/types.ts`:
+      // `incorrectPieces + missingPieces + extraPieces`, summed across submits).
+      const correctCount = stats?.c ?? 0;
+      const mistakes = stats?.k ?? 0;
+
+      const baseUrl = buildSingleResultUrl({
         locale,
         positionId,
         timeLimit,
         results,
         stats,
       });
-      router.push(url);
+
+      savePositionMemoryResult({
+        correctCount,
+        mistakes,
+        // DB-backed single-position runs are never custom-FEN.
+        isCustomFen: false,
+      })
+        .then((result) => {
+          if (result.success && result.expEventId) {
+            router.push(appendGrantParam(baseUrl, result.expEventId));
+            return;
+          }
+          router.push(baseUrl);
+        })
+        .catch((error) => {
+          Sentry.captureException(error);
+          router.push(baseUrl);
+        });
     },
     [locale, positionId, timeLimit, router]
   );

@@ -100,7 +100,7 @@ export function usePositionMemorySession({
   }, [skipProblemResult, state.value, send]);
 
   // Assemble the session-complete payload and delegate to the caller.
-  const { problemResults, recreatedPositions, skippedProblems } = state.context;
+  const { problemResults, recreatedPositions, skippedProblems, totalMistakes } = state.context;
   useEffect(() => {
     if (state.value !== 'sessionResult') return;
 
@@ -120,6 +120,7 @@ export function usePositionMemorySession({
       i: totalIncorrect,
       m: totalMissing,
       e: totalExtra,
+      k: totalMistakes,
     };
 
     onSessionComplete({ results, stats, totalAccuracy });
@@ -129,6 +130,7 @@ export function usePositionMemorySession({
     skippedProblems,
     positions,
     recreatedPositions,
+    totalMistakes,
     onSessionComplete,
   ]);
 

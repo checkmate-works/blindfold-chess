@@ -339,7 +339,8 @@
           "diagonal_quiz": "Diagonal Quiz",
           "legal_moves": "Legal Moves",
           "board_symmetry": "Board Symmetry",
-          "route_planner": "Route Planner"
+          "route_planner": "Route Planner",
+          "position_memory": "Position Memory"
         },
         "misses0": "0 (Perfect)",
         "misses1": "1",
@@ -869,8 +870,16 @@
       },
       "cancel": "Cancel",
       "requiredKnowledge": "Required Knowledge",
-      "viewArticle": "Learn about position memory training",
-      "articleDescription": "Learn techniques for memorizing and recreating chess positions",
+      "articles": {
+        "positionMemory": {
+          "title": "Learn about position memory training",
+          "description": "Learn techniques for memorizing and recreating chess positions"
+        },
+        "deGrootExperiment": {
+          "title": "The De Groot Experiment",
+          "description": "How grandmasters memorize positions: the classic study on chunking"
+        }
+      },
       "list": {
         "title": "Position Memory",
         "sectionTitle": "Problem List",
@@ -2324,11 +2333,43 @@
       "past28days": "Past 28 days",
       "past90days": "Past 90 days",
       "newUsersPeriodTotal": "New Users (Period Total)",
-      "postsPeriodTotal": "Posts (Period Total)",
+      "ugcPostsPeriodTotal": "UGC Posts (Period Total)",
       "dailyTrends": "Daily Trends",
       "newUsers": "New Users",
-      "posts": "Posts",
-      "noData": "No data for the selected period."
+      "ugcPosts": "UGC Posts",
+      "noData": "No data for the selected period.",
+      "summaryTable": {
+        "title": "KPI Summary",
+        "category": "Category",
+        "metric": "Metric",
+        "value": "Value",
+        "users": "Users",
+        "ugcPosts": "UGC Posts",
+        "likes": "Likes",
+        "avgPerDay": "Avg per day",
+        "avgPerActivePoster": "Avg per active poster",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "opening",
+            "square": "square"
+          },
+          "positions": {
+            "memory": "memory"
+          }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Avg per active poster",
+            "ariaLabel": "Show explanation for Avg per active poster",
+            "description": "Total UGC posts in the selected period divided by the number of distinct users who posted at least one UGC item in that period.\n\nA user who contributed multiple kinds of UGC (for example, both a topic post and a saved position) is counted as one active poster, not two.\n\nSoft-deleted posts are excluded from both the numerator and the active-poster count."
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",

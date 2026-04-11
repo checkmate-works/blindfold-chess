@@ -10,6 +10,13 @@
  *   a = accuracy, c = correctPieces, t = totalPieces,
  *   i = incorrectPieces, m = missingPieces, e = extraPieces,
  *   o = originalIndex, s = skipped (0/1)
+ *
+ * Field legend (SerializedStats):
+ *   c = totalCorrectPieces, t = totalPieces, i = totalIncorrectPieces,
+ *   m = totalMissingPieces, e = totalExtraPieces,
+ *   k = totalMistakes (sum of i + m + e across submitted problems — used
+ *       as the EXP accuracy-bonus tier input). Optional for backward
+ *       compatibility with older URLs; parser defaults it to 0.
  */
 
 export interface SerializedResultItem {
@@ -32,6 +39,8 @@ export interface SerializedStats {
   i: number;
   m: number;
   e: number;
+  /** Total player mistakes (optional; defaults to 0 on legacy payloads). */
+  k?: number;
 }
 
 /**
@@ -65,6 +74,12 @@ export interface ParsedStats {
   incorrectPieces: number;
   missingPieces: number;
   extraPieces: number;
+  /**
+   * Total player mistakes across submitted problems (sum of incorrect +
+   * missing + extra). Defaults to 0 when absent from the payload
+   * (backward compat with pre-mistakes-tracking URLs).
+   */
+  mistakes: number;
 }
 
 export type ProblemResultContext = {
@@ -150,6 +165,7 @@ export function parseStats(statsParam: string | null): ParsedStats | null {
       incorrectPieces: parsed.i,
       missingPieces: parsed.m,
       extraPieces: parsed.e,
+      mistakes: parsed.k ?? 0,
     };
   } catch {
     return null;

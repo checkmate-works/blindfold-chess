@@ -8,8 +8,15 @@
  * @see {@link @blindfold-chess/features/exp} for calculation logic (calculateExp, getLevel)
  * @see {@link ./save-challenge-result.ts} for the caller that invokes grantChallengeExp
  */
-import { calculateExp, getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
+import {
+  calculateExp,
+  calculatePracticeExp,
+  getLevel,
+  getLevelProgress,
+  getModuleWeight,
+} from '@blindfold-chess/features/exp';
 import { and, eq, sql } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 
 import type { ExpInfo } from '@/lib/exp-types';
 
@@ -202,5 +209,89 @@ export async function grantChallengeExp(
     level: levelAfter,
     levelUp: levelAfter > levelBefore,
     progressPercent,
+  };
+}
+
+/**
+ * Calculates and grants Exp for a completed free-play practice run within a
+ * transaction.
+ *
+ * Unlike {@link grantChallengeExp}, practice runs are not stored in
+ * `challenge_results`, so there is no natural database-generated row id to
+ * use as `source_id`. This function generates a UUID per grant and uses it
+ * as the `exp_events.source_id`, giving callers a stable handle they can
+ * propagate as `?grant=<id>` to the result page so it can refetch EXP
+ * server-side via {@link getExpInfoBySource}.
+ *
+ * Caller contract:
+ * - `correctCount = 0` runs MUST NOT reach this function (they grant zero
+ *   EXP and are not eligible for persistence).
+ * - Custom-FEN runs MUST NOT reach this function (gated by the action).
+ */
+export async function grantPracticeExp(
+  tx: TransactionClient,
+  params: {
+    userId: string;
+    menuType: string;
+    correctCount: number;
+    mistakes: number;
+  }
+): Promise<{ expEventId: string; grantedExp: number; expInfo: ExpInfo }> {
+  const { userId, menuType, correctCount, mistakes } = params;
+
+  const weight = getModuleWeight(menuType);
+  const expResult = calculatePracticeExp({ correctCount, mistakes, weight });
+
+  // Generate a stable sourceId for this grant so the result page can refetch
+  // via ?grant=<id>. Idempotency is automatic: a new UUID per call means
+  // duplicate calls from the same session yield distinct events, but the
+  // `savedRef` guard on the client prevents that at the call site.
+  const expEventId = randomUUID();
+
+  const grantResult = await grantExp(tx, {
+    userId,
+    source: 'practice_result',
+    sourceId: expEventId,
+    menuType,
+    amount: expResult.totalExp,
+    metadata: {
+      correctCount,
+      mistakes,
+      baseExp: expResult.baseExp,
+      accuracyMultiplier: expResult.accuracyMultiplier,
+    },
+  });
+
+  const { totalExp } = grantResult;
+  const levelAfter = getLevel(totalExp);
+  const levelProgress = getLevelProgress(totalExp);
+  const progressPercent = Math.round(levelProgress.progress * 100);
+
+  if (grantResult.alreadyGranted) {
+    return {
+      expEventId,
+      grantedExp: grantResult.existingAmount,
+      expInfo: {
+        earnedExp: grantResult.existingAmount,
+        totalExp,
+        level: levelAfter,
+        levelUp: false,
+        progressPercent,
+      },
+    };
+  }
+
+  const levelBefore = getLevel(totalExp - expResult.totalExp);
+
+  return {
+    expEventId,
+    grantedExp: expResult.totalExp,
+    expInfo: {
+      earnedExp: expResult.totalExp,
+      totalExp,
+      level: levelAfter,
+      levelUp: levelAfter > levelBefore,
+      progressPercent,
+    },
   };
 }

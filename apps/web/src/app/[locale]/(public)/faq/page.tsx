@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
+import { getModuleWeight } from '@blindfold-chess/features/exp';
 
 import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
 
@@ -16,6 +17,21 @@ import { FAQClient } from './_components/FAQClient';
 import type { FAQItem } from './_lib/types';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * Display order for the EXP module-weight table. Kept separate from
+ * `MODULE_WEIGHT` so the FAQ can present modules in an editorial order
+ * (lightweight → specialty) independent of the data source.
+ */
+const WEIGHT_DISPLAY_ORDER = [
+  'coordinate_quiz',
+  'square_colors',
+  'legal_moves',
+  'board_symmetry',
+  'position_memory',
+  'diagonal_quiz',
+  'route_planner',
+] as const;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -116,19 +132,10 @@ export default async function FAQPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {(
-                [
-                  ['coordinate_quiz', '1'],
-                  ['square_colors', '1'],
-                  ['legal_moves', '1.5'],
-                  ['board_symmetry', '2.5'],
-                  ['diagonal_quiz', '15'],
-                  ['route_planner', '15'],
-                ] as const
-              ).map(([key, weight]) => (
+              {WEIGHT_DISPLAY_ORDER.map((key) => (
                 <tr key={key} className="border-b border-border">
                   <td className="py-1.5 px-2">{t(`items.expSystem.modules.${key}`)}</td>
-                  <td className="py-1.5 px-2">{weight}</td>
+                  <td className="py-1.5 px-2">{getModuleWeight(key).toString()}</td>
                 </tr>
               ))}
             </tbody>

@@ -279,6 +279,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
           dividerClassName={dividerClassName}
         >
           {renderContent(ctx, adBanner)}
+          {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
         </PracticeResultPage>
       );
     }

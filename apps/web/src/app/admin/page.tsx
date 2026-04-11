@@ -4,8 +4,9 @@ import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
 import { DailyTrendChart } from './_components/DailyTrendChart';
 import { DateRangePicker } from './_components/DateRangePicker';
+import { KpiSummaryTable } from './_components/KpiSummaryTable';
 import { daysAgo, today } from './_lib/date-utils';
-import { getNewUsersPerDay, getPostsPerDay } from './_lib/queries';
+import { getKpiSummary, getNewUsersPerDay, getPostsPerDay } from './_lib/queries';
 
 const searchParamsCache = createSearchParamsCache({
   from: parseAsString.withDefault(daysAgo(28)),
@@ -24,6 +25,13 @@ export default async function AdminDashboardPage({
     getNewUsersPerDay(startDate, endDate),
     getPostsPerDay(startDate, endDate),
   ]);
+
+  const kpiSummary = await getKpiSummary({
+    startDate,
+    endDate,
+    usersTotalInPeriod: newUsersData.total,
+    ugcTotalInPeriod: postsData.total,
+  });
 
   return (
     <div>
@@ -54,7 +62,7 @@ export default async function AdminDashboardPage({
           </p>
         </div>
         <div className="rounded-lg border border-border bg-secondary p-6">
-          <p className="text-sm text-muted-foreground">{t('dashboardKpi.postsPeriodTotal')}</p>
+          <p className="text-sm text-muted-foreground">{t('dashboardKpi.ugcPostsPeriodTotal')}</p>
           <p className="text-3xl font-semibold mt-1">{postsData.total}</p>
           <p className="text-xs text-muted-foreground mt-1">
             {startDate} ~ {endDate} (UTC)
@@ -70,8 +78,41 @@ export default async function AdminDashboardPage({
           postsData={postsData.daily}
           labels={{
             newUsers: t('dashboardKpi.newUsers'),
-            posts: t('dashboardKpi.posts'),
+            posts: t('dashboardKpi.ugcPosts'),
             noData: t('dashboardKpi.noData'),
+          }}
+        />
+      </div>
+
+      {/* KPI summary table */}
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold mb-4">{t('dashboardKpi.summaryTable.title')}</h2>
+        <KpiSummaryTable
+          data={kpiSummary}
+          labels={{
+            category: t('dashboardKpi.summaryTable.category'),
+            metric: t('dashboardKpi.summaryTable.metric'),
+            value: t('dashboardKpi.summaryTable.value'),
+            users: t('dashboardKpi.summaryTable.users'),
+            ugcPosts: t('dashboardKpi.summaryTable.ugcPosts'),
+            likes: t('dashboardKpi.summaryTable.likes'),
+            avgPerDay: t('dashboardKpi.summaryTable.avgPerDay'),
+            avgPerActivePoster: t('dashboardKpi.summaryTable.avgPerActivePoster'),
+            avgPerActivePosterHelp: {
+              title: t('dashboardKpi.summaryTable.help.avgPerActivePoster.title'),
+              description: t('dashboardKpi.summaryTable.help.avgPerActivePoster.description'),
+              ariaLabel: t('dashboardKpi.summaryTable.help.avgPerActivePoster.ariaLabel'),
+            },
+            total: t('dashboardKpi.summaryTable.total'),
+            sourceLabels: {
+              topic_posts: t('dashboardKpi.summaryTable.sources.topic_posts'),
+              positions: t('dashboardKpi.summaryTable.sources.positions'),
+            },
+            breakdownLabels: {
+              'topic_posts.opening': t('dashboardKpi.summaryTable.breakdowns.topic_posts.opening'),
+              'topic_posts.square': t('dashboardKpi.summaryTable.breakdowns.topic_posts.square'),
+              'positions.memory': t('dashboardKpi.summaryTable.breakdowns.positions.memory'),
+            },
           }}
         />
       </div>

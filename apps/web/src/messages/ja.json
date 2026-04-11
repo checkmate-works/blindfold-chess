@@ -340,7 +340,8 @@
           "diagonal_quiz": "ダイアゴナルクイズ",
           "legal_moves": "合法手",
           "board_symmetry": "盤面の対称性",
-          "route_planner": "ルートプランナー"
+          "route_planner": "ルートプランナー",
+          "position_memory": "ポジションの記憶"
         },
         "misses0": "0（パーフェクト）",
         "misses1": "1回",
@@ -870,8 +871,16 @@
       },
       "cancel": "キャンセル",
       "requiredKnowledge": "関連記事",
-      "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
-      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ",
+      "articles": {
+        "positionMemory": {
+          "title": "ポジション記憶のトレーニングについて学ぶ",
+          "description": "チェスの局面を記憶し再現するテクニックを学ぶ"
+        },
+        "deGrootExperiment": {
+          "title": "デ・フロートの実験",
+          "description": "グランドマスターはどのように局面を記憶するか：チャンキングに関する古典的研究"
+        }
+      },
       "list": {
         "title": "ポジション記憶",
         "sectionTitle": "問題一覧",
@@ -2325,11 +2334,36 @@
       "past28days": "過去28日",
       "past90days": "過去90日",
       "newUsersPeriodTotal": "新規ユーザー数（期間合計）",
-      "postsPeriodTotal": "投稿数（期間合計）",
+      "ugcPostsPeriodTotal": "UGC投稿数（期間合計）",
       "dailyTrends": "日別推移",
       "newUsers": "新規ユーザー",
-      "posts": "投稿",
-      "noData": "選択期間のデータがありません。"
+      "ugcPosts": "UGC投稿",
+      "noData": "選択期間のデータがありません。",
+      "summaryTable": {
+        "title": "KPIサマリー",
+        "category": "カテゴリ",
+        "metric": "指標",
+        "value": "値",
+        "users": "ユーザー",
+        "ugcPosts": "UGC投稿",
+        "likes": "いいね",
+        "avgPerDay": "1日あたりの平均",
+        "avgPerActivePoster": "アクティブ投稿者あたりの平均",
+        "total": "合計",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "オープニング",
+            "square": "マス目"
+          },
+          "positions": {
+            "memory": "メモリー"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",
