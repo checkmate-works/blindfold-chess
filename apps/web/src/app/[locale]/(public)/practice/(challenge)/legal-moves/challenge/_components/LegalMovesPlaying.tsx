@@ -6,6 +6,7 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
@@ -63,6 +64,8 @@ export function LegalMovesPlaying({
   const t = useTranslations('practice.legalMoves');
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
+  const inputDisabled = showResult || countdown !== null || isPaused;
+
   return (
     <div>
       <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
@@ -152,24 +155,32 @@ export function LegalMovesPlaying({
             <div className="text-7xl">{pieceDisplayMap[currentQuestion.piece]}</div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => onAnswer(true)}
-              disabled={showResult || countdown !== null || isPaused}
-              className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <span className="text-2xl">○</span>
-              <span>{t('legal')}</span>
-            </button>
-            <button
-              onClick={() => onAnswer(false)}
-              disabled={showResult || countdown !== null || isPaused}
-              className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <span className="text-2xl">×</span>
-              <span>{t('illegal')}</span>
-            </button>
-          </div>
+          <ArrowKeyAnswer
+            disabled={inputDisabled}
+            bindings={{
+              ArrowLeft: { label: t('legal'), onTrigger: () => onAnswer(true) },
+              ArrowRight: { label: t('illegal'), onTrigger: () => onAnswer(false) },
+            }}
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => onAnswer(true)}
+                disabled={inputDisabled}
+                className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="text-2xl">○</span>
+                <span>{t('legal')}</span>
+              </button>
+              <button
+                onClick={() => onAnswer(false)}
+                disabled={inputDisabled}
+                className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="text-2xl">×</span>
+                <span>{t('illegal')}</span>
+              </button>
+            </div>
+          </ArrowKeyAnswer>
         </div>
       </div>
 
