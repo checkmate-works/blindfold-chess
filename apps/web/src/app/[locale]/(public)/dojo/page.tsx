@@ -26,7 +26,6 @@ import { buildGuidePath, getRankGuide } from '@/lib/guides';
 import { createClient } from '@/lib/supabase/server';
 
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
-import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import {
   buildChallengeNameKey,
   buildRequirementItems,
@@ -42,6 +41,7 @@ import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { BeltStrip } from './_components/BeltStrip';
 import { CurriculumToc } from './_components/CurriculumToc';
+import { NextRankRequirements } from './_components/NextRankRequirements';
 
 export const dynamic = 'force-dynamic';
 
@@ -126,6 +126,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
   // directly to the relevant practice page (piece parameters already handled
   // by `buildRequirementItems`).
   const nextRequirementItems = next ? buildRequirementItems(next.requirements, locale, tRanks) : [];
+  const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
 
   return (
     <div className="space-y-8">
@@ -158,17 +159,14 @@ export default async function DojoPage({ params }: LocalePageProps) {
                 </Link>
               </div>
 
-              {/* Requirement items — reuses the same RequirementsList
-                  component rendered by the rank detail page, so the visual
-                  treatment stays in sync with `/ranks/[slug]`. */}
+              {/* Requirement items — rendered as a Zenn-style flat list
+                  (same visual treatment as the curriculum TOC below) so
+                  rows are tightly grouped under a single bordered card.
+                  Intentionally differs from `/ranks/[slug]`, which keeps
+                  the spaced `RequirementsList` look. */}
               <div className="mt-4 space-y-3">
                 {nextRequirementItems.length > 0 ? (
-                  <RequirementsList
-                    className="space-y-3"
-                    iconSize="size-5"
-                    textSize="text-base"
-                    items={nextRequirementItems}
-                  />
+                  <NextRankRequirements items={nextRequirementItems} beltColor={nextBeltColor} />
                 ) : (
                   <p className="text-center text-sm text-muted-foreground">
                     {t('nextRankRequirementsComingSoon')}

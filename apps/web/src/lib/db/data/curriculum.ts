@@ -12,6 +12,11 @@ import type { RankSlug } from './ranks';
 export type CurriculumSection = {
   /** i18n key under `dojo.curriculum.sections` */
   titleKey: string;
+  // NOTE: Future work may add sub-pages beneath a section (e.g., separate
+  // guide chapters under "Computing diagonals and anti-diagonals"). When that
+  // happens, this type will likely grow a `children?: readonly CurriculumSection[]`
+  // or `pages?: readonly CurriculumPage[]` field. Keep additions backward
+  // compatible so existing consumers continue to render the flat list.
 };
 
 export type CurriculumRank = {

@@ -6,6 +6,8 @@ import { CURRICULUM } from '@/lib/db/data/curriculum';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
+import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+
 import { CurriculumToc } from './CurriculumToc';
 
 expect.extend(matchers);
@@ -65,6 +67,23 @@ describe('CurriculumToc', () => {
     expect(ol!.querySelectorAll(':scope > li').length).toBe(expectedRows);
   });
 
+  it('renders as a plain list without a bordered card container or row dividers', () => {
+    const { container } = renderToc();
+    const ol = container.querySelector('ol')!;
+    // No card-like container classes on the outer list.
+    expect(ol.className).not.toMatch(/rounded-lg/);
+    expect(ol.className).not.toMatch(/\bshadow/);
+    expect(ol.className).not.toMatch(/\bbg-card\b/);
+
+    // No row (or inner content) should use `border-t` dividers.
+    const rows = ol.querySelectorAll(':scope > li');
+    for (const row of rows) {
+      expect(row.className ?? '').not.toMatch(/border-t/);
+      const inner = row.querySelector('a, :scope > *');
+      expect(inner?.className ?? '').not.toMatch(/border-t/);
+    }
+  });
+
   it('renders every rank in CURRICULUM (as a section row or placeholder)', () => {
     const { container } = renderToc();
     for (const { slug } of CURRICULUM) {
@@ -73,11 +92,52 @@ describe('CurriculumToc', () => {
     }
   });
 
-  it('renders section rows as links pointing to the rank guide', () => {
+  it('wraps only the section title in a link (bullet and rank name are not inside the anchor)', () => {
     const { container } = renderToc();
-    const link = container.querySelector('a[href="/en/guides/ranks/5kyu"]');
-    expect(link).not.toBeNull();
-    expect(link!.textContent).toContain('section:anchorPoints');
+    const row = container.querySelector('[data-rank="5kyu"]')!;
+    // Exactly one anchor per row, and it points at the rank guide.
+    const anchors = row.querySelectorAll('a');
+    expect(anchors.length).toBe(1);
+    const link = anchors[0];
+    expect(link.getAttribute('href')).toBe('/en/guides/ranks/5kyu');
+    // The link wraps the section title text only — not the rank label.
+    expect(link.textContent).toBe('section:anchorPoints');
+    expect(link.textContent).not.toContain('name:5kyu');
+
+    // The belt bullet and rank name label must NOT be descendants of the anchor.
+    expect(link.querySelector('[data-testid="curriculum-belt-dot"]')).toBeNull();
+    const rankLabel = Array.from(row.querySelectorAll('span')).find(
+      (el) => el.textContent === 'name:5kyu'
+    );
+    expect(rankLabel).toBeDefined();
+    expect(link.contains(rankLabel!)).toBe(false);
+  });
+
+  it('renders a vertical dashed line element on the outer list', () => {
+    const { container } = renderToc();
+    const line = container.querySelector('[data-testid="curriculum-dashed-line"]');
+    expect(line).not.toBeNull();
+    expect(line!.getAttribute('aria-hidden')).toBe('true');
+    expect(line!.className).toMatch(/border-dashed/);
+    expect(line!.className).toMatch(/border-l/);
+    // Sits inside the <ol>, not outside it.
+    const ol = container.querySelector('ol');
+    expect(ol!.contains(line)).toBe(true);
+  });
+
+  it('each row has a belt-colored bullet matching the row rank slug', () => {
+    const { container } = renderToc();
+    const row = container.querySelector('[data-rank="5kyu"]')!;
+    const dot = row.querySelector('[data-testid="curriculum-belt-dot"]');
+    expect(dot).not.toBeNull();
+    expect(dot!.getAttribute('data-belt-color')).toBe(getBeltColorHex('5kyu'));
+  });
+
+  it('top label is the rank name and bottom is the section title', () => {
+    const { container } = renderToc();
+    const row = container.querySelector('[data-rank="5kyu"]')!;
+    expect(row.textContent).toContain('name:5kyu');
+    expect(row.textContent).toContain('section:anchorPoints');
   });
 
   it('renders a disabled (non-link) row when the rank guide is missing', () => {
@@ -87,7 +147,6 @@ describe('CurriculumToc', () => {
     const fivekyuRow = container.querySelector('[data-rank="5kyu"]');
     expect(fivekyuRow).not.toBeNull();
     expect(fivekyuRow!.getAttribute('data-disabled')).toBe('true');
-    // Should not contain an anchor element
     expect(fivekyuRow!.querySelector('a')).toBeNull();
   });
 
@@ -111,13 +170,15 @@ describe('CurriculumToc', () => {
     expect(checks.length).toBe(3);
   });
 
-  it('renders a coming-soon placeholder row for ranks with empty sections', () => {
+  it('renders a coming-soon placeholder row (non-clickable) for ranks with empty sections', () => {
     const { container } = renderToc();
     for (const slug of ['2kyu', '1kyu', '1dan'] as const) {
       const row = container.querySelector(`[data-rank="${slug}"]`);
       expect(row).not.toBeNull();
       expect(row!.getAttribute('data-disabled')).toBe('true');
       expect(row!.textContent).toContain('Coming soon');
+      // Non-clickable coming-soon rows must not contain an anchor.
+      expect(row!.querySelector('a')).toBeNull();
     }
   });
 

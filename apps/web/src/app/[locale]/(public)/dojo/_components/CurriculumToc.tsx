@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { HiCheck, HiChevronRight } from 'react-icons/hi2';
+import { HiCheck } from 'react-icons/hi2';
 
 import { CURRICULUM } from '@/lib/db/data/curriculum';
 import type { RankSlug } from '@/lib/db/data/ranks';
@@ -23,17 +23,24 @@ type CurriculumTocProps = {
 };
 
 /**
- * Zenn-style flat curriculum list for the Dojo page.
+ * Zenn-chapter-style curriculum list for the Dojo page.
  *
- * Replaces the previous per-rank accordion with a single bordered card
- * containing a numbered flat list of sections (one row per curriculum
- * section), divided by hairlines. Each row links to its corresponding rank
- * guide when a guide exists; otherwise it renders as a muted, non-clickable
- * placeholder. Coming-soon ranks (empty `sections`) contribute a single
- * placeholder row per rank so the full curriculum outline stays visible.
+ * Plain vertical list (no outer card, no row dividers). Each row is a
+ * two-line entry: a small muted rank-name label on top, and the curriculum
+ * section title below, with a small belt-colored bullet on the left. Only
+ * the section title text is a `<Link>` — the bullet and rank name label
+ * remain non-interactive. Ranks whose guide does not yet exist (or whose
+ * `sections` list is empty, i.e. coming-soon ranks) render the section
+ * title as plain text.
  *
- * Achieved ranks get a check mark on their rows. The currently pursued
- * (`nextSlug`) rank gets a subtle background tint + left accent border.
+ * A vertical dashed line runs down the left side of the list, visually
+ * connecting the belt-colored bullet dots (book-spine effect). The line is
+ * clamped to start at the first bullet's vertical center and end at the
+ * last bullet's vertical center, sitting behind the dots.
+ *
+ * Achieved ranks show a check mark on the right. The currently pursued
+ * (`nextSlug`) rank is subtly highlighted via a left accent border on the
+ * row — card-less but still visible.
  */
 export function CurriculumToc({
   achievedSlugs,
@@ -44,8 +51,6 @@ export function CurriculumToc({
   achievedLabel,
   guideHrefBySlug,
 }: CurriculumTocProps) {
-  // Flatten curriculum into a numbered row list. Empty-section ranks still
-  // produce one placeholder row so users can see the full outline.
   type Row =
     | {
         kind: 'section';
@@ -85,49 +90,57 @@ export function CurriculumToc({
     }
   }
 
+  // Vertical offset from the top of each row to the vertical center of the
+  // belt bullet. Derived from the row's padding + the bullet's own offset:
+  //   py-3 (12px top padding) + mt-1.5 (6px) + half of size-2.5 (5px) = 23px.
+  // Because every row shares the same padding, the first bullet's center is
+  // this many pixels from the top of the <ol>, and the last bullet's center
+  // is the same offset from the bottom. We use these to clamp the dashed
+  // line so it does not extend past the first/last dot.
+  const BULLET_CENTER_OFFSET_PX = 23;
+  // Horizontal offset from the left of the <ol> to the vertical center of
+  // the belt bullet. pl-3 (12px) + half of size-2.5 (5px) = 17px.
+  const BULLET_CENTER_LEFT_PX = 17;
+
   return (
-    <ol className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-      {rows.map((row, index) => {
+    <ol className="relative flex flex-col">
+      <span
+        aria-hidden="true"
+        data-testid="curriculum-dashed-line"
+        className="pointer-events-none absolute border-l border-dashed border-border"
+        style={{
+          left: `${BULLET_CENTER_LEFT_PX}px`,
+          top: `${BULLET_CENTER_OFFSET_PX}px`,
+          bottom: `${BULLET_CENTER_OFFSET_PX}px`,
+        }}
+      />
+      {rows.map((row) => {
         const beltColor = getBeltColorHex(row.slug);
         const whiteBelt = isWhiteBelt(beltColor);
-        const isFirst = index === 0;
-        const numberLabel = index + 1;
 
-        // Base row classes: divider between rows, next-rank highlight.
         const baseRowClass = [
-          'relative flex items-center gap-3 px-4 py-3 text-sm',
-          isFirst ? '' : 'border-t border-border',
-          row.isNext ? 'bg-warning/5 border-l-2 border-l-warning' : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
-
-        const numberEl = (
-          <span className="w-6 shrink-0 text-center text-xs font-mono text-foreground/50">
-            {numberLabel}
-          </span>
-        );
+          'relative flex items-start gap-3 py-3 pl-3 pr-2',
+          row.isNext
+            ? 'border-l-2 border-l-warning bg-warning/5'
+            : 'border-l-2 border-l-transparent',
+        ].join(' ');
 
         const beltDot = (
           <span
-            className="inline-block size-3 shrink-0 rounded-full"
+            className="relative z-10 mt-1.5 inline-block size-2.5 shrink-0 rounded-full"
             style={{
               backgroundColor: beltColor,
               ...(whiteBelt ? { border: '1px solid #d4d4d4' } : {}),
             }}
             aria-hidden="true"
+            data-testid="curriculum-belt-dot"
+            data-belt-color={beltColor}
           />
-        );
-
-        const rankBadge = (
-          <span className="shrink-0 rounded bg-muted/40 px-2 py-0.5 text-[11px] font-medium text-foreground/70">
-            {rankName(row.slug)}
-          </span>
         );
 
         const achievedMark = row.isAchieved ? (
           <HiCheck
-            className="size-4 shrink-0 text-emerald-500"
+            className="mt-1 size-4 shrink-0 text-emerald-500"
             aria-label={achievedLabel}
             aria-hidden={false}
             role="img"
@@ -144,56 +157,41 @@ export function CurriculumToc({
               data-next={row.isNext ? 'true' : undefined}
               data-disabled="true"
             >
-              {numberEl}
               {beltDot}
-              <span className="flex-1 truncate italic">
-                {rankName(row.slug)} — {emptyLabel}
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="text-xs text-muted-foreground">{rankName(row.slug)}</span>
+                <span className="text-sm italic">{emptyLabel}</span>
               </span>
-              {rankBadge}
               {achievedMark}
             </li>
           );
         }
 
-        const content = (
-          <>
-            {numberEl}
-            {beltDot}
-            <span className="flex-1 truncate text-foreground">{row.title}</span>
-            {rankBadge}
-            {achievedMark}
-            {row.href && (
-              <HiChevronRight aria-hidden="true" className="size-4 shrink-0 text-foreground/40" />
-            )}
-          </>
+        const titleLink = row.href ? (
+          <Link
+            href={row.href}
+            className="text-sm text-foreground transition-colors hover:text-foreground/70 hover:underline"
+          >
+            {row.title}
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">{row.title}</span>
         );
-
-        if (row.href) {
-          return (
-            <li
-              key={`${row.slug}-${row.title}`}
-              data-rank={row.slug}
-              data-next={row.isNext ? 'true' : undefined}
-            >
-              <Link
-                href={row.href}
-                className={`${baseRowClass} transition-colors hover:bg-muted/30`}
-              >
-                {content}
-              </Link>
-            </li>
-          );
-        }
 
         return (
           <li
             key={`${row.slug}-${row.title}`}
-            className={`${baseRowClass} text-muted-foreground`}
+            className={baseRowClass}
             data-rank={row.slug}
             data-next={row.isNext ? 'true' : undefined}
-            data-disabled="true"
+            data-disabled={row.href ? undefined : 'true'}
           >
-            {content}
+            {beltDot}
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">{rankName(row.slug)}</span>
+              {titleLink}
+            </span>
+            {achievedMark}
           </li>
         );
       })}
