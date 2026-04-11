@@ -1269,6 +1269,7 @@
       "selectRank": "ランクを選択 (1-8)",
       "backspace": "一文字削除",
       "clear": "クリア",
+      "keyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。",
       "submit": "回答",
       "correct": "正解！",
       "incorrect": "不正解",

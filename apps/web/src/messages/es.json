@@ -1268,6 +1268,7 @@
       "selectRank": "Selecciona una fila (1-8)",
       "backspace": "Retroceso",
       "clear": "Borrar",
+      "keyboardHint": "Escribe una letra (a-h) y luego un número (1-8). Retroceso: borrar.",
       "submit": "Enviar",
       "correct": "¡Correcto!",
       "incorrect": "Incorrecto",

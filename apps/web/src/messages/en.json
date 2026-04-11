@@ -1268,6 +1268,7 @@
       "selectRank": "Select a rank (1-8)",
       "backspace": "Backspace",
       "clear": "Clear",
+      "keyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete.",
       "submit": "Submit",
       "correct": "Correct!",
       "incorrect": "Incorrect",

@@ -6,7 +6,9 @@ import { LuPlay } from 'react-icons/lu';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 
@@ -89,6 +91,13 @@ export function DiagonalQuizPlaying({
     showResult,
     isDisabled,
     onAnswer,
+  });
+
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: !isDisabled,
   });
 
   return (
@@ -201,6 +210,8 @@ export function DiagonalQuizPlaying({
             onBackspace={handleBackspace}
             onClear={handleClear}
           />
+
+          <KeyboardHintText text={t('keyboardHint')} disabled={isDisabled} />
         </div>
       </div>
 

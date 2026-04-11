@@ -41,3 +41,32 @@ export function KeyboardHint({ bindings, disabled = false }: Props) {
     </div>
   );
 }
+
+type TextProps = {
+  /** Hint sentence to display. */
+  text: string;
+  /** When true, the hint is dimmed to match the inactive state of its target UI. */
+  disabled?: boolean;
+};
+
+/**
+ * Plain-text variant of the desktop keyboard hint. Use this when the key set
+ * is too wide to render individual `<kbd>` glyphs (e.g. typing any file
+ * `a`-`h` followed by any rank `1`-`8`). Same desktop-only visibility and
+ * muted styling as {@link KeyboardHint}.
+ */
+export function KeyboardHintText({ text, disabled = false }: TextProps) {
+  if (!text) return null;
+
+  return (
+    <div
+      className={`mt-4 hidden [@media(pointer:fine)]:flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground transition-opacity ${
+        disabled ? 'opacity-40' : 'opacity-100'
+      }`}
+      aria-hidden="true"
+      data-testid="keyboard-hint-text"
+    >
+      <span>{text}</span>
+    </div>
+  );
+}
