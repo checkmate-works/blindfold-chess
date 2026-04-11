@@ -16,10 +16,12 @@ import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_comp
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
+import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -50,6 +52,7 @@ export default function RoutePlannerChallengeSession({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
+  const tCommon = useTranslations('practice.common');
   const router = useRouter();
   const quitConfirmLabels = useQuitConfirmLabels();
 
@@ -57,9 +60,6 @@ export default function RoutePlannerChallengeSession({
   const [moves, setMoves] = useState<string[]>([]);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
   const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const { selectedFile, selectedRank, setSelectedFile, setSelectedRank, resetInput } =
-    useCoordinateInput();
 
   const piecesForGeneration = useMemo(
     () => (allowedPieces.length > 0 ? allowedPieces : [...PIECES]),
@@ -96,6 +96,42 @@ export default function RoutePlannerChallengeSession({
   useScrollToElement('route-planner-challenge-session');
 
   const timeElapsed = initialTimeLimit - timeRemaining;
+  const isDisabled = showFeedback || isPaused || countdown !== null;
+
+  // Forward refs so coordinate input can call the yet-to-be-defined game
+  // callbacks without a circular hook dependency.
+  const addMoveRef = useRef<(square: string) => void>(() => {});
+  const handleUndoRef = useRef<() => void>(() => {});
+  const movesLengthRef = useRef(0);
+
+  const handleCoordinateComplete = useCallback((square: string) => {
+    addMoveRef.current(square);
+  }, []);
+  const handleCoordinateUndo = useCallback(() => {
+    handleUndoRef.current();
+  }, []);
+  const hasMovesToUndo = useCallback(() => movesLengthRef.current > 0, []);
+
+  const {
+    selectedFile,
+    selectedRank,
+    handleFilePress,
+    handleRankPress,
+    handleBackspace,
+    resetInput,
+  } = useCoordinateInput({
+    onCoordinateComplete: handleCoordinateComplete,
+    onUndo: handleCoordinateUndo,
+    hasMovesToUndo,
+    disabled: isDisabled,
+  });
+
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: !isDisabled && currentProblem !== null,
+  });
 
   // Reset local state when currentProblem changes (new question from useTimedSession)
   const prevProblemRef = useRef(currentProblem);
@@ -128,6 +164,10 @@ export default function RoutePlannerChallengeSession({
     setMoves(moves.slice(0, -1));
     resetInput();
   }, [moves, currentProblem, resetInput]);
+
+  addMoveRef.current = addMove;
+  handleUndoRef.current = handleUndo;
+  movesLengthRef.current = moves.length;
 
   const handleSubmitAnswer = useCallback(() => {
     if (!currentProblem || showFeedback || isPaused || countdown !== null) return;
@@ -167,55 +207,6 @@ export default function RoutePlannerChallengeSession({
 
     hookHandleAnswer(success);
   }, [currentProblem, moves, hookHandleAnswer, showFeedback, isPaused, countdown]);
-
-  const attemptMoveSubmit = useCallback(
-    (file: string | null, rank: string | null) => {
-      if (!file || !rank) return;
-      addMove(`${file}${rank}`);
-      resetInput();
-    },
-    [addMove, resetInput]
-  );
-
-  const handleFileToggle = useCallback(
-    (file: string) => {
-      if (showFeedback || isPaused || countdown !== null) return;
-      const newFile = file === selectedFile ? null : file;
-      setSelectedFile(newFile);
-      if (newFile && selectedRank) {
-        attemptMoveSubmit(newFile, selectedRank);
-      }
-    },
-    [
-      selectedFile,
-      selectedRank,
-      attemptMoveSubmit,
-      setSelectedFile,
-      showFeedback,
-      isPaused,
-      countdown,
-    ]
-  );
-
-  const handleRankToggle = useCallback(
-    (rank: string) => {
-      if (showFeedback || isPaused || countdown !== null) return;
-      const newRank = rank === selectedRank ? null : rank;
-      setSelectedRank(newRank);
-      if (selectedFile && newRank) {
-        attemptMoveSubmit(selectedFile, newRank);
-      }
-    },
-    [
-      selectedFile,
-      selectedRank,
-      attemptMoveSubmit,
-      setSelectedRank,
-      showFeedback,
-      isPaused,
-      countdown,
-    ]
-  );
 
   const handleQuitRequest = useCallback(() => {
     if (!isPaused) togglePause();
@@ -281,8 +272,6 @@ export default function RoutePlannerChallengeSession({
   if (!currentProblem || isFinished) {
     return <PracticeResultSkeleton />;
   }
-
-  const isDisabled = showFeedback || isPaused || countdown !== null;
 
   return (
     <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
@@ -415,14 +404,14 @@ export default function RoutePlannerChallengeSession({
 
             {/* Coordinate Input */}
             <div
-              className={`transition-opacity duration-300 ${showFeedback ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`transition-opacity duration-300 ${isDisabled ? 'opacity-40 pointer-events-none' : ''}`}
             >
               <PieceCoordinateInput
                 activePiece={currentProblem.piece}
                 selectedFile={selectedFile}
                 selectedRank={selectedRank}
-                onFileToggle={handleFileToggle}
-                onRankToggle={handleRankToggle}
+                onFileToggle={handleFilePress}
+                onRankToggle={handleRankPress}
               >
                 <div className="flex pt-4 border-t border-border mt-2">
                   <Button
@@ -439,6 +428,7 @@ export default function RoutePlannerChallengeSession({
                   </Button>
                 </div>
               </PieceCoordinateInput>
+              <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={isDisabled} />
             </div>
           </div>
         </div>

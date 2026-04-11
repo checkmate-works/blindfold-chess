@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 import Link from 'next/link';
 
@@ -10,8 +10,10 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { KeyboardHintText } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
 import { useCoordinateInput } from '../_hooks/use-coordinate-input';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
@@ -32,17 +34,39 @@ export function RoutePlannerSession({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
+  const tCommon = useTranslations('practice.common');
+
+  // Forward refs for game-hook callbacks — coordinate input needs to call
+  // `addMove` / `handleUndo` / check moves length, but the game hook itself
+  // depends on `resetInput` coming from the coordinate input. The refs break
+  // the cycle without losing up-to-date closures.
+  const addMoveRef = useRef<(square: string) => void>(() => {});
+  const handleUndoRef = useRef<() => void>(() => {});
+  const movesLengthRef = useRef(0);
+
+  const handleCoordinateComplete = useCallback((square: string) => {
+    addMoveRef.current(square);
+  }, []);
+  const handleCoordinateUndo = useCallback(() => {
+    handleUndoRef.current();
+  }, []);
+  const hasMovesToUndo = useCallback(() => movesLengthRef.current > 0, []);
 
   const {
     selectedFile,
     selectedRank,
     highlightedPathIndex,
+    handleFilePress,
+    handleRankPress,
+    handleBackspace,
     setHoveredPathIndex,
     setLockedPathIndex,
-    setSelectedFile,
-    setSelectedRank,
     resetInput,
-  } = useCoordinateInput();
+  } = useCoordinateInput({
+    onCoordinateComplete: handleCoordinateComplete,
+    onUndo: handleCoordinateUndo,
+    hasMovesToUndo,
+  });
 
   const {
     gameState,
@@ -63,36 +87,18 @@ export function RoutePlannerSession({
     resetInput,
   });
 
-  const attemptMoveSubmit = useCallback(
-    (file: string | null, rank: string | null) => {
-      if (!file || !rank) return;
-      addMove(`${file}${rank}`);
-      resetInput();
-    },
-    [addMove, resetInput]
-  );
+  addMoveRef.current = addMove;
+  handleUndoRef.current = handleUndo;
+  movesLengthRef.current = moves.length;
 
-  const handleFileToggle = useCallback(
-    (file: string) => {
-      const newFile = file === selectedFile ? null : file;
-      setSelectedFile(newFile);
-      if (newFile && selectedRank) {
-        attemptMoveSubmit(newFile, selectedRank);
-      }
-    },
-    [selectedFile, selectedRank, attemptMoveSubmit, setSelectedFile]
-  );
+  const isInputActive = gameState === 'playing';
 
-  const handleRankToggle = useCallback(
-    (rank: string) => {
-      const newRank = rank === selectedRank ? null : rank;
-      setSelectedRank(newRank);
-      if (selectedFile && newRank) {
-        attemptMoveSubmit(selectedFile, newRank);
-      }
-    },
-    [selectedFile, selectedRank, attemptMoveSubmit, setSelectedRank]
-  );
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: isInputActive,
+  });
 
   if (!problem) return <PracticeResultSkeleton />;
 
@@ -157,26 +163,29 @@ export function RoutePlannerSession({
           )}
 
           {gameState === 'playing' && (
-            <PieceCoordinateInput
-              activePiece={problem.piece}
-              selectedFile={selectedFile}
-              selectedRank={selectedRank}
-              onFileToggle={handleFileToggle}
-              onRankToggle={handleRankToggle}
-            >
-              {/* Answer Action */}
-              <div className="flex pt-4 border-t border-border mt-2">
-                <Button
-                  onClick={handleSubmitAnswer}
-                  disabled={moves.length === 0 && problem.start === problem.end}
-                  variant="primary"
-                  className="w-full"
-                >
-                  <FaFlagCheckered className="mr-2" />
-                  {t('submit')}
-                </Button>
-              </div>
-            </PieceCoordinateInput>
+            <>
+              <PieceCoordinateInput
+                activePiece={problem.piece}
+                selectedFile={selectedFile}
+                selectedRank={selectedRank}
+                onFileToggle={handleFilePress}
+                onRankToggle={handleRankPress}
+              >
+                {/* Answer Action */}
+                <div className="flex pt-4 border-t border-border mt-2">
+                  <Button
+                    onClick={handleSubmitAnswer}
+                    disabled={moves.length === 0 && problem.start === problem.end}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    <FaFlagCheckered className="mr-2" />
+                    {t('submit')}
+                  </Button>
+                </div>
+              </PieceCoordinateInput>
+              <KeyboardHintText text={tCommon('algebraicKeyboardHint')} disabled={!isInputActive} />
+            </>
           )}
         </div>
 
