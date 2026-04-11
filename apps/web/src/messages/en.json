@@ -210,7 +210,8 @@
     "leaderboard": "Leaderboard",
     "contact": "Contact",
     "settings": "Settings",
-    "ranks": "Belt System"
+    "ranks": "Belt System",
+    "guides": "Guides"
   },
   "Preferences": {
     "title": "Settings",
@@ -3544,6 +3545,10 @@
         "quadrantsLabel": "Quadrant Training",
         "5kyuGuideLabel": "View the 5th Kyū guide"
       }
+    },
+    "navigation": {
+      "prevRank": "Previous rank: {rankName} guide",
+      "nextRank": "Next rank: {rankName} guide"
     }
   }
 }

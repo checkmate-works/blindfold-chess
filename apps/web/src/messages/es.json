@@ -210,7 +210,8 @@
     "leaderboard": "Clasificación",
     "contact": "Contacto",
     "settings": "Configuración",
-    "ranks": "Sistema de Cinturones"
+    "ranks": "Sistema de Cinturones",
+    "guides": "Guías"
   },
   "Preferences": {
     "title": "Configuración",
@@ -3543,6 +3544,10 @@
         "quadrantsLabel": "Entrenamiento de Cuadrantes",
         "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
       }
+    },
+    "navigation": {
+      "prevRank": "Rango anterior: guía de {rankName}",
+      "nextRank": "Siguiente rango: guía de {rankName}"
     }
   }
 }

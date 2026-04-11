@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
 
-import { isMukyuSlug } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
 import {
   buildChapterHref,
@@ -78,6 +78,11 @@ export type GuideBodyProps = FlatBodyProps | ChapterListProps | ChapterBodyProps
  */
 type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
 
+type RankNavigationNeighbour = {
+  slug: RankSlug;
+  rankName: string;
+};
+
 type GuideContext = {
   locale: Locale;
   rankSlug: RankSlug;
@@ -86,7 +91,36 @@ type GuideContext = {
   beltColor: string;
   tRanks: Translator;
   tGuides: Translator;
+  /**
+   * Adjacent ranks that have published guide content. Either side is `null`
+   * at the extremes of `ALL_RANK_SLUGS` or when the adjacent rank has no
+   * guide entry in `guides.pages`.
+   */
+  prevRank: RankNavigationNeighbour | null;
+  nextRank: RankNavigationNeighbour | null;
 };
+
+/**
+ * Find the nearest sibling rank in `ALL_RANK_SLUGS` that has guide content,
+ * walking in `step === -1` (previous) or `step === +1` (next) direction.
+ * Returns `null` when no reachable sibling with a published guide exists.
+ */
+function findAdjacentGuidedRank(
+  currentSlug: RankSlug,
+  step: -1 | 1,
+  guidesPages: Record<string, unknown>,
+  tRanks: Translator
+): RankNavigationNeighbour | null {
+  const index = (ALL_RANK_SLUGS as readonly string[]).indexOf(currentSlug);
+  if (index === -1) return null;
+  for (let i = index + step; i >= 0 && i < ALL_RANK_SLUGS.length; i += step) {
+    const slug = ALL_RANK_SLUGS[i];
+    if (getRankGuide(guidesPages, slug) !== null) {
+      return { slug, rankName: tRanks(`rankNames.${slug}`) };
+    }
+  }
+  return null;
+}
 
 /**
  * Resolve everything that every layer needs regardless of `kind`: the guide
@@ -110,6 +144,8 @@ async function resolveGuideContext(locale: Locale, rankSlug: RankSlug): Promise<
     beltColor: getBeltColorHex(rankSlug),
     tRanks,
     tGuides,
+    prevRank: findAdjacentGuidedRank(rankSlug, -1, guidesPages, tRanks),
+    nextRank: findAdjacentGuidedRank(rankSlug, +1, guidesPages, tRanks),
   };
 }
 
@@ -173,6 +209,49 @@ function renderPageParagraphs({
         );
       })}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Rank navigation (prev / next guide) — shared between flat + chapter bodies
+// ---------------------------------------------------------------------------
+
+/**
+ * Prev / next rank guide links, rendered on the last page of a flat guide
+ * and on every chapter body page. Either side collapses silently when there
+ * is no adjacent guided rank — e.g. mukyu has no previous, 3kyu currently
+ * has no next because 2kyu has no guide content yet.
+ */
+function RankNavigation({ ctx }: { ctx: GuideContext }): ReactNode {
+  const { locale, tGuides, prevRank, nextRank } = ctx;
+  if (!prevRank && !nextRank) return null;
+
+  return (
+    <nav
+      aria-label="Rank guide navigation"
+      className="mt-6 flex items-center justify-between gap-4"
+    >
+      {prevRank ? (
+        <a
+          href={buildGuidePath(locale, prevRank.slug, { kind: 'root' })}
+          className="text-sm text-link-primary hover:underline"
+        >
+          ← {tGuides('navigation.prevRank', { rankName: prevRank.rankName })}
+        </a>
+      ) : (
+        <span />
+      )}
+      {nextRank ? (
+        <a
+          href={buildGuidePath(locale, nextRank.slug, { kind: 'root' })}
+          className="text-sm text-link-primary hover:underline"
+        >
+          {tGuides('navigation.nextRank', { rankName: nextRank.rankName })} →
+        </a>
+      ) : (
+        <span />
+      )}
+    </nav>
   );
 }
 
@@ -317,6 +396,8 @@ async function renderFlatBody(
           </>
         )}
 
+        {isLastPage && <RankNavigation ctx={ctx} />}
+
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
       </PagePanel>
     </div>
@@ -342,6 +423,11 @@ async function renderChapterBody(
 
   const currentPage = chapter.pages[pageNumber - 1];
   const showPagination = chapter.pages.length > 1;
+  // "Last reachable page of this rank's guide" — only true on the final
+  // page of the final chapter. Lower-walks the same termination semantics
+  // as `renderFlatBody::isLastPage`.
+  const isLastChapter = guide.chapters[guide.chapters.length - 1]?.slug === chapter.slug;
+  const isLastPageOfRank = isLastChapter && pageNumber === chapter.pages.length;
 
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: tGuides('breadcrumb.guides'), href: '/guides' },
@@ -418,6 +504,8 @@ async function renderChapterBody(
             />
           </>
         )}
+
+        {isLastPageOfRank && <RankNavigation ctx={ctx} />}
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
       </PagePanel>

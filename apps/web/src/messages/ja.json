@@ -210,7 +210,8 @@
     "leaderboard": "ランキング",
     "contact": "お問い合わせ",
     "settings": "設定",
-    "ranks": "段級位制"
+    "ranks": "段級位制",
+    "guides": "ガイド"
   },
   "Preferences": {
     "title": "設定",
@@ -3500,6 +3501,10 @@
         "quadrantsLabel": "4分割トレーニング",
         "5kyuGuideLabel": "5級のガイドを見る"
       }
+    },
+    "navigation": {
+      "prevRank": "前の段級位: {rankName} ガイド",
+      "nextRank": "次の段級位: {rankName} ガイド"
     }
   }
 }
