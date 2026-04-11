@@ -11,13 +11,12 @@ type Props = {
 };
 
 export async function Footer({ locale }: Props) {
-  const [tPrivacy, tTerms, tCompany, tContact, tAffiliate, tHeader] = await Promise.all([
+  const [tPrivacy, tTerms, tCompany, tContact, tAffiliate] = await Promise.all([
     getTranslations({ locale, namespace: 'privacy' }),
     getTranslations({ locale, namespace: 'terms' }),
     getTranslations({ locale, namespace: 'company' }),
     getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'affiliateDisclosure' }),
-    getTranslations({ locale, namespace: 'Header' }),
   ]);
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
@@ -26,21 +25,6 @@ export async function Footer({ locale }: Props) {
     <footer className="bg-card border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-4">
-          {/* Content discovery links */}
-          <nav>
-            <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
-              <li>
-                <Link
-                  href={`/${locale}/guides`}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
-                >
-                  <FaChevronRight className="h-2 w-2" />
-                  {tHeader('guides')}
-                </Link>
-              </li>
-            </ul>
-          </nav>
-
           {/* Legal pages - vertical menu */}
           <nav>
             <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
