@@ -19,6 +19,7 @@ import type { NotificationWithActor } from '../_lib/queries';
 import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
+  isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
 } from '../_lib/type-guards';
@@ -74,6 +75,14 @@ export function NotificationItem({ notification, currentUsername }: Props) {
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
       return `/u/${actor.username}`;
+    }
+    if (notification.type === 'like' && notification.targetType === 'position') {
+      if (isPositionMetadata(notification.metadata)) {
+        return `/practice/position-memory/${notification.metadata.positionId}`;
+      }
+      if (notification.targetId) {
+        return `/practice/position-memory/${notification.targetId}`;
+      }
     }
     if (
       (notification.type === 'like' ||

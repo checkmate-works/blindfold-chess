@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAnnouncementMetadata, isPostMetadata, isReplyMetadata } from './type-guards';
+import {
+  isAnnouncementMetadata,
+  isPositionMetadata,
+  isPostMetadata,
+  isReplyMetadata,
+} from './type-guards';
 
 // ---------------------------------------------------------------------------
 // isPostMetadata
@@ -203,5 +208,63 @@ describe('isAnnouncementMetadata', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (d as any).title = 'y';
     expect(isAnnouncementMetadata(d)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isPositionMetadata
+// ---------------------------------------------------------------------------
+
+describe('isPositionMetadata', () => {
+  it('should return true for valid metadata with positionId', () => {
+    expect(isPositionMetadata({ positionId: 'pos-1' })).toBe(true);
+  });
+
+  it('should return true for metadata with extra properties', () => {
+    expect(isPositionMetadata({ positionId: 'pos-1', extra: 'x' })).toBe(true);
+  });
+
+  it('should return false for null', () => {
+    expect(isPositionMetadata(null)).toBe(false);
+  });
+
+  it('should return false for undefined', () => {
+    expect(isPositionMetadata(undefined)).toBe(false);
+  });
+
+  it('should return false for an empty object', () => {
+    expect(isPositionMetadata({})).toBe(false);
+  });
+
+  it('should return false when positionId is not a string', () => {
+    expect(isPositionMetadata({ positionId: 123 })).toBe(false);
+  });
+
+  it('should return false when positionId is null', () => {
+    expect(isPositionMetadata({ positionId: null })).toBe(false);
+  });
+
+  it('should return false when positionId is a boolean', () => {
+    expect(isPositionMetadata({ positionId: true })).toBe(false);
+  });
+
+  it('should return false when positionId is an object', () => {
+    expect(isPositionMetadata({ positionId: { nested: 'value' } })).toBe(false);
+  });
+
+  it('should return true when positionId is an empty string (current guard permits it)', () => {
+    // NOTE: The current type guard only checks typeof === 'string', so '' passes.
+    // This documents the existing behavior; callers must guard against empty strings themselves.
+    expect(isPositionMetadata({ positionId: '' })).toBe(true);
+  });
+
+  it('should return false for non-object values', () => {
+    expect(isPositionMetadata('string')).toBe(false);
+    expect(isPositionMetadata(42)).toBe(false);
+    expect(isPositionMetadata(true)).toBe(false);
+  });
+
+  it('should return false for an array', () => {
+    expect(isPositionMetadata([])).toBe(false);
   });
 });

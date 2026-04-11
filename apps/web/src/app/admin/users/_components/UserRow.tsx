@@ -53,7 +53,7 @@ export function UserRow({
       <td className="px-4 py-3">
         {profile?.username ? (
           <Link
-            href={`/en/profile/${encodeURIComponent(profile.username)}`}
+            href={`/en/u/${encodeURIComponent(profile.username)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"

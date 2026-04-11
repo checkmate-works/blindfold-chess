@@ -11,6 +11,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/positio
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { PositionFeedData } from '../_lib/types';
 import { FeedItemCard } from './FeedItemCard';
@@ -27,6 +28,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   justNowLabel,
 }: Props) {
   const tFeed = useTranslations('home.feed.position');
+  const { preferences } = useGamePreferences();
   const displayName = resolveDisplayName(data.author);
   const href = `/practice/position-memory/${data.id}`;
 
@@ -34,7 +36,13 @@ export const PositionFeedCard = memo(function PositionFeedCard({
     <FeedItemCard
       href={href}
       locale={locale}
-      thumbnail={<BoardThumbnail fen={data.fen} className="w-full h-full" />}
+      thumbnail={
+        <BoardThumbnail
+          fen={data.fen}
+          className="w-full h-full"
+          boardTheme={preferences.boardTheme}
+        />
+      }
     >
       <UserAvatar
         profileHref={null}

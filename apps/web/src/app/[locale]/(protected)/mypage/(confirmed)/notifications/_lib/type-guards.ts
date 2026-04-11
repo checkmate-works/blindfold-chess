@@ -1,6 +1,13 @@
 export type PostMetadata = { topicType: string; topicKey: string; postId: string };
 export type ReplyMetadata = PostMetadata & { replyId: string };
 export type AnnouncementMetadata = { slug: string; title: string };
+export type PositionMetadata = { positionId: string };
+
+export function isPositionMetadata(m: unknown): m is PositionMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.positionId === 'string';
+}
 
 export function isPostMetadata(m: unknown): m is PostMetadata {
   if (typeof m !== 'object' || m === null) return false;
