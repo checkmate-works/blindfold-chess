@@ -6,9 +6,11 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
+import { getPositionById } from '@/lib/positions/queries';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -42,14 +44,36 @@ export default async function PositionResultPage({ params }: Props) {
     notFound();
   }
 
+  const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
+  const tNav = await getTranslations({ locale, namespace: 'navigation' });
+
+  const position = await getPositionById({ id, type: 'memory' });
+
   const adBannerStandard =
     IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
       <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
     ) : undefined;
 
+  const breadcrumb = (
+    <Breadcrumb
+      items={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/position-memory' },
+        ...(position ? [{ label: position.title, href: `/practice/position-memory/${id}` }] : []),
+        { label: t('result') },
+      ]}
+      locale={locale}
+    />
+  );
+
   return (
     <Suspense>
-      <SinglePositionResult locale={locale} positionId={id} adBannerStandard={adBannerStandard} />
+      <SinglePositionResult
+        locale={locale}
+        positionId={id}
+        adBannerStandard={adBannerStandard}
+        breadcrumb={breadcrumb}
+      />
     </Suspense>
   );
 }

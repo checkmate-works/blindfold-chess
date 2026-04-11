@@ -11,7 +11,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
-import { CardLink, PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -23,9 +23,10 @@ type Props = {
   locale: Locale;
   positionId: string;
   adBannerStandard?: ReactNode;
+  breadcrumb?: ReactNode;
 };
 
-export function SinglePositionResult({ locale, positionId, adBannerStandard }: Props) {
+export function SinglePositionResult({ locale, positionId, adBannerStandard, breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('practice.positionMemory');
   const { preferences } = useGamePreferences();
@@ -183,6 +184,13 @@ export function SinglePositionResult({ locale, positionId, adBannerStandard }: P
 
           {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
         </div>
+
+        {breadcrumb && (
+          <>
+            <Divider />
+            {breadcrumb}
+          </>
+        )}
       </PagePanel>
     </div>
   );
