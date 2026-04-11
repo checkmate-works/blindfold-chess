@@ -84,7 +84,7 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
       <td className="px-4 py-3">
         {profileMap.get(log.userId)?.username ? (
           <Link
-            href={`/en/profile/${encodeURIComponent(profileMap.get(log.userId)!.username!)}`}
+            href={`/en/u/${encodeURIComponent(profileMap.get(log.userId)!.username!)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -103,7 +103,7 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
             {log.targetType === 'user' && log.targetId ? (
               profileMap.get(log.targetId)?.username ? (
                 <Link
-                  href={`/en/profile/${encodeURIComponent(profileMap.get(log.targetId)!.username!)}`}
+                  href={`/en/u/${encodeURIComponent(profileMap.get(log.targetId)!.username!)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
