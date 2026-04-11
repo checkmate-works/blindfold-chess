@@ -159,6 +159,10 @@
       "title": "段級位制度",
       "description": "目隠しチェスでAIを打ち負かす実力がつけられるように独自のカリキュラムを公開。黒帯取得を目指そう。"
     },
+    "dojo": {
+      "title": "道場",
+      "description": "現在の段級位と、次の昇級に必要な条件をひとつのページで確認できます。"
+    },
     "glossary": {
       "title": "チェス用語集 - 用語と定義一覧",
       "description": "チェスの専門用語を網羅的に解説する用語集。アルファベット順やカテゴリー別に検索して、戦術・戦略・ポジショナルコンセプトなど目隠しチェスに役立つ用語の意味を学びましょう。",
@@ -175,9 +179,23 @@
       "title": "{rankName} - 段級位",
       "description": "{rankName}の合格基準と必要スコアの詳細。"
     },
-    "rankGuide": {
-      "title": "{rankName} ガイド - 段級位",
-      "description": "{rankName}の合格に向けた詳細なガイドと解説。"
+    "guides": {
+      "top": {
+        "title": "ガイド",
+        "description": "段級位別に整理された、目隠しチェス訓練のテキストブック形式ガイド。"
+      },
+      "rank": {
+        "title": "{rankName} ガイド",
+        "description": "{rankName} の目隠しチェス教本(ガイド)。盤上の座標認識、ダイアゴナル計算、駒の合法手、駒運び(マヌーバリング)を、視覚教材とインラインリンクつきで段階的に解説し、帯システムで到達度を確認しながら学べる学習ガイドです。",
+        "pageTitle": "{rankName} ガイド - {page}ページ目",
+        "descriptionWithPage": "{rankName} の目隠しチェス教本(ガイド)、{page}/{total}ページ。視覚教材やインラインリンクを使いながら、{rankName} 取得に必要な盤上認識・座標感覚・駒運びを段階的に身につけていくページです。"
+      },
+      "chapter": {
+        "title": "{rankName} ガイド - {chapterName}",
+        "description": "{rankName} ガイドの {chapterName} 章。視覚教材を使った段階的な解説で、目隠しチェスで {chapterName} を扱うのに必要な感覚と計算を、{rankName} 取得に向けて体系的に身につけられる学習コンテンツです。",
+        "pageTitle": "{rankName} ガイド - {chapterName} - {page}ページ目",
+        "descriptionWithPage": "{rankName} ガイドの {chapterName} 章、{page}/{total}ページ。視覚教材やインラインリンクで、{chapterName} を少しずつ身につける手順と、目隠しチェスに必要な感覚・計算を具体的に解説します。"
+      }
     }
   },
   "Header": {
@@ -196,7 +214,8 @@
     "leaderboard": "ランキング",
     "contact": "お問い合わせ",
     "settings": "設定",
-    "ranks": "段級位制"
+    "ranks": "段級位制",
+    "guides": "ガイド"
   },
   "Preferences": {
     "title": "設定",
@@ -3248,8 +3267,91 @@
       "prevPage": "前へ",
       "nextPage": "次へ",
       "pageOf": "{total}ページ中{current}ページ目",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["代数記法を理解していること"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "詳しくは以下の記事をみてください。",
+        "practiceLink": "簡単な演習を以下で行うこともできます。",
+        "learnArticleLabel": "代数記法について学ぶ",
+        "practiceLabel": "代数記法の練習"
+      },
+      "readFullGuide": "{rankName} ガイドを読む"
+    },
+    "signUpBanner": {
+      "message": "黒帯を取得しよう！",
+      "description": "段級位の取得には会員登録が必要です",
+      "cta": "無料登録"
+    },
+    "lockedModal": {
+      "title": "ロックされた級",
+      "message": "{rankName}を合格したら挑戦できます",
+      "linkLabel": "{rankName}の詳細を見る",
+      "ariaLabel": "ロックされています"
+    }
+  },
+  "rankAchievement": {
+    "title": "昇級おめでとう！",
+    "description": "新しい級位を獲得しました。",
+    "viewRanks": "段級位を見る",
+    "close": "閉じる",
+    "rankNames": {
+      "mukyu": "無級",
+      "5kyu": "5級",
+      "4kyu": "4級",
+      "3kyu": "3級",
+      "2kyu": "2級",
+      "1kyu": "1級",
+      "1dan": "初段"
+    }
+  },
+  "MobileTabBar": {
+    "games": "ゲーム一覧",
+    "dojo": "道場",
+    "topics": "トピック",
+    "mypage": "マイページ"
+  },
+  "dojo": {
+    "pageTitle": "道場",
+    "currentRankTitle": "現在のランク",
+    "nextRankTitle": "次のランク",
+    "nextRankRequirementsComingSoon": "条件は近日公開",
+    "allAchieved": "すべてのランクを達成しました 🎉",
+    "viewAllRanks": "段級位一覧を見る",
+    "viewAllPractices": "練習一覧を見る",
+    "viewAllGuides": "ガイドを全て見る",
+    "curriculum": {
+      "title": "教本",
+      "empty": "近日公開",
+      "achieved": "達成済み",
+      "sections": {
+        "algebraicNotation": "代数記法の理解",
+        "anchorPoints": "アンカーポイントによる盤面の把握",
+        "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
+        "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
+      }
+    }
+  },
+  "guides": {
+    "top": {
+      "title": "ガイド",
+      "sections": {
+        "rankGuides": {
+          "title": "段級位別ガイド",
+          "description": "段級位ごとに整理された、目隠しチェス訓練のテキストブック形式のガイドです。"
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "解説",
+      "chapterListHeading": "章"
+    },
+    "breadcrumb": {
+      "home": "ホーム",
+      "guides": "ガイド"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "もし e4 や Nf3 などの記法が意味することがわからないなら、代数記法を理解するところから始める必要があります。",
@@ -3273,8 +3375,11 @@
               "このテクニックは5級で習います。"
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "うまく問題が解けない場合は、アンカーポイントを利用してみましょう。",
@@ -3300,8 +3405,11 @@
               "以下の記事でもこの方法を解説しています。"
             ]
           }
-        ],
-        "3kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "ビショップのマヌーバリングに関してですが、まずビショップが特定のマスに置かれた場合、そのビショップがどのダイアゴナルと逆ダイアゴナルを支配できるかを考えるといいです。",
@@ -3386,8 +3494,11 @@
               "このダイアゴナルと逆ダイアゴナルの計算ができるようになると目隠しチェスでのマヌーバリングも早くできるようになるのですが、その理論は別途解説予定です。"
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "物理的なチェスボードが目の前にある場合、おそらくチェスの経験者ならすべての駒で合法手の判断をすることがほぼ無意識にできるでしょう。",
@@ -3425,63 +3536,34 @@
             ]
           }
         ]
-      },
-      "mukyuRequirements": ["代数記法を理解していること"],
-      "3kyuGuideLinks": {
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
         "diagonalQuizTutorialLabel": "ダイアゴナルクイズ チュートリアル",
         "diagonalQuizLabel": "ダイアゴナルクイズ"
       },
-      "5kyuGuideLinks": {
+      "5kyu": {
         "quadrantMethodArticleLabel": "盤面把握の方法をクアドラント法に切り替えた"
       },
-      "4kyuGuideLinks": {
+      "4kyu": {
         "kingMovementLabel": "キングの動き（詳しい解説）",
         "knightMovementLabel": "ナイトの動き（詳しい解説）",
         "bishopMovementLabel": "ビショップの動き（詳しい解説）",
         "rookMovementLabel": "ルークの動き（詳しい解説）"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "詳しくは以下の記事をみてください。",
-        "practiceLink": "簡単な演習を以下で行うこともできます。",
         "learnArticleLabel": "代数記法について学ぶ",
-        "practiceLabel": "代数記法の練習",
         "coordinateQuizLabel": "座標クイズ",
         "coordinateConfusionLabel": "座標の混乱について",
         "quadrantsLabel": "4分割トレーニング",
         "5kyuGuideLabel": "5級のガイドを見る"
       }
     },
-    "signUpBanner": {
-      "message": "黒帯を取得しよう！",
-      "description": "段級位の取得には会員登録が必要です",
-      "cta": "無料登録"
-    },
-    "lockedModal": {
-      "title": "ロックされた級",
-      "message": "{rankName}を合格したら挑戦できます",
-      "linkLabel": "{rankName}の詳細を見る",
-      "ariaLabel": "ロックされています"
+    "navigation": {
+      "prevRank": "前の段級位: {rankName} ガイド",
+      "nextRank": "次の段級位: {rankName} ガイド"
     }
-  },
-  "rankAchievement": {
-    "title": "昇級おめでとう！",
-    "description": "新しい級位を獲得しました。",
-    "viewRanks": "段級位を見る",
-    "close": "閉じる",
-    "rankNames": {
-      "mukyu": "無級",
-      "5kyu": "5級",
-      "4kyu": "4級",
-      "3kyu": "3級",
-      "2kyu": "2級",
-      "1kyu": "1級",
-      "1dan": "初段"
-    }
-  },
-  "MobileTabBar": {
-    "games": "ゲーム一覧",
-    "practice": "練習",
-    "topics": "トピック",
-    "mypage": "マイページ"
   }
 }

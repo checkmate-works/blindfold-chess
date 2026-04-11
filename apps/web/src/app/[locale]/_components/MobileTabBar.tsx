@@ -16,7 +16,7 @@ const TAB_ITEMS: ReadonlyArray<{
   iconName: NavigationIconName;
 }> = [
   { labelKey: 'games', path: '/games', iconName: 'games' },
-  { labelKey: 'practice', path: '/practice', iconName: 'practice' },
+  { labelKey: 'dojo', path: '/dojo', iconName: 'dojo' },
   { labelKey: 'topics', path: '/topics', iconName: 'topics' },
   // /mypage is a protected route. Unauthenticated users will be redirected
   // to sign-in by the (protected) layout's auth guard — this is intentional.

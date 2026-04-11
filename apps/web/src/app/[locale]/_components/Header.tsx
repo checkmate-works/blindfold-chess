@@ -17,6 +17,7 @@ export async function Header({ locale }: Props) {
   const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
     { id: 'ranks', href: `/${locale}/ranks`, label: t('ranks'), iconName: 'ranks' },
+    { id: 'guides', href: `/${locale}/guides`, label: t('guides'), iconName: 'guides' },
     { id: 'learn', href: `/${locale}/learn`, label: t('learn'), iconName: 'learn' },
     { id: 'practice', href: `/${locale}/practice`, label: t('practice'), iconName: 'practice' },
     { id: 'topics', href: `/${locale}/topics`, label: t('topics'), iconName: 'topics' },

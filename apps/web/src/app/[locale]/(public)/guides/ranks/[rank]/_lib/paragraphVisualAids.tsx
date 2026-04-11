@@ -1,3 +1,17 @@
+/**
+ * Paragraph-level visual aid registry for rank guide pages.
+ *
+ * Keyed on `(rankSlug, pageNumber, paragraphIndex)` — the same coordinate
+ * space used by {@link getGuideInlineLink} in `./paragraphInlineLinks.ts`.
+ * The two files are deliberately kept separate (one owns link cards, the
+ * other owns board/visual components) but the parallel naming signals that
+ * they are both indexed by the same identifier tuple.
+ *
+ * Adding a new visual aid: pick the `(rank, page, paragraph)` coordinates,
+ * add an entry to `VISUAL_AID_MAP`, and import the board component from
+ * `@/app/[locale]/(public)/ranks/_components/`. Board components must be
+ * client components so they can read `useGamePreferences` for theme.
+ */
 import type { ReactNode } from 'react';
 
 import type { RankSlug } from '@/lib/db/data/ranks';
