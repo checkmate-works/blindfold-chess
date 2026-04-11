@@ -20,8 +20,9 @@ const GI_BLACK_BELT_PATH =
  * system (originally `GiBlackBelt` from `react-icons/gi`), colorised per
  * rank. The SVG is inlined and receives an explicit `fill` attribute so the
  * belt color is guaranteed to render regardless of CSS cascade or the
- * `currentColor` inheritance path. White belts (mukyu) get a thin outlined
- * background so the icon remains visible on light backgrounds.
+ * `currentColor` inheritance path. White belts (mukyu) get a subtle
+ * theme-aware background fill so the icon remains visible on light
+ * backgrounds (and looks consistent in dark mode).
  */
 export function BeltStrip({ slug, rankName }: BeltStripProps) {
   const beltColor = getBeltColorHex(slug);
@@ -39,7 +40,7 @@ export function BeltStrip({ slug, rankName }: BeltStripProps) {
       <div
         className={
           whiteBelt
-            ? 'flex h-16 w-16 items-center justify-center rounded-full border border-border sm:h-20 sm:w-20'
+            ? 'flex h-16 w-16 items-center justify-center rounded-full bg-muted sm:h-20 sm:w-20'
             : 'flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20'
         }
       >

@@ -42,15 +42,20 @@ describe('BeltStrip', () => {
     const container = screen.getByTestId('belt-strip');
     expect(container.getAttribute('data-belt-slug')).toBe(slug);
     expect(container.getAttribute('data-belt-color')).toBe(expected);
+
+    // Non-white belts should not have the white-belt-only background fill.
+    const wrapper = screen.getByTestId('belt-strip-icon').parentElement;
+    expect(wrapper?.className ?? '').not.toContain('bg-muted');
   });
 
-  it('renders mukyu as a white belt with a visible outlined container', () => {
+  it('renders mukyu as a white belt with a filled background container', () => {
     render(<BeltStrip slug="mukyu" rankName="無級" />);
     const icon = screen.getByTestId('belt-strip-icon');
     expect(icon.getAttribute('fill')).toBe('#ffffff');
-    // White belt path wraps the icon in an outlined container so it stays
-    // visible on light backgrounds.
+    // White belt path wraps the icon in a theme-aware background-filled
+    // container (not a border) so it stays visible on light backgrounds.
     const wrapper = icon.parentElement;
-    expect(wrapper?.className).toMatch(/border/);
+    expect(wrapper?.className).toContain('bg-muted');
+    expect(wrapper?.className ?? '').not.toMatch(/\bborder\b/);
   });
 });
