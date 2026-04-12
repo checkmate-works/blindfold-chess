@@ -48,9 +48,8 @@ import { db, profiles, userGrants } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
 import { RevokeButton } from './_components/RevokeButton';
@@ -202,7 +201,7 @@ export default async function AdminGrantsPage({
         }}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

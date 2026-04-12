@@ -7,9 +7,8 @@ import { db, profiles, topicPosts } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -263,7 +262,7 @@ export default async function AdminTopicPostsPage({
         }}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

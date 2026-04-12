@@ -507,6 +507,67 @@ describe('PaginationNav', () => {
     });
   });
 
+  describe('data-pagination-item attributes', () => {
+    it('marks active Previous link with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const previous = screen.getByLabelText('Previous page');
+      expect(previous).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks disabled Previous span with data-pagination-item="disabled"', () => {
+      render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
+      const previous = screen.getByLabelText('Previous page');
+      expect(previous).toHaveAttribute('data-pagination-item', 'disabled');
+    });
+
+    it('marks active Next link with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
+      const next = screen.getByLabelText('Next page');
+      expect(next).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks disabled Next span with data-pagination-item="disabled"', () => {
+      render(<PaginationNav currentPage={3} totalPages={3} buildHref={buildHref} />);
+      const next = screen.getByLabelText('Next page');
+      expect(next).toHaveAttribute('data-pagination-item', 'disabled');
+    });
+
+    it('marks current page span with data-pagination-item="current"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const currentPageEl = screen.getByText('2');
+      expect(currentPageEl).toHaveAttribute('data-pagination-item', 'current');
+    });
+
+    it('marks non-current page links with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const page1 = screen.getByText('1');
+      const page3 = screen.getByText('3');
+      expect(page1).toHaveAttribute('data-pagination-item', 'link');
+      expect(page3).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks ellipsis spans with data-pagination-item="ellipsis"', () => {
+      render(<PaginationNav currentPage={5} totalPages={10} buildHref={buildHref} />);
+      const ellipses = screen.getAllByText('...');
+      expect(ellipses).toHaveLength(2);
+      for (const ellipsis of ellipses) {
+        expect(ellipsis).toHaveAttribute('data-pagination-item', 'ellipsis');
+      }
+    });
+
+    it('every element inside nav has a data-pagination-item attribute', () => {
+      const { container } = render(
+        <PaginationNav currentPage={5} totalPages={10} buildHref={buildHref} />
+      );
+      const nav = container.querySelector('nav')!;
+      const directChildren = Array.from(nav.children);
+      // Every direct child of the nav should have data-pagination-item
+      for (const child of directChildren) {
+        expect(child).toHaveAttribute('data-pagination-item');
+      }
+    });
+  });
+
   describe('max displayed items count', () => {
     it('never shows more than 7 items in the page number area (for mobile fit)', () => {
       // The maximum items occur when both ellipses are shown:

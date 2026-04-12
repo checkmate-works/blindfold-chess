@@ -6,9 +6,8 @@ import { DEFAULT_PAGE_SIZE } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { CountryBarChart } from './_components/CountryBarChart';
 import { StatusFilter } from './_components/StatusFilter';
 import { UserRow } from './_components/UserRow';
@@ -159,7 +158,7 @@ async function UsersListContent({
         )}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </>
   );
 }

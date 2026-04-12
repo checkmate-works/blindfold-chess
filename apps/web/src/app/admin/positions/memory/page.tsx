@@ -1,14 +1,13 @@
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
+import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
-
-import { PaginationNav } from '@/app/[locale]/_components';
 
 import { DeletePositionButton } from './_components/DeletePositionButton';
 
@@ -84,7 +83,7 @@ export default async function AdminPositionMemoryPage({
         )}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

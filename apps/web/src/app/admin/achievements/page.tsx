@@ -24,9 +24,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { countAchievements, listAchievementsWithHolderCount } from './_lib/queries';
 
 const searchParamsCache = createSearchParamsCache({
@@ -119,7 +118,7 @@ export default async function AdminAchievementsPage({
         )}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

@@ -71,12 +71,17 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
     <nav aria-label="Pagination" className="flex items-center justify-center gap-1 mt-4">
       {/* Previous button */}
       {currentPage > 1 ? (
-        <Link href={buildHref(currentPage - 1)} className={linkClass} aria-label="Previous page">
+        <Link
+          href={buildHref(currentPage - 1)}
+          className={linkClass}
+          aria-label="Previous page"
+          data-pagination-item="link"
+        >
           <span className="sm:hidden">←</span>
           <span className="hidden sm:inline">Previous</span>
         </Link>
       ) : (
-        <span className={disabledClass} aria-label="Previous page">
+        <span className={disabledClass} aria-label="Previous page" data-pagination-item="disabled">
           <span className="sm:hidden">←</span>
           <span className="hidden sm:inline">Previous</span>
         </span>
@@ -85,15 +90,24 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
       {/* Page numbers */}
       {pageItems.map((item, index) =>
         item === null ? (
-          <span key={`ellipsis-${index}`} className="px-2 py-2 text-sm text-muted-foreground">
+          <span
+            key={`ellipsis-${index}`}
+            className="px-2 py-2 text-sm text-muted-foreground"
+            data-pagination-item="ellipsis"
+          >
             ...
           </span>
         ) : item === currentPage ? (
-          <span key={item} aria-current="page" className={currentPageClass}>
+          <span
+            key={item}
+            aria-current="page"
+            className={currentPageClass}
+            data-pagination-item="current"
+          >
             {item}
           </span>
         ) : (
-          <Link key={item} href={buildHref(item)} className={pageClass}>
+          <Link key={item} href={buildHref(item)} className={pageClass} data-pagination-item="link">
             {item}
           </Link>
         )
@@ -101,12 +115,17 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
 
       {/* Next button */}
       {currentPage < totalPages ? (
-        <Link href={buildHref(currentPage + 1)} className={linkClass} aria-label="Next page">
+        <Link
+          href={buildHref(currentPage + 1)}
+          className={linkClass}
+          aria-label="Next page"
+          data-pagination-item="link"
+        >
           <span className="sm:hidden">→</span>
           <span className="hidden sm:inline">Next</span>
         </Link>
       ) : (
-        <span className={disabledClass} aria-label="Next page">
+        <span className={disabledClass} aria-label="Next page" data-pagination-item="disabled">
           <span className="sm:hidden">→</span>
           <span className="hidden sm:inline">Next</span>
         </span>

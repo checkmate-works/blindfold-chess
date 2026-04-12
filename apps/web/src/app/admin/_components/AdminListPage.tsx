@@ -10,9 +10,8 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { db } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from './AdminDataTable';
+import { AdminPaginationNav } from './AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -72,7 +71,11 @@ export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
           renderRow={(item) => config.renderRow(item, t)}
         />
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <AdminPaginationNav
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+        />
       </div>
     );
   };
