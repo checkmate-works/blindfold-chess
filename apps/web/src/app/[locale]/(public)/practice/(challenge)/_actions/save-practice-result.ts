@@ -3,6 +3,7 @@
 import { revalidateTag } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
+import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
@@ -92,8 +93,8 @@ export async function savePracticeResult(
     // TODO: Optimise — only invalidate when the user is in (or enters) the Top 50.
     // Currently fires on every challenge completion. If traffic grows, consider
     // checking the user's rank before invalidating.
-    revalidateTag('leaderboard', { expire: 0 });
-    revalidateTag('exp-leaderboard', { expire: 0 });
+    revalidateTag(LEADERBOARD_CACHE_TAG, { expire: 0 });
+    revalidateTag(EXP_LEADERBOARD_CACHE_TAG, { expire: 0 });
 
     return { success: true, grantedRanks, challengeResultId };
   } catch (error) {

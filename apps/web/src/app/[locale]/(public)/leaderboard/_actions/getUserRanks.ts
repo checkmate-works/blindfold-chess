@@ -1,5 +1,7 @@
 import { unstable_cache } from 'next/cache';
 
+import { LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
+
 import { getQueriesForPeriod } from '../_lib/period-queries';
 import type { LeaderboardPeriod, UserRankInfo } from '../_lib/types';
 import { ALL_LEADERBOARD_ENTRIES } from '../_lib/types';
@@ -28,6 +30,6 @@ export async function getUserRanks(
         .filter((r): r is UserRankInfo => r !== null);
     },
     ['user-ranks', userId, period],
-    { revalidate: REVALIDATE_SECONDS, tags: ['leaderboard'] }
+    { revalidate: REVALIDATE_SECONDS, tags: [LEADERBOARD_CACHE_TAG] }
   )();
 }

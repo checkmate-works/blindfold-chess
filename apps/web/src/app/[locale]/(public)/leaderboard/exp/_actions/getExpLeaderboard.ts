@@ -5,6 +5,7 @@ import { unstable_cache } from 'next/cache';
 import { getLevel } from '@blindfold-chess/features/exp';
 import { desc, eq } from 'drizzle-orm';
 
+import { EXP_LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { db, profiles, userExp } from '@/lib/db';
 import { handleServerActionError } from '@/lib/server-action-error';
 
@@ -53,7 +54,7 @@ const getCachedExpRanking = unstable_cache(
     }));
   },
   ['exp-leaderboard-ranking'],
-  { revalidate: REVALIDATE_SECONDS, tags: ['exp-leaderboard'] }
+  { revalidate: REVALIDATE_SECONDS, tags: [EXP_LEADERBOARD_CACHE_TAG] }
 );
 
 export async function getExpLeaderboard(): Promise<ExpLeaderboardResult> {
