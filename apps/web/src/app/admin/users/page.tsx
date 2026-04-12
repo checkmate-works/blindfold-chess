@@ -4,7 +4,8 @@
  * @description
  * Admin page for viewing and managing user accounts. Provides both a paginated
  * user list with status filtering and a statistics view with country and rank
- * distribution charts.
+ * distribution charts. Supports filtering by status, country, and rank with
+ * cross-tab chart-click navigation.
  *
  * @flow
  * 1. Admin navigates to /admin/users — sees the user list tab by default.
@@ -14,6 +15,10 @@
  *    - Users by Country — horizontal bar chart of user distribution by country.
  *    - Users by Rank — horizontal bar chart of user distribution by belt rank,
  *      including unranked (mukyu) users and Coming Soon ranks with 0 count.
+ * 4. Clicking a bar in a chart sets the corresponding filter (country or rank)
+ *    and navigates to the List tab with the filter applied.
+ * 5. Active filters are displayed as dismissible badges above the user list.
+ *    Each badge can be individually removed, or all filters cleared at once.
  */
 import { getTranslations } from 'next-intl/server';
 
@@ -26,8 +31,10 @@ import { createClient } from '@/lib/supabase/server';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { ActiveFilters } from './_components/ActiveFilters';
 import { CountryBarChart } from './_components/CountryBarChart';
 import { RankBarChart } from './_components/RankBarChart';
+import { StatsChartNav } from './_components/StatsChartNav';
 import { StatusFilter } from './_components/StatusFilter';
 import { UserRow } from './_components/UserRow';
 import { UsersTabNav } from './_components/UsersTabNav';
@@ -37,6 +44,8 @@ const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
   status: parseAsString.withDefault(''),
   tab: parseAsString.withDefault('list'),
+  country: parseAsString.withDefault(''),
+  rank: parseAsString.withDefault(''),
 });
 
 export default async function AdminUsersPage({
@@ -44,7 +53,13 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page, status: statusFilter, tab: rawTab } = await searchParamsCache.parse(searchParams);
+  const {
+    page,
+    status: statusFilter,
+    tab: rawTab,
+    country: countryFilter,
+    rank: rankFilter,
+  } = await searchParamsCache.parse(searchParams);
   const adminClient = createAdminClient();
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
@@ -87,11 +102,19 @@ export default async function AdminUsersPage({
           adminClient={adminClient}
           page={page}
           statusFilter={statusFilter}
+          countryFilter={countryFilter}
+          rankFilter={rankFilter}
           currentUser={currentUser}
           t={t}
         />
       ) : (
-        <StatsContent adminClient={adminClient} statusFilter={statusFilter} t={t} />
+        <StatsContent
+          adminClient={adminClient}
+          statusFilter={statusFilter}
+          countryFilter={countryFilter}
+          rankFilter={rankFilter}
+          t={t}
+        />
       )}
     </div>
   );
@@ -101,12 +124,16 @@ async function UsersListContent({
   adminClient,
   page,
   statusFilter,
+  countryFilter,
+  rankFilter,
   currentUser,
   t,
 }: {
   adminClient: ReturnType<typeof createAdminClient>;
   page: number;
   statusFilter: string;
+  countryFilter: string;
+  rankFilter: string;
   currentUser: { id: string } | null | undefined;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
@@ -119,15 +146,22 @@ async function UsersListContent({
     roleMap,
     subscriptionMap,
     banReasonMap,
-  } = await fetchUsersPageData(adminClient, page, statusFilter);
+  } = await fetchUsersPageData(adminClient, page, statusFilter, countryFilter, rankFilter);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set('page', String(p));
     params.set('tab', 'list');
     if (statusFilter) params.set('status', statusFilter);
+    if (countryFilter) params.set('country', countryFilter);
+    if (rankFilter) params.set('rank', rankFilter);
     return `/admin/users?${params.toString()}`;
   };
+
+  const rankNames: Record<string, string> = {};
+  for (const slug of ALL_RANK_SLUGS) {
+    rankNames[slug] = t(`stats.rankNames.${slug}`);
+  }
 
   const rowLabels = {
     defaultRole: t('usersTable.defaultRole'),
@@ -144,6 +178,20 @@ async function UsersListContent({
 
   return (
     <>
+      <ActiveFilters
+        statusFilter={statusFilter}
+        countryFilter={countryFilter}
+        rankFilter={rankFilter}
+        rankNames={rankNames}
+        labels={{
+          clearAll: t('filters.clearAll'),
+          active: t('usersTable.active'),
+          banned: t('usersTable.banned'),
+          anonymous: t('usersTable.anonymous'),
+          deleted: t('usersTable.deleted'),
+        }}
+      />
+
       {totalCount > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
@@ -185,15 +233,19 @@ async function UsersListContent({
 async function StatsContent({
   adminClient,
   statusFilter,
+  countryFilter,
+  rankFilter,
   t,
 }: {
   adminClient: ReturnType<typeof createAdminClient>;
   statusFilter: string;
+  countryFilter: string;
+  rankFilter: string;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
   const [countryStats, rankStats] = await Promise.all([
-    fetchCountryStats(adminClient, statusFilter),
-    fetchRankStats(adminClient, statusFilter),
+    fetchCountryStats(adminClient, statusFilter, countryFilter, rankFilter),
+    fetchRankStats(adminClient, statusFilter, countryFilter, rankFilter),
   ]);
 
   const rankNames: Record<string, string> = {};
@@ -205,25 +257,29 @@ async function StatsContent({
     <div className="space-y-6">
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">{t('stats.usersByCountry')}</h2>
-        <CountryBarChart
-          data={countryStats}
-          labels={{
-            noData: t('stats.noData'),
-            users: t('stats.users'),
-          }}
-        />
+        <StatsChartNav type="country">
+          <CountryBarChart
+            data={countryStats}
+            labels={{
+              noData: t('stats.noData'),
+              users: t('stats.users'),
+            }}
+          />
+        </StatsChartNav>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">{t('stats.usersByRank')}</h2>
-        <RankBarChart
-          data={rankStats}
-          labels={{
-            noData: t('stats.noData'),
-            users: t('stats.users'),
-          }}
-          rankNames={rankNames}
-        />
+        <StatsChartNav type="rank">
+          <RankBarChart
+            data={rankStats}
+            labels={{
+              noData: t('stats.noData'),
+              users: t('stats.users'),
+            }}
+            rankNames={rankNames}
+          />
+        </StatsChartNav>
       </div>
     </div>
   );

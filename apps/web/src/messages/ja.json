@@ -2419,6 +2419,11 @@
         "1dan": "初段"
       }
     },
+    "filters": {
+      "clearAll": "すべてクリア",
+      "country": "国",
+      "rank": "ランク"
+    },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "サブスクリプション",

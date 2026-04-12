@@ -14,6 +14,7 @@ type Props = {
     users: string;
   };
   rankNames: Record<string, string>;
+  onBarClick?: (slug: string) => void;
 };
 
 /**
@@ -57,7 +58,7 @@ function RankTick({
   );
 }
 
-export function RankBarChart({ data, labels, rankNames }: Props) {
+export function RankBarChart({ data, labels, rankNames, onBarClick }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
@@ -96,7 +97,18 @@ export function RankBarChart({ data, labels, rankNames }: Props) {
             color: 'var(--color-foreground)',
           }}
         />
-        <Bar dataKey="count" fill="var(--color-primary)" radius={[0, 4, 4, 0]} />
+        <Bar
+          dataKey="count"
+          fill="var(--color-primary)"
+          radius={[0, 4, 4, 0]}
+          cursor={onBarClick ? 'pointer' : undefined}
+          onClick={(_data, _index, _event) => {
+            const entry = _data as unknown as RankStat;
+            if (onBarClick && entry?.slug) {
+              onBarClick(entry.slug);
+            }
+          }}
+        />
       </BarChart>
     </ResponsiveContainer>
   );
