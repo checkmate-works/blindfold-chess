@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaRedo } from 'react-icons/fa';
-
-import type { ExpInfo } from '@/lib/exp-types';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';

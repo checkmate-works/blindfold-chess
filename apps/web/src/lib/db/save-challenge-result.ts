@@ -1,7 +1,6 @@
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
-
-import type { ExpInfo } from '@/lib/exp-types';
 
 import { getUserAllTimeRank } from './challenge-queries';
 import { db } from './index';

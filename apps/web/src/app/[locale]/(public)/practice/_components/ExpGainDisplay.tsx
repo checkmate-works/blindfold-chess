@@ -1,4 +1,4 @@
-import type { ExpInfo } from '@/lib/exp-types';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 type Props = {
   expInfo: ExpInfo | null;

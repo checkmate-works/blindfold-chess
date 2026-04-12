@@ -7,8 +7,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { ExpInfo } from '@/lib/exp-types';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';

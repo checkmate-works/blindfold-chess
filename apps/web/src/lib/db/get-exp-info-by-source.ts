@@ -17,9 +17,8 @@
  * grant well enough for UI display.
  */
 import { getLevel, getLevelProgress } from '@blindfold-chess/features/exp';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { and, eq } from 'drizzle-orm';
-
-import type { ExpInfo } from '@/lib/exp-types';
 
 import { db } from './index';
 import { expEvents, userExp } from './schema';

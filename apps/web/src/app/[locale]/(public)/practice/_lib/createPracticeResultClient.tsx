@@ -6,8 +6,7 @@ import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { ExpInfo } from '@/lib/exp-types';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';

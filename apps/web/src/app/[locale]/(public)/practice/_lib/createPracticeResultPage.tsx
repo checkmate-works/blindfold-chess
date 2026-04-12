@@ -4,9 +4,9 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
-import type { ExpInfo } from '@/lib/exp-types';
 import { createClient } from '@/lib/supabase/server';
 
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';

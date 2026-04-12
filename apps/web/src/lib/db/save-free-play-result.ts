@@ -9,7 +9,7 @@
  *
  * @see {@link ./save-exp.ts} — `grantPracticeExp` (the underlying EXP writer)
  */
-import type { ExpInfo } from '@/lib/exp-types';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 
 import { db } from './index';
 import { grantPracticeExp } from './save-exp';

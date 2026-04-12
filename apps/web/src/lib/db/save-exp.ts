@@ -15,10 +15,9 @@ import {
   getLevelProgress,
   getModuleWeight,
 } from '@blindfold-chess/features/exp';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
-
-import type { ExpInfo } from '@/lib/exp-types';
 
 import type { db } from './index';
 import { expEvents, userExp } from './schema';
