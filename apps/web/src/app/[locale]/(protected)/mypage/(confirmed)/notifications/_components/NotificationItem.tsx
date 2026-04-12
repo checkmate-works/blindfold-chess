@@ -11,7 +11,7 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
-import { slugToDisplayName } from '@/lib/achievements/display';
+import { getAchievementDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/truncate-content';
 
 import { markAsRead } from '../_actions';
@@ -32,6 +32,9 @@ type Props = {
 export function NotificationItem({ notification, currentUsername }: Props) {
   const locale = useLocale();
   const t = useTranslations('MypageNotifications');
+  // Root-scoped translator so `getAchievementDisplayName` can resolve
+  // full-path keys like `Achievements.monthlyLeaderboard.name`.
+  const tRoot = useTranslations();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -57,7 +60,12 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         if (isAchievementGrantedMetadata(notification.metadata)) {
           const { badges } = notification.metadata;
           if (badges.length === 1) {
-            return t('achievementSingleMessage', { name: slugToDisplayName(badges[0].slug) });
+            return t('achievementSingleMessage', {
+              name: getAchievementDisplayName(
+                { slug: badges[0].slug, category: 'monthly_leaderboard' },
+                tRoot
+              ),
+            });
           }
           return t('achievementMultipleMessage', { count: String(badges.length) });
         }
