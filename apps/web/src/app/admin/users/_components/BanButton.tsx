@@ -2,6 +2,8 @@
 
 import { useRef, useState } from 'react';
 
+import { Textarea } from '@/app/_components';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { banUser } from '../_actions/banUser';
@@ -62,10 +64,10 @@ export function BanButton({ userId }: { userId: string }) {
         <label htmlFor={`ban-reason-${userId}`} className="block text-sm font-medium mb-2">
           Reason for ban
         </label>
-        <textarea
+        <Textarea
           id={`ban-reason-${userId}`}
           ref={reasonRef}
-          className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground resize-none"
+          inputSize="sm"
           rows={3}
           maxLength={1000}
           placeholder="Enter reason for banning this user..."

@@ -2,36 +2,63 @@
 
 import { useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deletePosition } from '../_actions/deletePosition';
 
 export function DeletePositionButton({ id, title }: { id: string; title: string }) {
-  const router = useRouter();
-  const [pending, setPending] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    setIsPending(true);
+    setError(null);
 
-    setPending(true);
     const result = await deletePosition(id);
-    setPending(false);
 
     if ('error' in result) {
-      alert(`Failed to delete: ${result.error}`);
-      return;
+      setError(result.error);
+      setIsPending(false);
+    } else {
+      setIsOpen(false);
+      setIsPending(false);
     }
+  }
 
-    router.refresh();
+  function handleCancel() {
+    setIsOpen(false);
+    setError(null);
   }
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={pending}
-      className="text-xs px-2 py-1 rounded bg-destructive text-destructive-foreground hover:opacity-80 disabled:opacity-50 transition-opacity"
-    >
-      {pending ? 'Deleting...' : 'Delete'}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="text-xs px-2 py-1 rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity"
+      >
+        Delete
+      </button>
+
+      <ConfirmationModal
+        isOpen={isOpen}
+        title="Delete Position"
+        confirmText={isPending ? 'Deleting...' : 'Delete'}
+        cancelText="Cancel"
+        confirmVariant="danger"
+        isLoading={isPending}
+        error={error}
+        onConfirm={handleDelete}
+        onCancel={handleCancel}
+      >
+        <p className="text-sm text-muted-foreground mb-2">
+          <span className="font-medium text-foreground">{title}</span>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Are you sure you want to delete this position?
+        </p>
+      </ConfirmationModal>
+    </>
   );
 }

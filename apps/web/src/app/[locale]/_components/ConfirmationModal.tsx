@@ -14,7 +14,7 @@ type Props = {
   error?: string | null;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: 'primary' | 'danger' | 'warning';
+  confirmVariant?: 'primary' | 'danger';
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -40,7 +40,6 @@ export function ConfirmationModal({
     switch (confirmVariant) {
       case 'danger':
         return 'destructive';
-      case 'warning':
       case 'primary':
       default:
         return 'primary';
