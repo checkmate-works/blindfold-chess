@@ -14,6 +14,7 @@ import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_h
 import { saveBoardSymmetryResult } from '@/app/[locale]/(public)/practice/(challenge)/board-symmetry/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaying } from '../../_components/BoardSymmetryPlaying';
@@ -85,6 +86,14 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
     if (isProcessing || countdown !== null || isPaused) return;
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
+
+  // Rank-first deletion: clear the rank if present, otherwise clear the file.
+  const handleBackspace = useCallback(() => {
+    if (isProcessing || countdown !== null || isPaused) return;
+    const { next } = applyCoordinateBackspace({ selectedFile, selectedRank });
+    setSelectedFile(next.selectedFile);
+    setSelectedRank(next.selectedRank);
+  }, [isProcessing, countdown, isPaused, selectedFile, selectedRank]);
 
   const handleQuitRequest = useCallback(() => {
     if (!isPaused) togglePause();
@@ -162,6 +171,7 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
         incorrectCount={incorrectCount}
         onFileToggle={handleFileToggle}
         onRankToggle={handleRankToggle}
+        onBackspace={handleBackspace}
         isProcessing={isProcessing}
         timeRemaining={timeRemaining}
         timeLimit={CHALLENGE_TIME_LIMIT}

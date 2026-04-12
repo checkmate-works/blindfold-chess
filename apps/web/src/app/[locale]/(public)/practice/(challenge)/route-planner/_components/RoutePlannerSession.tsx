@@ -10,11 +10,14 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaArrowRight, FaFlagCheckered, FaUndo } from 'react-icons/fa';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
-import { useCoordinateInput } from '../_hooks/use-coordinate-input';
+import { useResultPathHover } from '../_hooks/use-result-path-hover';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
+import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/utils';
 import type { PieceType } from '../_lib/utils';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
@@ -33,16 +36,8 @@ export function RoutePlannerSession({
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
 
-  const {
-    selectedFile,
-    selectedRank,
-    highlightedPathIndex,
-    setHoveredPathIndex,
-    setLockedPathIndex,
-    setSelectedFile,
-    setSelectedRank,
-    resetInput,
-  } = useCoordinateInput();
+  const staged = useStagedCoordinate();
+  const resultHover = useResultPathHover();
 
   const {
     gameState,
@@ -50,49 +45,35 @@ export function RoutePlannerSession({
     problem,
     moves,
     result,
-    addMove,
+    handleFilePress,
+    handleRankPress,
+    handleBackspace,
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
-    handleNextProblem,
+    handleNextProblem: handleNextProblemRaw,
     handleEndTraining,
   } = useRoutePlannerGame({
     locale,
     allowedPieces,
     mode,
-    resetInput,
+    stagedCoordinate: staged,
   });
 
-  const attemptMoveSubmit = useCallback(
-    (file: string | null, rank: string | null) => {
-      if (!file || !rank) return;
-      addMove(`${file}${rank}`);
-      resetInput();
-    },
-    [addMove, resetInput]
-  );
+  const { resetHover } = resultHover;
+  const handleNextProblem = useCallback(() => {
+    resetHover();
+    handleNextProblemRaw();
+  }, [resetHover, handleNextProblemRaw]);
 
-  const handleFileToggle = useCallback(
-    (file: string) => {
-      const newFile = file === selectedFile ? null : file;
-      setSelectedFile(newFile);
-      if (newFile && selectedRank) {
-        attemptMoveSubmit(newFile, selectedRank);
-      }
-    },
-    [selectedFile, selectedRank, attemptMoveSubmit, setSelectedFile]
-  );
+  const isInputActive = gameState === 'playing';
 
-  const handleRankToggle = useCallback(
-    (rank: string) => {
-      const newRank = rank === selectedRank ? null : rank;
-      setSelectedRank(newRank);
-      if (selectedFile && newRank) {
-        attemptMoveSubmit(selectedFile, newRank);
-      }
-    },
-    [selectedFile, selectedRank, attemptMoveSubmit, setSelectedRank]
-  );
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: isInputActive,
+  });
 
   if (!problem) return <PracticeResultSkeleton />;
 
@@ -157,26 +138,29 @@ export function RoutePlannerSession({
           )}
 
           {gameState === 'playing' && (
-            <PieceCoordinateInput
-              activePiece={problem.piece}
-              selectedFile={selectedFile}
-              selectedRank={selectedRank}
-              onFileToggle={handleFileToggle}
-              onRankToggle={handleRankToggle}
-            >
-              {/* Answer Action */}
-              <div className="flex pt-4 border-t border-border mt-2">
-                <Button
-                  onClick={handleSubmitAnswer}
-                  disabled={moves.length === 0 && problem.start === problem.end}
-                  variant="primary"
-                  className="w-full"
-                >
-                  <FaFlagCheckered className="mr-2" />
-                  {t('submit')}
-                </Button>
-              </div>
-            </PieceCoordinateInput>
+            <>
+              <PieceCoordinateInput
+                activePiece={problem.piece}
+                selectedFile={staged.selectedFile}
+                selectedRank={staged.selectedRank}
+                onFileToggle={handleFilePress}
+                onRankToggle={handleRankPress}
+              >
+                {/* Answer Action */}
+                <div className="flex pt-4 border-t border-border mt-2">
+                  <Button
+                    onClick={handleSubmitAnswer}
+                    disabled={moves.length === 0 && problem.start === problem.end}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    <FaFlagCheckered className="mr-2" />
+                    {t('submit')}
+                  </Button>
+                </div>
+              </PieceCoordinateInput>
+              <AlgebraicKeyboardHint disabled={!isInputActive} />
+            </>
           )}
         </div>
 
@@ -185,9 +169,9 @@ export function RoutePlannerSession({
             problem={problem}
             result={result}
             moves={moves}
-            highlightedPathIndex={highlightedPathIndex}
-            onHoverPathIndex={setHoveredPathIndex}
-            onLockPathIndex={setLockedPathIndex}
+            highlightedPathIndex={resultHover.highlightedPathIndex}
+            onHoverPathIndex={resultHover.setHoveredPathIndex}
+            onLockPathIndex={resultHover.setLockedPathIndex}
             onNextProblem={handleNextProblem}
             isTraining={true}
             isLastProblem={false}

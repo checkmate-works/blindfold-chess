@@ -9,6 +9,7 @@ import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SquareColorAnswerButtons } from '../../_components/SquareColorAnswerButtons';
@@ -41,6 +42,7 @@ export function SquareColorsTrainingPlaying({
 }: Props) {
   const t = useTranslations('practice.squareColors');
   const tp = useTranslations('practice');
+  const inputDisabled = showResult || countdown !== null;
 
   return (
     <div className="max-w-md mx-auto">
@@ -55,12 +57,20 @@ export function SquareColorsTrainingPlaying({
         <div>
           <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
 
-          <SquareColorAnswerButtons
-            onAnswer={onAnswer}
-            disabled={showResult || countdown !== null}
-            labels={{ white: t('white'), black: t('black') }}
-            boardTheme={boardTheme}
-          />
+          <ArrowKeyAnswer
+            disabled={inputDisabled}
+            bindings={{
+              ArrowLeft: { label: t('white'), onTrigger: () => onAnswer('light') },
+              ArrowRight: { label: t('black'), onTrigger: () => onAnswer('dark') },
+            }}
+          >
+            <SquareColorAnswerButtons
+              onAnswer={onAnswer}
+              disabled={inputDisabled}
+              labels={{ white: t('white'), black: t('black') }}
+              boardTheme={boardTheme}
+            />
+          </ArrowKeyAnswer>
         </div>
       </div>
 

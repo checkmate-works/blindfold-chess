@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -20,6 +22,7 @@ type Props = {
   incorrectCount: number;
   onFileToggle: (file: string) => void;
   onRankToggle: (rank: string) => void;
+  onBackspace: () => void;
   isProcessing: boolean;
   countdown: number | null;
   onEndTraining: () => void;
@@ -35,6 +38,7 @@ export function BoardSymmetryTrainingPlaying({
   incorrectCount,
   onFileToggle,
   onRankToggle,
+  onBackspace,
   isProcessing,
   countdown,
   onEndTraining,
@@ -42,6 +46,14 @@ export function BoardSymmetryTrainingPlaying({
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tp = useTranslations('practice');
+  const isDisabled = isProcessing || countdown !== null;
+
+  useAlgebraicKeyboardInput({
+    onFile: onFileToggle,
+    onRank: onRankToggle,
+    onBackspace,
+    enabled: !isDisabled,
+  });
 
   const getFeedbackColor = () => {
     if (isCorrect === true) return 'text-success';
@@ -85,6 +97,7 @@ export function BoardSymmetryTrainingPlaying({
               onRankToggle={onRankToggle}
               className={`max-w-md mx-auto ${isProcessing ? 'pointer-events-none opacity-50' : ''}`}
             />
+            <AlgebraicKeyboardHint disabled={isDisabled} />
           </div>
         </div>
       </div>

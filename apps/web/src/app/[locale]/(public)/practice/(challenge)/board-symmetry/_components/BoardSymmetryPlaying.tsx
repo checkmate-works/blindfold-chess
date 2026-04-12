@@ -7,8 +7,10 @@ import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
@@ -24,6 +26,7 @@ type Props = {
   incorrectCount: number;
   onFileToggle: (file: string) => void;
   onRankToggle: (rank: string) => void;
+  onBackspace: () => void;
   isProcessing: boolean;
   timeRemaining: number;
   timeLimit: number;
@@ -47,6 +50,7 @@ export function BoardSymmetryPlaying({
   incorrectCount,
   onFileToggle,
   onRankToggle,
+  onBackspace,
   isProcessing,
   timeRemaining,
   timeLimit,
@@ -64,6 +68,14 @@ export function BoardSymmetryPlaying({
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
   const timeElapsed = timeLimit - timeRemaining;
+  const isDisabled = isProcessing || countdown !== null || isPaused;
+
+  useAlgebraicKeyboardInput({
+    onFile: onFileToggle,
+    onRank: onRankToggle,
+    onBackspace,
+    enabled: !isDisabled,
+  });
 
   // Helper for conditional classes since cn might be missing
   const getFeedbackColor = () => {
@@ -169,6 +181,7 @@ export function BoardSymmetryPlaying({
                 isProcessing || isPaused ? 'pointer-events-none opacity-50' : ''
               }`}
             />
+            <AlgebraicKeyboardHint disabled={isDisabled} />
           </div>
         </div>
       </div>

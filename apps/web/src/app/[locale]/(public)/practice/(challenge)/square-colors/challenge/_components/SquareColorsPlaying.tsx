@@ -11,6 +11,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { SquareColorAnswerButtons } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorAnswerButtons';
 import { SquareColorQuestionDisplay } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorQuestionDisplay';
+import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
@@ -60,6 +61,7 @@ export function SquareColorsPlaying({
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
   const timeElapsed = timeLimit - timeRemaining;
+  const inputDisabled = showResult || countdown !== null || isPaused;
 
   return (
     <div className="max-w-md mx-auto">
@@ -133,12 +135,20 @@ export function SquareColorsPlaying({
         >
           <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
 
-          <SquareColorAnswerButtons
-            onAnswer={onAnswer}
-            disabled={showResult || countdown !== null || isPaused}
-            labels={{ white: t('white'), black: t('black') }}
-            boardTheme={boardTheme}
-          />
+          <ArrowKeyAnswer
+            disabled={inputDisabled}
+            bindings={{
+              ArrowLeft: { label: t('white'), onTrigger: () => onAnswer('light') },
+              ArrowRight: { label: t('black'), onTrigger: () => onAnswer('dark') },
+            }}
+          >
+            <SquareColorAnswerButtons
+              onAnswer={onAnswer}
+              disabled={inputDisabled}
+              labels={{ white: t('white'), black: t('black') }}
+              boardTheme={boardTheme}
+            />
+          </ArrowKeyAnswer>
         </div>
       </div>
 

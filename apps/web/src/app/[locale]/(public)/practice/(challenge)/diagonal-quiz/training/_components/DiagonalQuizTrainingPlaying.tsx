@@ -10,6 +10,8 @@ import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
+import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -94,6 +96,13 @@ export function DiagonalQuizTrainingPlaying({
     disabled: isDisabled,
     allowSingleSquareDiagonal: singleDiagonal,
     allowSingleSquareAntiDiagonal: singleAntiDiagonal,
+  });
+
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: !isDisabled,
   });
 
   // Reset input when the question changes
@@ -235,6 +244,8 @@ export function DiagonalQuizTrainingPlaying({
             onBackspace={handleBackspace}
             onClear={handleClear}
           />
+
+          <AlgebraicKeyboardHint disabled={isDisabled} />
         </div>
       </div>
 
