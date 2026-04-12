@@ -11,10 +11,10 @@ import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symme
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { applyBoardSymmetryBackspace } from '../../_lib/backspace';
 import { BoardSymmetryTrainingPlaying } from './BoardSymmetryTrainingPlaying';
 
 type Props = {
@@ -88,7 +88,7 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
   // Rank-first deletion: clear the rank if present, otherwise clear the file.
   const handleBackspace = useCallback(() => {
     if (isProcessing || countdown !== null) return;
-    const next = applyBoardSymmetryBackspace({ selectedFile, selectedRank });
+    const { next } = applyCoordinateBackspace({ selectedFile, selectedRank });
     setSelectedFile(next.selectedFile);
     setSelectedRank(next.selectedRank);
   }, [isProcessing, countdown, selectedFile, selectedRank]);

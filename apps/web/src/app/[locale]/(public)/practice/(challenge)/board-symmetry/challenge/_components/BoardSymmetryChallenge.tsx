@@ -14,10 +14,10 @@ import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_h
 import { saveBoardSymmetryResult } from '@/app/[locale]/(public)/practice/(challenge)/board-symmetry/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaying } from '../../_components/BoardSymmetryPlaying';
-import { applyBoardSymmetryBackspace } from '../../_lib/backspace';
 
 type Props = {
   locale: Locale;
@@ -90,7 +90,7 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
   // Rank-first deletion: clear the rank if present, otherwise clear the file.
   const handleBackspace = useCallback(() => {
     if (isProcessing || countdown !== null || isPaused) return;
-    const next = applyBoardSymmetryBackspace({ selectedFile, selectedRank });
+    const { next } = applyCoordinateBackspace({ selectedFile, selectedRank });
     setSelectedFile(next.selectedFile);
     setSelectedRank(next.selectedRank);
   }, [isProcessing, countdown, isPaused, selectedFile, selectedRank]);

@@ -1,9 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 
-export type StagedCoordinateState = {
-  selectedFile: string | null;
-  selectedRank: string | null;
-};
+import {
+  type StagedCoordinateSelection,
+  applyCoordinateBackspace,
+} from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
+
+export type StagedCoordinateState = StagedCoordinateSelection;
 
 type UseStagedCoordinateOptions = {
   /** When true, every press/clear is a no-op. */
@@ -87,18 +89,12 @@ export function useStagedCoordinate(options: UseStagedCoordinateOptions = {}): S
 
   const clearStage = useCallback((): boolean => {
     if (disabled) return false;
-    const { selectedFile: currentFile, selectedRank: currentRank } = stateRef.current;
-    if (currentRank !== null) {
-      stateRef.current = { selectedFile: currentFile, selectedRank: null };
-      setSelectedRank(null);
-      return true;
-    }
-    if (currentFile !== null) {
-      stateRef.current = { selectedFile: null, selectedRank: null };
-      setSelectedFile(null);
-      return true;
-    }
-    return false;
+    const { next, cleared } = applyCoordinateBackspace(stateRef.current);
+    if (!cleared) return false;
+    stateRef.current = next;
+    setSelectedFile(next.selectedFile);
+    setSelectedRank(next.selectedRank);
+    return true;
   }, [disabled]);
 
   const hasStage = useCallback((): boolean => {
