@@ -3,26 +3,14 @@ import { generateBalancedMoveQuestions, isLegalMove } from '@blindfold-chess/fea
 import type { PieceType } from '@blindfold-chess/features/legal-moves';
 import { describe, expect, it } from 'vitest';
 
+import {
+  PIECE_NAME_TO_TYPE,
+  PIECE_TYPE_TO_NAME,
+  VALID_PIECE_NAMES,
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+
 const BATCH_SIZE = 100;
 const ALL_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-
-const PIECE_NAME_TO_TYPE: Record<string, PieceType> = {
-  king: 'k',
-  queen: 'q',
-  rook: 'r',
-  bishop: 'b',
-  knight: 'n',
-};
-
-const PIECE_TYPE_TO_NAME: Record<string, string> = {
-  k: 'king',
-  q: 'queen',
-  r: 'rook',
-  b: 'bishop',
-  n: 'knight',
-};
-
-const VALID_PIECE_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
 
 describe('LegalMovesTrainingSession logic', () => {
   describe('question generation for training mode', () => {

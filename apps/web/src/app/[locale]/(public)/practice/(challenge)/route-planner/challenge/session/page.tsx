@@ -4,14 +4,12 @@ import { CHALLENGE_TIME_LIMIT } from '@/lib/challenge-constants';
 
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import { PIECE_NAME_TO_TYPE } from '../../_lib/utils';
+import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../../_lib/utils';
 import type { PieceType } from '../../_lib/utils';
 
 const RoutePlannerChallengeSession = dynamic(
   () => import('../_components/RoutePlannerChallengeSession')
 );
-
-const VALID_PIECE_NAMES = ['bishop', 'knight'] as const;
 
 const { generateMetadata, generateStaticParams, Page } = createPracticeChallengeSessionPage({
   i18nKey: 'routePlanner',

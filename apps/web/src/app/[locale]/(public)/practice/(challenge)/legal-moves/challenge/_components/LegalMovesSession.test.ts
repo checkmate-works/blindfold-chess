@@ -2,6 +2,11 @@ import { generateBalancedMoveQuestions, isLegalMove } from '@blindfold-chess/fea
 import type { PieceType } from '@blindfold-chess/features/legal-moves';
 import { describe, expect, it } from 'vitest';
 
+import {
+  PIECE_NAME_TO_TYPE,
+  VALID_PIECE_NAMES,
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+
 /**
  * Tests for LegalMovesSession challenge mode logic.
  *
@@ -13,16 +18,6 @@ import { describe, expect, it } from 'vitest';
  */
 
 const ALL_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n'];
-
-const PIECE_NAME_TO_TYPE: Record<string, PieceType> = {
-  king: 'k',
-  queen: 'q',
-  rook: 'r',
-  bishop: 'b',
-  knight: 'n',
-};
-
-const VALID_PIECE_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
 
 // ---------------------------------------------------------------------------
 // URL parameter parsing logic (mirrors challenge/page.tsx)

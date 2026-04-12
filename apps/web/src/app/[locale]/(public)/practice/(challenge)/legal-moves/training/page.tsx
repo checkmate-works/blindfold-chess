@@ -12,12 +12,13 @@
 import dynamic from 'next/dynamic';
 
 import type { PieceType } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/types';
-import { PIECE_NAME_TO_TYPE } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+import {
+  PIECE_NAME_TO_TYPE,
+  VALID_PIECE_NAMES,
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
 import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const LegalMovesTrainingSession = dynamic(() => import('./_components/LegalMovesTrainingSession'));
-
-const VALID_PIECE_NAMES = ['king', 'queen', 'rook', 'bishop', 'knight', 'random'] as const;
 
 const { generateMetadata, Page } = createPracticeTrainingPage({
   i18nKey: 'legalMoves',
