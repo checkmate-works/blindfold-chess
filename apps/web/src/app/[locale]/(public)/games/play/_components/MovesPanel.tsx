@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core';
 import {
   FaCheck,
   FaChevronDown,
@@ -12,8 +13,6 @@ import {
   FaPlay,
   FaPlusCircle,
 } from 'react-icons/fa';
-
-import { fenToLichessUrl } from '@/lib/lichess';
 
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 

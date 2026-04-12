@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button, TextInput } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { validateUsername } from '@/lib/username';
+import { validateUsername } from '@blindfold-chess/features/username';
 
 type Props = {
   locale: string;

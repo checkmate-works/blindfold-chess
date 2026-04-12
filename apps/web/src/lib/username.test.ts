@@ -1,6 +1,5 @@
+import { validateUsername } from '@blindfold-chess/features/username';
 import { describe, expect, it } from 'vitest';
-
-import { validateUsername } from './username';
 
 describe('validateUsername', () => {
   it('returns null for valid usernames', () => {

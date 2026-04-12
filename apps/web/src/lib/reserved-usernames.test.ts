@@ -1,6 +1,5 @@
+import { isReservedUsername } from '@blindfold-chess/features/username';
 import { describe, expect, it } from 'vitest';
-
-import { isReservedUsername } from './reserved-usernames';
 
 describe('isReservedUsername', () => {
   describe('Category 1: RFC 2142 role-based addresses', () => {

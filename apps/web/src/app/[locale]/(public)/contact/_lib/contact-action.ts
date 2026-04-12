@@ -2,13 +2,13 @@
 
 import { headers } from 'next/headers';
 
+import { escapeHtml } from '@blindfold-chess/features/utils';
 import { Resend } from 'resend';
 
 import { handleServerActionError } from '@/lib/server-action-error';
 
 import type { ContactFormData } from './contact-schema';
 import { contactFormSchema } from './contact-schema';
-import { escapeHtml } from './escape-html';
 import { checkRateLimit } from './rate-limiter';
 
 const resend = new Resend(process.env.RESEND_API_KEY);

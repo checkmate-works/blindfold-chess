@@ -1,4 +1,4 @@
-import type { AchievementCriteria } from '@/lib/db/achievement-criteria-types';
+import type { AchievementCriteria } from '@blindfold-chess/types';
 
 // ---------------------------------------------------------------------------
 // Monthly leaderboard metadata (stored in user_achievements.metadata)

@@ -4,10 +4,9 @@ import { useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import { FaCheck, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
-
-import { fenToLichessUrl } from '@/lib/lichess';
 
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { formatPgnToText } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
