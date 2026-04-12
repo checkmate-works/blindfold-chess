@@ -4,6 +4,11 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { TextInput } from '@/app/_components';
+import {
+  AUTH_FORM_LABEL_CLASSES,
+  AUTH_SUBMIT_BUTTON_CLASSES,
+} from '@/app/_components/authFormStyles';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -82,60 +87,56 @@ export function EmailSignUpForm() {
       {error && <FormErrorMessage message={error} />}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+        <label htmlFor="email" className={AUTH_FORM_LABEL_CLASSES}>
           {t('emailLabel')}
         </label>
-        <input
+        <TextInput
           id="email"
           type="email"
+          inputSize="sm"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
-          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           placeholder={t('emailPlaceholder')}
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+        <label htmlFor="password" className={AUTH_FORM_LABEL_CLASSES}>
           {t('passwordLabel')}
         </label>
-        <input
+        <TextInput
           id="password"
           type="password"
+          inputSize="sm"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={MIN_PASSWORD_LENGTH}
           autoComplete="new-password"
-          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           placeholder={t('passwordPlaceholder')}
         />
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
+        <label htmlFor="confirmPassword" className={AUTH_FORM_LABEL_CLASSES}>
           {t('confirmPasswordLabel')}
         </label>
-        <input
+        <TextInput
           id="confirmPassword"
           type="password"
+          inputSize="sm"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           minLength={MIN_PASSWORD_LENGTH}
           autoComplete="new-password"
-          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           placeholder={t('confirmPasswordPlaceholder')}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
         {isLoading ? t('emailSignUpLoading') : t('emailSignUp')}
       </button>
     </form>

@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 
+import { TextInput } from '@/app/_components';
+import {
+  AUTH_FORM_LABEL_CLASSES,
+  AUTH_SUBMIT_BUTTON_CLASSES,
+} from '@/app/_components/authFormStyles';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -97,63 +102,53 @@ export function ChangePasswordForm() {
         {error && <FormErrorMessage message={error} />}
 
         <div>
-          <label
-            htmlFor="currentPassword"
-            className="block text-sm font-medium text-foreground mb-1"
-          >
+          <label htmlFor="currentPassword" className={AUTH_FORM_LABEL_CLASSES}>
             {t('currentPasswordLabel')}
           </label>
-          <input
+          <TextInput
             id="currentPassword"
             type="password"
+            inputSize="sm"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
             autoComplete="current-password"
-            className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
 
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-1">
+          <label htmlFor="newPassword" className={AUTH_FORM_LABEL_CLASSES}>
             {t('newPasswordLabel')}
           </label>
-          <input
+          <TextInput
             id="newPassword"
             type="password"
+            inputSize="sm"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
             minLength={MIN_PASSWORD_LENGTH}
             autoComplete="new-password"
-            className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="confirmNewPassword"
-            className="block text-sm font-medium text-foreground mb-1"
-          >
+          <label htmlFor="confirmNewPassword" className={AUTH_FORM_LABEL_CLASSES}>
             {t('confirmPasswordLabel')}
           </label>
-          <input
+          <TextInput
             id="confirmNewPassword"
             type="password"
+            inputSize="sm"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={MIN_PASSWORD_LENGTH}
             autoComplete="new-password"
-            className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
           {isLoading ? t('submitLoading') : t('submit')}
         </button>
       </form>

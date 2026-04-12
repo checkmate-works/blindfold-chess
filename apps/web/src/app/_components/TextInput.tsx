@@ -1,9 +1,12 @@
 import type { InputHTMLAttributes } from 'react';
 
-import { INPUT_BASE_CLASSES } from './inputStyles';
+import { INPUT_BASE_CLASSES, INPUT_SM_CLASSES, type InputSize } from './inputStyles';
 
-type Props = InputHTMLAttributes<HTMLInputElement>;
+type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> & {
+  inputSize?: InputSize;
+};
 
-export function TextInput({ className = '', type = 'text', ...props }: Props) {
-  return <input type={type} className={`${INPUT_BASE_CLASSES} ${className}`.trim()} {...props} />;
+export function TextInput({ className = '', type = 'text', inputSize = 'md', ...props }: Props) {
+  const baseClasses = inputSize === 'sm' ? INPUT_SM_CLASSES : INPUT_BASE_CLASSES;
+  return <input type={type} className={`${baseClasses} ${className}`.trim()} {...props} />;
 }
