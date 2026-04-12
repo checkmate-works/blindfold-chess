@@ -2693,6 +2693,68 @@
       "endAt": "End At",
       "create": "Create",
       "creating": "Creating..."
+    },
+    "grants": {
+      "title": "Grants",
+      "navLabel": "Grants",
+      "noGrantsFound": "No grants found",
+      "showing": "Showing {from}\u2013{to} of {total} grants",
+      "columns": {
+        "user": "User",
+        "benefit": "Benefit",
+        "grantType": "Grant Type",
+        "reason": "Reason",
+        "period": "Period",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "revoked": "Revoked",
+        "expired": "Expired",
+        "active": "Active"
+      }
+    },
+    "achievements": {
+      "title": "Achievements",
+      "navLabel": "Achievements",
+      "description": "Manage achievement definitions and view holders.",
+      "noAchievementsFound": "No achievements found",
+      "showing": "Showing {from}\u2013{to} of {total} achievements",
+      "viewHolders": "View holders",
+      "columns": {
+        "displayName": "Name",
+        "iconKey": "Icon key",
+        "slug": "Slug",
+        "category": "Category",
+        "repeatable": "Repeatable",
+        "displayOrder": "Display order",
+        "holderCount": "Holders",
+        "actions": "Actions"
+      },
+      "yes": "Yes",
+      "no": "No",
+      "detail": {
+        "backToList": "Back to Achievements",
+        "notFound": "Achievement not found",
+        "headerTitle": "Achievement Details",
+        "slug": "Slug",
+        "category": "Category",
+        "iconKey": "Icon key",
+        "repeatable": "Repeatable",
+        "displayOrder": "Display order",
+        "holderCount": "Holders",
+        "createdAt": "Created at",
+        "holdersTitle": "Holders",
+        "showingHolders": "Showing {from}\u2013{to} of {total} holders",
+        "noHoldersFound": "No holders yet",
+        "columns": {
+          "username": "Username",
+          "userId": "User ID",
+          "achievedAt": "Achieved at",
+          "metadata": "Metadata"
+        },
+        "anonymous": "(no profile)"
+      }
     }
   },
   "publicProfile": {
@@ -3355,6 +3417,35 @@
       "2kyu": "2nd Kyū",
       "1kyu": "1st Kyū",
       "1dan": "1st Dan"
+    }
+  },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} Place",
+      "menuType": {
+        "board_symmetry": "Board Symmetry",
+        "coordinate_quiz": "Coordinate Quiz",
+        "diagonal_quiz": "Diagonal Quiz",
+        "legal_moves": "Legal Moves",
+        "route_planner": "Route Planner",
+        "square_colors": "Square Colors"
+      },
+      "leaderboardKey": {
+        "bishop": "Bishop",
+        "black": "Black",
+        "default": "Default",
+        "king": "King",
+        "knight": "Knight",
+        "queen": "Queen",
+        "random": "Random",
+        "rook": "Rook",
+        "white": "White"
+      },
+      "placement": {
+        "1st": "1st",
+        "2nd": "2nd",
+        "3rd": "3rd"
+      }
     }
   },
   "MobileTabBar": {

@@ -3349,6 +3349,35 @@
       "1dan": "1.er Dan"
     }
   },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} lugar",
+      "menuType": {
+        "board_symmetry": "Simetría del Tablero",
+        "coordinate_quiz": "Cuestionario de Coordenadas",
+        "diagonal_quiz": "Cuestionario de Diagonales",
+        "legal_moves": "Movimientos Legales",
+        "route_planner": "Planificador de Rutas",
+        "square_colors": "Color de Casillas"
+      },
+      "leaderboardKey": {
+        "bishop": "Alfil",
+        "black": "Negras",
+        "default": "Predeterminado",
+        "king": "Rey",
+        "knight": "Caballo",
+        "queen": "Dama",
+        "random": "Aleatorio",
+        "rook": "Torre",
+        "white": "Blancas"
+      },
+      "placement": {
+        "1st": "1.º",
+        "2nd": "2.º",
+        "3rd": "3.º"
+      }
+    }
+  },
   "MobileTabBar": {
     "games": "Partidas",
     "dojo": "Dojo",

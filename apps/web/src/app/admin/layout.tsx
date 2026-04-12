@@ -136,7 +136,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   href="/admin/grants"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
-                  Grants
+                  {t('grants.navLabel')}
+                </Link>
+                <Link
+                  href="/admin/achievements"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('achievements.navLabel')}
                 </Link>
               </nav>
             </aside>

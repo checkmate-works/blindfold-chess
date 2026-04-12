@@ -1,6 +1,8 @@
+import { getTranslations } from 'next-intl/server';
+
 import { Link } from '@/i18n/routing';
 
-import { slugToDisplayName } from '@/lib/achievements/display';
+import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { isMonthlyMetadata } from '@/lib/achievements/type-guards';
 import type { UserAchievementRow } from '@/lib/db/achievement-queries';
 
@@ -30,16 +32,6 @@ type Props = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const ICON_MAP: Record<string, string> = {
-  'trophy-gold': '\u{1F947}',
-  'trophy-silver': '\u{1F948}',
-  'trophy-bronze': '\u{1F949}',
-};
-
-function getIconForKey(iconKey: string): string {
-  return ICON_MAP[iconKey] ?? '\u{1F3C6}';
-}
-
 function formatYearMonth(year: number, month: number, locale: string): string {
   const date = new Date(year, month - 1, 1);
   return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
@@ -49,7 +41,7 @@ function formatYearMonth(year: number, month: number, locale: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function ProfileAchievements({
+export async function ProfileAchievements({
   achievements,
   locale,
   limit,
@@ -57,6 +49,9 @@ export function ProfileAchievements({
   username,
   labels,
 }: Props) {
+  // Root-scoped translator so `getAchievementDisplayName` can resolve
+  // full-path keys like `Achievements.monthlyLeaderboard.name`.
+  const tRoot = await getTranslations({ locale });
   const displayCount = totalCount ?? achievements.length;
   const hasMore = limit != null && username != null && displayCount > limit;
 
@@ -108,13 +103,13 @@ export function ProfileAchievements({
                 >
                   {/* Icon */}
                   <span className="text-2xl leading-none" role="img" aria-label={item.iconKey}>
-                    {getIconForKey(item.iconKey)}
+                    {getAchievementIconEmoji(item.iconKey)}
                   </span>
 
                   {/* Content */}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">
-                      {slugToDisplayName(item.slug)}
+                      {getAchievementDisplayName(item, tRoot)}
                     </p>
                     {monthLabel && (
                       <p className="text-xs text-muted-foreground mt-0.5">{monthLabel}</p>

@@ -39,6 +39,8 @@
  * 4. Active grants can be revoked (sets revokedAt, preserving history).
  * 5. Cache tag 'grant-status' is revalidated on create/revoke.
  */
+import { getTranslations } from 'next-intl/server';
+
 import { desc, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
@@ -57,17 +59,29 @@ const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
 });
 
-function getGrantStatus(grant: { revokedAt: Date | null; expiresAt: Date }): {
+function getGrantStatus(
+  grant: { revokedAt: Date | null; expiresAt: Date },
+  t: (key: string) => string
+): {
   label: string;
   className: string;
 } {
   if (grant.revokedAt) {
-    return { label: 'Revoked', className: 'bg-destructive-soft text-destructive-soft-foreground' };
+    return {
+      label: t('grants.status.revoked'),
+      className: 'bg-destructive-soft text-destructive-soft-foreground',
+    };
   }
   if (new Date(grant.expiresAt) < new Date()) {
-    return { label: 'Expired', className: 'bg-secondary text-muted-foreground' };
+    return {
+      label: t('grants.status.expired'),
+      className: 'bg-secondary text-muted-foreground',
+    };
   }
-  return { label: 'Active', className: 'bg-success-soft text-success-soft-foreground' };
+  return {
+    label: t('grants.status.active'),
+    className: 'bg-success-soft text-success-soft-foreground',
+  };
 }
 
 export default async function AdminGrantsPage({
@@ -76,6 +90,7 @@ export default async function AdminGrantsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { page } = await searchParamsCache.parse(searchParams);
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   // Get total count
   const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(userGrants);
@@ -119,7 +134,7 @@ export default async function AdminGrantsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Grants</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('grants.title')}</h1>
 
       <div className="mb-8">
         <GrantForm />
@@ -131,20 +146,30 @@ export default async function AdminGrantsPage({
 
       {grantRows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
-          Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length} of {countResult?.count ?? 0}{' '}
-          grants
+          {t('grants.showing', {
+            from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
+            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length,
+            total: countResult?.count ?? 0,
+          })}
         </p>
       )}
 
       <AdminDataTable
-        headers={['User', 'Benefit', 'Grant Type', 'Reason', 'Period', 'Status', 'Actions']}
+        headers={[
+          t('grants.columns.user'),
+          t('grants.columns.benefit'),
+          t('grants.columns.grantType'),
+          t('grants.columns.reason'),
+          t('grants.columns.period'),
+          t('grants.columns.status'),
+          t('grants.columns.actions'),
+        ]}
         items={grantRows}
-        emptyMessage="No grants found"
+        emptyMessage={t('grants.noGrantsFound')}
         renderRow={(grant) => {
           const profile = profileMap.get(grant.userId);
           const email = emailMap.get(grant.userId);
-          const status = getGrantStatus(grant);
+          const status = getGrantStatus(grant, t);
           const isActive = !grant.revokedAt && new Date(grant.expiresAt) >= new Date();
 
           return (
