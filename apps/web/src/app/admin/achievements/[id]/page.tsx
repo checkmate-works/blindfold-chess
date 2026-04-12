@@ -23,7 +23,7 @@ import { notFound } from 'next/navigation';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { slugToDisplayName } from '@/lib/achievements/display';
+import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import { PaginationNav } from '@/app/[locale]/_components';
@@ -49,6 +49,9 @@ export default async function AdminAchievementDetailPage({
   const { id } = await params;
   const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
+  // Root-scoped translator so `getAchievementDisplayName` can resolve
+  // full-path keys like `Achievements.monthlyLeaderboard.name`.
+  const tRoot = await getTranslations({ locale: 'en' });
 
   const achievement = await getAchievementById(id);
   if (!achievement) {
@@ -70,7 +73,8 @@ export default async function AdminAchievementDetailPage({
     return `/admin/achievements/${id}?${params.toString()}`;
   };
 
-  const displayName = slugToDisplayName(achievement.slug);
+  const displayName = getAchievementDisplayName(achievement, tRoot);
+  const iconEmoji = getAchievementIconEmoji(achievement.iconKey);
 
   return (
     <div>
@@ -80,7 +84,12 @@ export default async function AdminAchievementDetailPage({
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold mb-2">{displayName}</h1>
+      <h1 className="text-2xl font-bold mb-2">
+        <span aria-hidden="true" className="mr-1">
+          {iconEmoji}
+        </span>
+        <span>{displayName}</span>
+      </h1>
       <p className="text-sm font-mono text-muted-foreground mb-6">{achievement.slug}</p>
 
       <div className="mb-8 rounded-lg border border-border bg-card p-4">

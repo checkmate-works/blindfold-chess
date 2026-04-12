@@ -21,7 +21,7 @@ import Link from 'next/link';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { slugToDisplayName } from '@/lib/achievements/display';
+import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achievements/display';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import { PaginationNav } from '@/app/[locale]/_components';
@@ -40,6 +40,9 @@ export default async function AdminAchievementsPage({
 }) {
   const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
+  // Root-scoped translator so `getAchievementDisplayName` can resolve
+  // full-path keys like `Achievements.monthlyLeaderboard.name`.
+  const tRoot = await getTranslations({ locale: 'en' });
 
   const totalCount = await countAchievements();
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
@@ -86,7 +89,12 @@ export default async function AdminAchievementsPage({
         emptyMessage={t('achievements.noAchievementsFound')}
         renderRow={(achievement) => (
           <tr key={achievement.id} className="border-t border-border">
-            <td className="px-4 py-3 font-medium">{slugToDisplayName(achievement.slug)}</td>
+            <td className="px-4 py-3 font-medium">
+              <span aria-hidden="true" className="mr-1">
+                {getAchievementIconEmoji(achievement.iconKey)}
+              </span>
+              <span>{getAchievementDisplayName(achievement, tRoot)}</span>
+            </td>
             <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
               {achievement.slug}
             </td>
