@@ -8,6 +8,7 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { type PieceType, findShortestPath, generateProblem, validateUserPath } from '../_lib/utils';
+import type { StagedCoordinate } from './use-staged-coordinate';
 
 type GameState = 'playing' | 'result';
 
@@ -32,10 +33,11 @@ type Options = {
   locale: string;
   allowedPieces: PieceType[];
   mode: 'training';
-  resetInput: () => void;
+  /** Injected staged-coordinate state controller. */
+  stagedCoordinate: StagedCoordinate;
 };
 
-export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }: Options) {
+export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordinate }: Options) {
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
   const router = useRouter();
@@ -52,14 +54,16 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }:
   const [moves, setMoves] = useState<string[]>([]);
   const [result, setResult] = useState<ResultState | null>(null);
 
+  const { resetStage } = stagedCoordinate;
+
   const startNewProblem = useCallback(() => {
     const newProblem = generateProblem(allowedPieces);
     setProblem(newProblem);
     setMoves([]);
     setGameState('playing');
     setResult(null);
-    resetInput();
-  }, [allowedPieces, resetInput]);
+    resetStage();
+  }, [allowedPieces, resetStage]);
 
   // Initialize first problem on mount
   useEffect(() => {
@@ -81,8 +85,35 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }:
   const handleUndo = useCallback(() => {
     if (moves.length === 0 || !problem) return;
     setMoves(moves.slice(0, -1));
-    resetInput();
-  }, [moves, problem, resetInput]);
+    resetStage();
+  }, [moves, problem, resetStage]);
+
+  const handleFilePress = useCallback(
+    (file: string) => {
+      const next = stagedCoordinate.pressFile(file);
+      if (next.selectedFile !== null && next.selectedRank !== null) {
+        addMove(`${next.selectedFile}${next.selectedRank}`);
+        stagedCoordinate.resetStage();
+      }
+    },
+    [stagedCoordinate, addMove]
+  );
+
+  const handleRankPress = useCallback(
+    (rank: string) => {
+      const next = stagedCoordinate.pressRank(rank);
+      if (next.selectedFile !== null && next.selectedRank !== null) {
+        addMove(`${next.selectedFile}${next.selectedRank}`);
+        stagedCoordinate.resetStage();
+      }
+    },
+    [stagedCoordinate, addMove]
+  );
+
+  const handleBackspace = useCallback(() => {
+    if (stagedCoordinate.clearStage()) return;
+    if (moves.length > 0) handleUndo();
+  }, [stagedCoordinate, moves.length, handleUndo]);
 
   const handleSubmitAnswer = useCallback(() => {
     if (!problem) return;
@@ -148,7 +179,9 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, resetInput }:
     problem,
     moves,
     result,
-    addMove,
+    handleFilePress,
+    handleRankPress,
+    handleBackspace,
     handleUndo,
     handleSubmitAnswer,
     handleSkip,

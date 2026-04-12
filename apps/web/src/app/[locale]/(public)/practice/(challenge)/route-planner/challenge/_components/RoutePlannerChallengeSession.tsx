@@ -26,7 +26,7 @@ import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/us
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useCoordinateInput } from '../../_hooks/use-coordinate-input';
+import { useStagedCoordinate } from '../../_hooks/use-staged-coordinate';
 import { PIECES, findShortestPath, generateProblem, validateUserPath } from '../../_lib/utils';
 import type { PieceType } from '../../_lib/utils';
 
@@ -97,58 +97,7 @@ export default function RoutePlannerChallengeSession({
   const timeElapsed = initialTimeLimit - timeRemaining;
   const isDisabled = showFeedback || isPaused || countdown !== null;
 
-  // Forward refs so coordinate input can call the yet-to-be-defined game
-  // callbacks without a circular hook dependency.
-  const addMoveRef = useRef<(square: string) => void>(() => {});
-  const handleUndoRef = useRef<() => void>(() => {});
-  const movesLengthRef = useRef(0);
-
-  const handleCoordinateComplete = useCallback((square: string) => {
-    addMoveRef.current(square);
-  }, []);
-  const handleCoordinateUndo = useCallback(() => {
-    handleUndoRef.current();
-  }, []);
-  const hasMovesToUndo = useCallback(() => movesLengthRef.current > 0, []);
-
-  const {
-    selectedFile,
-    selectedRank,
-    handleFilePress,
-    handleRankPress,
-    handleBackspace,
-    resetInput,
-  } = useCoordinateInput({
-    onCoordinateComplete: handleCoordinateComplete,
-    onUndo: handleCoordinateUndo,
-    hasMovesToUndo,
-    disabled: isDisabled,
-  });
-
-  useAlgebraicKeyboardInput({
-    onFile: handleFilePress,
-    onRank: handleRankPress,
-    onBackspace: handleBackspace,
-    enabled: !isDisabled && currentProblem !== null,
-  });
-
-  // Reset local state when currentProblem changes (new question from useTimedSession)
-  const prevProblemRef = useRef(currentProblem);
-  useEffect(() => {
-    if (currentProblem && currentProblem !== prevProblemRef.current) {
-      setMoves([]);
-      setLastAnswerCorrect(null);
-      resetInput();
-      prevProblemRef.current = currentProblem;
-    }
-  }, [currentProblem, resetInput]);
-
-  // Clear feedback state when hook feedback ends
-  useEffect(() => {
-    if (!showFeedback) {
-      setLastAnswerCorrect(null);
-    }
-  }, [showFeedback]);
+  const staged = useStagedCoordinate({ disabled: isDisabled });
 
   const addMove = useCallback(
     (square: string) => {
@@ -159,14 +108,63 @@ export default function RoutePlannerChallengeSession({
   );
 
   const handleUndo = useCallback(() => {
-    if (moves.length === 0 || !currentProblem) return;
-    setMoves(moves.slice(0, -1));
-    resetInput();
-  }, [moves, currentProblem, resetInput]);
+    if (!currentProblem) return;
+    setMoves((prev) => (prev.length === 0 ? prev : prev.slice(0, -1)));
+    staged.resetStage();
+  }, [currentProblem, staged]);
 
-  addMoveRef.current = addMove;
-  handleUndoRef.current = handleUndo;
-  movesLengthRef.current = moves.length;
+  const handleFilePress = useCallback(
+    (file: string) => {
+      const next = staged.pressFile(file);
+      if (next.selectedFile !== null && next.selectedRank !== null) {
+        addMove(`${next.selectedFile}${next.selectedRank}`);
+        staged.resetStage();
+      }
+    },
+    [staged, addMove]
+  );
+
+  const handleRankPress = useCallback(
+    (rank: string) => {
+      const next = staged.pressRank(rank);
+      if (next.selectedFile !== null && next.selectedRank !== null) {
+        addMove(`${next.selectedFile}${next.selectedRank}`);
+        staged.resetStage();
+      }
+    },
+    [staged, addMove]
+  );
+
+  const handleBackspace = useCallback(() => {
+    if (staged.clearStage()) return;
+    if (moves.length > 0) handleUndo();
+  }, [staged, moves.length, handleUndo]);
+
+  useAlgebraicKeyboardInput({
+    onFile: handleFilePress,
+    onRank: handleRankPress,
+    onBackspace: handleBackspace,
+    enabled: !isDisabled && currentProblem !== null,
+  });
+
+  // Reset local state when currentProblem changes (new question from useTimedSession)
+  const prevProblemRef = useRef(currentProblem);
+  const { resetStage } = staged;
+  useEffect(() => {
+    if (currentProblem && currentProblem !== prevProblemRef.current) {
+      setMoves([]);
+      setLastAnswerCorrect(null);
+      resetStage();
+      prevProblemRef.current = currentProblem;
+    }
+  }, [currentProblem, resetStage]);
+
+  // Clear feedback state when hook feedback ends
+  useEffect(() => {
+    if (!showFeedback) {
+      setLastAnswerCorrect(null);
+    }
+  }, [showFeedback]);
 
   const handleSubmitAnswer = useCallback(() => {
     if (!currentProblem || showFeedback || isPaused || countdown !== null) return;
@@ -407,8 +405,8 @@ export default function RoutePlannerChallengeSession({
             >
               <PieceCoordinateInput
                 activePiece={currentProblem.piece}
-                selectedFile={selectedFile}
-                selectedRank={selectedRank}
+                selectedFile={staged.selectedFile}
+                selectedRank={staged.selectedRank}
                 onFileToggle={handleFilePress}
                 onRankToggle={handleRankPress}
               >

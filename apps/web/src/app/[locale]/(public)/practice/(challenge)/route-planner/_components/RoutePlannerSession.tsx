@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import Link from 'next/link';
 
@@ -15,8 +15,9 @@ import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_componen
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
-import { useCoordinateInput } from '../_hooks/use-coordinate-input';
+import { useResultPathHover } from '../_hooks/use-result-path-hover';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
+import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/utils';
 import type { PieceType } from '../_lib/utils';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
@@ -35,37 +36,8 @@ export function RoutePlannerSession({
   const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
 
-  // Forward refs for game-hook callbacks — coordinate input needs to call
-  // `addMove` / `handleUndo` / check moves length, but the game hook itself
-  // depends on `resetInput` coming from the coordinate input. The refs break
-  // the cycle without losing up-to-date closures.
-  const addMoveRef = useRef<(square: string) => void>(() => {});
-  const handleUndoRef = useRef<() => void>(() => {});
-  const movesLengthRef = useRef(0);
-
-  const handleCoordinateComplete = useCallback((square: string) => {
-    addMoveRef.current(square);
-  }, []);
-  const handleCoordinateUndo = useCallback(() => {
-    handleUndoRef.current();
-  }, []);
-  const hasMovesToUndo = useCallback(() => movesLengthRef.current > 0, []);
-
-  const {
-    selectedFile,
-    selectedRank,
-    highlightedPathIndex,
-    handleFilePress,
-    handleRankPress,
-    handleBackspace,
-    setHoveredPathIndex,
-    setLockedPathIndex,
-    resetInput,
-  } = useCoordinateInput({
-    onCoordinateComplete: handleCoordinateComplete,
-    onUndo: handleCoordinateUndo,
-    hasMovesToUndo,
-  });
+  const staged = useStagedCoordinate();
+  const resultHover = useResultPathHover();
 
   const {
     gameState,
@@ -73,22 +45,26 @@ export function RoutePlannerSession({
     problem,
     moves,
     result,
-    addMove,
+    handleFilePress,
+    handleRankPress,
+    handleBackspace,
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
-    handleNextProblem,
+    handleNextProblem: handleNextProblemRaw,
     handleEndTraining,
   } = useRoutePlannerGame({
     locale,
     allowedPieces,
     mode,
-    resetInput,
+    stagedCoordinate: staged,
   });
 
-  addMoveRef.current = addMove;
-  handleUndoRef.current = handleUndo;
-  movesLengthRef.current = moves.length;
+  const { resetHover } = resultHover;
+  const handleNextProblem = useCallback(() => {
+    resetHover();
+    handleNextProblemRaw();
+  }, [resetHover, handleNextProblemRaw]);
 
   const isInputActive = gameState === 'playing';
 
@@ -165,8 +141,8 @@ export function RoutePlannerSession({
             <>
               <PieceCoordinateInput
                 activePiece={problem.piece}
-                selectedFile={selectedFile}
-                selectedRank={selectedRank}
+                selectedFile={staged.selectedFile}
+                selectedRank={staged.selectedRank}
                 onFileToggle={handleFilePress}
                 onRankToggle={handleRankPress}
               >
@@ -193,9 +169,9 @@ export function RoutePlannerSession({
             problem={problem}
             result={result}
             moves={moves}
-            highlightedPathIndex={highlightedPathIndex}
-            onHoverPathIndex={setHoveredPathIndex}
-            onLockPathIndex={setLockedPathIndex}
+            highlightedPathIndex={resultHover.highlightedPathIndex}
+            onHoverPathIndex={resultHover.setHoveredPathIndex}
+            onLockPathIndex={resultHover.setLockedPathIndex}
             onNextProblem={handleNextProblem}
             isTraining={true}
             isLastProblem={false}
