@@ -2092,7 +2092,8 @@
       "heatmapLearnLink": "経験値の計算方法",
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
-      "expRemaining": "次のレベルまで あと {remaining} Exp"
+      "expRemaining": "次のレベルまで あと {remaining} Exp",
+      "viewExpLeaderboard": "Exp ランキングを見る"
     },
     "records": "レコード",
     "bestScore": "最高スコア",

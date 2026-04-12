@@ -111,6 +111,41 @@ export default async function MypagePage({ params }: Props) {
           </div>
         </div>
 
+        {/* Level progress */}
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-sm font-semibold text-foreground">
+              {t('dashboard.levelLabel', { level: levelProgress.level })}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {t('dashboard.expProgress', {
+                current: expInCurrentLevel.toLocaleString(),
+                next: expNeededForNext.toLocaleString(),
+              })}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('dashboard.expRemaining', {
+              remaining: expRemaining.toLocaleString(),
+            })}
+          </p>
+          <p className="mt-2 text-center">
+            <Link
+              href="/leaderboard/exp"
+              locale={locale}
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
+            >
+              {t('dashboard.viewExpLeaderboard')}
+            </Link>
+          </p>
+        </div>
+
         <Divider />
 
         {/* Interview banner — hidden when all questions are answered */}
@@ -131,35 +166,6 @@ export default async function MypagePage({ params }: Props) {
             </span>
           </Link>
         )}
-
-        {/* Level progress */}
-        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-foreground mb-2">
-            <span className="mr-1">⭐</span>
-            {t('dashboard.levelLabel', { level: levelProgress.level })}
-          </h3>
-          <div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
-              <span>
-                {t('dashboard.expProgress', {
-                  current: expInCurrentLevel.toLocaleString(),
-                  next: expNeededForNext.toLocaleString(),
-                })}
-              </span>
-              <span>
-                {t('dashboard.expRemaining', {
-                  remaining: expRemaining.toLocaleString(),
-                })}
-              </span>
-            </div>
-          </div>
-        </section>
 
         {/* Exp activity heatmap */}
         <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
