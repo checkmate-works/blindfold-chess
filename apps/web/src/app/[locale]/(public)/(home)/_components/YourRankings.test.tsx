@@ -41,6 +41,7 @@ vi.mock('@/i18n/routing', () => ({
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  PagePanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock('@/app/[locale]/(public)/leaderboard/_components/LeaderboardCard', () => ({

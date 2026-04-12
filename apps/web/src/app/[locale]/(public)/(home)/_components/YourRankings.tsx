@@ -7,7 +7,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { getUserRanks } from '@/app/[locale]/(public)/leaderboard/_actions/getUserRanks';
 import { LeaderboardCard } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardCard';
 import type { LeaderboardEntry } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
 
 const MAX_DISPLAY = 3;
 
@@ -33,7 +33,7 @@ export async function YourRankings({ locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'home.yourRankings' });
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 shadow-sm space-y-4">
+    <PagePanel className="space-y-4">
       <SectionTitle>{t('title')}</SectionTitle>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {topRanks.length > 0
@@ -67,6 +67,6 @@ export async function YourRankings({ locale }: Props) {
           {t('viewAll')}
         </Link>
       </div>
-    </div>
+    </PagePanel>
   );
 }
