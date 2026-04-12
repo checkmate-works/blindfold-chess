@@ -1,3 +1,5 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SaveResultResponse } from './save-practice-result';
@@ -110,6 +112,34 @@ describe('savePracticeResult', () => {
       incorrectAnswers: 3,
       timeTaken: 46,
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // Cache revalidation
+  // -------------------------------------------------------------------------
+
+  it('revalidates both leaderboard and exp-leaderboard tags on successful save', async () => {
+    await savePracticeResult(
+      'coordinate_quiz',
+      { boardOrientation: 'white' },
+      validChallengeFields
+    );
+
+    expect(revalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 0 });
+    expect(revalidateTag).toHaveBeenCalledWith('exp-leaderboard', { expire: 0 });
+    expect(revalidateTag).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not revalidate cache tags when user is banned', async () => {
+    mockIsUserBanned.mockResolvedValue(true);
+
+    await savePracticeResult(
+      'coordinate_quiz',
+      { boardOrientation: 'white' },
+      validChallengeFields
+    );
+
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 
   // -------------------------------------------------------------------------
