@@ -13,6 +13,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,6 +55,10 @@ export default async function ExpLeaderboardPage({ params }: Props) {
       <LeaderboardTabs activeTab="exp" locale={locale} />
 
       <ExpLeaderboardTable rows={rows} locale={locale} />
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
     </PagePanel>
   );
 }

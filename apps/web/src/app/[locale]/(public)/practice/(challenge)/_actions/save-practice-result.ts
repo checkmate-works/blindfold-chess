@@ -3,6 +3,7 @@
 import { revalidateTag } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
+import { EXP_LEADERBOARD_CACHE_TAG, LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { deriveLeaderboardKey } from '@/lib/db/leaderboard-key';
 import { PRACTICE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
@@ -73,11 +74,27 @@ export async function savePracticeResult(
       timeTaken: Math.round(challengeFields.timeTaken),
     });
 
+    // Invalidate both leaderboard caches so the result page the user is about
+    // to see reflects their just-saved score immediately.
+    //
+    // - 'leaderboard'     → module-specific ranking cache (getLeaderboard /
+    //                        getUserRanks). The result page queries the weekly
+    //                        period, where every completion can shift ranks
+    //                        even without an all-time best.
+    // - 'exp-leaderboard' → global EXP ranking cache (getExpLeaderboard). Every
+    //                        challenge completion grants EXP, so this cache is
+    //                        always affected.
+    //
+    // Strict invalidation (`expire: 0`) rather than the previous `expire: 60`:
+    // the user expects to see their own fresh score on the very next page
+    // load, not up to 60 s later. `expire: 0` also flips `pathWasRevalidated`
+    // so this server action gets read-your-own-writes semantics.
+    //
     // TODO: Optimise — only invalidate when the user is in (or enters) the Top 50.
-    // Currently fires on every challenge completion. Acceptable at current scale
-    // because the leaderboard query is already cached for 60 s via unstable_cache.
-    // If traffic grows, consider checking the user's rank before invalidating.
-    revalidateTag('exp-leaderboard', { expire: 60 });
+    // Currently fires on every challenge completion. If traffic grows, consider
+    // checking the user's rank before invalidating.
+    revalidateTag(LEADERBOARD_CACHE_TAG, { expire: 0 });
+    revalidateTag(EXP_LEADERBOARD_CACHE_TAG, { expire: 0 });
 
     return { success: true, grantedRanks, challengeResultId };
   } catch (error) {

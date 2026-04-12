@@ -451,24 +451,30 @@ describe('saveChallengeResult', () => {
 
   // -------------------------------------------------------------------------
   // Leaderboard cache invalidation
+  //
+  // Cache invalidation is the caller's responsibility (see
+  // `save-practice-result.ts`, which strict-invalidates both 'leaderboard' and
+  // 'exp-leaderboard' tags after this function returns). `saveChallengeResult`
+  // itself must never touch `revalidateTag` — these assertions guard against
+  // accidental re-introduction of an inner invalidation call.
   // -------------------------------------------------------------------------
 
-  it('should call revalidateTag("leaderboard") on new entry', async () => {
+  it('should NOT call revalidateTag on new entry (caller is responsible)', async () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
-  it('should call revalidateTag("leaderboard") on improvement', async () => {
+  it('should NOT call revalidateTag on improvement (caller is responsible)', async () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
   it('should NOT call revalidateTag when no improvement', async () => {

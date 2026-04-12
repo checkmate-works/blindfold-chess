@@ -173,18 +173,24 @@ export function createLeaderboardPracticeResultPage(
     const leaderboardRows = leaderboardResult.rows.slice(0, 3);
     const leaderboardDetailPath = buildDetailPath('weekly', leaderboard.module, key);
 
+    // `adBannerWide` (content-middle) is the top half of a sandwich around the
+    // weekly leaderboard. When there are no leaderboard rows, `LeaderboardPreview`
+    // renders nothing, so the wide banner would become an orphan "top half". Hide
+    // it in that case so the sandwich is all-or-nothing.
+    const hasLeaderboardRows = leaderboardRows.length > 0;
+
     return (
       <Suspense>
         <ResultClient
           locale={locale}
           adBannerWide={
-            wide && ADSENSE_SLOT_CONTENT_MIDDLE ? (
-              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE} />
+            wide && hasLeaderboardRows && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) ? (
+              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
             ) : undefined
           }
           adBannerStandard={
-            standard && ADSENSE_SLOT_CONTENT_BOTTOM ? (
-              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM} />
+            standard && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) ? (
+              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
             ) : undefined
           }
           leaderboardRows={leaderboardRows}

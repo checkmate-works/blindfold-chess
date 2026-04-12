@@ -2,6 +2,7 @@
 
 import { unstable_cache } from 'next/cache';
 
+import { LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
@@ -50,7 +51,7 @@ function getCachedRanking(
       return getRanking(module, key, offset, limit);
     },
     ['leaderboard-ranking', module, key, period, String(offset), String(limit)],
-    { revalidate: REVALIDATE_SECONDS, tags: ['leaderboard'] }
+    { revalidate: REVALIDATE_SECONDS, tags: [LEADERBOARD_CACHE_TAG] }
   )();
 }
 
