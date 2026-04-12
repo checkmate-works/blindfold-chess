@@ -3640,5 +3640,10 @@
       "prevRank": "Rango anterior: guía de {rankName}",
       "nextRank": "Siguiente rango: guía de {rankName}"
     }
+  },
+  "Footer": {
+    "resources": "Recursos",
+    "support": "Soporte",
+    "legal": "Legal"
   }
 }

@@ -22,21 +22,12 @@ export async function Header({ locale }: Props) {
     { id: 'practice', href: `/${locale}/practice`, label: t('practice'), iconName: 'practice' },
     { id: 'topics', href: `/${locale}/topics`, label: t('topics'), iconName: 'topics' },
     { id: 'articles', href: `/${locale}/articles`, label: t('articles'), iconName: 'articles' },
-    { id: 'glossary', href: `/${locale}/glossary`, label: t('glossary'), iconName: 'glossary' },
     {
       id: 'leaderboard',
       href: `/${locale}/leaderboard`,
       label: t('leaderboard'),
       iconName: 'leaderboard',
     },
-    { id: 'manual', href: `/${locale}/manual`, label: t('manual'), iconName: 'manual' },
-    {
-      id: 'announcements',
-      href: `/${locale}/announcements`,
-      label: t('announcements'),
-      iconName: 'announcements',
-    },
-    { id: 'faq', href: `/${locale}/faq`, label: t('faq'), iconName: 'faq' },
     { id: 'settings', href: `/${locale}/preferences`, label: t('settings'), iconName: 'settings' },
   ];
 

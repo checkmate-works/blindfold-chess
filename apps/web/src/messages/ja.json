@@ -3601,5 +3601,10 @@
       "prevRank": "前の段級位: {rankName} ガイド",
       "nextRank": "次の段級位: {rankName} ガイド"
     }
+  },
+  "Footer": {
+    "resources": "リソース",
+    "support": "サポート",
+    "legal": "法的情報"
   }
 }

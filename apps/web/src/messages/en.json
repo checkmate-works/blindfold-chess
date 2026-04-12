@@ -3714,5 +3714,10 @@
       "prevRank": "Previous rank: {rankName} guide",
       "nextRank": "Next rank: {rankName} guide"
     }
+  },
+  "Footer": {
+    "resources": "Resources",
+    "support": "Support",
+    "legal": "Legal"
   }
 }
