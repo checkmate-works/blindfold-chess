@@ -370,14 +370,24 @@ export default function RoutePlannerChallengeSession({
               <span className="font-mono font-bold text-muted-foreground">
                 {currentProblem.start}
               </span>
-              {moves.map((move, i) => (
-                <div key={i} className="flex items-center">
-                  <span className="text-muted-foreground mx-1">&rarr;</span>
-                  <span className="font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm">
-                    {move}
-                  </span>
-                </div>
-              ))}
+              {moves.map((move, i) => {
+                const isFinalTarget =
+                  showFeedback && i === moves.length - 1 && move === currentProblem.end;
+                return (
+                  <div key={i} className="flex items-center">
+                    <span className="text-muted-foreground mx-1">&rarr;</span>
+                    <span
+                      className={
+                        isFinalTarget
+                          ? 'font-mono font-bold text-muted-foreground'
+                          : 'font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm'
+                      }
+                    >
+                      {move}
+                    </span>
+                  </div>
+                );
+              })}
 
               {moves.length > 0 && !showFeedback && (
                 <button
@@ -392,7 +402,7 @@ export default function RoutePlannerChallengeSession({
               {!showFeedback && (
                 <div className="flex items-center ml-2">
                   <span className="text-muted-foreground mx-1">&rarr;</span>
-                  <span className="font-mono font-bold text-muted-foreground border border-dashed border-border px-2 py-1 rounded opacity-70">
+                  <span className="font-mono font-bold text-muted-foreground">
                     {currentProblem.end}
                   </span>
                 </div>

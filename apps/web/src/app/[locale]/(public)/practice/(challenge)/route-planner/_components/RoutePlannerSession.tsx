@@ -130,9 +130,7 @@ export function RoutePlannerSession({
 
               <div className="flex items-center ml-2">
                 <span className="text-muted-foreground mx-1">&rarr;</span>
-                <span className="font-mono font-bold text-muted-foreground border border-dashed border-border px-2 py-1 rounded opacity-70">
-                  {problem.end}
-                </span>
+                <span className="font-mono font-bold text-muted-foreground">{problem.end}</span>
               </div>
             </div>
           )}
