@@ -1,5 +1,3 @@
-import { revalidateTag } from 'next/cache';
-
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
@@ -40,9 +38,6 @@ export async function saveChallengeResult(
 ): Promise<{ grantedRanks: GrantedRank[]; exp: ExpInfo; challengeResultId: string }> {
   const { userId, menuType, leaderboardKey, score, incorrectAnswers, timeTaken } = input;
   const now = new Date();
-
-  // Track whether rankings changed so we can invalidate the cache after commit
-  let rankingsChanged = false;
 
   // Captured inside the transaction so the caller can return it (used by
   // result pages to refetch EXP via ?grant=<id>).
@@ -144,11 +139,6 @@ export async function saveChallengeResult(
         )`,
       });
 
-    // Rankings change whenever a new entry or improvement occurs
-    if (isNewEntry || isImprovement) {
-      rankingsChanged = true;
-    }
-
     // 4. Insert feed item based on rank conditions
     if (isNewEntry) {
       const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
@@ -210,13 +200,7 @@ export async function saveChallengeResult(
     });
   });
 
-  // 6. Invalidate leaderboard cache after transaction commits so the next
-  //    page visit fetches fresh ranking data.
-  if (rankingsChanged) {
-    revalidateTag('leaderboard', { expire: 60 });
-  }
-
-  // 7. Check and grant any newly achievable belt ranks.
+  // 6. Check and grant any newly achievable belt ranks.
   // Called outside the transaction so challenge_best_scores reflects the latest data.
   // Uses onConflictDoNothing for idempotency — safe to call on every challenge completion.
   // Wrapped in try-catch: rank evaluation is supplementary — a failure here must not
