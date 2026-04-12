@@ -21,6 +21,9 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LeaderboardTabs } from '../_components/LeaderboardTabs';
+import { PeriodSelector } from '../_components/PeriodSelector';
+import type { LeaderboardPeriod } from '../_lib/types';
+import { isValidPeriod } from '../_lib/validators';
 import { getExpLeaderboard } from './_actions/getExpLeaderboard';
 import { ExpLeaderboardTable } from './_components/ExpLeaderboardTable';
 
@@ -30,7 +33,17 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<{
+    period?: string;
+  }>;
 };
+
+function parsePeriod(value: string | undefined): LeaderboardPeriod {
+  if (value && isValidPeriod(value)) {
+    return value;
+  }
+  return 'all-time';
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -46,13 +59,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ExpLeaderboardPage({ params }: Props) {
+export default async function ExpLeaderboardPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { rows } = await getExpLeaderboard();
+  const { period: periodParam } = await searchParams;
+  const period = parsePeriod(periodParam);
+  const { rows } = await getExpLeaderboard(period);
 
   return (
     <PagePanel>
       <LeaderboardTabs activeTab="exp" locale={locale} />
+
+      <PeriodSelector currentPeriod={period} />
 
       <ExpLeaderboardTable rows={rows} locale={locale} />
 
