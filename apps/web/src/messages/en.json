@@ -2412,8 +2412,18 @@
     },
     "stats": {
       "usersByCountry": "Users by Country",
+      "usersByRank": "Users by Rank",
       "noData": "No data available",
-      "users": "users"
+      "users": "users",
+      "rankNames": {
+        "mukyu": "Unranked",
+        "5kyu": "5th Kyu",
+        "4kyu": "4th Kyu",
+        "3kyu": "3rd Kyu",
+        "2kyu": "2nd Kyu",
+        "1kyu": "1st Kyu",
+        "1dan": "1st Dan"
+      }
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {

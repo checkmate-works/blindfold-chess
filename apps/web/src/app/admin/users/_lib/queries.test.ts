@@ -35,6 +35,8 @@ vi.mock('@/lib/db', () => ({
     action: 'action',
     targetType: 'targetType',
   },
+  ranks: { id: 'id', slug: 'slug' },
+  userRanks: { userId: 'userId', rankId: 'rankId' },
 }));
 
 vi.mock('drizzle-orm', () => ({
@@ -732,5 +734,522 @@ describe('fetchCountryStats', () => {
     const result = await fetchCountryStats(mockAdminClient as never, '');
 
     expect(result).toEqual([{ country: 'Unknown', count: 2 }]);
+  });
+});
+
+/**
+ * Helper to create a db.select mock that dispatches by table reference.
+ *
+ * fetchRankStats internally calls:
+ *   1. db.select().from(profiles).where(...)          — via fetchFilteredUsers (skipped if 0 users)
+ *   2. db.select().from(ranks)                        — all rank records (directly awaited)
+ *   3. db.select().from(userRanks).where(...)         — user rank rows (skipped if 0 filtered users)
+ */
+async function setupRankStatsMock(options: {
+  profileRows: Array<{ id: string; bannedAt: Date | null; deletedAt: Date | null }>;
+  rankRows: Array<{ id: number; slug: string }>;
+  userRankRows: Array<{ userId: string; rankId: number }>;
+}) {
+  const dbMod = await import('@/lib/db');
+  const mockSelect = dbMod.db.select as ReturnType<typeof vi.fn>;
+  const ranksRef = dbMod.ranks;
+  const userRanksRef = dbMod.userRanks;
+
+  mockSelect.mockImplementation(() => ({
+    from: vi.fn().mockImplementation((table: unknown) => {
+      if (table === ranksRef) {
+        // ranks query — directly awaited, no .where()
+        return {
+          where: vi.fn().mockReturnValue({
+            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
+              Promise.resolve(options.rankRows).then(resolve, reject),
+          }),
+          then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
+            Promise.resolve(options.rankRows).then(resolve, reject),
+        };
+      } else if (table === userRanksRef) {
+        // userRanks query
+        return {
+          where: vi.fn().mockReturnValue({
+            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
+              Promise.resolve(options.userRankRows).then(resolve, reject),
+          }),
+        };
+      } else {
+        // Default: profiles and other tables
+        return {
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([]),
+            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
+              Promise.resolve(options.profileRows).then(resolve, reject),
+          }),
+        };
+      }
+    }),
+  }));
+}
+
+describe('fetchRankStats', () => {
+  it('should count all users as mukyu when no user has a rank', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' },
+      { id: 'user-2', email: 'b@example.com' },
+      { id: 'user-3', email: 'c@example.com' },
+    ];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 3 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [
+        { id: 'user-1', bannedAt: null, deletedAt: null },
+        { id: 'user-2', bannedAt: null, deletedAt: null },
+        { id: 'user-3', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [], // no users have ranks
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    // All 3 users should be counted as mukyu
+    const mukyu = result.find((r) => r.slug === 'mukyu');
+    expect(mukyu).toBeDefined();
+    expect(mukyu!.count).toBe(3);
+
+    // All other ranks should have count 0
+    const nonMukyu = result.filter((r) => r.slug !== 'mukyu');
+    for (const rank of nonMukyu) {
+      expect(rank.count).toBe(0);
+    }
+  });
+
+  it('should include all ranks from ALL_RANK_SLUGS in results', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const { ALL_RANK_SLUGS: allSlugs } = await import('@/lib/db/data/ranks');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    const resultSlugs = result.map((r) => r.slug);
+    for (const slug of allSlugs) {
+      expect(resultSlugs).toContain(slug);
+    }
+    expect(result).toHaveLength(allSlugs.length);
+  });
+
+  it('should return results sorted by level in ascending order', async () => {
+    const mockUsers = [{ id: 'user-1', email: 'a@example.com' }];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 1 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [{ id: 'user-1', bannedAt: null, deletedAt: null }],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i]!.level).toBeGreaterThanOrEqual(result[i - 1]!.level);
+    }
+
+    // Verify specific order: mukyu(0) < 5kyu(10) < 4kyu(20) < 3kyu(30) < 2kyu(40) < 1kyu(50) < 1dan(110)
+    expect(result[0]!.slug).toBe('mukyu');
+    expect(result[result.length - 1]!.slug).toBe('1dan');
+  });
+
+  it('should include Coming Soon ranks (2kyu, 1kyu, 1dan) with count 0', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' },
+      { id: 'user-2', email: 'b@example.com' },
+    ];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 2 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [
+        { id: 'user-1', bannedAt: null, deletedAt: null },
+        { id: 'user-2', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [
+        { userId: 'user-1', rankId: 1 }, // 5kyu
+      ],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    // Coming Soon ranks should exist with count 0
+    const comingSoonSlugs = ['2kyu', '1kyu', '1dan'];
+    for (const slug of comingSoonSlugs) {
+      const rank = result.find((r) => r.slug === slug);
+      expect(rank).toBeDefined();
+      expect(rank!.count).toBe(0);
+    }
+  });
+
+  it('should correctly count ranked and unranked users', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' },
+      { id: 'user-2', email: 'b@example.com' },
+      { id: 'user-3', email: 'c@example.com' },
+      { id: 'user-4', email: 'd@example.com' },
+      { id: 'user-5', email: 'e@example.com' },
+    ];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 5 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [
+        { id: 'user-1', bannedAt: null, deletedAt: null },
+        { id: 'user-2', bannedAt: null, deletedAt: null },
+        { id: 'user-3', bannedAt: null, deletedAt: null },
+        { id: 'user-4', bannedAt: null, deletedAt: null },
+        { id: 'user-5', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [
+        { userId: 'user-1', rankId: 1 }, // 5kyu
+        { userId: 'user-2', rankId: 1 }, // 5kyu
+        { userId: 'user-3', rankId: 2 }, // 4kyu
+      ],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    // 2 users have 5kyu, 1 has 4kyu, 2 are unranked (mukyu)
+    // Note: user-1 and user-2 have ranks so they are NOT mukyu
+    // user-4 and user-5 have no ranks → mukyu
+    expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(2);
+    expect(result.find((r) => r.slug === '5kyu')!.count).toBe(2);
+    expect(result.find((r) => r.slug === '4kyu')!.count).toBe(1);
+    expect(result.find((r) => r.slug === '3kyu')!.count).toBe(0);
+  });
+
+  it('should return all ranks with count 0 when there are no users', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    // All ranks should have count 0, including mukyu
+    for (const rank of result) {
+      expect(rank.count).toBe(0);
+    }
+  });
+
+  it('should assign correct colors from BELT_COLOR_HEX for each rank', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } = await import(
+      '@/lib/db/data/ranks'
+    );
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    for (const rank of result) {
+      const expectedColorName = rankColors[rank.slug as keyof typeof rankColors];
+      const expectedHex = beltColors[expectedColorName];
+      expect(rank.color).toBe(expectedHex);
+    }
+  });
+
+  it('should assign correct level values from seed data', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    expect(result.find((r) => r.slug === 'mukyu')!.level).toBe(0);
+    expect(result.find((r) => r.slug === '5kyu')!.level).toBe(10);
+    expect(result.find((r) => r.slug === '4kyu')!.level).toBe(20);
+    expect(result.find((r) => r.slug === '3kyu')!.level).toBe(30);
+    expect(result.find((r) => r.slug === '2kyu')!.level).toBe(40);
+    expect(result.find((r) => r.slug === '1kyu')!.level).toBe(50);
+    expect(result.find((r) => r.slug === '1dan')!.level).toBe(110);
+  });
+
+  it('should count a user with multiple ranks only once for mukyu calculation', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' },
+      { id: 'user-2', email: 'b@example.com' },
+    ];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 2 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [
+        { id: 'user-1', bannedAt: null, deletedAt: null },
+        { id: 'user-2', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [
+        // user-1 has both 5kyu and 4kyu (earned both)
+        { userId: 'user-1', rankId: 1 },
+        { userId: 'user-1', rankId: 2 },
+      ],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    // user-1 holds ranks, user-2 does not → mukyu = 1
+    expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(1);
+    // user-1 counted once for each rank slug
+    expect(result.find((r) => r.slug === '5kyu')!.count).toBe(1);
+    expect(result.find((r) => r.slug === '4kyu')!.count).toBe(1);
+  });
+
+  it('should use name equal to slug for each rank', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, '');
+
+    for (const rank of result) {
+      expect(rank.name).toBe(rank.slug);
+    }
+  });
+
+  it('should only count filtered users for mukyu when status filter is applied', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'active@example.com' },
+      { id: 'user-2', email: 'banned@example.com' },
+      { id: 'user-3', email: 'active2@example.com' },
+    ];
+
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: 3 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupRankStatsMock({
+      profileRows: [
+        { id: 'user-1', bannedAt: null, deletedAt: null },
+        { id: 'user-2', bannedAt: new Date('2024-01-15'), deletedAt: null },
+        { id: 'user-3', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: [
+        { id: 1, slug: '5kyu' },
+        { id: 2, slug: '4kyu' },
+        { id: 3, slug: '3kyu' },
+        { id: 4, slug: '2kyu' },
+        { id: 5, slug: '1kyu' },
+        { id: 6, slug: '1dan' },
+      ],
+      userRankRows: [
+        { userId: 'user-1', rankId: 1 }, // 5kyu — active
+      ],
+    });
+
+    const { fetchRankStats } = await import('./queries');
+    const result = await fetchRankStats(mockAdminClient as never, 'active');
+
+    // active filter: user-1 (active, ranked), user-3 (active, unranked)
+    // user-2 is banned → excluded
+    // mukyu = 2 active users - 1 ranked user = 1
+    expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(1);
+    expect(result.find((r) => r.slug === '5kyu')!.count).toBe(1);
   });
 });

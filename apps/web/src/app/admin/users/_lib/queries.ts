@@ -1,7 +1,22 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
-import { db, moderationActions, profiles, subscriptions, userRoles } from '@/lib/db';
+import {
+  db,
+  moderationActions,
+  profiles,
+  ranks,
+  subscriptions,
+  userRanks,
+  userRoles,
+} from '@/lib/db';
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  MUKYU_SLUG,
+  RANK_COLORS,
+  ranksSeedData,
+} from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
@@ -214,4 +229,72 @@ export async function fetchCountryStats(
   return Array.from(countMap.entries())
     .map(([country, cnt]) => ({ country, count: cnt }))
     .sort((a, b) => b.count - a.count);
+}
+
+export type RankStat = {
+  slug: string;
+  name: string;
+  count: number;
+  color: string;
+  level: number;
+};
+
+/**
+ * Fetch user counts grouped by rank, including unranked (mukyu) users.
+ *
+ * Mukyu count = total filtered users - users who hold at least one rank.
+ * Coming Soon ranks (with no requirements defined) are included with count 0.
+ */
+export async function fetchRankStats(
+  adminClient: SupabaseClient,
+  statusFilter: string
+): Promise<RankStat[]> {
+  const { filteredUsers } = await fetchFilteredUsers(adminClient, statusFilter);
+  const filteredUserIds = filteredUsers.map((u) => u.id);
+
+  // Fetch all rank records from DB to map rankId → slug
+  const allRanks = await db.select().from(ranks);
+  const rankById = new Map(allRanks.map((r) => [r.id, r]));
+
+  // Count users per rank (only for filtered users)
+  const rankCountMap = new Map<string, number>();
+  const rankedUserIds = new Set<string>();
+
+  if (filteredUserIds.length > 0) {
+    const userRankRows = await db
+      .select()
+      .from(userRanks)
+      .where(inArray(userRanks.userId, filteredUserIds));
+
+    for (const ur of userRankRows) {
+      const rank = rankById.get(ur.rankId);
+      if (rank) {
+        rankedUserIds.add(ur.userId);
+        rankCountMap.set(rank.slug, (rankCountMap.get(rank.slug) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Build level map from seed data + mukyu
+  const levelMap = new Map<string, number>();
+  levelMap.set(MUKYU_SLUG, 0);
+  for (const seed of ranksSeedData) {
+    levelMap.set(seed.slug, seed.level);
+  }
+
+  // Build results for all ranks in ALL_RANK_SLUGS order
+  const mukyuCount = filteredUsers.length - rankedUserIds.size;
+
+  return ALL_RANK_SLUGS.map((slug) => {
+    const colorName = RANK_COLORS[slug];
+    const hexColor = BELT_COLOR_HEX[colorName] ?? '#888888';
+
+    return {
+      slug,
+      name: slug, // Will be replaced with i18n label by the component
+      count: slug === MUKYU_SLUG ? mukyuCount : (rankCountMap.get(slug) ?? 0),
+      color: hexColor,
+      level: levelMap.get(slug) ?? 0,
+    };
+  }).sort((a, b) => a.level - b.level);
 }

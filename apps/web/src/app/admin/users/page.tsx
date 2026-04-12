@@ -1,7 +1,25 @@
+/**
+ * Admin Users Management (ユーザー管理)
+ *
+ * @description
+ * Admin page for viewing and managing user accounts. Provides both a paginated
+ * user list with status filtering and a statistics view with country and rank
+ * distribution charts.
+ *
+ * @flow
+ * 1. Admin navigates to /admin/users — sees the user list tab by default.
+ * 2. Admin can filter by status (active/banned/anonymous/deleted) — applies to
+ *    both list and stats tabs.
+ * 3. Switching to the "Statistics" tab shows:
+ *    - Users by Country — horizontal bar chart of user distribution by country.
+ *    - Users by Rank — horizontal bar chart of user distribution by belt rank,
+ *      including unranked (mukyu) users and Coming Soon ranks with 0 count.
+ */
 import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -9,10 +27,11 @@ import { createClient } from '@/lib/supabase/server';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { CountryBarChart } from './_components/CountryBarChart';
+import { RankBarChart } from './_components/RankBarChart';
 import { StatusFilter } from './_components/StatusFilter';
 import { UserRow } from './_components/UserRow';
 import { UsersTabNav } from './_components/UsersTabNav';
-import { fetchCountryStats, fetchUsersPageData } from './_lib/queries';
+import { fetchCountryStats, fetchRankStats, fetchUsersPageData } from './_lib/queries';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -172,18 +191,40 @@ async function StatsContent({
   statusFilter: string;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
-  const countryStats = await fetchCountryStats(adminClient, statusFilter);
+  const [countryStats, rankStats] = await Promise.all([
+    fetchCountryStats(adminClient, statusFilter),
+    fetchRankStats(adminClient, statusFilter),
+  ]);
+
+  const rankNames: Record<string, string> = {};
+  for (const slug of ALL_RANK_SLUGS) {
+    rankNames[slug] = t(`stats.rankNames.${slug}`);
+  }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <h2 className="text-lg font-semibold mb-4">{t('stats.usersByCountry')}</h2>
-      <CountryBarChart
-        data={countryStats}
-        labels={{
-          noData: t('stats.noData'),
-          users: t('stats.users'),
-        }}
-      />
+    <div className="space-y-6">
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByCountry')}</h2>
+        <CountryBarChart
+          data={countryStats}
+          labels={{
+            noData: t('stats.noData'),
+            users: t('stats.users'),
+          }}
+        />
+      </div>
+
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByRank')}</h2>
+        <RankBarChart
+          data={rankStats}
+          labels={{
+            noData: t('stats.noData'),
+            users: t('stats.users'),
+          }}
+          rankNames={rankNames}
+        />
+      </div>
     </div>
   );
 }
