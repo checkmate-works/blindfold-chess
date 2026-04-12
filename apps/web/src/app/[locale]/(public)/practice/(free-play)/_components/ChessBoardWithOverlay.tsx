@@ -9,6 +9,8 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
 
 import type { SquareDiff } from '@/app/[locale]/(public)/practice/_lib/types';
 
+import type { FenPieceChar } from './types';
+
 type Props = {
   fen: string;
   flipped?: boolean;
@@ -16,8 +18,6 @@ type Props = {
   boardTheme?: BoardTheme;
   showCoordinates?: boolean;
 };
-
-type FenPieceChar = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
 
 export function ChessBoardWithOverlay({
   fen,

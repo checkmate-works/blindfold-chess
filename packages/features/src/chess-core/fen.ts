@@ -44,6 +44,64 @@ export function fenToBoardFlat(fen: string): string[] {
 }
 
 /**
+ * Serialize a flat 64-element board (as produced by {@link fenToBoardFlat})
+ * back into a FEN string.
+ *
+ * Index 0 = a8, index 63 = h1. Empty squares are represented by empty strings.
+ *
+ * By default, the returned FEN uses the neutral game-state suffix
+ * `" w - - 0 1"`. If `options.preserveFrom` is provided and it is a full
+ * six-field FEN, the side-to-move, castling, en passant, halfmove and fullmove
+ * fields are copied from that FEN instead (useful for preserving turn info
+ * while the piece placement is edited).
+ */
+export function boardFlatToFen(
+  board: readonly string[],
+  options: { preserveFrom?: string } = {},
+): string {
+  let placement = "";
+
+  for (let rank = 0; rank < 8; rank++) {
+    let emptyCount = 0;
+    let rankFen = "";
+
+    for (let file = 0; file < 8; file++) {
+      const squareIndex = rank * 8 + file;
+      const piece = board[squareIndex];
+
+      if (!piece) {
+        emptyCount++;
+      } else {
+        if (emptyCount > 0) {
+          rankFen += emptyCount;
+          emptyCount = 0;
+        }
+        rankFen += piece;
+      }
+    }
+
+    if (emptyCount > 0) {
+      rankFen += emptyCount;
+    }
+
+    placement += rankFen;
+    if (rank < 7) {
+      placement += "/";
+    }
+  }
+
+  if (options.preserveFrom) {
+    const parts = options.preserveFrom.split(" ");
+    if (parts.length >= 6) {
+      const gameStateInfo = parts.slice(1).join(" ");
+      return placement + " " + gameStateInfo;
+    }
+  }
+
+  return placement + " w - - 0 1";
+}
+
+/**
  * Shallow helper: returns `true` when the side-to-move field of a FEN is
  * black. Unlike {@link getTurnFromFen}, this does not throw on malformed
  * FENs — it simply falls back to `false` so UI code can use it safely in

@@ -18,6 +18,7 @@ export {
   validateFenFormat,
   fenToBoard,
   fenToBoardFlat,
+  boardFlatToFen,
   getTurnFromFen,
   isBlackToMoveFromFen,
   getFenAfterMoves,

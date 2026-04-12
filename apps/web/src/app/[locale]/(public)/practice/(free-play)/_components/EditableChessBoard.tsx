@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+
+import type { FenPieceChar } from './types';
 
 export type EditableChessBoardLabels = {
   whitePieces: string;
@@ -30,8 +32,6 @@ type Props = {
   showCoordinates?: boolean;
 };
 
-type FenPieceChar = 'p' | 'r' | 'n' | 'b' | 'q' | 'k' | 'P' | 'R' | 'N' | 'B' | 'Q' | 'K' | '';
-
 const WHITE_PIECES: FenPieceChar[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
 const BLACK_PIECES: FenPieceChar[] = ['k', 'q', 'r', 'b', 'n', 'p'];
 
@@ -41,48 +41,10 @@ function boardToFen(
   preserveTurnInfo?: boolean,
   originalPosition?: string
 ): string {
-  let fen = '';
-
-  for (let rank = 0; rank < 8; rank++) {
-    let emptyCount = 0;
-    let rankFen = '';
-
-    for (let file = 0; file < 8; file++) {
-      const squareIndex = rank * 8 + file;
-      const piece = board[squareIndex];
-
-      if (piece === '') {
-        emptyCount++;
-      } else {
-        if (emptyCount > 0) {
-          rankFen += emptyCount;
-          emptyCount = 0;
-        }
-        rankFen += piece;
-      }
-    }
-
-    if (emptyCount > 0) {
-      rankFen += emptyCount;
-    }
-
-    fen += rankFen;
-    if (rank < 7) {
-      fen += '/';
-    }
-  }
-
-  // If preserveTurnInfo is enabled, extract and preserve the game state info from original position
-  if (preserveTurnInfo && originalPosition) {
-    const parts = originalPosition.split(' ');
-    if (parts.length >= 6) {
-      // Preserve turn, castling, en passant, halfmove, and fullmove from original position
-      const gameStateInfo = parts.slice(1).join(' ');
-      return fen + ' ' + gameStateInfo;
-    }
-  }
-
-  return fen + ' w - - 0 1';
+  return boardFlatToFen(
+    board,
+    preserveTurnInfo && originalPosition ? { preserveFrom: originalPosition } : {}
+  );
 }
 
 export function EditableChessBoard({
