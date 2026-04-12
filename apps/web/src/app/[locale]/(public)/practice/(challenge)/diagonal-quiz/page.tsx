@@ -24,6 +24,10 @@ const { generateMetadata, Page } = createPracticeTopPage({
   canonicalPath: 'practice/diagonal-quiz',
   renderSetup: (locale) => <DiagonalQuizPageContent locale={locale} />,
   renderArticles: () => null,
+  leaderboard: {
+    module: 'diagonal_quiz',
+    defaultKey: 'default',
+  },
 });
 
 export { generateMetadata };

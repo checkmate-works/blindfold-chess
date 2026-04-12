@@ -215,7 +215,8 @@
     "contact": "Contacto",
     "settings": "Configuración",
     "ranks": "Sistema de Cinturones",
-    "guides": "Guías"
+    "guides": "Guías",
+    "dojo": "Dojo"
   },
   "Preferences": {
     "title": "Configuración",
@@ -484,6 +485,7 @@
     "levelIntermediate": "Intermedio",
     "levelAdvanced": "Avanzado",
     "levelIntroduction": "Introducción",
+    "viewLeaderboard": "🏆 Ver Clasificación",
     "tryAgain": "Intentar de Nuevo",
     "changeSettings": "Cambiar Configuración",
     "doOtherPractice": "Hacer otra práctica",

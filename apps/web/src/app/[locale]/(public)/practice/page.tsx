@@ -14,6 +14,7 @@
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
 
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
@@ -180,6 +181,15 @@ export default async function PracticePage({ params }: Props) {
             </DashboardSection>
           ))}
         </DashboardCard>
+
+        <div className="text-center pt-4">
+          <Link
+            href={`/${locale}/leaderboard`}
+            className="text-primary hover:underline text-sm font-medium"
+          >
+            {t('practice.viewLeaderboard')}
+          </Link>
+        </div>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

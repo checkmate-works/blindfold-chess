@@ -44,6 +44,10 @@ const { generateMetadata, Page } = createPracticeTopPage({
       </div>
     </div>
   ),
+  leaderboard: {
+    module: 'legal_moves',
+    defaultKey: 'random',
+  },
 });
 
 export { generateMetadata };

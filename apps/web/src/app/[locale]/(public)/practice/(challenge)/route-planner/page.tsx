@@ -23,6 +23,10 @@ const { generateMetadata, Page } = createPracticeTopPage({
   canonicalPath: 'practice/route-planner',
   renderSetup: (locale) => <RoutePlanner locale={locale} />,
   renderArticles: () => null,
+  leaderboard: {
+    module: 'route_planner',
+    defaultKey: 'knight',
+  },
 });
 
 export { generateMetadata };

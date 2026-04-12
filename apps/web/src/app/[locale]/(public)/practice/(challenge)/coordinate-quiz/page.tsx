@@ -37,6 +37,10 @@ const { generateMetadata, Page } = createPracticeTopPage({
       </div>
     </div>
   ),
+  leaderboard: {
+    module: 'coordinate_quiz',
+    defaultKey: 'random',
+  },
 });
 
 export { generateMetadata };

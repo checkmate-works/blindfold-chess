@@ -215,7 +215,8 @@
     "contact": "Contact",
     "settings": "Settings",
     "ranks": "Belt System",
-    "guides": "Guides"
+    "guides": "Guides",
+    "dojo": "Dojo"
   },
   "Preferences": {
     "title": "Settings",
@@ -484,6 +485,7 @@
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
     "levelIntroduction": "Introduction",
+    "viewLeaderboard": "🏆 View Leaderboard",
     "tryAgain": "Try Again",
     "changeSettings": "Change Settings",
     "doOtherPractice": "Do other practice",

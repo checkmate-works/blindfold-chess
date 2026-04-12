@@ -215,7 +215,8 @@
     "contact": "お問い合わせ",
     "settings": "設定",
     "ranks": "段級位制",
-    "guides": "ガイド"
+    "guides": "ガイド",
+    "dojo": "道場"
   },
   "Preferences": {
     "title": "設定",
@@ -485,6 +486,7 @@
     "levelIntermediate": "中級",
     "levelAdvanced": "上級",
     "levelIntroduction": "入門",
+    "viewLeaderboard": "🏆 ランキングを見る",
     "tryAgain": "もう一度行う",
     "changeSettings": "設定を変更する",
     "doOtherPractice": "他の練習を行う",

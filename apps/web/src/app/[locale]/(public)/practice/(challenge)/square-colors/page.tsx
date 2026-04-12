@@ -22,6 +22,10 @@ const { generateMetadata, Page } = createPracticeTopPage({
       />
     </div>
   ),
+  leaderboard: {
+    module: 'square_colors',
+    defaultKey: 'default',
+  },
 });
 
 export { generateMetadata };

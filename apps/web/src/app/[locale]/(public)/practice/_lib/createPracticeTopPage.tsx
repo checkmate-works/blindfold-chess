@@ -5,6 +5,13 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
+import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
+import type {
+  LeaderboardModule,
+  LeaderboardRow,
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -26,7 +33,23 @@ type PracticeTopPageConfig = {
   renderSetup: (locale: Locale) => ReactNode;
   /** Render the articles section. Receives the translation function. */
   renderArticles: (t: Awaited<ReturnType<typeof getTranslations>>, locale: Locale) => ReactNode;
+  /** Optional leaderboard preview (reuses LeaderboardPreview from result pages) */
+  leaderboard?: {
+    module: LeaderboardModule;
+    defaultKey: string;
+  };
 };
+
+async function resolveLeaderboardData(
+  lb: PracticeTopPageConfig['leaderboard']
+): Promise<{ rows: LeaderboardRow[]; detailPath: string } | null> {
+  if (!lb) return null;
+  const result = await getLeaderboard(lb.module, lb.defaultKey, 'weekly', 1);
+  return {
+    rows: result.rows.slice(0, 3),
+    detailPath: buildDetailPath('weekly', lb.module, lb.defaultKey),
+  };
+}
 
 export function createPracticeTopPage(config: PracticeTopPageConfig) {
   async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,6 +68,8 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     setRequestLocale(locale);
     const t = await getTranslations({ locale });
 
+    const leaderboardData = await resolveLeaderboardData(config.leaderboard);
+
     return (
       <div className="space-y-8">
         <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
@@ -53,6 +78,14 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
           {config.renderSetup(locale)}
 
           {config.renderArticles(t, locale)}
+
+          {leaderboardData && (
+            <LeaderboardPreview
+              rows={leaderboardData.rows}
+              detailPath={leaderboardData.detailPath}
+              locale={locale}
+            />
+          )}
 
           {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
             <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
