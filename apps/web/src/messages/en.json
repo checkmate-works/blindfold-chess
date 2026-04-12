@@ -3419,6 +3419,35 @@
       "1dan": "1st Dan"
     }
   },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} Place",
+      "menuType": {
+        "board_symmetry": "Board Symmetry",
+        "coordinate_quiz": "Coordinate Quiz",
+        "diagonal_quiz": "Diagonal Quiz",
+        "legal_moves": "Legal Moves",
+        "route_planner": "Route Planner",
+        "square_colors": "Square Colors"
+      },
+      "leaderboardKey": {
+        "bishop": "Bishop",
+        "black": "Black",
+        "default": "Default",
+        "king": "King",
+        "knight": "Knight",
+        "queen": "Queen",
+        "random": "Random",
+        "rook": "Rook",
+        "white": "White"
+      },
+      "placement": {
+        "1st": "1st",
+        "2nd": "2nd",
+        "3rd": "3rd"
+      }
+    }
+  },
   "MobileTabBar": {
     "games": "Games",
     "dojo": "Dojo",

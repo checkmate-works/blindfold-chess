@@ -3306,6 +3306,35 @@
       "1dan": "初段"
     }
   },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType}（{leaderboardKey}） {placement}",
+      "menuType": {
+        "board_symmetry": "盤面対称",
+        "coordinate_quiz": "座標クイズ",
+        "diagonal_quiz": "斜線クイズ",
+        "legal_moves": "合法手",
+        "route_planner": "ルートプランナー",
+        "square_colors": "マス目の色"
+      },
+      "leaderboardKey": {
+        "bishop": "ビショップ",
+        "black": "黒番",
+        "default": "標準",
+        "king": "キング",
+        "knight": "ナイト",
+        "queen": "クイーン",
+        "random": "ランダム",
+        "rook": "ルーク",
+        "white": "白番"
+      },
+      "placement": {
+        "1st": "1位",
+        "2nd": "2位",
+        "3rd": "3位"
+      }
+    }
+  },
   "MobileTabBar": {
     "games": "ゲーム一覧",
     "dojo": "道場",
