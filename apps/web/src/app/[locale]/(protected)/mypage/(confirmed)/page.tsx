@@ -17,6 +17,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { ChallengeCard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { getLevelProgress } from '@blindfold-chess/features/exp';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
@@ -64,6 +65,12 @@ export default async function MypagePage({ params }: Props) {
     getMypageDashboardData(user.id),
     getExpHeatmapData(user.id),
   ]);
+
+  const levelProgress = getLevelProgress(data.totalExp);
+  const expInCurrentLevel = data.totalExp - levelProgress.currentLevelExp;
+  const expNeededForNext = levelProgress.nextLevelExp - levelProgress.currentLevelExp;
+  const expRemaining = expNeededForNext - expInCurrentLevel;
+  const progressPercent = Math.round(levelProgress.progress * 100);
 
   return (
     <div className="space-y-8">
@@ -124,6 +131,35 @@ export default async function MypagePage({ params }: Props) {
             </span>
           </Link>
         )}
+
+        {/* Level progress */}
+        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            <span className="mr-1">⭐</span>
+            {t('dashboard.levelLabel', { level: levelProgress.level })}
+          </h3>
+          <div>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+              <span>
+                {t('dashboard.expProgress', {
+                  current: expInCurrentLevel.toLocaleString(),
+                  next: expNeededForNext.toLocaleString(),
+                })}
+              </span>
+              <span>
+                {t('dashboard.expRemaining', {
+                  remaining: expRemaining.toLocaleString(),
+                })}
+              </span>
+            </div>
+          </div>
+        </section>
 
         {/* Exp activity heatmap */}
         <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
