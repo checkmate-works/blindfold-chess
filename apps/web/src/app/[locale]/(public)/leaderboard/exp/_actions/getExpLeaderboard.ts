@@ -3,11 +3,13 @@
 import { unstable_cache } from 'next/cache';
 
 import { getLevel } from '@blindfold-chess/features/exp';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, gte, sql, sum } from 'drizzle-orm';
 
 import { EXP_LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
-import { db, profiles, userExp } from '@/lib/db';
+import { db, expEvents, profiles, userExp } from '@/lib/db';
 import { handleServerActionError } from '@/lib/server-action-error';
+
+import type { LeaderboardPeriod } from '../../_lib/types';
 
 export type ExpLeaderboardRow = {
   userId: string;
@@ -28,7 +30,27 @@ const LIMIT = 50;
 
 const EMPTY_RESULT: ExpLeaderboardResult = { rows: [] };
 
-const getCachedExpRanking = unstable_cache(
+// ---------------------------------------------------------------------------
+// Period helpers
+// ---------------------------------------------------------------------------
+
+function startOfCurrentWeek(): Date {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0 = Sunday
+  const diff = day === 0 ? 6 : day - 1; // Monday-based week
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diff));
+}
+
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+// ---------------------------------------------------------------------------
+// All-time ranking (from user_exp)
+// ---------------------------------------------------------------------------
+
+const getCachedAllTimeRanking = unstable_cache(
   async (): Promise<ExpLeaderboardRow[]> => {
     const results = await db
       .select({
@@ -53,13 +75,71 @@ const getCachedExpRanking = unstable_cache(
       rank: i + 1,
     }));
   },
-  ['exp-leaderboard-ranking'],
+  ['exp-leaderboard-ranking', 'all-time'],
   { revalidate: REVALIDATE_SECONDS, tags: [EXP_LEADERBOARD_CACHE_TAG] }
 );
 
-export async function getExpLeaderboard(): Promise<ExpLeaderboardResult> {
+// ---------------------------------------------------------------------------
+// Period ranking (from exp_events)
+// ---------------------------------------------------------------------------
+
+function getCachedPeriodRanking(period: 'weekly' | 'monthly') {
+  return unstable_cache(
+    async (): Promise<ExpLeaderboardRow[]> => {
+      const startDate = period === 'weekly' ? startOfCurrentWeek() : startOfCurrentMonth();
+
+      const totalExpAlias = sql<number>`cast(coalesce(${sum(expEvents.amount)}, 0) as int)`;
+
+      const results = await db
+        .select({
+          userId: expEvents.userId,
+          totalExp: totalExpAlias,
+          cumulativeTotalExp: userExp.totalExp,
+          username: profiles.username,
+          displayName: profiles.displayName,
+          avatarUrl: profiles.avatarUrl,
+        })
+        .from(expEvents)
+        .innerJoin(profiles, eq(profiles.id, expEvents.userId))
+        .leftJoin(userExp, eq(userExp.userId, expEvents.userId))
+        .where(gte(expEvents.createdAt, startDate))
+        .groupBy(
+          expEvents.userId,
+          userExp.totalExp,
+          profiles.username,
+          profiles.displayName,
+          profiles.avatarUrl
+        )
+        .orderBy(desc(totalExpAlias))
+        .limit(LIMIT);
+
+      return results.map((r, i) => ({
+        userId: r.userId,
+        username: r.username,
+        displayName: r.displayName,
+        avatarUrl: r.avatarUrl,
+        totalExp: r.totalExp,
+        level: getLevel(r.cumulativeTotalExp ?? 0),
+        rank: i + 1,
+      }));
+    },
+    ['exp-leaderboard-ranking', period],
+    { revalidate: REVALIDATE_SECONDS, tags: [EXP_LEADERBOARD_CACHE_TAG] }
+  )();
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+export async function getExpLeaderboard(
+  period: LeaderboardPeriod = 'all-time'
+): Promise<ExpLeaderboardResult> {
   try {
-    const rows = await getCachedExpRanking();
+    const rows =
+      period === 'all-time'
+        ? await getCachedAllTimeRanking()
+        : await getCachedPeriodRanking(period);
     return { rows };
   } catch (error) {
     handleServerActionError(error, '[getExpLeaderboard]');

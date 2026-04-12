@@ -2088,7 +2088,11 @@
       "heatmapMore": "More",
       "heatmapTotal": "Total",
       "heatmapNoActivity": "No activity on this day",
-      "heatmapLearnLink": "Learn how we count Exp"
+      "heatmapLearnLink": "Learn how we count Exp",
+      "levelLabel": "Level {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "{remaining} Exp to next level",
+      "viewExpLeaderboard": "View Exp Leaderboard"
     },
     "records": "Records",
     "bestScore": "Best Score",
