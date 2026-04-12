@@ -2400,6 +2400,30 @@
       "viewSubscriptions": "サブスクリプション",
       "deleted": "退会済み"
     },
+    "tabs": {
+      "users": "ユーザー",
+      "statistics": "統計"
+    },
+    "stats": {
+      "usersByCountry": "国別ユーザー数",
+      "usersByRank": "ランク別ユーザー数",
+      "noData": "データがありません",
+      "users": "人",
+      "rankNames": {
+        "mukyu": "無級",
+        "5kyu": "5級",
+        "4kyu": "4級",
+        "3kyu": "3級",
+        "2kyu": "2級",
+        "1kyu": "1級",
+        "1dan": "初段"
+      }
+    },
+    "filters": {
+      "clearAll": "すべてクリア",
+      "country": "国",
+      "rank": "ランク"
+    },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
       "title": "サブスクリプション",

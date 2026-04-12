@@ -1,7 +1,22 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
-import { db, moderationActions, profiles, subscriptions, userRoles } from '@/lib/db';
+import {
+  db,
+  moderationActions,
+  profiles,
+  ranks,
+  subscriptions,
+  userRanks,
+  userRoles,
+} from '@/lib/db';
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  MUKYU_SLUG,
+  RANK_COLORS,
+  ranksSeedData,
+} from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
@@ -41,7 +56,9 @@ type FilteredUsersResult = {
 
 async function fetchFilteredUsers(
   adminClient: SupabaseClient,
-  statusFilter: string
+  statusFilter: string,
+  countryFilter?: string,
+  rankFilter?: string
 ): Promise<FilteredUsersResult> {
   const allUsers = await fetchAllUsers(adminClient);
   const allUserIds = allUsers.map((u) => u.id);
@@ -52,20 +69,69 @@ async function fetchFilteredUsers(
       : [];
   const profileMap = new Map(allProfiles.map((p) => [p.id, p]));
 
+  // Build rank lookup if rank filter is active
+  let rankedUserSlugs: Map<string, Set<string>> | null = null;
+  if (rankFilter) {
+    rankedUserSlugs = new Map();
+    if (allUserIds.length > 0) {
+      const allRanksData = await db.select().from(ranks);
+      const rankById = new Map(allRanksData.map((r) => [r.id, r]));
+
+      const userRankRows = await db
+        .select()
+        .from(userRanks)
+        .where(inArray(userRanks.userId, allUserIds));
+
+      for (const ur of userRankRows) {
+        const rank = rankById.get(ur.rankId);
+        if (rank) {
+          const slugs = rankedUserSlugs.get(ur.userId) ?? new Set<string>();
+          slugs.add(rank.slug);
+          rankedUserSlugs.set(ur.userId, slugs);
+        }
+      }
+    }
+  }
+
   const filteredUsers = allUsers.filter((user) => {
     const profile = profileMap.get(user.id);
+
+    // Status filter
     switch (statusFilter) {
       case 'active':
-        return profile != null && profile.deletedAt == null && profile.bannedAt == null;
+        if (!(profile != null && profile.deletedAt == null && profile.bannedAt == null))
+          return false;
+        break;
       case 'banned':
-        return profile != null && profile.deletedAt == null && profile.bannedAt != null;
+        if (!(profile != null && profile.deletedAt == null && profile.bannedAt != null))
+          return false;
+        break;
       case 'anonymous':
-        return profile == null;
+        if (profile != null) return false;
+        break;
       case 'deleted':
-        return profile != null && profile.deletedAt != null;
-      default:
-        return true;
+        if (!(profile != null && profile.deletedAt != null)) return false;
+        break;
     }
+
+    // Country filter
+    if (countryFilter) {
+      const userCountry = profile?.country ?? 'Unknown';
+      if (userCountry !== countryFilter) return false;
+    }
+
+    // Rank filter
+    if (rankFilter && rankedUserSlugs) {
+      if (rankFilter === MUKYU_SLUG) {
+        // Mukyu = user has no rank records
+        if (rankedUserSlugs.has(user.id)) return false;
+      } else {
+        const userSlugs = rankedUserSlugs.get(user.id);
+        if (!userSlugs || !userSlugs.has(rankFilter)) return false;
+      }
+    }
+
+    return true;
   });
 
   return { filteredUsers, profileMap };
@@ -85,7 +151,9 @@ export type UsersPageData = {
 export async function fetchUsersPageData(
   adminClient: SupabaseClient,
   page: number,
-  statusFilter: string
+  statusFilter: string,
+  countryFilter?: string,
+  rankFilter?: string
 ): Promise<UsersPageData> {
   let users: User[];
   let currentPage: number;
@@ -93,10 +161,14 @@ export async function fetchUsersPageData(
   let totalCount: number;
   let profileMap: Map<string, Profile>;
 
-  if (statusFilter) {
+  const hasFilter = statusFilter || countryFilter || rankFilter;
+
+  if (hasFilter) {
     const { filteredUsers, profileMap: allProfileMap } = await fetchFilteredUsers(
       adminClient,
-      statusFilter
+      statusFilter,
+      countryFilter,
+      rankFilter
     );
 
     totalCount = filteredUsers.length;
@@ -198,11 +270,18 @@ export type CountryStat = {
 
 export async function fetchCountryStats(
   adminClient: SupabaseClient,
-  statusFilter: string
+  statusFilter: string,
+  countryFilter?: string,
+  rankFilter?: string
 ): Promise<CountryStat[]> {
   // Always use fetchFilteredUsers to ensure the same user population as the list view.
-  // When statusFilter is empty, fetchFilteredUsers returns all users (default branch).
-  const { filteredUsers, profileMap } = await fetchFilteredUsers(adminClient, statusFilter);
+  // When all filters are empty, fetchFilteredUsers returns all users (default branch).
+  const { filteredUsers, profileMap } = await fetchFilteredUsers(
+    adminClient,
+    statusFilter,
+    countryFilter,
+    rankFilter
+  );
 
   const countMap = new Map<string, number>();
   for (const user of filteredUsers) {
@@ -214,4 +293,79 @@ export async function fetchCountryStats(
   return Array.from(countMap.entries())
     .map(([country, cnt]) => ({ country, count: cnt }))
     .sort((a, b) => b.count - a.count);
+}
+
+export type RankStat = {
+  slug: string;
+  name: string;
+  count: number;
+  color: string;
+  level: number;
+};
+
+/**
+ * Fetch user counts grouped by rank, including unranked (mukyu) users.
+ *
+ * Mukyu count = total filtered users - users who hold at least one rank.
+ * Coming Soon ranks (with no requirements defined) are included with count 0.
+ */
+export async function fetchRankStats(
+  adminClient: SupabaseClient,
+  statusFilter: string,
+  countryFilter?: string,
+  rankFilter?: string
+): Promise<RankStat[]> {
+  const { filteredUsers } = await fetchFilteredUsers(
+    adminClient,
+    statusFilter,
+    countryFilter,
+    rankFilter
+  );
+  const filteredUserIds = filteredUsers.map((u) => u.id);
+
+  // Fetch all rank records from DB to map rankId → slug
+  const allRanks = await db.select().from(ranks);
+  const rankById = new Map(allRanks.map((r) => [r.id, r]));
+
+  // Count users per rank (only for filtered users)
+  const rankCountMap = new Map<string, number>();
+  const rankedUserIds = new Set<string>();
+
+  if (filteredUserIds.length > 0) {
+    const userRankRows = await db
+      .select()
+      .from(userRanks)
+      .where(inArray(userRanks.userId, filteredUserIds));
+
+    for (const ur of userRankRows) {
+      const rank = rankById.get(ur.rankId);
+      if (rank) {
+        rankedUserIds.add(ur.userId);
+        rankCountMap.set(rank.slug, (rankCountMap.get(rank.slug) ?? 0) + 1);
+      }
+    }
+  }
+
+  // Build level map from seed data + mukyu
+  const levelMap = new Map<string, number>();
+  levelMap.set(MUKYU_SLUG, 0);
+  for (const seed of ranksSeedData) {
+    levelMap.set(seed.slug, seed.level);
+  }
+
+  // Build results for all ranks in ALL_RANK_SLUGS order
+  const mukyuCount = filteredUsers.length - rankedUserIds.size;
+
+  return ALL_RANK_SLUGS.map((slug) => {
+    const colorName = RANK_COLORS[slug];
+    const hexColor = BELT_COLOR_HEX[colorName] ?? '#888888';
+
+    return {
+      slug,
+      name: slug, // Will be replaced with i18n label by the component
+      count: slug === MUKYU_SLUG ? mukyuCount : (rankCountMap.get(slug) ?? 0),
+      color: hexColor,
+      level: levelMap.get(slug) ?? 0,
+    };
+  }).sort((a, b) => a.level - b.level);
 }
