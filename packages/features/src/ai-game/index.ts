@@ -14,6 +14,7 @@ export {
   isLimitedStrength,
 } from "./constants";
 export { buildSkillLevelCommands } from "./skill-level";
+export { isValidSkillLevel } from "./validators";
 export type {
   ParsedUciResponse,
   UciResponseType,

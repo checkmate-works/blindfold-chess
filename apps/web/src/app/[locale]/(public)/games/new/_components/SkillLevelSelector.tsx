@@ -3,10 +3,9 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { getEloForSkillLevel, isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { FaInfoCircle } from 'react-icons/fa';
 
-import { getEloRating } from '@/lib/chess/elo';
-import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -55,7 +54,7 @@ export function SkillLevelSelector({ value, onChange }: Props) {
         >
           {SKILL_LEVELS.map((level) => (
             <option key={level} value={level}>
-              {t('levelWithNumber', { level })} ({getEloRating(level)} ELO)
+              {t('levelWithNumber', { level })} ({getEloForSkillLevel(level)} ELO)
             </option>
           ))}
         </select>
