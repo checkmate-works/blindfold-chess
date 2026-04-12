@@ -5,8 +5,8 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { generateSquareSequence } from '@blindfold-chess/features/common';
 import {
+  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,

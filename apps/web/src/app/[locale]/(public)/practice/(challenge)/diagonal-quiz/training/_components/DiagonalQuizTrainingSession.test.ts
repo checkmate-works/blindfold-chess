@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { generateSquareSequence } from '@blindfold-chess/features/common';
 import {
+  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,

@@ -2,6 +2,8 @@ import type { Square } from "@blindfold-chess/types";
 
 import {
   type RandomSource,
+  FILES,
+  RANKS,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
@@ -12,13 +14,28 @@ import {
 
 import type { DiagonalPair } from "./types";
 
-/** Corner squares whose diagonal or anti-diagonal is a single point. */
-const CORNER_SQUARES: ReadonlySet<Square> = new Set<Square>([
-  "a1",
-  "a8",
-  "h1",
-  "h8",
-]);
+/**
+ * Squares that are unsuitable as diagonal-quiz questions because either
+ * their diagonal or anti-diagonal has length 1 (i.e. is just the square
+ * itself). Answering such a square only requires naming a single real
+ * diagonal, which is half the cognitive cost of every other square.
+ *
+ * This rule is expressed generally rather than as a hardcoded corner list
+ * so the intent is explicit at the call site. On an 8x8 board the resulting
+ * set is always {a1, a8, h1, h8}, but the rule is the source of truth.
+ */
+const SINGLE_DIAGONAL_SQUARES: ReadonlySet<Square> = (() => {
+  const set = new Set<Square>();
+  for (let f = 0; f < FILES.length; f++) {
+    for (let r = 0; r < RANKS.length; r++) {
+      const { diagLength, antiLength } = computeDiagonalParams(f, r);
+      if (diagLength === 0 || antiLength === 0) {
+        set.add(fileRankToSquare(f, r));
+      }
+    }
+  }
+  return set;
+})();
 
 /**
  * Compute the start position and length of both diagonals for a square.
@@ -189,20 +206,34 @@ export function getCornerInfo(square: string): {
 }
 
 /**
- * Generate a random square excluding the four corner squares.
- * Corners are excluded because they have a single-square diagonal
- * (start == end), which is incompatible with the quiz UI.
+ * Squares that are excluded from the diagonal-quiz question pool because
+ * either their diagonal or anti-diagonal has length 1. See
+ * {@link SINGLE_DIAGONAL_SQUARES} for the full rationale. Exposed for tests
+ * so the generalized rule can be asserted directly.
+ */
+export const EXCLUDED_QUIZ_SQUARES: ReadonlySet<Square> =
+  SINGLE_DIAGONAL_SQUARES;
+
+/**
+ * Generate a random square suitable as a diagonal-quiz question.
+ *
+ * Squares whose diagonal or anti-diagonal has length 1 (i.e. the square is
+ * its own only diagonal) are excluded because answering them only requires
+ * naming a single real diagonal, which is half the cognitive cost of every
+ * other square. On an 8x8 board the excluded set is {a1, a8, h1, h8}.
  */
 export function generateRandomSquare(rng: RandomSource = Math.random): Square {
-  return generateRandomSquareBase(rng, CORNER_SQUARES);
+  return generateRandomSquareBase(rng, SINGLE_DIAGONAL_SQUARES);
 }
 
 /**
- * Generate a sequence of unique random squares excluding corner squares.
+ * Generate a sequence of unique random squares suitable as diagonal-quiz
+ * questions. Squares whose diagonal or anti-diagonal has length 1 are
+ * excluded. See {@link generateRandomSquare} for the rationale.
  */
 export function generateSquareSequence(
   count: number,
   rng: RandomSource = Math.random,
 ): Square[] {
-  return generateSquareSequenceBase(count, rng, CORNER_SQUARES);
+  return generateSquareSequenceBase(count, rng, SINGLE_DIAGONAL_SQUARES);
 }

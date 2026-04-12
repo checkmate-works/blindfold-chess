@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  EXCLUDED_QUIZ_SQUARES,
   generateRandomSquare,
   generateSquareSequence,
   getCornerInfo,
@@ -575,5 +576,60 @@ describe("generateSquareSequence (diagonal-quiz)", () => {
     const squares = generateSquareSequence(20);
     const unique = new Set(squares);
     expect(unique.size).toBe(squares.length);
+  });
+});
+
+// ============================================================
+// EXCLUDED_QUIZ_SQUARES — generalized exclusion rule
+// ============================================================
+describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
+  it("excludes exactly a1, a8, h1, h8 on an 8x8 board", () => {
+    expect([...EXCLUDED_QUIZ_SQUARES].sort()).toEqual(["a1", "a8", "h1", "h8"]);
+  });
+
+  it("excludes every square whose diagonal or anti-diagonal has length 1", () => {
+    // The rule is: a square is excluded iff it sits on a length-1 diagonal
+    // or a length-1 anti-diagonal. Verify this holds for all 64 squares
+    // rather than relying on a hardcoded corner list.
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    for (const file of files) {
+      for (const rank of ranks) {
+        const square = `${file}${rank}`;
+        const { diagonal, antiDiagonal } = getDiagonalSquares(square);
+        const hasSingleLine =
+          diagonal.length === 1 || antiDiagonal.length === 1;
+        expect(EXCLUDED_QUIZ_SQUARES.has(square as never)).toBe(hasSingleLine);
+      }
+    }
+  });
+
+  it("does not exclude representative non-corner squares", () => {
+    for (const square of ["d4", "e5", "a2", "h4", "d1", "b7"] as const) {
+      expect(EXCLUDED_QUIZ_SQUARES.has(square)).toBe(false);
+    }
+  });
+
+  it("never emits an excluded square via generateRandomSquare", () => {
+    for (let i = 0; i < 500; i++) {
+      const square = generateRandomSquare();
+      expect(EXCLUDED_QUIZ_SQUARES.has(square)).toBe(false);
+    }
+  });
+
+  it("never emits an excluded square via generateSquareSequence", () => {
+    const squares = generateSquareSequence(200);
+    for (const square of squares) {
+      expect(EXCLUDED_QUIZ_SQUARES.has(square as never)).toBe(false);
+    }
+  });
+
+  it("includes representative non-corner squares in generated sequences", () => {
+    // With 60 eligible squares and reset every 30, a 500-square sequence
+    // should hit every eligible square many times over.
+    const squares = new Set<string>(generateSquareSequence(500));
+    for (const square of ["d4", "e5", "a2", "h4"]) {
+      expect(squares.has(square)).toBe(true);
+    }
   });
 });
