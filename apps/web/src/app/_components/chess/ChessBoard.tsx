@@ -15,6 +15,17 @@ import { getEvaluationIcon } from '@/lib/evaluation';
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
 
+/**
+ * Stable empty-array identity for the `highlightedSquares` default prop.
+ * Hoisted to module scope so `memo(ChessBoard)`'s shallow-equality check
+ * sees the same reference across renders when no callers override it,
+ * avoiding unnecessary re-renders on hot paths (play, move navigation,
+ * feed/thumbnail lists). Frozen to prevent accidental mutation.
+ */
+export const EMPTY_HIGHLIGHTED_SQUARES: string[] = Object.freeze(
+  [] as string[]
+) as unknown as string[];
+
 type Props = {
   fen: string;
   flipped?: boolean;
@@ -39,7 +50,7 @@ export const ChessBoard = memo(function ChessBoard({
   playerSide = 'white',
   lastMove = null,
   onSquareClick,
-  highlightedSquares = [],
+  highlightedSquares = EMPTY_HIGHLIGHTED_SQUARES,
   showCoordinates = true,
   showOwnPieces = true,
   showOpponentPieces = true,
