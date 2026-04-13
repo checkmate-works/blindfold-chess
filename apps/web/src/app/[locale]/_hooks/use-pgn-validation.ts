@@ -5,12 +5,34 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { validatePgnWithDetails } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 
 type UsePgnValidationOptions = {
-  /** The value to validate, typically the *debounced* PGN content */
+  /**
+   * The PGN content to validate.
+   *
+   * IMPORTANT: This MUST already be debounced by the caller. The hook runs
+   * `validatePgnWithDetails` synchronously in the render body on every change
+   * to this value, and that call performs a full `chess.js` PGN parse. Passing
+   * a raw keystroke-driven value will parse on every character and can cause
+   * noticeable input lag on long games.
+   *
+   * Currently the only caller is `PgnInput`, which debounces via
+   * `useDebouncedInput` (1000ms, with paste bypass). Any new caller must do
+   * the equivalent — e.g., via `useDebouncedInput`, a manual
+   * `useEffect` + `setTimeout`, or a form-submit-derived value.
+   */
   debouncedValue: string;
   /** Whether validation should run at all */
   showValidation?: boolean;
 };
 
+/**
+ * Derives UI validation state (success / error / invalid-move highlight /
+ * localized error message) from an already-debounced PGN string.
+ *
+ * @remarks
+ * This hook deliberately does NOT debounce internally. See
+ * {@link UsePgnValidationOptions.debouncedValue} for the caller contract and
+ * the reason (chess.js parsing cost on every render).
+ */
 export function usePgnValidation({
   debouncedValue,
   showValidation = true,
