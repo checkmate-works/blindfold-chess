@@ -16,8 +16,6 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 import { FAQClient } from './_components/FAQClient';
 import type { FAQItem } from './_lib/types';
 
-export const dynamic = 'force-dynamic';
-
 /**
  * Display order for the EXP module-weight table. Kept separate from
  * `MODULE_WEIGHT` so the FAQ can present modules in an editorial order

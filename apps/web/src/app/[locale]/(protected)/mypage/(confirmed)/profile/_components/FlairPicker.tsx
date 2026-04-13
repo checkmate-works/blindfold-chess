@@ -3,11 +3,27 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useTheme } from 'next-themes';
-
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
+import dynamic from 'next/dynamic';
 
 import { useDropdownClose } from '../_hooks/use-dropdown-close';
+
+type EmojiMartData = Record<string, unknown>;
+
+type PickerProps = {
+  data: EmojiMartData;
+  onEmojiSelect: (emoji: { native: string }) => void;
+  theme?: 'light' | 'dark';
+  autoFocus?: boolean;
+};
+
+const PickerPlaceholder = () => (
+  <div className="h-[435px] w-[352px] rounded-lg border border-border bg-card" />
+);
+
+const Picker = dynamic<PickerProps>(() => import('@emoji-mart/react').then((mod) => mod.default), {
+  ssr: false,
+  loading: () => <PickerPlaceholder />,
+});
 
 type Props = {
   value: string;
@@ -21,10 +37,26 @@ export function FlairPicker({ value, onChange, placeholder, clearLabel }: Props)
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [emojiData, setEmojiData] = useState<EmojiMartData | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen || emojiData) {
+      return;
+    }
+    let cancelled = false;
+    void import('@emoji-mart/data').then((mod) => {
+      if (!cancelled) {
+        setEmojiData((mod.default ?? mod) as EmojiMartData);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, emojiData]);
 
   useDropdownClose(containerRef, isOpen, setIsOpen);
 
@@ -63,12 +95,16 @@ export function FlairPicker({ value, onChange, placeholder, clearLabel }: Props)
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 z-50">
-          <Picker
-            data={data}
-            onEmojiSelect={handleEmojiSelect}
-            theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-            autoFocus
-          />
+          {emojiData ? (
+            <Picker
+              data={emojiData}
+              onEmojiSelect={handleEmojiSelect}
+              theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+              autoFocus
+            />
+          ) : (
+            <PickerPlaceholder />
+          )}
         </div>
       )}
     </div>

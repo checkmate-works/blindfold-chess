@@ -16,7 +16,7 @@ import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { getTermsByCategory } from '../../_lib/queries';
 import { CATEGORY_STYLES, type GlossaryCategory } from '../../_lib/types';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{

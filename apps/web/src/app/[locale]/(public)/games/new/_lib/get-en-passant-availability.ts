@@ -1,4 +1,4 @@
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 

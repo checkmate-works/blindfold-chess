@@ -1,5 +1,3 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,11 +7,11 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
-import { CoordinateBoard } from '@/app/[locale]/(public)/ranks/_components';
-import { ChessBoardDemo } from '@/app/[locale]/_components/ChessBoardDemo';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { SubsectionTitle } from '@/app/[locale]/_components/SubsectionTitle';
+
+import { MarkdownDemoImage } from './MarkdownDemoImage';
 
 type Props = {
   content: string;
@@ -102,19 +100,8 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
         img: ({ src, alt }) => {
           // Handle demo: prefix for interactive ChessBoard demos
           // In markdown ![demo:type](), the demo type is in the alt text
-          if (alt === 'demo:coordinate-board') {
-            return (
-              <div className="my-8">
-                <CoordinateBoard />
-              </div>
-            );
-          }
           if (alt?.startsWith('demo:')) {
-            const demoType = alt.replace('demo:', '') as
-              | 'board-normal'
-              | 'single-colored'
-              | 'stones';
-            return <ChessBoardDemo type={demoType} />;
+            return <MarkdownDemoImage alt={alt} />;
           }
           if (!src || typeof src !== 'string') return null;
 

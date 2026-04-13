@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
+import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 
 import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 

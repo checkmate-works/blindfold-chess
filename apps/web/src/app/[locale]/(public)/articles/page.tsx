@@ -22,7 +22,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticleCount, getPublishedArticlesPaginated } from './_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const ARTICLES_PER_PAGE = 20;
 

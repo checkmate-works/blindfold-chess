@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
 
 import {
   Divider,
@@ -33,9 +33,13 @@ type Props = {
   }>;
 };
 
-export const dynamic = 'force-dynamic';
-
 const validCategories = Object.values(ARTICLE_CATEGORIES) as string[];
+
+export function generateStaticParams(): { locale: Locale; category: string }[] {
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    Object.values(ARTICLE_CATEGORIES).map((category) => ({ locale, category }))
+  );
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;

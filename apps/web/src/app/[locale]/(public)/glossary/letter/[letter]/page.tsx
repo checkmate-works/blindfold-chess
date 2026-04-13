@@ -14,7 +14,7 @@ import { AlphabeticalIndex } from '../../_components/AlphabeticalIndex';
 import { GlossaryTermList } from '../../_components/GlossaryTermList';
 import { getTermsByLetter } from '../../_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{

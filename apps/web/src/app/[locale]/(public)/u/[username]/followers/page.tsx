@@ -12,7 +12,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const PAGE_SIZE = 10;
 

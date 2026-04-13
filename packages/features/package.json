@@ -9,6 +9,7 @@
     "./ai-game": "./src/ai-game/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./chess-core": "./src/chess-core/index.ts",
+    "./chess-core/fen": "./src/chess-core/fen-pure.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./common": "./src/common/index.ts",
     "./coordinate-quiz": "./src/coordinate-quiz/index.ts",

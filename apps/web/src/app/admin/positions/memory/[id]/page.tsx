@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getPositionById } from '@/lib/positions/queries';
 

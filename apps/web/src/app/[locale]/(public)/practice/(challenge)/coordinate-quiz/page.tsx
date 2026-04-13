@@ -3,7 +3,7 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import CoordinateQuiz from './_components/CoordinateQuiz';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'coordinateQuiz',
