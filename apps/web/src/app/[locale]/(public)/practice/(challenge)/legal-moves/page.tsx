@@ -3,7 +3,7 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { LegalMoves } from './_components/LegalMoves';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'legalMoves',

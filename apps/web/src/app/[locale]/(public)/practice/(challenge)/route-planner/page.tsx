@@ -16,7 +16,7 @@ import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/cre
 
 import RoutePlanner from './_components/RoutePlanner';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'routePlanner',
