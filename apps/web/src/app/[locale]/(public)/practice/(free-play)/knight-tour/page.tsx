@@ -28,8 +28,6 @@ import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/cre
 
 import { KnightTourPageContent } from './_components/KnightTourPageContent';
 
-export const dynamic = 'force-dynamic';
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'knightTour',
   canonicalPath: 'practice/knight-tour',

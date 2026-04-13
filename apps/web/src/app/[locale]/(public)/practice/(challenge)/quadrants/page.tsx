@@ -4,8 +4,6 @@ import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { QuadrantsSetup } from './_components/QuadrantsSetup';
 
-export const dynamic = 'force-dynamic';
-
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'quadrantAnchors',
   canonicalPath: 'practice/quadrants',
