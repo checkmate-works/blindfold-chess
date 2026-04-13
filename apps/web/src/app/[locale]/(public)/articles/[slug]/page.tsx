@@ -18,7 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticle } from '../_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const MarkdownRenderer = nextDynamic(
   () =>

@@ -18,7 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { ProfileAchievements } from '../_components/ProfileAchievements';
 import { getProfileByUsername } from '../_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const PAGE_SIZE = 10;
 
