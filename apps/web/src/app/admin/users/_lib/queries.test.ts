@@ -1077,9 +1077,8 @@ describe('fetchRankStats', () => {
     });
 
     const { fetchRankStats } = await import('./queries');
-    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } = await import(
-      '@/lib/db/data/ranks'
-    );
+    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } =
+      await import('@/lib/db/data/ranks');
     const result = await fetchRankStats(mockAdminClient as never, '');
 
     for (const rank of result) {
@@ -1822,5 +1821,534 @@ describe('fetchRankStats — with country/rank filters', () => {
     const result = await fetchRankStats(mockAdminClient as never, 'active', 'JP');
 
     expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(1);
+  });
+});
+
+/**
+ * Helper to build a mock Supabase user shape with arbitrary provider metadata.
+ * Mirrors the relevant fields read by `getSignupMethod` without needing the
+ * full `@supabase/supabase-js` User type.
+ */
+function makeUser(
+  id: string,
+  opts: {
+    appMetadataProvider?: string | null | undefined;
+    appMetadataMissing?: boolean;
+    appMetadataNull?: boolean;
+    identityProviders?: Array<string | undefined>;
+    noIdentities?: boolean;
+  } = {}
+) {
+  const user: Record<string, unknown> = { id, email: `${id}@example.com` };
+
+  if (opts.appMetadataNull) {
+    user.app_metadata = null;
+  } else if (opts.appMetadataMissing) {
+    // leave app_metadata undefined
+  } else {
+    user.app_metadata =
+      opts.appMetadataProvider === undefined ? {} : { provider: opts.appMetadataProvider };
+  }
+
+  if (!opts.noIdentities && opts.identityProviders) {
+    user.identities = opts.identityProviders.map((p) => ({ provider: p }));
+  }
+
+  return user;
+}
+
+describe('getSignupMethod', () => {
+  it('should return "google" when app_metadata.provider is "google"', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataProvider: 'google' });
+    expect(getSignupMethod(user as never)).toBe('google');
+  });
+
+  it('should return "email" when app_metadata.provider is "email"', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataProvider: 'email' });
+    expect(getSignupMethod(user as never)).toBe('email');
+  });
+
+  it('should return "unknown" for an unrecognized provider like "apple"', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataProvider: 'apple' });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should return "unknown" when app_metadata.provider is an empty string', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataProvider: '' });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should fall back to identities[0].provider when app_metadata is missing', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', {
+      appMetadataMissing: true,
+      identityProviders: ['google'],
+    });
+    expect(getSignupMethod(user as never)).toBe('google');
+  });
+
+  it('should fall back to identities[0].provider when app_metadata has no provider key', async () => {
+    const { getSignupMethod } = await import('./queries');
+    // app_metadata exists as {} (no provider key) — falls through to identities
+    const user = makeUser('u1', {
+      appMetadataProvider: undefined,
+      identityProviders: ['email'],
+    });
+    expect(getSignupMethod(user as never)).toBe('email');
+  });
+
+  it('should return "unknown" when both app_metadata and identities are missing', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataMissing: true, noIdentities: true });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should return "unknown" when identities array is present but empty', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataMissing: true, identityProviders: [] });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should return "unknown" defensively when app_metadata is null', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', { appMetadataNull: true, noIdentities: true });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should return "unknown" when identities[0].provider is an unrecognized string', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', {
+      appMetadataMissing: true,
+      identityProviders: ['facebook'],
+    });
+    expect(getSignupMethod(user as never)).toBe('unknown');
+  });
+
+  it('should prefer app_metadata.provider over identities[0].provider when both are set', async () => {
+    const { getSignupMethod } = await import('./queries');
+    const user = makeUser('u1', {
+      appMetadataProvider: 'google',
+      identityProviders: ['email'],
+    });
+    expect(getSignupMethod(user as never)).toBe('google');
+  });
+});
+
+describe('fetchUsersPageData — provider filter', () => {
+  it('should return only google users when providerFilter="google"', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'email' }),
+      makeUser('user-3', { appMetadataProvider: 'apple' }),
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(
+      mockAdminClient as never,
+      1,
+      '',
+      undefined,
+      undefined,
+      'google'
+    );
+
+    expect(result.totalCount).toBe(1);
+    expect(result.users.map((u) => u.id)).toEqual(['user-1']);
+  });
+
+  it('should return only email users when providerFilter="email"', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'email' }),
+      makeUser('user-3', { appMetadataProvider: 'email' }),
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(
+      mockAdminClient as never,
+      1,
+      '',
+      undefined,
+      undefined,
+      'email'
+    );
+
+    expect(result.totalCount).toBe(2);
+    expect(result.users.map((u) => u.id).sort()).toEqual(['user-2', 'user-3']);
+  });
+
+  it('should return only unknown users when providerFilter="unknown"', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'apple' }),
+      makeUser('user-3', { appMetadataMissing: true, noIdentities: true }),
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(
+      mockAdminClient as never,
+      1,
+      '',
+      undefined,
+      undefined,
+      'unknown'
+    );
+
+    expect(result.totalCount).toBe(2);
+    expect(result.users.map((u) => u.id).sort()).toEqual(['user-2', 'user-3']);
+  });
+
+  it('should apply no provider filter when providerFilter is empty string', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'email' }),
+      makeUser('user-3', { appMetadataProvider: 'apple' }),
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    // No filter at all → takes the non-filtered branch of fetchUsersPageData,
+    // which reads total from the Supabase response.
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(
+      mockAdminClient as never,
+      1,
+      '',
+      undefined,
+      undefined,
+      ''
+    );
+
+    expect(result.totalCount).toBe(3);
+    expect(result.users).toHaveLength(3);
+  });
+
+  it('should combine provider and status filters with AND semantics', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }), // active + google
+      makeUser('user-2', { appMetadataProvider: 'google' }), // banned + google → excluded
+      makeUser('user-3', { appMetadataProvider: 'email' }), // active + email → excluded
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: new Date('2024-01-15'), deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(
+      mockAdminClient as never,
+      1,
+      'active',
+      undefined,
+      undefined,
+      'google'
+    );
+
+    expect(result.totalCount).toBe(1);
+    expect(result.users.map((u) => u.id)).toEqual(['user-1']);
+  });
+});
+
+describe('fetchSignupMethodStats', () => {
+  it('should return three buckets in fixed [google, email, unknown] order', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'email' }),
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, '');
+
+    // Fixed order — unknown bucket still present with count 0
+    expect(result.map((r) => r.method)).toEqual(['google', 'email', 'unknown']);
+    expect(result).toEqual([
+      { method: 'google', count: 1 },
+      { method: 'email', count: 1 },
+      { method: 'unknown', count: 0 },
+    ]);
+  });
+
+  it('should count a mixed user set correctly', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }),
+      makeUser('user-2', { appMetadataProvider: 'google' }),
+      makeUser('user-3', { appMetadataProvider: 'google' }),
+      makeUser('user-4', { appMetadataProvider: 'email' }),
+      makeUser('user-5', { appMetadataProvider: 'apple' }), // unknown
+      makeUser('user-6', { appMetadataMissing: true, noIdentities: true }), // unknown
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: mockUsers.map((u) => ({
+        id: u.id as string,
+        country: 'JP',
+        bannedAt: null,
+        deletedAt: null,
+      })),
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, '');
+
+    expect(result).toEqual([
+      { method: 'google', count: 3 },
+      { method: 'email', count: 1 },
+      { method: 'unknown', count: 2 },
+    ]);
+  });
+
+  it('should reflect the filtered population when statusFilter is applied', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }), // active
+      makeUser('user-2', { appMetadataProvider: 'google' }), // banned → excluded
+      makeUser('user-3', { appMetadataProvider: 'email' }), // active
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: new Date('2024-01-15'), deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, 'active');
+
+    expect(result).toEqual([
+      { method: 'google', count: 1 },
+      { method: 'email', count: 1 },
+      { method: 'unknown', count: 0 },
+    ]);
+  });
+
+  it('should reflect the filtered population when countryFilter is applied', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }), // JP
+      makeUser('user-2', { appMetadataProvider: 'email' }), // US → excluded
+      makeUser('user-3', { appMetadataProvider: 'google' }), // JP
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [],
+    });
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, '', 'JP');
+
+    expect(result).toEqual([
+      { method: 'google', count: 2 },
+      { method: 'email', count: 0 },
+      { method: 'unknown', count: 0 },
+    ]);
+  });
+
+  it('should reflect the filtered population when rankFilter is applied', async () => {
+    const mockUsers = [
+      makeUser('user-1', { appMetadataProvider: 'google' }), // 5kyu
+      makeUser('user-2', { appMetadataProvider: 'email' }), // mukyu → excluded
+      makeUser('user-3', { appMetadataProvider: 'google' }), // 5kyu
+    ];
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: mockUsers, total: mockUsers.length },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
+      ],
+      rankRows: standardRankRows,
+      userRankRows: [
+        { userId: 'user-1', rankId: 1 }, // 5kyu
+        { userId: 'user-3', rankId: 1 }, // 5kyu
+      ],
+    });
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, '', undefined, '5kyu');
+
+    expect(result).toEqual([
+      { method: 'google', count: 2 },
+      { method: 'email', count: 0 },
+      { method: 'unknown', count: 0 },
+    ]);
+  });
+
+  it('should return all three buckets with count 0 for an empty user set', async () => {
+    const mockAdminClient = {
+      auth: {
+        admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [], total: 0 },
+            error: null,
+          }),
+        },
+      },
+    };
+
+    const { fetchSignupMethodStats } = await import('./queries');
+    const result = await fetchSignupMethodStats(mockAdminClient as never, '');
+
+    expect(result).toEqual([
+      { method: 'google', count: 0 },
+      { method: 'email', count: 0 },
+      { method: 'unknown', count: 0 },
+    ]);
   });
 });

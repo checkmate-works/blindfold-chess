@@ -2398,7 +2398,13 @@
       "premium": "Premium",
       "free": "Free",
       "viewSubscriptions": "サブスクリプション",
-      "deleted": "退会済み"
+      "deleted": "退会済み",
+      "signupMethod": "Signup Method",
+      "filterByProvider": "Signup Method",
+      "allProviders": "All",
+      "providerGoogle": "Google",
+      "providerEmail": "Email",
+      "providerUnknown": "Unknown"
     },
     "tabs": {
       "users": "ユーザー",
@@ -2407,6 +2413,7 @@
     "stats": {
       "usersByCountry": "国別ユーザー数",
       "usersByRank": "ランク別ユーザー数",
+      "usersBySignupMethod": "Users by Signup Method",
       "noData": "データがありません",
       "users": "人",
       "rankNames": {

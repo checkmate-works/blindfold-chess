@@ -8,7 +8,9 @@ type Props = {
   statusFilter: string;
   countryFilter: string;
   rankFilter: string;
+  providerFilter: string;
   rankNames: Record<string, string>;
+  providerNames: Record<string, string>;
   labels: {
     clearAll: string;
     active: string;
@@ -29,26 +31,29 @@ export function ActiveFilters({
   statusFilter,
   countryFilter,
   rankFilter,
+  providerFilter,
   rankNames,
+  providerNames,
   labels,
 }: Props) {
   const [, setParams] = useQueryStates({
     status: parseAsString.withDefault(''),
     country: parseAsString.withDefault(''),
     rank: parseAsString.withDefault(''),
+    provider: parseAsString.withDefault(''),
     page: parseAsInteger.withDefault(1),
   });
 
-  const hasAnyFilter = statusFilter || countryFilter || rankFilter;
+  const hasAnyFilter = statusFilter || countryFilter || rankFilter || providerFilter;
   if (!hasAnyFilter) return null;
 
-  const clearOne = (key: 'status' | 'country' | 'rank') => {
+  const clearOne = (key: 'status' | 'country' | 'rank' | 'provider') => {
     setParams({ [key]: null, page: null }, { history: 'push', shallow: false });
   };
 
   const clearAll = () => {
     setParams(
-      { status: null, country: null, rank: null, page: null },
+      { status: null, country: null, rank: null, provider: null, page: null },
       { history: 'push', shallow: false }
     );
   };
@@ -66,6 +71,13 @@ export function ActiveFilters({
         <FilterBadge
           label={rankNames[rankFilter] ?? rankFilter}
           onRemove={() => clearOne('rank')}
+        />
+      )}
+
+      {providerFilter && (
+        <FilterBadge
+          label={providerNames[providerFilter] ?? providerFilter}
+          onRemove={() => clearOne('provider')}
         />
       )}
 

@@ -2404,7 +2404,13 @@
       "premium": "Premium",
       "free": "Free",
       "viewSubscriptions": "Subscriptions",
-      "deleted": "Deleted"
+      "deleted": "Deleted",
+      "signupMethod": "Signup Method",
+      "filterByProvider": "Signup Method",
+      "allProviders": "All",
+      "providerGoogle": "Google",
+      "providerEmail": "Email",
+      "providerUnknown": "Unknown"
     },
     "tabs": {
       "users": "Users",
@@ -2413,6 +2419,7 @@
     "stats": {
       "usersByCountry": "Users by Country",
       "usersByRank": "Users by Rank",
+      "usersBySignupMethod": "Users by Signup Method",
       "noData": "No data available",
       "users": "users",
       "rankNames": {

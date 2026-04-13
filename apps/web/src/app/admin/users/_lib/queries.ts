@@ -20,10 +20,37 @@ import {
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
+import { SIGNUP_METHOD_ORDER, type SignupMethod } from './signup-method';
+
 const FETCH_ALL_PAGE_SIZE = 1000;
 const MAX_PAGES = 100;
 
 type Profile = typeof profiles.$inferSelect;
+
+/**
+ * Classify a Supabase auth user's signup provider into one of three buckets:
+ * `google`, `email`, or `unknown` (any other / missing provider).
+ *
+ * Reads `user.app_metadata.provider` first (the canonical field), falling back
+ * to the first entry of `user.identities` for legacy rows.
+ */
+function getSignupMethod(user: User): SignupMethod {
+  const appMetaProvider =
+    typeof user.app_metadata === 'object' && user.app_metadata !== null
+      ? (user.app_metadata as Record<string, unknown>).provider
+      : undefined;
+  const identityProvider = user.identities?.[0]?.provider;
+  const provider =
+    typeof appMetaProvider === 'string' && appMetaProvider.length > 0
+      ? appMetaProvider
+      : typeof identityProvider === 'string' && identityProvider.length > 0
+        ? identityProvider
+        : '';
+
+  if (provider === 'google') return 'google';
+  if (provider === 'email') return 'email';
+  return 'unknown';
+}
 
 async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
   const allUsers: User[] = [];
@@ -58,7 +85,8 @@ async function fetchFilteredUsers(
   adminClient: SupabaseClient,
   statusFilter: string,
   countryFilter?: string,
-  rankFilter?: string
+  rankFilter?: string,
+  providerFilter?: string
 ): Promise<FilteredUsersResult> {
   const allUsers = await fetchAllUsers(adminClient);
   const allUserIds = allUsers.map((u) => u.id);
@@ -131,6 +159,11 @@ async function fetchFilteredUsers(
       }
     }
 
+    // Signup method (provider) filter
+    if (providerFilter) {
+      if (getSignupMethod(user) !== providerFilter) return false;
+    }
+
     return true;
   });
 
@@ -153,7 +186,8 @@ export async function fetchUsersPageData(
   page: number,
   statusFilter: string,
   countryFilter?: string,
-  rankFilter?: string
+  rankFilter?: string,
+  providerFilter?: string
 ): Promise<UsersPageData> {
   let users: User[];
   let currentPage: number;
@@ -161,14 +195,15 @@ export async function fetchUsersPageData(
   let totalCount: number;
   let profileMap: Map<string, Profile>;
 
-  const hasFilter = statusFilter || countryFilter || rankFilter;
+  const hasFilter = statusFilter || countryFilter || rankFilter || providerFilter;
 
   if (hasFilter) {
     const { filteredUsers, profileMap: allProfileMap } = await fetchFilteredUsers(
       adminClient,
       statusFilter,
       countryFilter,
-      rankFilter
+      rankFilter,
+      providerFilter
     );
 
     totalCount = filteredUsers.length;
@@ -272,7 +307,8 @@ export async function fetchCountryStats(
   adminClient: SupabaseClient,
   statusFilter: string,
   countryFilter?: string,
-  rankFilter?: string
+  rankFilter?: string,
+  providerFilter?: string
 ): Promise<CountryStat[]> {
   // Always use fetchFilteredUsers to ensure the same user population as the list view.
   // When all filters are empty, fetchFilteredUsers returns all users (default branch).
@@ -280,7 +316,8 @@ export async function fetchCountryStats(
     adminClient,
     statusFilter,
     countryFilter,
-    rankFilter
+    rankFilter,
+    providerFilter
   );
 
   const countMap = new Map<string, number>();
@@ -313,13 +350,15 @@ export async function fetchRankStats(
   adminClient: SupabaseClient,
   statusFilter: string,
   countryFilter?: string,
-  rankFilter?: string
+  rankFilter?: string,
+  providerFilter?: string
 ): Promise<RankStat[]> {
   const { filteredUsers } = await fetchFilteredUsers(
     adminClient,
     statusFilter,
     countryFilter,
-    rankFilter
+    rankFilter,
+    providerFilter
   );
   const filteredUserIds = filteredUsers.map((u) => u.id);
 
@@ -369,3 +408,46 @@ export async function fetchRankStats(
     };
   }).sort((a, b) => a.level - b.level);
 }
+
+export type SignupMethodStat = {
+  method: SignupMethod;
+  count: number;
+};
+
+/**
+ * Fetch user counts grouped by signup method (google / email / unknown).
+ *
+ * Mirrors `fetchCountryStats` — uses the same filtered user population so the
+ * chart is consistent with the list view. Always returns all three buckets in
+ * a fixed order (google → email → unknown), even when a bucket is empty, so
+ * the chart is stable across renders.
+ */
+export async function fetchSignupMethodStats(
+  adminClient: SupabaseClient,
+  statusFilter: string,
+  countryFilter?: string,
+  rankFilter?: string,
+  providerFilter?: string
+): Promise<SignupMethodStat[]> {
+  const { filteredUsers } = await fetchFilteredUsers(
+    adminClient,
+    statusFilter,
+    countryFilter,
+    rankFilter,
+    providerFilter
+  );
+
+  const countMap = new Map<SignupMethod, number>();
+  for (const method of SIGNUP_METHOD_ORDER) countMap.set(method, 0);
+  for (const user of filteredUsers) {
+    const method = getSignupMethod(user);
+    countMap.set(method, (countMap.get(method) ?? 0) + 1);
+  }
+
+  return SIGNUP_METHOD_ORDER.map((method) => ({
+    method,
+    count: countMap.get(method) ?? 0,
+  }));
+}
+
+export { getSignupMethod };
