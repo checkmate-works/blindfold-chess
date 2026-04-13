@@ -102,7 +102,7 @@ export function CoordinateQuizChallengePlaying({
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative -mx-8 sm:mx-0">
             {/* Pause Overlay with Play Button */}
             <BoardOverlay
               isVisible={isPaused}

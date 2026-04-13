@@ -43,14 +43,16 @@ export function CoordinateQuizTrainingPlaying({
     <div>
       <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
-          <CoordinateQuizGameBoard
-            currentQuestion={currentQuestion}
-            onSquareClick={onSquareClick}
-            lastClickedSquare={lastClickedSquare}
-            showFeedback={showFeedback}
-            isCorrect={isCorrect}
-            countdown={countdown}
-          />
+          <div className="-mx-8 sm:mx-0">
+            <CoordinateQuizGameBoard
+              currentQuestion={currentQuestion}
+              onSquareClick={onSquareClick}
+              lastClickedSquare={lastClickedSquare}
+              showFeedback={showFeedback}
+              isCorrect={isCorrect}
+              countdown={countdown}
+            />
+          </div>
         </div>
       </div>
 
