@@ -137,7 +137,7 @@ export default async function MypagePage({ params }: Props) {
           </p>
           <p className="mt-2 text-center">
             <Link
-              href="/leaderboard/exp"
+              href="/leaderboard/exp/all-time"
               locale={locale}
               className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
             >

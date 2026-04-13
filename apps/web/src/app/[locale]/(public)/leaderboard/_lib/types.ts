@@ -78,7 +78,7 @@ export const ALL_LEADERBOARD_ENTRIES: LeaderboardEntry[] = MODULES.flatMap((modu
 // URL slug <-> DB module name conversion
 // ---------------------------------------------------------------------------
 
-const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
+export const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
   coordinate_quiz: 'coordinate-quiz',
   legal_moves: 'legal-moves',
   square_colors: 'square-colors',
@@ -87,7 +87,7 @@ const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
   route_planner: 'route-planner',
 };
 
-const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
+export const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
   'coordinate-quiz': 'coordinate_quiz',
   'legal-moves': 'legal_moves',
   'square-colors': 'square_colors',
@@ -95,6 +95,20 @@ const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
   'board-symmetry': 'board_symmetry',
   'route-planner': 'route_planner',
 };
+
+/**
+ * All valid module URL slugs (hyphenated form). Parallel to `VALID_MODULE_FILTERS`
+ * (underscore form). Used by the path-segment-based module filter on the
+ * category-first canonical route `/leaderboard/score/[period]/[module-slug]`.
+ */
+export const VALID_MODULE_SLUGS = [
+  'coordinate-quiz',
+  'legal-moves',
+  'square-colors',
+  'diagonal-quiz',
+  'board-symmetry',
+  'route-planner',
+] as const satisfies readonly LeaderboardModuleSlug[];
 
 export function moduleToSlug(module: LeaderboardModule): LeaderboardModuleSlug {
   return MODULE_TO_SLUG[module];
@@ -104,12 +118,19 @@ export function slugToModule(slug: string): LeaderboardModule | null {
   return (SLUG_TO_MODULE as Record<string, LeaderboardModule>)[slug] ?? null;
 }
 
+/**
+ * Build the canonical (category-first) leaderboard detail path. Callers
+ * prepend `/${locale}` to produce a fully-qualified URL.
+ *
+ * Example: `buildDetailPath('weekly', 'legal_moves', 'knight')`
+ *   → `/leaderboard/score/weekly/legal-moves/knight`
+ */
 export function buildDetailPath(
   period: LeaderboardPeriod,
   module: LeaderboardModule,
   key: string
 ): string {
-  return `/leaderboard/${period}/${moduleToSlug(module)}/${key}`;
+  return `/leaderboard/score/${period}/${moduleToSlug(module)}/${key}`;
 }
 
 /**

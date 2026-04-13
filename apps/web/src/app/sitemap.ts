@@ -14,6 +14,12 @@ import { enumerateGuideRoutes, guideRouteToSegments } from '@/lib/guides';
 import { getPublishedAnnouncements } from './[locale]/(public)/announcements/_lib/queries';
 import { getPublishedArticlesForSitemap } from './[locale]/(public)/articles/_lib/queries';
 import { getCategoryCounts, getUniqueLetters } from './[locale]/(public)/glossary/_lib/queries';
+import {
+  MODULES,
+  MODULE_KEYS,
+  MODULE_TO_SLUG,
+  VALID_PERIODS,
+} from './[locale]/(public)/leaderboard/_lib/types';
 import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
 import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
@@ -74,7 +80,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/getting-started',
     '/articles',
     '/announcements',
-    '/leaderboard',
+    // Note: `/leaderboard` is intentionally NOT listed here — it is a 308
+    // redirect to `/leaderboard/score/all-time`. The canonical category-first
+    // leaderboard URLs (`/leaderboard/score/...` and `/leaderboard/exp/...`)
+    // are emitted below in the "Dynamic pages - Leaderboard" section so
+    // crawlers index only non-redirect, 200-returning canonical endpoints.
     '/ranks',
     '/dojo',
     '/guides',
@@ -230,6 +240,54 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${BASE_URL}/${locale}${path}`,
         lastModified: now,
         alternates: generateAlternates(path),
+      });
+    }
+  }
+
+  // Dynamic pages - Leaderboard (category-first canonical URLs).
+  //
+  // Emits only non-redirect, 200-returning endpoints under the
+  // `/leaderboard/score/...` and `/leaderboard/exp/...` category-first
+  // hierarchy. The legacy period-first paths (`/leaderboard/[period]/...`)
+  // and the bare `/leaderboard` index are intentionally omitted — they 308
+  // to the canonical shapes emitted here, and listing redirect sources in a
+  // sitemap dilutes crawl budget for no SEO gain.
+  //
+  // Emitted paths (per locale, with hreflang alternates):
+  //   - Score top:        /leaderboard/score/{period}                        × 3 periods
+  //   - Score middle hub: /leaderboard/score/{period}/{module-slug}          × 3 × 6 modules
+  //   - Score detail:     /leaderboard/score/{period}/{module-slug}/{key}    (variant modules only)
+  //   - Exp top:          /leaderboard/exp/{period}                          × 3 periods
+  //
+  // Detail leaves are skipped for modules whose only key is `default`
+  // (square_colors, diagonal_quiz, board_symmetry). Those modules are fully
+  // represented by their middle hub — the detail page would share the same
+  // ranking table and create duplicate-content noise for crawlers.
+  const leaderboardPaths: string[] = [];
+  for (const period of VALID_PERIODS) {
+    // Score top
+    leaderboardPaths.push(`/leaderboard/score/${period}`);
+    // Score middle hubs (one per module). `mod` (not `module`) because
+    // `module` is a reserved globals-shadowing variable name under
+    // `@next/next/no-assign-module-variable`.
+    for (const mod of MODULES) {
+      const slug = MODULE_TO_SLUG[mod];
+      leaderboardPaths.push(`/leaderboard/score/${period}/${slug}`);
+      // Score detail leaves — only for modules with real variant keys
+      for (const key of MODULE_KEYS[mod]) {
+        if (key === 'default') continue;
+        leaderboardPaths.push(`/leaderboard/score/${period}/${slug}/${key}`);
+      }
+    }
+    // Exp top
+    leaderboardPaths.push(`/leaderboard/exp/${period}`);
+  }
+  for (const routePath of leaderboardPaths) {
+    for (const locale of SUPPORTED_LOCALES) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}${routePath}`,
+        lastModified: now,
+        alternates: generateAlternates(routePath),
       });
     }
   }

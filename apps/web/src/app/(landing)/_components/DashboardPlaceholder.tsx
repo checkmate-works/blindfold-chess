@@ -36,7 +36,7 @@ export function DashboardPlaceholder({ t, locale, siteName, displayName, avatarU
           backgroundImage="/images/challenge.webp"
           footer={
             <Link
-              href={`/${locale}/leaderboard`}
+              href={`/${locale}/leaderboard/score/all-time`}
               className="block text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors rounded-full bg-card/90 backdrop-blur-sm py-1.5 px-4 border border-border/50"
             >
               {t('dashboard.viewLeaderboard')}

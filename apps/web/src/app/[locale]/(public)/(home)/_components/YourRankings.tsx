@@ -60,7 +60,7 @@ export async function YourRankings({ locale }: Props) {
       </div>
       <div className="text-center">
         <Link
-          href="/leaderboard?period=weekly"
+          href="/leaderboard/score/weekly"
           locale={locale}
           className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
         >

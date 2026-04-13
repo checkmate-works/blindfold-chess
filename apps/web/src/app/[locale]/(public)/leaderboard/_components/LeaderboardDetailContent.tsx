@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useTransition } from 'react';
+import { type ReactNode, useCallback, useState, useTransition } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -24,6 +24,10 @@ type Props = {
   currentUserId: string | null;
   data: LeaderboardResult;
   currentPage: number;
+  // Optional slot rendered immediately below the SectionTitle. Accepts a
+  // pre-constructed React element (e.g., <PeriodSelector ... />) so the host
+  // page owns the href data and the nested component stays presentational.
+  periodSelector?: ReactNode;
 };
 
 export function LeaderboardDetailContent({
@@ -34,6 +38,7 @@ export function LeaderboardDetailContent({
   currentUserId,
   data: initialData,
   currentPage: initialPage,
+  periodSelector,
 }: Props) {
   const t = useTranslations('leaderboard');
   const [isPending, startTransition] = useTransition();
@@ -56,11 +61,13 @@ export function LeaderboardDetailContent({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SectionTitle>
         {title}
         <span className="ml-2 text-sm font-normal text-muted-foreground">({periodLabel})</span>
       </SectionTitle>
+
+      {periodSelector}
 
       <div
         className={`transition-opacity ${isPending ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}

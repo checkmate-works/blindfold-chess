@@ -1,31 +1,44 @@
-'use client';
-
-import { useRouter, useSearchParams } from 'next/navigation';
-
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 
-import type { ModuleFilterValue } from '../_lib/types';
-import { VALID_MODULE_FILTERS } from '../_lib/types';
+import type { LeaderboardModuleSlug, LeaderboardPeriod, ModuleFilterValue } from '../_lib/types';
+import { MODULE_TO_SLUG, VALID_MODULE_FILTERS } from '../_lib/types';
+
+type CurrentSlug = LeaderboardModuleSlug | 'all';
 
 type Props = {
-  currentModule: ModuleFilterValue;
+  currentSlug: CurrentSlug;
+  period: LeaderboardPeriod;
+  locale: string;
 };
 
-export function ModuleFilter({ currentModule }: Props) {
-  const t = useTranslations('leaderboard');
-  const router = useRouter();
-  const searchParams = useSearchParams();
+/**
+ * Module filter rendered as a segmented-control link bar. Drives navigation
+ * via path segments (`/leaderboard/score/[period]/[module-slug]`) instead of
+ * the legacy `?module=` query param, so each filter state has a stable
+ * canonical URL.
+ *
+ * This is an async server component so it can await `getTranslations`
+ * directly and render `<Link>` elements for SSR-friendly navigation without
+ * any client JS. Import directly from `./ModuleFilter` (not via the
+ * `_components` barrel) to avoid pulling server-only deps into client bundles.
+ */
+export async function ModuleFilter({ currentSlug, period, locale }: Props) {
+  const t = await getTranslations({ locale, namespace: 'leaderboard' });
 
-  function handleModuleChange(module: ModuleFilterValue) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (module === 'all') {
-      params.delete('module');
-    } else {
-      params.set('module', module);
+  function buildHref(value: ModuleFilterValue): string {
+    if (value === 'all') {
+      return `/${locale}/leaderboard/score/${period}`;
     }
-    router.push(`?${params.toString()}`);
+    const slug = MODULE_TO_SLUG[value];
+    return `/${locale}/leaderboard/score/${period}/${slug}`;
+  }
+
+  function isActive(value: ModuleFilterValue): boolean {
+    if (value === 'all') return currentSlug === 'all';
+    return MODULE_TO_SLUG[value] === currentSlug;
   }
 
   return (
@@ -35,17 +48,17 @@ export function ModuleFilter({ currentModule }: Props) {
       aria-label={t('moduleFilterLabel')}
     >
       {VALID_MODULE_FILTERS.map((m) => {
-        const isActive = currentModule === m;
+        const active = isActive(m);
         const emoji = m === 'all' ? null : PRACTICE_EMOJIS[m];
         return (
-          <button
+          <Link
             key={m}
+            href={buildHref(m)}
             role="radio"
-            aria-checked={isActive}
-            onClick={() => handleModuleChange(m)}
+            aria-checked={active}
             title={t(`moduleFilter.${m}`)}
             className={`flex-1 rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-              isActive
+              active
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -58,7 +71,7 @@ export function ModuleFilter({ currentModule }: Props) {
             ) : (
               t(`moduleFilter.${m}`)
             )}
-          </button>
+          </Link>
         );
       })}
     </div>

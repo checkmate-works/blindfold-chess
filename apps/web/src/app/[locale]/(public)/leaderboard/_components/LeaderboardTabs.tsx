@@ -4,19 +4,25 @@ import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { LeaderboardPeriod } from '../_lib/types';
+
 type TabValue = 'score' | 'exp';
 
 type Props = {
   activeTab: TabValue;
   locale: string;
+  period: LeaderboardPeriod;
 };
 
-const TABS: { value: TabValue; href: (locale: string) => string }[] = [
-  { value: 'score', href: (locale) => `/${locale}/leaderboard` },
-  { value: 'exp', href: (locale) => `/${locale}/leaderboard/exp` },
+const TABS: {
+  value: TabValue;
+  buildHref: (locale: string, period: LeaderboardPeriod) => string;
+}[] = [
+  { value: 'score', buildHref: (locale, period) => `/${locale}/leaderboard/score/${period}` },
+  { value: 'exp', buildHref: (locale, period) => `/${locale}/leaderboard/exp/${period}` },
 ];
 
-export function LeaderboardTabs({ activeTab, locale }: Props) {
+export function LeaderboardTabs({ activeTab, locale, period }: Props) {
   const t = useTranslations('leaderboard');
 
   return (
@@ -26,7 +32,7 @@ export function LeaderboardTabs({ activeTab, locale }: Props) {
         return (
           <Link
             key={tab.value}
-            href={tab.href(locale)}
+            href={tab.buildHref(locale, period)}
             role="tab"
             aria-selected={isActive}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${

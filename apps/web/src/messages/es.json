@@ -3171,7 +3171,7 @@
       "board_symmetry": "Simetría del Tablero",
       "route_planner": "Planificador de Rutas"
     },
-    "allLeaderboardsSection": "Todas las Clasificaciones",
+    "scoreLeaderboardSection": "Clasificación de Puntuación",
     "rankLabel": "Tu Posición: #{rank}",
     "notRanked": "Sin posición",
     "cardTitle": {

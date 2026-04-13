@@ -184,7 +184,7 @@ export default async function PracticePage({ params }: Props) {
 
         <div className="text-center pt-4">
           <Link
-            href={`/${locale}/leaderboard`}
+            href={`/${locale}/leaderboard/score/all-time`}
             className="text-primary hover:underline text-sm font-medium"
           >
             {t('practice.viewLeaderboard')}

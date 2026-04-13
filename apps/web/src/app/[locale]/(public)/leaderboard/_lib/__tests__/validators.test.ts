@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../validators';
+import {
+  isValidKey,
+  isValidModule,
+  isValidModuleSlug,
+  isValidPage,
+  isValidPeriod,
+  parseModuleFilter,
+  parseModuleSlugFilter,
+  parsePeriod,
+} from '../validators';
 
 describe('isValidModule', () => {
   it('accepts valid modules', () => {
@@ -135,5 +144,103 @@ describe('isValidPage', () => {
 
   it('rejects very small negative number', () => {
     expect(isValidPage(-Number.MAX_SAFE_INTEGER)).toBe(false);
+  });
+});
+
+describe('parsePeriod', () => {
+  it('returns valid values as-is', () => {
+    expect(parsePeriod('all-time')).toBe('all-time');
+    expect(parsePeriod('weekly')).toBe('weekly');
+    expect(parsePeriod('monthly')).toBe('monthly');
+  });
+
+  it('falls back to "all-time" by default for undefined', () => {
+    expect(parsePeriod(undefined)).toBe('all-time');
+  });
+
+  it('falls back to "all-time" by default for invalid values', () => {
+    expect(parsePeriod('daily')).toBe('all-time');
+    expect(parsePeriod('')).toBe('all-time');
+    expect(parsePeriod('ALL-TIME')).toBe('all-time');
+  });
+
+  it('uses the provided fallback when value is invalid', () => {
+    expect(parsePeriod(undefined, 'weekly')).toBe('weekly');
+    expect(parsePeriod('nope', 'monthly')).toBe('monthly');
+  });
+
+  it('prefers the valid value over the fallback', () => {
+    expect(parsePeriod('monthly', 'weekly')).toBe('monthly');
+  });
+});
+
+describe('isValidModuleSlug', () => {
+  it('accepts all six hyphenated module slugs', () => {
+    expect(isValidModuleSlug('coordinate-quiz')).toBe(true);
+    expect(isValidModuleSlug('legal-moves')).toBe(true);
+    expect(isValidModuleSlug('square-colors')).toBe(true);
+    expect(isValidModuleSlug('diagonal-quiz')).toBe(true);
+    expect(isValidModuleSlug('board-symmetry')).toBe(true);
+    expect(isValidModuleSlug('route-planner')).toBe(true);
+  });
+
+  it('rejects underscore-form module names', () => {
+    expect(isValidModuleSlug('coordinate_quiz')).toBe(false);
+    expect(isValidModuleSlug('legal_moves')).toBe(false);
+  });
+
+  it('rejects the "all" sentinel (that belongs to ModuleFilterValue, not slugs)', () => {
+    expect(isValidModuleSlug('all')).toBe(false);
+  });
+
+  it('rejects unknown slugs', () => {
+    expect(isValidModuleSlug('')).toBe(false);
+    expect(isValidModuleSlug('unknown-module')).toBe(false);
+    expect(isValidModuleSlug('Coordinate-Quiz')).toBe(false);
+  });
+});
+
+describe('parseModuleFilter', () => {
+  it('returns the valid underscore-form value as-is', () => {
+    expect(parseModuleFilter('coordinate_quiz')).toBe('coordinate_quiz');
+    expect(parseModuleFilter('legal_moves')).toBe('legal_moves');
+  });
+
+  it('passes through the "all" sentinel', () => {
+    expect(parseModuleFilter('all')).toBe('all');
+  });
+
+  it('returns "all" for undefined / empty / invalid inputs', () => {
+    expect(parseModuleFilter(undefined)).toBe('all');
+    expect(parseModuleFilter('')).toBe('all');
+    expect(parseModuleFilter('coordinate-quiz')).toBe('all'); // slug form rejected
+    expect(parseModuleFilter('not-a-module')).toBe('all');
+  });
+
+  it('extracts the first element when given an array', () => {
+    expect(parseModuleFilter(['legal_moves', 'square_colors'])).toBe('legal_moves');
+  });
+
+  it('falls back to "all" for an empty array', () => {
+    expect(parseModuleFilter([])).toBe('all');
+  });
+});
+
+describe('parseModuleSlugFilter', () => {
+  it('returns the valid slug as-is', () => {
+    expect(parseModuleSlugFilter('coordinate-quiz')).toBe('coordinate-quiz');
+    expect(parseModuleSlugFilter('legal-moves')).toBe('legal-moves');
+  });
+
+  it('returns null for undefined / empty / invalid inputs', () => {
+    expect(parseModuleSlugFilter(undefined)).toBeNull();
+    expect(parseModuleSlugFilter('')).toBeNull();
+    expect(parseModuleSlugFilter('coordinate_quiz')).toBeNull(); // underscore rejected
+    expect(parseModuleSlugFilter('unknown-slug')).toBeNull();
+    expect(parseModuleSlugFilter('all')).toBeNull();
+  });
+
+  it('extracts the first element when given an array', () => {
+    expect(parseModuleSlugFilter(['legal-moves', 'square-colors'])).toBe('legal-moves');
   });
 });

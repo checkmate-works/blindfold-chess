@@ -56,7 +56,7 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
   const tLeaderboard = useTranslations('leaderboard');
   const displayName = data.actor.displayName || data.actor.username;
   const moduleSlug = moduleToSlug(data.menuType as LeaderboardModule);
-  const href = `/leaderboard/all-time/${moduleSlug}/${data.leaderboardKey}`;
+  const href = `/leaderboard/score/all-time/${moduleSlug}/${data.leaderboardKey}`;
   const moduleName = tLeaderboard(`module.${data.menuType}` as Parameters<typeof tLeaderboard>[0]);
 
   const label =

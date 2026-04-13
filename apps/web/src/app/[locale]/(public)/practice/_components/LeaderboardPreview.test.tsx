@@ -64,7 +64,7 @@ describe('LeaderboardPreview', () => {
     const { container } = render(
       <LeaderboardPreview
         rows={[]}
-        detailPath="/leaderboard/weekly/coordinate-quiz/white"
+        detailPath="/leaderboard/score/weekly/coordinate-quiz/white"
         locale="en"
       />
     );
@@ -78,7 +78,7 @@ describe('LeaderboardPreview', () => {
     render(
       <LeaderboardPreview
         rows={rows}
-        detailPath="/leaderboard/weekly/coordinate-quiz/white"
+        detailPath="/leaderboard/score/weekly/coordinate-quiz/white"
         locale="en"
       />
     );
@@ -96,7 +96,7 @@ describe('LeaderboardPreview', () => {
     render(
       <LeaderboardPreview
         rows={rows}
-        detailPath="/leaderboard/weekly/coordinate-quiz/white"
+        detailPath="/leaderboard/score/weekly/coordinate-quiz/white"
         locale="en"
       />
     );
@@ -112,14 +112,14 @@ describe('LeaderboardPreview', () => {
     render(
       <LeaderboardPreview
         rows={rows}
-        detailPath="/leaderboard/weekly/legal-moves/king"
+        detailPath="/leaderboard/score/weekly/legal-moves/king"
         locale="en"
       />
     );
 
     const link = screen.getByRole('link', { name: 'viewMore' });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/en/leaderboard/weekly/legal-moves/king');
+    expect(link).toHaveAttribute('href', '/en/leaderboard/score/weekly/legal-moves/king');
   });
 
   it('should render the section title with weeklyRanking translation key', () => {
@@ -128,7 +128,7 @@ describe('LeaderboardPreview', () => {
     render(
       <LeaderboardPreview
         rows={rows}
-        detailPath="/leaderboard/weekly/coordinate-quiz/white"
+        detailPath="/leaderboard/score/weekly/coordinate-quiz/white"
         locale="ja"
       />
     );
@@ -142,12 +142,12 @@ describe('LeaderboardPreview', () => {
     render(
       <LeaderboardPreview
         rows={rows}
-        detailPath="/leaderboard/weekly/square-colors/default"
+        detailPath="/leaderboard/score/weekly/square-colors/default"
         locale="ja"
       />
     );
 
     const link = screen.getByRole('link', { name: 'viewMore' });
-    expect(link).toHaveAttribute('href', '/ja/leaderboard/weekly/square-colors/default');
+    expect(link).toHaveAttribute('href', '/ja/leaderboard/score/weekly/square-colors/default');
   });
 });

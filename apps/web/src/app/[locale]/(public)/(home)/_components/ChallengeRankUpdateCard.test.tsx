@@ -149,7 +149,7 @@ describe('ChallengeRankUpdateCard', () => {
     render(<ChallengeRankUpdateCard data={createData()} {...defaultProps} />);
 
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/leaderboard/all-time/coordinate-quiz/white');
+    expect(link).toHaveAttribute('href', '/leaderboard/score/all-time/coordinate-quiz/white');
   });
 
   it('should render module and setting label with separator', () => {

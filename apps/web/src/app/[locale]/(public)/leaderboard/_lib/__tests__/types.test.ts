@@ -4,7 +4,10 @@ import {
   ALL_LEADERBOARD_ENTRIES,
   MODULES,
   MODULE_KEYS,
+  MODULE_TO_SLUG,
   PAGE_SIZE,
+  SLUG_TO_MODULE,
+  VALID_MODULE_SLUGS,
   VALID_PERIODS,
   buildDetailPath,
   moduleToSlug,
@@ -65,6 +68,46 @@ describe('MODULE_KEYS', () => {
 describe('VALID_PERIODS', () => {
   it('contains all-time, weekly, monthly', () => {
     expect(VALID_PERIODS).toEqual(['all-time', 'weekly', 'monthly']);
+  });
+
+  // Regression guard: `score` and `exp` must never be added as periods, since
+  // they are reserved as category segments in the canonical URL hierarchy
+  // (`/leaderboard/score/[period]`, `/leaderboard/exp/[period]`). Next.js
+  // routes static segments before dynamic, so the legacy `[period]` shim
+  // would never receive these as inputs — but if precedence ever flipped,
+  // the shim's `notFound()` branch would still close the gap, and this test
+  // codifies the invariant at the data-model level.
+  it('does not contain the reserved category segments "score" or "exp"', () => {
+    expect(VALID_PERIODS).not.toContain('score' as never);
+    expect(VALID_PERIODS).not.toContain('exp' as never);
+  });
+});
+
+describe('VALID_MODULE_SLUGS', () => {
+  it('contains exactly six hyphenated slugs parallel to MODULES', () => {
+    expect(VALID_MODULE_SLUGS).toEqual([
+      'coordinate-quiz',
+      'legal-moves',
+      'square-colors',
+      'diagonal-quiz',
+      'board-symmetry',
+      'route-planner',
+    ]);
+  });
+});
+
+describe('MODULE_TO_SLUG / SLUG_TO_MODULE', () => {
+  it('is bijective across MODULES and VALID_MODULE_SLUGS', () => {
+    for (const mod of MODULES) {
+      const slug = MODULE_TO_SLUG[mod];
+      expect(VALID_MODULE_SLUGS).toContain(slug);
+      expect(SLUG_TO_MODULE[slug]).toBe(mod);
+    }
+    for (const slug of VALID_MODULE_SLUGS) {
+      const mod = SLUG_TO_MODULE[slug];
+      expect(MODULES).toContain(mod);
+      expect(MODULE_TO_SLUG[mod]).toBe(slug);
+    }
   });
 });
 
@@ -259,25 +302,25 @@ describe('slugToModule', () => {
 describe('buildDetailPath', () => {
   it('builds correct path for all-time coordinate_quiz white', () => {
     expect(buildDetailPath('all-time', 'coordinate_quiz', 'white')).toBe(
-      '/leaderboard/all-time/coordinate-quiz/white'
+      '/leaderboard/score/all-time/coordinate-quiz/white'
     );
   });
 
   it('builds correct path for weekly legal_moves knight', () => {
     expect(buildDetailPath('weekly', 'legal_moves', 'knight')).toBe(
-      '/leaderboard/weekly/legal-moves/knight'
+      '/leaderboard/score/weekly/legal-moves/knight'
     );
   });
 
   it('builds correct path for monthly square_colors default', () => {
     expect(buildDetailPath('monthly', 'square_colors', 'default')).toBe(
-      '/leaderboard/monthly/square-colors/default'
+      '/leaderboard/score/monthly/square-colors/default'
     );
   });
 
   it('builds correct path for all-time diagonal_quiz default', () => {
     expect(buildDetailPath('all-time', 'diagonal_quiz', 'default')).toBe(
-      '/leaderboard/all-time/diagonal-quiz/default'
+      '/leaderboard/score/all-time/diagonal-quiz/default'
     );
   });
 
@@ -285,6 +328,13 @@ describe('buildDetailPath', () => {
     const path = buildDetailPath('all-time', 'legal_moves', 'random');
     expect(path).toContain('legal-moves');
     expect(path).not.toContain('legal_moves');
+  });
+
+  it('always starts with the /leaderboard/score/ category prefix', () => {
+    for (const mod of MODULES) {
+      const key = MODULE_KEYS[mod][0];
+      expect(buildDetailPath('weekly', mod, key)).toMatch(/^\/leaderboard\/score\//);
+    }
   });
 });
 

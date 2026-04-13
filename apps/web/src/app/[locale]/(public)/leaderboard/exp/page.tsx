@@ -1,31 +1,23 @@
 /**
- * Exp Leaderboard (Exp ランキング — `/leaderboard/exp`)
+ * Exp Leaderboard index redirect (`/leaderboard/exp` → `/leaderboard/exp/[period]`)
  *
  * @description
- * Displays cumulative Exp rankings sourced from the `user_exp` table.
- * Shows top 50 users ranked by total experience points, with level
- * derived dynamically via `getLevel(totalExp)`.
+ * Absorbs any legacy `?period=` query string and permanently redirects to the
+ * canonical category-first exp leaderboard URL. Uses `permanentRedirect`
+ * (308) so crawlers consolidate link equity onto the new URL. Default period
+ * is `all-time`.
  *
- * @flow
- * - Tab navigation: Score / Exp (shared with main leaderboard)
- * - ExpLeaderboardTable: Ranked rows with avatar, username, total Exp, level
+ * Static routing precedence: this file sits at a static segment (`exp`),
+ * so Next.js dispatches `/leaderboard/exp` here rather than to the legacy
+ * `[period]/page.tsx` shim with `period="exp"` — which is why the legacy
+ * shim additionally 404s when it sees `period === 'score'` or `period === 'exp'`
+ * (defense in depth in case precedence ever flips).
  */
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { permanentRedirect } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { PagePanel } from '@/app/[locale]/_components/PagePanel';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { LeaderboardTabs } from '../_components/LeaderboardTabs';
-import { PeriodSelector } from '../_components/PeriodSelector';
-import type { LeaderboardPeriod } from '../_lib/types';
-import { isValidPeriod } from '../_lib/validators';
-import { getExpLeaderboard } from './_actions/getExpLeaderboard';
-import { ExpLeaderboardTable } from './_components/ExpLeaderboardTable';
+import { parsePeriod } from '../_lib/validators';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,49 +25,17 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  // Next.js delivers repeated query keys as string[], so accept both forms and
+  // normalize below.
   searchParams: Promise<{
-    period?: string;
+    period?: string | string[];
   }>;
 };
 
-function parsePeriod(value: string | undefined): LeaderboardPeriod {
-  if (value && isValidPeriod(value)) {
-    return value;
-  }
-  return 'all-time';
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.expLeaderboard' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'leaderboard/exp', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
-}
-
-export default async function ExpLeaderboardPage({ params, searchParams }: Props) {
+export default async function ExpLeaderboardIndexRedirect({ params, searchParams }: Props) {
   const { locale } = await params;
   const { period: periodParam } = await searchParams;
-  const period = parsePeriod(periodParam);
-  const { rows } = await getExpLeaderboard(period);
-
-  return (
-    <PagePanel>
-      <LeaderboardTabs activeTab="exp" locale={locale} />
-
-      <PeriodSelector currentPeriod={period} />
-
-      <ExpLeaderboardTable rows={rows} locale={locale} />
-
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
-    </PagePanel>
-  );
+  const raw = Array.isArray(periodParam) ? periodParam[0] : periodParam;
+  const period = parsePeriod(raw);
+  permanentRedirect(`/${locale}/leaderboard/exp/${period}`);
 }

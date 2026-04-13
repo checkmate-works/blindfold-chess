@@ -7,6 +7,7 @@ import { desc, eq, gte, sql, sum } from 'drizzle-orm';
 
 import { EXP_LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { db, expEvents, profiles, userExp } from '@/lib/db';
+import { startOfCurrentMonth, startOfCurrentWeek } from '@/lib/db/period-range';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 import type { LeaderboardPeriod } from '../../_lib/types';
@@ -29,22 +30,6 @@ const REVALIDATE_SECONDS = 60;
 const LIMIT = 50;
 
 const EMPTY_RESULT: ExpLeaderboardResult = { rows: [] };
-
-// ---------------------------------------------------------------------------
-// Period helpers
-// ---------------------------------------------------------------------------
-
-function startOfCurrentWeek(): Date {
-  const now = new Date();
-  const day = now.getUTCDay(); // 0 = Sunday
-  const diff = day === 0 ? 6 : day - 1; // Monday-based week
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diff));
-}
-
-function startOfCurrentMonth(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
 
 // ---------------------------------------------------------------------------
 // All-time ranking (from user_exp)

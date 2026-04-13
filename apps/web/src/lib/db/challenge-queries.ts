@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { db } from './index';
+import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
 import { challengeBestScores, challengeResults, profiles } from './schema';
 
 export type LeaderboardRow = {
@@ -23,25 +24,6 @@ export type LeaderboardPage = {
 export type RankResult = {
   rank: number;
 };
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function startOfCurrentWeek(): Date {
-  const now = new Date();
-  const day = now.getUTCDay(); // 0 = Sunday
-  const diff = day === 0 ? 6 : day - 1; // Monday-based week
-  const monday = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diff)
-  );
-  return monday;
-}
-
-function startOfCurrentMonth(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
 
 // ---------------------------------------------------------------------------
 // All-time ranking (from challenge_best_scores)

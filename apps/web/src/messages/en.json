@@ -3267,7 +3267,7 @@
       "board_symmetry": "Board Symmetry",
       "route_planner": "Route Planner"
     },
-    "allLeaderboardsSection": "All Leaderboards",
+    "scoreLeaderboardSection": "Score Leaderboard",
     "rankLabel": "Your Rank: #{rank}",
     "notRanked": "Not ranked",
     "cardTitle": {

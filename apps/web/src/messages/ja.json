@@ -3163,7 +3163,7 @@
       "board_symmetry": "ボードの対称性",
       "route_planner": "ルートプランナー"
     },
-    "allLeaderboardsSection": "すべてのランキング",
+    "scoreLeaderboardSection": "スコアランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
     "notRanked": "ランク外",
     "cardTitle": {
