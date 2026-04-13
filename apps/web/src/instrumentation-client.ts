@@ -91,18 +91,11 @@ Sentry.init({
   // Don't send events in development unless explicitly enabled
   enabled: process.env.NODE_ENV === 'production' || !!process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV,
 
-  // Replay configuration
-  replaysOnErrorSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
-  integrations: [
-    Sentry.replayIntegration({
-      // Additional Replay configuration goes here
-      maskAllText: true,
-      blockAllMedia: true,
-    }),
-  ],
+  // Session Replay は 2026-04-13 にインテグレーションから除外。
+  // Sentry 側の replay quota に到達していたため実際にはリプレイが記録されておらず
+  // ("The replay associated with this event cannot be found" と表示される状態)、
+  // クライアントバンドルから replayIntegration を削除して初期ロードを軽量化する。
+  // 再有効化する場合は quota の見直しを先に行うこと。
 
   // Filter out known errors that are not actionable
   beforeSend(event, hint) {
