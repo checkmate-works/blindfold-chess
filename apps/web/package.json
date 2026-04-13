@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "check:i18n": "tsx ./scripts/check-i18n-namespaces.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
