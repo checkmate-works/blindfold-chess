@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -12,6 +12,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { MANUAL_ARTICLE_SLUGS } from '../_lib/types';
 import { getManualArticle } from '../_lib/utils';
 
 const MarkdownRenderer = nextDynamic(
@@ -29,7 +30,10 @@ type Props = {
   }>;
 };
 
-export const dynamic = 'force-dynamic';
+export function generateStaticParams(): { locale: Locale; slug: string }[] {
+  const slugs = Object.values(MANUAL_ARTICLE_SLUGS);
+  return SUPPORTED_LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
+}
 
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
