@@ -1,4 +1,20 @@
 /**
+ * FEN helpers that do NOT depend on `chess.js`.
+ *
+ * The chess.js-dependent counterparts live in `./fen-chess.ts`. Both files are
+ * re-exported from `./fen.ts` so the chess-core barrel (`./index.ts`) stays
+ * byte-for-byte compatible with existing callers.
+ *
+ * Consumers that import from `@blindfold-chess/features/chess-core/fen` (the
+ * subpath export wired via the package's `exports` field) receive ONLY this
+ * file's contents, so they never pull `chess.js` into their bundle.
+ *
+ * If you add a new pure FEN helper, put it here. If you add a helper that
+ * needs chess.js, put it in `fen-chess.ts` — do NOT import `chess.js` into
+ * this file.
+ */
+
+/**
  * Parse FEN piece placement into a flat 64-element array of piece characters.
  * Index 0 = a8, index 1 = b8, ..., index 63 = h1.
  * Empty squares are represented as empty strings.

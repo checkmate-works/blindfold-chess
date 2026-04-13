@@ -1,3 +1,10 @@
+/**
+ * FEN helpers that depend on `chess.js`. The chess.js-free counterpart is
+ * `./fen-pure.ts`. If you add a helper that does not need chess.js, put it in
+ * `fen-pure.ts` instead — keeping pure helpers out of this file preserves the
+ * bundle-size benefit of the `@blindfold-chess/features/chess-core/fen`
+ * subpath export.
+ */
 import { Chess, DEFAULT_POSITION } from "chess.js";
 
 import type { BoardPiece } from "./types";

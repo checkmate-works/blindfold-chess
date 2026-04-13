@@ -12,6 +12,13 @@ type Props = {
 
 type Color = 'w' | 'b';
 
+// The helpers below intentionally avoid `fenToBoard` / `isBlackToMoveFromFen`
+// from `@blindfold-chess/features/chess-core`: those implementations depend on
+// `chess.js`, which would defeat the purpose of keeping this file a
+// chess-core-free React Server Component (we do not want chess.js pulled into
+// any client bundle that imports this thumbnail transitively). If a
+// chess.js-free alternative ever lands in `@blindfold-chess/features/chess-core/fen`,
+// replace these inline helpers with imports from that subentry.
 function parseFenChar(ch: string): { type: PieceType; color: Color } | null {
   if (ch >= 'A' && ch <= 'Z') {
     const lower = ch.toLowerCase();
