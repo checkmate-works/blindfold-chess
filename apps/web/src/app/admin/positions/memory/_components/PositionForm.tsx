@@ -4,7 +4,8 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { isBlackToMoveFromFen, validateFen } from '@blindfold-chess/features/chess-core';
+import { validateFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 

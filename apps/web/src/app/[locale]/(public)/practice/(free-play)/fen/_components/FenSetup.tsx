@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
+import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';

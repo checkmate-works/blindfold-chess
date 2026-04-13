@@ -1,7 +1,7 @@
 /**
  * Shared accuracy calculation utilities for position-based practice modules
  */
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 
 import type { PositionAccuracy, ScoreDetail, SquareDiff } from './types';
 

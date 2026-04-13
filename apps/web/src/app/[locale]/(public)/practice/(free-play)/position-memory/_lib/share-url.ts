@@ -1,6 +1,6 @@
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core';
+export { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 
 const MAX_QUERY_LENGTH = 1000;
 

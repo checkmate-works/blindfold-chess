@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
-import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { boardFlatToFen, fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 

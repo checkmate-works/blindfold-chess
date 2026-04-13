@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getOptionalUser } from '@/lib/auth';
 import { resolveDisplayName } from '@/lib/display-name';

@@ -1,4 +1,4 @@
-import { fenToBoardFlat } from '@blindfold-chess/features/chess-core';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 
 import type { CastlingRights } from '../_components/PositionSettings';
 

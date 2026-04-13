@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import type { BoardTheme } from '@/lib/boardThemes';
 

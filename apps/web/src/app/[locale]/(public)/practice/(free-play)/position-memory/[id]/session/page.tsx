@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getPositionById } from '@/lib/positions/queries';
 
