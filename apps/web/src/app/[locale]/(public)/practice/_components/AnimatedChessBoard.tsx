@@ -127,9 +127,11 @@ export function AnimatedChessBoard({
 
   const pieces = useMemo(() => parseFenToPieces(currentFen), [currentFen]);
 
+  const pieceBySquare = useMemo(() => new Map(pieces.map((p) => [p.square, p])), [pieces]);
+
   const renderSquare = useCallback(
     ({ square }: SquareRenderInfo) => {
-      const piece = pieces.find((p) => p.square === square);
+      const piece = pieceBySquare.get(square);
       if (!piece || piece.square === hiddenSquare) return null;
 
       return (
@@ -138,7 +140,7 @@ export function AnimatedChessBoard({
         </div>
       );
     },
-    [pieces, hiddenSquare]
+    [pieceBySquare, hiddenSquare]
   );
 
   return (
