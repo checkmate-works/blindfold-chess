@@ -9,6 +9,7 @@ import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
+import { ThemeScript } from '@/lib/theme';
 
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
@@ -157,6 +158,7 @@ export default async function Layout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />

@@ -15,6 +15,7 @@ import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
 import { getLocaleFromRequest } from '@/lib/locale';
+import { ThemeScript } from '@/lib/theme';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { AnnouncementBanner } from '@/app/[locale]/_components/AnnouncementBanner';
@@ -94,6 +95,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />

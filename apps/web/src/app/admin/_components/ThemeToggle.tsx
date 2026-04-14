@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/lib/theme';
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
