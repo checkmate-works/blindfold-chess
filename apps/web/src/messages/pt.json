@@ -131,6 +131,10 @@
       "title": "Ranking",
       "description": "Veja os melhores jogadores em todos os módulos de prática"
     },
+    "expLeaderboard": {
+      "title": "Ranking de Exp",
+      "description": "Veja os melhores jogadores classificados pelo total de pontos de experiência"
+    },
     "practice": {
       "title": "Exercícios de Prática de Xadrez às Cegas",
       "description": "Exercícios interativos gratuitos de xadrez às cegas: reconhecimento de coordenadas, exercícios de cor de casas, quizzes de movimentos legais e mais. Melhore sua visualização."
@@ -155,6 +159,10 @@
       "title": "Sistema de Faixas",
       "description": "Um programa único projetado para desenvolver as habilidades necessárias para vencer a IA no xadrez às cegas. Almeje a faixa preta."
     },
+    "dojo": {
+      "title": "Dojo",
+      "description": "Veja sua graduação atual e os requisitos para a próxima, tudo em um só lugar."
+    },
     "glossary": {
       "title": "Glossário de Xadrez - Termos e Definições",
       "description": "Consulte a terminologia enxadrística em nosso glossário completo. Navegue alfabeticamente ou por categoria para aprender definições de termos, táticas, estratégias e conceitos posicionais utilizados no xadrez às cegas.",
@@ -171,9 +179,23 @@
       "title": "{rankName} - Graduações",
       "description": "Requisitos e critérios para alcançar a graduação {rankName} no treinamento de xadrez às cegas."
     },
-    "rankGuide": {
-      "title": "Guia de {rankName} - Graduações",
-      "description": "Guia detalhado e dicas para alcançar a graduação {rankName} no treinamento de xadrez às cegas."
+    "guides": {
+      "top": {
+        "title": "Guias",
+        "description": "Guias no estilo livro-texto para treino de xadrez às cegas, organizados por graduação."
+      },
+      "rank": {
+        "title": "Guia de {rankName}",
+        "description": "Guia completo de xadrez às cegas para {rankName}. Aprenda coordenadas, diagonais e manobras de peças passo a passo com auxílios visuais e metas de progressão por faixa.",
+        "pageTitle": "Guia de {rankName} - Página {page}",
+        "descriptionWithPage": "Guia de xadrez às cegas para {rankName}, página {page} de {total}. Percorra esta parte do curso com auxílios visuais de tabuleiro e exercícios progressivos elaborados para o sistema de faixas."
+      },
+      "chapter": {
+        "title": "Guia de {rankName} - {chapterName}",
+        "description": "O capítulo {chapterName} do guia de xadrez às cegas de {rankName}. Um passo a passo focado e visualmente orientado das habilidades de {chapterName} necessárias para conquistar esta faixa.",
+        "pageTitle": "Guia de {rankName} - {chapterName} - Página {page}",
+        "descriptionWithPage": "Capítulo {chapterName} do guia de xadrez às cegas de {rankName}, página {page} de {total}. Auxílios visuais passo a passo e links em linha para ajudar você a dominar {chapterName}."
+      }
     }
   },
   "Header": {
@@ -192,7 +214,9 @@
     "leaderboard": "Ranking",
     "contact": "Contato",
     "settings": "Configurações",
-    "ranks": "Sistema de Faixas"
+    "ranks": "Sistema de Faixas",
+    "guides": "Guias",
+    "dojo": "Dojo"
   },
   "Preferences": {
     "title": "Configurações",
@@ -302,6 +326,40 @@
       "chessEngine": {
         "question": "Que motor de xadrez a IA usa?",
         "answer": "A IA utiliza Stockfish 17.1 (versão Lite de thread único)."
+      },
+      "expSystem": {
+        "question": "Como é calculada a experiência (Exp)?",
+        "answer": "Você ganha pontos de experiência (Exp) ao completar desafios. A fórmula é: Exp = Respostas Corretas × Peso do Módulo × Bônus por Erros.",
+        "moduleWeightTitle": "Pesos por Módulo",
+        "accuracyBonusTitle": "Bônus por Erros",
+        "streakBonusTitle": "Bônus de Sequência Diária",
+        "headerModule": "Módulo",
+        "headerWeight": "Peso",
+        "headerAccuracy": "Erros",
+        "headerMultiplier": "Multiplicador",
+        "headerChallenges": "Desafios Diários",
+        "modules": {
+          "coordinate_quiz": "Quiz de Coordenadas",
+          "square_colors": "Cores das Casas",
+          "diagonal_quiz": "Quiz de Diagonais",
+          "legal_moves": "Movimentos Legais",
+          "board_symmetry": "Simetria do Tabuleiro",
+          "route_planner": "Planejador de Rotas",
+          "position_memory": "Memória de Posições"
+        },
+        "misses0": "0 (Perfeito)",
+        "misses1": "1",
+        "misses2": "2",
+        "misses3": "3 (Burst)",
+        "streak5": "5+",
+        "streak3": "3–4",
+        "streak2": "2",
+        "streak1": "1",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -418,12 +476,16 @@
     "articleNotFound": "Artigo Não Encontrado"
   },
   "practice": {
+    "keyboard": {
+      "algebraicKeyboardHint": "Digite uma letra (a–h) e depois um número (1–8). Backspace: apagar."
+    },
     "title": "Prática",
     "modulesTitle": "Módulos de Prática",
     "levelBeginner": "Iniciante",
     "levelIntermediate": "Intermediário",
     "levelAdvanced": "Avançado",
     "levelIntroduction": "Introdução",
+    "viewLeaderboard": "🏆 Ver Ranking",
     "tryAgain": "Tentar Novamente",
     "changeSettings": "Alterar Configurações",
     "doOtherPractice": "Fazer outra prática",
@@ -705,6 +767,8 @@
     "positionMemory": {
       "title": "Memória de Posições",
       "description": "Treine sua capacidade de lembrar e recriar posições de xadrez",
+      "like": "Curtir",
+      "unlike": "Descurtir",
       "session": "Em Andamento",
       "settings": "Configuração do Problema",
       "problemSource": "Origem do Problema",
@@ -815,8 +879,35 @@
       },
       "cancel": "Cancelar",
       "requiredKnowledge": "Conhecimento Necessário",
-      "viewArticle": "Aprenda sobre o treinamento de memória de posições",
-      "articleDescription": "Aprenda técnicas para memorizar e recriar posições de xadrez"
+      "articles": {
+        "positionMemory": {
+          "title": "Aprenda sobre o treinamento de memória de posições",
+          "description": "Aprenda técnicas para memorizar e recriar posições de xadrez"
+        },
+        "deGrootExperiment": {
+          "title": "O Experimento de De Groot",
+          "description": "Como os grandes mestres memorizam posições: o estudo clássico sobre chunking"
+        }
+      },
+      "list": {
+        "title": "Memória de Posições",
+        "sectionTitle": "Lista de Problemas",
+        "empty": "Ainda não há posições disponíveis",
+        "tutorialLink": "Ver Tutorial",
+        "submittedBy": "enviado"
+      },
+      "detail": {
+        "title": "Detalhes da Posição",
+        "descriptionSection": "Descrição da Posição",
+        "solveSection": "Resolver o Problema",
+        "start": "Iniciar",
+        "timeLimit": "Limite de Tempo",
+        "seconds": "{count} segundos",
+        "createdBy": "Criado por",
+        "tutorialLink": "Ver Tutorial",
+        "tryAgain": "Tentar Novamente",
+        "backToList": "Voltar para a lista"
+      }
     },
     "knightTour": {
       "title": "Percurso do Cavalo",
@@ -969,7 +1060,6 @@
       "title": "Planejador de Rotas",
       "session": "Em Andamento",
       "description": "Calcule o caminho mais curto para que uma peça alcance uma casa objetivo",
-      "betaNotice": "O salvamento de pontuações e o ranking estão atualmente em desenvolvimento.",
       "howToPlayTitle": "Como Jogar",
       "howToPlayDescription": "Calcule o caminho mais curto para que uma peça alcance uma casa objetivo.",
       "settings": "Configurações",
@@ -1162,7 +1252,10 @@
           "title": "Casas Âncora",
           "description": "Aprenda pontos de referência chave para a visualização do tabuleiro"
         }
-      }
+      },
+      "howToPlayTitle": "Como Jogar",
+      "howToPlayDescription": "O nome de uma casa será exibido. Identifique a qual quadrante ela pertence tocando na área correta do tabuleiro.",
+      "challengeSetupNoLeaderboard": "As pontuações deste exercício não serão registradas no seu histórico de prática nem no ranking."
     },
     "diagonalQuiz": {
       "title": "Quiz de Diagonais",
@@ -1270,6 +1363,9 @@
         "improved": "Melhorou sua posição!",
         "rank": "Posição",
         "score": "Pontuação"
+      },
+      "position": {
+        "action": "Publicou um novo problema"
       }
     },
     "vsAi": {
@@ -1435,10 +1531,12 @@
     "logMoveNumber": "Movimento",
     "logIncorrectMove": "Sua entrada",
     "logCorrectMove": "Correto",
+    "logAutoFilled": "Preenchido automaticamente",
     "noMistakes": "Sem erros!",
     "incorrectMoveError": "{movePrefix} não é {move}",
     "analyzing": "Analisando",
-    "correctMoveMessage": "{movePrefix} {move} está correto"
+    "correctMoveMessage": "{movePrefix} {move} está correto",
+    "skippedMoveMessage": "A resposta era {movePrefix} {move}"
   },
   "playError": {
     "title": "Recuperação da Partida",
@@ -1859,14 +1957,16 @@
     "submitLoading": "Redefinindo...",
     "error": "Erro ao redefinir a senha. Por favor, tente novamente.",
     "passwordMismatch": "As senhas não coincidem.",
-    "passwordTooShort": "A senha deve ter pelo menos 8 caracteres."
+    "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
+    "rateLimited": "Muitas solicitações. Tente novamente mais tarde."
   },
   "articles": {
     "pageTitle": "Artigos",
     "noArticles": "Ainda não há artigos.",
     "articlesListTitle": "Todos os Artigos",
     "moreArticles": "Mais artigos",
-    "articleNotFound": "Artigo Não Encontrado"
+    "articleNotFound": "Artigo Não Encontrado",
+    "notTranslatedNotice": "Este artigo ainda não foi traduzido para o seu idioma. Você está vendo a versão original."
   },
   "announcements": {
     "pageTitle": "Anúncios",
@@ -1984,7 +2084,17 @@
       "beltSystem": "Sistema de Faixas",
       "myRecords": "Meus Registros",
       "socialTitle": "Social",
-      "interviewBanner": "Responda perguntas de entrevista e conte-nos sobre você"
+      "interviewBanner": "Responda perguntas de entrevista e conte-nos sobre você",
+      "activityTitle": "Atividade",
+      "heatmapLess": "Menos",
+      "heatmapMore": "Mais",
+      "heatmapTotal": "Total",
+      "heatmapNoActivity": "Sem atividade neste dia",
+      "heatmapLearnLink": "Saiba como calculamos a Exp",
+      "levelLabel": "Nível {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "{remaining} Exp até o próximo nível",
+      "viewExpLeaderboard": "Ver Ranking de Exp"
     },
     "records": "Registros",
     "bestScore": "Melhor Pontuação",
@@ -2037,7 +2147,8 @@
       "move_sequence": "Yakusoku Kumite",
       "algebraic_notation": "Notação Algébrica",
       "fen": "Reconstrução FEN",
-      "quadrant_anchors": "Âncoras de Quadrante"
+      "quadrant_anchors": "Âncoras de Quadrante",
+      "unknown": "Outro"
     },
     "practiceThisChallenge": "Praticar Este Desafio"
   },
@@ -2235,11 +2346,43 @@
       "past28days": "Últimos 28 dias",
       "past90days": "Últimos 90 dias",
       "newUsersPeriodTotal": "Novos Usuários (Total do Período)",
-      "postsPeriodTotal": "Publicações (Total do Período)",
+      "ugcPostsPeriodTotal": "Publicações UGC (Total do Período)",
       "dailyTrends": "Tendências Diárias",
       "newUsers": "Novos Usuários",
-      "posts": "Publicações",
-      "noData": "Sem dados para o período selecionado."
+      "ugcPosts": "Publicações UGC",
+      "noData": "Sem dados para o período selecionado.",
+      "summaryTable": {
+        "title": "Resumo de KPI",
+        "category": "Categoria",
+        "metric": "Métrica",
+        "value": "Valor",
+        "users": "Usuários",
+        "ugcPosts": "Publicações UGC",
+        "likes": "Curtidas",
+        "avgPerDay": "Média por dia",
+        "avgPerActivePoster": "Média por autor ativo",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "abertura",
+            "square": "casa"
+          },
+          "positions": {
+            "memory": "memória"
+          }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Média por autor ativo",
+            "ariaLabel": "Mostrar explicação de Média por autor ativo",
+            "description": "Total de publicações UGC no período selecionado dividido pelo número de usuários distintos que publicaram pelo menos um item UGC naquele período.\n\nUm usuário que contribuiu com vários tipos de UGC (por exemplo, tanto uma publicação em tópico quanto uma posição salva) é contado como um autor ativo, não dois.\n\nPublicações removidas (soft-delete) são excluídas tanto do numerador quanto da contagem de autores ativos."
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "E-mail",
@@ -2261,7 +2404,13 @@
       "premium": "Premium",
       "free": "Gratuito",
       "viewSubscriptions": "Assinaturas",
-      "deleted": "Excluído"
+      "deleted": "Excluído",
+      "signupMethod": "Método de Cadastro",
+      "filterByProvider": "Método de Cadastro",
+      "allProviders": "Todos",
+      "providerGoogle": "Google",
+      "providerEmail": "E-mail",
+      "providerUnknown": "Desconhecido"
     },
     "tabs": {
       "users": "Usuários",
@@ -2269,8 +2418,24 @@
     },
     "stats": {
       "usersByCountry": "Usuários por País",
+      "usersByRank": "Usuários por Graduação",
+      "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
-      "users": "usuários"
+      "users": "usuários",
+      "rankNames": {
+        "mukyu": "Sem Graduação",
+        "5kyu": "5º Kyu",
+        "4kyu": "4º Kyu",
+        "3kyu": "3º Kyu",
+        "2kyu": "2º Kyu",
+        "1kyu": "1º Kyu",
+        "1dan": "1º Dan"
+      }
+    },
+    "filters": {
+      "clearAll": "Limpar tudo",
+      "country": "País",
+      "rank": "Graduação"
     },
     "subscriptions": "Assinaturas",
     "subscriptionsTable": {
@@ -2351,6 +2516,7 @@
       "previousPage": "Anterior",
       "nextPage": "Próximo"
     },
+    "positionMemory": "Memória de Posições",
     "topicPosts": {
       "navLabel": "Publicações de Tópicos",
       "title": "Publicações de Tópicos",
@@ -2555,6 +2721,68 @@
       "endAt": "Fim",
       "create": "Criar",
       "creating": "Criando..."
+    },
+    "grants": {
+      "title": "Concessões",
+      "navLabel": "Concessões",
+      "noGrantsFound": "Nenhuma concessão encontrada",
+      "showing": "Exibindo {from}–{to} de {total} concessões",
+      "columns": {
+        "user": "Usuário",
+        "benefit": "Benefício",
+        "grantType": "Tipo de Concessão",
+        "reason": "Motivo",
+        "period": "Período",
+        "status": "Status",
+        "actions": "Ações"
+      },
+      "status": {
+        "revoked": "Revogado",
+        "expired": "Expirado",
+        "active": "Ativo"
+      }
+    },
+    "achievements": {
+      "title": "Conquistas",
+      "navLabel": "Conquistas",
+      "description": "Gerencie as definições de conquistas e veja quem as possui.",
+      "noAchievementsFound": "Nenhuma conquista encontrada",
+      "showing": "Exibindo {from}–{to} de {total} conquistas",
+      "viewHolders": "Ver detentores",
+      "columns": {
+        "displayName": "Nome",
+        "iconKey": "Chave do ícone",
+        "slug": "Slug",
+        "category": "Categoria",
+        "repeatable": "Repetível",
+        "displayOrder": "Ordem de exibição",
+        "holderCount": "Detentores",
+        "actions": "Ações"
+      },
+      "yes": "Sim",
+      "no": "Não",
+      "detail": {
+        "backToList": "Voltar para Conquistas",
+        "notFound": "Conquista não encontrada",
+        "headerTitle": "Detalhes da Conquista",
+        "slug": "Slug",
+        "category": "Categoria",
+        "iconKey": "Chave do ícone",
+        "repeatable": "Repetível",
+        "displayOrder": "Ordem de exibição",
+        "holderCount": "Detentores",
+        "createdAt": "Criado em",
+        "holdersTitle": "Detentores",
+        "showingHolders": "Exibindo {from}–{to} de {total} detentores",
+        "noHoldersFound": "Ainda não há detentores",
+        "columns": {
+          "username": "Nome de usuário",
+          "userId": "ID do usuário",
+          "achievedAt": "Conquistado em",
+          "metadata": "Metadados"
+        },
+        "anonymous": "(sem perfil)"
+      }
     }
   },
   "publicProfile": {
@@ -3039,7 +3267,7 @@
       "board_symmetry": "Simetria do Tabuleiro",
       "route_planner": "Planejador de Rotas"
     },
-    "allLeaderboardsSection": "Todos os Rankings",
+    "scoreLeaderboardSection": "Ranking de Pontuação",
     "rankLabel": "Sua Posição: #{rank}",
     "notRanked": "Sem posição",
     "cardTitle": {
@@ -3078,7 +3306,23 @@
       "message": "Participe do ranking!",
       "description": "Crie uma conta gratuita para acompanhar suas pontuações e competir com outros jogadores.",
       "cta": "Cadastro Gratuito"
+    },
+    "tabs": {
+      "score": "Pontuação",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Ranking de Exp",
+    "description": "Veja os melhores jogadores classificados pelo total de pontos de experiência.",
+    "table": {
+      "rank": "Posição",
+      "player": "Jogador",
+      "exp": "Exp",
+      "level": "Nível"
+    },
+    "emptyState": "Ainda não há registros de Exp. Comece a praticar para ganhar Exp!",
+    "backToScoreLeaderboard": "Voltar para Ranking de Pontuação"
   },
   "validation": {
     "password": {
@@ -3138,7 +3382,9 @@
       "legal_moves": "Movimentos Legais",
       "legal_moves_bishop": "Movimentos Legais (Bispo)",
       "legal_moves_king": "Movimentos Legais (Rei)",
-      "legal_moves_knight": "Movimentos Legais (Cavalo)"
+      "legal_moves_knight": "Movimentos Legais (Cavalo)",
+      "route_planner_knight": "Planejador de Rotas (Cavalo)",
+      "route_planner_bishop": "Planejador de Rotas (Bispo)"
     },
     "rankNames": {
       "mukyu": "Sem Graduação",
@@ -3155,7 +3401,8 @@
       "criteriaDescriptions": {
         "mukyu": "Pronto para começar o treinamento básico de xadrez às cegas.",
         "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",
-        "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais."
+        "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
+        "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais."
       },
       "tips": "Dicas",
       "guide": "Guia",
@@ -3164,114 +3411,14 @@
       "prevPage": "Anterior",
       "nextPage": "Próximo",
       "pageOf": "Página {current} de {total}",
-      "guidePages": {
-        "mukyu": [
-          {
-            "paragraphs": [
-              "Se você não entende o que significam notações como e4 ou Cf3, precisa começar aprendendo a notação algébrica.",
-              "A notação algébrica é a linguagem comum de facto para o xadrez às cegas.",
-              "Em resumo, a notação algébrica atribui uma coordenada única a cada casa do tabuleiro de xadrez. Essas coordenadas são coisas como e4 ou f3.",
-              "Este sistema identifica as casas usando estes símbolos."
-            ]
-          },
-          {
-            "paragraphs": [
-              "Mesmo depois de entender a notação algébrica, é necessário prática para reconhecer instantaneamente a posição exata de coordenadas como c7 ou g4.",
-              "O seguinte treinamento é recomendado.",
-              "É uma boa ideia começar a partir da perspectiva das Brancas.",
-              "No xadrez às cegas, alguns jogadores mantêm um tabuleiro fixo a partir da perspectiva das Brancas em sua mente, mesmo quando jogam com Pretas. Isso é chamado de modelo de perspectiva fixa. Se você tiver interesse, leia o seguinte artigo."
-            ]
-          },
-          {
-            "paragraphs": [
-              "Se você não obtém bons resultados no quiz de coordenadas, tente treinar para identificar em qual área do tabuleiro se encontra uma coordenada dividindo o tabuleiro de xadrez em quatro quadrantes.",
-              "Uma vez que possa fazer isso rapidamente, poderá usar pontos de ancoragem para identificar coordenadas eficientemente.",
-              "Esta técnica é ensinada no 5.º Kyū."
-            ]
-          }
-        ],
-        "5kyu": [
-          {
-            "paragraphs": [
-              "Se você tem dificuldade para resolver os exercícios, tente usar pontos de ancoragem.",
-              "Por exemplo, as quatro casas dos cantos — a8, h8, a1, h1 — são fáceis de memorizar. Você também pode saber instantaneamente a cor dessas casas.",
-              "Casas como estas, que são fáceis de lembrar e podem servir como pontos de referência, são chamadas de pontos de ancoragem.",
-              "Além disso, você pode dividir o tabuleiro de xadrez em quatro quadrantes.",
-              "Vamos começar focando apenas na área superior esquerda.",
-              "Cada uma das quatro seções sempre contém uma das quatro casas de canto do tabuleiro completo. Na área superior esquerda que estamos vendo, essa é a8.",
-              "A casa diagonal oposta a a8 dentro desta seção é d5. Os dois pontos restantes podem ser derivados por simetria horizontal e vertical: a5 e d8."
-            ]
-          },
-          {
-            "paragraphs": [
-              "Como as quatro seções são autossimilares — compartilham a mesma estrutura — podemos aplicar a mesma lógica para criar pontos de ancoragem para todo o tabuleiro.",
-              "Observe também o padrão: cada casa de canto do tabuleiro completo se emparelha com uma das casas centrais. Por exemplo, na seção superior esquerda, a8 se emparelha com d5.",
-              "Uma vez que você tenha estabelecido estes pontos de ancoragem, está pronto para colocá-los em prática.",
-              "A maior vantagem deste método é que cada casa do tabuleiro é um ponto de ancoragem em si, ou está adjacente a um.",
-              "Por exemplo, suponha que seu oponente jogue 1...Cf6. Veja como você poderia reconhecer f6:",
-              "Passo 1: Identificar a área.\nMesmo que você não possa localizar f6 imediatamente, pode determinar rapidamente que cai dentro da área superior direita (e5–h8).",
-              "Passo 2: Determinar o ponto de ancoragem.\nOs pontos de ancoragem nesta área são e5, h5, e8 e h8. Procure o ponto de ancoragem mais próximo por coluna e fila — neste caso, e5 funciona bem.",
-              "Passo 3: Verificar a posição relativa.\nf6 está uma casa à direita e uma casa acima de e5 — ou seja, diagonalmente acima à direita.",
-              "Desta forma, em vez de construir uma imagem mental a partir de coordenadas absolutas como \"a coluna f... a fila 6...\", você reconhece posições de forma relativa: \"área superior direita, acima à direita de e5.\" Isso reduz a carga cognitiva e permite uma visualização do tabuleiro mais eficiente."
-            ]
-          }
-        ],
-        "4kyu": [
-          {
-            "paragraphs": [
-              "Com um tabuleiro de xadrez físico à sua frente, os jogadores experientes podem determinar os movimentos legais de todas as peças quase inconscientemente.",
-              "No entanto, no xadrez às cegas, você deve determinar os movimentos legais baseando-se unicamente em informação textual como 'um cavalo está colocado em c3'. Isso é surpreendentemente difícil se você não está acostumado.",
-              "Vamos começar considerando o caso relativamente simples de determinar os movimentos legais do Rei. O Rei pode se mover em todas as direções, mas apenas uma casa por vez.",
-              "Para qualquer peça, o conceito de mudança (delta) é importante.",
-              "Por exemplo, pensemos na mudança de fila. Ao se mover de g1 para h2, a diferença de fila é 1. De a8 para a6, a diferença é 2. Isso é o que os matemáticos chamam de valor absoluto, mas usaremos o termo mais amigável 'mudança' aqui.",
-              "A mudança de coluna funciona da mesma maneira — atribua números às colunas (a=1, b=2, ... h=8) e calcule a diferença.",
-              "O Rei pode se mover quando o máximo da mudança de fila e mudança de coluna é 1, e ambos não são 0. Expresso como fórmula:"
-            ]
-          },
-          {
-            "paragraphs": [
-              "A seguir, consideremos como determinar os movimentos legais do Cavalo. O Cavalo se move em forma de L.",
-              "Um Cavalo pode se mover de uma casa para outra apenas quando a combinação de mudança de coluna e mudança de fila é (1,2) ou (2,1).",
-              "Isso significa que o Cavalo deve se mover duas casas verticalmente e uma horizontalmente, ou duas casas horizontalmente e uma verticalmente. Expresso como fórmula:",
-              "A menos que esteja restringido pela borda do tabuleiro, um Cavalo pode se mover para 8 casas diferentes a partir de qualquer casa dada. As 8 direções de movimento são (+2,+1), (+2,-1), (-2,+1), (-2,-1), (+1,+2), (+1,-2), (-1,+2), (-1,-2).",
-              "O Cavalo tem propriedades especiais que outras peças não possuem. Os Cavalos podem saltar sobre outras peças, e sempre aterrissam em uma casa de cor oposta à sua casa de partida."
-            ]
-          },
-          {
-            "paragraphs": [
-              "Finalmente, consideremos como determinar os movimentos legais do Bispo. O Bispo se move na diagonal.",
-              "Um Bispo pode se mover de uma casa para outra apenas quando a mudança de coluna é igual à mudança de fila. Expresso como fórmula:",
-              "Em outras palavras, um movimento é legal apenas quando a diferença absoluta de coluna e fila é igual.",
-              "O Bispo tem uma característica importante. Um Bispo sempre permanece em casas da mesma cor. Um Bispo de casas claras só pode se mover para casas claras, e um Bispo de casas escuras só pode se mover para casas escuras."
-            ]
-          },
-          {
-            "paragraphs": [
-              "Quanto à Torre, é bastante simples — pode se mover para qualquer casa que compartilhe a mesma coluna ou fila.",
-              "A Dama pode ser considerada como uma combinação da Torre e do Bispo.",
-              "A forma como usamos o termo 'movimentos legais' aqui é na verdade um pouco imprecisa. Em uma partida real, você não pode se mover para uma casa ocupada por uma peça aliada, e o Rei não pode se mover para uma casa que esteja sob ataque. Os movimentos legais deveriam ser determinados propriamente com base em condições mais complexas.",
-              "Dito isso, vamos começar praticando como mover as peças corretamente em um cenário simplificado onde não há outras peças no tabuleiro."
-            ]
-          }
-        ]
-      },
       "mukyuRequirements": ["Compreensão da notação algébrica"],
-      "4kyuGuideLinks": {
-        "kingMovementLabel": "Movimento do Rei (guia detalhado)",
-        "knightMovementLabel": "Movimento do Cavalo (guia detalhado)",
-        "bishopMovementLabel": "Movimento do Bispo (guia detalhado)",
-        "rookMovementLabel": "Movimento da Torre (guia detalhado)"
-      },
-      "mukyuGuideLinks": {
+      "mukyuRelatedLinks": {
         "learnArticle": "Para mais detalhes, consulte o seguinte artigo.",
         "practiceLink": "Você também pode praticar com um exercício simples.",
         "learnArticleLabel": "Aprenda sobre notação algébrica",
-        "practiceLabel": "Pratique notação algébrica",
-        "coordinateQuizLabel": "Quiz de Coordenadas",
-        "coordinateConfusionLabel": "Sobre a confusão de coordenadas",
-        "quadrantsLabel": "Treinamento de Quadrantes",
-        "5kyuGuideLabel": "Ver o guia do 5.º Kyū"
-      }
+        "practiceLabel": "Pratique notação algébrica"
+      },
+      "readFullGuide": "Leia o guia de {rankName}"
     },
     "signUpBanner": {
       "message": "Conquiste sua faixa preta!",
@@ -3300,10 +3447,301 @@
       "1dan": "1.º Dan"
     }
   },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} lugar",
+      "menuType": {
+        "board_symmetry": "Simetria do Tabuleiro",
+        "coordinate_quiz": "Quiz de Coordenadas",
+        "diagonal_quiz": "Quiz de Diagonais",
+        "legal_moves": "Movimentos Legais",
+        "route_planner": "Planejador de Rotas",
+        "square_colors": "Cores das Casas"
+      },
+      "leaderboardKey": {
+        "bishop": "Bispo",
+        "black": "Pretas",
+        "default": "Padrão",
+        "king": "Rei",
+        "knight": "Cavalo",
+        "queen": "Dama",
+        "random": "Aleatório",
+        "rook": "Torre",
+        "white": "Brancas"
+      },
+      "placement": {
+        "1st": "1º",
+        "2nd": "2º",
+        "3rd": "3º"
+      }
+    }
+  },
   "MobileTabBar": {
     "games": "Partidas",
-    "practice": "Prática",
+    "dojo": "Dojo",
     "topics": "Tópicos",
     "mypage": "Minha Página"
+  },
+  "dojo": {
+    "pageTitle": "Dojo",
+    "currentRankTitle": "Graduação Atual",
+    "nextRankTitle": "Próxima Graduação",
+    "nextRankRequirementsComingSoon": "Requisitos em breve",
+    "allAchieved": "Você conquistou todas as graduações 🎉",
+    "viewAllRanks": "Ver todas as graduações",
+    "viewAllPractices": "Ver todas as práticas",
+    "viewAllGuides": "Ver todos os guias",
+    "curriculum": {
+      "title": "Currículo",
+      "empty": "Em breve",
+      "achieved": "Conquistado",
+      "sections": {
+        "algebraicNotation": "Notação algébrica",
+        "anchorPoints": "Percepção do tabuleiro com pontos de ancoragem",
+        "blindfoldLegalMoves": "Detecção de movimentos legais no xadrez às cegas",
+        "diagonals": "Cálculo de diagonais e antidiagonais"
+      }
+    }
+  },
+  "guides": {
+    "top": {
+      "title": "Guias",
+      "sections": {
+        "rankGuides": {
+          "title": "Guias por Graduação",
+          "description": "Guias no estilo livro-texto para treino de xadrez às cegas, organizados por graduação."
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "Guia",
+      "chapterListHeading": "Capítulos"
+    },
+    "breadcrumb": {
+      "home": "Início",
+      "guides": "Guias"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Se você não entende o que notações como e4 ou Cf3 significam, precisa começar aprendendo a notação algébrica.",
+              "A notação algébrica é a linguagem comum de fato para o xadrez às cegas.",
+              "Em resumo, a notação algébrica atribui uma coordenada única a cada casa do tabuleiro de xadrez. Essas coordenadas são coisas como e4 ou f3.",
+              "Este sistema identifica casas usando esses símbolos."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Mesmo após entender a notação algébrica, é preciso prática para reconhecer instantaneamente a posição exata de coordenadas como c7 ou g4.",
+              "O treinamento a seguir é recomendado.",
+              "É uma boa ideia começar pela perspectiva das Brancas.",
+              "No xadrez às cegas, alguns jogadores mantêm um tabuleiro fixo na perspectiva das Brancas em mente, mesmo quando jogam com as Pretas. Isso é chamado de modelo de perspectiva fixa. Se estiver interessado, leia o artigo a seguir."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Se você não está obtendo bons resultados no quiz de coordenadas, tente treinar a identificação de qual área do tabuleiro uma coordenada pertence dividindo o tabuleiro em quatro quadrantes.",
+              "Assim que conseguir fazer isso rapidamente, poderá usar pontos de ancoragem para identificar coordenadas de forma eficiente.",
+              "Essa técnica é ensinada no 5º Kyū."
+            ]
+          }
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Se você está tendo dificuldade para resolver os problemas, tente usar pontos de ancoragem.",
+              "Por exemplo, as quatro casas de canto — a8, h8, a1, h1 — são fáceis de memorizar. Você também consegue identificar instantaneamente a cor dessas casas.",
+              "Casas como essas, que são fáceis de lembrar e podem servir como pontos de referência, são chamadas de pontos de ancoragem.",
+              "Além disso, você pode dividir o tabuleiro de xadrez em quatro quadrantes.",
+              "Vamos começar focando apenas na área superior esquerda.",
+              "Cada uma das quatro seções divididas sempre contém uma das quatro casas de canto do tabuleiro completo. Na área superior esquerda que estamos observando, essa é a8.",
+              "A casa diagonalmente oposta a a8 dentro desta seção é d5. Os dois pontos restantes podem ser derivados por simetria horizontal e vertical: a5 e d8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Como todas as quatro seções são autossimilares — compartilham a mesma estrutura — podemos aplicar a mesma lógica para criar pontos de ancoragem para o tabuleiro inteiro.",
+              "Observe também o padrão: cada casa de canto do tabuleiro completo se empareja com uma das casas centrais. Por exemplo, na seção superior esquerda, a8 se empareja com d5.",
+              "Depois de estabelecer esses pontos de ancoragem, você está pronto para colocá-los em prática.",
+              "A maior vantagem desse método é que toda casa do tabuleiro é, ela própria, um ponto de ancoragem, ou é adjacente a um.",
+              "Por exemplo, suponha que seu oponente jogue 1...Cf6. Veja como você pode reconhecer f6:",
+              "Passo 1: Identifique a área.\nMesmo que não consiga localizar f6 imediatamente, você pode determinar rapidamente que ela cai dentro da área superior direita (e5–h8).",
+              "Passo 2: Determine o ponto de ancoragem.\nOs pontos de ancoragem nessa área são e5, h5, e8 e h8. Procure o ponto de ancoragem mais próximo por coluna e fileira — neste caso, e5 funciona bem.",
+              "Passo 3: Verifique a posição relativa.\nf6 está uma casa à direita e uma casa acima de e5 — em outras palavras, diagonalmente para cima e à direita.",
+              "Dessa forma, em vez de construir uma imagem mental a partir de coordenadas absolutas como \"a coluna f... a 6ª fileira...\", você reconhece posições de forma relativa: \"área superior direita, acima e à direita de e5.\" Isso reduz a carga cognitiva e permite uma visualização do tabuleiro mais eficiente.",
+              "O artigo a seguir também explica esse método."
+            ]
+          }
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Quanto à manobra do bispo, é útil primeiro considerar qual diagonal e antidiagonal um bispo pode controlar quando colocado em uma casa específica.",
+              "Para uma explicação de diagonais e antidiagonais, consulte o tutorial do Quiz de Diagonais.",
+              "Vamos começar pensando nas diagonais que vão de baixo-esquerda para cima-direita.",
+              "O ponto de partida de uma diagonal é sempre uma casa na coluna a ou na 1ª fileira.",
+              "Isso ocorre porque os valores de coluna e fileira mudam em 1 simultaneamente ao longo de uma diagonal, então traçar para baixo-esquerda (↙) sempre alcança uma borda do tabuleiro antes da outra.",
+              "Vamos pensar em termos de valores numéricos de coluna (a=1, b=2, ..., h=8).",
+              "Quando o valor da coluna é menor que o valor da fileira, traçar para baixo-esquerda (↙) atinge primeiro a coluna a (borda esquerda).",
+              "Por exemplo, considere um bispo em d7. O valor da coluna é 4 e a fileira é 7.",
+              "O máximo de passos para baixo-esquerda é \"valor da coluna - 1\" = 3. Subtraindo 3 da fileira: 7 - 3 = 4, então o ponto de partida é a4."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Por outro lado, quando o valor da coluna é maior que o valor da fileira, traçar para baixo-esquerda (↙) atinge primeiro a 1ª fileira (borda inferior).",
+              "Por exemplo, considere um bispo em f4. O valor da coluna é 6 e a fileira é 4.",
+              "O máximo de passos para baixo-esquerda é \"valor da fileira - 1\" = 3. Subtraindo 3 da coluna: 6 - 3 = 3, então o ponto de partida é c1.",
+              "Quando os valores de coluna e fileira são iguais, traçar para baixo-esquerda (↙) alcança ambas as bordas do tabuleiro simultaneamente, então o ponto de partida é sempre a1.",
+              "Esta é a diagonal principal a1-h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Até aqui aprendemos como encontrar o ponto de partida.",
+              "A mesma abordagem pode ser usada para encontrar o ponto final.",
+              "O ponto final é sempre uma casa na coluna h ou na 8ª fileira.",
+              "Desta vez, considere traçar para cima-direita (↗). Pela mesma lógica de antes, a borda do tabuleiro alcançada primeiro determina o ponto final.",
+              "Quando o valor da coluna é menor que o valor da fileira, traçar para cima-direita (↗) atinge primeiro a 8ª fileira (borda superior).",
+              "Por exemplo, com um bispo em d7, o máximo de passos para cima-direita é \"8 - valor da fileira\" = 8 - 7 = 1. Somando 1 à coluna: 4 + 1 = 5, então o ponto final é e8.",
+              "Por outro lado, quando o valor da coluna é maior que o valor da fileira, a coluna h (borda direita) é alcançada primeiro.",
+              "Por exemplo, com um bispo em f4, o máximo de passos para cima-direita é \"8 - valor da coluna\" = 8 - 6 = 2. Somando 2 à fileira: 4 + 2 = 6, então o ponto final é h6.",
+              "Quando os valores de coluna e fileira são iguais, o ponto final é sempre h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Em seguida, vamos considerar as antidiagonais que vão de cima-esquerda para baixo-direita.",
+              "O ponto de partida de uma antidiagonal é sempre uma casa na coluna a ou na 8ª fileira.",
+              "Ao longo de uma antidiagonal, traçar para cima-esquerda (↖) diminui a coluna e aumenta a fileira, então alcança primeiro a coluna a (borda esquerda) ou a 8ª fileira (borda superior).",
+              "Os passos até a coluna a são \"valor da coluna - 1\", e os passos até a 8ª fileira são \"8 - valor da fileira\". O valor menor determina qual borda é alcançada primeiro.",
+              "Por exemplo, considere um bispo em c3. Passos até a coluna a: 3 - 1 = 2, passos até a 8ª fileira: 8 - 3 = 5.",
+              "A coluna a é alcançada primeiro, então somando 2 à fileira: 3 + 2 = 5, e o ponto de partida é a5.",
+              "Por outro lado, para um bispo em f7, passos até a coluna a: 6 - 1 = 5, passos até a 8ª fileira: 8 - 7 = 1.",
+              "A 8ª fileira é alcançada primeiro, então subtraindo 1 da coluna: 6 - 1 = 5, e o ponto de partida é e8.",
+              "Quando ambas as contagens de passos são iguais, o ponto de partida é sempre a8. Esta é a antidiagonal principal a8-h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "O ponto final de uma antidiagonal é sempre uma casa na coluna h ou na 1ª fileira.",
+              "Considere traçar para baixo-direita (↘). Os passos até a coluna h são \"8 - valor da coluna\", e os passos até a 1ª fileira são \"valor da fileira - 1\".",
+              "Para um bispo em c3, passos até a coluna h: 8 - 3 = 5, passos até a 1ª fileira: 3 - 1 = 2.",
+              "A 1ª fileira é alcançada primeiro, então somando 2 à coluna: 3 + 2 = 5, e o ponto final é e1.",
+              "Para um bispo em f7, passos até a coluna h: 8 - 6 = 2, passos até a 1ª fileira: 7 - 1 = 6.",
+              "A coluna h é alcançada primeiro, então subtraindo 2 da fileira: 7 - 2 = 5, e o ponto final é h5.",
+              "Quando ambas as contagens de passos são iguais, o ponto final é sempre h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Para resumir, os pontos de partida e chegada de diagonais e antidiagonais seguem padrões regulares.",
+              "Primeiro, aqui estão os padrões para diagonais (direção ↗) começando pela coluna a.",
+              "À medida que o ponto de partida sobe, o ponto final se comprime pela direita ao longo da 8ª fileira.",
+              "Em seguida, os padrões para diagonais começando pela 1ª fileira.",
+              "À medida que o ponto de partida se move para a direita, o ponto final se comprime de cima para baixo ao longo da coluna h."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Aqui estão os padrões para antidiagonais (direção ↘) começando pela coluna a.",
+              "Semelhante às diagonais, à medida que o ponto de partida desce, o ponto final se comprime pela direita ao longo da 1ª fileira.",
+              "Em seguida, os padrões para antidiagonais começando pela 8ª fileira.",
+              "À medida que o ponto de partida se move para a direita, o ponto final se comprime de baixo para cima ao longo da coluna h."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Combinações como a2 → g8 ou e8 → h5 serão naturalmente memorizadas através da prática repetida de xadrez às cegas. Eventualmente, você conseguirá respondê-las inconscientemente.",
+              "O Quiz de Diagonais é eficaz para treinar esse cálculo.",
+              "Se pular direto para o Planejador de Rotas for muito difícil, aqueça aqui primeiro.",
+              "Assim que você conseguir realizar esses cálculos de diagonais e antidiagonais, a manobra no xadrez às cegas se torna muito mais rápida — a teoria por trás disso será abordada em um guia futuro."
+            ]
+          }
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Com um tabuleiro de xadrez físico à sua frente, jogadores experientes conseguem determinar movimentos legais de todas as peças quase inconscientemente.",
+              "No entanto, no xadrez às cegas, você deve determinar os movimentos legais baseando-se apenas em informações textuais como \"um cavalo está em c3\". Isso é surpreendentemente difícil se você não está acostumado.",
+              "Vamos começar considerando o caso relativamente simples de determinar os movimentos legais do Rei. O Rei pode se mover em todas as direções, mas apenas uma casa por vez.",
+              "Para qualquer peça, o conceito de mudança (delta) é importante.",
+              "Por exemplo, pensemos na mudança de fileira. Ao mover-se de g1 para h2, a diferença de fileira é 1. De a8 para a6, a diferença é 2. Isso é o que os matemáticos chamam de valor absoluto, mas usaremos o termo mais amigável \"mudança\" aqui.",
+              "A mudança de coluna funciona da mesma forma — atribua números às colunas (a=1, b=2, ... h=8) e calcule a diferença.",
+              "O Rei pode se mover quando o máximo entre a mudança de fileira e a mudança de coluna é 1, e ambas não são 0. Expresso como fórmula:"
+            ]
+          },
+          {
+            "paragraphs": [
+              "Em seguida, vamos considerar como determinar os movimentos legais do Cavalo. O Cavalo se move em forma de L.",
+              "Um Cavalo pode mover-se de uma casa para outra apenas quando a combinação de mudança de coluna e mudança de fileira é (1,2) ou (2,1).",
+              "Isso significa que o Cavalo deve mover-se duas casas verticalmente e uma casa horizontalmente, ou duas casas horizontalmente e uma casa verticalmente. Expresso como fórmula:",
+              "A menos que restrito pela borda do tabuleiro, um Cavalo pode mover-se para 8 casas diferentes a partir de qualquer casa dada. As 8 direções de movimento são (+2,+1), (+2,-1), (-2,+1), (-2,-1), (+1,+2), (+1,-2), (-1,+2), (-1,-2).",
+              "O Cavalo tem propriedades especiais que outras peças não têm. Cavalos podem pular sobre outras peças e sempre pousam em uma casa de cor oposta à sua casa de partida."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Finalmente, vamos considerar como determinar os movimentos legais do Bispo. O Bispo se move em diagonal.",
+              "Um Bispo pode mover-se de uma casa para outra apenas quando a mudança de coluna é igual à mudança de fileira. Expresso como fórmula:",
+              "Em outras palavras, um movimento é legal apenas quando a diferença absoluta de coluna e fileira é igual.",
+              "O Bispo tem uma característica importante. Um Bispo sempre permanece em casas da mesma cor. Um Bispo de casas claras só pode mover-se para casas claras, e um Bispo de casas escuras só pode mover-se para casas escuras."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Quanto à Torre, é bastante simples — ela pode mover-se para qualquer casa que compartilhe a mesma coluna ou fileira.",
+              "A Dama pode ser pensada como uma combinação da Torre e do Bispo.",
+              "A forma como usamos o termo \"movimentos legais\" aqui é, na verdade, um pouco imprecisa. Em uma partida real, você não pode mover-se para uma casa ocupada por uma peça aliada, e o Rei não pode mover-se para uma casa que esteja sob ataque. Os movimentos legais devem ser determinados propriamente com base em condições mais complexas.",
+              "Dito isso, vamos começar praticando como mover as peças corretamente em um cenário simplificado em que não há outras peças no tabuleiro."
+            ]
+          }
+        ]
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
+        "diagonalQuizTutorialLabel": "Tutorial do Quiz de Diagonais",
+        "diagonalQuizLabel": "Quiz de Diagonais"
+      },
+      "5kyu": {
+        "quadrantMethodArticleLabel": "Mudando meu método de percepção do tabuleiro para o método de quadrantes"
+      },
+      "4kyu": {
+        "kingMovementLabel": "Movimento do Rei (guia detalhado)",
+        "knightMovementLabel": "Movimento do Cavalo (guia detalhado)",
+        "bishopMovementLabel": "Movimento do Bispo (guia detalhado)",
+        "rookMovementLabel": "Movimento da Torre (guia detalhado)"
+      },
+      "mukyu": {
+        "learnArticle": "Para mais detalhes, consulte o seguinte artigo.",
+        "learnArticleLabel": "Aprenda sobre notação algébrica",
+        "coordinateQuizLabel": "Quiz de Coordenadas",
+        "coordinateConfusionLabel": "Sobre a confusão de coordenadas",
+        "quadrantsLabel": "Treinamento de Quadrantes",
+        "5kyuGuideLabel": "Ver o guia do 5º Kyū"
+      }
+    },
+    "navigation": {
+      "prevRank": "Graduação anterior: guia de {rankName}",
+      "nextRank": "Próxima graduação: guia de {rankName}"
+    }
+  },
+  "Footer": {
+    "resources": "Recursos",
+    "support": "Suporte",
+    "legal": "Legal"
   }
 }
