@@ -25,7 +25,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * This is an accepted tradeoff. Link updates inside the app ensure normal
  * users never hit these 404s.
  *
- * @returns The detected locale ('en', 'ja', or 'es')
+ * @returns The detected locale ('en', 'ja', 'es', or 'pt')
  */
 export async function getLocaleFromRequest(): Promise<Locale> {
   // 1. Check cookie first (user preference)

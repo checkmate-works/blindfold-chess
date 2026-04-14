@@ -1,10 +1,10 @@
 export type Question = {
   id: number;
-  description: { en: string; ja: string; es: string };
+  description: { en: string; ja: string; es: string; pt: string };
   fenBefore: string;
   fenAfter: string;
   correctAnswer: string;
   options: string[];
-  explanation: { en: string[]; ja: string[]; es: string[] };
+  explanation: { en: string[]; ja: string[]; es: string[]; pt: string[] };
   move: string;
 };

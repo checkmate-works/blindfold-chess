@@ -32,7 +32,12 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
+  const OG_LOCALE_MAP: Record<string, string> = {
+    en: 'en_US',
+    ja: 'ja_JP',
+    es: 'es_ES',
+    pt: 'pt_BR',
+  };
   const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');

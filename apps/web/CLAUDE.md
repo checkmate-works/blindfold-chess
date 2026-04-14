@@ -49,7 +49,7 @@ Route segment names use **singular or plural form depending on the nature of the
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **CSS Variables** - Theme color values are defined in `@blindfold-chess/ui` (`packages/ui/src/theme/`) and injected as CSS custom properties via `generateThemeCSS()` in layout.tsx. `globals.css` bridges these variables into Tailwind's `@theme` system.
 - **No Hardcoded Colors** - Use CSS variable-based utilities instead of direct color classes (e.g., `text-foreground` instead of `text-gray-800`)
-- **Dark Mode Support** - Implement with `next-themes` and CSS variables
+- **Dark Mode Support** - Implement with the custom theme provider at `@/lib/theme` (`ThemeProvider`, `useTheme`, `ThemeScript`) and CSS variables. `next-themes` was replaced to fix a React 19 "Encountered a script tag" warning; the no-flash bootstrap script is rendered from the Server Component `<ThemeScript />` inside each root layout's `<head>`.
 - **Minimal External CSS** - Avoid external CSS files, use Tailwind utilities inline
 - **Icons** - Use `@blindfold-chess/icons` for custom/chess-related icons (cross-platform, see `packages/icons/CLAUDE.md`). Use `react-icons` for general-purpose icons (Font Awesome, Material Icons, etc.)
 

@@ -13,6 +13,7 @@ const metadataRegistry: Record<
     en: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.en'),
     ja: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.ja'),
     es: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.es'),
+    pt: () => import('@/app/[locale]/(public)/manual/_content/about-this-website/metadata.pt'),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () =>
@@ -21,11 +22,14 @@ const metadataRegistry: Record<
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.ja'),
     es: () =>
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.es'),
+    pt: () =>
+      import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/metadata.pt'),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.en'),
     ja: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.ja'),
     es: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.es'),
+    pt: () => import('@/app/[locale]/(public)/manual/_content/data-handling-caution/metadata.pt'),
   },
 };
 
@@ -44,6 +48,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       import('@/app/[locale]/(public)/manual/_content/about-this-website/es').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
+    pt: () =>
+      import('@/app/[locale]/(public)/manual/_content/about-this-website/pt').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
   },
   [MANUAL_ARTICLE_SLUGS.CHANGING_PIECE_APPEARANCE]: {
     en: () =>
@@ -58,6 +66,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/es').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
+    pt: () =>
+      import('@/app/[locale]/(public)/manual/_content/changing-piece-appearance/pt').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
   },
   [MANUAL_ARTICLE_SLUGS.DATA_HANDLING_CAUTION]: {
     en: () =>
@@ -70,6 +82,10 @@ const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
       ),
     es: () =>
       import('@/app/[locale]/(public)/manual/_content/data-handling-caution/es').then((m) =>
+        'default' in m ? m.default : (m as { content: string }).content
+      ),
+    pt: () =>
+      import('@/app/[locale]/(public)/manual/_content/data-handling-caution/pt').then((m) =>
         'default' in m ? m.default : (m as { content: string }).content
       ),
   },
