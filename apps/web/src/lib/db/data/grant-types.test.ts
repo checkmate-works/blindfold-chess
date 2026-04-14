@@ -10,11 +10,11 @@ import {
 
 describe('GRANT_TYPES', () => {
   it('contains all expected grant type values', () => {
-    expect(GRANT_TYPES).toEqual(['admin_manual', 'topic_post', 'puzzle_creation', 'campaign']);
+    expect(GRANT_TYPES).toEqual(['admin_manual', 'topic_post']);
   });
 
-  it('contains exactly 4 entries (boundary: collection size)', () => {
-    expect(GRANT_TYPES).toHaveLength(4);
+  it('contains exactly 2 entries (boundary: collection size)', () => {
+    expect(GRANT_TYPES).toHaveLength(2);
   });
 
   it('includes admin_manual', () => {
@@ -23,14 +23,6 @@ describe('GRANT_TYPES', () => {
 
   it('includes topic_post', () => {
     expect(GRANT_TYPES).toContain('topic_post');
-  });
-
-  it('includes puzzle_creation', () => {
-    expect(GRANT_TYPES).toContain('puzzle_creation');
-  });
-
-  it('includes campaign', () => {
-    expect(GRANT_TYPES).toContain('campaign');
   });
 });
 
@@ -86,6 +78,14 @@ describe('isGrantType', () => {
 
   it('returns false for an unknown string', () => {
     expect(isGrantType('unknown')).toBe(false);
+  });
+
+  it('returns false for puzzle_creation (deferred grant type)', () => {
+    expect(isGrantType('puzzle_creation')).toBe(false);
+  });
+
+  it('returns false for campaign (deferred grant type)', () => {
+    expect(isGrantType('campaign')).toBe(false);
   });
 
   it('returns false for typo "topic_posts" (close-but-wrong)', () => {

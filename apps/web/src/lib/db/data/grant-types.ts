@@ -2,7 +2,7 @@
  * Grant type policy configuration — source of truth for durations per automated grant trigger.
  * See schema.ts `userGrants` @design tags for why this lives in code, not DB.
  */
-export const GRANT_TYPES = ['admin_manual', 'topic_post', 'puzzle_creation', 'campaign'] as const;
+export const GRANT_TYPES = ['admin_manual', 'topic_post'] as const;
 export type GrantType = (typeof GRANT_TYPES)[number];
 export type AutomatedGrantType = Exclude<GrantType, 'admin_manual'>;
 
@@ -22,8 +22,6 @@ export type GrantTypeConfig = {
  */
 export const GRANT_TYPE_DEFAULTS: Record<AutomatedGrantType, GrantTypeConfig> = {
   topic_post: { benefitType: 'ad_free', durationDays: 7 },
-  puzzle_creation: { benefitType: 'ad_free', durationDays: 14 },
-  campaign: { benefitType: 'ad_free', durationDays: 30 },
 };
 
 export function isGrantType(v: string): v is GrantType {

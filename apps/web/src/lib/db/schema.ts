@@ -1518,8 +1518,8 @@ export type NewUserExpRecord = typeof userExp.$inferInsert;
  * @design reason is free-form text by design; grantType is the canonical "why"
  *
  * The categorical "why" of a grant is expressed by `grantType` (e.g.,
- * 'topic_post', 'puzzle_creation', 'admin_manual'), not by `reason`. A
- * separate `grant_reasons` master table was deliberately NOT introduced:
+ * 'topic_post', 'admin_manual'), not by `reason`. A separate
+ * `grant_reasons` master table was deliberately NOT introduced:
  *
  * - User-facing notification/display text is owned by the i18n layer
  *   (`messages/{locale}.json`, keyed by grantType), not the database.

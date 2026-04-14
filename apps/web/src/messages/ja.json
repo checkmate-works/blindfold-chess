@@ -2172,15 +2172,11 @@
     },
     "howToEarn": {
       "title": "特典の獲得方法",
-      "topic_post": "トピックを投稿すると{days}日間付与されます",
-      "puzzle_creation": "問題を作成すると{days}日間付与されます",
-      "campaign": "キャンペーン参加で{days}日間付与されます"
+      "topic_post": "トピックを投稿すると{days}日間付与されます"
     },
     "grantTypeLabel": {
       "admin_manual": "運営からの付与",
-      "topic_post": "トピック投稿による付与",
-      "puzzle_creation": "問題作成による付与",
-      "campaign": "キャンペーンによる付与"
+      "topic_post": "トピック投稿による付与"
     }
   },
   "MypageLikes": {
